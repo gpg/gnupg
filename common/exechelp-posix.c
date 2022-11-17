@@ -915,3 +915,655 @@ gnupg_kill_process (pid_t pid)
       kill (pid, SIGTERM);
     }
 }
+
+#include <sys/socket.h>
+
+struct gnupg_process {
+  const char *pgmname;
+  unsigned int terminated   :1; /* or detached */
+  unsigned int flags;
+  pid_t pid;
+  int fd_in;
+  int fd_out;
+  int fd_err;
+  int wstatus;
+};
+
+static int gnupg_process_syscall_func_initialized;
+
+/* Functions called before and after blocking syscalls.  */
+static void (*pre_syscall_func) (void);
+static void (*post_syscall_func) (void);
+
+static void
+check_syscall_func (void)
+{
+  if (!gnupg_process_syscall_func_initialized)
+    {
+      gpgrt_get_syscall_clamp (&pre_syscall_func, &post_syscall_func);
+      gnupg_process_syscall_func_initialized = 1;
+    }
+}
+
+static void
+pre_syscall (void)
+{
+  if (pre_syscall_func)
+    pre_syscall_func ();
+}
+
+static void
+post_syscall (void)
+{
+  if (post_syscall_func)
+    post_syscall_func ();
+}
+
+
+static gpg_err_code_t
+do_create_socketpair (int filedes[2])
+{
+  gpg_error_t err = 0;
+
+  pre_syscall ();
+  if (socketpair (AF_LOCAL, SOCK_STREAM, 0, filedes) == -1)
+    {
+      err = gpg_err_code_from_syserror ();
+      filedes[0] = filedes[1] = -1;
+    }
+  post_syscall ();
+
+  return err;
+}
+
+static int
+posix_open_null (int for_write)
+{
+  int fd;
+
+  fd = open ("/dev/null", for_write? O_WRONLY : O_RDONLY);
+  if (fd == -1)
+    log_fatal ("failed to open '/dev/null': %s\n", strerror (errno));
+  return fd;
+}
+
+static void
+my_exec (const char *pgmname, const char *argv[],
+         int fd_in, int fd_out, int fd_err, int ask_inherit)
+{
+  int i;
+  int fds[3];
+
+  fds[0] = fd_in;
+  fds[1] = fd_out;
+  fds[2] = fd_err;
+
+  /* Assign /dev/null to unused FDs.  */
+  for (i = 0; i <= 2; i++)
+    if (fds[i] == -1)
+      fds[i] = posix_open_null (i);
+
+  /* Connect the standard files.  */
+  for (i = 0; i <= 2; i++)
+    if (fds[i] != i)
+      {
+        if (dup2 (fds[i], i) == -1)
+          log_fatal ("dup2 std%s failed: %s\n",
+                     i==0?"in":i==1?"out":"err", strerror (errno));
+        close (fds[i]);
+      }
+
+  /* Close all other files.  */
+  if (!ask_inherit)
+    close_all_fds (3, NULL);
+
+  execv (pgmname, (char *const *)argv);
+  /* No way to print anything, as we have may have closed all streams. */
+  _exit (127);
+}
+
+static gpg_err_code_t
+spawn_detached (gnupg_process_t process,
+                const char *pgmname, const char *argv[],
+                int (*spawn_cb) (struct spawn_cb_arg *), void *spawn_cb_arg)
+{
+  gpg_err_code_t ec;
+  pid_t pid;
+
+  /* FIXME: Is this GnuPG specific or should we keep it.  */
+  if (getuid() != geteuid())
+    {
+      xfree (process);
+      xfree (argv);
+      return GPG_ERR_BUG;
+    }
+
+  if (access (pgmname, X_OK))
+    {
+      ec = gpg_err_code_from_syserror ();
+      xfree (process);
+      xfree (argv);
+      return ec;
+    }
+
+  pre_syscall ();
+  pid = fork ();
+  post_syscall ();
+  if (pid == (pid_t)(-1))
+    {
+      ec = gpg_err_code_from_syserror ();
+      log_error (_("error forking process: %s\n"), gpg_strerror (ec));
+      xfree (process);
+      xfree (argv);
+      return ec;
+    }
+
+  if (!pid)
+    {
+      pid_t pid2;
+      struct spawn_cb_arg arg;
+      int ask_inherit = 0;
+
+      arg.std_fds[0] = arg.std_fds[1] = arg.std_fds[2] = -1;
+      arg.arg = spawn_cb_arg;
+
+      if (spawn_cb)
+        ask_inherit = (*spawn_cb) (&arg);
+
+      if (setsid() == -1 || chdir ("/"))
+        _exit (1);
+
+      pid2 = fork (); /* Double fork to let init take over the new child. */
+      if (pid2 == (pid_t)(-1))
+        _exit (1);
+      if (pid2)
+        _exit (0);  /* Let the parent exit immediately. */
+
+      my_exec (pgmname, argv, -1, -1, -1, ask_inherit);
+      /*NOTREACHED*/
+    }
+
+  pre_syscall ();
+  if (waitpid (pid, NULL, 0) == -1)
+    {
+      post_syscall ();
+      ec = gpg_err_code_from_syserror ();
+      log_error ("waitpid failed in gpgrt_spawn_process_detached: %s",
+                 gpg_strerror (ec));
+      return ec;
+    }
+  else
+    post_syscall ();
+
+  process->pid = (pid_t)-1;
+  process->fd_in = -1;
+  process->fd_out = -1;
+  process->fd_err = -1;
+  process->wstatus = -1;
+  process->terminated = 1;
+  return 0;
+}
+
+gpg_err_code_t
+gnupg_process_spawn (const char *pgmname, const char *argv1[],
+                     unsigned int flags,
+                     int (*spawn_cb) (struct spawn_cb_arg *),
+                     void *spawn_cb_arg,
+                     gnupg_process_t *r_process)
+{
+  gpg_err_code_t ec;
+  gnupg_process_t process;
+  int fd_in[2];
+  int fd_out[2];
+  int fd_err[2];
+  pid_t pid;
+  const char **argv;
+  int i, j;
+
+  check_syscall_func ();
+
+  *r_process = NULL;
+
+  /* Create the command line argument array.  */
+  i = 0;
+  if (argv1)
+    while (argv1[i])
+      i++;
+  argv = xtrycalloc (i+2, sizeof *argv);
+  if (!argv)
+    return gpg_err_code_from_syserror ();
+  argv[0] = strrchr (pgmname, '/');
+  if (argv[0])
+    argv[0]++;
+  else
+    argv[0] = pgmname;
+
+  if (argv1)
+    for (i=0, j=1; argv1[i]; i++, j++)
+      argv[j] = argv1[i];
+
+  process = xtrycalloc (1, sizeof (struct gnupg_process));
+  if (process == NULL)
+    {
+      xfree (argv);
+      return gpg_err_code_from_syserror ();
+    }
+
+  process->pgmname = pgmname;
+  process->flags = flags;
+
+  if ((flags & GNUPG_PROCESS_DETACHED))
+    {
+      if ((flags & GNUPG_PROCESS_STDFDS_SETTING))
+        {
+          xfree (process);
+          xfree (argv);
+          return GPG_ERR_INV_FLAG;
+        }
+
+      *r_process = process;
+      return spawn_detached (process, pgmname, argv, spawn_cb, spawn_cb_arg);
+    }
+
+  if ((flags & GNUPG_PROCESS_STDINOUT_SOCKETPAIR))
+    {
+      ec = do_create_socketpair (fd_in);
+      if (ec)
+        {
+          xfree (process);
+          xfree (argv);
+          return ec;
+        }
+      fd_out[0] = dup (fd_in[0]);
+      fd_out[1] = dup (fd_in[1]);
+    }
+  else
+    {
+      if ((flags & GNUPG_PROCESS_STDIN_PIPE))
+        {
+          ec = do_create_pipe (fd_in);
+          if (ec)
+            {
+              xfree (process);
+              xfree (argv);
+              return ec;
+            }
+        }
+      else if ((flags & GNUPG_PROCESS_STDIN_NULL))
+        {
+          fd_in[0] = -1;
+          fd_in[1] = -1;
+        }
+      else
+        {
+          fd_in[0] = 0;
+          fd_in[1] = -1;
+        }
+
+      if ((flags & GNUPG_PROCESS_STDOUT_PIPE))
+        {
+          ec = do_create_pipe (fd_out);
+          if (ec)
+            {
+              if (fd_in[0] >= 0 && fd_in[0] != 0)
+                close (fd_in[0]);
+              if (fd_in[1] >= 0)
+                close (fd_in[1]);
+              xfree (process);
+              xfree (argv);
+              return ec;
+            }
+        }
+      else if ((flags & GNUPG_PROCESS_STDOUT_NULL))
+        {
+          fd_out[0] = -1;
+          fd_out[1] = -1;
+        }
+      else
+        {
+          fd_out[0] = -1;
+          fd_out[1] = 1;
+        }
+    }
+
+  if ((flags & GNUPG_PROCESS_STDERR_PIPE))
+    {
+      ec = do_create_pipe (fd_err);
+      if (ec)
+        {
+          if (fd_in[0] >= 0 && fd_in[0] != 0)
+            close (fd_in[0]);
+          if (fd_in[1] >= 0)
+            close (fd_in[1]);
+          if (fd_out[0] >= 0)
+            close (fd_out[0]);
+          if (fd_out[1] >= 0 && fd_out[1] != 1)
+            close (fd_out[1]);
+          xfree (process);
+          xfree (argv);
+          return ec;
+        }
+    }
+  else if ((flags & GNUPG_PROCESS_STDERR_NULL))
+    {
+      fd_err[0] = -1;
+      fd_err[1] = -1;
+    }
+  else
+    {
+      fd_err[0] = -1;
+      fd_err[1] = 2;
+    }
+
+  pre_syscall ();
+  pid = fork ();
+  post_syscall ();
+  if (pid == (pid_t)(-1))
+    {
+      ec = gpg_err_code_from_syserror ();
+      log_error (_("error forking process: %s\n"), gpg_strerror (ec));
+      if (fd_in[0] >= 0 && fd_in[0] != 0)
+        close (fd_in[0]);
+      if (fd_in[1] >= 0)
+        close (fd_in[1]);
+      if (fd_out[0] >= 0)
+        close (fd_out[0]);
+      if (fd_out[1] >= 0 && fd_out[1] != 1)
+        close (fd_out[1]);
+      if (fd_err[0] >= 0)
+        close (fd_err[0]);
+      if (fd_err[1] >= 0 && fd_err[1] != 2)
+        close (fd_err[1]);
+      xfree (process);
+      xfree (argv);
+      return ec;
+    }
+
+  if (!pid)
+    {
+      struct spawn_cb_arg arg;
+      int ask_inherit = 0;
+
+      arg.std_fds[0] = fd_in[0];
+      arg.std_fds[1] = fd_out[1];
+      arg.std_fds[2] = fd_err[1];
+      arg.arg = spawn_cb_arg;
+
+      if (fd_in[1] >= 0)
+        close (fd_in[1]);
+      if (fd_out[0] >= 0)
+        close (fd_out[0]);
+      if (fd_err[0] >= 0)
+        close (fd_err[0]);
+
+      if (spawn_cb)
+        ask_inherit = (*spawn_cb) (&arg);
+
+      /* Run child. */
+      my_exec (pgmname, argv, fd_in[0], fd_out[1], fd_err[1], ask_inherit);
+      /*NOTREACHED*/
+    }
+
+  xfree (argv);
+  process->pid = pid;
+
+  if (fd_in[0] >= 0 && fd_in[0] != 0)
+    close (fd_in[0]);
+  if (fd_out[1] >= 0 && fd_out[1] != 1)
+    close (fd_out[1]);
+  if (fd_err[1] >= 0 && fd_err[1] != 2)
+    close (fd_err[1]);
+  process->fd_in = fd_in[1];
+  process->fd_out = fd_out[0];
+  process->fd_err = fd_err[0];
+  process->wstatus = -1;
+  process->terminated = 0;
+
+  *r_process = process;
+  return 0;
+}
+
+static gpg_err_code_t
+process_kill (gnupg_process_t process, int sig)
+{
+  gpg_err_code_t ec = 0;
+  pid_t pid = process->pid;
+
+  pre_syscall ();
+  if (kill (pid, sig) < 0)
+    ec = gpg_err_code_from_syserror ();
+  post_syscall ();
+  return ec;
+}
+
+gpg_err_code_t
+gnupg_process_terminate (gnupg_process_t process)
+{
+  return process_kill (process, SIGTERM);
+}
+
+gpg_err_code_t
+gnupg_process_get_fds (gnupg_process_t process, unsigned int flags,
+                       int *r_fd_in, int *r_fd_out, int *r_fd_err)
+{
+  (void)flags;
+  if (r_fd_in)
+    {
+      *r_fd_in = process->fd_in;
+      process->fd_in = -1;
+    }
+  if (r_fd_out)
+    {
+      *r_fd_out = process->fd_out;
+      process->fd_out = -1;
+    }
+  if (r_fd_err)
+    {
+      *r_fd_err = process->fd_err;
+      process->fd_err = -1;
+    }
+
+  return 0;
+}
+
+gpg_err_code_t
+gnupg_process_get_streams (gnupg_process_t process, unsigned int flags,
+                           gpgrt_stream_t *r_fp_in, gpgrt_stream_t *r_fp_out,
+                           gpgrt_stream_t *r_fp_err)
+{
+  int nonblock = (flags & GNUPG_PROCESS_STREAM_NONBLOCK)? 1: 0;
+
+  if (r_fp_in)
+    {
+      *r_fp_in = es_fdopen (process->fd_in, nonblock? "w,nonblock" : "w");
+      process->fd_in = -1;
+    }
+  if (r_fp_out)
+    {
+      *r_fp_out = es_fdopen (process->fd_out, nonblock? "r,nonblock" : "r");
+      process->fd_out = -1;
+    }
+  if (r_fp_err)
+    {
+      *r_fp_err = es_fdopen (process->fd_err, nonblock? "r,nonblock" : "r");
+      process->fd_err = -1;
+    }
+  return 0;
+}
+
+static gpg_err_code_t
+process_vctl (gnupg_process_t process, unsigned int request, va_list arg_ptr)
+{
+  switch (request)
+    {
+    case GNUPG_PROCESS_NOP:
+      return 0;
+
+    case GNUPG_PROCESS_GET_ID:
+      {
+        int *r_id = va_arg (arg_ptr, int *);
+
+        if (r_id == NULL)
+          return GPG_ERR_INV_VALUE;
+
+        *r_id = (int)process->pid;
+        return 0;
+      }
+
+    case GNUPG_PROCESS_GET_EXIT_ID:
+      {
+        int status = process->wstatus;
+        int *r_exit_status = va_arg (arg_ptr, int *);
+
+        if (!process->terminated)
+          return GPG_ERR_UNFINISHED;
+
+        if (WIFEXITED (status))
+          {
+            if (r_exit_status)
+              *r_exit_status = WEXITSTATUS (status);
+          }
+        else
+          *r_exit_status = -1;
+
+        return 0;
+      }
+
+    case GNUPG_PROCESS_GET_PID:
+      {
+        pid_t *r_pid = va_arg (arg_ptr, pid_t *);
+
+        if (r_pid == NULL)
+          return GPG_ERR_INV_VALUE;
+
+        *r_pid = process->pid;
+        return 0;
+      }
+
+    case GNUPG_PROCESS_GET_WSTATUS:
+      {
+        int status = process->wstatus;
+        int *r_if_exited = va_arg (arg_ptr, int *);
+        int *r_if_signaled = va_arg (arg_ptr, int *);
+        int *r_exit_status = va_arg (arg_ptr, int *);
+        int *r_termsig = va_arg (arg_ptr, int *);
+
+        if (!process->terminated)
+          return GPG_ERR_UNFINISHED;
+
+        if (WIFEXITED (status))
+          {
+            if (r_if_exited)
+              *r_if_exited = 1;
+            if (r_if_signaled)
+              *r_if_signaled = 0;
+            if (r_exit_status)
+              *r_exit_status = WEXITSTATUS (status);
+            if (r_termsig)
+              *r_termsig = 0;
+          }
+        else if (WIFSIGNALED (status))
+          {
+            if (r_if_exited)
+              *r_if_exited = 0;
+            if (r_if_signaled)
+              *r_if_signaled = 1;
+            if (r_exit_status)
+              *r_exit_status = 0;
+            if (r_termsig)
+              *r_termsig = WTERMSIG (status);
+          }
+
+        return 0;
+      }
+
+    case GNUPG_PROCESS_KILL:
+      {
+        int sig = va_arg (arg_ptr, int);
+
+        return process_kill (process, sig);
+      }
+
+    default:
+      break;
+    }
+
+  return GPG_ERR_UNKNOWN_COMMAND;
+}
+
+gpg_err_code_t
+gnupg_process_ctl (gnupg_process_t process, unsigned int request, ...)
+{
+  va_list arg_ptr;
+  gpg_err_code_t ec;
+
+  va_start (arg_ptr, request);
+  ec = process_vctl (process, request, arg_ptr);
+  va_end (arg_ptr);
+  return ec;
+}
+
+gpg_err_code_t
+gnupg_process_wait (gnupg_process_t process, int hang)
+{
+  gpg_err_code_t ec;
+  int status;
+  pid_t pid;
+
+
+  if (process->terminated)
+    /* Already terminated.  */
+    return 0;
+
+  pre_syscall ();
+  while ((pid = waitpid (process->pid, &status, hang? 0: WNOHANG))
+         == (pid_t)(-1) && errno == EINTR);
+  post_syscall ();
+
+  if (pid == (pid_t)(-1))
+    {
+      ec = gpg_err_code_from_syserror ();
+      log_error (_("waiting for process %d to terminate failed: %s\n"),
+                        (int)pid, gpg_strerror (ec));
+    }
+  else if (!pid)
+    {
+      ec = GPG_ERR_TIMEOUT; /* Still running.  */
+    }
+  else
+    {
+      process->terminated = 1;
+      process->wstatus = status;
+      ec = 0;
+    }
+
+  return ec;
+}
+
+void
+gnupg_process_release (gnupg_process_t process)
+{
+  if (process->terminated)
+    gnupg_process_wait (process, 0);
+
+  xfree (process);
+}
+
+gpg_err_code_t
+gnupg_process_wait_list (gnupg_process_t *process_list, int count, int hang)
+{
+  gpg_err_code_t ec = 0;
+  int i;
+
+  for (i = 0; i < count; i++)
+    {
+      if (process_list[i]->terminated)
+        continue;
+
+      ec = gnupg_process_wait (process_list[i], hang);
+      if (ec)
+        break;
+    }
+
+  return ec;
+}

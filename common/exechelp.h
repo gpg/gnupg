@@ -207,6 +207,93 @@ gpg_error_t gnupg_spawn_process_detached (const char *pgmname,
                                           const char *argv[],
                                           const char *envp[] );
 
+
+/* The opaque type for a subprocess.  */
+typedef struct gnupg_process *gnupg_process_t;
+struct spawn_cb_arg {
+  int std_fds[3];
+  void *arg;
+};
+
+/* Internal flag to ihnerit file descriptor/handle */
+#define GNUPG_PROCESS_INHERIT_FILE        (1 << 0)
+
+#define GNUPG_PROCESS_DETACHED            (1 << 1)
+/**/
+#define GNUPG_PROCESS_WINDOWS_ASFW        (1 << 7)
+
+/* Specify how to keep/connect standard fds.  */
+#define GNUPG_PROCESS_STDIN_PIPE          (1 << 8)
+#define GNUPG_PROCESS_STDOUT_PIPE         (1 << 9)
+#define GNUPG_PROCESS_STDERR_PIPE         (1 << 10)
+#define GNUPG_PROCESS_STDINOUT_SOCKETPAIR (1 << 11)
+#define GNUPG_PROCESS_STDIN_NULL          (1 << 12)
+#define GNUPG_PROCESS_STDOUT_NULL         (1 << 13)
+#define GNUPG_PROCESS_STDERR_NULL         (1 << 14)
+#define GNUPG_PROCESS_STDFDS_SETTING  ( GNUPG_PROCESS_STDIN_PIPE  \
+  | GNUPG_PROCESS_STDOUT_PIPE         | GNUPG_PROCESS_STDERR_PIPE \
+  | GNUPG_PROCESS_STDINOUT_SOCKETPAIR | GNUPG_PROCESS_STDIN_NULL  \
+  | GNUPG_PROCESS_STDOUT_NULL         | GNUPG_PROCESS_STDERR_NULL)
+
+#define GNUPG_PROCESS_STREAM_NONBLOCK     (1 << 16)
+
+/* Spawn PGMNAME.  */
+gpg_err_code_t gnupg_process_spawn (const char *pgmname, const char *argv[],
+                                    unsigned int flags,
+                                    int (*spawn_cb) (struct spawn_cb_arg *),
+                                    void *spawn_cb_arg,
+                                    gnupg_process_t *r_process);
+
+/* Get FDs for subprocess I/O.  It is the caller which should care
+   FDs (closing FDs).  */
+gpg_err_code_t gnupg_process_get_fds (gnupg_process_t process,
+                                      unsigned int flags,
+                                      int *r_fd_in, int *r_fd_out,
+                                      int *r_fd_err);
+
+/* Get STREAMs for subprocess I/O.  It is the caller which should care
+   STREAMs (closing STREAMs).  */
+gpg_err_code_t gnupg_process_get_streams (gnupg_process_t process,
+                                          unsigned int flags,
+                                          gpgrt_stream_t *r_fp_in,
+                                          gpgrt_stream_t *r_fp_out,
+                                          gpgrt_stream_t *r_fp_err);
+
+enum gnupg_process_requests
+  {
+    /* Portable requests */
+    GNUPG_PROCESS_NOP           = 0,
+    GNUPG_PROCESS_GET_ID        = 1,
+    GNUPG_PROCESS_GET_EXIT_ID   = 2,
+
+    /* POSIX only */
+    GNUPG_PROCESS_GET_PID       = 16,
+    GNUPG_PROCESS_GET_WSTATUS   = 17,
+    GNUPG_PROCESS_KILL          = 18,
+
+    /* Windows only */
+    GNUPG_PROCESS_GET_P_HANDLE  = 32,
+    GNUPG_PROCESS_GET_HANDLES   = 33,
+    GNUPG_PROCESS_GET_EXIT_CODE = 34,
+    GNUPG_PROCESS_KILL_WITH_EC  = 35
+  };
+
+/* Control of a process.  */
+gpg_err_code_t gnupg_process_ctl (gnupg_process_t process,
+                                  unsigned int request, ...);
+
+/* Wait for a single PROCESS.  */
+gpg_err_code_t gnupg_process_wait (gnupg_process_t process, int hang);
+
+/* Terminate a PROCESS.  */
+gpg_err_code_t gnupg_process_terminate (gnupg_process_t process);
+
+/* Release PROCESS resources.  */
+void gnupg_process_release (gnupg_process_t process);
+
+/* Wait for a multiple processes.  */
+gpg_err_code_t gnupg_process_wait_list (gnupg_process_t *process_list,
+                                        int count, int hang);
 
 
 #endif /*GNUPG_COMMON_EXECHELP_H*/

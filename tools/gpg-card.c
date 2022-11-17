@@ -3641,7 +3641,7 @@ cmd_gpg (card_info_t info, char *argstr, int use_gpgsm)
   char **argarray;
   ccparray_t ccp;
   const char **argv = NULL;
-  pid_t pid;
+  gnupg_process_t proc;
   int i;
 
   if (!info)
@@ -3669,15 +3669,13 @@ cmd_gpg (card_info_t info, char *argstr, int use_gpgsm)
       goto leave;
     }
 
-  err = gnupg_spawn_process (use_gpgsm? opt.gpgsm_program:opt.gpg_program,
-                             argv, NULL, (GNUPG_SPAWN_KEEP_STDOUT
-                                          |GNUPG_SPAWN_KEEP_STDERR),
-                             NULL, NULL, NULL, &pid);
+  err = gnupg_process_spawn (use_gpgsm? opt.gpgsm_program:opt.gpg_program,
+                             argv, GNUPG_PROCESS_STDIN_NULL, NULL, NULL,
+                             &proc);
   if (!err)
     {
-      err = gnupg_wait_process (use_gpgsm? opt.gpgsm_program:opt.gpg_program,
-                                pid, 1, NULL);
-      gnupg_release_process (pid);
+      err = gnupg_process_wait (proc, 1);
+      gnupg_process_release (proc);
     }
 
 

@@ -324,7 +324,7 @@ gpgtar_extract (const char *filename, int decrypt)
   char *dirname = NULL;
   struct tarinfo_s tarinfo_buffer;
   tarinfo_t tarinfo = &tarinfo_buffer;
-  pid_t pid = (pid_t)(-1);
+  gnupg_process_t proc;
   char *logfilename = NULL;
 
 
@@ -408,13 +408,14 @@ gpgtar_extract (const char *filename, int decrypt)
           goto leave;
         }
 
-      err = gnupg_spawn_process (opt.gpg_program, argv, NULL,
-                                 ((filename? 0 : GNUPG_SPAWN_KEEP_STDIN)
-                                  | GNUPG_SPAWN_KEEP_STDERR),
-                                 NULL, &stream, NULL, &pid);
+      err = gnupg_process_spawn (opt.gpg_program, argv,
+                                 ((filename ? GNUPG_PROCESS_STDIN_NULL : 0)
+                                  | GNUPG_PROCESS_STDOUT_PIPE),
+                                 NULL, NULL, &proc);
       xfree (argv);
       if (err)
         goto leave;
+      gnupg_process_get_streams (proc, 0, NULL, &stream, NULL);
       es_set_binary (stream);
     }
   else if (filename)
@@ -454,25 +455,26 @@ gpgtar_extract (const char *filename, int decrypt)
       header = NULL;
     }
 
-  if (pid != (pid_t)(-1))
+  if (proc)
     {
-      int exitcode;
-
       err = es_fclose (stream);
       stream = NULL;
       if (err)
         log_error ("error closing pipe: %s\n", gpg_strerror (err));
-      else
+
+      err = gnupg_process_wait (proc, 1);
+      if (!err)
         {
-          err = gnupg_wait_process (opt.gpg_program, pid, 1, &exitcode);
-          if (err)
+          int exitcode;
+
+          gnupg_process_ctl (proc, GNUPG_PROCESS_GET_EXIT_ID, &exitcode);
+          if (exitcode)
             log_error ("running %s failed (exitcode=%d): %s",
                        opt.gpg_program, exitcode, gpg_strerror (err));
-          gnupg_release_process (pid);
-          pid = (pid_t)(-1);
         }
+      gnupg_process_release (proc);
+      proc = NULL;
     }
-
 
  leave:
   free_strlist (extheader);

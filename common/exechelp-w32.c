@@ -1048,3 +1048,668 @@ gnupg_kill_process (pid_t pid)
       TerminateProcess (process, 1);
     }
 }
+
+struct gnupg_process {
+  const char *pgmname;
+  unsigned int terminated   :1; /* or detached */
+  unsigned int flags;
+  HANDLE hProcess;
+  HANDLE hd_in;
+  HANDLE hd_out;
+  HANDLE hd_err;
+  int exitcode;
+};
+
+static int gnupg_process_syscall_func_initialized;
+
+/* Functions called before and after blocking syscalls.  */
+static void (*pre_syscall_func) (void);
+static void (*post_syscall_func) (void);
+
+static void
+check_syscall_func (void)
+{
+  if (!gnupg_process_syscall_func_initialized)
+    {
+      gpgrt_get_syscall_clamp (&pre_syscall_func, &post_syscall_func);
+      gnupg_process_syscall_func_initialized = 1;
+    }
+}
+
+static void
+pre_syscall (void)
+{
+  if (pre_syscall_func)
+    pre_syscall_func ();
+}
+
+static void
+post_syscall (void)
+{
+  if (post_syscall_func)
+    post_syscall_func ();
+}
+
+
+static gpg_err_code_t
+spawn_detached (gnupg_process_t process,
+                const char *pgmname, char *cmdline,
+                int (*spawn_cb) (struct spawn_cb_arg *), void *spawn_cb_arg)
+{
+  SECURITY_ATTRIBUTES sec_attr;
+  PROCESS_INFORMATION pi = { NULL, 0, 0, 0 };
+  STARTUPINFOW si;
+  int cr_flags;
+  wchar_t *wcmdline = NULL;
+  wchar_t *wpgmname = NULL;
+  int ask_inherit = 0;
+  gpg_err_code_t ec;
+  int ret;
+
+  ec = gnupg_access (pgmname, X_OK);
+  if (ec)
+    {
+      xfree (process);
+      xfree (cmdline);
+      return ec;
+    }
+
+  if (spawn_cb)
+    {
+      struct spawn_cb_arg arg;
+
+      arg.std_fds[0] = arg.std_fds[1] = arg.std_fds[2] = -1;
+      arg.arg = spawn_cb_arg;
+
+      ask_inherit = (*spawn_cb) (&arg);
+    }
+
+  /* Prepare security attributes.  */
+  memset (&sec_attr, 0, sizeof sec_attr );
+  sec_attr.nLength = sizeof sec_attr;
+
+  if (ask_inherit)
+    sec_attr.bInheritHandle = TRUE;
+  else
+    sec_attr.bInheritHandle = FALSE;
+
+  /* Start the process.  */
+  memset (&si, 0, sizeof si);
+  si.cb = sizeof (si);
+  si.dwFlags = STARTF_USESHOWWINDOW;
+  si.wShowWindow = DEBUG_W32_SPAWN? SW_SHOW : SW_MINIMIZE;
+
+  cr_flags = (CREATE_DEFAULT_ERROR_MODE
+              | GetPriorityClass (GetCurrentProcess ())
+              | CREATE_NEW_PROCESS_GROUP
+              | DETACHED_PROCESS);
+
+  log_debug ("CreateProcess(detached), path='%s' cmdline='%s'\n",
+                    pgmname, cmdline);
+  /* Take care: CreateProcessW may modify wpgmname */
+  if (!(wpgmname = utf8_to_wchar (pgmname)))
+    ret = 0;
+  else if (!(wcmdline = utf8_to_wchar (cmdline)))
+    ret = 0;
+  else
+    ret = CreateProcessW (wpgmname,      /* Program to start.  */
+                          wcmdline,      /* Command line arguments.  */
+                          &sec_attr,     /* Process security attributes.  */
+                          &sec_attr,     /* Thread security attributes.  */
+                          FALSE,         /* Inherit handles.  */
+                          cr_flags,      /* Creation flags.  */
+                          NULL,          /* Environment.  */
+                          NULL,          /* Use current drive/directory.  */
+                          &si,           /* Startup information. */
+                          &pi            /* Returns process information.  */
+                          );
+  if (!ret)
+    {
+      if (!wpgmname || !wcmdline)
+        log_error ("CreateProcess failed (utf8_to_wchar): %s\n",
+                   strerror (errno));
+      else
+        log_error ("CreateProcess(detached) failed: %d\n",
+                   (int)GetLastError ());
+      xfree (wpgmname);
+      xfree (wcmdline);
+      xfree (cmdline);
+      return GPG_ERR_GENERAL;
+    }
+  xfree (wpgmname);
+  xfree (wcmdline);
+  xfree (cmdline);
+
+  log_debug ("CreateProcess(detached) ready: hProcess=%p hThread=%p"
+             " dwProcessID=%d dwThreadId=%d\n",
+             pi.hProcess, pi.hThread,
+             (int) pi.dwProcessId, (int) pi.dwThreadId);
+
+  CloseHandle (pi.hThread);
+  CloseHandle (pi.hProcess);
+
+  process->hProcess = INVALID_HANDLE_VALUE;
+  process->hd_in = INVALID_HANDLE_VALUE;
+  process->hd_out = INVALID_HANDLE_VALUE;
+  process->hd_err = INVALID_HANDLE_VALUE;
+  process->exitcode = -1;
+  process->terminated = 1;
+  return 0;
+}
+
+
+gpg_err_code_t
+gnupg_process_spawn (const char *pgmname, const char *argv[],
+                     unsigned int flags,
+                     int (*spawn_cb) (struct spawn_cb_arg *),
+                     void *spawn_cb_arg,
+                     gnupg_process_t *r_process)
+{
+  gpg_err_code_t ec;
+  gnupg_process_t process;
+  SECURITY_ATTRIBUTES sec_attr;
+  PROCESS_INFORMATION pi = { NULL, 0, 0, 0 };
+  STARTUPINFOW si;
+  int cr_flags;
+  char *cmdline;
+  wchar_t *wcmdline = NULL;
+  wchar_t *wpgmname = NULL;
+  int ret;
+  int ask_inherit = 0;
+  HANDLE hd_in[2];
+  HANDLE hd_out[2];
+  HANDLE hd_err[2];
+
+  check_syscall_func ();
+
+  *r_process = NULL;
+
+  /* Build the command line.  */
+  ec = build_w32_commandline (pgmname, argv, &cmdline);
+  if (ec)
+    return ec;
+
+  process = xtrymalloc (sizeof (struct gnupg_process));
+  if (process == NULL)
+    return gpg_err_code_from_syserror ();
+
+  process->pgmname = pgmname;
+  process->flags = flags;
+
+  if ((flags & GNUPG_PROCESS_DETACHED))
+    {
+      if ((flags & GNUPG_PROCESS_STDFDS_SETTING))
+        {
+          xfree (process);
+          xfree (cmdline);
+          return GPG_ERR_INV_FLAG;
+        }
+
+      *r_process = process;
+      return spawn_detached (process, pgmname, cmdline, spawn_cb, spawn_cb_arg);
+    }
+
+  if ((flags & GNUPG_PROCESS_STDINOUT_SOCKETPAIR))
+    {
+      xfree (process);
+      xfree (cmdline);
+      return GPG_ERR_NOT_SUPPORTED;
+    }
+
+  if ((flags & GNUPG_PROCESS_STDIN_PIPE))
+    {
+      ec = create_inheritable_pipe (hd_in, INHERIT_READ);
+      if (ec)
+        {
+          xfree (process);
+          xfree (cmdline);
+          return ec;
+        }
+    }
+  else if ((flags & GNUPG_PROCESS_STDIN_NULL))
+    {
+      hd_in[0] = w32_open_null (0);
+      hd_in[1] = INVALID_HANDLE_VALUE;
+    }
+  else
+    {
+      hd_in[0] = GetStdHandle (STD_INPUT_HANDLE);
+      hd_in[1] = INVALID_HANDLE_VALUE;
+    }
+
+  if ((flags & GNUPG_PROCESS_STDOUT_PIPE))
+    {
+      ec = create_inheritable_pipe (hd_out, INHERIT_WRITE);
+      if (ec)
+        {
+          if (hd_in[0] != INVALID_HANDLE_VALUE)
+            CloseHandle (hd_in[0]);
+          if (hd_in[1] != INVALID_HANDLE_VALUE)
+            CloseHandle (hd_in[1]);
+          xfree (process);
+          xfree (cmdline);
+          return ec;
+        }
+    }
+  else if ((flags & GNUPG_PROCESS_STDOUT_NULL))
+    {
+      hd_out[0] = INVALID_HANDLE_VALUE;
+      hd_out[1] = w32_open_null (1);
+    }
+  else
+    {
+      hd_out[0] = INVALID_HANDLE_VALUE;
+      hd_out[1] = GetStdHandle (STD_OUTPUT_HANDLE);
+    }
+
+  if ((flags & GNUPG_PROCESS_STDERR_PIPE))
+    {
+      ec = create_inheritable_pipe (hd_err, INHERIT_WRITE);
+      if (ec)
+        {
+          if (hd_in[0] != INVALID_HANDLE_VALUE)
+            CloseHandle (hd_in[0]);
+          if (hd_in[1] != INVALID_HANDLE_VALUE)
+            CloseHandle (hd_in[1]);
+          if (hd_out[0] != INVALID_HANDLE_VALUE)
+            CloseHandle (hd_out[0]);
+          if (hd_out[1] != INVALID_HANDLE_VALUE)
+            CloseHandle (hd_out[1]);
+          xfree (process);
+          xfree (cmdline);
+          return ec;
+        }
+    }
+  else if ((flags & GNUPG_PROCESS_STDERR_NULL))
+    {
+      hd_err[0] = INVALID_HANDLE_VALUE;
+      hd_err[1] = w32_open_null (1);
+    }
+  else
+    {
+      hd_err[0] = INVALID_HANDLE_VALUE;
+      hd_err[1] = GetStdHandle (STD_ERROR_HANDLE);
+    }
+
+  if (spawn_cb)
+    {
+      struct spawn_cb_arg arg;
+
+      arg.std_fds[0] = arg.std_fds[1] = arg.std_fds[2] = -1;
+      arg.arg = spawn_cb_arg;
+
+      ask_inherit = (*spawn_cb) (&arg);
+    }
+
+  /* Prepare security attributes.  */
+  memset (&sec_attr, 0, sizeof sec_attr );
+  sec_attr.nLength = sizeof sec_attr;
+
+  if (ask_inherit)
+    sec_attr.bInheritHandle = TRUE;
+  else
+    sec_attr.bInheritHandle = FALSE;
+
+  /* Start the process.  */
+  memset (&si, 0, sizeof si);
+  si.cb = sizeof (si);
+  si.dwFlags = STARTF_USESTDHANDLES | STARTF_USESHOWWINDOW;
+  si.wShowWindow = DEBUG_W32_SPAWN? SW_SHOW : SW_HIDE;
+  si.hStdInput  = hd_in[0];
+  si.hStdOutput = hd_out[1];
+  si.hStdError  = hd_err[1];
+
+  log_debug ("CreateProcess, path='%s' cmdline='%s'\n",
+                    pgmname, cmdline);
+  cr_flags = (CREATE_DEFAULT_ERROR_MODE
+              | GetPriorityClass (GetCurrentProcess ())
+              | CREATE_SUSPENDED);
+  if (!(wpgmname = utf8_to_wchar (pgmname)))
+    ret = 0;
+  else if (!(wcmdline = utf8_to_wchar (cmdline)))
+    ret = 0;
+  else
+    ret = CreateProcessW (wpgmname,       /* Program to start.  */
+                          wcmdline,       /* Command line arguments.  */
+                          &sec_attr,     /* Process security attributes.  */
+                          &sec_attr,     /* Thread security attributes.  */
+                          TRUE,         /* Inherit handles.  */
+                          cr_flags,      /* Creation flags.  */
+                          NULL,          /* Environment.  */
+                          NULL,          /* Use current drive/directory.  */
+                          &si,           /* Startup information. */
+                          &pi            /* Returns process information.  */
+                          );
+  if (!ret)
+    {
+      if (!wpgmname || !wcmdline)
+        log_error ("CreateProcess failed (utf8_to_wchar): %s\n",
+                          strerror (errno));
+      else
+        log_error ("CreateProcess failed: ec=%d\n",
+                          (int)GetLastError ());
+      if (hd_in[0] != INVALID_HANDLE_VALUE)
+        CloseHandle (hd_in[0]);
+      if (hd_in[1] != INVALID_HANDLE_VALUE)
+        CloseHandle (hd_in[1]);
+      if (hd_out[0] != INVALID_HANDLE_VALUE)
+        CloseHandle (hd_out[0]);
+      if (hd_out[1] != INVALID_HANDLE_VALUE)
+        CloseHandle (hd_out[1]);
+      if (hd_err[0] != INVALID_HANDLE_VALUE)
+        CloseHandle (hd_err[0]);
+      if (hd_err[1] != INVALID_HANDLE_VALUE)
+        CloseHandle (hd_err[1]);
+      xfree (wpgmname);
+      xfree (wcmdline);
+      xfree (process);
+      xfree (cmdline);
+      return GPG_ERR_GENERAL;
+    }
+
+  xfree (wpgmname);
+  xfree (wcmdline);
+  xfree (cmdline);
+  if (hd_in[0] != INVALID_HANDLE_VALUE)
+    CloseHandle (hd_in[0]);
+  if (hd_out[1] != INVALID_HANDLE_VALUE)
+    CloseHandle (hd_out[1]);
+  if (hd_err[1] != INVALID_HANDLE_VALUE)
+    CloseHandle (hd_err[1]);
+
+  log_debug ("CreateProcess ready: hProcess=%p hThread=%p"
+                    " dwProcessID=%d dwThreadId=%d\n",
+                    pi.hProcess, pi.hThread,
+                    (int) pi.dwProcessId, (int) pi.dwThreadId);
+
+  if ((flags & GNUPG_PROCESS_WINDOWS_ASFW))
+    {
+      /* Fixme: For unknown reasons AllowSetForegroundWindow returns
+       * an invalid argument error if we pass it the correct
+       * processID.  As a workaround we use -1 (ASFW_ANY).  */
+      if (!AllowSetForegroundWindow (ASFW_ANY /*pi.dwProcessId*/))
+        log_info ("AllowSetForegroundWindow() failed: ec=%d\n",
+                         (int)GetLastError ());
+    }
+
+  /* Process has been created suspended; resume it now. */
+  pre_syscall ();
+  ResumeThread (pi.hThread);
+  CloseHandle (pi.hThread);
+  post_syscall ();
+
+  process->hProcess = pi.hProcess;
+  process->hd_in = hd_in[1];
+  process->hd_out = hd_out[0];
+  process->hd_err = hd_err[0];
+  process->exitcode = -1;
+  process->terminated = 0;
+
+  *r_process = process;
+  return 0;
+}
+
+gpg_err_code_t
+gnupg_process_get_fds (gnupg_process_t process, unsigned int flags,
+                        int *r_fd_in, int *r_fd_out, int *r_fd_err)
+{
+  (void)flags;
+  if (r_fd_in)
+    {
+      *r_fd_in = _open_osfhandle ((intptr_t)process->hd_in, O_APPEND);
+      process->hd_in = INVALID_HANDLE_VALUE;
+    }
+  if (r_fd_out)
+    {
+      *r_fd_out = _open_osfhandle ((intptr_t)process->hd_out, O_RDONLY);
+      process->hd_out = INVALID_HANDLE_VALUE;
+    }
+  if (r_fd_err)
+    {
+      *r_fd_err = _open_osfhandle ((intptr_t)process->hd_err, O_RDONLY);
+      process->hd_err = INVALID_HANDLE_VALUE;
+    }
+
+  return 0;
+}
+
+gpg_err_code_t
+gnupg_process_get_streams (gnupg_process_t process, unsigned int flags,
+                           estream_t *r_fp_in, estream_t *r_fp_out,
+                           estream_t *r_fp_err)
+{
+  int nonblock = (flags & GNUPG_PROCESS_STREAM_NONBLOCK)? 1: 0;
+  es_syshd_t syshd;
+
+  syshd.type = ES_SYSHD_HANDLE;
+  if (r_fp_in)
+    {
+      syshd.u.handle = process->hd_in;
+      *r_fp_in = es_sysopen (&syshd, nonblock? "w,nonblock" : "w");
+      process->hd_in = INVALID_HANDLE_VALUE;
+    }
+  if (r_fp_out)
+    {
+      syshd.u.handle = process->hd_out;
+      *r_fp_out = es_sysopen (&syshd, nonblock? "r,nonblock" : "r");
+      process->hd_out = INVALID_HANDLE_VALUE;
+    }
+  if (r_fp_err)
+    {
+      syshd.u.handle = process->hd_err;
+      *r_fp_err = es_sysopen (&syshd, nonblock? "r,nonblock" : "r");
+      process->hd_err = INVALID_HANDLE_VALUE;
+    }
+  return 0;
+}
+
+static gpg_err_code_t
+process_kill (gnupg_process_t process, unsigned int exitcode)
+{
+  gpg_err_code_t ec = 0;
+
+  pre_syscall ();
+  if (TerminateProcess (process->hProcess, exitcode))
+    ec = gpg_err_code_from_syserror ();
+  post_syscall ();
+  return ec;
+}
+
+static gpg_err_code_t
+process_vctl (gnupg_process_t process, unsigned int request, va_list arg_ptr)
+{
+  switch (request)
+    {
+    case GNUPG_PROCESS_NOP:
+      return 0;
+
+    case GNUPG_PROCESS_GET_ID:
+      {
+        int *r_id = va_arg (arg_ptr, int *);
+
+        if (r_id == NULL)
+          return GPG_ERR_INV_VALUE;
+
+        *r_id = (int)process->hProcess;
+        return 0;
+      }
+
+    case GNUPG_PROCESS_GET_EXIT_ID:
+      {
+        int *r_exit_status = va_arg (arg_ptr, int *);
+        unsigned long exit_code;
+
+        *r_exit_status = -1;
+
+        if (!process->terminated)
+          return GPG_ERR_UNFINISHED;
+
+        if (process->hProcess == INVALID_HANDLE_VALUE)
+          return 0;
+
+        if (GetExitCodeProcess (process->hProcess, &exit_code))
+          return gpg_err_code_from_syserror ();
+
+        *r_exit_status = (int)exit_code;
+        return 0;
+      }
+
+    case GNUPG_PROCESS_GET_P_HANDLE:
+      {
+        HANDLE *r_hProcess = va_arg (arg_ptr, HANDLE *);
+
+        if (r_hProcess == NULL)
+          return GPG_ERR_INV_VALUE;
+
+        *r_hProcess = process->hProcess;
+        process->hProcess = INVALID_HANDLE_VALUE;
+        return 0;
+      }
+
+    case GNUPG_PROCESS_GET_HANDLES:
+      {
+        HANDLE *r_hd_in = va_arg (arg_ptr, HANDLE *);
+        HANDLE *r_hd_out = va_arg (arg_ptr, HANDLE *);
+        HANDLE *r_hd_err = va_arg (arg_ptr, HANDLE *);
+
+        if (r_hd_in)
+          {
+            *r_hd_in = process->hd_in;
+            process->hd_in = INVALID_HANDLE_VALUE;
+          }
+        if (r_hd_out)
+          {
+            *r_hd_out = process->hd_out;
+            process->hd_out = INVALID_HANDLE_VALUE;
+          }
+        if (r_hd_err)
+          {
+            *r_hd_err = process->hd_err;
+            process->hd_err = INVALID_HANDLE_VALUE;
+          }
+        return 0;
+      }
+
+    case GNUPG_PROCESS_GET_EXIT_CODE:
+      {
+        unsigned long *r_exitcode = va_arg (arg_ptr, unsigned long *);
+
+        if (!process->terminated)
+          return GPG_ERR_UNFINISHED;
+
+        if (process->hProcess == INVALID_HANDLE_VALUE)
+          {
+            *r_exitcode = (unsigned long)-1;
+            return 0;
+          }
+
+        if (GetExitCodeProcess (process->hProcess, r_exitcode))
+          return gpg_err_code_from_syserror ();
+        return 0;
+      }
+
+    case GNUPG_PROCESS_KILL_WITH_EC:
+      {
+        unsigned int exitcode = va_arg (arg_ptr, unsigned int);
+
+        if (process->terminated)
+          return 0;
+
+        if (process->hProcess == INVALID_HANDLE_VALUE)
+          return 0;
+
+        return process_kill (process, exitcode);
+      }
+
+    default:
+      break;
+    }
+
+  return GPG_ERR_UNKNOWN_COMMAND;
+}
+
+gpg_err_code_t
+gnupg_process_ctl (gnupg_process_t process, unsigned int request, ...)
+{
+  va_list arg_ptr;
+  gpg_err_code_t ec;
+
+  va_start (arg_ptr, request);
+  ec = process_vctl (process, request, arg_ptr);
+  va_end (arg_ptr);
+  return ec;
+}
+
+gpg_err_code_t
+gnupg_process_wait (gnupg_process_t process, int hang)
+{
+  gpg_err_code_t ec;
+  int code;
+
+  if (process->hProcess == INVALID_HANDLE_VALUE)
+    return 0;
+
+  pre_syscall ();
+  code = WaitForSingleObject (process->hProcess, hang? INFINITE : 0);
+  post_syscall ();
+
+  switch (code)
+    {
+    case WAIT_TIMEOUT:
+      ec = GPG_ERR_TIMEOUT; /* Still running.  */
+      break;
+
+    case WAIT_FAILED:
+      log_error (_("waiting for process to terminate failed: ec=%d\n"),
+                        (int)GetLastError ());
+      ec = GPG_ERR_GENERAL;
+      break;
+
+    case WAIT_OBJECT_0:
+      process->terminated = 1;
+      ec = 0;
+      break;
+
+    default:
+      log_debug ("WaitForSingleObject returned unexpected code %d\n",
+                        code);
+      ec = GPG_ERR_GENERAL;
+      break;
+    }
+
+  return ec;
+}
+
+gpg_err_code_t
+gnupg_process_terminate (gnupg_process_t process)
+{
+  return process_kill (process, 1);
+}
+
+void
+gnupg_process_release (gnupg_process_t process)
+{
+  if (process->terminated)
+    gnupg_process_wait (process, 0);
+
+  xfree (process);
+}
+
+gpg_err_code_t
+gnupg_process_wait_list (gnupg_process_t *process_list, int count, int hang)
+{
+  gpg_err_code_t ec = 0;
+  int i;
+
+  for (i = 0; i < count; i++)
+    {
+      if (process_list[i]->terminated)
+        continue;
+
+      ec = gnupg_process_wait (process_list[i], hang);
+      if (ec)
+        break;
+    }
+
+  return ec;
+}
