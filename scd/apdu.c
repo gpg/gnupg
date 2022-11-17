@@ -773,7 +773,14 @@ pcsc_send_apdu (int slot, unsigned char *apdu, size_t apdulen,
     return err;
 
   if (DBG_CARD_IO)
-    log_printhex (apdu, apdulen, "  PCSC_data:");
+    {
+      /* Do not dump the PIN in a VERIFY command.  */
+      if (apdulen > 5 && apdu[1] == 0x20)
+        log_debug ("PCSC_data: %02X %02X %02X %02X %02X [redacted]\n",
+                   apdu[0], apdu[1], apdu[2], apdu[3], apdu[4]);
+      else
+        log_printhex (apdu, apdulen, "PCSC_data:");
+    }
 
   if ((reader_table[slot].pcsc.protocol & PCSC_PROTOCOL_T1))
       send_pci.protocol = PCSC_PROTOCOL_T1;
@@ -1555,7 +1562,14 @@ send_apdu_ccid (int slot, unsigned char *apdu, size_t apdulen,
     return err;
 
   if (DBG_CARD_IO)
-    log_printhex (apdu, apdulen, " raw apdu:");
+    {
+      /* Do not dump the PIN in a VERIFY command.  */
+      if (apdulen > 5 && apdu[1] == 0x20)
+        log_debug (" raw apdu: %02x%02x%02x%02x%02x [redacted]\n",
+                   apdu[0], apdu[1], apdu[2], apdu[3], apdu[4]);
+      else
+        log_printhex (apdu, apdulen, " raw apdu:");
+    }
 
   maxbuflen = *buflen;
   if (pininfo)
