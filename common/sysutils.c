@@ -609,7 +609,7 @@ gnupg_tmpfile (void)
   char *name, *p;
   HANDLE file;
   int pid = GetCurrentProcessId ();
-  unsigned int value;
+  unsigned int value = 0;
   int i;
   SECURITY_ATTRIBUTES sec_attr;
 
@@ -634,12 +634,9 @@ gnupg_tmpfile (void)
   for (attempts=0; attempts < 10; attempts++)
     {
       p = name;
-      value = (GetTickCount () ^ ((pid<<16) & 0xffff0000));
+      value += (GetTickCount () ^ ((pid<<16) & 0xffff0000));
       for (i=0; i < 8; i++)
-        {
-          *p++ = tohex (((value >> 28) & 0x0f));
-          value <<= 4;
-        }
+	*p++ = tohex (((value >> (7 - i)*4) & 0x0f));
       strcpy (p, ".tmp");
       file = CreateFile (buffer,
                          GENERIC_READ | GENERIC_WRITE,
