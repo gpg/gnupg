@@ -210,6 +210,15 @@ gpg_error_t gnupg_spawn_process_detached (const char *pgmname,
 
 /* The opaque type for a subprocess.  */
 typedef struct gnupg_process *gnupg_process_t;
+#ifdef HAVE_W32_SYSTEM
+#ifdef NEED_STRUCT_SPAWN_CB_ARG
+struct spawn_cb_arg {
+  void *plpAttributeList;
+  HANDLE hd[16];
+  void *arg;
+};
+#endif
+#endif
 
 /* Internal flag to ihnerit file descriptor/handle */
 #define GNUPG_PROCESS_INHERIT_FILE        (1 << 0)

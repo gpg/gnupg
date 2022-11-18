@@ -33,6 +33,8 @@
 
 #if !defined(HAVE_W32_SYSTEM)
 #error This code is only used on W32.
+#else
+#define _WIN32_WINNT 0x602
 #endif
 
 #include <stdio.h>
@@ -63,9 +65,11 @@
 #include "util.h"
 #include "i18n.h"
 #include "sysutils.h"
+#define NEED_STRUCT_SPAWN_CB_ARG
 #include "exechelp.h"
 
 #include <windows.h>
+#include <processthreadsapi.h>
 
 /* Define to 1 do enable debugging.  */
 #define DEBUG_W32_SPAWN 0
@@ -1098,13 +1102,14 @@ spawn_detached (gnupg_process_t process,
 {
   SECURITY_ATTRIBUTES sec_attr;
   PROCESS_INFORMATION pi = { NULL, 0, 0, 0 };
-  STARTUPINFOW si;
+  STARTUPINFOEXW si;
   int cr_flags;
   wchar_t *wcmdline = NULL;
   wchar_t *wpgmname = NULL;
-  int ask_inherit = 0;
+  BOOL ask_inherit = FALSE;
   gpg_err_code_t ec;
   int ret;
+  struct spawn_cb_arg sca;
 
   ec = gnupg_access (pgmname, X_OK);
   if (ec)
@@ -1114,23 +1119,23 @@ spawn_detached (gnupg_process_t process,
       return ec;
     }
 
-  if (spawn_cb)
-    ask_inherit = (*spawn_cb) (spawn_cb_arg);
+  memset (&si, 0, sizeof si);
+
+  sca.plpAttributeList = &si.lpAttributeList;
+  sca.arg = spawn_cb_arg;
+  sca.hd[0] = INVALID_HANDLE_VALUE;
+  if (spawn_cb && (*spawn_cb) (&sca))
+    ask_inherit = TRUE;
 
   /* Prepare security attributes.  */
   memset (&sec_attr, 0, sizeof sec_attr );
   sec_attr.nLength = sizeof sec_attr;
-
-  if (ask_inherit)
-    sec_attr.bInheritHandle = TRUE;
-  else
-    sec_attr.bInheritHandle = FALSE;
+  sec_attr.bInheritHandle = FALSE;
 
   /* Start the process.  */
-  memset (&si, 0, sizeof si);
-  si.cb = sizeof (si);
-  si.dwFlags = STARTF_USESHOWWINDOW;
-  si.wShowWindow = DEBUG_W32_SPAWN? SW_SHOW : SW_MINIMIZE;
+  si.StartupInfo.cb = sizeof (si);
+  si.StartupInfo.dwFlags = STARTF_USESHOWWINDOW;
+  si.StartupInfo.wShowWindow = DEBUG_W32_SPAWN? SW_SHOW : SW_MINIMIZE;
 
   cr_flags = (CREATE_DEFAULT_ERROR_MODE
               | GetPriorityClass (GetCurrentProcess ())
@@ -1149,11 +1154,11 @@ spawn_detached (gnupg_process_t process,
                           wcmdline,      /* Command line arguments.  */
                           &sec_attr,     /* Process security attributes.  */
                           &sec_attr,     /* Thread security attributes.  */
-                          FALSE,         /* Inherit handles.  */
+                          ask_inherit,   /* Inherit handles.  */
                           cr_flags,      /* Creation flags.  */
                           NULL,          /* Environment.  */
                           NULL,          /* Use current drive/directory.  */
-                          &si,           /* Startup information. */
+                          (STARTUPINFOW *)&si,           /* Startup information. */
                           &pi            /* Returns process information.  */
                           );
   if (!ret)
@@ -1169,6 +1174,8 @@ spawn_detached (gnupg_process_t process,
       xfree (cmdline);
       return GPG_ERR_GENERAL;
     }
+  if (si.lpAttributeList)
+    DeleteProcThreadAttributeList (si.lpAttributeList);
   xfree (wpgmname);
   xfree (wcmdline);
   xfree (cmdline);
@@ -1202,16 +1209,18 @@ gnupg_process_spawn (const char *pgmname, const char *argv[],
   gnupg_process_t process;
   SECURITY_ATTRIBUTES sec_attr;
   PROCESS_INFORMATION pi = { NULL, 0, 0, 0 };
-  STARTUPINFOW si;
+  STARTUPINFOEXW si;
   int cr_flags;
   char *cmdline;
   wchar_t *wcmdline = NULL;
   wchar_t *wpgmname = NULL;
   int ret;
-  int ask_inherit = 0;
+  BOOL ask_inherit = FALSE;
   HANDLE hd_in[2];
   HANDLE hd_out[2];
   HANDLE hd_err[2];
+  struct spawn_cb_arg sca;
+  int i;
 
   check_syscall_func ();
 
@@ -1224,7 +1233,10 @@ gnupg_process_spawn (const char *pgmname, const char *argv[],
 
   process = xtrymalloc (sizeof (struct gnupg_process));
   if (process == NULL)
-    return gpg_err_code_from_syserror ();
+    {
+      xfree (cmdline);
+      return gpg_err_code_from_syserror ();
+    }
 
   process->pgmname = pgmname;
   process->flags = flags;
@@ -1324,26 +1336,67 @@ gnupg_process_spawn (const char *pgmname, const char *argv[],
       hd_err[1] = GetStdHandle (STD_ERROR_HANDLE);
     }
 
-  if (spawn_cb)
-    ask_inherit = (*spawn_cb) (spawn_cb_arg);
+  memset (&si, 0, sizeof si);
+
+  sca.plpAttributeList = &si.lpAttributeList;
+  sca.arg = spawn_cb_arg;
+  i = 0;
+  if (hd_in[0] != INVALID_HANDLE_VALUE)
+    sca.hd[i++] = hd_in[0];
+  if (hd_out[1] != INVALID_HANDLE_VALUE)
+    sca.hd[i++] = hd_out[1];
+  if (hd_err[1] != INVALID_HANDLE_VALUE)
+    sca.hd[i++] = hd_err[1];
+  sca.hd[i] = INVALID_HANDLE_VALUE;
+
+  if (spawn_cb && (*spawn_cb) (&sca))
+    ask_inherit = TRUE;
+  else if (i != 0)
+    {
+      SIZE_T attr_list_size = 0;
+
+      InitializeProcThreadAttributeList (NULL, 1, 0, &attr_list_size);
+      si.lpAttributeList = xtrymalloc (attr_list_size);
+      if (si.lpAttributeList == NULL)
+        {
+          if (hd_in[0] != INVALID_HANDLE_VALUE)
+            CloseHandle (hd_in[0]);
+          if (hd_in[1] != INVALID_HANDLE_VALUE)
+            CloseHandle (hd_in[1]);
+          if (hd_out[0] != INVALID_HANDLE_VALUE)
+            CloseHandle (hd_out[0]);
+          if (hd_out[1] != INVALID_HANDLE_VALUE)
+            CloseHandle (hd_out[1]);
+          if (hd_err[0] != INVALID_HANDLE_VALUE)
+            CloseHandle (hd_err[0]);
+          if (hd_err[1] != INVALID_HANDLE_VALUE)
+            CloseHandle (hd_err[1]);
+          xfree (wpgmname);
+          xfree (wcmdline);
+          xfree (process);
+          xfree (cmdline);
+          return gpg_err_code_from_syserror ();
+        }
+      InitializeProcThreadAttributeList (si.lpAttributeList, 1, 0,
+                                         &attr_list_size);
+      UpdateProcThreadAttribute (si.lpAttributeList, 0,
+                                 PROC_THREAD_ATTRIBUTE_HANDLE_LIST,
+                                 sca.hd, sizeof (HANDLE) * i, NULL, NULL);
+      ask_inherit = TRUE;
+    }
 
   /* Prepare security attributes.  */
   memset (&sec_attr, 0, sizeof sec_attr );
   sec_attr.nLength = sizeof sec_attr;
-
-  if (ask_inherit)
-    sec_attr.bInheritHandle = TRUE;
-  else
-    sec_attr.bInheritHandle = FALSE;
+  sec_attr.bInheritHandle = FALSE;
 
   /* Start the process.  */
-  memset (&si, 0, sizeof si);
-  si.cb = sizeof (si);
-  si.dwFlags = STARTF_USESTDHANDLES | STARTF_USESHOWWINDOW;
-  si.wShowWindow = DEBUG_W32_SPAWN? SW_SHOW : SW_HIDE;
-  si.hStdInput  = hd_in[0];
-  si.hStdOutput = hd_out[1];
-  si.hStdError  = hd_err[1];
+  si.StartupInfo.cb = sizeof (si);
+  si.StartupInfo.dwFlags = STARTF_USESTDHANDLES | STARTF_USESHOWWINDOW;
+  si.StartupInfo.wShowWindow = DEBUG_W32_SPAWN? SW_SHOW : SW_HIDE;
+  si.StartupInfo.hStdInput  = hd_in[0];
+  si.StartupInfo.hStdOutput = hd_out[1];
+  si.StartupInfo.hStdError  = hd_err[1];
 
   log_debug ("CreateProcess, path='%s' cmdline='%s'\n",
                     pgmname, cmdline);
@@ -1355,15 +1408,15 @@ gnupg_process_spawn (const char *pgmname, const char *argv[],
   else if (!(wcmdline = utf8_to_wchar (cmdline)))
     ret = 0;
   else
-    ret = CreateProcessW (wpgmname,       /* Program to start.  */
-                          wcmdline,       /* Command line arguments.  */
+    ret = CreateProcessW (wpgmname,      /* Program to start.  */
+                          wcmdline,      /* Command line arguments.  */
                           &sec_attr,     /* Process security attributes.  */
                           &sec_attr,     /* Thread security attributes.  */
-                          TRUE,         /* Inherit handles.  */
+                          ask_inherit,   /* Inherit handles.  */
                           cr_flags,      /* Creation flags.  */
                           NULL,          /* Environment.  */
                           NULL,          /* Use current drive/directory.  */
-                          &si,           /* Startup information. */
+                          (STARTUPINFOW *)&si,           /* Startup information. */
                           &pi            /* Returns process information.  */
                           );
   if (!ret)
@@ -1393,6 +1446,8 @@ gnupg_process_spawn (const char *pgmname, const char *argv[],
       return GPG_ERR_GENERAL;
     }
 
+  if (si.lpAttributeList)
+    DeleteProcThreadAttributeList (si.lpAttributeList);
   xfree (wpgmname);
   xfree (wcmdline);
   xfree (cmdline);
