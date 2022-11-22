@@ -26,7 +26,7 @@
   (call-check `(,@GPG --list-secret-keys)))
 
 (define (assert-migrated)
-  (unless (file-exists? ".gpg-v21-migrated")
+  (unless (or (file-exists? ".gpg-v21-migrated") (file-exists? "gpg-v21-migrated"))
 	  (error "Not migrated"))
 
   (for-each
