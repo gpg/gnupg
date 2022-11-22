@@ -353,6 +353,11 @@ do_get_temp_path (scheme *sc, pointer args)
 #ifdef HAVE_W32_SYSTEM
   if (GetTempPath (MAX_PATH+1, buffer) == 0)
     FFI_RETURN_STRING (sc, "/temp");
+  else
+    {
+      size_t len = strlen (buffer);
+      buffer[len-1] = 0;
+    }
   FFI_RETURN_STRING (sc, buffer);
 #else
   FFI_RETURN_STRING (sc, "/tmp");
