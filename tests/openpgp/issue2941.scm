@@ -29,6 +29,6 @@
 (for-each-p
  "Checking invocation with invalid file descriptors (issue2941)."
  (lambda (option)
-   (check-failure `(,(string-append "--" option "=23") --sign gpg.conf)))
+   (check-failure `(,(string-append "--" option "=233") --sign gpg.conf)))
  '("status-fd" "attribute-fd" "logger-fd"
    "override-session-key-fd" "passphrase-fd" "command-fd"))
