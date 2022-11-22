@@ -716,7 +716,9 @@
 
       (define (open-log-file)
 	(unless log-file-name
-		(set! log-file-name (string-append (basename name) ".log")))
+	  (set! log-file-name (path-join
+			       (getenv "objdir")
+			       (string-append name ".log"))))
 	(catch '() (unlink log-file-name))
 	(open log-file-name (logior O_RDWR O_BINARY O_CREAT) #o600))
 
