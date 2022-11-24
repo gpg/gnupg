@@ -29,6 +29,7 @@
 (define setup
   (make-environment-cache (test::scm
 			   #f
+			   #f
 			   (path-join "tests" "openpgp" "setup.scm")
 			   (in-srcdir "tests" "openpgp" "setup.scm"))))
 
@@ -55,11 +56,12 @@
                (if use-keyboxd?
 	           (map (lambda (name)
 		          (test::scm setup-use-keyboxd
-				     (qualify (path-join "tests" "openpgp" name)
-					      "keyboxd")
+				     "keyboxd"
+				     (path-join "tests" "openpgp" name)
 				     (in-srcdir "tests" "openpgp" name)
                                      "--use-keyboxd")) tests)
 	           (map (lambda (name)
 		          (test::scm setup
+				     #f
 				     (path-join "tests" "openpgp" name)
 				     (in-srcdir "tests" "openpgp" name))) tests))))

@@ -679,14 +679,14 @@
 	name))
 
   (package
-   (define (scm setup name path . args)
+   (define (scm setup variant name path . args)
      ;; Start the process.
      (define (spawn-scm args' in out err)
        (spawn-process-fd `(,*argv0* ,@(verbosity (*verbose*))
 				    ,(locate-test (test-name path))
 				    ,@(if setup (force setup) '())
 				    ,@args' ,@args) in out err))
-     (new name #f spawn-scm #f #f CLOSED_FD (expect-failure? name)))
+     (new variant name #f spawn-scm #f #f CLOSED_FD (expect-failure? name)))
 
    (define (binary setup name path . args)
      ;; Start the process.
@@ -694,9 +694,9 @@
        (spawn-process-fd `(,(test-name path)
 			   ,@(if setup (force setup) '()) ,@args' ,@args)
 			 in out err))
-     (new name #f spawn-binary #f #f CLOSED_FD (expect-failure? name)))
+     (new #f name #f spawn-binary #f #f CLOSED_FD (expect-failure? name)))
 
-   (define (new name directory spawn pid retcode logfd expect-failure)
+   (define (new variant name directory spawn pid retcode logfd expect-failure)
      (package
 
       ;; XXX: OO glue.
@@ -727,7 +727,9 @@
 	(unless log-file-name
 	  (set! log-file-name (path-join
 			       (getenv "objdir")
-			       (string-append name ".log"))))
+			       (if variant
+				   (string-append name "." variant ".log")
+				   (string-append name ".log")))))
 	(catch '() (unlink log-file-name))
 	(open log-file-name (logior O_RDWR O_BINARY O_CREAT) #o600))
 
@@ -776,7 +778,10 @@
 		(seek logfd 0 SEEK_SET)
 		(splice logfd STDERR_FILENO)
 		(close logfd))
-	(echo (string-append (status-string) ":") name))
+	(echo (string-append (status-string) ":")
+	      (if variant
+		  (string-append "<" variant ">" name)
+		  name)))
 
       (define (xml)
 	(xx::tag

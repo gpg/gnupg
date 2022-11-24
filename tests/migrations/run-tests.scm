@@ -23,5 +23,6 @@
 	       (load-tests "tests" "migrations")
 	       (map (lambda (name)
 		      (test::scm #f
+			         #f
 				 (path-join "tests" "migrations" name)
 				 (in-srcdir "tests" "migrations" name))) tests)))

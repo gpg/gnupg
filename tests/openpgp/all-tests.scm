@@ -30,6 +30,7 @@
    (make-environment-cache
     (test::scm
      #f
+     #f
      (path-join "tests" "openpgp" "setup.scm")
      (in-srcdir "tests" "openpgp" "setup.scm"))))
 
@@ -40,7 +41,8 @@
    (make-environment-cache
     (test::scm
      #f
-     (qualify (path-join "tests" "openpgp" "setup.scm") variant)
+     variant
+     (path-join "tests" "openpgp" "setup.scm")
      (in-srcdir "tests" "openpgp" "setup.scm")
      (string-append "--" variant))))
 
@@ -62,7 +64,8 @@
  (define tests
    (map (lambda (name)
 	  (test::scm setup
-		     (qualify (path-join "tests" "openpgp" name) "standard")
+		     "standard"
+		     (path-join "tests" "openpgp" name)
 		     (in-srcdir "tests" "openpgp" name))) all-tests))
 
  (when *run-all-tests*
@@ -73,17 +76,16 @@
 	      (if keyboxd-enabled?
 		  (map (lambda (name)
 			 (test::scm setup-use-keyboxd
-				    (qualify (path-join "tests" "openpgp" name)
-					     "keyboxd")
+				    "keyboxd"
+				    (path-join "tests" "openpgp" name)
 				    (in-srcdir "tests" "openpgp" name)
 				    "--use-keyboxd")) all-tests))
 	      ;; The third pass uses the legact pubring.gpg
 	      (map (lambda (name)
 		     (test::scm setup-use-keyring
-				(qualify (path-join "tests" "openpgp" name)
-					 "keyring")
+				"keyring"
+				(path-join "tests" "openpgp" name)
 				(in-srcdir "tests" "openpgp" name)
-				"--use-keyring")) all-tests)
-	      )))
+				"--use-keyring")) all-tests))))
 
  tests)

@@ -28,6 +28,7 @@
 
  (map (lambda (name)
 	(test::scm #f
+		   #f
 		   (path-join "tests" "migrations" name)
 		   (in-srcdir "tests" "migrations" name)))
       (parse-makefile-expand (in-srcdir "tests" "migrations" "Makefile.am")
