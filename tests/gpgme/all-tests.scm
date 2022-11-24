@@ -40,12 +40,14 @@
    (make-environment-cache
     (test::scm
      #f
+     #f
      (path-join "tests" "gpgme" "setup.scm" "tests" "gpg")
      (in-srcdir "tests" "gpgme" "setup.scm")
      "--" "tests" "gpg")))
  (define setup-py
    (make-environment-cache
     (test::scm
+     #f
      #f
      (path-join "tests" "gpgme" "setup.scm" "lang" "python" "tests")
      (in-srcdir "tests" "gpgme" "setup.scm")
@@ -71,6 +73,7 @@
 		     (map (lambda (name)
 			    (apply test::scm
 				   `(,(:setup cmpnts)
+                                     #f
 				     ,(apply path-join
 					     `("tests" "gpgme" ,@(:path cmpnts) ,name))
 				     ,(in-srcdir "tests" "gpgme" "wrap.scm")
