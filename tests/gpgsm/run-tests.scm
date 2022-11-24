@@ -28,6 +28,7 @@
 (define setup
   (make-environment-cache (test::scm
 			   #f
+			   #f
 			   (path-join "tests" "gpgsm" "setup.scm")
 			   (in-srcdir "tests" "gpgsm" "setup.scm"))))
 
@@ -35,5 +36,6 @@
 	       (load-tests "tests" "gpgsm")
 	       (map (lambda (name)
 		      (test::scm setup
+			         #f
 				 (path-join "tests" "gpgsm" name)
 				 (in-srcdir "tests" "gpgsm" name))) tests)))

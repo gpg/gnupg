@@ -29,6 +29,7 @@
 (define setup
   (make-environment-cache (test::scm
 			   #f
+			   #f
 			   (path-join "tests" "openpgp" "setup.scm")
 			   (in-srcdir "tests" "openpgp" "setup.scm"))))
 
@@ -38,5 +39,6 @@
 	       (load-tests "tests" "openpgp")
 	       (map (lambda (name)
 		      (test::scm setup
+			         #f
 				 (path-join "tests" "openpgp" name)
 				 (in-srcdir "tests" "openpgp" name))) tests)))

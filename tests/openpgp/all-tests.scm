@@ -30,6 +30,7 @@
    (make-environment-cache
     (test::scm
      #f
+     #f
      (path-join "tests" "openpgp" "setup.scm")
      (in-srcdir "tests" "openpgp" "setup.scm"))))
 
@@ -40,7 +41,8 @@
    (make-environment-cache
     (test::scm
      #f
-     (qualify (path-join "tests" "openpgp" "setup.scm") variant)
+     variant
+     (path-join "tests" "openpgp" "setup.scm")
      (in-srcdir "tests" "openpgp" "setup.scm")
      (string-append "--" variant))))
 
@@ -55,6 +57,7 @@
  (define tests
    (map (lambda (name)
 	  (test::scm setup
+                     #f
 		     (path-join "tests" "openpgp" name)
 		     (in-srcdir "tests" "openpgp" name))) all-tests))
 
@@ -64,14 +67,14 @@
 	      tests
 	      (map (lambda (name)
 		     (test::scm setup-use-keyring
-				(qualify (path-join "tests" "openpgp" name)
-					 "use-keyring")
+				"use-keyring"
+				(path-join "tests" "openpgp" name)
 				(in-srcdir "tests" "openpgp" name)
 				"--use-keyring")) all-tests)
 	      (map (lambda (name)
 		     (test::scm setup-extended-key-format
-				(qualify (path-join "tests" "openpgp" name)
-					 "extended-key-format")
+				"extended-key-format"
+				(path-join "tests" "openpgp" name)
 				(in-srcdir "tests" "openpgp" name)
 				"--extended-key-format")) all-tests))))
 
