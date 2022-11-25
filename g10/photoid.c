@@ -594,34 +594,37 @@ run_with_pipe (struct spawn_info *info, const void *image, u32 len)
                " external programs\n"));
   return;
 #else /* !EXEC_TEMPFILE_ONLY */
-  int to[2];
-  pid_t pid;
   gpg_error_t err;
   const char *argv[4];
-
-  err = gnupg_create_pipe (to);
-  if (err)
-    return;
+  gnupg_process_t proc;
 
   fill_command_argv (argv, info->command);
-  err = gnupg_spawn_process_fd (argv[0], argv+1, to[0], -1, -1, &pid);
-
-  close (to[0]);
-
+  err = gnupg_process_spawn (argv[0], argv+1,
+                             (GNUPG_PROCESS_STDIN_PIPE | GNUPG_PROCESS_STDOUT_NULL
+                              | GNUPG_PROCESS_STDERR_NULL),
+                             NULL, NULL, &proc);
   if (err)
-    {
-      log_error (_("unable to execute shell '%s': %s\n"),
-                 argv[0], gpg_strerror (err));
-      close (to[1]);
-    }
+    log_error (_("unable to execute shell '%s': %s\n"),
+               argv[0], gpg_strerror (err));
   else
     {
-      write (to[1], image, len);
-      close (to[1]);
+      int fd_in;
 
-      err = gnupg_wait_process (argv[0], pid, 1, NULL);
+      err = gnupg_process_get_fds (proc, 0, &fd_in, NULL, NULL);
+      if (err)
+        log_error ("unable to get pipe connection '%s': %s\n",
+                   argv[2], gpg_strerror (err));
+      else
+        {
+          write (fd_in, image, len);
+          close (fd_in);
+        }
+
+      err = gnupg_process_wait (proc, 1);
       if (err)
         log_error (_("unnatural exit of external program\n"));
+
+      gnupg_process_release (proc);
     }
 #endif /* !EXEC_TEMPFILE_ONLY */
 }
