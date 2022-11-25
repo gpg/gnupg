@@ -692,14 +692,15 @@ show_photo (const char *command, const char *name, const void *image, u32 len)
         log_error (_("system error while calling external program: %s\n"),
                    strerror (errno));
 #else
-      pid_t pid;
       gpg_error_t err;
       const char *argv[4];
 
       fill_command_argv (argv, spawn->command);
-      err = gnupg_spawn_process_fd (argv[0], argv+1, -1, -1, -1, &pid);
-      if (!err)
-        err = gnupg_wait_process (argv[0], pid, 1, NULL);
+      err = gnupg_process_spawn (argv[0], argv+1,
+                                 (GNUPG_PROCESS_STDIN_NULL
+                                  |GNUPG_PROCESS_STDOUT_NULL
+                                  |GNUPG_PROCESS_STDERR_NULL),
+                                 NULL, NULL, NULL);
       if (err)
         log_error (_("unnatural exit of external program\n"));
 #endif

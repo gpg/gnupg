@@ -526,13 +526,11 @@ start_new_service (assuan_context_t *r_ctx,
           err = gnupg_spawn_process_detached (program? program : program_name,
                                               argv, NULL);
 #else /*!W32*/
-          pid_t pid;
-
-          err = gnupg_spawn_process_fd (program? program : program_name,
-                                        argv, -1, -1, -1, &pid);
-          if (!err)
-            err = gnupg_wait_process (program? program : program_name,
-                                      pid, 1, NULL);
+          err = gnupg_process_spawn (program? program : program_name, argv,
+                                     (GNUPG_PROCESS_STDIN_NULL
+                                      |GNUPG_PROCESS_STDOUT_NULL
+                                      |GNUPG_PROCESS_STDERR_NULL),
+                                     NULL, NULL, NULL);
 #endif /*!W32*/
           if (err)
             log_error ("failed to start %s '%s': %s\n",

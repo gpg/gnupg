@@ -744,7 +744,7 @@ gpg_agent_runtime_change (int killflag)
   gpg_error_t err = 0;
   const char *pgmname;
   const char *argv[5];
-  pid_t pid = (pid_t)(-1);
+  gnupg_process_t proc = NULL;
   int i = 0;
   int cmdidx;
 
@@ -761,13 +761,17 @@ gpg_agent_runtime_change (int killflag)
   log_assert (i < DIM(argv));
 
   if (!err)
-    err = gnupg_spawn_process_fd (pgmname, argv, -1, -1, -1, &pid);
+    err = gnupg_process_spawn (pgmname, argv,
+                               (GNUPG_PROCESS_STDIN_NULL
+                                |GNUPG_PROCESS_STDOUT_NULL
+                                |GNUPG_PROCESS_STDERR_NULL),
+                               NULL, NULL, &proc);
   if (!err)
-    err = gnupg_wait_process (pgmname, pid, 1, NULL);
+    err = gnupg_process_wait (proc, 1);
   if (err)
     gc_error (0, 0, "error running '%s %s': %s",
               pgmname, argv[cmdidx], gpg_strerror (err));
-  gnupg_release_process (pid);
+  gnupg_process_release (proc);
 }
 
 
@@ -777,7 +781,7 @@ scdaemon_runtime_change (int killflag)
   gpg_error_t err = 0;
   const char *pgmname;
   const char *argv[9];
-  pid_t pid = (pid_t)(-1);
+  gnupg_process_t proc = NULL;
   int i = 0;
   int cmdidx;
 
@@ -805,13 +809,17 @@ scdaemon_runtime_change (int killflag)
   log_assert (i < DIM(argv));
 
   if (!err)
-    err = gnupg_spawn_process_fd (pgmname, argv, -1, -1, -1, &pid);
+    err = gnupg_process_spawn (pgmname, argv,
+                               (GNUPG_PROCESS_STDIN_NULL
+                                |GNUPG_PROCESS_STDOUT_NULL
+                                |GNUPG_PROCESS_STDERR_NULL),
+                               NULL, NULL, &proc);
   if (!err)
-    err = gnupg_wait_process (pgmname, pid, 1, NULL);
+    err = gnupg_process_wait (proc, 1);
   if (err)
     gc_error (0, 0, "error running '%s %s': %s",
               pgmname, argv[cmdidx], gpg_strerror (err));
-  gnupg_release_process (pid);
+  gnupg_process_release (proc);
 }
 
 
@@ -822,7 +830,7 @@ tpm2daemon_runtime_change (int killflag)
   gpg_error_t err = 0;
   const char *pgmname;
   const char *argv[9];
-  pid_t pid = (pid_t)(-1);
+  gnupg_process_t proc = NULL;
   int i = 0;
   int cmdidx;
 
@@ -850,13 +858,17 @@ tpm2daemon_runtime_change (int killflag)
   log_assert (i < DIM(argv));
 
   if (!err)
-    err = gnupg_spawn_process_fd (pgmname, argv, -1, -1, -1, &pid);
+    err = gnupg_process_spawn (pgmname, argv,
+                               (GNUPG_PROCESS_STDIN_NULL
+                                |GNUPG_PROCESS_STDOUT_NULL
+                                |GNUPG_PROCESS_STDERR_NULL),
+                               NULL, NULL, &proc);
   if (!err)
-    err = gnupg_wait_process (pgmname, pid, 1, NULL);
+    err = gnupg_process_wait (proc, 1);
   if (err)
     gc_error (0, 0, "error running '%s %s': %s",
               pgmname, argv[cmdidx], gpg_strerror (err));
-  gnupg_release_process (pid);
+  gnupg_process_release (proc);
 }
 #endif
 
@@ -867,7 +879,7 @@ dirmngr_runtime_change (int killflag)
   gpg_error_t err = 0;
   const char *pgmname;
   const char *argv[6];
-  pid_t pid = (pid_t)(-1);
+  gnupg_process_t proc = NULL;
   int i = 0;
   int cmdidx;
 
@@ -885,13 +897,17 @@ dirmngr_runtime_change (int killflag)
   log_assert (i < DIM(argv));
 
   if (!err)
-    err = gnupg_spawn_process_fd (pgmname, argv, -1, -1, -1, &pid);
+    err = gnupg_process_spawn (pgmname, argv,
+                               (GNUPG_PROCESS_STDIN_NULL
+                                |GNUPG_PROCESS_STDOUT_NULL
+                                |GNUPG_PROCESS_STDERR_NULL),
+                               NULL, NULL, &proc);
   if (!err)
-    err = gnupg_wait_process (pgmname, pid, 1, NULL);
+    err = gnupg_process_wait (proc, 1);
   if (err)
     gc_error (0, 0, "error running '%s %s': %s",
               pgmname, argv[cmdidx], gpg_strerror (err));
-  gnupg_release_process (pid);
+  gnupg_process_release (proc);
 }
 
 
@@ -901,7 +917,7 @@ keyboxd_runtime_change (int killflag)
   gpg_error_t err = 0;
   const char *pgmname;
   const char *argv[6];
-  pid_t pid = (pid_t)(-1);
+  gnupg_process_t proc = NULL;
   int i = 0;
   int cmdidx;
 
@@ -919,13 +935,17 @@ keyboxd_runtime_change (int killflag)
   log_assert (i < DIM(argv));
 
   if (!err)
-    err = gnupg_spawn_process_fd (pgmname, argv, -1, -1, -1, &pid);
+    err = gnupg_process_spawn (pgmname, argv,
+                               (GNUPG_PROCESS_STDIN_NULL
+                                |GNUPG_PROCESS_STDOUT_NULL
+                                |GNUPG_PROCESS_STDERR_NULL),
+                               NULL, NULL, &proc);
   if (!err)
-    err = gnupg_wait_process (pgmname, pid, 1, NULL);
+    err = gnupg_process_wait (proc, 1);
   if (err)
     gc_error (0, 0, "error running '%s %s': %s",
               pgmname, argv[cmdidx], gpg_strerror (err));
-  gnupg_release_process (pid);
+  gnupg_process_release (proc);
 }
 
 
@@ -937,7 +957,7 @@ gc_component_launch (int component)
   const char *pgmname;
   const char *argv[6];
   int i;
-  pid_t pid;
+  gnupg_process_t proc = NULL;
 
   if (component < 0)
     {
@@ -985,9 +1005,13 @@ gc_component_launch (int component)
   argv[i] = NULL;
   log_assert (i < DIM(argv));
 
-  err = gnupg_spawn_process_fd (pgmname, argv, -1, -1, -1, &pid);
+  err = gnupg_process_spawn (pgmname, argv,
+                             (GNUPG_PROCESS_STDIN_NULL
+                              |GNUPG_PROCESS_STDOUT_NULL
+                              |GNUPG_PROCESS_STDERR_NULL),
+                             NULL, NULL, &proc);
   if (!err)
-    err = gnupg_wait_process (pgmname, pid, 1, NULL);
+    err = gnupg_process_wait (proc, 1);
   if (err)
     gc_error (0, 0, "error running '%s%s%s': %s",
               pgmname,
@@ -995,7 +1019,7 @@ gc_component_launch (int component)
               : component == GC_COMPONENT_KEYBOXD? " --keyboxd":"",
               " NOP",
               gpg_strerror (err));
-  gnupg_release_process (pid);
+  gnupg_process_release (proc);
   return err;
 }
 
