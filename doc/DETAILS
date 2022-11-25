@@ -1694,6 +1694,10 @@ Description of some debug flags:
   - RFC-6337 :: ECC in OpenPGP
   - RFC-7292 :: PKCS #12: Personal Information Exchange Syntax v1.1
   - RFC-8351 :: The PKCS #8 EncryptedPrivateKeyInfo Media Type
+  - RFC-8550 :: S/MIME Version 4.0 Certificate Handling
+  - RFC-8551 :: S/MIME Version 4.0 Message Specification
+  - RFC-2634 :: Enhanced Security Services for S/MIME
+  - RFC-5035 :: Enhanced Security Services (ESS) Update
 
   - draft-koch-openpgp-2015-rfc4880bis :: Updates to RFC-4880
 
