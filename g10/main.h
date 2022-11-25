@@ -464,6 +464,7 @@ void release_revocation_reason_info (struct revocation_reason_info *reason);
 void public_key_list (ctrl_t ctrl, strlist_t list,
                       int locate_mode, int no_local);
 void secret_key_list (ctrl_t ctrl, strlist_t list );
+gpg_error_t parse_and_set_list_filter (const char *string);
 void print_subpackets_colon(PKT_signature *sig);
 void reorder_keyblock (KBNODE keyblock);
 void list_keyblock_direct (ctrl_t ctrl, kbnode_t keyblock, int secret,

@@ -44,6 +44,8 @@
 #include "../common/mbox-util.h"
 #include "../common/zb32.h"
 #include "tofu.h"
+#include "../common/init.h"
+#include "../common/recsel.h"
 #include "../common/compliance.h"
 #include "../common/pkscreening.h"
 
@@ -64,21 +66,74 @@ struct keylist_context
   int no_validity; /* Do not show validity.  */
 };
 
-
-static void list_keyblock (ctrl_t ctrl,
-                           kbnode_t keyblock, int secret, int has_secret,
-                           int fpr, struct keylist_context *listctx);
+/* An object and a global instance to store selectors created from
+ * --list-filter select=EXPR.
+ */
+struct list_filter_s
+{
+  recsel_expr_t selkey;
+};
+struct list_filter_s list_filter;
 
 
 /* The stream used to write attribute packets to.  */
 static estream_t attrib_fp;
 
 
+
+
+static void list_keyblock (ctrl_t ctrl,
+                           kbnode_t keyblock, int secret, int has_secret,
+                           int fpr, struct keylist_context *listctx);
+
 /* Release resources from a keylist context.  */
 static void
 keylist_context_release (struct keylist_context *listctx)
 {
   (void)listctx; /* Nothing to release.  */
+}
+
+
+static void
+release_list_filter (struct list_filter_s *filt)
+{
+  recsel_release (filt->selkey);
+  filt->selkey = NULL;
+}
+
+
+static void
+cleanup_keylist_globals (void)
+{
+  release_list_filter (&list_filter);
+}
+
+
+/* Parse and set an list filter from string.  STRING has the format
+ * "NAME=EXPR" with NAME being the name of the filter.  Spaces before
+ * and after NAME are not allowed.  If this function is all called
+ * several times all expressions for the same NAME are concatenated.
+ * Supported filter names are:
+ *
+ *  - select :: If the expression evaluates to true for a certain key
+ *              this key will be listed.  The expression may use any
+ *              variable defined for the export and import filters.
+ *
+ */
+gpg_error_t
+parse_and_set_list_filter (const char *string)
+{
+  gpg_error_t err;
+
+  /* Auto register the cleanup function.  */
+  register_mem_cleanup_func (cleanup_keylist_globals);
+
+  if (!strncmp (string, "select=", 7))
+    err = recsel_parse_expr (&list_filter.selkey, string+7);
+  else
+    err = gpg_error (GPG_ERR_INV_NAME);
+
+  return err;
 }
 
 
@@ -2163,12 +2218,31 @@ reorder_keyblock (KBNODE keyblock)
   do_reorder_keyblock (keyblock, 0);
 }
 
+
 static void
 list_keyblock (ctrl_t ctrl,
                KBNODE keyblock, int secret, int has_secret, int fpr,
                struct keylist_context *listctx)
 {
   reorder_keyblock (keyblock);
+
+  if (list_filter.selkey)
+    {
+      int selected = 0;
+      struct impex_filter_parm_s parm;
+      parm.ctrl = ctrl;
+
+      for (parm.node = keyblock; parm.node; parm.node = parm.node->next)
+        {
+          if (recsel_select (list_filter.selkey, impex_filter_getval, &parm))
+            {
+              selected = 1;
+              break;
+            }
+        }
+      if (!selected)
+        return;  /* Skip this one.  */
+    }
 
   if (opt.with_colons)
     list_keyblock_colon (ctrl, keyblock, secret, has_secret);

@@ -1338,6 +1338,13 @@ Assume "yes" on most questions.  Should not be used in an option file.
 Assume "no" on most questions.  Should not be used in an option file.
 
 
+@item --list-filter @{select=@var{expr}@}
+@opindex list-filter
+A list filter can be used to output only certain keys during key
+listsin command. For the availbale property names, see the description
+of @option{--import-filter}.
+
+
 @item --list-options @var{parameters}
 @opindex list-options
 This is a space or comma delimited string that gives options used when
@@ -2550,11 +2557,21 @@ The available filter types are:
   Self-signatures are not considered.
   Currently only implemented for --import-filter.
 
+  @item select
+  This filter is only implemented by @option{--list-filter}.  All
+  property names may be used.
+
 @end table
 
 For the syntax of the expression see the chapter "FILTER EXPRESSIONS".
 The property names for the expressions depend on the actual filter
-type and are indicated in the following table.
+type and are indicated in the following table.  Note that all property
+names may also be used by @option{--list-filter}.
+
+Property names may be prefix with a scope delimited by a slash.  Valid
+scopes are "pub" for public and secret primary keys, "sub" for public
+and secret subkeys, "uid" for for user-ID packets, and "sig" for
+signature packets.  Invalid scopes are currently ignored.
 
 The available properties are:
 
@@ -2567,8 +2584,16 @@ The available properties are:
   The addr-spec part of a user id with mailbox or the empty string.
   (keep-uid)
 
+  @item algostr
+  A string with the key algorithm description.  For example "rsa3072"
+  or "ed25519".
+
   @item key_algo
   A number with the public key algorithm of a key or subkey packet.
+  (drop-subkey)
+
+  @item key_size
+  A number with the effective key size of a key or subkey packet.
   (drop-subkey)
 
   @item key_created
@@ -2593,7 +2618,7 @@ The available properties are:
   been revoked.
 
   @item disabled
-  Boolean indicating whether a primary key is disabled. (not used)
+  Boolean indicating whether a primary key is disabled.
 
   @item secret
   Boolean indicating whether a key or subkey is a secret one.
@@ -2615,6 +2640,18 @@ The available properties are:
 
   @item sig_digest_algo
   A number with the digest algorithm of a signature packet. (drop-sig)
+
+  @item origin
+  A string with the key origin or a question mark.  For example the
+  string ``wkd'' is used if a key originated from a Web Key Directory
+  lookup.
+
+  @item lastupd
+  The timestamp the key was last updated from a keyserver or the Web
+  Key Directory.
+
+  @item url
+  A string with the the URL associated wit the last key lookup.
 
 @end table
 
