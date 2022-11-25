@@ -1118,7 +1118,8 @@ gnupg_process_spawn (const char *pgmname, const char *argv1[],
 
   check_syscall_func ();
 
-  *r_process = NULL;
+  if (r_process)
+    *r_process = NULL;
 
   /* Create the command line argument array.  */
   i = 0;
@@ -1304,6 +1305,13 @@ gnupg_process_spawn (const char *pgmname, const char *argv1[],
   process->fd_err = fd_err[0];
   process->wstatus = -1;
   process->terminated = 0;
+
+  if (r_process == NULL)
+    {
+      ec = gnupg_process_wait (process, 1);
+      gnupg_process_release (process);
+      return ec;
+    }
 
   *r_process = process;
   return 0;
@@ -1495,7 +1503,6 @@ gnupg_process_wait (gnupg_process_t process, int hang)
   gpg_err_code_t ec;
   int status;
   pid_t pid;
-
 
   if (process->terminated)
     /* Already terminated.  */

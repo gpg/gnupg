@@ -1224,7 +1224,8 @@ gnupg_process_spawn (const char *pgmname, const char *argv[],
 
   check_syscall_func ();
 
-  *r_process = NULL;
+  if (r_process)
+    *r_process = NULL;
 
   /* Build the command line.  */
   ec = build_w32_commandline (pgmname, argv, &cmdline);
@@ -1485,6 +1486,13 @@ gnupg_process_spawn (const char *pgmname, const char *argv[],
   process->hd_err = hd_err[0];
   process->exitcode = -1;
   process->terminated = 0;
+
+  if (r_process == NULL)
+    {
+      ec = gnupg_process_wait (process, 1);
+      gnupg_process_release (process);
+      return ec;
+    }
 
   *r_process = process;
   return 0;
