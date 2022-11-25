@@ -53,7 +53,7 @@ check: xcheck
 
 .PHONY: xcheck
 xcheck:
-	$(TESTS_ENVIRONMENT) $(abs_top_builddir)/tests/gpgscm/gpgscm \
+	$(TESTS_ENVIRONMENT) $(abs_top_builddir)/tests/gpgscm/gpgscm$(EXEEXT) \
 	  $(abs_srcdir)/run-tests.scm $(TESTFLAGS) $(TESTS)
 
 KEYS =	32100C27173EF6E9C4E9A25D3D69F86D37A4F939
