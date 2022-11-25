@@ -40,6 +40,7 @@
 #include "../common/gc-opt-flags.h"
 #include "../common/asshelp.h"
 #include "../common/init.h"
+#include "../common/exechelp.h"
 #include "keyblob.h"
 #include "server.h"
 #include "runner.h"
