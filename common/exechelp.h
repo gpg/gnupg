@@ -211,6 +211,7 @@ gpg_error_t gnupg_spawn_process_detached (const char *pgmname,
 /* The opaque type for a subprocess.  */
 typedef struct gnupg_process *gnupg_process_t;
 #ifdef HAVE_W32_SYSTEM
+struct spawn_cb_arg;
 #ifdef NEED_STRUCT_SPAWN_CB_ARG
 struct spawn_cb_arg {
   void *plpAttributeList;
@@ -218,6 +219,11 @@ struct spawn_cb_arg {
   void *arg;
 };
 #endif
+#else
+struct spawn_cb_arg {
+  int fds[3];
+  void *arg;
+};
 #endif
 
 /* Internal flag to ihnerit file descriptor/handle */
@@ -245,7 +251,7 @@ struct spawn_cb_arg {
 /* Spawn PGMNAME.  */
 gpg_err_code_t gnupg_process_spawn (const char *pgmname, const char *argv[],
                                     unsigned int flags,
-                                    int (*spawn_cb) (void *),
+                                    int (*spawn_cb) (struct spawn_cb_arg *),
                                     void *spawn_cb_arg,
                                     gnupg_process_t *r_process);
 

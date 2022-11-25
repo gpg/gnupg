@@ -993,30 +993,32 @@ my_exec (const char *pgmname, const char *argv[],
          int (*spawn_cb) (void *), void *spawn_cb_arg)
 {
   int i;
-  int fds[3];
   int ask_inherit = 0;
+  struct spawn_cb_arg sca;
 
-  fds[0] = fd_in;
-  fds[1] = fd_out;
-  fds[2] = fd_err;
+
+  sca.fds[0] = fd_in;
+  sca.fds[1] = fd_out;
+  sca.fds[2] = fd_err;
+  sca.arg = spawn_cb_arg;
 
   /* Assign /dev/null to unused FDs.  */
   for (i = 0; i <= 2; i++)
     if (fds[i] == -1)
-      fds[i] = posix_open_null (i);
+      sca.fds[i] = posix_open_null (i);
+
+  if (spawn_cb)
+    ask_inherit = (*spawn_cb) (&sca);
 
   /* Connect the standard files.  */
   for (i = 0; i <= 2; i++)
-    if (fds[i] != i)
+    if (sca.fds[i] != i)
       {
-        if (dup2 (fds[i], i) == -1)
+        if (dup2 (sca.fds[i], i) == -1)
           log_fatal ("dup2 std%s failed: %s\n",
                      i==0?"in":i==1?"out":"err", strerror (errno));
-        close (fds[i]);
+        close (sca.fds[i]);
       }
-
-  if (spawn_cb)
-    ask_inherit = (*spawn_cb) (spawn_cb_arg);
 
   /* Close all other files.  */
   if (!ask_inherit)
