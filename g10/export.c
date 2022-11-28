@@ -63,15 +63,17 @@ struct export_stats_s
 };
 
 
-/* A global variable to store the selector created from
+/* Global variables to store the selectors created from
  * --export-filter keep-uid=EXPR.
  * --export-filter drop-subkey=EXPR.
+ * --export-filter select=EXPR.
  *
  * FIXME: We should put this into the CTRL object but that requires a
  * lot more changes right now.
  */
 static recsel_expr_t export_keep_uid;
 static recsel_expr_t export_drop_subkey;
+static recsel_expr_t export_select_filter;
 
 
 /* An object used for a linked list to implement the
@@ -81,6 +83,7 @@ struct export_filter_attic_s
   struct export_filter_attic_s *next;
   recsel_expr_t export_keep_uid;
   recsel_expr_t export_drop_subkey;
+  recsel_expr_t export_select_filter;
 };
 static struct export_filter_attic_s *export_filter_attic;
 
@@ -105,6 +108,8 @@ cleanup_export_globals (void)
   export_keep_uid = NULL;
   recsel_release (export_drop_subkey);
   export_drop_subkey = NULL;
+  recsel_release (export_select_filter);
+  export_select_filter = NULL;
 }
 
 
@@ -127,6 +132,9 @@ parse_export_options(char *str,unsigned int *options,int noisy)
        N_("remove as much as possible from key during export")},
 
       {"export-dane", EXPORT_DANE_FORMAT, NULL, NULL },
+
+      {"export-revocs", EXPORT_REVOCS, NULL,
+       N_("export only revocation certificates") },
 
       {"backup", EXPORT_BACKUP, NULL,
        N_("use the GnuPG key backup format")},
@@ -184,6 +192,8 @@ parse_export_options(char *str,unsigned int *options,int noisy)
  *
  *                - secret   :: 1 for a secret subkey, else 0.
  *                - key_algo :: Public key algorithm id
+ *
+ *  - select :: The key is only exported if the filter returns true.
  */
 gpg_error_t
 parse_and_set_export_filter (const char *string)
@@ -197,6 +207,8 @@ parse_and_set_export_filter (const char *string)
     err = recsel_parse_expr (&export_keep_uid, string+9);
   else if (!strncmp (string, "drop-subkey=", 12))
     err = recsel_parse_expr (&export_drop_subkey, string+12);
+  else if (!strncmp (string, "select=", 7))
+    err = recsel_parse_expr (&export_select_filter, string+7);
   else
     err = gpg_error (GPG_ERR_INV_NAME);
 
@@ -217,6 +229,8 @@ push_export_filters (void)
   export_keep_uid = NULL;
   item->export_drop_subkey = export_drop_subkey;
   export_drop_subkey = NULL;
+  item->export_select_filter = export_select_filter;
+  export_select_filter = NULL;
   item->next = export_filter_attic;
   export_filter_attic = item;
 }
@@ -235,6 +249,7 @@ pop_export_filters (void)
   cleanup_export_globals ();
   export_keep_uid = item->export_keep_uid;
   export_drop_subkey = item->export_drop_subkey;
+  export_select_filter = item->export_select_filter;
 }
 
 
@@ -1872,6 +1887,78 @@ do_export_one_keyblock (ctrl_t ctrl, kbnode_t keyblock, u32 *keyid,
 }
 
 
+/* Helper for do_export_stream which writes the own revocations
+ * certificates (if any) from KEYBLOCK to OUT. */
+static gpg_error_t
+do_export_revocs (ctrl_t ctrl, kbnode_t keyblock, u32 *keyid,
+                  iobuf_t out, unsigned int options, int *any)
+{
+  gpg_error_t err = 0;
+  kbnode_t kbctx, node;
+  PKT_signature *sig;
+
+  (void)ctrl;
+
+  /* NB: walk_kbnode skips packets marked as deleted.  */
+  for (kbctx=NULL; (node = walk_kbnode (keyblock, &kbctx, 0)); )
+    {
+      if (node->pkt->pkttype != PKT_SIGNATURE)
+        continue;
+      sig = node->pkt->pkt.signature;
+
+      /* We are only interested in revocation certifcates.  */
+      if (!(IS_KEY_REV (sig) || IS_UID_REV (sig) || IS_SUBKEY_REV (sig)))
+        continue;
+
+      if (!(sig->keyid[0] == keyid[0] && sig->keyid[1] == keyid[1]))
+        continue;  /* Not a self-signature.  */
+
+      /* Do not export signature packets which are marked as not
+       * exportable.  */
+      if (!(options & EXPORT_LOCAL_SIGS)
+          && !sig->flags.exportable)
+        continue; /* not exportable */
+
+      /* Do not export packets with a "sensitive" revocation key
+       * unless the user wants us to.  */
+      if (!(options & EXPORT_SENSITIVE_REVKEYS)
+          && sig->revkey)
+        {
+          int i;
+
+          for (i = 0; i < sig->numrevkeys; i++)
+            if ((sig->revkey[i].class & 0x40))
+              break;
+          if (i < sig->numrevkeys)
+            continue;
+        }
+
+      if (!sig->flags.checked)
+        {
+          log_info ("signature not marked as checked - ignored\n");
+          continue;
+        }
+      if (!sig->flags.valid)
+        {
+          log_info ("signature not not valid - ignored\n");
+          continue;
+        }
+
+      err = build_packet (out, node->pkt);
+      if (err)
+        {
+          log_error ("build_packet(%d) failed: %s\n",
+                     node->pkt->pkttype, gpg_strerror (err));
+          goto leave;
+        }
+      *any = 1;
+    }
+
+ leave:
+  return err;
+}
+
+
 /* For secret key export we need to setup a decryption context.
  * Returns 0 and the context at r_cipherhd.  */
 static gpg_error_t
@@ -2066,11 +2153,31 @@ do_export_stream (ctrl_t ctrl, iobuf_t out, strlist_t users, int secret,
                              NULL, NULL);
           commit_kbnode (&keyblock);
         }
-      else if (export_keep_uid || export_drop_subkey)
+      else if (export_keep_uid || export_drop_subkey || export_select_filter)
         {
           /* Need to merge so that for example the "usage" property
            * has been setup.  */
           merge_keys_and_selfsig (ctrl, keyblock);
+        }
+
+
+      if (export_select_filter)
+        {
+          int selected = 0;
+          struct impex_filter_parm_s parm;
+          parm.ctrl = ctrl;
+
+          for (parm.node = keyblock; parm.node; parm.node = parm.node->next)
+            {
+              if (recsel_select (export_select_filter,
+                                 impex_filter_getval, &parm))
+                {
+                  selected = 1;
+                  break;
+                }
+            }
+          if (!selected)
+            continue;  /* Skip this keyblock.  */
         }
 
       if (export_keep_uid)
@@ -2088,10 +2195,15 @@ do_export_stream (ctrl_t ctrl, iobuf_t out, strlist_t users, int secret,
         }
 
       /* And write it. */
-      err = do_export_one_keyblock (ctrl, keyblock, keyid,
-                                    out_help? out_help : out,
-                                    secret, options, stats, any,
-                                    desc, ndesc, descindex, cipherhd);
+      if ((options & EXPORT_REVOCS))
+        err = do_export_revocs (ctrl, keyblock, keyid,
+                                out_help? out_help : out,
+                                options, any);
+      else
+        err = do_export_one_keyblock (ctrl, keyblock, keyid,
+                                      out_help? out_help : out,
+                                      secret, options, stats, any,
+                                      desc, ndesc, descindex, cipherhd);
       if (err)
         break;
 

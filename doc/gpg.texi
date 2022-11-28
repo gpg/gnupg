@@ -2710,6 +2710,11 @@ opposite meaning.  The options are:
   running the @option{--edit-key} command "minimize" before export except
   that the local copy of the key is not modified. Defaults to no.
 
+  @item export-revocs
+  Export only standalone revocation certificates of the key.  This
+  option does not export revocations of 3rd party certificate
+  revocations.
+
   @item export-dane
   Instead of outputting the key material output OpenPGP DANE records
   suitable to put into DNS zone files.  An ORIGIN line is printed before
