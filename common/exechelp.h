@@ -222,6 +222,7 @@ struct spawn_cb_arg {
 #else
 struct spawn_cb_arg {
   int fds[3];
+  int *except_fds;
   void *arg;
 };
 #endif

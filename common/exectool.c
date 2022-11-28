@@ -302,12 +302,12 @@ copy_buffer_flush (struct copy_buffer *c, estream_t sink)
 
 
 static int
-close_all_except (void *arg)
+setup_close_all (struct spawn_cb_arg *sca)
 {
-  int *exceptclose = arg;
+  int *user_except = sca->arg;
 
-  close_all_fds (3, exceptclose);
-  return 1;
+  sca->except_fds = user_except;
+  return 0;
 }
 
 /* Run the program PGMNAME with the command line arguments given in
@@ -424,7 +424,7 @@ gnupg_exec_tool_stream (const char *pgmname, const char *argv[],
                                : GNUPG_PROCESS_STDIN_NULL)
                               | GNUPG_PROCESS_STDOUT_PIPE
                               | GNUPG_PROCESS_STDERR_PIPE),
-                             close_all_except, exceptclose, &proc);
+                             setup_close_all, exceptclose, &proc);
   gnupg_process_get_streams (proc, GNUPG_PROCESS_STREAM_NONBLOCK,
                              input? &infp : NULL, &outfp, &errfp);
   if (extrapipe[0] != -1)

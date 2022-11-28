@@ -1000,11 +1000,12 @@ my_exec (const char *pgmname, const char *argv[],
   sca.fds[0] = fd_in;
   sca.fds[1] = fd_out;
   sca.fds[2] = fd_err;
+  sca.except_fds = NULL;
   sca.arg = spawn_cb_arg;
 
   /* Assign /dev/null to unused FDs.  */
   for (i = 0; i <= 2; i++)
-    if (fds[i] == -1)
+    if (sca.fds[i] == -1)
       sca.fds[i] = posix_open_null (i);
 
   if (spawn_cb)
@@ -1022,7 +1023,7 @@ my_exec (const char *pgmname, const char *argv[],
 
   /* Close all other files.  */
   if (!ask_inherit)
-    close_all_fds (3, NULL);
+    close_all_fds (3, sca.except_fds);
 
   execv (pgmname, (char *const *)argv);
   /* No way to print anything, as we have may have closed all streams. */
@@ -1106,7 +1107,8 @@ spawn_detached (gnupg_process_t process,
 gpg_err_code_t
 gnupg_process_spawn (const char *pgmname, const char *argv1[],
                      unsigned int flags,
-                     int (*spawn_cb) (void *), void *spawn_cb_arg,
+                     int (*spawn_cb) (struct spawn_cb_arg *),
+                     void *spawn_cb_arg,
                      gnupg_process_t *r_process)
 {
   gpg_err_code_t ec;
