@@ -301,13 +301,12 @@ copy_buffer_flush (struct copy_buffer *c, estream_t sink)
 }
 
 
-static int
+static void
 setup_close_all (struct spawn_cb_arg *sca)
 {
   int *user_except = sca->arg;
 
   sca->except_fds = user_except;
-  return 0;
 }
 
 /* Run the program PGMNAME with the command line arguments given in

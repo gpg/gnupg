@@ -214,6 +214,7 @@ typedef struct gnupg_process *gnupg_process_t;
 struct spawn_cb_arg;
 #ifdef NEED_STRUCT_SPAWN_CB_ARG
 struct spawn_cb_arg {
+  int ask_inherit;
   void *plpAttributeList;
   HANDLE hd[16];
   void *arg;
@@ -252,7 +253,7 @@ struct spawn_cb_arg {
 /* Spawn PGMNAME.  */
 gpg_err_code_t gnupg_process_spawn (const char *pgmname, const char *argv[],
                                     unsigned int flags,
-                                    int (*spawn_cb) (struct spawn_cb_arg *),
+                                    void (*spawn_cb) (struct spawn_cb_arg *),
                                     void *spawn_cb_arg,
                                     gnupg_process_t *r_process);
 

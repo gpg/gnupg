@@ -990,26 +990,23 @@ posix_open_null (int for_write)
 static void
 my_exec (const char *pgmname, const char *argv[],
          int fd_in, int fd_out, int fd_err,
-         int (*spawn_cb) (void *), void *spawn_cb_arg)
+         void (*spawn_cb) (struct spawn_cb_arg *), void *spawn_cb_arg)
 {
   int i;
-  int ask_inherit = 0;
   struct spawn_cb_arg sca;
-
 
   sca.fds[0] = fd_in;
   sca.fds[1] = fd_out;
   sca.fds[2] = fd_err;
   sca.except_fds = NULL;
   sca.arg = spawn_cb_arg;
+  if (spawn_cb)
+    (*spawn_cb) (&sca);
 
   /* Assign /dev/null to unused FDs.  */
   for (i = 0; i <= 2; i++)
     if (sca.fds[i] == -1)
       sca.fds[i] = posix_open_null (i);
-
-  if (spawn_cb)
-    ask_inherit = (*spawn_cb) (&sca);
 
   /* Connect the standard files.  */
   for (i = 0; i <= 2; i++)
@@ -1018,12 +1015,15 @@ my_exec (const char *pgmname, const char *argv[],
         if (dup2 (sca.fds[i], i) == -1)
           log_fatal ("dup2 std%s failed: %s\n",
                      i==0?"in":i==1?"out":"err", strerror (errno));
-        close (sca.fds[i]);
+        /*
+         * We don't close sca.fds[i] here, but close them by
+         * close_all_fds.  Note that there may be same one in three of
+         * sca.fds[i].
+         */
       }
 
   /* Close all other files.  */
-  if (!ask_inherit)
-    close_all_fds (3, sca.except_fds);
+  close_all_fds (3, sca.except_fds);
 
   execv (pgmname, (char *const *)argv);
   /* No way to print anything, as we have may have closed all streams. */
@@ -1033,7 +1033,7 @@ my_exec (const char *pgmname, const char *argv[],
 static gpg_err_code_t
 spawn_detached (gnupg_process_t process,
                 const char *pgmname, const char *argv[],
-                int (*spawn_cb) (void *), void *spawn_cb_arg)
+                void (*spawn_cb) (struct spawn_cb_arg *), void *spawn_cb_arg)
 {
   gpg_err_code_t ec;
   pid_t pid;
@@ -1107,7 +1107,7 @@ spawn_detached (gnupg_process_t process,
 gpg_err_code_t
 gnupg_process_spawn (const char *pgmname, const char *argv1[],
                      unsigned int flags,
-                     int (*spawn_cb) (struct spawn_cb_arg *),
+                     void (*spawn_cb) (struct spawn_cb_arg *),
                      void *spawn_cb_arg,
                      gnupg_process_t *r_process)
 {
