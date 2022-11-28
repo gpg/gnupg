@@ -748,8 +748,67 @@ do_es_write (scheme *sc, pointer args)
 }
 
 
-
 /* Process handling.  */
+
+struct proc_object_box
+{
+  gnupg_process_t proc;
+};
+
+static void
+proc_object_finalize (scheme *sc, void *data)
+{
+  struct proc_object_box *box = data;
+  (void) sc;
+
+  if (!box->proc)
+    gnupg_process_release (box->proc);
+  xfree (box);
+}
+
+static void
+proc_object_to_string (scheme *sc, char *out, size_t size, void *data)
+{
+  struct proc_object_box *box = data;
+  (void) sc;
+
+  snprintf (out, size, "#proc %p", box->proc);
+}
+
+static struct foreign_object_vtable proc_object_vtable =
+  {
+    proc_object_finalize,
+    proc_object_to_string,
+  };
+
+static pointer
+proc_wrap (scheme *sc, gnupg_process_t proc)
+{
+  struct proc_object_box *box = xmalloc (sizeof *box);
+  if (box == NULL)
+    return sc->NIL;
+
+  box->proc = proc;
+  return sc->vptr->mk_foreign_object (sc, &proc_object_vtable, box);
+}
+
+static struct proc_object_box *
+proc_unwrap (scheme *sc, pointer object)
+{
+  (void) sc;
+
+  if (! is_foreign_object (object))
+    return NULL;
+
+  if (sc->vptr->get_foreign_object_vtable (object) != &proc_object_vtable)
+    return NULL;
+
+  return sc->vptr->get_foreign_object_data (object);
+}
+
+#define CONVERSION_proc(SC, X)	proc_unwrap (SC, X)
+#define IS_A_proc(SC, X)		proc_unwrap (SC, X)
+
 
 static pointer
 do_spawn_process (scheme *sc, pointer args)
@@ -803,21 +862,30 @@ do_spawn_process (scheme *sc, pointer args)
 #undef IMC
 }
 
+static void
+setup_std_fds (struct spawn_cb_arg *sca)
+{
+  int *std_fds = sca->arg;
+
+  sca->fds[0] = std_fds[0];
+  sca->fds[1] = std_fds[1];
+  sca->fds[2] = std_fds[2];
+}
+
 static pointer
-do_spawn_process_fd (scheme *sc, pointer args)
+do_process_spawn_fd (scheme *sc, pointer args)
 {
   FFI_PROLOG ();
   pointer arguments;
   char **argv;
   size_t len;
-  int infd, outfd, errfd;
-
-  pid_t pid;
+  int std_fds[3];
+  gnupg_process_t proc = NULL;
 
   FFI_ARG_OR_RETURN (sc, pointer, arguments, list, args);
-  FFI_ARG_OR_RETURN (sc, int, infd, number, args);
-  FFI_ARG_OR_RETURN (sc, int, outfd, number, args);
-  FFI_ARG_OR_RETURN (sc, int, errfd, number, args);
+  FFI_ARG_OR_RETURN (sc, int, std_fds[0], number, args);
+  FFI_ARG_OR_RETURN (sc, int, std_fds[1], number, args);
+  FFI_ARG_OR_RETURN (sc, int, std_fds[2], number, args);
   FFI_ARGS_DONE_OR_RETURN (sc, args);
 
   err = ffi_list2argv (sc, arguments, &argv, &len);
@@ -834,13 +902,31 @@ do_spawn_process_fd (scheme *sc, pointer args)
       fprintf (stderr, "Executing:");
       for (p = argv; *p; p++)
         fprintf (stderr, " '%s'", *p);
-      fprintf (stderr, "\n");
+      fprintf (stderr, " (%d %d %d)\n", std_fds[0], std_fds[1], std_fds[2]);
     }
 
-  err = gnupg_spawn_process_fd (argv[0], (const char **) &argv[1],
-                                infd, outfd, errfd, &pid);
+  err = gnupg_process_spawn (argv[0], (const char **) &argv[1],
+                             0, setup_std_fds, std_fds, &proc);
   xfree (argv);
-  FFI_RETURN_INT (sc, pid);
+  FFI_RETURN_POINTER (sc, proc_wrap (sc, proc));
+}
+
+static pointer
+do_process_wait (scheme *sc, pointer args)
+{
+  FFI_PROLOG ();
+  struct proc_object_box *box;
+  int hang;
+  int retcode = -1;
+
+  FFI_ARG_OR_RETURN (sc, struct proc_object_box *, box, proc, args);
+  FFI_ARG_OR_RETURN (sc, int, hang, bool, args);
+  FFI_ARGS_DONE_OR_RETURN (sc, args);
+  err = gnupg_process_wait (box->proc, hang);
+  if (!err)
+    err = gnupg_process_ctl (box->proc, GNUPG_PROCESS_GET_EXIT_ID, &retcode);
+
+  FFI_RETURN_INT (sc, retcode);
 }
 
 static pointer
@@ -1394,12 +1480,13 @@ ffi_init (scheme *sc, const char *argv0, const char *scriptname,
 
   /* Process management.  */
   ffi_define_function (sc, spawn_process);
-  ffi_define_function (sc, spawn_process_fd);
   ffi_define_function (sc, wait_process);
   ffi_define_function (sc, wait_processes);
   ffi_define_function (sc, pipe);
   ffi_define_function (sc, inbound_pipe);
   ffi_define_function (sc, outbound_pipe);
+  ffi_define_function (sc, process_spawn_fd);
+  ffi_define_function (sc, process_wait);
 
   /* estream functions.  */
   ffi_define_function_name (sc, "es-fclose", es_fclose);

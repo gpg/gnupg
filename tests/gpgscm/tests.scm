@@ -81,7 +81,7 @@
 ;; Process management.
 (define CLOSED_FD -1)
 (define (call-with-fds what infd outfd errfd)
-  (wait-process (stringify what) (spawn-process-fd what infd outfd errfd) #t))
+  (process-wait (process-spawn-fd what infd outfd errfd) #t))
 (define (call what)
   (call-with-fds what
 		 CLOSED_FD
@@ -351,12 +351,8 @@
       (define (dump)
 	(write (list procs source sink producer))
 	(newline))
-      (define (add-proc command pid)
-	(new (cons (list command pid) procs) source sink producer))
-      (define (commands)
-	(map car procs))
-      (define (pids)
-	(map cadr procs))
+      (define (add-proc proc)
+	(new (cons proc procs) source sink producer))
       (define (set-source source')
 	(new procs source' sink producer))
       (define (set-sink sink')
@@ -367,17 +363,19 @@
 	(new procs source sink producer'))))))
 
 
+(define (process-wait-list procs hang)
+  (map (lambda (p) (process-wait p hang)) procs))
+
 (define (pipe:do . commands)
   (let loop ((M (pipeM::new '() CLOSED_FD CLOSED_FD #f)) (cmds commands))
     (if (null? cmds)
 	(begin
 	  (if M::producer (M::producer))
 	  (if (not (null? M::procs))
-	      (let* ((retcodes (wait-processes (map stringify (M::commands))
-					       (M::pids) #t))
-		     (results (map (lambda (p r) (append p (list r)))
+	      (let* ((retcodes (process-wait-list M::procs #t))
+		     (results (map (lambda (p r) (cons p r))
 				   M::procs retcodes))
-		     (failed (filter (lambda (x) (not (= 0 (caddr x))))
+		     (failed (filter (lambda (x) (not (= 0 (cdr x))))
 				     results)))
 		(if (not (null? failed))
 		    (throw failed))))) ; xxx nicer reporting
@@ -408,11 +406,11 @@
 (define (pipe:spawn command)
   (lambda (M)
     (define (do-spawn M new-source)
-      (let ((pid (spawn-process-fd command M::source M::sink
-				   (if (> (*verbose*) 0)
-				       STDERR_FILENO CLOSED_FD)))
+      (let ((proc (process-spawn-fd command M::source M::sink
+				    (if (> (*verbose*) 0)
+				        STDERR_FILENO CLOSED_FD)))
 	    (M' (M::set-source new-source)))
-	(M'::add-proc command pid)))
+	(M'::add-proc proc)))
     (if (= CLOSED_FD M::sink)
 	(let* ((p (pipe))
 	       (M' (do-spawn (M::set-sink (:write-end p)) (:read-end p))))
@@ -568,8 +566,8 @@
 	      (assert (= (length enqueued) (- i 1)))
 	      test)))))
 
-      (define (pid->test pid)
-	(let ((t (filter (lambda (x) (= pid x::pid)) procs)))
+      (define (proc->test proc)
+	(let ((t (filter (lambda (x) (eq? proc x::proc)) procs)))
 	  (if (null? t) #f (car t))))
       (define (wait)
 	(if (null? enqueued)
@@ -587,7 +585,7 @@
 	  (if (null? unfinished)
 	      (current-environment)
 	      (let ((names (map (lambda (t) t::name) unfinished))
-		    (pids (map (lambda (t) t::pid) unfinished))
+		    (procs (map (lambda (t) t::proc) unfinished))
 		    (any #f))
 		(for-each
 		 (lambda (test retcode)
@@ -597,8 +595,8 @@
 			   (test::report)
 			   (sem::release!)
 			   (set! any #t)))
-		 (map pid->test pids)
-		 (wait-processes (map stringify names) pids hang))
+		 (map proc->test procs)
+		 (process-wait-list procs hang))
 
 		;; If some processes finished, try to start new ones.
 		(let loop ()
@@ -682,7 +680,7 @@
    (define (scm setup name path . args)
      ;; Start the process.
      (define (spawn-scm args' in out err)
-       (spawn-process-fd `(,*argv0* ,@(verbosity (*verbose*))
+       (process-spawn-fd `(,*argv0* ,@(verbosity (*verbose*))
 				    ,(locate-test (test-name path))
 				    ,@(if setup (force setup) '())
 				    ,@args' ,@args) in out err))
@@ -691,12 +689,12 @@
    (define (binary setup name path . args)
      ;; Start the process.
      (define (spawn-binary args' in out err)
-       (spawn-process-fd `(,(test-name path)
+       (process-spawn-fd `(,(test-name path)
 			   ,@(if setup (force setup) '()) ,@args' ,@args)
 			 in out err))
      (new name #f spawn-binary #f #f CLOSED_FD (expect-failure? name)))
 
-   (define (new name directory spawn pid retcode logfd expect-failure)
+   (define (new name directory spawn proc retcode logfd expect-failure)
      (package
 
       ;; XXX: OO glue.
@@ -721,7 +719,7 @@
 
       ;; Has the test been started yet?
       (define (started?)
-	(number? pid))
+	proc)
 
       (define (open-log-file)
 	(unless log-file-name
@@ -734,26 +732,26 @@
 	(letfd ((log (open-log-file)))
 	  (with-working-directory directory
 	    (let* ((p (inbound-pipe))
-		   (pid' (spawn args 0 (:write-end p) (:write-end p))))
+		   (proc' (spawn args 0 (:write-end p) (:write-end p))))
 	      (close (:write-end p))
 	      (splice (:read-end p) STDERR_FILENO log)
 	      (close (:read-end p))
-	      (set! pid pid')
-	      (set! retcode (wait-process name pid' #t)))))
+	      (set! proc proc')
+	      (set! retcode (process-wait proc' #t)))))
 	(report)
 	(current-environment))
       (define (run-sync-quiet . args)
 	(set-start-time!)
 	(with-working-directory directory
-	  (set! pid (spawn args CLOSED_FD CLOSED_FD CLOSED_FD)))
-	(set! retcode (wait-process name pid #t))
+	  (set! proc (spawn args CLOSED_FD CLOSED_FD CLOSED_FD)))
+	(set! retcode (process-wait proc #t))
 	(set-end-time!)
 	(current-environment))
       (define (run-async . args)
 	(set-start-time!)
 	(let ((log (open-log-file)))
 	  (with-working-directory directory
-	    (set! pid (spawn args CLOSED_FD log log)))
+	    (set! proc (spawn args CLOSED_FD log log)))
 	  (set! logfd log))
 	(current-environment))
       (define (status)

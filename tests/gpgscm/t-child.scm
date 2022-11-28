@@ -69,37 +69,36 @@
   (assert (string=? "" (:stderr r))))
 
 (define (spawn what)
-  (spawn-process-fd what CLOSED_FD STDOUT_FILENO STDERR_FILENO))
+  (process-spawn-fd what CLOSED_FD STDOUT_FILENO STDERR_FILENO))
 
-(let ((pid0 (spawn `(,(qualify "t-child") "return0")))
-      (pid1 (spawn `(,(qualify "t-child") "return0"))))
-  (assert (equal? '(0 0)
-		  (wait-processes '("child0" "child1") (list pid0 pid1) #t))))
+(let ((proc0 (spawn `(,(qualify "t-child") "return0")))
+      (proc1 (spawn `(,(qualify "t-child") "return0"))))
+  (assert (= (process-wait proc0 #t) 0))
+  (assert (= (process-wait proc1 #t) 0)))
 
-(let ((pid0 (spawn `(,(qualify "t-child") "return1")))
-      (pid1 (spawn `(,(qualify "t-child") "return0"))))
-  (assert (equal? '(1 0)
-		  (wait-processes '("child0" "child1") (list pid0 pid1) #t))))
+(let ((proc0 (spawn `(,(qualify "t-child") "return1")))
+      (proc1 (spawn `(,(qualify "t-child") "return0"))))
+  (assert (= (process-wait proc0 #t) 1))
+  (assert (= (process-wait proc1 #t) 0)))
 
-(let ((pid0 (spawn `(,(qualify "t-child") "return0")))
-      (pid1 (spawn `(,(qualify "t-child") "return77")))
-      (pid2 (spawn `(,(qualify "t-child") "return1"))))
-  (assert (equal? '(0 77 1)
-		  (wait-processes '("child0" "child1" "child2")
-				  (list pid0 pid1 pid2) #t))))
+(let ((proc0 (spawn `(,(qualify "t-child") "return0")))
+      (proc1 (spawn `(,(qualify "t-child") "return77")))
+      (proc2 (spawn `(,(qualify "t-child") "return1"))))
+  (assert (= (process-wait proc0 #t) 0))
+  (assert (= (process-wait proc1 #t) 77))
+  (assert (= (process-wait proc2 #t) 1)))
 
 (let* ((p (pipe))
-       (pid0 (spawn-process-fd
+       (proc0 (process-spawn-fd
 	       `(,(qualify "t-child") "hello_stdout")
 	       CLOSED_FD (:write-end p) STDERR_FILENO))
        (_ (close (:write-end p)))
-       (pid1 (spawn-process-fd
+       (proc1 (process-spawn-fd
 	       `(,(qualify "t-child") "cat")
 	       (:read-end p) STDOUT_FILENO STDERR_FILENO)))
   (close (:read-end p))
-  (assert
-   (equal? '(0 0)
-	   (wait-processes '("child0" "child1") (list pid0 pid1) #t))))
+  (assert (= (process-wait proc0 #t) 0))
+  (assert (= (process-wait proc1 #t) 0)))
 (echo " world.")
 
 (tr:do
