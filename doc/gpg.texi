@@ -2611,6 +2611,11 @@ opposite meaning.  The options are:
   to put into DNS zone files.  An ORIGIN line is printed before each
   record to allow diverting the records to the corresponding zone file.
 
+  @item export-revocs
+  Export only standalone revocation certificates of the key.  This
+  option does not export revocations of 3rd party certificate
+  revocations.
+
   @item export-dane
   Instead of outputting the key material output OpenPGP DANE records
   suitable to put into DNS zone files.  An ORIGIN line is printed before
