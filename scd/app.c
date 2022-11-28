@@ -2316,6 +2316,14 @@ app_check_pin (card_t card, ctrl_t ctrl, const char *keyidstr,
 
 
 static void
+setup_env (struct spawn_cb_arg *sca)
+{
+  char *v = sca->arg;
+
+  putenv (v);
+}
+
+static void
 report_change (int slot, int old_status, int cur_status)
 {
   char *homestr, *envstr;
@@ -2342,11 +2350,8 @@ report_change (int slot, int old_status, int cur_status)
   else
     {
       gpg_error_t err;
-      const char *args[9], *envs[2];
+      const char *args[9];
       char numbuf1[30], numbuf2[30], numbuf3[30];
-
-      envs[0] = envstr;
-      envs[1] = NULL;
 
       sprintf (numbuf1, "%d", slot);
       sprintf (numbuf2, "0x%04X", old_status);
@@ -2364,7 +2369,12 @@ report_change (int slot, int old_status, int cur_status)
       args[8] = NULL;
 
       fname = make_filename (gnupg_homedir (), "scd-event", NULL);
-      err = gnupg_spawn_process_detached (fname, args, envs);
+      err = gnupg_process_spawn (fname, args,
+                                 (GNUPG_PROCESS_DETACHED
+                                  | GNUPG_PROCESS_STDIN_NULL
+                                  | GNUPG_PROCESS_STDOUT_NULL
+                                  | GNUPG_PROCESS_STDERR_NULL),
+                                 setup_env, envstr, NULL);
       if (err && gpg_err_code (err) != GPG_ERR_ENOENT)
         log_error ("failed to run event handler '%s': %s\n",
                    fname, gpg_strerror (err));
