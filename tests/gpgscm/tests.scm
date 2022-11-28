@@ -92,19 +92,19 @@
 (define :stdin car)
 (define :stdout cadr)
 (define :stderr caddr)
-(define :pid cadddr)
+(define :proc cadddr)
 
 (define (call-with-io what in)
-  (let ((h (spawn-process what 0)))
+  (let ((h (process-spawn what 0)))
     (es-write (:stdin h) in)
     (es-fclose (:stdin h))
     (let* ((out (es-read-all (:stdout h)))
 	   (err (es-read-all (:stderr h)))
-	   (result (wait-process (car what) (:pid h) #t)))
+	   (result (process-wait (:proc h) #t)))
       (es-fclose (:stdout h))
       (es-fclose (:stderr h))
       (if (> (*verbose*) 2)
-	  (info "Child" (:pid h) "returned:"
+	  (info "Child" (:proc h) "returned:"
 		`((command ,(stringify what))
 		  (status ,result)
 		  (stdout ,out)

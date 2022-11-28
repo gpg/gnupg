@@ -811,21 +811,23 @@ proc_unwrap (scheme *sc, pointer object)
 
 
 static pointer
-do_spawn_process (scheme *sc, pointer args)
+do_process_spawn (scheme *sc, pointer args)
 {
   FFI_PROLOG ();
   pointer arguments;
   char **argv;
   size_t len;
   unsigned int flags;
-
+  gnupg_process_t proc = NULL;
   estream_t infp;
   estream_t outfp;
   estream_t errfp;
-  pid_t pid;
 
   FFI_ARG_OR_RETURN (sc, pointer, arguments, list, args);
   FFI_ARG_OR_RETURN (sc, unsigned int, flags, number, args);
+  flags |= (GNUPG_PROCESS_STDIN_PIPE
+            | GNUPG_PROCESS_STDOUT_PIPE
+            | GNUPG_PROCESS_STDERR_PIPE);
   FFI_ARGS_DONE_OR_RETURN (sc, args);
 
   err = ffi_list2argv (sc, arguments, &argv, &len);
@@ -845,19 +847,18 @@ do_spawn_process (scheme *sc, pointer args)
       fprintf (stderr, "\n");
     }
 
-  err = gnupg_spawn_process (argv[0], (const char **) &argv[1],
-                             NULL,
-                             flags,
-                             &infp, &outfp, &errfp, &pid);
+  err = gnupg_process_spawn (argv[0], (const char **) &argv[1],
+                             flags, NULL, NULL, &proc);
+  err = gnupg_process_get_streams (proc, 0, &infp, &outfp, &errfp);
   xfree (argv);
-#define IMC(A, B)                                                       \
-  _cons (sc, sc->vptr->mk_integer (sc, (unsigned long) (A)), (B), 1)
+#define IMP(A, B)                                                       \
+  _cons (sc, proc_wrap (sc, (A)), (B), 1)
 #define IMS(A, B)                                                       \
   _cons (sc, es_wrap (sc, (A)), (B), 1)
   FFI_RETURN_POINTER (sc, IMS (infp,
                               IMS (outfp,
                                    IMS (errfp,
-                                        IMC (pid, sc->NIL)))));
+                                        IMP (proc, sc->NIL)))));
 #undef IMS
 #undef IMC
 }
@@ -928,98 +929,6 @@ do_process_wait (scheme *sc, pointer args)
 
   FFI_RETURN_INT (sc, retcode);
 }
-
-static pointer
-do_wait_process (scheme *sc, pointer args)
-{
-  FFI_PROLOG ();
-  const char *name;
-  pid_t pid;
-  int hang;
-
-  int retcode;
-
-  FFI_ARG_OR_RETURN (sc, const char *, name, string, args);
-  FFI_ARG_OR_RETURN (sc, pid_t, pid, number, args);
-  FFI_ARG_OR_RETURN (sc, int, hang, bool, args);
-  FFI_ARGS_DONE_OR_RETURN (sc, args);
-  err = gnupg_wait_process (name, pid, hang, &retcode);
-  if (err == GPG_ERR_GENERAL)
-    err = 0;	/* Let the return code speak for itself.  */
-
-  FFI_RETURN_INT (sc, retcode);
-}
-
-
-static pointer
-do_wait_processes (scheme *sc, pointer args)
-{
-  FFI_PROLOG ();
-  pointer list_names;
-  char **names;
-  pointer list_pids;
-  size_t i, count;
-  pid_t *pids;
-  int hang;
-  int *retcodes;
-  pointer retcodes_list = sc->NIL;
-
-  FFI_ARG_OR_RETURN (sc, pointer, list_names, list, args);
-  FFI_ARG_OR_RETURN (sc, pointer, list_pids, list, args);
-  FFI_ARG_OR_RETURN (sc, int, hang, bool, args);
-  FFI_ARGS_DONE_OR_RETURN (sc, args);
-
-  if (sc->vptr->list_length (sc, list_names)
-      != sc->vptr->list_length (sc, list_pids))
-    return
-      sc->vptr->mk_string (sc, "length of first two arguments must match");
-
-  err = ffi_list2argv (sc, list_names, &names, &count);
-  if (err == gpg_error (GPG_ERR_INV_VALUE))
-    return ffi_sprintf (sc, "%lu%s element of first argument is "
-                        "neither string nor symbol",
-                        (unsigned long) count,
-                        ordinal_suffix ((int) count));
-  if (err)
-    FFI_RETURN_ERR (sc, err);
-
-  err = ffi_list2intv (sc, list_pids, (int **) &pids, &count);
-  if (err == gpg_error (GPG_ERR_INV_VALUE))
-    return ffi_sprintf (sc, "%lu%s element of second argument is "
-                        "not a number",
-                        (unsigned long) count,
-                        ordinal_suffix ((int) count));
-  if (err)
-    FFI_RETURN_ERR (sc, err);
-
-  retcodes = xtrycalloc (sizeof *retcodes, count);
-  if (retcodes == NULL)
-    {
-      xfree (names);
-      xfree (pids);
-      FFI_RETURN_ERR (sc, gpg_error_from_syserror ());
-    }
-
-  err = gnupg_wait_processes ((const char **) names, pids, count, hang,
-                              retcodes);
-  if (err == GPG_ERR_GENERAL)
-    err = 0;	/* Let the return codes speak.  */
-  if (err == GPG_ERR_TIMEOUT)
-    err = 0;	/* We may have got some results.  */
-
-  for (i = 0; i < count; i++)
-    retcodes_list =
-      (sc->vptr->cons) (sc,
-                        sc->vptr->mk_integer (sc,
-                                              (long) retcodes[count-1-i]),
-                        retcodes_list);
-
-  xfree (names);
-  xfree (pids);
-  xfree (retcodes);
-  FFI_RETURN_POINTER (sc, retcodes_list);
-}
-
 
 static pointer
 do_pipe (scheme *sc, pointer args)
@@ -1479,12 +1388,10 @@ ffi_init (scheme *sc, const char *argv0, const char *scriptname,
   ffi_define_function (sc, make_random_string);
 
   /* Process management.  */
-  ffi_define_function (sc, spawn_process);
-  ffi_define_function (sc, wait_process);
-  ffi_define_function (sc, wait_processes);
   ffi_define_function (sc, pipe);
   ffi_define_function (sc, inbound_pipe);
   ffi_define_function (sc, outbound_pipe);
+  ffi_define_function (sc, process_spawn);
   ffi_define_function (sc, process_spawn_fd);
   ffi_define_function (sc, process_wait);
 
