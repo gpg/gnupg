@@ -2318,9 +2318,13 @@ app_check_pin (card_t card, ctrl_t ctrl, const char *keyidstr,
 static void
 setup_env (struct spawn_cb_arg *sca)
 {
+#ifdef HAVE_W32_SYSTEM
+  (void)sca;			/* Not supported on Windows.  */
+#else
   char *v = sca->arg;
 
   putenv (v);
+#endif
 }
 
 static void

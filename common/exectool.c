@@ -38,10 +38,14 @@
 #include <gpg-error.h>
 
 #include <assuan.h>
+
 #include "i18n.h"
 #include "logging.h"
 #include "membuf.h"
 #include "mischelp.h"
+#ifdef HAVE_W32_SYSTEM
+#define NEED_STRUCT_SPAWN_CB_ARG 1
+#endif
 #include "exechelp.h"
 #include "sysutils.h"
 #include "util.h"
@@ -305,8 +309,14 @@ static void
 setup_close_all (struct spawn_cb_arg *sca)
 {
   int *user_except = sca->arg;
-
+#ifdef HAVE_W32_SYSTEM
+  if (user_except[0] == -1)
+    sca->ask_inherit = 0;
+  else
+    sca->ask_inherit = 1;
+#else
   sca->except_fds = user_except;
+#endif
 }
 
 /* Run the program PGMNAME with the command line arguments given in

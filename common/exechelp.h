@@ -214,7 +214,7 @@ typedef struct gnupg_process *gnupg_process_t;
 struct spawn_cb_arg;
 #ifdef NEED_STRUCT_SPAWN_CB_ARG
 struct spawn_cb_arg {
-  int ask_inherit;
+  BOOL ask_inherit;
   void *plpAttributeList;
   HANDLE hd[16];
   void *arg;

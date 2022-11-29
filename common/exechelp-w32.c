@@ -1098,7 +1098,7 @@ post_syscall (void)
 static gpg_err_code_t
 spawn_detached (gnupg_process_t process,
                 const char *pgmname, char *cmdline,
-                int (*spawn_cb) (void *), void *spawn_cb_arg)
+                void (*spawn_cb) (struct spawn_cb_arg *), void *spawn_cb_arg)
 {
   SECURITY_ATTRIBUTES sec_attr;
   PROCESS_INFORMATION pi = { NULL, 0, 0, 0 };
@@ -1106,7 +1106,7 @@ spawn_detached (gnupg_process_t process,
   int cr_flags;
   wchar_t *wcmdline = NULL;
   wchar_t *wpgmname = NULL;
-  BOOL ask_inherit = FALSE;
+  BOOL ask_inherit;
   gpg_err_code_t ec;
   int ret;
   struct spawn_cb_arg sca;
@@ -1121,11 +1121,13 @@ spawn_detached (gnupg_process_t process,
 
   memset (&si, 0, sizeof si);
 
+  sca.ask_inherit = FALSE;
   sca.plpAttributeList = &si.lpAttributeList;
   sca.arg = spawn_cb_arg;
   sca.hd[0] = INVALID_HANDLE_VALUE;
-  if (spawn_cb && (*spawn_cb) (&sca))
-    ask_inherit = TRUE;
+  if (spawn_cb)
+    (*spawn_cb) (&sca);
+  ask_inherit = sca.ask_inherit;
 
   /* Prepare security attributes.  */
   memset (&sec_attr, 0, sizeof sec_attr );
@@ -1201,7 +1203,7 @@ spawn_detached (gnupg_process_t process,
 gpg_err_code_t
 gnupg_process_spawn (const char *pgmname, const char *argv[],
                      unsigned int flags,
-                     int (*spawn_cb) (void *),
+                     void (*spawn_cb) (struct spawn_cb_arg *),
                      void *spawn_cb_arg,
                      gnupg_process_t *r_process)
 {
@@ -1215,7 +1217,7 @@ gnupg_process_spawn (const char *pgmname, const char *argv[],
   wchar_t *wcmdline = NULL;
   wchar_t *wpgmname = NULL;
   int ret;
-  BOOL ask_inherit = FALSE;
+  BOOL ask_inherit;
   HANDLE hd_in[2];
   HANDLE hd_out[2];
   HANDLE hd_err[2];
@@ -1339,6 +1341,7 @@ gnupg_process_spawn (const char *pgmname, const char *argv[],
 
   memset (&si, 0, sizeof si);
 
+  sca.ask_inherit = FALSE;
   sca.plpAttributeList = &si.lpAttributeList;
   sca.arg = spawn_cb_arg;
   i = 0;
@@ -1349,10 +1352,11 @@ gnupg_process_spawn (const char *pgmname, const char *argv[],
   if (hd_err[1] != INVALID_HANDLE_VALUE)
     sca.hd[i++] = hd_err[1];
   sca.hd[i] = INVALID_HANDLE_VALUE;
+  if (spawn_cb)
+    (*spawn_cb) (&sca);
+  ask_inherit = sca.ask_inherit;
 
-  if (spawn_cb && (*spawn_cb) (&sca))
-    ask_inherit = TRUE;
-  else if (i != 0)
+  if (i != 0)
     {
       SIZE_T attr_list_size = 0;
 
