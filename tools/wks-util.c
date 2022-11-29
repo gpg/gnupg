@@ -193,10 +193,11 @@ get_key_status_cb (void *opaque, const char *keyword, char *args)
  * mail address ADDRSPEC is included in the key.  If EXACT is set the
  * returned user id must match Addrspec exactly and not just in the
  * addr-spec (mailbox) part.  The key is returned as a new memory
- * stream at R_KEY.  */
+ * stream at R_KEY.  If BINARY is set the returned key is
+ * non-armored.  */
 gpg_error_t
 wks_get_key (estream_t *r_key, const char *fingerprint, const char *addrspec,
-             int exact)
+             int exact, int binary)
 {
   gpg_error_t err;
   ccparray_t ccp;
@@ -218,8 +219,9 @@ wks_get_key (estream_t *r_key, const char *fingerprint, const char *addrspec,
     }
 
   /* Prefix the key with the MIME content type.  */
-  es_fputs ("Content-Type: application/pgp-keys\n"
-            "\n", key);
+  if (!binary)
+    es_fputs ("Content-Type: application/pgp-keys\n"
+              "\n", key);
 
   filterexp = es_bsprintf ("keep-uid=%s= %s", exact? "uid":"mbox", addrspec);
   if (!filterexp)
@@ -239,7 +241,8 @@ wks_get_key (estream_t *r_key, const char *fingerprint, const char *addrspec,
   ccparray_put (&ccp, "--batch");
   ccparray_put (&ccp, "--status-fd=2");
   ccparray_put (&ccp, "--always-trust");
-  ccparray_put (&ccp, "--armor");
+  if (!binary)
+    ccparray_put (&ccp, "--armor");
   ccparray_put (&ccp, "--export-options=export-minimal");
   ccparray_put (&ccp, "--export-filter");
   ccparray_put (&ccp, filterexp);
@@ -546,6 +549,124 @@ wks_filter_uid (estream_t *r_newkey, estream_t key, const char *uid,
   xfree (filterexp);
   xfree (argv);
   es_fclose (newkey);
+  return err;
+}
+
+
+/* Put the ascii-armor around KEY and return that as a new estream
+ * object at R_NEWKEY.  Caller must make sure that KEY has been seeked
+ * to the right position (usually by calling es_rewind).  The
+ * resulting NEWKEY has already been rewound.  If PREFIX is not NULL,
+ * its content is written to NEWKEY propr to the armor; this may be
+ * used for MIME headers. */
+gpg_error_t
+wks_armor_key (estream_t *r_newkey, estream_t key, const char *prefix)
+{
+  gpg_error_t err;
+  estream_t newkey;
+  struct b64state b64state;
+  char buffer[4096];
+  size_t nread;
+
+  *r_newkey = NULL;
+
+  newkey = es_fopenmem (0, "w+b");
+  if (!newkey)
+    {
+      err = gpg_error_from_syserror ();
+      return err;
+    }
+
+  if (prefix)
+    es_fputs (prefix, newkey);
+
+  err = b64enc_start_es (&b64state, newkey, "PGP PUBLIC KEY BLOCK");
+  if (err)
+    goto leave;
+
+  do
+    {
+      nread = es_fread (buffer, 1, sizeof buffer, key);
+      if (!nread)
+	break;
+      err = b64enc_write (&b64state, buffer, nread);
+      if (err)
+        goto leave;
+    }
+  while (!es_feof (key) && !es_ferror (key));
+  if (!es_feof (key) || es_ferror (key))
+    {
+      err = gpg_error_from_syserror ();
+      goto leave;
+    }
+
+  err = b64enc_finish (&b64state);
+  if (err)
+    goto leave;
+
+  es_rewind (newkey);
+  *r_newkey = newkey;
+  newkey = NULL;
+
+ leave:
+  es_fclose (newkey);
+  return err;
+}
+
+
+/* Run gpg to export the revocation certificates for ADDRSPEC.  Add
+ * them to KEY which is expected to be non-armored keyblock.  */
+gpg_error_t
+wks_find_add_revocs (estream_t key, const char *addrspec)
+{
+  gpg_error_t err;
+  ccparray_t ccp;
+  const char **argv = NULL;
+  char *filterexp = NULL;
+
+  filterexp = es_bsprintf ("select=mbox= %s", addrspec);
+  if (!filterexp)
+    {
+      err = gpg_error_from_syserror ();
+      log_error ("error allocating memory buffer: %s\n", gpg_strerror (err));
+      goto leave;
+    }
+
+  ccparray_init (&ccp, 0);
+
+  ccparray_put (&ccp, "--no-options");
+  if (opt.verbose < 2)
+    ccparray_put (&ccp, "--quiet");
+  else
+    ccparray_put (&ccp, "--verbose");
+  ccparray_put (&ccp, "--batch");
+  ccparray_put (&ccp, "--status-fd=2");
+  ccparray_put (&ccp, "--export-options=export-revocs");
+  ccparray_put (&ccp, "--export-filter");
+  ccparray_put (&ccp, filterexp);
+  ccparray_put (&ccp, "--export");
+  ccparray_put (&ccp, addrspec);
+
+  ccparray_put (&ccp, NULL);
+  argv = ccparray_get (&ccp, NULL);
+  if (!argv)
+    {
+      err = gpg_error_from_syserror ();
+      goto leave;
+    }
+  debug_gpg_invocation (__func__, argv);
+  err = gnupg_exec_tool_stream (opt.gpg_program, argv, NULL,
+                                NULL, key,
+                                key_status_cb, NULL);
+  if (err)
+    {
+      log_error ("exporting revocs failed: %s\n", gpg_strerror (err));
+      goto leave;
+    }
+
+ leave:
+  xfree (filterexp);
+  xfree (argv);
   return err;
 }
 
@@ -1121,7 +1242,7 @@ wks_cmd_install_key (const char *fname, const char *userid)
     {
       /* FNAME looks like a fingerprint.  Get the key from the
        * standard keyring.  */
-      err = wks_get_key (&fp, fname, addrspec, 0);
+      err = wks_get_key (&fp, fname, addrspec, 0, 1);
       if (err)
         {
           log_error ("error getting key '%s' (uid='%s'): %s\n",
@@ -1192,6 +1313,24 @@ wks_cmd_install_key (const char *fname, const char *userid)
     es_fclose (fp);
     fp = fp2;
   }
+
+  if (opt.add_revocs)
+    {
+      if (es_fseek (fp, 0, SEEK_END))
+        {
+          err = gpg_error_from_syserror ();
+          log_error ("error seeking stream: %s\n", gpg_strerror (err));
+          goto leave;
+        }
+      err = wks_find_add_revocs (fp, addrspec);
+      if (err)
+        {
+          log_error ("error finding revocations for '%s': %s\n",
+                     addrspec, gpg_strerror (err));
+          goto leave;
+        }
+      es_rewind (fp);
+    }
 
   err = wks_install_key_core (fp, addrspec);
   if (!opt.quiet)
