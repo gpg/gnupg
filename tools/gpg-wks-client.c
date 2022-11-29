@@ -74,6 +74,7 @@ enum cmd_and_opt_values
     oWithColons,
     oBlacklist,
     oNoAutostart,
+    oAddRevocs,
 
     oDummy
   };
@@ -100,9 +101,9 @@ static ARGPARSE_OPTS opts[] = {
   ARGPARSE_c (aRemoveKey, "remove-key",
               "remove a key from a directory"),
   ARGPARSE_c (aPrintWKDHash, "print-wkd-hash",
-              "Print the WKD identifier for the given user ids"),
+              "print the WKD identifier for the given user ids"),
   ARGPARSE_c (aPrintWKDURL, "print-wkd-url",
-              "Print the WKD URL for the given user id"),
+              "print the WKD URL for the given user id"),
 
   ARGPARSE_group (301, ("@\nOptions:\n ")),
 
@@ -117,6 +118,7 @@ static ARGPARSE_OPTS opts[] = {
   ARGPARSE_s_n (oWithColons, "with-colons", "@"),
   ARGPARSE_s_s (oBlacklist, "blacklist", "@"),
   ARGPARSE_s_s (oDirectory, "directory", "@"),
+  ARGPARSE_s_n (oAddRevocs, "add-revocs", "add revocation certificates"),
 
   ARGPARSE_s_s (oFakeSubmissionAddr, "fake-submission-addr", "@"),
 
@@ -253,6 +255,9 @@ parse_arguments (ARGPARSE_ARGS *pargs, ARGPARSE_OPTS *popts)
           break;
         case oBlacklist:
           add_blacklist (pargs->r.ret_str);
+          break;
+        case oAddRevocs:
+          opt.add_revocs = 1;
           break;
 
 	case aSupported:
@@ -1145,7 +1150,7 @@ command_send (const char *fingerprint, const char *userid)
       err = gpg_error (GPG_ERR_INV_USER_ID);
       goto leave;
     }
-  err = wks_get_key (&key, fingerprint, addrspec, 0);
+  err = wks_get_key (&key, fingerprint, addrspec, 0, 1);
   if (err)
     goto leave;
 
@@ -1213,7 +1218,7 @@ command_send (const char *fingerprint, const char *userid)
       estream_t newkey;
 
       es_rewind (key);
-      err = wks_filter_uid (&newkey, key, thisuid->uid, 0);
+      err = wks_filter_uid (&newkey, key, thisuid->uid, 1);
       if (err)
         {
           log_error ("error filtering key: %s\n", gpg_strerror (err));
@@ -1238,10 +1243,46 @@ command_send (const char *fingerprint, const char *userid)
        * the key again.  */
       es_fclose (key);
       key = NULL;
-      err = wks_get_key (&key, fingerprint, addrspec, 1);
+      err = wks_get_key (&key, fingerprint, addrspec, 1, 1);
       if (err)
         goto leave;
     }
+
+  if (opt.add_revocs)
+    {
+      if (es_fseek (key, 0, SEEK_END))
+        {
+          err = gpg_error_from_syserror ();
+          log_error ("error seeking stream: %s\n", gpg_strerror (err));
+          goto leave;
+        }
+      err = wks_find_add_revocs (key, addrspec);
+      if (err)
+        {
+          log_error ("error finding revocations for '%s': %s\n",
+                     addrspec, gpg_strerror (err));
+          goto leave;
+        }
+    }
+
+
+  /* Now put the armor around the key.  */
+  {
+    estream_t newkey;
+
+    es_rewind (key);
+    err = wks_armor_key (&newkey, key,
+                         no_encrypt? NULL
+                         /* */    : ("Content-Type: application/pgp-keys\n"
+                                     "\n"));
+    if (err)
+      {
+        log_error ("error armoring key: %s\n", gpg_strerror (err));
+        goto leave;
+      }
+    es_fclose (key);
+    key = newkey;
+  }
 
   /* Hack to support posteo but let them disable this by setting the
    * new policy-version flag.  */
@@ -1287,7 +1328,7 @@ command_send (const char *fingerprint, const char *userid)
   if (no_encrypt)
     {
       void *data;
-      size_t datalen, n;
+      size_t datalen;
 
       if (posteo_hack)
         {
@@ -1312,16 +1353,7 @@ command_send (const char *fingerprint, const char *userid)
           goto leave;
         }
       key = NULL;
-      /* We need to skip over the first line which has a content-type
-       * header not needed here.  */
-      for (n=0; n < datalen ; n++)
-        if (((const char *)data)[n] == '\n')
-          {
-            n++;
-            break;
-          }
-
-      err = mime_maker_add_body_data (mime, (char*)data + n, datalen - n);
+      err = mime_maker_add_body_data (mime, data, datalen);
       xfree (data);
       if (err)
         goto leave;
@@ -1808,7 +1840,7 @@ domain_matches_mbox (const char *domain, const char *mbox)
 
 /* Core of mirror_one_key with the goal of mirroring just one uid.
  * UIDLIST is used to figure out whether the given MBOX occurs several
- * times in UIDLIST and then to single out the newwest one.  This is
+ * times in UIDLIST and then to single out the newest one.  This is
  * so that for a key with
  *    uid: Joe Someone <joe@example.org>
  *    uid: Joe <joe@example.org>
@@ -1849,24 +1881,36 @@ mirror_one_keys_userid (estream_t key, const char *mbox, uidinfo_list_t uidlist,
       err = gpg_error (GPG_ERR_NO_USER_ID);
       goto leave;
     }
-  /* FIXME: Consult blacklist.  */
 
-
-  /* Only if we have more than one user id we bother to run the
-   * filter.  In this case the result will be put into NEWKEY*/
+  /* Always filter the key so that the result will be non-armored.  */
   es_rewind (key);
-  if (uidlist->next)
+  err = wks_filter_uid (&newkey, key, thisuid->uid, 1);
+  if (err)
     {
-      err = wks_filter_uid (&newkey, key, thisuid->uid, 0);
-      if (err)
-        {
-          log_error ("error filtering key %s: %s\n", fpr, gpg_strerror (err));
-          err = gpg_error (GPG_ERR_NO_PUBKEY);
-          goto leave;
-        }
+      log_error ("error filtering key %s: %s\n", fpr, gpg_strerror (err));
+      err = gpg_error (GPG_ERR_NO_PUBKEY);
+      goto leave;
     }
 
-  err = wks_install_key_core (newkey? newkey : key, mbox);
+  if (opt.add_revocs)
+    {
+      if (es_fseek (newkey, 0, SEEK_END))
+        {
+          err = gpg_error_from_syserror ();
+          log_error ("error seeking stream: %s\n", gpg_strerror (err));
+          goto leave;
+        }
+      err = wks_find_add_revocs (newkey, mbox);
+      if (err)
+        {
+          log_error ("error finding revocations for '%s': %s\n",
+                     mbox, gpg_strerror (err));
+          goto leave;
+        }
+      es_rewind (newkey);
+    }
+
+  err = wks_install_key_core (newkey, mbox);
   if (opt.verbose)
     log_info ("key %s published for '%s'\n", fpr, mbox);
   mirror_one_key_parm.nuids++;
