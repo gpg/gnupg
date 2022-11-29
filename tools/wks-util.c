@@ -150,6 +150,21 @@ free_uidinfo_list (uidinfo_list_t list)
 }
 
 
+static void
+debug_gpg_invocation (const char *func, const char **argv)
+{
+  int i;
+
+  if (!(opt.debug & DBG_EXTPROG_VALUE))
+    return;
+
+  log_debug ("%s: exec '%s' with", func, opt.gpg_program);
+  for (i=0; argv[i]; i++)
+    log_printf (" '%s'", argv[i]);
+  log_printf ("\n");
+}
+
+
 
 struct get_key_status_parm_s
 {
@@ -164,7 +179,8 @@ get_key_status_cb (void *opaque, const char *keyword, char *args)
 {
   struct get_key_status_parm_s *parm = opaque;
 
-  /*log_debug ("%s: %s\n", keyword, args);*/
+  if (DBG_CRYPTO)
+    log_debug ("%s: %s\n", keyword, args);
   if (!strcmp (keyword, "EXPORTED"))
     {
       parm->count++;
@@ -239,6 +255,7 @@ wks_get_key (estream_t *r_key, const char *fingerprint, const char *addrspec,
       goto leave;
     }
   parm.fpr = fingerprint;
+  debug_gpg_invocation (__func__, argv);
   err = gnupg_exec_tool_stream (opt.gpg_program, argv, NULL,
                                 NULL, key,
                                 get_key_status_cb, &parm);
@@ -332,6 +349,7 @@ wks_list_key (estream_t key, char **r_fpr, uidinfo_list_t *r_mboxes)
       err = gpg_error_from_syserror ();
       goto leave;
     }
+  debug_gpg_invocation (__func__, argv);
   err = gnupg_exec_tool_stream (opt.gpg_program, argv, key,
                                 NULL, listing,
                                 key_status_cb, NULL);
@@ -510,6 +528,7 @@ wks_filter_uid (estream_t *r_newkey, estream_t key, const char *uid,
       err = gpg_error_from_syserror ();
       goto leave;
     }
+  debug_gpg_invocation (__func__, argv);
   err = gnupg_exec_tool_stream (opt.gpg_program, argv, key,
                                 NULL, newkey,
                                 key_status_cb, NULL);
