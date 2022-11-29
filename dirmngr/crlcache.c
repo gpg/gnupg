@@ -984,8 +984,8 @@ make_db_file_name (const char *issuer_hash)
 
 
 /* Hash the file FNAME and return the MD5 digest in MD5BUFFER. The
-   caller must allocate MD%buffer wityh at least 16 bytes. Returns 0
-   on success. */
+ * caller must allocate MD5buffer with at least 16 bytes. Returns 0
+ * on success. */
 static int
 hash_dbfile (const char *fname, unsigned char *md5buffer)
 {
