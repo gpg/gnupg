@@ -988,42 +988,45 @@ posix_open_null (int for_write)
 }
 
 static void
-my_exec (const char *pgmname, const char *argv[],
-         int fd_in, int fd_out, int fd_err,
-         void (*spawn_cb) (struct spawn_cb_arg *), void *spawn_cb_arg)
+call_spawn_cb (struct spawn_cb_arg *sca,
+               int fd_in, int fd_out, int fd_err,
+               void (*spawn_cb) (struct spawn_cb_arg *), void *spawn_cb_arg)
+{
+  sca->fds[0] = fd_in;
+  sca->fds[1] = fd_out;
+  sca->fds[2] = fd_err;
+  sca->except_fds = NULL;
+  sca->arg = spawn_cb_arg;
+  if (spawn_cb)
+    (*spawn_cb) (sca);
+}
+
+static void
+my_exec (const char *pgmname, const char *argv[], struct spawn_cb_arg *sca)
 {
   int i;
-  struct spawn_cb_arg sca;
-
-  sca.fds[0] = fd_in;
-  sca.fds[1] = fd_out;
-  sca.fds[2] = fd_err;
-  sca.except_fds = NULL;
-  sca.arg = spawn_cb_arg;
-  if (spawn_cb)
-    (*spawn_cb) (&sca);
 
   /* Assign /dev/null to unused FDs.  */
   for (i = 0; i <= 2; i++)
-    if (sca.fds[i] == -1)
-      sca.fds[i] = posix_open_null (i);
+    if (sca->fds[i] == -1)
+      sca->fds[i] = posix_open_null (i);
 
   /* Connect the standard files.  */
   for (i = 0; i <= 2; i++)
-    if (sca.fds[i] != i)
+    if (sca->fds[i] != i)
       {
-        if (dup2 (sca.fds[i], i) == -1)
+        if (dup2 (sca->fds[i], i) == -1)
           log_fatal ("dup2 std%s failed: %s\n",
                      i==0?"in":i==1?"out":"err", strerror (errno));
         /*
          * We don't close sca.fds[i] here, but close them by
          * close_all_fds.  Note that there may be same one in three of
-         * sca.fds[i].
+         * sca->fds[i].
          */
       }
 
   /* Close all other files.  */
-  close_all_fds (3, sca.except_fds);
+  close_all_fds (3, sca->except_fds);
 
   execv (pgmname, (char *const *)argv);
   /* No way to print anything, as we have may have closed all streams. */
@@ -1069,6 +1072,7 @@ spawn_detached (gnupg_process_t process,
   if (!pid)
     {
       pid_t pid2;
+      struct spawn_cb_arg sca;
 
       if (setsid() == -1 || chdir ("/"))
         _exit (1);
@@ -1079,7 +1083,9 @@ spawn_detached (gnupg_process_t process,
       if (pid2)
         _exit (0);  /* Let the parent exit immediately. */
 
-      my_exec (pgmname, argv, -1, -1, -1, spawn_cb, spawn_cb_arg);
+      call_spawn_cb (&sca, -1, -1, -1, spawn_cb, spawn_cb_arg);
+
+      my_exec (pgmname, argv, &sca);
       /*NOTREACHED*/
     }
 
@@ -1282,6 +1288,8 @@ gnupg_process_spawn (const char *pgmname, const char *argv1[],
 
   if (!pid)
     {
+      struct spawn_cb_arg sca;
+
       if (fd_in[1] >= 0)
         close (fd_in[1]);
       if (fd_out[0] >= 0)
@@ -1289,9 +1297,11 @@ gnupg_process_spawn (const char *pgmname, const char *argv1[],
       if (fd_err[0] >= 0)
         close (fd_err[0]);
 
+      call_spawn_cb (&sca, fd_in[0], fd_out[1], fd_err[1],
+                     spawn_cb, spawn_cb_arg);
+
       /* Run child. */
-      my_exec (pgmname, argv, fd_in[0], fd_out[1], fd_err[1],
-               spawn_cb, spawn_cb_arg);
+      my_exec (pgmname, argv, &sca);
       /*NOTREACHED*/
     }
 
