@@ -214,10 +214,10 @@ typedef struct gnupg_process *gnupg_process_t;
 struct spawn_cb_arg;
 #ifdef NEED_STRUCT_SPAWN_CB_ARG
 struct spawn_cb_arg {
+  HANDLE hd[3];
+  HANDLE *inherit_hds;
   BOOL ask_inherit;
   BOOL allow_foreground_window;
-  void *plpAttributeList;
-  HANDLE hd[16];
   void *arg;
 };
 #endif

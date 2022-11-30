@@ -42,6 +42,9 @@
 #endif
 
 #include "../../common/util.h"
+#ifdef HAVE_W32_SYSTEM
+#define NEED_STRUCT_SPAWN_CB_ARG
+#endif
 #include "../../common/exechelp.h"
 #include "../../common/sysutils.h"
 
@@ -868,9 +871,18 @@ setup_std_fds (struct spawn_cb_arg *sca)
 {
   int *std_fds = sca->arg;
 
+#ifdef HAVE_W32_SYSTEM
+  sca->hd[0] = std_fds[0] == -1?
+    INVALID_HANDLE_VALUE : (HANDLE)_get_osfhandle (std_fds[0]);
+  sca->hd[1] = std_fds[1] == -1?
+    INVALID_HANDLE_VALUE : (HANDLE)_get_osfhandle (std_fds[1]);
+  sca->hd[2] = std_fds[2] == -1?
+    INVALID_HANDLE_VALUE : (HANDLE)_get_osfhandle (std_fds[2]);
+#else
   sca->fds[0] = std_fds[0];
   sca->fds[1] = std_fds[1];
   sca->fds[2] = std_fds[2];
+#endif
 }
 
 static pointer

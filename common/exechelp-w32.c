@@ -1122,9 +1122,11 @@ spawn_detached (gnupg_process_t process,
 
   sca.ask_inherit = FALSE;
   sca.allow_foreground_window = FALSE;
-  sca.plpAttributeList = &si.lpAttributeList;
-  sca.arg = spawn_cb_arg;
   sca.hd[0] = INVALID_HANDLE_VALUE;
+  sca.hd[1] = INVALID_HANDLE_VALUE;
+  sca.hd[2] = INVALID_HANDLE_VALUE;
+  sca.inherit_hds = NULL;
+  sca.arg = spawn_cb_arg;
   if (spawn_cb)
     (*spawn_cb) (&sca);
 
@@ -1344,22 +1346,46 @@ gnupg_process_spawn (const char *pgmname, const char *argv[],
 
   sca.ask_inherit = FALSE;
   sca.allow_foreground_window = FALSE;
-  sca.plpAttributeList = &si.lpAttributeList;
+  sca.hd[0] = hd_in[0];
+  sca.hd[1] = hd_out[1];
+  sca.hd[2] = hd_err[1];
+  sca.inherit_hds = NULL;
   sca.arg = spawn_cb_arg;
-  i = 0;
-  if (hd_in[0] != INVALID_HANDLE_VALUE)
-    sca.hd[i++] = hd_in[0];
-  if (hd_out[1] != INVALID_HANDLE_VALUE)
-    sca.hd[i++] = hd_out[1];
-  if (hd_err[1] != INVALID_HANDLE_VALUE)
-    sca.hd[i++] = hd_err[1];
-  sca.hd[i] = INVALID_HANDLE_VALUE;
   if (spawn_cb)
     (*spawn_cb) (&sca);
 
-  if (i != 0)
+  i = 0;
+  if (sca.hd[0] != INVALID_HANDLE_VALUE)
+    i++;
+  if (sca.hd[1] != INVALID_HANDLE_VALUE)
+    i++;
+  if (sca.hd[1] != INVALID_HANDLE_VALUE)
+    i++;
+
+  if (i != 0 || sca.inherit_hds)
     {
       SIZE_T attr_list_size = 0;
+      HANDLE hd[16];
+      HANDLE *hd_p = sca.inherit_hds;
+      int j = 0;
+
+      if (sca.hd[0] != INVALID_HANDLE_VALUE)
+        hd[j++] = sca.hd[0];
+      if (sca.hd[1] != INVALID_HANDLE_VALUE)
+        hd[j++] = sca.hd[1];
+      if (sca.hd[1] != INVALID_HANDLE_VALUE)
+        hd[j++] = sca.hd[2];
+      if (hd_p)
+        {
+          while (*hd_p != INVALID_HANDLE_VALUE)
+            if (j < DIM (hd))
+              hd[j++] = *hd_p++;
+            else
+              {
+                log_error ("Too much handles\n");
+                break;
+              }
+        }
 
       InitializeProcThreadAttributeList (NULL, 1, 0, &attr_list_size);
       si.lpAttributeList = xtrymalloc (attr_list_size);
@@ -1387,7 +1413,7 @@ gnupg_process_spawn (const char *pgmname, const char *argv[],
                                          &attr_list_size);
       UpdateProcThreadAttribute (si.lpAttributeList, 0,
                                  PROC_THREAD_ATTRIBUTE_HANDLE_LIST,
-                                 sca.hd, sizeof (HANDLE) * i, NULL, NULL);
+                                 hd, sizeof (HANDLE) * j, NULL, NULL);
       sca.ask_inherit = TRUE;
     }
 
