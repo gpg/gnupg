@@ -433,7 +433,8 @@ name may be changed on the command line (@pxref{option --options}).
 @cindex scd-event
 If this file is present and executable, it will be called on every card
 reader's status change.  An example of this script is provided with the
-distribution
+source code distribution.  This option is deprecated in favor of the
+@command{DEVINFO --watch}.
 
 @item reader_@var{n}.status
 This file is created by @command{scdaemon} to let other applications now
