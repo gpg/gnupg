@@ -131,24 +131,24 @@ all-local:
 	@cat $(srcdir)/tests/gpgconf.ctl.in > bin/gpgconf.ctl
 	(set -e; cd bin; \
 	 for i in gpg gpgv; \
-	     do ln -sf ../g10/$$i .; done; \
+	     do ln -sf ../g10/$$i$(EXEEXT) .; done; \
 	 for i in gpgsm; \
-	     do ln -sf ../sm/$$i .; done; \
+	     do ln -sf ../sm/$$i$(EXEEXT) .; done; \
 	 for i in gpg-agent; \
-	     do ln -sf ../agent/$$i .; done; \
+	     do ln -sf ../agent/$$i$(EXEEXT) .; done; \
 	 for i in dirmngr; \
-	     do ln -sf ../dirmngr/$$i .; done; \
+	     do ln -sf ../dirmngr/$$i$(EXEEXT) .; done; \
 	 for i in gpgconf gpg-connect-agent gpgtar gpg-card; \
-	     do ln -sf ../tools/$$i .; done; \
+	     do ln -sf ../tools/$$i$(EXEEXT) .; done; \
 	 cd ../libexec ; \
 	 for i in keyboxd; \
-	     do ln -sf ../kbx/$$i .; done; \
+	     do ln -sf ../kbx/$$i$(EXEEXT) .; done; \
 	 for i in scdaemon; \
-	     do ln -sf ../scd/$$i .; done; \
+	     do ln -sf ../scd/$$i$(EXEEXT) .; done; \
 	 for i in gpg-preset-passphrase; \
-	     do ln -sf ../agent/$$i .; done; \
+	     do ln -sf ../agent/$$i$(EXEEXT) .; done; \
 	 for i in tpm2daemon; \
-             do [ -f ../tpm2d/$$i ] && ln -sf ../tpm2d/$$i .; done; \
+             do [ -f ../tpm2d/$$i$(EXEEXT) ] && ln -sf ../tpm2d/$$i$(EXEEXT) .; done; \
 	 echo "created links to binaries" )
 
 
