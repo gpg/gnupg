@@ -215,6 +215,7 @@ struct spawn_cb_arg;
 #ifdef NEED_STRUCT_SPAWN_CB_ARG
 struct spawn_cb_arg {
   BOOL ask_inherit;
+  BOOL allow_foreground_window;
   void *plpAttributeList;
   HANDLE hd[16];
   void *arg;
@@ -232,8 +233,6 @@ struct spawn_cb_arg {
 #define GNUPG_PROCESS_INHERIT_FILE        (1 << 0)
 
 #define GNUPG_PROCESS_DETACHED            (1 << 1)
-/**/
-#define GNUPG_PROCESS_WINDOWS_ASFW        (1 << 7)
 
 /* Specify how to keep/connect standard fds.  */
 #define GNUPG_PROCESS_STDIN_PIPE          (1 << 8)

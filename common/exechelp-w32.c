@@ -1106,7 +1106,6 @@ spawn_detached (gnupg_process_t process,
   int cr_flags;
   wchar_t *wcmdline = NULL;
   wchar_t *wpgmname = NULL;
-  BOOL ask_inherit;
   gpg_err_code_t ec;
   int ret;
   struct spawn_cb_arg sca;
@@ -1122,12 +1121,12 @@ spawn_detached (gnupg_process_t process,
   memset (&si, 0, sizeof si);
 
   sca.ask_inherit = FALSE;
+  sca.allow_foreground_window = FALSE;
   sca.plpAttributeList = &si.lpAttributeList;
   sca.arg = spawn_cb_arg;
   sca.hd[0] = INVALID_HANDLE_VALUE;
   if (spawn_cb)
     (*spawn_cb) (&sca);
-  ask_inherit = sca.ask_inherit;
 
   /* Prepare security attributes.  */
   memset (&sec_attr, 0, sizeof sec_attr );
@@ -1156,7 +1155,7 @@ spawn_detached (gnupg_process_t process,
                           wcmdline,      /* Command line arguments.  */
                           &sec_attr,     /* Process security attributes.  */
                           &sec_attr,     /* Thread security attributes.  */
-                          ask_inherit,   /* Inherit handles.  */
+                          sca.ask_inherit,   /* Inherit handles.  */
                           cr_flags,      /* Creation flags.  */
                           NULL,          /* Environment.  */
                           NULL,          /* Use current drive/directory.  */
@@ -1186,6 +1185,9 @@ spawn_detached (gnupg_process_t process,
              " dwProcessID=%d dwThreadId=%d\n",
              pi.hProcess, pi.hThread,
              (int) pi.dwProcessId, (int) pi.dwThreadId);
+
+  /* Note: AllowSetForegroundWindow doesn't make sense for background
+     process.  */
 
   CloseHandle (pi.hThread);
   CloseHandle (pi.hProcess);
@@ -1217,7 +1219,6 @@ gnupg_process_spawn (const char *pgmname, const char *argv[],
   wchar_t *wcmdline = NULL;
   wchar_t *wpgmname = NULL;
   int ret;
-  BOOL ask_inherit;
   HANDLE hd_in[2];
   HANDLE hd_out[2];
   HANDLE hd_err[2];
@@ -1342,6 +1343,7 @@ gnupg_process_spawn (const char *pgmname, const char *argv[],
   memset (&si, 0, sizeof si);
 
   sca.ask_inherit = FALSE;
+  sca.allow_foreground_window = FALSE;
   sca.plpAttributeList = &si.lpAttributeList;
   sca.arg = spawn_cb_arg;
   i = 0;
@@ -1354,7 +1356,6 @@ gnupg_process_spawn (const char *pgmname, const char *argv[],
   sca.hd[i] = INVALID_HANDLE_VALUE;
   if (spawn_cb)
     (*spawn_cb) (&sca);
-  ask_inherit = sca.ask_inherit;
 
   if (i != 0)
     {
@@ -1387,7 +1388,7 @@ gnupg_process_spawn (const char *pgmname, const char *argv[],
       UpdateProcThreadAttribute (si.lpAttributeList, 0,
                                  PROC_THREAD_ATTRIBUTE_HANDLE_LIST,
                                  sca.hd, sizeof (HANDLE) * i, NULL, NULL);
-      ask_inherit = TRUE;
+      sca.ask_inherit = TRUE;
     }
 
   /* Prepare security attributes.  */
@@ -1417,7 +1418,7 @@ gnupg_process_spawn (const char *pgmname, const char *argv[],
                           wcmdline,      /* Command line arguments.  */
                           &sec_attr,     /* Process security attributes.  */
                           &sec_attr,     /* Thread security attributes.  */
-                          ask_inherit,   /* Inherit handles.  */
+                          sca.ask_inherit,   /* Inherit handles.  */
                           cr_flags,      /* Creation flags.  */
                           NULL,          /* Environment.  */
                           NULL,          /* Use current drive/directory.  */
@@ -1468,14 +1469,14 @@ gnupg_process_spawn (const char *pgmname, const char *argv[],
                     pi.hProcess, pi.hThread,
                     (int) pi.dwProcessId, (int) pi.dwThreadId);
 
-  if ((flags & GNUPG_PROCESS_WINDOWS_ASFW))
+  if (sca.allow_foreground_window)
     {
       /* Fixme: For unknown reasons AllowSetForegroundWindow returns
        * an invalid argument error if we pass it the correct
        * processID.  As a workaround we use -1 (ASFW_ANY).  */
       if (!AllowSetForegroundWindow (ASFW_ANY /*pi.dwProcessId*/))
         log_info ("AllowSetForegroundWindow() failed: ec=%d\n",
-                         (int)GetLastError ());
+                  (int)GetLastError ());
     }
 
   /* Process has been created suspended; resume it now. */
