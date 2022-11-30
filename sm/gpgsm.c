@@ -495,7 +495,7 @@ static int default_include_certs = DEFAULT_INCLUDE_CERTS;
 static int default_validation_model;
 
 /* The default cipher algo.  */
-#define DEFAULT_CIPHER_ALGO "AES"
+#define DEFAULT_CIPHER_ALGO "AES256"
 
 
 static char *build_list (const char *text,
