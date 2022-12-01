@@ -1249,28 +1249,45 @@ print_status_exported (PKT_public_key *pk)
  * clear.
  *
  * CACHE_NONCE_ADDR is used to share nonce for multiple key retrievals.
+ *
+ * If PK is NULL, the raw key is returned (e.g. for ssh export) at
+ * R_KEY.  CLEARTEXT and CACHE_NONCE_ADDR ared ignored in this case.
  */
 gpg_error_t
 receive_seckey_from_agent (ctrl_t ctrl, gcry_cipher_hd_t cipherhd,
                            int cleartext,
                            char **cache_nonce_addr, const char *hexgrip,
-                           PKT_public_key *pk)
+                           PKT_public_key *pk, gcry_sexp_t *r_key)
 {
   gpg_error_t err = 0;
   unsigned char *wrappedkey = NULL;
   size_t wrappedkeylen;
   unsigned char *key = NULL;
   size_t keylen, realkeylen;
-  gcry_sexp_t s_skey;
+  gcry_sexp_t s_skey = NULL;
   char *prompt;
 
+  if (r_key)
+    *r_key = NULL;
   if (opt.verbose)
     log_info ("key %s: asking agent for the secret parts\n", hexgrip);
 
-  prompt = gpg_format_keydesc (ctrl, pk, FORMAT_KEYDESC_EXPORT,1);
-  err = agent_export_key (ctrl, hexgrip, prompt, !cleartext, cache_nonce_addr,
-                          &wrappedkey, &wrappedkeylen,
-			  pk->keyid, pk->main_keyid, pk->pubkey_algo);
+  if (pk)
+    {
+      prompt = gpg_format_keydesc (ctrl, pk, FORMAT_KEYDESC_EXPORT, 1);
+      err = agent_export_key (ctrl, hexgrip, prompt, !cleartext,
+                              cache_nonce_addr,
+                              &wrappedkey, &wrappedkeylen,
+                              pk->keyid, pk->main_keyid, pk->pubkey_algo);
+    }
+  else
+    {
+      prompt = gpg_format_keydesc (ctrl, NULL, FORMAT_KEYDESC_KEYGRIP, 1);
+      err = agent_export_key (ctrl, hexgrip, prompt, 0,
+                              NULL,
+                              &wrappedkey, &wrappedkeylen,
+                              NULL, NULL, 0);
+    }
   xfree (prompt);
 
   if (err)
@@ -1297,14 +1314,19 @@ receive_seckey_from_agent (ctrl_t ctrl, gcry_cipher_hd_t cipherhd,
   err = gcry_sexp_sscan (&s_skey, NULL, key, realkeylen);
   if (!err)
     {
-      if (cleartext)
+      if (pk && cleartext)
         err = cleartext_secret_key_to_openpgp (s_skey, pk);
-      else
+      else if (pk)
         err = transfer_format_to_openpgp (s_skey, pk);
-      gcry_sexp_release (s_skey);
+      else if (r_key)
+        {
+          *r_key = s_skey;
+          s_skey = NULL;
+        }
     }
 
  unwraperror:
+  gcry_sexp_release (s_skey);
   xfree (key);
   xfree (wrappedkey);
   if (err)
@@ -1811,7 +1833,7 @@ do_export_one_keyblock (ctrl_t ctrl, kbnode_t keyblock, u32 *keyid,
             {
               err = receive_seckey_from_agent (ctrl, cipherhd,
                                                cleartext, &cache_nonce,
-                                               hexgrip, pk);
+                                               hexgrip, pk, NULL);
               if (err)
                 {
                   if (gpg_err_code (err) == GPG_ERR_FULLY_CANCELED)
@@ -2714,74 +2736,6 @@ export_ssh_key (ctrl_t ctrl, const char *userid)
 }
 
 
-/* Simplified version of receive_seckey_from_agent used to get the raw
- * key.  */
-gpg_error_t
-receive_raw_seckey_from_agent (ctrl_t ctrl, gcry_cipher_hd_t cipherhd,
-                               const char *hexgrip, gcry_sexp_t *r_key)
-{
-  gpg_error_t err = 0;
-  unsigned char *wrappedkey = NULL;
-  size_t wrappedkeylen;
-  unsigned char *key = NULL;
-  size_t keylen, realkeylen;
-  gcry_sexp_t s_skey = NULL;
-
-  *r_key = NULL;
-  if (opt.verbose)
-    log_info ("key %s: asking agent for the secret parts\n", hexgrip);
-
-  {
-    char * prompt = gpg_format_keydesc (ctrl, NULL, FORMAT_KEYDESC_KEYGRIP, 1);
-    err = agent_export_key (ctrl, hexgrip, prompt, 0, NULL,
-                            &wrappedkey, &wrappedkeylen,
-                            NULL, NULL, 0);
-    xfree (prompt);
-  }
-  if (err)
-    goto leave;
-
-  if (wrappedkeylen < 24)
-    {
-      err = gpg_error (GPG_ERR_INV_LENGTH);
-      goto leave;
-    }
-  keylen = wrappedkeylen - 8;
-  key = xtrymalloc_secure (keylen);
-  if (!key)
-    {
-      err = gpg_error_from_syserror ();
-      goto leave;
-    }
-  err = gcry_cipher_decrypt (cipherhd, key, keylen, wrappedkey, wrappedkeylen);
-  if (err)
-    goto leave;
-  realkeylen = gcry_sexp_canon_len (key, keylen, NULL, &err);
-  if (!realkeylen)
-    goto leave; /* Invalid csexp.  */
-
-  err = gcry_sexp_sscan (&s_skey, NULL, key, realkeylen);
-  if (!err)
-    {
-      gcry_log_debugsxp ("skey", s_skey);
-      *r_key = s_skey;
-      s_skey = NULL;
-    }
-
- leave:
-  gcry_sexp_release (s_skey);
-  xfree (key);
-  xfree (wrappedkey);
-  if (err)
-    {
-      log_error ("key %s: error receiving key from agent:"
-                 " %s%s\n", hexgrip, gpg_strerror (err),
-                 "");
-    }
-  return err;
-}
-
-
 /* Export the key identified by USERID in the SSH secret key format.
  * The USERID must be given in keygrip format (prefixed with a '&')
  * and thus no OpenPGP key is required.  The exported key is not
@@ -2827,7 +2781,8 @@ export_secret_ssh_key (ctrl_t ctrl, const char *userid)
   if ((err = get_keywrap_key (ctrl, &cipherhd)))
     goto leave;
 
-  err = receive_raw_seckey_from_agent (ctrl, cipherhd, hexgrip, &skey);
+  err = receive_seckey_from_agent (ctrl, cipherhd, 0, NULL, hexgrip, NULL,
+                                   &skey);
   if (err)
     goto leave;
 

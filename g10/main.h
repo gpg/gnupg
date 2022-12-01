@@ -434,7 +434,7 @@ gpg_error_t receive_seckey_from_agent (ctrl_t ctrl, gcry_cipher_hd_t cipherhd,
                                        int cleartext,
                                        char **cache_nonce_addr,
                                        const char *hexgrip,
-                                       PKT_public_key *pk);
+                                       PKT_public_key *pk, gcry_sexp_t *r_key);
 
 gpg_error_t write_keyblock_to_output (kbnode_t keyblock,
                                       int with_armor, unsigned int options);
