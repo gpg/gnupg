@@ -33,8 +33,6 @@
      #f
      (path-join "tests" "cms" "setup.scm")
      (in-srcdir "tests" "cms" "setup.scm")
-     (path-join "tests" "gpgsm" "setup.scm")
-     (in-srcdir "tests" "gpgsm" "setup.scm")
      "--" "tests" "gpg")))
 
  (map (lambda (name)
