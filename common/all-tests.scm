@@ -23,24 +23,27 @@
 	  (test::binary #f
 		        (path-join "common" name-ext)
 		        (path-join (getenv "objdir") "common" name-ext))))
-      (list "t-stringhelp"
-	    "t-timestuff"
-	    "t-convert"
-	    "t-percent"
-	    "t-gettime"
-	    "t-sysutils"
-	    "t-sexputil"
-	    "t-session-env"
-	    "t-openpgp-oid"
-	    "t-ssh-utils"
-	    "t-mapstrings"
-	    "t-zb32"
-	    "t-mbox-util"
-	    "t-iobuf"
-	    "t-strlist"
-	    "t-name-value"
-	    "t-ccparray"
-	    "t-recsel"
-	    "t-exechelp"
-	    "t-exectool"
-	    )))
+      `("t-stringhelp"
+	"t-timestuff"
+	"t-convert"
+	"t-percent"
+	"t-gettime"
+	"t-sysutils"
+	"t-sexputil"
+	"t-session-env"
+	"t-openpgp-oid"
+	"t-ssh-utils"
+	"t-mapstrings"
+	"t-zb32"
+	"t-mbox-util"
+	"t-iobuf"
+	"t-strlist"
+	"t-name-value"
+	"t-ccparray"
+	"t-recsel"
+	,@(if *win32*
+	      '("t-w32-reg"
+		"t-w32-cmdline")
+	      '("t-exechelp"
+		"t-exectool"))
+	)))

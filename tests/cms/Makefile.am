@@ -28,6 +28,8 @@ include $(top_srcdir)/am/cmacros.am
 
 AM_CFLAGS =
 
+GPGSM = ../../sm/gpgsm
+
 # Note that we need to use /bin/pwd so that we don't get into trouble
 # if the shell used for inittests would uses an internal version of
 # pwd which handles symlinks differently.
