@@ -27,9 +27,10 @@
    (parse-makefile-expand filename expander key))
 
  (map (lambda (name)
-	(test::binary #f
-		      (path-join "g10" name)
-		      (path-join (getenv "objdir") "g10" name)))
+        (let ((name-ext (string-append name (getenv "EXEEXT"))))
+	  (test::binary #f
+		        (path-join "g10" name-ext)
+		        (path-join (getenv "objdir") "g10" name-ext))))
       (parse-makefile-expand (in-srcdir "g10" "Makefile.am")
 			     (lambda (filename port key) (parse-makefile port key))
 			     "module_tests")))

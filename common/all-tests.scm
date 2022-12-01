@@ -19,9 +19,10 @@
  ;; XXX: Currently, the makefile parser does not understand this
  ;; Makefile.am, so we hardcode the list of tests here.
  (map (lambda (name)
-	(test::binary #f
-		      (path-join "common" name)
-		      (path-join (getenv "objdir") "common" name)))
+        (let ((name-ext (string-append name (getenv "EXEEXT"))))
+	  (test::binary #f
+		        (path-join "common" name-ext)
+		        (path-join (getenv "objdir") "common" name-ext))))
       (list "t-stringhelp"
 	    "t-timestuff"
 	    "t-convert"

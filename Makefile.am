@@ -218,7 +218,7 @@ TESTS_ENVIRONMENT = \
 .PHONY: check-all release sign-release
 check-all:
 	$(TESTS_ENVIRONMENT) \
-	  $(abs_top_builddir)/tests/gpgscm/gpgscm \
+	  $(abs_top_builddir)/tests/gpgscm/gpgscm$(EXEEXT) \
 	  $(abs_srcdir)/tests/run-tests.scm $(TESTFLAGS) $(TESTS)
 
 # Names of to help the release target.

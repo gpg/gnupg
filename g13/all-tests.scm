@@ -34,9 +34,10 @@
 			        "g13"))))
  (if g13-enabled?
      (map (lambda (name)
-	    (test::binary #f
-		          (path-join "g13" name)
-		          (path-join (getenv "objdir") "g13" name)))
+            (let ((name-ext (string-append name (getenv "EXEEXT"))))
+	      (test::binary #f
+		            (path-join "g13" name-ext)
+		            (path-join (getenv "objdir") "g13" name-ext))))
           (parse-makefile-expand (in-srcdir "g13" "Makefile.am")
 			         (lambda (filename port key) (parse-makefile port key))
 			         "module_tests"))
