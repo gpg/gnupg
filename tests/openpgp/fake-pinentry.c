@@ -201,7 +201,6 @@ main (int argc, char **argv)
 {
   char *args;
   char *option_user_data = NULL;
-  int got_environment_user_data;
   char *logfile;
   char *passphrasefile;
   char *passphrase;
@@ -213,7 +212,6 @@ main (int argc, char **argv)
   setvbuf (stdout, NULL, _IOLBF, BUFSIZ);
 
   args = getenv ("PINENTRY_USER_DATA");
-  got_environment_user_data = !!args;
   if (! args)
     args = "";
 
@@ -290,12 +288,7 @@ main (int argc, char **argv)
 	}
       else if (strncmp (buffer, OPT_USER_DATA, strlen (OPT_USER_DATA)) == 0)
         {
-          if (got_environment_user_data)
-            {
-              reply ("OK - I already got the data from the environment.\n");
-              continue;
-            }
-
+          /* Prefer interactive data to the one from environment variable.  */
           if (log_stream)
             fclose (log_stream);
           log_stream = NULL;
