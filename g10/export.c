@@ -2,6 +2,7 @@
  * Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004,
  *               2005, 2010 Free Software Foundation, Inc.
  * Copyright (C) 1998-2016  Werner Koch
+ * Copyright (C) 2022 g10 Code GmbH
  *
  * This file is part of GnuPG.
  *
@@ -139,6 +140,9 @@ parse_export_options(char *str,unsigned int *options,int noisy)
       {"backup", EXPORT_BACKUP, NULL,
        N_("use the GnuPG key backup format")},
       {"export-backup", EXPORT_BACKUP, NULL, NULL },
+
+      {"mode1003", EXPORT_MODE1003, NULL,
+       N_("export secret keys using the GnuPG format") },
 
       /* Aliases for backward compatibility */
       {"include-local-sigs",EXPORT_LOCAL_SIGS,NULL,NULL},
@@ -636,6 +640,183 @@ canon_pk_algo (enum gcry_pk_algos algo)
     case GCRY_PK_ECDH: return GCRY_PK_ECC;
     default: return algo;
     }
+}
+
+
+/* Take an s-expression wit the public and private key and change the
+ * parameter array in PK to include the secret parameters.  */
+static gpg_error_t
+secret_key_to_mode1003 (gcry_sexp_t s_key, PKT_public_key *pk)
+{
+  gpg_error_t err;
+  gcry_sexp_t list = NULL;
+  gcry_sexp_t l2;
+  enum gcry_pk_algos pk_algo;
+  struct seckey_info *ski;
+  int idx;
+  char *string;
+  size_t npkey, nskey;
+  gcry_mpi_t pub_params[10] = { NULL };
+
+  /* We look for a private-key, then the first element in it tells us
+     the type */
+  list = gcry_sexp_find_token (s_key, "protected-private-key", 0);
+  if (!list)
+    list = gcry_sexp_find_token (s_key, "private-key", 0);
+  if (!list)
+    {
+      err = gpg_error (GPG_ERR_BAD_SECKEY);
+      goto leave;
+    }
+
+  log_assert (!pk->seckey_info);
+
+  /* Parse the gcrypt PK algo and check that it is okay.  */
+  l2 = gcry_sexp_cadr (list);
+  if (!l2)
+    {
+      err = gpg_error (GPG_ERR_BAD_SECKEY);
+      goto leave;
+    }
+  gcry_sexp_release (list);
+  list = l2;
+  string = gcry_sexp_nth_string (list, 0);
+  if (!string)
+    {
+      err = gpg_error (GPG_ERR_BAD_SECKEY);
+      goto leave;
+    }
+  pk_algo = gcry_pk_map_name (string);
+  xfree (string); string = NULL;
+  if (gcry_pk_algo_info (pk_algo, GCRYCTL_GET_ALGO_NPKEY, NULL, &npkey)
+      || gcry_pk_algo_info (pk_algo, GCRYCTL_GET_ALGO_NSKEY, NULL, &nskey)
+      || !npkey || npkey >= nskey)
+    {
+      err = gpg_error (GPG_ERR_BAD_SECKEY);
+      goto leave;
+    }
+
+  /* Check that the pubkey algo and the received parameters matches
+   * those from the public key.  */
+  switch (canon_pk_algo (pk_algo))
+    {
+    case GCRY_PK_RSA:
+      if (!is_RSA (pk->pubkey_algo) || npkey != 2)
+        err = gpg_error (GPG_ERR_PUBKEY_ALGO);  /* Does not match.  */
+      else
+        err = gcry_sexp_extract_param (list, NULL, "ne",
+                                       &pub_params[0],
+                                       &pub_params[1],
+                                       NULL);
+      break;
+
+    case GCRY_PK_DSA:
+      if (!is_DSA (pk->pubkey_algo) || npkey != 4)
+        err = gpg_error (GPG_ERR_PUBKEY_ALGO);  /* Does not match.  */
+      else
+        err = gcry_sexp_extract_param (list, NULL, "pqgy",
+                                       &pub_params[0],
+                                       &pub_params[1],
+                                       &pub_params[2],
+                                       &pub_params[3],
+                                       NULL);
+      break;
+
+    case GCRY_PK_ELG:
+      if (!is_ELGAMAL (pk->pubkey_algo) || npkey != 3)
+        err = gpg_error (GPG_ERR_PUBKEY_ALGO);  /* Does not match.  */
+      else
+        err = gcry_sexp_extract_param (list, NULL, "pgy",
+                                       &pub_params[0],
+                                       &pub_params[1],
+                                       &pub_params[2],
+                                       NULL);
+      break;
+
+    case GCRY_PK_ECC:
+      err = 0;
+      if (!(pk->pubkey_algo == PUBKEY_ALGO_ECDSA
+            || pk->pubkey_algo == PUBKEY_ALGO_ECDH
+            || pk->pubkey_algo == PUBKEY_ALGO_EDDSA))
+        {
+          err = gpg_error (GPG_ERR_PUBKEY_ALGO);  /* Does not match.  */
+          goto leave;
+        }
+      npkey = 2;
+      if (pk->pubkey_algo == PUBKEY_ALGO_ECDH)
+        npkey++;
+      /* Dedicated check of the curve.  */
+      pub_params[0] = NULL;
+      err = match_curve_skey_pk (list, pk);
+      if (err)
+        goto leave;
+      /* ... and of the Q parameter.  */
+      err = sexp_extract_param_sos (list, "q", &pub_params[1]);
+      if (!err && (gcry_mpi_cmp (pk->pkey[1], pub_params[1])))
+        err = gpg_error (GPG_ERR_BAD_PUBKEY);
+      break;
+
+    default:
+      err = gpg_error (GPG_ERR_PUBKEY_ALGO);  /* Unknown.  */
+      break;
+    }
+  if (err)
+    goto leave;
+
+  nskey = npkey + 1;  /* We only have one skey param.  */
+  if (nskey > PUBKEY_MAX_NSKEY)
+    {
+      err = gpg_error (GPG_ERR_BAD_SECKEY);
+      goto leave;
+    }
+
+  /* Check that the public key parameters match.  For ECC we already
+   * did this in the switch above.  */
+  if (canon_pk_algo (pk_algo) != GCRY_PK_ECC)
+    {
+      for (idx=0; idx < npkey; idx++)
+        if (gcry_mpi_cmp (pk->pkey[idx], pub_params[idx]))
+          {
+            err = gpg_error (GPG_ERR_BAD_PUBKEY);
+            goto leave;
+          }
+    }
+
+  /* Store the maybe protected secret key as an s-expression.  */
+  pk->seckey_info = ski = xtrycalloc (1, sizeof *ski);
+  if (!ski)
+    {
+      err = gpg_error_from_syserror ();
+      goto leave;
+    }
+
+  pk->seckey_info = ski = xtrycalloc (1, sizeof *ski);
+  if (!ski)
+    {
+      err = gpg_error_from_syserror ();
+      goto leave;
+    }
+
+  ski->is_protected = 1;
+  ski->s2k.mode = 1003;
+
+  {
+    unsigned char *buf;
+    size_t buflen;
+
+    err = make_canon_sexp (s_key, &buf, &buflen);
+    if (err)
+      goto leave;
+    pk->pkey[npkey] = gcry_mpi_set_opaque (NULL, buf, buflen*8);
+    for (idx=npkey+1; idx < PUBKEY_MAX_NSKEY; idx++)
+      pk->pkey[idx] = NULL;
+  }
+
+ leave:
+  gcry_sexp_release (list);
+  for (idx=0; idx < DIM(pub_params); idx++)
+    gcry_mpi_release (pub_params[idx]);
+  return err;
 }
 
 
@@ -1248,6 +1429,11 @@ print_status_exported (PKT_public_key *pk)
  * passphrase-protected.  Otherwise, store secret key material in the
  * clear.
  *
+ * If MODE1003 is set, the key is requested in raw GnuPG format from
+ * the agent.  This usually does not require a passphrase unless the
+ * gpg-agent has not yet used the key and needs to convert it to its
+ * internal format first.
+ *
  * CACHE_NONCE_ADDR is used to share nonce for multiple key retrievals.
  *
  * If PK is NULL, the raw key is returned (e.g. for ssh export) at
@@ -1255,7 +1441,7 @@ print_status_exported (PKT_public_key *pk)
  */
 gpg_error_t
 receive_seckey_from_agent (ctrl_t ctrl, gcry_cipher_hd_t cipherhd,
-                           int cleartext,
+                           int cleartext, int mode1003,
                            char **cache_nonce_addr, const char *hexgrip,
                            PKT_public_key *pk, gcry_sexp_t *r_key)
 {
@@ -1275,7 +1461,7 @@ receive_seckey_from_agent (ctrl_t ctrl, gcry_cipher_hd_t cipherhd,
   if (pk)
     {
       prompt = gpg_format_keydesc (ctrl, pk, FORMAT_KEYDESC_EXPORT, 1);
-      err = agent_export_key (ctrl, hexgrip, prompt, !cleartext,
+      err = agent_export_key (ctrl, hexgrip, prompt, !cleartext, mode1003,
                               cache_nonce_addr,
                               &wrappedkey, &wrappedkeylen,
                               pk->keyid, pk->main_keyid, pk->pubkey_algo);
@@ -1283,7 +1469,7 @@ receive_seckey_from_agent (ctrl_t ctrl, gcry_cipher_hd_t cipherhd,
   else
     {
       prompt = gpg_format_keydesc (ctrl, NULL, FORMAT_KEYDESC_KEYGRIP, 1);
-      err = agent_export_key (ctrl, hexgrip, prompt, 0,
+      err = agent_export_key (ctrl, hexgrip, prompt, 0, 0,
                               NULL,
                               &wrappedkey, &wrappedkeylen,
                               NULL, NULL, 0);
@@ -1314,7 +1500,9 @@ receive_seckey_from_agent (ctrl_t ctrl, gcry_cipher_hd_t cipherhd,
   err = gcry_sexp_sscan (&s_skey, NULL, key, realkeylen);
   if (!err)
     {
-      if (pk && cleartext)
+      if (pk && mode1003)
+        err = secret_key_to_mode1003 (s_skey, pk);
+      else if (pk && cleartext)
         err = cleartext_secret_key_to_openpgp (s_skey, pk);
       else if (pk)
         err = transfer_format_to_openpgp (s_skey, pk);
@@ -1832,7 +2020,9 @@ do_export_one_keyblock (ctrl_t ctrl, kbnode_t keyblock, u32 *keyid,
           else if (!err)
             {
               err = receive_seckey_from_agent (ctrl, cipherhd,
-                                               cleartext, &cache_nonce,
+                                               cleartext,
+                                               !!(options & EXPORT_MODE1003),
+                                               &cache_nonce,
                                                hexgrip, pk, NULL);
               if (err)
                 {
@@ -2781,7 +2971,7 @@ export_secret_ssh_key (ctrl_t ctrl, const char *userid)
   if ((err = get_keywrap_key (ctrl, &cipherhd)))
     goto leave;
 
-  err = receive_seckey_from_agent (ctrl, cipherhd, 0, NULL, hexgrip, NULL,
+  err = receive_seckey_from_agent (ctrl, cipherhd, 0, 0, NULL, hexgrip, NULL,
                                    &skey);
   if (err)
     goto leave;

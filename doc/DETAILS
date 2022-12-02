@@ -1504,6 +1504,14 @@ CREATE TABLE signatures (
          - One octet with the length of the following serial number.
          - The serial number. Regardless of what the length octet
            indicates no more than 16 octets are stored.
+  - 3 :: The internal representation of a private key: For v4 keys we
+         first write 4 octets big endian length of the following
+         s-expression with the protected or unprotected private key;
+         for v5 keys this is not necessarily because that length
+         header is always there.  The actual data are N octets of
+         s-expression.  Any protection (including the real S2K) is
+         part of that data.  Note that the public key aparemters are
+         repeated in th s-expression.
 
   Note that gpg stores the GNU S2K Extension Number internally as an
   S2K Specifier with an offset of 1000.

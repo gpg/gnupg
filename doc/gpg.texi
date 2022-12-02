@@ -2721,6 +2721,16 @@ opposite meaning.  The options are:
   each record to allow diverting the records to the corresponding zone
   file.
 
+  @item mode1003
+  Enable the use of a new secret key export format.  This format
+  avoids the re-encryption as required with the current OpenPGP format
+  and also improves the security of the secret key if it has been
+  protected with a passphrase.  Note that an unprotected key is
+  exported as-is and thus not secure; the general rule to convey
+  secret keys in an OpenPGP encrypted file still applies with this
+  mode.  Versions of GnuPG before 2.4.0 are not able to import such a
+  secret file.
+
 @end table
 
 @item --with-colons

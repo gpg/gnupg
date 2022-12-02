@@ -431,7 +431,7 @@ gpg_error_t export_pubkey_buffer (ctrl_t ctrl, const char *keyspec,
                                   void **r_data, size_t *r_datalen);
 
 gpg_error_t receive_seckey_from_agent (ctrl_t ctrl, gcry_cipher_hd_t cipherhd,
-                                       int cleartext,
+                                       int cleartext, int mode1003,
                                        char **cache_nonce_addr,
                                        const char *hexgrip,
                                        PKT_public_key *pk, gcry_sexp_t *r_key);
