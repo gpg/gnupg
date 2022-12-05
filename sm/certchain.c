@@ -1246,7 +1246,22 @@ is_cert_still_valid (ctrl_t ctrl, int chain_model, int lm, estream_t fp,
       switch (gpg_err_code (err))
         {
         case GPG_ERR_CERT_REVOKED:
-          do_list (1, lm, fp, _("certificate has been revoked"));
+          if (!check_isotime (ctrl->revoked_at))
+            {
+              char *tmpstr;
+              const unsigned char *t = ctrl->revoked_at;
+
+              tmpstr = xtryasprintf ("%.4s-%.2s-%.2s %.2s:%.2s:%s (%s)",
+                                     t, t+4, t+6, t+9, t+11, t+13,
+                                     ctrl->revocation_reason?
+                                     ctrl->revocation_reason : "");
+
+              do_list (1, lm, fp, "%s: %s",
+                       _("certificate has been revoked"), tmpstr);
+              xfree (tmpstr);
+            }
+          else
+            do_list (1, lm, fp, _("certificate has been revoked"));
           *any_revoked = 1;
           /* Store that in the keybox so that key listings are able to
              return the revoked flag.  We don't care about error,
