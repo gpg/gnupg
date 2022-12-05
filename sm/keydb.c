@@ -2027,7 +2027,7 @@ keydb_set_cert_flags (ctrl_t ctrl, ksba_cert_t cert, int ephemeral,
   err = keydb_search_fpr (ctrl, kh, fpr);
   if (err)
     {
-      if (gpg_err_code (err) != gpg_error (GPG_ERR_NOT_FOUND))
+      if (gpg_err_code (err) != GPG_ERR_NOT_FOUND)
         log_error (_("problem re-searching certificate: %s\n"),
                    gpg_strerror (err));
       keydb_release (kh);
