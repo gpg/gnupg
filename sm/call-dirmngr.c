@@ -510,10 +510,10 @@ isvalid_status_cb (void *opaque, const char *line)
 
   Values for USE_OCSP:
      0 = Do CRL check.
-     1 = Do an OCSP check but fallback to CRL unless CRLS are disabled.
-     2 = Do only an OCSP check using only the default responder.
+     1 = Do an OCSP check but fallback to CRL unless CRLs are disabled.
+     2 = Do only an OCSP check (used for the chain model).
  */
-int
+gpg_error_t
 gpgsm_dirmngr_isvalid (ctrl_t ctrl,
                        ksba_cert_t cert, ksba_cert_t issuer_cert, int use_ocsp)
 {
@@ -563,9 +563,8 @@ gpgsm_dirmngr_isvalid (ctrl_t ctrl,
                          NULL, NULL, NULL, NULL, NULL, NULL);
       did_options = 1;
     }
-  snprintf (line, DIM(line), "ISVALID%s%s %s%s%s",
-            use_ocsp == 2 || opt.no_crl_check ? " --only-ocsp":"",
-            use_ocsp == 2? " --force-default-responder":"",
+  snprintf (line, DIM(line), "ISVALID%s %s%s%s",
+            (use_ocsp == 2 || opt.no_crl_check) ? " --only-ocsp":"",
             certid,
             use_ocsp? " ":"",
             use_ocsp? certfpr:"");

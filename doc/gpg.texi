@@ -1341,7 +1341,7 @@ Assume "no" on most questions.  Should not be used in an option file.
 @item --list-filter @{select=@var{expr}@}
 @opindex list-filter
 A list filter can be used to output only certain keys during key
-listsin command. For the availbale property names, see the description
+listing commands. For the available property names, see the description
 of @option{--import-filter}.
 
 

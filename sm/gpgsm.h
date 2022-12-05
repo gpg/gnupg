@@ -494,9 +494,9 @@ gpg_error_t gpgsm_agent_export_key (ctrl_t ctrl, const char *keygrip,
                                     size_t *r_resultlen);
 
 /*-- call-dirmngr.c --*/
-int gpgsm_dirmngr_isvalid (ctrl_t ctrl,
-                           ksba_cert_t cert, ksba_cert_t issuer_cert,
-                           int use_ocsp);
+gpg_error_t gpgsm_dirmngr_isvalid (ctrl_t ctrl,
+                                   ksba_cert_t cert, ksba_cert_t issuer_cert,
+                                   int use_ocsp);
 int gpgsm_dirmngr_lookup (ctrl_t ctrl, strlist_t names, const char *uri,
                           int cache_only,
                           void (*cb)(void*, ksba_cert_t), void *cb_value);
