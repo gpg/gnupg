@@ -2228,6 +2228,8 @@ gpgsm_init_default_ctrl (struct server_control_s *ctrl)
   ctrl->use_ocsp = opt.enable_ocsp;
   ctrl->validation_model = default_validation_model;
   ctrl->offline = opt.disable_dirmngr;
+  ctrl->revoked_at[0] = 0;
+  ctrl->revocation_reason = NULL;
 }
 
 
@@ -2237,6 +2239,8 @@ void
 gpgsm_deinit_default_ctrl (ctrl_t ctrl)
 {
   gpgsm_keydb_deinit_session_data (ctrl);
+  xfree (ctrl->revocation_reason);
+  ctrl->revocation_reason = NULL;
 }
 
 

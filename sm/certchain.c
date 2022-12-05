@@ -1193,6 +1193,8 @@ is_cert_still_valid (ctrl_t ctrl, int chain_model, int lm, estream_t fp,
                      int *any_revoked, int *any_no_crl, int *any_crl_too_old)
 {
   gpg_error_t err;
+  gnupg_isotime_t revoked_at;
+  char *reason;
 
   if (ctrl->offline || (opt.no_crl_check && !ctrl->use_ocsp))
     {
@@ -1221,7 +1223,20 @@ is_cert_still_valid (ctrl_t ctrl, int chain_model, int lm, estream_t fp,
 
   err = gpgsm_dirmngr_isvalid (ctrl,
                                subject_cert, issuer_cert,
-                               chain_model? 2 : !!ctrl->use_ocsp);
+                               chain_model? 2 : !!ctrl->use_ocsp,
+                               revoked_at, &reason);
+  if (gpg_err_code (err) == GPG_ERR_CERT_REVOKED)
+    {
+      gnupg_copy_time (ctrl->revoked_at, revoked_at);
+      xfree (ctrl->revocation_reason);
+      ctrl->revocation_reason = reason;
+      reason = NULL;
+    }
+  else
+    {
+      xfree (reason);
+      reason = (NULL);
+    }
   audit_log_ok (ctrl->audit, AUDIT_CRL_CHECK, err);
 
   if (err)

@@ -1201,6 +1201,15 @@ list_cert_raw (ctrl_t ctrl, KEYDB_HANDLE hd,
     {
       err = gpgsm_validate_chain (ctrl, cert,
                                   GNUPG_ISOTIME_NONE, NULL, 1, fp, 0, NULL);
+      if (gpg_err_code (err) == GPG_ERR_CERT_REVOKED
+          && !check_isotime (ctrl->revoked_at))
+        {
+          es_fputs ("      revoked: ", fp);
+          gpgsm_print_time (fp, ctrl->revoked_at);
+          if (ctrl->revocation_reason)
+            es_fprintf (fp, " (%s)", ctrl->revocation_reason);
+          es_putc ('\n', fp);
+        }
       if (!err)
         es_fprintf (fp, "  [certificate is good]\n");
       else
@@ -1451,6 +1460,15 @@ list_cert_std (ctrl_t ctrl, ksba_cert_t cert, estream_t fp, int have_secret,
 
       err = gpgsm_validate_chain (ctrl, cert,
                                   GNUPG_ISOTIME_NONE, NULL, 1, fp, 0, NULL);
+      if (gpg_err_code (err) == GPG_ERR_CERT_REVOKED
+          && !check_isotime (ctrl->revoked_at))
+        {
+          es_fputs ("      revoked: ", fp);
+          gpgsm_print_time (fp, ctrl->revoked_at);
+          if (ctrl->revocation_reason)
+            es_fprintf (fp, " (%s)", ctrl->revocation_reason);
+          es_putc ('\n', fp);
+        }
       tmperr = ksba_cert_get_user_data (cert, "is_qualified",
                                         &buffer, sizeof (buffer), &buflen);
       if (!tmperr && buflen)

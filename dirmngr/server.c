@@ -1310,6 +1310,9 @@ cmd_isvalid (assuan_context_t ctx, char *line)
  again:
   if (ocsp_mode)
     {
+      gnupg_isotime_t revoked_at;
+      const char *reason;
+
       /* Note, that we currently ignore the supplied fingerprint FPR;
        * instead ocsp_isvalid does an inquire to ask for the cert.
        * The fingerprint may eventually be used to lookup the
@@ -1317,7 +1320,12 @@ cmd_isvalid (assuan_context_t ctx, char *line)
       if (!opt.allow_ocsp)
         err = gpg_error (GPG_ERR_NOT_SUPPORTED);
       else
-        err = ocsp_isvalid (ctrl, NULL, NULL, force_default_responder);
+        err = ocsp_isvalid (ctrl, NULL, NULL, force_default_responder,
+                            revoked_at, &reason);
+
+      if (gpg_err_code (err) == GPG_ERR_CERT_REVOKED)
+        dirmngr_status_printf (ctrl, "REVOCATIONINFO", "%s %s",
+                               revoked_at, reason);
 
       if (gpg_err_code (err) == GPG_ERR_CONFIGURATION
           && gpg_err_source (err) == GPG_ERR_SOURCE_DIRMNGR)
@@ -1512,6 +1520,8 @@ cmd_checkocsp (assuan_context_t ctx, char *line)
   unsigned char fprbuffer[20], *fpr;
   ksba_cert_t cert;
   int force_default_responder;
+  gnupg_isotime_t revoked_at;
+  const char *reason;
 
   force_default_responder = has_option (line, "--force-default-responder");
   line = skip_options (line);
@@ -1547,12 +1557,18 @@ cmd_checkocsp (assuan_context_t ctx, char *line)
         goto leave;
     }
 
-  assert (cert);
+  log_assert (cert);
 
   if (!opt.allow_ocsp)
     err = gpg_error (GPG_ERR_NOT_SUPPORTED);
   else
-    err = ocsp_isvalid (ctrl, cert, NULL, force_default_responder);
+    err = ocsp_isvalid (ctrl, cert, NULL, force_default_responder,
+                        revoked_at, &reason);
+
+  if (gpg_err_code (err) == GPG_ERR_CERT_REVOKED)
+    dirmngr_status_printf (ctrl, "REVOCATIONINFO", "%s %s",
+                           revoked_at, reason);
+
 
  leave:
   ksba_cert_release (cert);
