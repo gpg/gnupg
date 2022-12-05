@@ -802,9 +802,10 @@ convert_from_openpgp_main (ctrl_t ctrl, gcry_sexp_t s_pgp, int dontcare_exist,
   if (!list)
     goto bad_seckey;
   value = gcry_sexp_nth_data (list, 1, &valuelen);
-  if (!value || valuelen != 1 || !(value[0] == '3' || value[0] == '4'))
+  if (!value || valuelen != 1
+      || !(value[0] == '3' || value[0] == '4' || value[0] == '5'))
     goto bad_seckey;
-  is_v4 = (value[0] == '4');
+  is_v4 = (value[0] == '4' || value[0] == '5');
 
   gcry_sexp_release (list);
   list = gcry_sexp_find_token (top_list, "protection", 0);
@@ -948,7 +949,7 @@ convert_from_openpgp_main (ctrl_t ctrl, gcry_sexp_t s_pgp, int dontcare_exist,
   gcry_sexp_release (top_list); top_list = NULL;
 
 #if 0
-  log_debug ("XXX is_v4=%d\n", is_v4);
+  log_debug ("XXX is v4_or_later=%d\n", is_v4);
   log_debug ("XXX pubkey_algo=%d\n", pubkey_algo);
   log_debug ("XXX is_protected=%d\n", is_protected);
   log_debug ("XXX protect_algo=%d\n", protect_algo);

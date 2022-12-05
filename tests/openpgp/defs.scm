@@ -146,6 +146,9 @@
   (gpg-conf' "" args))
 (define (gpg-conf' input args)
   (let ((s (call-popen `(,(tool-hardcoded 'gpgconf)
+			 ,@(if *win32*
+			       (list '--build-prefix (getenv "objdir"))
+			       '())
 			 ,@args) input)))
     (map (lambda (line) (map percent-decode (string-split line #\:)))
 	 (string-split-newlines s))))

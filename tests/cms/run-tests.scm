@@ -28,6 +28,7 @@
 (define setup
   (make-environment-cache (test::scm
 			   #f
+			   #f
 			   (path-join "tests" "cms" "setup.scm")
 			   (in-srcdir "tests" "cms" "setup.scm"))))
 
@@ -35,5 +36,6 @@
 	       (load-tests "tests" "cms")
 	       (map (lambda (name)
 		      (test::scm setup
+			         #f
 				 (path-join "tests" "cms" name)
 				 (in-srcdir "tests" "cms" name))) tests)))

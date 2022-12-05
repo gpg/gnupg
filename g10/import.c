@@ -1430,7 +1430,8 @@ check_prefs (ctrl_t ctrl, kbnode_t keyblock)
 }
 
 
-/* Helper for apply_*_filter in import.c and export.c.  */
+/* Helper for apply_*_filter in import.c and export.c and also used by
+ * keylist.c.  */
 const char *
 impex_filter_getval (void *cookie, const char *propname)
 {
@@ -1440,11 +1441,32 @@ impex_filter_getval (void *cookie, const char *propname)
   kbnode_t node = parm->node;
   static char numbuf[20];
   const char *result;
+  const char *s;
+  enum { scpNone = 0, scpPub, scpSub, scpUid, scpSig} scope = 0;
 
   log_assert (ctrl && ctrl->magic == SERVER_CONTROL_MAGIC);
 
-  if (node->pkt->pkttype == PKT_USER_ID
-      || node->pkt->pkttype == PKT_ATTRIBUTE)
+  /* We allow a prefix delimited by a slash to limit the scope of the
+   * keyword.  Note that "pub" also includes "sec" and "sub" includes
+   * "ssb".  */
+  if ((s=strchr (propname, '/')) && s != propname)
+    {
+      size_t n = s - propname;
+      if (!strncmp (propname, "pub", n))
+        scope = scpPub;
+      else if (!strncmp (propname, "sub", n))
+        scope = scpSub;
+      else if (!strncmp (propname, "uid", n))
+        scope = scpUid;
+      else if (!strncmp (propname, "sig", n))
+        scope = scpSig;
+
+      propname = s + 1;
+    }
+
+  if ((node->pkt->pkttype == PKT_USER_ID
+       || node->pkt->pkttype == PKT_ATTRIBUTE)
+      && (!scope || scope == scpUid))
     {
       PKT_user_id *uid = node->pkt->pkt.user_id;
 
@@ -1473,7 +1495,8 @@ impex_filter_getval (void *cookie, const char *propname)
       else
         result = NULL;
     }
-  else if (node->pkt->pkttype == PKT_SIGNATURE)
+  else if (node->pkt->pkttype == PKT_SIGNATURE
+           && (!scope || scope == scpSig))
     {
       PKT_signature *sig = node->pkt->pkt.signature;
 
@@ -1503,10 +1526,12 @@ impex_filter_getval (void *cookie, const char *propname)
       else
         result = NULL;
     }
-  else if (node->pkt->pkttype == PKT_PUBLIC_KEY
-           || node->pkt->pkttype == PKT_SECRET_KEY
-           || node->pkt->pkttype == PKT_PUBLIC_SUBKEY
-           || node->pkt->pkttype == PKT_SECRET_SUBKEY)
+  else if (((node->pkt->pkttype == PKT_PUBLIC_KEY
+             || node->pkt->pkttype == PKT_SECRET_KEY)
+            && (!scope || scope == scpPub))
+           || ((node->pkt->pkttype == PKT_PUBLIC_SUBKEY
+                || node->pkt->pkttype == PKT_SECRET_SUBKEY)
+               && (!scope || scope == scpSub)))
     {
       PKT_public_key *pk = node->pkt->pkt.public_key;
 
@@ -1519,6 +1544,16 @@ impex_filter_getval (void *cookie, const char *propname)
         {
           snprintf (numbuf, sizeof numbuf, "%d", pk->pubkey_algo);
           result = numbuf;
+        }
+      else if (!strcmp (propname, "key_size"))
+        {
+          snprintf (numbuf, sizeof numbuf, "%u", nbits_from_pk (pk));
+          result = numbuf;
+        }
+      else if (!strcmp (propname, "algostr"))
+        {
+          pubkey_string (pk, parm->hexfpr, sizeof parm->hexfpr);
+          result = parm->hexfpr;
         }
       else if (!strcmp (propname, "key_created"))
         {
@@ -1555,6 +1590,26 @@ impex_filter_getval (void *cookie, const char *propname)
         {
           hexfingerprint (pk, parm->hexfpr, sizeof parm->hexfpr);
           result = parm->hexfpr;
+        }
+      else if (!strcmp (propname, "origin"))
+        {
+          result = key_origin_string (pk->keyorg);
+        }
+      else if (!strcmp (propname, "lastupd"))
+        {
+          snprintf (numbuf, sizeof numbuf, "%lu", (ulong)pk->keyupdate);
+          result = numbuf;
+        }
+      else if (!strcmp (propname, "url"))
+        {
+          if (pk->updateurl && *pk->updateurl)
+            {
+              /* Fixme: This might get truncated.  */
+              mem2str (parm->hexfpr, pk->updateurl, sizeof parm->hexfpr);
+              result = parm->hexfpr;
+            }
+          else
+            result = "";
         }
       else
         result = NULL;

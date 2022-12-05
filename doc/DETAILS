@@ -1504,6 +1504,14 @@ CREATE TABLE signatures (
          - One octet with the length of the following serial number.
          - The serial number. Regardless of what the length octet
            indicates no more than 16 octets are stored.
+  - 3 :: The internal representation of a private key: For v4 keys we
+         first write 4 octets big endian length of the following
+         s-expression with the protected or unprotected private key;
+         for v5 keys this is not necessarily because that length
+         header is always there.  The actual data are N octets of
+         s-expression.  Any protection (including the real S2K) is
+         part of that data.  Note that the public key aparemters are
+         repeated in th s-expression.
 
   Note that gpg stores the GNU S2K Extension Number internally as an
   S2K Specifier with an offset of 1000.
@@ -1694,6 +1702,10 @@ Description of some debug flags:
   - RFC-6337 :: ECC in OpenPGP
   - RFC-7292 :: PKCS #12: Personal Information Exchange Syntax v1.1
   - RFC-8351 :: The PKCS #8 EncryptedPrivateKeyInfo Media Type
+  - RFC-8550 :: S/MIME Version 4.0 Certificate Handling
+  - RFC-8551 :: S/MIME Version 4.0 Message Specification
+  - RFC-2634 :: Enhanced Security Services for S/MIME
+  - RFC-5035 :: Enhanced Security Services (ESS) Update
 
   - draft-koch-openpgp-2015-rfc4880bis :: Updates to RFC-4880
 

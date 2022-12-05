@@ -19,27 +19,31 @@
  ;; XXX: Currently, the makefile parser does not understand this
  ;; Makefile.am, so we hardcode the list of tests here.
  (map (lambda (name)
-	(test::binary #f
-		      (path-join "common" name)
-		      (path-join (getenv "objdir") "common" name)))
-      (list "t-stringhelp"
-	    "t-timestuff"
-	    "t-convert"
-	    "t-percent"
-	    "t-gettime"
-	    "t-sysutils"
-	    "t-sexputil"
-	    "t-session-env"
-	    "t-openpgp-oid"
-	    "t-ssh-utils"
-	    "t-mapstrings"
-	    "t-zb32"
-	    "t-mbox-util"
-	    "t-iobuf"
-	    "t-strlist"
-	    "t-name-value"
-	    "t-ccparray"
-	    "t-recsel"
-	    "t-exechelp"
-	    "t-exectool"
-	    )))
+        (let ((name-ext (string-append name (getenv "EXEEXT"))))
+	  (test::binary #f
+		        (path-join "common" name-ext)
+		        (path-join (getenv "objdir") "common" name-ext))))
+      `("t-stringhelp"
+	"t-timestuff"
+	"t-convert"
+	"t-percent"
+	"t-gettime"
+	"t-sysutils"
+	"t-sexputil"
+	"t-session-env"
+	"t-openpgp-oid"
+	"t-ssh-utils"
+	"t-mapstrings"
+	"t-zb32"
+	"t-mbox-util"
+	"t-iobuf"
+	"t-strlist"
+	"t-name-value"
+	"t-ccparray"
+	"t-recsel"
+	,@(if *win32*
+	      '("t-w32-reg"
+		"t-w32-cmdline")
+	      '("t-exechelp"
+		"t-exectool"))
+	)))

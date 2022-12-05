@@ -5286,8 +5286,8 @@ card_store_key_with_backup (ctrl_t ctrl, PKT_public_key *sub_psk,
       goto leave;
     }
 
-  err = receive_seckey_from_agent (ctrl, cipherhd, 0,
-                                   &cache_nonce, hexgrip, sk);
+  err = receive_seckey_from_agent (ctrl, cipherhd, 0, 0,
+                                   &cache_nonce, hexgrip, sk, NULL);
   if (err)
     {
       log_error ("error getting secret key from agent: %s\n",

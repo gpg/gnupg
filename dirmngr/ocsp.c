@@ -504,8 +504,11 @@ check_signature_core (ctrl_t ctrl, ksba_cert_t cert, gcry_sexp_t s_sig,
       goto leave;
     }
 
-  gcry_log_debugsxp ("sig ", s_sig);
-  gcry_log_debugsxp ("hash", s_hash);
+  if (DBG_CRYPTO)
+    {
+      gcry_log_debugsxp ("sig ", s_sig);
+      gcry_log_debugsxp ("hash", s_hash);
+    }
 
   err = gcry_pk_verify (s_sig, s_hash, s_pkey);
   if (err)

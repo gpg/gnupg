@@ -2752,11 +2752,15 @@ parse_key (IOBUF inp, int pkttype, unsigned long pktlen,
 		  break;
 		case 1001:
 		  if (list_mode)
-		    es_fprintf (listfp, "\tgnu-dummy S2K");
+		    es_fprintf (listfp, "\tgnu-dummy");
 		  break;
 		case 1002:
 		  if (list_mode)
-		    es_fprintf (listfp, "\tgnu-divert-to-card S2K");
+		    es_fprintf (listfp, "\tgnu-divert-to-card");
+		  break;
+		case 1003:
+		  if (list_mode)
+		    es_fprintf (listfp, "\tgnu-mode1003");
 		  break;
 		default:
 		  if (list_mode)
@@ -2768,7 +2772,7 @@ parse_key (IOBUF inp, int pkttype, unsigned long pktlen,
 		}
 
               /* Print some info.  */
-	      if (list_mode)
+	      if (list_mode && ski->s2k.mode != 1003)
 		{
 		  es_fprintf (listfp, ", algo: %d,%s hash: %d",
                               ski->algo,
@@ -2779,8 +2783,9 @@ parse_key (IOBUF inp, int pkttype, unsigned long pktlen,
 		      es_fprintf (listfp, ", salt: ");
                       es_write_hexstring (listfp, ski->s2k.salt, 8, 0, NULL);
 		    }
-		  es_putc ('\n', listfp);
-		}
+                }
+              if (list_mode)
+                es_putc ('\n', listfp);
 
               /* Read remaining protection parameters.  */
 	      if (ski->s2k.mode == 3)
@@ -2838,7 +2843,7 @@ parse_key (IOBUF inp, int pkttype, unsigned long pktlen,
 	  ski->ivlen = openpgp_cipher_blocklen (ski->algo);
 	  log_assert (ski->ivlen <= sizeof (temp));
 
-	  if (ski->s2k.mode == 1001)
+	  if (ski->s2k.mode == 1001 || ski->s2k.mode == 1003)
 	    ski->ivlen = 0;
 	  else if (ski->s2k.mode == 1002)
 	    ski->ivlen = snlen < 16 ? snlen : 16;
@@ -2850,7 +2855,7 @@ parse_key (IOBUF inp, int pkttype, unsigned long pktlen,
 	    }
 	  for (i = 0; i < ski->ivlen; i++, pktlen--)
 	    temp[i] = iobuf_get_noeof (inp);
-	  if (list_mode)
+	  if (list_mode && ski->s2k.mode != 1003)
 	    {
 	      es_fprintf (listfp,
                           ski->s2k.mode == 1002 ? "\tserial-number: "
@@ -2887,6 +2892,35 @@ parse_key (IOBUF inp, int pkttype, unsigned long pktlen,
 						 xstrdup ("dummydata"),
 						 10 * 8);
 	  pktlen = 0;
+	}
+      else if (ski->s2k.mode == 1003)
+	{
+          void *tmpp;
+
+	  if (pktlen < 2) /* At least two bytes for parenthesis.  */
+	    {
+              err = gpg_error (GPG_ERR_INV_PACKET);
+	      goto leave;
+	    }
+
+          tmpp = read_rest (inp, pktlen);
+          if (list_mode)
+            {
+              if (mpi_print_mode)
+                {
+                  char *tmpsxp = canon_sexp_to_string (tmpp, pktlen);
+                  es_fprintf (listfp, "\tskey[%d]: %s\n", npkey,
+                              tmpsxp? trim_trailing_spaces (tmpsxp)
+                              /*  */: "[invalid S-expression]");
+                  xfree (tmpsxp);
+                }
+              else
+                es_fprintf (listfp, "\tskey[%d]: [s-expression %lu octets]\n",
+                            npkey, pktlen);
+            }
+	  pk->pkey[npkey] = gcry_mpi_set_opaque (NULL,
+						 tmpp, tmpp? pktlen * 8 : 0);
+          pktlen = 0;
 	}
       else if (ski->is_protected)
 	{

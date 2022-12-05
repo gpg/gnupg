@@ -327,6 +327,7 @@ enum cmd_and_opt_values
     oExportOptions,
     oExportFilter,
     oListOptions,
+    oListFilter,
     oVerifyOptions,
     oTempDir,
     oExecPath,
@@ -794,6 +795,7 @@ static gpgrt_opt_t opts[] = {
   ARGPARSE_header ("Keylist", N_("Options controlling key listings")),
 
   ARGPARSE_s_s (oListOptions,   "list-options", "@"),
+  ARGPARSE_s_s (oListFilter,    "list-filter", "@"),
   ARGPARSE_s_n (oFullTimestrings, "full-timestrings", "@"),
   ARGPARSE_s_n (oShowPhotos,   "show-photos", "@"),
   ARGPARSE_s_n (oNoShowPhotos, "no-show-photos", "@"),
@@ -3354,6 +3356,11 @@ main (int argc, char **argv)
 	    break;
 	  case oExportFilter:
 	    rc = parse_and_set_export_filter (pargs.r.ret_str);
+	    if (rc)
+              log_error (_("invalid filter option: %s\n"), gpg_strerror (rc));
+	    break;
+	  case oListFilter:
+	    rc = parse_and_set_list_filter (pargs.r.ret_str);
 	    if (rc)
               log_error (_("invalid filter option: %s\n"), gpg_strerror (rc));
 	    break;

@@ -28,13 +28,15 @@ include $(top_srcdir)/am/cmacros.am
 
 AM_CFLAGS =
 
+GPGSM = ../../sm/gpgsm
+
 # Note that we need to use /bin/pwd so that we don't get into trouble
 # if the shell used for inittests would uses an internal version of
 # pwd which handles symlinks differently.
 OLD_TESTS_ENVIRONMENT = GNUPGHOME=`/bin/pwd` GPG_AGENT_INFO= LC_ALL=C \
                         GNUPG_BUILD_ROOT="$(abs_top_builddir)" \
 			GNUPG_IN_TEST_SUITE=fact \
-	                GPGSM="$(GPGSM)" "$(srcdir)/runtest"
+	                GPGSM="$(GPGSM)$(EXEEXT)" "$(srcdir)/runtest"
 
 TESTS_ENVIRONMENT = LC_ALL=C \
 	EXEEXT=$(EXEEXT) \

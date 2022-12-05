@@ -674,7 +674,8 @@ do_key (iobuf_t out, int ctb, PKT_public_key *pk)
                 count += 8;   /* Salt.  */
               if (ski->s2k.mode == 3)
                 count++;      /* S2K.COUNT */
-              if (ski->s2k.mode != 1001 && ski->s2k.mode != 1002)
+              if (ski->s2k.mode != 1001 && ski->s2k.mode != 1002
+                   && ski->s2k.mode != 1003)
                 count += ski->ivlen;
 
               iobuf_put (a, count);
@@ -704,8 +705,9 @@ do_key (iobuf_t out, int ctb, PKT_public_key *pk)
           if (ski->s2k.mode == 3)
             iobuf_put (a, ski->s2k.count);
 
-          /* For our special modes 1001, 1002 we do not need an IV. */
-          if (ski->s2k.mode != 1001 && ski->s2k.mode != 1002)
+          /* For our special modes 1001..1003 we do not need an IV. */
+          if (ski->s2k.mode != 1001 && ski->s2k.mode != 1002
+               && ski->s2k.mode != 1003)
             iobuf_write (a, ski->iv, ski->ivlen);
 
         }
@@ -732,6 +734,22 @@ do_key (iobuf_t out, int ctb, PKT_public_key *pk)
           iobuf_put (a, ski->ivlen );
           /* The serial number gets stored in the IV field.  */
           iobuf_write (a, ski->iv, ski->ivlen);
+        }
+      else if (ski->s2k.mode == 1003)
+        {
+          /* GnuPG extension - Store raw s-expression. */
+          byte *p;
+          unsigned int ndatabits;
+
+          log_assert (gcry_mpi_get_flag (pk->pkey[npkey], GCRYMPI_FLAG_OPAQUE));
+
+          p = gcry_mpi_get_opaque (pk->pkey[npkey], &ndatabits);
+          /* For v5 keys we first write the number of octets of the
+           * following key material.  */
+          if (is_v5)
+            write_32 (a, p? (ndatabits+7)/8 : 0);
+          if (p)
+            iobuf_write (a, p, (ndatabits+7)/8 );
         }
       else if (ski->is_protected)
         {

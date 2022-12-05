@@ -609,7 +609,7 @@ gnupg_tmpfile (void)
   char *name, *p;
   HANDLE file;
   int pid = GetCurrentProcessId ();
-  unsigned int value;
+  unsigned int value = 0;
   int i;
   SECURITY_ATTRIBUTES sec_attr;
 
@@ -634,12 +634,9 @@ gnupg_tmpfile (void)
   for (attempts=0; attempts < 10; attempts++)
     {
       p = name;
-      value = (GetTickCount () ^ ((pid<<16) & 0xffff0000));
+      value += (GetTickCount () ^ ((pid<<16) & 0xffff0000));
       for (i=0; i < 8; i++)
-        {
-          *p++ = tohex (((value >> 28) & 0x0f));
-          value <<= 4;
-        }
+	*p++ = tohex (((value >> (7 - i)*4) & 0x0f));
       strcpy (p, ".tmp");
       file = CreateFile (buffer,
                          GENERIC_READ | GENERIC_WRITE,
@@ -1195,19 +1192,28 @@ gnupg_unsetenv (const char *name)
 #else /*!HAVE_UNSETENV*/
   {
     char *buf;
+    int r;
 
     if (!name)
       {
         gpg_err_set_errno (EINVAL);
         return -1;
       }
-    buf = xtrystrdup (name);
+    buf = strconcat (name, "=", NULL);
     if (!buf)
       return -1;
+
+    r = putenv (buf);
+# ifdef HAVE_W32_SYSTEM
+    /* For Microsoft implementation, we can free the memory in this
+       use case.  */
+    xfree (buf);
+# else
 #  if __GNUC__
 #   warning no unsetenv - trying putenv but leaking memory.
 #  endif
-    return putenv (buf);
+# endif
+    return r;
   }
 #endif /*!HAVE_UNSETENV*/
 }

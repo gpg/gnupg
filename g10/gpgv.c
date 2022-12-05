@@ -812,3 +812,11 @@ get_revocation_reason (PKT_signature *sig, char **r_reason,
     *r_comment = NULL;
   return 0;
 }
+
+const char *
+impex_filter_getval (void *cookie, const char *propname)
+{
+  (void)cookie;
+  (void)propname;
+  return NULL;
+}

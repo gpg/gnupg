@@ -2997,13 +2997,15 @@ agent_import_key (ctrl_t ctrl, const char *desc, char **cache_nonce_addr,
    keygrip, DESC a prompt to be displayed with the agent's passphrase
    question (needs to be plus+percent escaped).  if OPENPGP_PROTECTED
    is not zero, ensure that the key material is returned in RFC
-   4880-compatible passphrased-protected form.  If CACHE_NONCE_ADDR is
-   not NULL the agent is advised to first try a passphrase associated
-   with that nonce.  On success the key is stored as a canonical
-   S-expression at R_RESULT and R_RESULTLEN.  */
+   4880-compatible passphrased-protected form; if instead MODE1003 is
+   not zero the raw gpg-agent private key format is requested (either
+   protected or unprotected).  If CACHE_NONCE_ADDR is not NULL the
+   agent is advised to first try a passphrase associated with that
+   nonce.  On success the key is stored as a canonical S-expression at
+   R_RESULT and R_RESULTLEN.  */
 gpg_error_t
 agent_export_key (ctrl_t ctrl, const char *hexkeygrip, const char *desc,
-                  int openpgp_protected, char **cache_nonce_addr,
+                  int openpgp_protected, int mode1003, char **cache_nonce_addr,
                   unsigned char **r_result, size_t *r_resultlen,
 		  u32 *keyid, u32 *mainkeyid, int pubkey_algo)
 {
@@ -3028,6 +3030,12 @@ agent_export_key (ctrl_t ctrl, const char *hexkeygrip, const char *desc,
     return err;
   dfltparm.ctx = agent_ctx;
 
+  /* Check that the gpg-agent supports the --mode1003 option.  */
+  if (mode1003 && assuan_transact (agent_ctx,
+                                   "GETINFO cmd_has_option EXPORT_KEY mode1003",
+                                   NULL, NULL, NULL, NULL, NULL, NULL))
+    return gpg_error (GPG_ERR_NOT_SUPPORTED);
+
   if (desc)
     {
       snprintf (line, DIM(line), "SETKEYDESC %s", desc);
@@ -3038,7 +3046,7 @@ agent_export_key (ctrl_t ctrl, const char *hexkeygrip, const char *desc,
     }
 
   snprintf (line, DIM(line), "EXPORT_KEY %s%s%s %s",
-            openpgp_protected ? "--openpgp ":"",
+            mode1003? "--mode1003" : openpgp_protected ? "--openpgp ":"",
             cache_nonce_addr && *cache_nonce_addr? "--cache-nonce=":"",
             cache_nonce_addr && *cache_nonce_addr? *cache_nonce_addr:"",
             hexkeygrip);

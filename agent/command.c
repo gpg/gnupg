@@ -2935,7 +2935,7 @@ cmd_import_key (assuan_context_t ctx, char *line)
 
 
 static const char hlp_export_key[] =
-  "EXPORT_KEY [--cache-nonce=<nonce>] [--openpgp] <hexstring_with_keygrip>\n"
+  "EXPORT_KEY [--cache-nonce=<nonce>] [--openpgp|--mode1003] <hexkeygrip>\n"
   "\n"
   "Export a secret key from the key store.  The key will be encrypted\n"
   "using the current session's key wrapping key (cf. command KEYWRAP_KEY)\n"
@@ -2943,9 +2943,10 @@ static const char hlp_export_key[] =
   "prior to using this command.  The function takes the keygrip as argument.\n"
   "\n"
   "If --openpgp is used, the secret key material will be exported in RFC 4880\n"
-  "compatible passphrase-protected form.  Without --openpgp, the secret key\n"
-  "material will be exported in the clear (after prompting the user to unlock\n"
-  "it, if needed).\n";
+  "compatible passphrase-protected form.  If --mode1003 is use the secret key\n"
+  "is exported as s-expression as storred locally.  Without those options,\n"
+  "the secret key material will be exported in the clear (after prompting\n"
+  "the user to unlock it, if needed).\n";
 static gpg_error_t
 cmd_export_key (assuan_context_t ctx, char *line)
 {
@@ -2958,7 +2959,7 @@ cmd_export_key (assuan_context_t ctx, char *line)
   gcry_cipher_hd_t cipherhd = NULL;
   unsigned char *wrappedkey = NULL;
   size_t wrappedkeylen;
-  int openpgp;
+  int openpgp, mode1003;
   char *cache_nonce;
   char *passphrase = NULL;
   unsigned char *shadow_info = NULL;
@@ -2969,6 +2970,10 @@ cmd_export_key (assuan_context_t ctx, char *line)
     return leave_cmd (ctx, gpg_error (GPG_ERR_FORBIDDEN));
 
   openpgp = has_option (line, "--openpgp");
+  mode1003 = has_option (line, "--mode1003");
+  if (mode1003)
+    openpgp = 0;
+
   cache_nonce = option_value (line, "--cache-nonce");
   if (cache_nonce)
     {
@@ -3003,11 +3008,17 @@ cmd_export_key (assuan_context_t ctx, char *line)
     }
 
   /* Get the key from the file.  With the openpgp flag we also ask for
-     the passphrase so that we can use it to re-encrypt it.  */
-  err = agent_key_from_file (ctrl, cache_nonce,
-                             ctrl->server_local->keydesc, grip,
-                             &shadow_info, CACHE_MODE_IGNORE, NULL, &s_skey,
-                             openpgp ? &passphrase : NULL, NULL);
+   * the passphrase so that we can use it to re-encrypt it.  In
+   * mode1003 we return the key as-is.  FIXME: if the key is still in
+   * OpenPGP-native mode we should first convert it to our internal
+   * protection.  */
+  if (mode1003)
+    err = agent_raw_key_from_file (ctrl, grip, &s_skey, NULL);
+  else
+    err = agent_key_from_file (ctrl, cache_nonce,
+                               ctrl->server_local->keydesc, grip,
+                               &shadow_info, CACHE_MODE_IGNORE, NULL, &s_skey,
+                               openpgp ? &passphrase : NULL, NULL);
   if (err)
     goto leave;
   if (shadow_info)
@@ -4148,6 +4159,11 @@ command_has_option (const char *cmd, const char *cmdopt)
       if (!strcmp (cmdopt, "repeat"))
         return 1;
       if (!strcmp (cmdopt, "newsymkey"))
+        return 1;
+    }
+  else if (!strcmp (cmd, "EXPORT_KEY"))
+    {
+      if (!strcmp (cmdopt, "mode1003"))
         return 1;
     }
 

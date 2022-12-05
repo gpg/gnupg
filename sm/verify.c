@@ -634,8 +634,8 @@ gpgsm_verify (ctrl_t ctrl, int in_fd, int data_fd, estream_t out_fp)
 
         /* FIXME: INFO_PKALGO correctly shows ECDSA but PKALGO is then
          * ECC.  We should use the ECDSA here and need to find a way to
-         * figure this oult without using the bodus assumtion in
-         * gpgsm_check_cms_signature that ECC is alwas ECDSA.  */
+         * figure this out without using the bogus assumption in
+         * gpgsm_check_cms_signature that ECC is always ECDSA.  */
 
         fpr = gpgsm_get_fingerprint_hexstring (cert, GCRY_MD_SHA1);
         tstr = strtimestamp_r (sigtime);
