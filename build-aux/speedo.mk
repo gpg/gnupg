@@ -80,6 +80,9 @@
 # AUTHENTICODE_KEY=/home/foo/.gnupg/my-authenticode-key.p12
 # AUTHENTICODE_CERTS=/home/foo/.gnupg/my-authenticode-certs.pem
 #
+# If a tarball has not been published while building a release it
+# may be stored in a directory specified by:
+# OVERRIDE_TARBALLS=/home/foo/override-tarballs
 #--8<---------------cut here---------------end--------------->8---
 
 
@@ -246,6 +249,7 @@ $(eval $(call READ_AUTOGEN_template,AUTHENTICODE_CERTS))
 $(eval $(call READ_AUTOGEN_template,OSSLSIGNCODE))
 $(eval $(call READ_AUTOGEN_template,OSSLPKCS11ENGINE))
 $(eval $(call READ_AUTOGEN_template,SCUTEMODULE))
+$(eval $(call READ_AUTOGEN_template,OVERRIDE_TARBALLS))
 
 # All files given in AUTHENTICODE_FILES are signed before
 # they are put into the installer.
@@ -999,6 +1003,13 @@ $(stampdir)/stamp-$(1)-00-unpack: $(stampdir)/stamp-directories
 	   cd "$$$${pkg}"; 				\
 	   AUTOGEN_SH_SILENT=1 ./autogen.sh;            \
          elif [ -n "$$$${tar}" ]; then			\
+           tar2="$(OVERRIDE_TARBALLS)/$$$$(basename $$$${tar})";\
+           if [ -f "$$$${tar2}" ]; then                 \
+             tar="$$$$tar2";                            \
+             echo "speedo: /*";                         \
+             echo "speedo:  * Note: using an override"; \
+             echo "speedo:  */";                        \
+           fi;                                          \
 	   echo "speedo: unpacking $(1) from $$$${tar}"; \
            case "$$$${tar}" in				\
              *.gz) pretar=zcat ;;	   		\
