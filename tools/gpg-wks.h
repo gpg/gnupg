@@ -81,6 +81,8 @@ struct uidinfo_list_s
   time_t created; /* Time the userid was created.  */
   char *mbox;  /* NULL or the malloced mailbox from UID.  */
   unsigned int flags;  /* These flags are cleared on creation.  */
+  unsigned int expired:1;
+  unsigned int revoked:1;
   char uid[1];
 };
 typedef struct uidinfo_list_s *uidinfo_list_t;
