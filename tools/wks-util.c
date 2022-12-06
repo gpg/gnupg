@@ -101,7 +101,8 @@ wks_write_status (int no, const char *format, ...)
  * updated.  C-style escaping is removed from UID.  On error ERRNO is
  * set and NULL returned. */
 static uidinfo_list_t
-append_to_uidinfo_list (uidinfo_list_t *list, const char *uid, time_t created)
+append_to_uidinfo_list (uidinfo_list_t *list, const char *uid, time_t created,
+                        int expired, int revoked)
 {
   uidinfo_list_t r, sl;
   char *plainuid;
@@ -121,6 +122,8 @@ append_to_uidinfo_list (uidinfo_list_t *list, const char *uid, time_t created)
   sl->created = created;
   sl->flags = 0;
   sl->mbox = mailbox_from_userid (plainuid, 0);
+  sl->expired = !!expired;
+  sl->revoked = !!revoked;
   sl->next = NULL;
   if (!*list)
     *list = sl;
@@ -296,6 +299,22 @@ key_status_cb (void *opaque, const char *keyword, char *args)
 }
 
 
+/* Parse field 1 and set revoked and expired on return.  */
+static void
+set_expired_revoked (const char *string, int *expired, int *revoked)
+{
+  *expired = *revoked = 0;
+  /* Look at letters and stop at the first digit.  */
+  for ( ;*string && !digitp (string); string++)
+    {
+      if (*string == 'e')
+        *expired = 1;
+      else if (*string == 'r')
+        *revoked = 1;
+    }
+}
+
+
 /* Run gpg on KEY and store the primary fingerprint at R_FPR and the
  * list of mailboxes at R_MBOXES.  Returns 0 on success; on error NULL
  * is stored at R_FPR and R_MBOXES and an error code is returned.
@@ -316,6 +335,7 @@ wks_list_key (estream_t key, char **r_fpr, uidinfo_list_t *r_mboxes)
   int lnr;
   char *fpr = NULL;
   uidinfo_list_t mboxes = NULL;
+  int expired, revoked;
 
   if (r_fpr)
     *r_fpr = NULL;
@@ -364,6 +384,7 @@ wks_list_key (estream_t key, char **r_fpr, uidinfo_list_t *r_mboxes)
 
   es_rewind (listing);
   lnr = 0;
+  expired = revoked = 0;
   maxlen = 2048; /* Set limit.  */
   while ((len = es_read_line (listing, &line, &length_of_line, &maxlen)) > 0)
     {
@@ -408,12 +429,20 @@ wks_list_key (estream_t key, char **r_fpr, uidinfo_list_t *r_mboxes)
           err = gpg_error (GPG_ERR_INV_ENGINE);
           goto leave;
         }
-      if (lnr > 1 && !strcmp (fields[0], "pub"))
+      if (!strcmp (fields[0], "pub"))
         {
-          /* More than one public key.  */
-          err = gpg_error (GPG_ERR_TOO_MANY);
-          goto leave;
+          if (lnr > 1)
+            {
+              /* More than one public key.  */
+              err = gpg_error (GPG_ERR_TOO_MANY);
+              goto leave;
+            }
+          if (nfields > 1)
+            set_expired_revoked (fields[1], &expired, &revoked);
+          else
+            expired = revoked = 0;
         }
+
       if (!strcmp (fields[0], "sub") || !strcmp (fields[0], "ssb"))
         break; /* We can stop parsing here.  */
 
@@ -428,8 +457,13 @@ wks_list_key (estream_t key, char **r_fpr, uidinfo_list_t *r_mboxes)
         }
       else if (!strcmp (fields[0], "uid") && nfields > 9)
         {
+          int uidexpired, uidrevoked;
+
+          set_expired_revoked (fields[1], &uidexpired, &uidrevoked);
           if (!append_to_uidinfo_list (&mboxes, fields[9],
-                                       parse_timestamp (fields[5], NULL)))
+                                       parse_timestamp (fields[5], NULL),
+                                       expired || uidexpired,
+                                       revoked || uidrevoked))
             {
               err = gpg_error_from_syserror ();
               goto leave;
@@ -1279,6 +1313,12 @@ wks_cmd_install_key (const char *fname, const char *userid)
         continue; /* Should not happen anyway.  */
       if (ascii_strcasecmp (uid->mbox, addrspec))
         continue; /* Not the requested addrspec.  */
+      if (uid->expired)
+        {
+          if (opt.verbose)
+            log_info ("ignoring expired user id '%s'\n", uid->uid);
+          continue;
+        }
       any = 1;
       if (uid->created > thistime)
         {

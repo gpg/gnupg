@@ -2455,8 +2455,8 @@ do_export_stream (ctrl_t ctrl, iobuf_t out, strlist_t users, int secret,
   keydb_release (kdbhd);
   if (err || !keyblock_out)
     release_kbnode( keyblock );
-  if( !*any )
-    log_info(_("WARNING: nothing exported\n"));
+  if( !*any && !opt.quiet)
+    log_info (_("WARNING: nothing exported\n"));
   return err;
 }
 

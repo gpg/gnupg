@@ -1115,6 +1115,9 @@ command_check (char *userid)
           log_info ("    created: %s\n", asctimestamp (sl->created));
           if (sl->mbox)
             log_info ("  addr-spec: %s\n", sl->mbox);
+          if (sl->expired || sl->revoked)
+            log_info ("    flags:%s%s\n",
+                      sl->expired? " expired":"", sl->revoked?" revoked":"");
         }
     }
   if (!found)
@@ -1153,6 +1156,7 @@ command_send (const char *fingerprint, const char *userid)
   uidinfo_list_t uidlist = NULL;
   uidinfo_list_t uid, thisuid;
   time_t thistime;
+  int any;
 
   if (classify_user_id (fingerprint, &desc, 1)
       || desc.mode != KEYDB_SEARCH_MODE_FPR)
@@ -1213,12 +1217,20 @@ command_send (const char *fingerprint, const char *userid)
     }
   thistime = 0;
   thisuid = NULL;
+  any = 0;
   for (uid = uidlist; uid; uid = uid->next)
     {
       if (!uid->mbox)
         continue; /* Should not happen anyway.  */
       if (policy->mailbox_only && ascii_strcasecmp (uid->uid, uid->mbox))
         continue; /* UID has more than just the mailbox.  */
+      if (uid->expired)
+        {
+          if (opt.verbose)
+            log_info ("ignoring expired user id '%s'\n", uid->uid);
+          continue;
+        }
+      any = 1;
       if (uid->created > thistime)
         {
           thistime = uid->created;
@@ -1227,6 +1239,14 @@ command_send (const char *fingerprint, const char *userid)
     }
   if (!thisuid)
     thisuid = uidlist;  /* This is the case for a missing timestamp.  */
+  if (!any)
+    {
+      log_error ("public key %s has no mail address '%s'\n",
+                 fingerprint, addrspec);
+      err = gpg_error (GPG_ERR_INV_USER_ID);
+      goto leave;
+    }
+
   if (opt.verbose)
     log_info ("submitting key with user id '%s'\n", thisuid->uid);
 
@@ -1968,6 +1988,8 @@ mirror_one_key (estream_t key)
     {
       if (!uid->mbox || (uid->flags & 1))
         continue; /* No mail box or already processed.  */
+      if (uid->expired)
+        continue;
       if (!domain_matches_mbox (domain, uid->mbox))
         continue; /* We don't want this one.  */
       if (is_in_blacklist (uid->mbox))
