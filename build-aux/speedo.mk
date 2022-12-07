@@ -135,7 +135,10 @@ help-wixlib:
 	@echo ''
 	@echo 'Afterwards w32-release will build also a wixlib.'
 
-
+# NB: we can't use +$(MAKE) here because we would need to define the
+# dependencies of our packages.  This does not make much sense given that
+# we have a clear order in how they are build and concurrent builds
+# would anyway clutter up the logs.
 SPEEDOMAKE := $(MAKE) -f $(SPEEDO_MK) UPD_SWDB=1
 
 native: check-tools
@@ -226,7 +229,7 @@ STATIC=0
 # external packages.
 TARBALLS=$(shell pwd)/../tarballs
 
-#  Number of parallel make jobs
+#  Number of parallel make jobs in each package
 MAKE_J=3
 
 # Name to use for the w32 installer and sources
@@ -877,16 +880,17 @@ endif
 # The playground area is our scratch area, where we unpack, build and
 # install the packages.
 $(stampdir)/stamp-directories:
-	$(MKDIR) $(root) || true
-	$(MKDIR) $(stampdir) || true
-	$(MKDIR) $(sdir)  || true
-	$(MKDIR) $(bdir)  || true
-	$(MKDIR) $(idir)   || true
+	$(MKDIR) -p $(root)
+	$(MKDIR) -p $(stampdir)
+	$(MKDIR) -p $(sdir)
+	$(MKDIR) -p $(bdir)
+	$(MKDIR) -p $(idir)
 ifeq ($(TARGETOS),w32)
-	$(MKDIR) $(bdir6)  || true
-	$(MKDIR) $(idir6)   || true
+	$(MKDIR) -p $(bdir6)
+	$(MKDIR) -p $(idir6)
 endif
 	touch $(stampdir)/stamp-directories
+
 
 # Frob the name $1 by converting all '-' and '+' characters to '_'.
 define FROB_macro
@@ -981,7 +985,7 @@ endef
 #
 define SPKG_template
 
-$(stampdir)/stamp-$(1)-00-unpack: $(stampdir)/stamp-directories
+$(stampdir)/stamp-$(1)-00-unpack:
 	@echo "speedo: /*"
 	@echo "speedo:  *   $(1)"
 	@echo "speedo:  */"
@@ -1256,7 +1260,7 @@ endef
 # Insert the template for each source package.
 $(foreach spkg, $(speedo_spkgs), $(eval $(call SPKG_template,$(spkg))))
 
-$(stampdir)/stamp-final: $(stampdir)/stamp-directories clean-pkg-versions
+$(stampdir)/stamp-final: clean-pkg-versions
 ifeq ($(TARGETOS),w32)
 $(stampdir)/stamp-final: $(addprefix $(stampdir)/stamp-w64-final-,$(speedo_w64_build_list))
 endif
@@ -1535,9 +1539,9 @@ endif
 
 
 #
-# Check availibility of standard tools
+# Check availibility of standard tools and prepare everything.
 #
-check-tools:
+check-tools: $(stampdir)/stamp-directories
 
 
 #
