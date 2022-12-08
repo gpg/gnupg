@@ -1145,8 +1145,6 @@ spawn_detached (gnupg_process_t process,
               | CREATE_NEW_PROCESS_GROUP
               | DETACHED_PROCESS);
 
-  log_debug ("CreateProcess(detached), path='%s' cmdline='%s'\n",
-                    pgmname, cmdline);
   /* Take care: CreateProcessW may modify wpgmname */
   if (!(wpgmname = utf8_to_wchar (pgmname)))
     ret = 0;
@@ -1183,10 +1181,10 @@ spawn_detached (gnupg_process_t process,
   xfree (wcmdline);
   xfree (cmdline);
 
-  log_debug ("CreateProcess(detached) ready: hProcess=%p hThread=%p"
-             " dwProcessID=%d dwThreadId=%d\n",
-             pi.hProcess, pi.hThread,
-             (int) pi.dwProcessId, (int) pi.dwThreadId);
+  /* log_debug ("CreateProcess(detached) ready: hProcess=%p hThread=%p" */
+  /*           " dwProcessID=%d dwThreadId=%d\n", */
+  /*           pi.hProcess, pi.hThread, */
+  /*          (int) pi.dwProcessId, (int) pi.dwThreadId); */
 
   /* Note: AllowSetForegroundWindow doesn't make sense for background
      process.  */
@@ -1433,7 +1431,7 @@ gnupg_process_spawn (const char *pgmname, const char *argv[],
   si.StartupInfo.hStdOutput = sca.hd[1];
   si.StartupInfo.hStdError  = sca.hd[2];
 
-  log_debug ("CreateProcess, path='%s' cmdline='%s'\n", pgmname, cmdline);
+  /* log_debug ("CreateProcess, path='%s' cmdline='%s'\n", pgmname, cmdline); */
   cr_flags = (CREATE_DEFAULT_ERROR_MODE
               | GetPriorityClass (GetCurrentProcess ())
               | CREATE_SUSPENDED);
@@ -1499,10 +1497,10 @@ gnupg_process_spawn (const char *pgmname, const char *argv[],
       || (flags & GNUPG_PROCESS_STDERR_NULL))
     CloseHandle (hd_err[1]);
 
-  log_debug ("CreateProcess ready: hProcess=%p hThread=%p"
-             " dwProcessID=%d dwThreadId=%d\n",
-             pi.hProcess, pi.hThread,
-             (int) pi.dwProcessId, (int) pi.dwThreadId);
+  /* log_debug ("CreateProcess ready: hProcess=%p hThread=%p" */
+  /*           " dwProcessID=%d dwThreadId=%d\n", */
+  /*           pi.hProcess, pi.hThread, */
+  /*           (int) pi.dwProcessId, (int) pi.dwThreadId); */
 
   if (sca.allow_foreground_window)
     {
