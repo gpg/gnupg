@@ -943,6 +943,8 @@ do_process_wait (scheme *sc, pointer args)
   err = gnupg_process_wait (box->proc, hang);
   if (!err)
     err = gnupg_process_ctl (box->proc, GNUPG_PROCESS_GET_EXIT_ID, &retcode);
+  if (err == GPG_ERR_TIMEOUT)
+    err = 0;
 
   FFI_RETURN_INT (sc, retcode);
 }
