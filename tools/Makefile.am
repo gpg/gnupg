@@ -98,7 +98,7 @@ gpgconf_LDADD = $(common_libs) \
                 $(LIBINTL) $(LIBGCRYPT_LIBS) $(GPG_ERROR_LIBS) $(NETLIBS) \
 	        $(LIBICONV) $(W32SOCKLIBS) \
 	        $(gpgconf_rc_objs)
-gpgconf_LDFLAGS = $(extra_bin_ldflags)
+gpgconf_LDFLAGS =
 
 gpgconf_w32_SOURCES = $(gpgconf_SOURCES)
 gpgconf_w32_LDADD = $(gpgconf_LDADD)

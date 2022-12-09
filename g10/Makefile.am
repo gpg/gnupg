@@ -47,9 +47,7 @@ endif
 # NB: We use noinst_ for gpg and gpgv so that we can install them with
 # the install-hook target under the name gpg2/gpgv2.
 noinst_PROGRAMS = gpg
-if !HAVE_W32CE_SYSTEM
 noinst_PROGRAMS += gpgv
-endif
 noinst_PROGRAMS += $(module_tests)
 if DISABLE_TESTS
 TESTS =
@@ -173,12 +171,12 @@ LDADD =  $(needed_libs) ../common/libgpgrl.a \
          $(ZLIBS) $(LIBINTL) $(CAPLIBS)
 gpg_LDADD = $(LDADD) $(SQLITE3_LIBS) $(LIBGCRYPT_LIBS) $(LIBREADLINE) \
              $(LIBASSUAN_LIBS) $(NPTH_LIBS) $(GPG_ERROR_LIBS) $(NETLIBS) \
-	     $(LIBICONV) $(resource_objs) $(extra_sys_libs)
-gpg_LDFLAGS = $(extra_bin_ldflags)
+	     $(LIBICONV) $(resource_objs)
+gpg_LDFLAGS =
 gpgv_LDADD = $(LDADD) $(LIBGCRYPT_LIBS) \
 	      $(LIBASSUAN_LIBS) $(NPTH_LIBS) $(GPG_ERROR_LIBS) $(NETLIBS) \
-	      $(LIBICONV) $(resource_objs) $(extra_sys_libs)
-gpgv_LDFLAGS = $(extra_bin_ldflags)
+	      $(LIBICONV) $(resource_objs)
+gpgv_LDFLAGS =
 
 
 t_common_ldadd =

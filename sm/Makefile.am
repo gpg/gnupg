@@ -70,8 +70,8 @@ common_libs = ../kbx/libkeybox509.a $(libcommonpth)
 gpgsm_LDADD = $(common_libs) ../common/libgpgrl.a \
               $(LIBGCRYPT_LIBS) $(KSBA_LIBS) $(LIBASSUAN_LIBS) \
               $(NPTH_LIBS) $(GPG_ERROR_LIBS) $(LIBREADLINE) $(LIBINTL) \
-	      $(LIBICONV) $(resource_objs) $(extra_sys_libs) $(NETLIBS)
-gpgsm_LDFLAGS = $(extra_bin_ldflags)
+	      $(LIBICONV) $(resource_objs) $(NETLIBS)
+gpgsm_LDFLAGS =
 
 
 module_tests =

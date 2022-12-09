@@ -57,19 +57,6 @@ if GNUPG_DIRMNGR_LDAP_PGM
 AM_CPPFLAGS += -DGNUPG_DEFAULT_DIRMNGR_LDAP="\"@GNUPG_DIRMNGR_LDAP_PGM@\""
 endif
 
-# Under Windows we use LockFileEx.  WindowsCE provides this only on
-# the WindowsMobile 6 platform and thus we need to use the coredll6
-# import library.  We also want to use a stacksize of 256k instead of
-# the 2MB which is the default with cegcc.  256k is the largest stack
-# we use with pth.
-if HAVE_W32CE_SYSTEM
-extra_sys_libs = -lcoredll6
-extra_bin_ldflags = -Wl,--stack=0x40000
-else
-extra_sys_libs =
-extra_bin_ldflags =
-endif
-
 if HAVE_W32_SYSTEM
 .rc.o:
 	$(WINDRES) $(DEFAULT_INCLUDES) $(INCLUDES) "$<" "$@"

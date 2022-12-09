@@ -93,7 +93,7 @@ dirmngr_LDADD = $(libcommonpth) \
 if USE_LDAP
 dirmngr_LDADD += $(ldaplibs) $(LBER_LIBS)
 endif
-dirmngr_LDFLAGS = $(extra_bin_ldflags)
+dirmngr_LDFLAGS =
 
 if USE_LDAP
 dirmngr_ldap_SOURCES = dirmngr_ldap.c ldap-misc.c ldap-misc.h $(ldap_url)
@@ -108,7 +108,7 @@ dirmngr_client_SOURCES = dirmngr-client.c
 dirmngr_client_LDADD = $(libcommon) \
                        $(LIBASSUAN_LIBS) $(GPG_ERROR_LIBS) \
                        $(LIBGCRYPT_LIBS) $(NETLIBS) $(LIBINTL) $(LIBICONV)
-dirmngr_client_LDFLAGS = $(extra_bin_ldflags)
+dirmngr_client_LDFLAGS =
 
 
 t_common_src = t-support.h t-support.c

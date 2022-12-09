@@ -19,10 +19,8 @@
 
 bin_PROGRAMS = gpg-agent
 libexec_PROGRAMS = gpg-protect-tool
-if !HAVE_W32CE_SYSTEM
 # fixme: Do no use simple-pwquery for preset-passphrase.
 libexec_PROGRAMS += gpg-preset-passphrase
-endif
 noinst_PROGRAMS = $(TESTS)
 
 EXTRA_DIST = ChangeLog-2011 gpg-agent-w32info.rc all-tests.scm
@@ -66,11 +64,7 @@ gpg_agent_SOURCES = \
 
 common_libs = $(libcommon)
 commonpth_libs = $(libcommonpth)
-if HAVE_W32CE_SYSTEM
-pwquery_libs =
-else
 pwquery_libs = ../common/libsimple-pwquery.a
-endif
 
 
 gpg_agent_CFLAGS = $(AM_CFLAGS) $(LIBASSUAN_CFLAGS) $(NPTH_CFLAGS) \
@@ -79,7 +73,7 @@ gpg_agent_LDADD = $(commonpth_libs) \
                 $(LIBGCRYPT_LIBS) $(LIBASSUAN_LIBS) $(NPTH_LIBS) \
 	        $(GPG_ERROR_LIBS) $(LIBINTL) $(NETLIBS) $(LIBICONV) \
 		$(resource_objs)
-gpg_agent_LDFLAGS = $(extra_bin_ldflags)
+gpg_agent_LDFLAGS =
 gpg_agent_DEPENDENCIES = $(resource_objs)
 
 gpg_protect_tool_SOURCES = \

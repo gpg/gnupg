@@ -37,12 +37,6 @@ else
 libexec_PROGRAMS =
 endif
 
-if HAVE_W32CE_SYSTEM
-extra_libs =  $(LIBASSUAN_LIBS)
-else
-extra_libs =
-endif
-
 common_libs = $(libcommon)
 commonpth_libs = $(libcommonpth)
 
@@ -75,7 +69,7 @@ libkeybox509_a_CFLAGS = $(AM_CFLAGS) $(LIBASSUAN_CFLAGS) $(NPTH_CFLAGS) -DKEYBOX
 kbxutil_SOURCES = kbxutil.c $(common_sources)
 kbxutil_CFLAGS = $(AM_CFLAGS) -DKEYBOX_WITH_X509=1
 kbxutil_LDADD   = $(common_libs) \
-                  $(KSBA_LIBS) $(LIBGCRYPT_LIBS) $(extra_libs) \
+                  $(KSBA_LIBS) $(LIBGCRYPT_LIBS) \
                   $(GPG_ERROR_LIBS) $(LIBINTL) $(LIBICONV) $(W32SOCKLIBS) \
 		  $(NETLIBS)
 
@@ -98,7 +92,7 @@ keyboxd_LDADD = $(commonpth_libs) \
 	        $(SQLITE3_LIBS) $(GPG_ERROR_LIBS) \
                 $(LIBINTL) $(NETLIBS) $(LIBICONV) \
 		$(resource_objs)
-keyboxd_LDFLAGS = $(extra_bin_ldflags)
+keyboxd_LDFLAGS =
 keyboxd_DEPENDENCIES = $(resource_objs)
 
 

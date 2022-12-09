@@ -691,7 +691,6 @@ try_gettext=yes
 require_iconv=yes
 have_dosish_system=no
 have_w32_system=no
-have_w32ce_system=no
 have_android_system=no
 use_simple_gettext=no
 mmap_needed=yes
@@ -710,15 +709,7 @@ case "${host}" in
         have_w32_system=yes
         require_iconv=no
         require_pipe_to_unblock_pselect=no
-        case "${host}" in
-          *-mingw32ce*)
-            have_w32ce_system=yes
-            ;;
-          *)
-            AC_DEFINE(HAVE_DRIVE_LETTERS,1,
-                      [Defined if the OS supports drive letters.])
-            ;;
-        esac
+        AC_DEFINE(HAVE_DRIVE_LETTERS,1, [Defined if the OS supports drive letters.])
         try_gettext="no"
 	use_simple_gettext=yes
 	mmap_needed=no
@@ -803,13 +794,9 @@ AM_CONDITIONAL(USE_SIMPLE_GETTEXT, test x"$use_simple_gettext" = xyes)
 
 if test "$have_w32_system" = yes; then
    AC_DEFINE(HAVE_W32_SYSTEM,1, [Defined if we run on a W32 API based system])
-   if test "$have_w32ce_system" = yes; then
-      AC_DEFINE(HAVE_W32CE_SYSTEM,1,[Defined if we run on WindowsCE])
-   fi
    AC_CHECK_HEADERS([winsock2.h])
 fi
 AM_CONDITIONAL(HAVE_W32_SYSTEM, test "$have_w32_system" = yes)
-AM_CONDITIONAL(HAVE_W32CE_SYSTEM, test "$have_w32ce_system" = yes)
 
 if test "$have_android_system" = yes; then
    AC_DEFINE(HAVE_ANDROID_SYSTEM,1, [Defined if we build for an Android system])
@@ -1273,9 +1260,6 @@ AC_DEFINE_UNQUOTED(NAME_OF_SENDMAIL,"$SENDMAIL",
 # Construct a printable name of the OS
 #
 case "${host}" in
-    *-mingw32ce*)
-        PRINTABLE_OS_NAME="W32CE"
-        ;;
     *-mingw32*)
         PRINTABLE_OS_NAME="MingW32"
         ;;
@@ -1575,11 +1559,7 @@ GNUPG_CHECK_GNUMAKE
 # requiring any network stuff but linking to code in libcommon which
 # tracks in winsock stuff (e.g. init_common_subsystems).
 if test "$have_w32_system" = yes; then
-   if test "$have_w32ce_system" = yes; then
-     W32SOCKLIBS="-lws2"
-   else
-     W32SOCKLIBS="-lws2_32"
-   fi
+   W32SOCKLIBS="-lws2_32"
    NETLIBS="${NETLIBS} ${W32SOCKLIBS}"
 fi
 
@@ -2063,16 +2043,6 @@ if test "$have_ksba" = "no"; then
 ***   https://gnupg.org/ftp/gcrypt/libksba/
 *** (at least version $NEED_KSBA_VERSION using API $NEED_KSBA_API is required).
 ***]])
-fi
-if test "$gnupg_have_ldap" = yes; then
-  if test "$have_w32ce_system" = yes; then
-    AC_MSG_NOTICE([[
-*** Note that CeGCC might be broken, a package fixing this is:
-***    http://files.kolab.org/local/windows-ce/
-***                           source/wldap32_0.1-mingw32ce.orig.tar.gz
-***                           binary/wldap32-ce-arm-dev_0.1-1_all.deb
-***]])
-   fi
 fi
 if test "$have_npth" = "no"; then
     die=yes
