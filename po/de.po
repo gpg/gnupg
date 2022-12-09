@@ -9,7 +9,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnupg-2.1.0\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"PO-Revision-Date: 2022-04-25 18:05+0200\n"
+"PO-Revision-Date: 2022-12-09 09:06+0100\n"
 "Last-Translator: Werner Koch <wk@gnupg.org>\n"
 "Language-Team: German <de@li.org>\n"
 "Language: de\n"
@@ -1968,6 +1968,9 @@ msgstr "Unbrauchbare Teile des Schlüssel während des Exports entfernen"
 
 msgid "remove as much as possible from key during export"
 msgstr "Während des Exports soviel wie möglich vom Schlüssel entfernen"
+
+msgid "export only revocation certificates"
+msgstr "Nur Schlüsselwiderruf-Zertifikate exportieren"
 
 msgid "use the GnuPG key backup format"
 msgstr "Das GnuPG Datensicherungsformat für Schlüssel benutzen"
@@ -6559,13 +6562,16 @@ msgstr "Der RSA Modulus fehlt oder ist nicht %d Bits lang\n"
 msgid "RSA public exponent missing or larger than %d bits\n"
 msgstr "Der öffentliche Exponent fehlt oder ist zu groß (mehr als %d Bit)\n"
 
+msgid "Note: PIN has not yet been enabled."
+msgstr "Hinweis: Die Null-PIN wurde noch nicht geändert"
+
 #, c-format
 msgid "PIN callback returned error: %s\n"
 msgstr "PIN-Callback meldete Fehler: %s\n"
 
 #, c-format
 msgid "the NullPIN has not yet been changed\n"
-msgstr "Die Nullpin wurde noch nicht geändert\n"
+msgstr "Die Null-PIN wurde noch nicht geändert\n"
 
 msgid "|N|Please enter a new PIN for the standard keys."
 msgstr "|N|Bitte eine neue PIN für den Standard-Schlüssel eingeben."
@@ -9204,10 +9210,9 @@ msgstr ""
 #~ msgid " using certificate ID 0x%08lX\n"
 #~ msgstr " mittels Zertifikat ID 0x%08lX\n"
 
-#, fuzzy
 #~ msgid ""
 #~ "keyserver option \"honor-keyserver-url\" may not be used in Tor mode\n"
-#~ msgstr "Die Schlüsselserveroption \"%s\" ist im %s-Modus nicht erlaubt.\n"
+#~ msgstr "Die Schlüsselserveroption \"%s\" ist im Tor-Modus nicht erlaubt.\n"
 
 #~ msgid "male"
 #~ msgstr "männlich"
@@ -9223,53 +9228,6 @@ msgstr ""
 
 #~ msgid "only SHA-1 is supported for OCSP responses\n"
 #~ msgstr "Lediglich SHA-1 wird bei OCSP Antworten unterstützt\n"
-
-#, fuzzy
-#~| msgid "error creating temporary file: %s\n"
-#~ msgid "error creating 'ultimately_trusted_keys' TOFU table: %s\n"
-#~ msgstr "Fehler beim Erstellen einer temporären Datei: %s\n"
-
-#, fuzzy
-#~| msgid "error creating temporary file: %s\n"
-#~ msgid "error creating 'encryptions' TOFU table: %s\n"
-#~ msgstr "Fehler beim Erstellen einer temporären Datei: %s\n"
-
-#, fuzzy
-#~| msgid "error writing key: %s\n"
-#~ msgid "resetting keydb: %s\n"
-#~ msgstr "Fehler beim Schreiben des Schlüssels: %s\n"
-
-#, fuzzy
-#~| msgid ""
-#~| "Verified %ld message signed by \"%s\"\n"
-#~| "in the past %s."
-#~| msgid_plural ""
-#~| "Verified %ld messages signed by \"%s\"\n"
-#~| "in the past %s."
-#~ msgid "%s: Verified %ld~signature in the past %s."
-#~ msgid_plural "%s: Verified %ld~signatures in the past %s."
-#~ msgstr[0] ""
-#~ "%ld überprüfte Nachricht von \"%s\"\n"
-#~ "in den letzten %s."
-#~ msgstr[1] ""
-#~ "%ld überprüfte Nachrichten von \"%s\"\n"
-#~ "in den letzten %s."
-
-#, fuzzy
-#~| msgid ""
-#~| "Verified %ld message signed by \"%s\"\n"
-#~| "in the past %s."
-#~| msgid_plural ""
-#~| "Verified %ld messages signed by \"%s\"\n"
-#~| "in the past %s."
-#~ msgid "Encrypted %ld~message in the past %s."
-#~ msgid_plural "Encrypted %ld~messages in the past %s."
-#~ msgstr[0] ""
-#~ "%ld überprüfte Nachricht von \"%s\"\n"
-#~ "in den letzten %s."
-#~ msgstr[1] ""
-#~ "%ld überprüfte Nachrichten von \"%s\"\n"
-#~ "in den letzten %s."
 
 #~ msgid "no keyserver known (use option --keyserver)\n"
 #~ msgstr "Kein Schlüsselserver bekannt (Option --keyserver verwenden)\n"
