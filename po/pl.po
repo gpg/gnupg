@@ -1936,6 +1936,11 @@ msgstr "usunięcie bezużytecznych części z klucza przy eksporcie"
 msgid "remove as much as possible from key during export"
 msgstr "usunięcie jak największej części klucza przy eksporcie"
 
+#, fuzzy
+#| msgid "generate a revocation certificate"
+msgid "export only revocation certificates"
+msgstr "tworzenie certyfikatu unieważnienia klucza"
+
 msgid "use the GnuPG key backup format"
 msgstr "użycie formatu kopii zapasowej klucza GnuPG"
 
@@ -6533,6 +6538,11 @@ msgstr "reszta RSA brakująca lub o rozmiarze innym niż %d bity\n"
 #, c-format
 msgid "RSA public exponent missing or larger than %d bits\n"
 msgstr "publiczny wykładnik RSA brakujący lub większy niż %d bity\n"
+
+#, fuzzy
+#| msgid "the NullPIN has not yet been changed\n"
+msgid "Note: PIN has not yet been enabled."
+msgstr "NullPIN nie został jeszcze zmieniony\n"
 
 #, c-format
 msgid "PIN callback returned error: %s\n"

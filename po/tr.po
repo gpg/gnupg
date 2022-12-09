@@ -2099,6 +2099,11 @@ msgstr "ihraç sırasında anahtardan kullanışsız parçalar kaldırılır"
 msgid "remove as much as possible from key during export"
 msgstr "ihraç sırasında anahtardan mümkün olduğunca çok şey kaldırılır"
 
+#, fuzzy
+#| msgid "generate a revocation certificate"
+msgid "export only revocation certificates"
+msgstr "bir yürürlükten kaldırma sertifikası üretir"
+
 msgid "use the GnuPG key backup format"
 msgstr ""
 
@@ -6891,6 +6896,11 @@ msgstr "RSA modülü ya eksik ya da %d bitlik değil\n"
 #, c-format
 msgid "RSA public exponent missing or larger than %d bits\n"
 msgstr "RSA genel üstel sayısı ya eksik ya da %d bitten büyük\n"
+
+#, fuzzy
+#| msgid "the NullPIN has not yet been changed\n"
+msgid "Note: PIN has not yet been enabled."
+msgstr "BoşPIN henüz değişmedi\n"
 
 #, c-format
 msgid "PIN callback returned error: %s\n"

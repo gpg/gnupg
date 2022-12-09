@@ -1979,6 +1979,11 @@ msgstr "匯出時從金鑰中移除無法使用的部分"
 msgid "remove as much as possible from key during export"
 msgstr "匯出時盡可能地從金鑰中移除"
 
+#, fuzzy
+#| msgid "generate a revocation certificate"
+msgid "export only revocation certificates"
+msgstr "產生撤銷憑證"
+
 msgid "use the GnuPG key backup format"
 msgstr ""
 
@@ -6463,6 +6468,11 @@ msgstr "RSA 模組缺漏或者並非 %d 位元大\n"
 #, c-format
 msgid "RSA public exponent missing or larger than %d bits\n"
 msgstr "RSA 公用指數缺漏或者大於 %d 位元\n"
+
+#, fuzzy
+#| msgid "the NullPIN has not yet been changed\n"
+msgid "Note: PIN has not yet been enabled."
+msgstr "NullPIN 還沒有變更過\n"
 
 #, c-format
 msgid "PIN callback returned error: %s\n"

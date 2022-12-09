@@ -1977,6 +1977,11 @@ msgstr "odstranit nepoužitelné části z klíče při exportu"
 msgid "remove as much as possible from key during export"
 msgstr "odstranit při exportu z klíče vše, co lze"
 
+#, fuzzy
+#| msgid "generate a revocation certificate"
+msgid "export only revocation certificates"
+msgstr "vytvořit revokační certifikát"
+
 msgid "use the GnuPG key backup format"
 msgstr "použít záložní formát klíče GnuPG"
 
@@ -6503,6 +6508,11 @@ msgstr "schází RSA modulus nebo nemá velikost %d bitů\n"
 #, c-format
 msgid "RSA public exponent missing or larger than %d bits\n"
 msgstr "schází veřejný RSA exponent nebo je delší než %d bitů\n"
+
+#, fuzzy
+#| msgid "the NullPIN has not yet been changed\n"
+msgid "Note: PIN has not yet been enabled."
+msgstr "NullPIN ještě nebyl změněn\n"
 
 #, c-format
 msgid "PIN callback returned error: %s\n"

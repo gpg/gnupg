@@ -2160,6 +2160,11 @@ msgstr "ta bort oanvändbara delar från nyckeln under exportering"
 msgid "remove as much as possible from key during export"
 msgstr "ta bort så mycket som möjligt från nyckeln under exportering"
 
+#, fuzzy
+#| msgid "generate a revocation certificate"
+msgid "export only revocation certificates"
+msgstr "generera ett spärrcertifikat"
+
 msgid "use the GnuPG key backup format"
 msgstr ""
 
@@ -6981,6 +6986,11 @@ msgstr "RSA modulus saknas eller är inte %d bitar stor\n"
 #, c-format
 msgid "RSA public exponent missing or larger than %d bits\n"
 msgstr "Publik RSA-exponent saknas eller större än %d bitar\n"
+
+#, fuzzy
+#| msgid "the NullPIN has not yet been changed\n"
+msgid "Note: PIN has not yet been enabled."
+msgstr "NullPIN har ännu inte ändrats\n"
 
 #, c-format
 msgid "PIN callback returned error: %s\n"

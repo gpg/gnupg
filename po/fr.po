@@ -2054,6 +2054,11 @@ msgstr "supprimer les parties inutilisables de la clef pendant l'exportation"
 msgid "remove as much as possible from key during export"
 msgstr "supprimer autant que possible de la clef pendant l'exportation"
 
+#, fuzzy
+#| msgid "generate a revocation certificate"
+msgid "export only revocation certificates"
+msgstr "générer un certificat de révocation"
+
 msgid "use the GnuPG key backup format"
 msgstr ""
 
@@ -6777,6 +6782,11 @@ msgstr "le module RSA est manquant ou sa taille n'est pas de %d bits\n"
 #, c-format
 msgid "RSA public exponent missing or larger than %d bits\n"
 msgstr "l'exposant public RSA est manquant ou plus grand que %d bits\n"
+
+#, fuzzy
+#| msgid "the NullPIN has not yet been changed\n"
+msgid "Note: PIN has not yet been enabled."
+msgstr "le code personnel nul n'a pas encore été modifié\n"
 
 #, c-format
 msgid "PIN callback returned error: %s\n"

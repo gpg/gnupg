@@ -2063,6 +2063,11 @@ msgstr "cheie secretă de nefolosit"
 msgid "remove as much as possible from key during export"
 msgstr ""
 
+#, fuzzy
+#| msgid "generate a revocation certificate"
+msgid "export only revocation certificates"
+msgstr "generează un certificat de revocare"
+
 msgid "use the GnuPG key backup format"
 msgstr ""
 
@@ -6778,6 +6783,11 @@ msgstr "modulus-ul RSA lipseşte sau nu are %d biţi\n"
 #, fuzzy, c-format
 msgid "RSA public exponent missing or larger than %d bits\n"
 msgstr "exponentul public RSA lipseşte sau are mai mult de %d biţi\n"
+
+#, fuzzy
+#| msgid "Note: This key has been disabled.\n"
+msgid "Note: PIN has not yet been enabled."
+msgstr "Notă: Această cheie a fost deactivată.\n"
 
 #, c-format
 msgid "PIN callback returned error: %s\n"
