@@ -1,7 +1,5 @@
-Noteworthy changes in version 2.2.41 (unreleased)
+Noteworthy changes in version 2.2.41 (2022-12-09)
 -------------------------------------------------
-
-  * gpg: Also import stray revocation certificates.  [rGbd825ead36af]
 
   * gpg: Add a notation to encryption subkeys in de-vs mode.  [T6279]
 
@@ -18,11 +16,14 @@ Noteworthy changes in version 2.2.41 (unreleased)
 
   * gpg: New --export-filter export-revocs.  [rGedbe30c152]
 
-  * scd: Support the Telesec Signature Card v2.0.  [T6252]
+  * gpg: Import stray revocation certificates to improve WKD
+    usability.  [rGbd825ead36af]
 
   * wkd: New option --add-revocs for gpg-wks-client.  [rG2f4492f3be]
 
   * wkd: Ignore expired user-ids in gpg-wks-client.  [T6292]
+
+  * scd: Support the Telesec Signature Card v2.0.  [T6252]
 
   * Fix build regression depending on libgpg-error version.  [T6244]
 
