@@ -153,7 +153,7 @@ Command completion in the interactive mode is also supported.
 @item AUTHENTICATE [--setkey] [--raw] [< @var{file}]|@var{key}]
 @itemx AUTH
 @opindex authenticate
-Authenticate to the card.  Perform a mutual autentication either by
+Authenticate to the card.  Perform a mutual authentication either by
 reading the key from @var{file} or by taking it from the command line
 as @var{key}.  Without the option @option{--raw} the key is expected
 to be hex encoded.  To install a new administration key
@@ -242,7 +242,7 @@ a @var{pinref} a menu is presented for certain cards."  In
 non-interactive mode and without a @var{pinref} a default value i used
 for these cards.  The option @option{--reset} is used with TCOS cards
 to reset the PIN using the PUK or vice versa; the option
-@var{--nullpin} is used for these cards to set the intial PIN.
+@var{--nullpin} is used for these cards to set the initial PIN.
 
 @item PRIVATEDO [--clear] @var{n} [< @var{file}]
 @opindex privatedo

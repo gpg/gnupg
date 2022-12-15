@@ -175,7 +175,7 @@ listening sockets.  This option is deprecated and not supported on
 Windows.
 
 If in @file{common.conf} the option @option{no-autostart} is set, any
-start attemps will be ignored.
+start attempts will be ignored.
 
 In --supervised mode, different file descriptors can be provided for
 use as different socket types (e.g. ssh, extra) as long as they are

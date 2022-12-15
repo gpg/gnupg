@@ -320,7 +320,7 @@ provided.  These are the same as the @option{--keyserver-options} of
 @command{gpg}, but apply only to this particular keyserver.
 
 Most keyservers synchronize with each other, so there is generally no
-need to send keys to more than one server. Somes keyservers use round
+need to send keys to more than one server. Some keyservers use round
 robin DNS to give a different keyserver each time you use it.
 
 If exactly two keyservers are configured and only one is a Tor hidden
@@ -751,7 +751,7 @@ allow-ocsp
 To make sure that new options are read or that after the installation
 of a new GnuPG versions the right dirmngr version is running, you
 should kill an existing dirmngr so that a new instance is started as
-needed by the otehr components:
+needed by the other components:
 
 @example
 gpgconf --kill dirmngr
