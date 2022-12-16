@@ -402,6 +402,11 @@ msgstr ""
 msgid "enable putty support"
 msgstr "nepodporované"
 
+#, fuzzy
+#| msgid "not supported"
+msgid "enable Win32-OpenSSH support"
+msgstr "nepodporované"
+
 msgid "Options controlling the security"
 msgstr ""
 
@@ -1856,8 +1861,9 @@ msgstr "VAROVÁNÍ: použitie parametra \"%s\" sa neodporúča\n"
 msgid "error creating passphrase: %s\n"
 msgstr "chyba pri vytváraní hesla: %s\n"
 
-#, c-format
-msgid "can't use a symmetric ESK packet due to the S2K mode\n"
+#, fuzzy, c-format
+#| msgid "can't use a symmetric ESK packet due to the S2K mode\n"
+msgid "can't use a SKESK packet due to the S2K mode\n"
 msgstr "v móde S2K nemožno použiť symetrický ESK paket\n"
 
 #, fuzzy, c-format
@@ -1942,8 +1948,17 @@ msgstr "nepoužiteľný tajný kľúč"
 msgid "remove as much as possible from key during export"
 msgstr ""
 
+#, fuzzy
+#| msgid "generate a revocation certificate"
+msgid "export only revocation certificates"
+msgstr "vytvoriť revokačný certifikát"
+
 msgid "use the GnuPG key backup format"
 msgstr ""
+
+#, fuzzy
+msgid "export secret keys using the GnuPG format"
+msgstr "zapisujem tajný kľúč do `%s'\n"
 
 #, fuzzy
 #| msgid "%s: skipped: %s\n"
@@ -2442,6 +2457,11 @@ msgstr "ukáž v ktorom súbore kľúčov je vypísaný kľúč"
 msgid "show expiration dates during signature listings"
 msgstr "V súbore tajných kľúčov chýba zodpovedajúci podpis\n"
 
+#, fuzzy
+#| msgid "set preference list"
+msgid "show preferences"
+msgstr "nastaviť zoznam predvolieb"
+
 #, fuzzy, c-format
 msgid "unknown TOFU policy '%s'\n"
 msgstr "neznámy implicitný adresát `%s'\n"
@@ -2603,11 +2623,6 @@ msgid "selected cipher algorithm is invalid\n"
 msgstr "vybraný šifrovací algoritmus je neplatný\n"
 
 #, fuzzy, c-format
-#| msgid "selected digest algorithm is invalid\n"
-msgid "selected AEAD algorithm is invalid\n"
-msgstr "vybraný hashovací algoritmus je neplatný\n"
-
-#, fuzzy, c-format
 msgid "selected compression algorithm is invalid\n"
 msgstr "vybraný šifrovací algoritmus je neplatný\n"
 
@@ -2652,11 +2667,6 @@ msgstr "neplatné defaultné predvoľby\n"
 msgid "invalid personal cipher preferences\n"
 msgstr "neplatné užívateľské predvoľby pre šifrovanie\n"
 
-#, fuzzy, c-format
-#| msgid "invalid personal cipher preferences\n"
-msgid "invalid personal AEAD preferences\n"
-msgstr "neplatné užívateľské predvoľby pre šifrovanie\n"
-
 #, c-format
 msgid "invalid personal digest preferences\n"
 msgstr "neplatné užívateľské predvoľby pre hashovanie\n"
@@ -2673,10 +2683,6 @@ msgstr "neplatná dĺžka kľúča; použijem %u bitov\n"
 #, c-format
 msgid "%s does not yet work with %s\n"
 msgstr "%s ešte nepracuje s %s\n"
-
-#, fuzzy, c-format
-msgid "AEAD algorithm '%s' may not be used in %s mode\n"
-msgstr "nemôžete použiť šifrovací algoritmus \"%s\" v móde %s\n"
 
 #, fuzzy, c-format
 msgid "compression algorithm '%s' may not be used in %s mode\n"
@@ -3884,18 +3890,6 @@ msgstr "chyba: neplatný odtlačok\n"
 msgid "subkey \"%s\" not found\n"
 msgstr "kľúč `%s' nebol nájdený: %s\n"
 
-msgid "AEAD: "
-msgstr ""
-
-msgid "Digest: "
-msgstr "Digest: "
-
-msgid "Features: "
-msgstr "Charakteristiky: "
-
-msgid "Keyserver no-modify"
-msgstr ""
-
 msgid "Preferred keyserver: "
 msgstr ""
 
@@ -4727,6 +4721,18 @@ msgstr "Skutočne vytvoriť? "
 
 msgid "never     "
 msgstr "nikdy     "
+
+msgid "AEAD: "
+msgstr ""
+
+msgid "Digest: "
+msgstr "Digest: "
+
+msgid "Features: "
+msgstr "Charakteristiky: "
+
+msgid "Keyserver no-modify"
+msgstr ""
 
 msgid "Critical signature policy: "
 msgstr "Kritická podpisová politika: "
@@ -9253,6 +9259,20 @@ msgstr ""
 msgid "manage the command history"
 msgstr ""
 
+#, fuzzy
+#~| msgid "selected digest algorithm is invalid\n"
+#~ msgid "selected AEAD algorithm is invalid\n"
+#~ msgstr "vybraný hashovací algoritmus je neplatný\n"
+
+#, fuzzy
+#~| msgid "invalid personal cipher preferences\n"
+#~ msgid "invalid personal AEAD preferences\n"
+#~ msgstr "neplatné užívateľské predvoľby pre šifrovanie\n"
+
+#, fuzzy
+#~ msgid "AEAD algorithm '%s' may not be used in %s mode\n"
+#~ msgstr "nemôžete použiť šifrovací algoritmus \"%s\" v móde %s\n"
+
 #~ msgid "forcing symmetric cipher %s (%d) violates recipient preferences\n"
 #~ msgstr "vyžiadaná symetrická šifra %s (%d) nevyhovuje predvoľbám príjemcu\n"
 
@@ -10870,9 +10890,6 @@ msgstr ""
 
 #~ msgid "delete signatures"
 #~ msgstr "zmazať podpisy"
-
-#~ msgid "set preference list"
-#~ msgstr "nastaviť zoznam predvolieb"
 
 #~ msgid "updated preferences"
 #~ msgstr "aktualizovať predvoľby"

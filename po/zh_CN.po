@@ -376,6 +376,11 @@ msgstr "|ALGO|使用 ALGO 显示 ssh 指纹"
 msgid "enable putty support"
 msgstr "启用 putty 支持"
 
+#, fuzzy
+#| msgid "enable putty support"
+msgid "enable Win32-OpenSSH support"
+msgstr "启用 putty 支持"
+
 msgid "Options controlling the security"
 msgstr "控制安全的选项"
 
@@ -1744,8 +1749,9 @@ msgstr "警告： 密钥 %s 在 %s 模式下不适用于加密\n"
 msgid "error creating passphrase: %s\n"
 msgstr "创建密码时出现错误：%s\n"
 
-#, c-format
-msgid "can't use a symmetric ESK packet due to the S2K mode\n"
+#, fuzzy, c-format
+#| msgid "can't use a symmetric ESK packet due to the S2K mode\n"
+msgid "can't use a SKESK packet due to the S2K mode\n"
 msgstr "由于在 S2K 模式，不能使用一个对称的 ESK 封包\n"
 
 #, c-format
@@ -1814,8 +1820,18 @@ msgstr "导出时移除密钥中未使用的部分"
 msgid "remove as much as possible from key during export"
 msgstr "导出时尽可能移除密钥中的可选部分"
 
+#, fuzzy
+#| msgid "generate a revocation certificate"
+msgid "export only revocation certificates"
+msgstr "生成一份吊销证书"
+
 msgid "use the GnuPG key backup format"
 msgstr "使用 GnuPG 密钥备份格式"
+
+#, fuzzy
+#| msgid "exporting secret keys not allowed\n"
+msgid "export secret keys using the GnuPG format"
+msgstr "不允许导出私钥\n"
 
 msgid " - skipped"
 msgstr " - 已跳过"
@@ -2245,6 +2261,11 @@ msgstr "列出密钥时显示钥匙环的名称"
 msgid "show expiration dates during signature listings"
 msgstr "列出签名时显示过期日期"
 
+#, fuzzy
+#| msgid "list preferences (expert)"
+msgid "show preferences"
+msgstr "列出偏好设置（专家模式）"
+
 #, c-format
 msgid "unknown TOFU policy '%s'\n"
 msgstr "未知的 TOFU 政策‘%s’\n"
@@ -2401,10 +2422,6 @@ msgid "selected cipher algorithm is invalid\n"
 msgstr "所选的密文算法无效\n"
 
 #, c-format
-msgid "selected AEAD algorithm is invalid\n"
-msgstr "所选择的 AEAD 算法无效\n"
-
-#, c-format
 msgid "selected compression algorithm is invalid\n"
 msgstr "所选的压缩算法无效\n"
 
@@ -2449,10 +2466,6 @@ msgid "invalid personal cipher preferences\n"
 msgstr "无效的个人密文偏好设置\n"
 
 #, c-format
-msgid "invalid personal AEAD preferences\n"
-msgstr "无效的个人 AEAD 偏好设置\n"
-
-#, c-format
 msgid "invalid personal digest preferences\n"
 msgstr "无效的个人摘要算法偏好设置\n"
 
@@ -2467,10 +2480,6 @@ msgstr "块大小无效 - 使用 %d\n"
 #, c-format
 msgid "%s does not yet work with %s\n"
 msgstr "%s 尚不能和 %s 并用\n"
-
-#, c-format
-msgid "AEAD algorithm '%s' may not be used in %s mode\n"
-msgstr "AEAD 算法‘%s’不能在 %s 模式下使用\n"
 
 #, c-format
 msgid "compression algorithm '%s' may not be used in %s mode\n"
@@ -3561,18 +3570,6 @@ msgstr "“%s” 不是一个正确的指纹\n"
 msgid "subkey \"%s\" not found\n"
 msgstr "子密钥 “%s” 未找到\n"
 
-msgid "AEAD: "
-msgstr "AEAD： "
-
-msgid "Digest: "
-msgstr "摘要： "
-
-msgid "Features: "
-msgstr "特点： "
-
-msgid "Keyserver no-modify"
-msgstr "公钥服务器不可修改"
-
 msgid "Preferred keyserver: "
 msgstr "首选公钥服务器： "
 
@@ -4350,6 +4347,18 @@ msgstr "真的要创建吗？(y/N) "
 
 msgid "never     "
 msgstr "永不     "
+
+msgid "AEAD: "
+msgstr "AEAD： "
+
+msgid "Digest: "
+msgstr "摘要： "
+
+msgid "Features: "
+msgstr "特点： "
+
+msgid "Keyserver no-modify"
+msgstr "公钥服务器不可修改"
 
 msgid "Critical signature policy: "
 msgstr "紧急签名策略： "
@@ -8611,6 +8620,15 @@ msgstr "Yubikey 管理命令"
 
 msgid "manage the command history"
 msgstr "管理命令历史记录"
+
+#~ msgid "selected AEAD algorithm is invalid\n"
+#~ msgstr "所选择的 AEAD 算法无效\n"
+
+#~ msgid "invalid personal AEAD preferences\n"
+#~ msgstr "无效的个人 AEAD 偏好设置\n"
+
+#~ msgid "AEAD algorithm '%s' may not be used in %s mode\n"
+#~ msgstr "AEAD 算法‘%s’不能在 %s 模式下使用\n"
 
 #~ msgid "forcing symmetric cipher %s (%d) violates recipient preferences\n"
 #~ msgstr "强行对称密文算法 %s (%d) 与接收者的偏好设置冲突\n"

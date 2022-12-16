@@ -463,6 +463,11 @@ msgstr ""
 msgid "enable putty support"
 msgstr ""
 
+#, fuzzy
+#| msgid "enable ssh-agent emulation"
+msgid "enable Win32-OpenSSH support"
+msgstr "aktivera ssh-agent-emulering"
+
 msgid "Options controlling the security"
 msgstr "Flaggor som kontrollerar säkerheten"
 
@@ -1994,8 +1999,9 @@ msgstr "VARNING: \"%s\" är en föråldrad flagga - den har ingen effekt\n"
 msgid "error creating passphrase: %s\n"
 msgstr "fel när lösenfras skapades: %s\n"
 
-#, c-format
-msgid "can't use a symmetric ESK packet due to the S2K mode\n"
+#, fuzzy, c-format
+#| msgid "can't use a symmetric ESK packet due to the S2K mode\n"
+msgid "can't use a SKESK packet due to the S2K mode\n"
 msgstr "kan inte använda symmetriska ESK-paket pga S2K-läge\n"
 
 #, fuzzy, c-format
@@ -2078,8 +2084,18 @@ msgstr "ta bort oanvändbara delar från nyckeln under exportering"
 msgid "remove as much as possible from key during export"
 msgstr "ta bort så mycket som möjligt från nyckeln under exportering"
 
+#, fuzzy
+#| msgid "generate a revocation certificate"
+msgid "export only revocation certificates"
+msgstr "generera ett spärrcertifikat"
+
 msgid "use the GnuPG key backup format"
 msgstr ""
+
+#, fuzzy
+#| msgid "exporting secret keys not allowed\n"
+msgid "export secret keys using the GnuPG format"
+msgstr "export av hemliga nycklar tillåts inte\n"
 
 #, fuzzy
 #| msgid "%s: skipped: %s\n"
@@ -2599,6 +2615,11 @@ msgstr "visa nyckelringens namn i nyckellistningar"
 msgid "show expiration dates during signature listings"
 msgstr "visa utgångsdatum under signaturlistningar"
 
+#, fuzzy
+#| msgid "list preferences (expert)"
+msgid "show preferences"
+msgstr "lista inställningar (expertläge)"
+
 #, fuzzy, c-format
 #| msgid "unknown option `%s'\n"
 msgid "unknown TOFU policy '%s'\n"
@@ -2764,11 +2785,6 @@ msgstr "kommer inte att köra med osäkert minne på grund av %s\n"
 msgid "selected cipher algorithm is invalid\n"
 msgstr "den valda chifferalgoritmen är ogiltig\n"
 
-#, fuzzy, c-format
-#| msgid "selected digest algorithm is invalid\n"
-msgid "selected AEAD algorithm is invalid\n"
-msgstr "vald sammandragsalgoritm är ogiltig\n"
-
 #, c-format
 msgid "selected compression algorithm is invalid\n"
 msgstr "vald komprimeringsalgoritm är ogiltig\n"
@@ -2822,12 +2838,6 @@ msgstr "ogiltiga standardinställningar\n"
 msgid "invalid personal cipher preferences\n"
 msgstr "ogiltig inställning av personligt chiffer\n"
 
-# Du kan ange de algoritmer du föredrar i prioritetsordning. Då avgör inte enbart standard (symmetrisk kryptering) eller mottagarens preferenser (kryptering till öppen nyckel).
-#, fuzzy, c-format
-#| msgid "invalid personal cipher preferences\n"
-msgid "invalid personal AEAD preferences\n"
-msgstr "ogiltig inställning av personligt chiffer\n"
-
 #, c-format
 msgid "invalid personal digest preferences\n"
 msgstr "ogiltig inställning av föredragna kontrollsummealgoritmer\n"
@@ -2844,11 +2854,6 @@ msgstr "ogiltig nyckelstorlek; använder %u bitar\n"
 #, c-format
 msgid "%s does not yet work with %s\n"
 msgstr "%s fungerar ännu inte med  %s\n"
-
-#, fuzzy, c-format
-#| msgid "you may not use cipher algorithm `%s' while in %s mode\n"
-msgid "AEAD algorithm '%s' may not be used in %s mode\n"
-msgstr "du får inte använda chifferalgoritmen \"%s\" när du är i %s-läget\n"
 
 #, fuzzy, c-format
 #| msgid "you may not use compression algorithm `%s' while in %s mode\n"
@@ -4062,18 +4067,6 @@ msgstr "ogiltigt fingeravtryck"
 msgid "subkey \"%s\" not found\n"
 msgstr "nyckeln \"%s\" hittades inte: %s\n"
 
-msgid "AEAD: "
-msgstr ""
-
-msgid "Digest: "
-msgstr "Sammandrag: "
-
-msgid "Features: "
-msgstr "Funktioner: "
-
-msgid "Keyserver no-modify"
-msgstr "Nyckelserver no-modify"
-
 msgid "Preferred keyserver: "
 msgstr "Föredragen nyckelserver: "
 
@@ -4938,6 +4931,18 @@ msgstr "Verkligen skapa? (j/N) "
 
 msgid "never     "
 msgstr "aldrig"
+
+msgid "AEAD: "
+msgstr ""
+
+msgid "Digest: "
+msgstr "Sammandrag: "
+
+msgid "Features: "
+msgstr "Funktioner: "
+
+msgid "Keyserver no-modify"
+msgstr "Nyckelserver no-modify"
 
 msgid "Critical signature policy: "
 msgstr "Viktig signaturpolicy: "
@@ -9803,6 +9808,22 @@ msgstr ""
 
 msgid "manage the command history"
 msgstr ""
+
+#, fuzzy
+#~| msgid "selected digest algorithm is invalid\n"
+#~ msgid "selected AEAD algorithm is invalid\n"
+#~ msgstr "vald sammandragsalgoritm är ogiltig\n"
+
+# Du kan ange de algoritmer du föredrar i prioritetsordning. Då avgör inte enbart standard (symmetrisk kryptering) eller mottagarens preferenser (kryptering till öppen nyckel).
+#, fuzzy
+#~| msgid "invalid personal cipher preferences\n"
+#~ msgid "invalid personal AEAD preferences\n"
+#~ msgstr "ogiltig inställning av personligt chiffer\n"
+
+#, fuzzy
+#~| msgid "you may not use cipher algorithm `%s' while in %s mode\n"
+#~ msgid "AEAD algorithm '%s' may not be used in %s mode\n"
+#~ msgstr "du får inte använda chifferalgoritmen \"%s\" när du är i %s-läget\n"
 
 #~ msgid "forcing symmetric cipher %s (%d) violates recipient preferences\n"
 #~ msgstr ""

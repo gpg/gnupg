@@ -404,6 +404,11 @@ msgstr ""
 msgid "enable putty support"
 msgstr "não suportado"
 
+#, fuzzy
+#| msgid "not supported"
+msgid "enable Win32-OpenSSH support"
+msgstr "não suportado"
+
 msgid "Options controlling the security"
 msgstr ""
 
@@ -1854,8 +1859,9 @@ msgstr "AVISO: \"%s\" é uma opção depreciada\n"
 msgid "error creating passphrase: %s\n"
 msgstr "erro na criação da frase secreta: %s\n"
 
-#, c-format
-msgid "can't use a symmetric ESK packet due to the S2K mode\n"
+#, fuzzy, c-format
+#| msgid "can't use a symmetric ESK packet due to the S2K mode\n"
+msgid "can't use a SKESK packet due to the S2K mode\n"
 msgstr "não é possível utilizar o pacote ESK simétrico devido ao modo S2K\n"
 
 #, fuzzy, c-format
@@ -1937,8 +1943,17 @@ msgstr "chave secreta não utilizável"
 msgid "remove as much as possible from key during export"
 msgstr ""
 
+#, fuzzy
+#| msgid "generate a revocation certificate"
+msgid "export only revocation certificates"
+msgstr "gerar um certificado de revogação"
+
 msgid "use the GnuPG key backup format"
 msgstr ""
+
+#, fuzzy
+msgid "export secret keys using the GnuPG format"
+msgstr "a escrever chave privada para `%s'\n"
 
 #, fuzzy
 #| msgid "%s: skipped: %s\n"
@@ -2431,6 +2446,11 @@ msgstr "mostrar em que porta-chave a chave está"
 msgid "show expiration dates during signature listings"
 msgstr "Nenhuma assinatura correspondente no porta-chaves secreto\n"
 
+#, fuzzy
+#| msgid "set preference list"
+msgid "show preferences"
+msgstr "configurar lista de preferências"
+
 #, fuzzy, c-format
 msgid "unknown TOFU policy '%s'\n"
 msgstr "destinatário por omissão desconhecido `%s'\n"
@@ -2592,11 +2612,6 @@ msgid "selected cipher algorithm is invalid\n"
 msgstr "o algoritmo de cifragem selecionado é inválido\n"
 
 #, fuzzy, c-format
-#| msgid "selected digest algorithm is invalid\n"
-msgid "selected AEAD algorithm is invalid\n"
-msgstr "o algoritmo de \"digest\" selecionado é inválido\n"
-
-#, fuzzy, c-format
 msgid "selected compression algorithm is invalid\n"
 msgstr "o algoritmo de cifragem selecionado é inválido\n"
 
@@ -2641,11 +2656,6 @@ msgstr "preferências por omissão inválidas\n"
 msgid "invalid personal cipher preferences\n"
 msgstr "preferências pessoais de cifra inválidas\n"
 
-#, fuzzy, c-format
-#| msgid "invalid personal cipher preferences\n"
-msgid "invalid personal AEAD preferences\n"
-msgstr "preferências pessoais de cifra inválidas\n"
-
 #, c-format
 msgid "invalid personal digest preferences\n"
 msgstr "preferências pessoais de 'digest' inválidas\n"
@@ -2662,10 +2672,6 @@ msgstr "tamanho de chave inválido; a utilizar %u bits\n"
 #, fuzzy, c-format
 msgid "%s does not yet work with %s\n"
 msgstr "%s não faz sentido com %s!\n"
-
-#, fuzzy, c-format
-msgid "AEAD algorithm '%s' may not be used in %s mode\n"
-msgstr "não pode utilizar %s enquanto estiver no modo %s\n"
 
 #, fuzzy, c-format
 msgid "compression algorithm '%s' may not be used in %s mode\n"
@@ -3870,18 +3876,6 @@ msgstr "%s: versão de ficheiro inválida %d\n"
 msgid "subkey \"%s\" not found\n"
 msgstr "chave `%s' não encontrada: %s\n"
 
-msgid "AEAD: "
-msgstr ""
-
-msgid "Digest: "
-msgstr "'Digest': "
-
-msgid "Features: "
-msgstr "Características: "
-
-msgid "Keyserver no-modify"
-msgstr ""
-
 msgid "Preferred keyserver: "
 msgstr ""
 
@@ -4719,6 +4713,18 @@ msgid "Really create? (y/N) "
 msgstr "Realmente criar? "
 
 msgid "never     "
+msgstr ""
+
+msgid "AEAD: "
+msgstr ""
+
+msgid "Digest: "
+msgstr "'Digest': "
+
+msgid "Features: "
+msgstr "Características: "
+
+msgid "Keyserver no-modify"
 msgstr ""
 
 msgid "Critical signature policy: "
@@ -9214,6 +9220,20 @@ msgstr ""
 msgid "manage the command history"
 msgstr ""
 
+#, fuzzy
+#~| msgid "selected digest algorithm is invalid\n"
+#~ msgid "selected AEAD algorithm is invalid\n"
+#~ msgstr "o algoritmo de \"digest\" selecionado é inválido\n"
+
+#, fuzzy
+#~| msgid "invalid personal cipher preferences\n"
+#~ msgid "invalid personal AEAD preferences\n"
+#~ msgstr "preferências pessoais de cifra inválidas\n"
+
+#, fuzzy
+#~ msgid "AEAD algorithm '%s' may not be used in %s mode\n"
+#~ msgstr "não pode utilizar %s enquanto estiver no modo %s\n"
+
 #~ msgid "forcing symmetric cipher %s (%d) violates recipient preferences\n"
 #~ msgstr ""
 #~ "ao forçar a cifra simétrica %s (%d) viola as preferências do "
@@ -10793,9 +10813,6 @@ msgstr ""
 
 #~ msgid "delete signatures"
 #~ msgstr "remove assinaturas"
-
-#~ msgid "set preference list"
-#~ msgstr "configurar lista de preferências"
 
 #~ msgid "updated preferences"
 #~ msgstr "preferências actualizadas"

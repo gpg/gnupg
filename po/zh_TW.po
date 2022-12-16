@@ -405,6 +405,11 @@ msgstr ""
 msgid "enable putty support"
 msgstr "啟用 putty 支援"
 
+#, fuzzy
+#| msgid "enable putty support"
+msgid "enable Win32-OpenSSH support"
+msgstr "啟用 putty 支援"
+
 msgid "Options controlling the security"
 msgstr "控制著安全性的選項"
 
@@ -1837,8 +1842,9 @@ msgstr "警告: \"%s%s\" 是已廢棄的選項 - 沒有效果\n"
 msgid "error creating passphrase: %s\n"
 msgstr "建立密語時出錯: %s\n"
 
-#, c-format
-msgid "can't use a symmetric ESK packet due to the S2K mode\n"
+#, fuzzy, c-format
+#| msgid "can't use a symmetric ESK packet due to the S2K mode\n"
+msgid "can't use a SKESK packet due to the S2K mode\n"
 msgstr "因處於 S2K 模式下而無法使用對稱式 ESK 封包\n"
 
 #, fuzzy, c-format
@@ -1912,8 +1918,18 @@ msgstr "匯出時從金鑰中移除無法使用的部分"
 msgid "remove as much as possible from key during export"
 msgstr "匯出時盡可能地從金鑰中移除"
 
+#, fuzzy
+#| msgid "generate a revocation certificate"
+msgid "export only revocation certificates"
+msgstr "產生撤銷憑證"
+
 msgid "use the GnuPG key backup format"
 msgstr ""
+
+#, fuzzy
+#| msgid "exporting secret keys not allowed\n"
+msgid "export secret keys using the GnuPG format"
+msgstr "不允許匯出私鑰\n"
 
 msgid " - skipped"
 msgstr " - 已跳過"
@@ -2379,6 +2395,11 @@ msgstr "在金鑰清單中顯示鑰匙圈名稱"
 msgid "show expiration dates during signature listings"
 msgstr "列出簽章時顯示有效期限"
 
+#, fuzzy
+#| msgid "list preferences (expert)"
+msgid "show preferences"
+msgstr "列出偏好 (專家模式)"
+
 #, fuzzy, c-format
 #| msgid "unknown option '%s'\n"
 msgid "unknown TOFU policy '%s'\n"
@@ -2538,11 +2559,6 @@ msgstr "因為 %s 而不會在不安全的記憶體中執行\n"
 msgid "selected cipher algorithm is invalid\n"
 msgstr "所選的編密演算法無效\n"
 
-#, fuzzy, c-format
-#| msgid "selected digest algorithm is invalid\n"
-msgid "selected AEAD algorithm is invalid\n"
-msgstr "所選的摘要演算法無效\n"
-
 #, c-format
 msgid "selected compression algorithm is invalid\n"
 msgstr "所選的壓縮演算法無效\n"
@@ -2587,11 +2603,6 @@ msgstr "無效的預設偏好\n"
 msgid "invalid personal cipher preferences\n"
 msgstr "無效的個人編密法偏好\n"
 
-#, fuzzy, c-format
-#| msgid "invalid personal cipher preferences\n"
-msgid "invalid personal AEAD preferences\n"
-msgstr "無效的個人編密法偏好\n"
-
 #, c-format
 msgid "invalid personal digest preferences\n"
 msgstr "無效的個人摘要偏好\n"
@@ -2608,11 +2619,6 @@ msgstr "金鑰尺寸無效; 改用 %u 位元\n"
 #, c-format
 msgid "%s does not yet work with %s\n"
 msgstr "%s 還沒辦法跟 %s 一起運作\n"
-
-#, fuzzy, c-format
-#| msgid "you may not use cipher algorithm '%s' while in %s mode\n"
-msgid "AEAD algorithm '%s' may not be used in %s mode\n"
-msgstr "你不該將 '%s' 編密演算法用於 %s 模式\n"
 
 #, fuzzy, c-format
 #| msgid "you may not use compression algorithm '%s' while in %s mode\n"
@@ -3752,18 +3758,6 @@ msgstr "\"%s\" 不是指紋\n"
 msgid "subkey \"%s\" not found\n"
 msgstr "找不到金鑰 \"%s\": %s\n"
 
-msgid "AEAD: "
-msgstr ""
-
-msgid "Digest: "
-msgstr "摘要: "
-
-msgid "Features: "
-msgstr "特點: "
-
-msgid "Keyserver no-modify"
-msgstr "金鑰伺服器無修改"
-
 msgid "Preferred keyserver: "
 msgstr "偏好的金鑰伺服器: "
 
@@ -4577,6 +4571,18 @@ msgstr "真的要建立嗎? (y/N) "
 
 msgid "never     "
 msgstr "永遠不過期"
+
+msgid "AEAD: "
+msgstr ""
+
+msgid "Digest: "
+msgstr "摘要: "
+
+msgid "Features: "
+msgstr "特點: "
+
+msgid "Keyserver no-modify"
+msgstr "金鑰伺服器無修改"
 
 msgid "Critical signature policy: "
 msgstr "關鍵簽章原則: "
@@ -8998,6 +9004,21 @@ msgstr ""
 
 msgid "manage the command history"
 msgstr ""
+
+#, fuzzy
+#~| msgid "selected digest algorithm is invalid\n"
+#~ msgid "selected AEAD algorithm is invalid\n"
+#~ msgstr "所選的摘要演算法無效\n"
+
+#, fuzzy
+#~| msgid "invalid personal cipher preferences\n"
+#~ msgid "invalid personal AEAD preferences\n"
+#~ msgstr "無效的個人編密法偏好\n"
+
+#, fuzzy
+#~| msgid "you may not use cipher algorithm '%s' while in %s mode\n"
+#~ msgid "AEAD algorithm '%s' may not be used in %s mode\n"
+#~ msgstr "你不該將 '%s' 編密演算法用於 %s 模式\n"
 
 #~ msgid "forcing symmetric cipher %s (%d) violates recipient preferences\n"
 #~ msgstr "強迫使用 %s (%d) 對稱式編密法會違反收件者偏好設定\n"

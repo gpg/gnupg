@@ -422,6 +422,11 @@ msgstr "|ALGO|usar ALGO para mostrar las huellas digitales de ssh"
 msgid "enable putty support"
 msgstr "habilitar soporte de putty"
 
+#, fuzzy
+#| msgid "enable putty support"
+msgid "enable Win32-OpenSSH support"
+msgstr "habilitar soporte de putty"
+
 msgid "Options controlling the security"
 msgstr "Opciones que controlan la seguridad"
 
@@ -1849,8 +1854,9 @@ msgstr ""
 msgid "error creating passphrase: %s\n"
 msgstr "error al crear frase contraseña: %s\n"
 
-#, c-format
-msgid "can't use a symmetric ESK packet due to the S2K mode\n"
+#, fuzzy, c-format
+#| msgid "can't use a symmetric ESK packet due to the S2K mode\n"
+msgid "can't use a SKESK packet due to the S2K mode\n"
 msgstr "no puede usar un paquete simétrico ESK debido al modo S2K\n"
 
 #, fuzzy, c-format
@@ -1925,8 +1931,18 @@ msgstr "borrar partes inutilizables de la clave al exportar"
 msgid "remove as much as possible from key during export"
 msgstr "borrar tanto como sea posible de la clave al exportar"
 
+#, fuzzy
+#| msgid "generate a revocation certificate"
+msgid "export only revocation certificates"
+msgstr "genera un certificado de revocación"
+
 msgid "use the GnuPG key backup format"
 msgstr "usar el formato de backup de claves GnuPG"
+
+#, fuzzy
+#| msgid "exporting secret keys not allowed\n"
+msgid "export secret keys using the GnuPG format"
+msgstr "no se permite exportar claves secretas\n"
 
 msgid " - skipped"
 msgstr " - omitido"
@@ -2382,6 +2398,11 @@ msgstr "mostrar nombre de los anillos de claves al listar claves"
 msgid "show expiration dates during signature listings"
 msgstr "mostrar fechas de caducidad al listar firmas"
 
+#, fuzzy
+#| msgid "showpref"
+msgid "show preferences"
+msgstr "verpref"
+
 #, c-format
 msgid "unknown TOFU policy '%s'\n"
 msgstr "política TOFU desconocida '%s'\n"
@@ -2537,11 +2558,6 @@ msgstr "no se ejecutará en memoria insegura por %s\n"
 msgid "selected cipher algorithm is invalid\n"
 msgstr "el algoritmo de cifrado seleccionado es inválido\n"
 
-#, fuzzy, c-format
-#| msgid "selected digest algorithm is invalid\n"
-msgid "selected AEAD algorithm is invalid\n"
-msgstr "el algoritmo de resumen seleccionado no inválido\n"
-
 #, c-format
 msgid "selected compression algorithm is invalid\n"
 msgstr "el algoritmo de compresión seleccionado es inválido\n"
@@ -2586,11 +2602,6 @@ msgstr "preferencias por defecto inválidas\n"
 msgid "invalid personal cipher preferences\n"
 msgstr "preferencias personales de cifrado inválidas\n"
 
-#, fuzzy, c-format
-#| msgid "invalid personal cipher preferences\n"
-msgid "invalid personal AEAD preferences\n"
-msgstr "preferencias personales de cifrado inválidas\n"
-
 #, c-format
 msgid "invalid personal digest preferences\n"
 msgstr "preferencias personales de algoritmo de resumen inválidas\n"
@@ -2607,11 +2618,6 @@ msgstr "tamaño de clave incorrecto; se usarán %u bits\n"
 #, c-format
 msgid "%s does not yet work with %s\n"
 msgstr "%s aún no funciona con %s\n"
-
-#, fuzzy, c-format
-#| msgid "cipher algorithm '%s' may not be used in %s mode\n"
-msgid "AEAD algorithm '%s' may not be used in %s mode\n"
-msgstr "no se puede usar el cifrado '%s' en modo %s\n"
 
 #, c-format
 msgid "compression algorithm '%s' may not be used in %s mode\n"
@@ -3749,18 +3755,6 @@ msgstr "\"%s\" no es una huella digital válida\n"
 msgid "subkey \"%s\" not found\n"
 msgstr "subclave \"%s\" no encontrada\n"
 
-msgid "AEAD: "
-msgstr ""
-
-msgid "Digest: "
-msgstr "Resumen: "
-
-msgid "Features: "
-msgstr "Características: "
-
-msgid "Keyserver no-modify"
-msgstr "Sevidor de claves no-modificar"
-
 msgid "Preferred keyserver: "
 msgstr "Servidor de claves preferido: "
 
@@ -4577,6 +4571,18 @@ msgstr "¿Crear de verdad? (s/N) "
 
 msgid "never     "
 msgstr "nunca     "
+
+msgid "AEAD: "
+msgstr ""
+
+msgid "Digest: "
+msgstr "Resumen: "
+
+msgid "Features: "
+msgstr "Características: "
+
+msgid "Keyserver no-modify"
+msgstr "Sevidor de claves no-modificar"
 
 msgid "Critical signature policy: "
 msgstr "Política de firmas críticas: "
@@ -9099,6 +9105,21 @@ msgstr ""
 msgid "manage the command history"
 msgstr ""
 
+#, fuzzy
+#~| msgid "selected digest algorithm is invalid\n"
+#~ msgid "selected AEAD algorithm is invalid\n"
+#~ msgstr "el algoritmo de resumen seleccionado no inválido\n"
+
+#, fuzzy
+#~| msgid "invalid personal cipher preferences\n"
+#~ msgid "invalid personal AEAD preferences\n"
+#~ msgstr "preferencias personales de cifrado inválidas\n"
+
+#, fuzzy
+#~| msgid "cipher algorithm '%s' may not be used in %s mode\n"
+#~ msgid "AEAD algorithm '%s' may not be used in %s mode\n"
+#~ msgstr "no se puede usar el cifrado '%s' en modo %s\n"
+
 #~ msgid "forcing symmetric cipher %s (%d) violates recipient preferences\n"
 #~ msgstr ""
 #~ "forzar el cifrado simétrico %s (%d) viola las preferencias\n"
@@ -11228,9 +11249,6 @@ msgstr ""
 
 #~ msgid "pref"
 #~ msgstr "pref"
-
-#~ msgid "showpref"
-#~ msgstr "verpref"
 
 #~ msgid "setpref"
 #~ msgstr "estpref"

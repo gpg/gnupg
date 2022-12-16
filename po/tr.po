@@ -388,6 +388,11 @@ msgstr "|ALGO|ssh parmak izlerini göstermek için ALGO kullan"
 msgid "enable putty support"
 msgstr "putty desteğini etkinleştir"
 
+#, fuzzy
+#| msgid "enable putty support"
+msgid "enable Win32-OpenSSH support"
+msgstr "putty desteğini etkinleştir"
+
 msgid "Options controlling the security"
 msgstr "Güvenliği denetleyen seçenekler"
 
@@ -1778,8 +1783,9 @@ msgstr "UYARI: %s anahtarı, %s kipinde şifreleme için uygun değil\n"
 msgid "error creating passphrase: %s\n"
 msgstr "anahtar parolası oluşturulurken hata: %s\n"
 
-#, c-format
-msgid "can't use a symmetric ESK packet due to the S2K mode\n"
+#, fuzzy, c-format
+#| msgid "can't use a symmetric ESK packet due to the S2K mode\n"
+msgid "can't use a SKESK packet due to the S2K mode\n"
 msgstr "S2K kipi sayesinde bir simetrik ESK paketi kullanılamıyor\n"
 
 #, c-format
@@ -1851,8 +1857,18 @@ msgstr "dışa aktarım sırasında anahtardan kullanışsız parçaları kaldı
 msgid "remove as much as possible from key during export"
 msgstr "dışa aktarım sırasında anahtardan olabildiğince çok şey kaldır"
 
+#, fuzzy
+#| msgid "generate a revocation certificate"
+msgid "export only revocation certificates"
+msgstr "bir yürürlükten kaldırma sertifikası üret"
+
 msgid "use the GnuPG key backup format"
 msgstr "GnuPG yedekleme biçimini kullan"
+
+#, fuzzy
+#| msgid "exporting secret keys not allowed\n"
+msgid "export secret keys using the GnuPG format"
+msgstr "gizli anahtarların dışa aktarımına izin verilmez\n"
 
 msgid " - skipped"
 msgstr " - atlandı"
@@ -2293,6 +2309,11 @@ msgstr "anahtar zinciri adını anahtar listelerinde göster"
 msgid "show expiration dates during signature listings"
 msgstr "imza listelemesi sırasında zaman aşımı tarihleri göster"
 
+#, fuzzy
+#| msgid "list preferences (expert)"
+msgid "show preferences"
+msgstr "tercihleri listele (uzman)"
+
 #, c-format
 msgid "unknown TOFU policy '%s'\n"
 msgstr "bilinmeyen TOFU poliçesi '%s'\n"
@@ -2452,10 +2473,6 @@ msgid "selected cipher algorithm is invalid\n"
 msgstr "seçilen şifre algoritması geçersiz\n"
 
 #, c-format
-msgid "selected AEAD algorithm is invalid\n"
-msgstr "seçili AEAD algoritması geçersiz\n"
-
-#, c-format
 msgid "selected compression algorithm is invalid\n"
 msgstr "seçili sıkıştırma algoritması geçersiz\n"
 
@@ -2500,10 +2517,6 @@ msgid "invalid personal cipher preferences\n"
 msgstr "geçersiz kişisel şifre tercihleri\n"
 
 #, c-format
-msgid "invalid personal AEAD preferences\n"
-msgstr "geçersiz kişisel AEAD tercihler\n"
-
-#, c-format
 msgid "invalid personal digest preferences\n"
 msgstr "geçersiz kişisel özet tercihleri\n"
 
@@ -2518,10 +2531,6 @@ msgstr "parça boyutu geçersiz - %d kullanılıyor\n"
 #, c-format
 msgid "%s does not yet work with %s\n"
 msgstr "%s, %s ile henüz çalışmıyor\n"
-
-#, c-format
-msgid "AEAD algorithm '%s' may not be used in %s mode\n"
-msgstr "'%s' AEAD algoritması, %s kipinde kullanılamayabilir\n"
 
 #, c-format
 msgid "compression algorithm '%s' may not be used in %s mode\n"
@@ -3665,18 +3674,6 @@ msgstr "\"%s\", düzgün bir parmak izi değil\n"
 msgid "subkey \"%s\" not found\n"
 msgstr "yardımcı anahtar \"%s\" bulunamadı\n"
 
-msgid "AEAD: "
-msgstr "AEAD: "
-
-msgid "Digest: "
-msgstr "Özet: "
-
-msgid "Features: "
-msgstr "Özellikler: "
-
-msgid "Keyserver no-modify"
-msgstr "Anahtar sunucusu değişmez"
-
 msgid "Preferred keyserver: "
 msgstr "Tercih edilen anahtar sunucusu: "
 
@@ -4487,6 +4484,18 @@ msgstr "Gerçekten üretilsin mi? (e/H) "
 
 msgid "never     "
 msgstr "asla      "
+
+msgid "AEAD: "
+msgstr "AEAD: "
+
+msgid "Digest: "
+msgstr "Özet: "
+
+msgid "Features: "
+msgstr "Özellikler: "
+
+msgid "Keyserver no-modify"
+msgstr "Anahtar sunucusu değişmez"
 
 msgid "Critical signature policy: "
 msgstr "Kritik imza guvencesi: "
@@ -8878,6 +8887,15 @@ msgstr "Yubikey yönetim konsolu"
 
 msgid "manage the command history"
 msgstr "komut geçmişini yönet"
+
+#~ msgid "selected AEAD algorithm is invalid\n"
+#~ msgstr "seçili AEAD algoritması geçersiz\n"
+
+#~ msgid "invalid personal AEAD preferences\n"
+#~ msgstr "geçersiz kişisel AEAD tercihler\n"
+
+#~ msgid "AEAD algorithm '%s' may not be used in %s mode\n"
+#~ msgstr "'%s' AEAD algoritması, %s kipinde kullanılamayabilir\n"
 
 #~ msgid "run in supervised mode"
 #~ msgstr "yönetilen kipte çalıştır"

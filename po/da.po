@@ -453,6 +453,11 @@ msgstr ""
 msgid "enable putty support"
 msgstr ""
 
+#, fuzzy
+#| msgid "enable ssh-agent emulation"
+msgid "enable Win32-OpenSSH support"
+msgstr "aktiver ssh-agent-emulering"
+
 msgid "Options controlling the security"
 msgstr "Tilvalg der kontrollerer sikkerheden"
 
@@ -1963,8 +1968,9 @@ msgstr "ADVARSEL: »%s« er en forældet indstilling - den har ingen effekt\n"
 msgid "error creating passphrase: %s\n"
 msgstr "fejl ved oprettelse af adgangsfrase: %s\n"
 
-#, c-format
-msgid "can't use a symmetric ESK packet due to the S2K mode\n"
+#, fuzzy, c-format
+#| msgid "can't use a symmetric ESK packet due to the S2K mode\n"
+msgid "can't use a SKESK packet due to the S2K mode\n"
 msgstr "kan ikke bruge en symmetrisk ESK-pakke på grund af S2K-tilstanden\n"
 
 #, fuzzy, c-format
@@ -2045,8 +2051,18 @@ msgstr "fjern nøgledele der ikke kan bruges under eksport"
 msgid "remove as much as possible from key during export"
 msgstr "fjern så meget som muligt fra nøglen under eksport"
 
+#, fuzzy
+#| msgid "generate a revocation certificate"
+msgid "export only revocation certificates"
+msgstr "opret et tilbagekaldscertifikat"
+
 msgid "use the GnuPG key backup format"
 msgstr ""
+
+#, fuzzy
+#| msgid "exporting secret keys not allowed\n"
+msgid "export secret keys using the GnuPG format"
+msgstr "eksport af hemmelige nøgler er ikke tilladt\n"
 
 #, fuzzy
 #| msgid "%s: skipped: %s\n"
@@ -2554,6 +2570,11 @@ msgstr "vis nøgleringsnavnet i nøglevisninger"
 msgid "show expiration dates during signature listings"
 msgstr "vis udløbsdatoer under underskriftvisninger"
 
+#, fuzzy
+#| msgid "list preferences (expert)"
+msgid "show preferences"
+msgstr "vis præferencer (ekspert)"
+
 #, fuzzy, c-format
 #| msgid "unknown option `%s'\n"
 msgid "unknown TOFU policy '%s'\n"
@@ -2718,11 +2739,6 @@ msgstr "vil ikke køre med usikker hukommelse på grund af %s\n"
 msgid "selected cipher algorithm is invalid\n"
 msgstr "valgt chifferalgoritme er ugyldig\n"
 
-#, fuzzy, c-format
-#| msgid "selected digest algorithm is invalid\n"
-msgid "selected AEAD algorithm is invalid\n"
-msgstr "valgt sammendragsalgoritme er ugyldig\n"
-
 #, c-format
 msgid "selected compression algorithm is invalid\n"
 msgstr "valgt komprimeringsalgoritme er ugyldig\n"
@@ -2768,11 +2784,6 @@ msgstr "ugyldige standardpræferencer\n"
 msgid "invalid personal cipher preferences\n"
 msgstr "ugyldige præferencer for personlig chiffer\n"
 
-#, fuzzy, c-format
-#| msgid "invalid personal cipher preferences\n"
-msgid "invalid personal AEAD preferences\n"
-msgstr "ugyldige præferencer for personlig chiffer\n"
-
 #, c-format
 msgid "invalid personal digest preferences\n"
 msgstr "ugyldige præferencer for personlig sammendrag\n"
@@ -2789,11 +2800,6 @@ msgstr "nøglestørrelse er ugyldig; bruger %u bit\n"
 #, c-format
 msgid "%s does not yet work with %s\n"
 msgstr "%s virker endnu ikke med %s\n"
-
-#, fuzzy, c-format
-#| msgid "you may not use cipher algorithm `%s' while in %s mode\n"
-msgid "AEAD algorithm '%s' may not be used in %s mode\n"
-msgstr "du må ikke bruge chifferalgoritmen »%s« i tilstanden %s\n"
 
 #, fuzzy, c-format
 #| msgid "you may not use compression algorithm `%s' while in %s mode\n"
@@ -3999,18 +4005,6 @@ msgstr "ugyldig fingeraftryk"
 msgid "subkey \"%s\" not found\n"
 msgstr "nøglen »%s« blev ikke fundet: %s\n"
 
-msgid "AEAD: "
-msgstr ""
-
-msgid "Digest: "
-msgstr "Sammendrag: "
-
-msgid "Features: "
-msgstr "Funktioner: "
-
-msgid "Keyserver no-modify"
-msgstr "Nøgleserver no-modify"
-
 msgid "Preferred keyserver: "
 msgstr "Fortrukken nøgleserver: "
 
@@ -4862,6 +4856,18 @@ msgstr "Vil du virkelig oprette? (j/N) "
 
 msgid "never     "
 msgstr "aldrig    "
+
+msgid "AEAD: "
+msgstr ""
+
+msgid "Digest: "
+msgstr "Sammendrag: "
+
+msgid "Features: "
+msgstr "Funktioner: "
+
+msgid "Keyserver no-modify"
+msgstr "Nøgleserver no-modify"
 
 msgid "Critical signature policy: "
 msgstr "Kritisk underskriftspolitik: "
@@ -9662,6 +9668,21 @@ msgstr ""
 
 msgid "manage the command history"
 msgstr ""
+
+#, fuzzy
+#~| msgid "selected digest algorithm is invalid\n"
+#~ msgid "selected AEAD algorithm is invalid\n"
+#~ msgstr "valgt sammendragsalgoritme er ugyldig\n"
+
+#, fuzzy
+#~| msgid "invalid personal cipher preferences\n"
+#~ msgid "invalid personal AEAD preferences\n"
+#~ msgstr "ugyldige præferencer for personlig chiffer\n"
+
+#, fuzzy
+#~| msgid "you may not use cipher algorithm `%s' while in %s mode\n"
+#~ msgid "AEAD algorithm '%s' may not be used in %s mode\n"
+#~ msgstr "du må ikke bruge chifferalgoritmen »%s« i tilstanden %s\n"
 
 #~ msgid "forcing symmetric cipher %s (%d) violates recipient preferences\n"
 #~ msgstr ""

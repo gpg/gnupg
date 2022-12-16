@@ -431,6 +431,14 @@ msgstr ""
 msgid "enable putty support"
 msgstr "no és suportat"
 
+# Gènere?  Nombre?  ivb
+# Werner FIXME: please add translator comment saying *what* is
+# uncompressed so we know the gender. jm
+#, fuzzy
+#| msgid "not supported"
+msgid "enable Win32-OpenSSH support"
+msgstr "no és suportat"
+
 msgid "Options controlling the security"
 msgstr ""
 
@@ -1921,8 +1929,9 @@ msgstr "AVÍS: %s és una opció desaconsellada.\n"
 msgid "error creating passphrase: %s\n"
 msgstr "error en la creació de la contrasenya: %s\n"
 
-#, c-format
-msgid "can't use a symmetric ESK packet due to the S2K mode\n"
+#, fuzzy, c-format
+#| msgid "can't use a symmetric ESK packet due to the S2K mode\n"
+msgid "can't use a SKESK packet due to the S2K mode\n"
 msgstr "no es pot usar un paquet asimètric ESK al estar en mode S2K\n"
 
 #, fuzzy, c-format
@@ -2008,8 +2017,17 @@ msgstr "la clau secreta és inusable"
 msgid "remove as much as possible from key during export"
 msgstr ""
 
+#, fuzzy
+#| msgid "generate a revocation certificate"
+msgid "export only revocation certificates"
+msgstr "genera un certificat de revocació"
+
 msgid "use the GnuPG key backup format"
 msgstr ""
+
+#, fuzzy
+msgid "export secret keys using the GnuPG format"
+msgstr "s'està escrivint la clau secreta a «%s»\n"
 
 #, fuzzy
 #| msgid "%s: skipped: %s\n"
@@ -2516,6 +2534,11 @@ msgstr "mostra en quin anell de claus està una clau llistada"
 msgid "show expiration dates during signature listings"
 msgstr "No hi ha cap signatura corresponent en l'anell secret\n"
 
+#, fuzzy
+#| msgid "set preference list"
+msgid "show preferences"
+msgstr "estableix la llista de preferències"
+
 #, fuzzy, c-format
 msgid "unknown TOFU policy '%s'\n"
 msgstr "el destinatari predeterminat és desconegut «%s»\n"
@@ -2679,11 +2702,6 @@ msgid "selected cipher algorithm is invalid\n"
 msgstr "l'algorisme de xifratge triat no és vàlid\n"
 
 #, fuzzy, c-format
-#| msgid "selected digest algorithm is invalid\n"
-msgid "selected AEAD algorithm is invalid\n"
-msgstr "l'algorisme de resum seleccionat no és vàlid\n"
-
-#, fuzzy, c-format
 msgid "selected compression algorithm is invalid\n"
 msgstr "l'algorisme de xifratge triat no és vàlid\n"
 
@@ -2728,11 +2746,6 @@ msgstr "les preferències per defecte són invàlides\n"
 msgid "invalid personal cipher preferences\n"
 msgstr "les preferències personals de xifrat són invàlides\n"
 
-#, fuzzy, c-format
-#| msgid "invalid personal cipher preferences\n"
-msgid "invalid personal AEAD preferences\n"
-msgstr "les preferències personals de xifrat són invàlides\n"
-
 #, c-format
 msgid "invalid personal digest preferences\n"
 msgstr "les preferències personals de digest són invàlides\n"
@@ -2749,10 +2762,6 @@ msgstr "la mida de la clau és invàlida; s'hi usaran %u bits\n"
 #, c-format
 msgid "%s does not yet work with %s\n"
 msgstr "%s encara no funciona amb %s\n"
-
-#, fuzzy, c-format
-msgid "AEAD algorithm '%s' may not be used in %s mode\n"
-msgstr "no podeu usar l'algorisme de xifratge «%s» mentre esteu en mode %s\n"
 
 #, fuzzy, c-format
 msgid "compression algorithm '%s' may not be used in %s mode\n"
@@ -3980,18 +3989,6 @@ msgstr "error: l'empremta digital és invàlida\n"
 msgid "subkey \"%s\" not found\n"
 msgstr "no s'ha trobat la clau «%s»: %s\n"
 
-msgid "AEAD: "
-msgstr ""
-
-msgid "Digest: "
-msgstr "Resum: "
-
-msgid "Features: "
-msgstr "Funcionalitats: "
-
-msgid "Keyserver no-modify"
-msgstr ""
-
 msgid "Preferred keyserver: "
 msgstr ""
 
@@ -4851,6 +4848,18 @@ msgstr "Crear realment? "
 
 msgid "never     "
 msgstr "mai       "
+
+msgid "AEAD: "
+msgstr ""
+
+msgid "Digest: "
+msgstr "Resum: "
+
+msgid "Features: "
+msgstr "Funcionalitats: "
+
+msgid "Keyserver no-modify"
+msgstr ""
 
 msgid "Critical signature policy: "
 msgstr "Política de signatura crítica: "
@@ -9451,6 +9460,21 @@ msgstr ""
 msgid "manage the command history"
 msgstr ""
 
+#, fuzzy
+#~| msgid "selected digest algorithm is invalid\n"
+#~ msgid "selected AEAD algorithm is invalid\n"
+#~ msgstr "l'algorisme de resum seleccionat no és vàlid\n"
+
+#, fuzzy
+#~| msgid "invalid personal cipher preferences\n"
+#~ msgid "invalid personal AEAD preferences\n"
+#~ msgstr "les preferències personals de xifrat són invàlides\n"
+
+#, fuzzy
+#~ msgid "AEAD algorithm '%s' may not be used in %s mode\n"
+#~ msgstr ""
+#~ "no podeu usar l'algorisme de xifratge «%s» mentre esteu en mode %s\n"
+
 #~ msgid "forcing symmetric cipher %s (%d) violates recipient preferences\n"
 #~ msgstr ""
 #~ "forçar el xifrat asimètric %s (%d) viola les preferències del "
@@ -11128,9 +11152,6 @@ msgstr ""
 
 #~ msgid "delete signatures"
 #~ msgstr "esborra signatures"
-
-#~ msgid "set preference list"
-#~ msgstr "estableix la llista de preferències"
 
 #~ msgid "updated preferences"
 #~ msgstr "preferències actualitzades"

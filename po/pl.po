@@ -396,6 +396,11 @@ msgstr "|ALGO|użycie ALGO do wyświetlania odcisków ssh"
 msgid "enable putty support"
 msgstr "włączenie obsługi putty"
 
+#, fuzzy
+#| msgid "enable putty support"
+msgid "enable Win32-OpenSSH support"
+msgstr "włączenie obsługi putty"
+
 msgid "Options controlling the security"
 msgstr "Opcje sterujące bezpieczeństwem"
 
@@ -1799,8 +1804,9 @@ msgstr "OSTRZEŻENIE: klucz %s nie nadaje się do szyfrowania w trybie %s\n"
 msgid "error creating passphrase: %s\n"
 msgstr "błąd podczas tworzenia hasła: %s\n"
 
-#, c-format
-msgid "can't use a symmetric ESK packet due to the S2K mode\n"
+#, fuzzy, c-format
+#| msgid "can't use a symmetric ESK packet due to the S2K mode\n"
+msgid "can't use a SKESK packet due to the S2K mode\n"
 msgstr ""
 "ustawiony tryb S2K nie pozwala użyć pakietu ESK dla szyfru symetrycznego\n"
 
@@ -1876,8 +1882,18 @@ msgstr "usunięcie bezużytecznych części z klucza przy eksporcie"
 msgid "remove as much as possible from key during export"
 msgstr "usunięcie jak największej części klucza przy eksporcie"
 
+#, fuzzy
+#| msgid "generate a revocation certificate"
+msgid "export only revocation certificates"
+msgstr "tworzenie certyfikatu unieważnienia klucza"
+
 msgid "use the GnuPG key backup format"
 msgstr "użycie formatu kopii zapasowej klucza GnuPG"
+
+#, fuzzy
+#| msgid "exporting secret keys not allowed\n"
+msgid "export secret keys using the GnuPG format"
+msgstr "eksport kluczy tajnych nie jest dozwolony\n"
 
 msgid " - skipped"
 msgstr " - pominięty"
@@ -2342,6 +2358,11 @@ msgstr "pokazywanie nazwy zbioru kluczy na listach kluczy"
 msgid "show expiration dates during signature listings"
 msgstr "pokazywanie dat wygaśnięcia przy wypisywaniu podpisów"
 
+#, fuzzy
+#| msgid "list preferences (expert)"
+msgid "show preferences"
+msgstr "ustawienia (zaawansowane)"
+
 #, c-format
 msgid "unknown TOFU policy '%s'\n"
 msgstr "nieznana polityka TOFU ,,%s''\n"
@@ -2500,11 +2521,6 @@ msgstr "nie zadziała z niebezpieczną pamięcią z powodu %s\n"
 msgid "selected cipher algorithm is invalid\n"
 msgstr "wybrany algorytm szyfrujący jest niepoprawny\n"
 
-#, fuzzy, c-format
-#| msgid "selected digest algorithm is invalid\n"
-msgid "selected AEAD algorithm is invalid\n"
-msgstr "wybrany algorytm skrótów wiadomości jest niepoprawny\n"
-
 #, c-format
 msgid "selected compression algorithm is invalid\n"
 msgstr "wybrany algorytm kompresji jest niepoprawny\n"
@@ -2551,11 +2567,6 @@ msgstr "niewłaściwe domyślne ustawienia\n"
 msgid "invalid personal cipher preferences\n"
 msgstr "niewłaściwe ustawienia szyfrów\n"
 
-#, fuzzy, c-format
-#| msgid "invalid personal cipher preferences\n"
-msgid "invalid personal AEAD preferences\n"
-msgstr "niewłaściwe ustawienia szyfrów\n"
-
 #, c-format
 msgid "invalid personal digest preferences\n"
 msgstr "niewłaściwe ustawienia skrótów\n"
@@ -2572,11 +2583,6 @@ msgstr "niewłaściwa długość klucza; wykorzystano %u bitów\n"
 #, c-format
 msgid "%s does not yet work with %s\n"
 msgstr "%s jeszcze nie działa z %s!\n"
-
-#, fuzzy, c-format
-#| msgid "cipher algorithm '%s' may not be used in %s mode\n"
-msgid "AEAD algorithm '%s' may not be used in %s mode\n"
-msgstr "szyfr ,,%s'' nie może być używany w trybie %s\n"
 
 #, c-format
 msgid "compression algorithm '%s' may not be used in %s mode\n"
@@ -3731,18 +3737,6 @@ msgstr ",,%s'' nie jest właściwym odciskiem\n"
 msgid "subkey \"%s\" not found\n"
 msgstr "podklucz ,,%s'' nie został odnaleziony\n"
 
-msgid "AEAD: "
-msgstr "AEAD: "
-
-msgid "Digest: "
-msgstr "Skrót: "
-
-msgid "Features: "
-msgstr "Ustawienia: "
-
-msgid "Keyserver no-modify"
-msgstr "no-modify dla serwera kluczy"
-
 msgid "Preferred keyserver: "
 msgstr "Preferowany serwer kluczy: "
 
@@ -4574,6 +4568,18 @@ msgstr "Czy na pewno utworzyć? (t/N) "
 
 msgid "never     "
 msgstr "nigdy     "
+
+msgid "AEAD: "
+msgstr "AEAD: "
+
+msgid "Digest: "
+msgstr "Skrót: "
+
+msgid "Features: "
+msgstr "Ustawienia: "
+
+msgid "Keyserver no-modify"
+msgstr "no-modify dla serwera kluczy"
 
 msgid "Critical signature policy: "
 msgstr "Krytyczny regulamin podpisu: "
@@ -9111,6 +9117,21 @@ msgstr ""
 
 msgid "manage the command history"
 msgstr ""
+
+#, fuzzy
+#~| msgid "selected digest algorithm is invalid\n"
+#~ msgid "selected AEAD algorithm is invalid\n"
+#~ msgstr "wybrany algorytm skrótów wiadomości jest niepoprawny\n"
+
+#, fuzzy
+#~| msgid "invalid personal cipher preferences\n"
+#~ msgid "invalid personal AEAD preferences\n"
+#~ msgstr "niewłaściwe ustawienia szyfrów\n"
+
+#, fuzzy
+#~| msgid "cipher algorithm '%s' may not be used in %s mode\n"
+#~ msgid "AEAD algorithm '%s' may not be used in %s mode\n"
+#~ msgstr "szyfr ,,%s'' nie może być używany w trybie %s\n"
 
 #~ msgid "forcing symmetric cipher %s (%d) violates recipient preferences\n"
 #~ msgstr "wymuszone użycie szyfru %s (%d) kłóci się z ustawieniami adresata\n"

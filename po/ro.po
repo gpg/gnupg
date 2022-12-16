@@ -409,6 +409,11 @@ msgstr ""
 msgid "enable putty support"
 msgstr "nu este suportat(ă)"
 
+#, fuzzy
+#| msgid "not supported"
+msgid "enable Win32-OpenSSH support"
+msgstr "nu este suportat(ă)"
+
 msgid "Options controlling the security"
 msgstr ""
 
@@ -1878,8 +1883,9 @@ msgstr "AVERTISMENT: \"%s\" este o opţiune învechită\n"
 msgid "error creating passphrase: %s\n"
 msgstr "eroare la crearea frazei-parolă: %s\n"
 
-#, c-format
-msgid "can't use a symmetric ESK packet due to the S2K mode\n"
+#, fuzzy, c-format
+#| msgid "can't use a symmetric ESK packet due to the S2K mode\n"
+msgid "can't use a SKESK packet due to the S2K mode\n"
 msgstr "nu pot crea un pachet ESK simetric datorită modului S2K\n"
 
 #, fuzzy, c-format
@@ -1962,8 +1968,18 @@ msgstr "cheie secretă de nefolosit"
 msgid "remove as much as possible from key during export"
 msgstr ""
 
+#, fuzzy
+#| msgid "generate a revocation certificate"
+msgid "export only revocation certificates"
+msgstr "generează un certificat de revocare"
+
 msgid "use the GnuPG key backup format"
 msgstr ""
+
+#, fuzzy
+#| msgid "exporting secret keys not allowed\n"
+msgid "export secret keys using the GnuPG format"
+msgstr "exportul cheilor secrete nu este permis\n"
 
 #, fuzzy
 #| msgid "%s: skipped: %s\n"
@@ -2484,6 +2500,11 @@ msgstr "arată căruia dintre inelele de chei îi aparţine o cheie enumerată"
 msgid "show expiration dates during signature listings"
 msgstr "Nici o semnătură corespunzătoare în inelul secret\n"
 
+#, fuzzy
+#| msgid "showpref"
+msgid "show preferences"
+msgstr "showpref"
+
 #, fuzzy, c-format
 #| msgid "unknown option `%s'\n"
 msgid "unknown TOFU policy '%s'\n"
@@ -2649,11 +2670,6 @@ msgstr "nu va rula cu memorie neprotejată (insecure) pentru că %s\n"
 msgid "selected cipher algorithm is invalid\n"
 msgstr "algoritm cifrare selectat este invalid\n"
 
-#, fuzzy, c-format
-#| msgid "selected digest algorithm is invalid\n"
-msgid "selected AEAD algorithm is invalid\n"
-msgstr "algoritm rezumat selectat este invalid\n"
-
 #, c-format
 msgid "selected compression algorithm is invalid\n"
 msgstr "algoritm compresie selectat este invalid\n"
@@ -2699,11 +2715,6 @@ msgstr "preferinţe implicite invalide\n"
 msgid "invalid personal cipher preferences\n"
 msgstr "preferinţe cifrare personale invalide\n"
 
-#, fuzzy, c-format
-#| msgid "invalid personal cipher preferences\n"
-msgid "invalid personal AEAD preferences\n"
-msgstr "preferinţe cifrare personale invalide\n"
-
 #, c-format
 msgid "invalid personal digest preferences\n"
 msgstr "preferinţe rezumat personale invalide\n"
@@ -2720,11 +2731,6 @@ msgstr "lungime cheie invalidă; folosesc %u biţi\n"
 #, c-format
 msgid "%s does not yet work with %s\n"
 msgstr "%s nu merge încă cu %s!\n"
-
-#, fuzzy, c-format
-#| msgid "you may not use cipher algorithm `%s' while in %s mode\n"
-msgid "AEAD algorithm '%s' may not be used in %s mode\n"
-msgstr "nu puteţi folosi algoritmul de cifrare `%s' câtă vreme în modul %s\n"
 
 #, fuzzy, c-format
 #| msgid "you may not use compression algorithm `%s' while in %s mode\n"
@@ -3917,18 +3923,6 @@ msgstr "amprentă invalidă"
 msgid "subkey \"%s\" not found\n"
 msgstr "cheia \"%s\" nu a fost găsită: %s\n"
 
-msgid "AEAD: "
-msgstr ""
-
-msgid "Digest: "
-msgstr "Rezumat: "
-
-msgid "Features: "
-msgstr "Capabilităţi: "
-
-msgid "Keyserver no-modify"
-msgstr "Server de chei no-modify"
-
 msgid "Preferred keyserver: "
 msgstr "Server de chei preferat: "
 
@@ -4776,6 +4770,18 @@ msgstr "Creaţi într-adevăr? (d/N) "
 
 msgid "never     "
 msgstr "niciodată "
+
+msgid "AEAD: "
+msgstr ""
+
+msgid "Digest: "
+msgstr "Rezumat: "
+
+msgid "Features: "
+msgstr "Capabilităţi: "
+
+msgid "Keyserver no-modify"
+msgstr "Server de chei no-modify"
 
 msgid "Critical signature policy: "
 msgstr "Politică de semnături critică: "
@@ -9363,6 +9369,22 @@ msgstr ""
 msgid "manage the command history"
 msgstr ""
 
+#, fuzzy
+#~| msgid "selected digest algorithm is invalid\n"
+#~ msgid "selected AEAD algorithm is invalid\n"
+#~ msgstr "algoritm rezumat selectat este invalid\n"
+
+#, fuzzy
+#~| msgid "invalid personal cipher preferences\n"
+#~ msgid "invalid personal AEAD preferences\n"
+#~ msgstr "preferinţe cifrare personale invalide\n"
+
+#, fuzzy
+#~| msgid "you may not use cipher algorithm `%s' while in %s mode\n"
+#~ msgid "AEAD algorithm '%s' may not be used in %s mode\n"
+#~ msgstr ""
+#~ "nu puteţi folosi algoritmul de cifrare `%s' câtă vreme în modul %s\n"
+
 #~ msgid "forcing symmetric cipher %s (%d) violates recipient preferences\n"
 #~ msgstr ""
 #~ "forţând cifrul simetric %s (%d) violaţi preferinţele destinatarului\n"
@@ -11319,9 +11341,6 @@ msgstr ""
 
 #~ msgid "pref"
 #~ msgstr "pref"
-
-#~ msgid "showpref"
-#~ msgstr "showpref"
 
 #~ msgid "setpref"
 #~ msgstr "setpref"

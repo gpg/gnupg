@@ -404,6 +404,11 @@ msgstr ""
 msgid "enable putty support"
 msgstr "tidak didukung"
 
+#, fuzzy
+#| msgid "not supported"
+msgid "enable Win32-OpenSSH support"
+msgstr "tidak didukung"
+
 msgid "Options controlling the security"
 msgstr ""
 
@@ -1856,8 +1861,9 @@ msgstr "WARNING: \"%s\" adalah opsi terdepresiasi\n"
 msgid "error creating passphrase: %s\n"
 msgstr "kesalahan penciptaan passphrase: %s\n"
 
-#, c-format
-msgid "can't use a symmetric ESK packet due to the S2K mode\n"
+#, fuzzy, c-format
+#| msgid "can't use a symmetric ESK packet due to the S2K mode\n"
+msgid "can't use a SKESK packet due to the S2K mode\n"
 msgstr "tidak dapat menggunakan paket simetri ESK karena mode S2K\n"
 
 #, fuzzy, c-format
@@ -1940,8 +1946,17 @@ msgstr "kunci rahasia tidak dapat dipakai"
 msgid "remove as much as possible from key during export"
 msgstr ""
 
+#, fuzzy
+#| msgid "generate a revocation certificate"
+msgid "export only revocation certificates"
+msgstr "buat sertifikat revokasi"
+
 msgid "use the GnuPG key backup format"
 msgstr ""
+
+#, fuzzy
+msgid "export secret keys using the GnuPG format"
+msgstr "menulis kunci rahasia ke `%s'\n"
 
 #, fuzzy
 #| msgid "%s: skipped: %s\n"
@@ -2430,6 +2445,11 @@ msgstr "tampilkan keyring tempat kunci yang dipilih berada"
 msgid "show expiration dates during signature listings"
 msgstr "Tidak ada signature koresponden di ring rahasia\n"
 
+#, fuzzy
+#| msgid "set preference list"
+msgid "show preferences"
+msgstr "set daftar preferensi"
+
 #, fuzzy, c-format
 msgid "unknown TOFU policy '%s'\n"
 msgstr "penerima baku tidak dikenal `%s'\n"
@@ -2591,11 +2611,6 @@ msgid "selected cipher algorithm is invalid\n"
 msgstr "algoritma cipher yang dipilih tidak valid\n"
 
 #, fuzzy, c-format
-#| msgid "selected digest algorithm is invalid\n"
-msgid "selected AEAD algorithm is invalid\n"
-msgstr "algoritma digest yang dipilih tidak valid\n"
-
-#, fuzzy, c-format
 msgid "selected compression algorithm is invalid\n"
 msgstr "algoritma cipher yang dipilih tidak valid\n"
 
@@ -2640,11 +2655,6 @@ msgstr "preferensi baku tidak valid\n"
 msgid "invalid personal cipher preferences\n"
 msgstr "preferensi cipher personal tidak valid\n"
 
-#, fuzzy, c-format
-#| msgid "invalid personal cipher preferences\n"
-msgid "invalid personal AEAD preferences\n"
-msgstr "preferensi cipher personal tidak valid\n"
-
 #, c-format
 msgid "invalid personal digest preferences\n"
 msgstr "preferensi digest personal tidak valid\n"
@@ -2661,11 +2671,6 @@ msgstr "keysize tidak valid; menggunakan %u bit\n"
 #, c-format
 msgid "%s does not yet work with %s\n"
 msgstr "%s belum dapat dipakai dengan %s\n"
-
-#, fuzzy, c-format
-msgid "AEAD algorithm '%s' may not be used in %s mode\n"
-msgstr ""
-"anda tidak boleh menggunakan algoritma cipher \"%s\" saat dalam mode %s.\n"
 
 #, fuzzy, c-format
 msgid "compression algorithm '%s' may not be used in %s mode\n"
@@ -3865,18 +3870,6 @@ msgstr "kesalahan: fingerprint tidak valid\n"
 msgid "subkey \"%s\" not found\n"
 msgstr "kunci '%s' tidak ditemukan: %s\n"
 
-msgid "AEAD: "
-msgstr ""
-
-msgid "Digest: "
-msgstr "Digest: "
-
-msgid "Features: "
-msgstr "Fitur: "
-
-msgid "Keyserver no-modify"
-msgstr ""
-
 msgid "Preferred keyserver: "
 msgstr ""
 
@@ -4716,6 +4709,18 @@ msgstr "Ingin diciptakan? "
 
 msgid "never     "
 msgstr "tidak pernah..."
+
+msgid "AEAD: "
+msgstr ""
+
+msgid "Digest: "
+msgstr "Digest: "
+
+msgid "Features: "
+msgstr "Fitur: "
+
+msgid "Keyserver no-modify"
+msgstr ""
 
 msgid "Critical signature policy: "
 msgstr "Kebijakan signature kritis: "
@@ -9220,6 +9225,21 @@ msgstr ""
 msgid "manage the command history"
 msgstr ""
 
+#, fuzzy
+#~| msgid "selected digest algorithm is invalid\n"
+#~ msgid "selected AEAD algorithm is invalid\n"
+#~ msgstr "algoritma digest yang dipilih tidak valid\n"
+
+#, fuzzy
+#~| msgid "invalid personal cipher preferences\n"
+#~ msgid "invalid personal AEAD preferences\n"
+#~ msgstr "preferensi cipher personal tidak valid\n"
+
+#, fuzzy
+#~ msgid "AEAD algorithm '%s' may not be used in %s mode\n"
+#~ msgstr ""
+#~ "anda tidak boleh menggunakan algoritma cipher \"%s\" saat dalam mode %s.\n"
+
 #~ msgid "forcing symmetric cipher %s (%d) violates recipient preferences\n"
 #~ msgstr "memaksa cipher simetrik %s (%d) melanggar preferensi penerima\n"
 
@@ -10845,9 +10865,6 @@ msgstr ""
 
 #~ msgid "delete signatures"
 #~ msgstr "hapus signature"
-
-#~ msgid "set preference list"
-#~ msgstr "set daftar preferensi"
 
 #~ msgid "updated preferences"
 #~ msgstr "perbarui preferensi"

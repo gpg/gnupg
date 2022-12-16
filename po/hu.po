@@ -399,6 +399,11 @@ msgstr ""
 msgid "enable putty support"
 msgstr "nem támogatott"
 
+#, fuzzy
+#| msgid "not supported"
+msgid "enable Win32-OpenSSH support"
+msgstr "nem támogatott"
+
 msgid "Options controlling the security"
 msgstr ""
 
@@ -1850,8 +1855,9 @@ msgstr "FIGYELEM: \"%s\" elavult opció!\n"
 msgid "error creating passphrase: %s\n"
 msgstr "Hiba a jelszó létrehozásakor: %s.\n"
 
-#, c-format
-msgid "can't use a symmetric ESK packet due to the S2K mode\n"
+#, fuzzy, c-format
+#| msgid "can't use a symmetric ESK packet due to the S2K mode\n"
+msgid "can't use a SKESK packet due to the S2K mode\n"
 msgstr "Nem tudok szimmetrikus ESK csomagot használni a S2K mód miatt!\n"
 
 #, fuzzy, c-format
@@ -1934,8 +1940,17 @@ msgstr "használhatatlan titkos kulcs"
 msgid "remove as much as possible from key during export"
 msgstr ""
 
+#, fuzzy
+#| msgid "generate a revocation certificate"
+msgid "export only revocation certificates"
+msgstr "visszavonási igazolás készítése"
+
 msgid "use the GnuPG key backup format"
 msgstr ""
+
+#, fuzzy
+msgid "export secret keys using the GnuPG format"
+msgstr "Írom a titkos kulcsot a %s állományba.\n"
 
 #, fuzzy
 #| msgid "%s: skipped: %s\n"
@@ -2426,6 +2441,11 @@ msgstr "mutatja a kilistázott kulcs kulcskarikáját is"
 msgid "show expiration dates during signature listings"
 msgstr "Nincs megfelelő aláírás a titkoskulcs-karikán.\n"
 
+#, fuzzy
+#| msgid "set preference list"
+msgid "show preferences"
+msgstr "preferencialista beállítása"
+
 #, fuzzy, c-format
 msgid "unknown TOFU policy '%s'\n"
 msgstr "Ismeretlen alapértelmezett címzett: \"%s\"\n"
@@ -2587,11 +2607,6 @@ msgid "selected cipher algorithm is invalid\n"
 msgstr "A kiválasztott rejtjelező algoritmus érvénytelen!\n"
 
 #, fuzzy, c-format
-#| msgid "selected digest algorithm is invalid\n"
-msgid "selected AEAD algorithm is invalid\n"
-msgstr "A kiválasztott kivonatoló algoritmus érvénytelen!\n"
-
-#, fuzzy, c-format
 msgid "selected compression algorithm is invalid\n"
 msgstr "A kiválasztott rejtjelező algoritmus érvénytelen!\n"
 
@@ -2636,11 +2651,6 @@ msgstr "Érvénytelen alapértelmezett preferenciák!\n"
 msgid "invalid personal cipher preferences\n"
 msgstr "Érvénytelen személyes rejtjelező-preferenciák!\n"
 
-#, fuzzy, c-format
-#| msgid "invalid personal cipher preferences\n"
-msgid "invalid personal AEAD preferences\n"
-msgstr "Érvénytelen személyes rejtjelező-preferenciák!\n"
-
 #, c-format
 msgid "invalid personal digest preferences\n"
 msgstr "Érvénytelen személyes kivonatolópreferenciák!\n"
@@ -2657,11 +2667,6 @@ msgstr "Kulcsméret érvénytelen; %u bitet használok.\n"
 #, c-format
 msgid "%s does not yet work with %s\n"
 msgstr "%s és %s egyelőre nem használható együtt!\n"
-
-#, fuzzy, c-format
-msgid "AEAD algorithm '%s' may not be used in %s mode\n"
-msgstr ""
-"Lehet, hogy nem használhatja \"%s\" rejtjelező algoritmust %s módban!\n"
 
 #, fuzzy, c-format
 msgid "compression algorithm '%s' may not be used in %s mode\n"
@@ -3859,18 +3864,6 @@ msgstr "Hiba: Érvénytelen ujjlenyomat.\n"
 msgid "subkey \"%s\" not found\n"
 msgstr "\"%s\" kulcs nem található: %s\n"
 
-msgid "AEAD: "
-msgstr ""
-
-msgid "Digest: "
-msgstr "Kivonat: "
-
-msgid "Features: "
-msgstr "Jellemzők: "
-
-msgid "Keyserver no-modify"
-msgstr ""
-
 msgid "Preferred keyserver: "
 msgstr ""
 
@@ -4706,6 +4699,18 @@ msgstr "Valóban létrehozzam? "
 
 msgid "never     "
 msgstr "soha      "
+
+msgid "AEAD: "
+msgstr ""
+
+msgid "Digest: "
+msgstr "Kivonat: "
+
+msgid "Features: "
+msgstr "Jellemzők: "
+
+msgid "Keyserver no-modify"
+msgstr ""
 
 msgid "Critical signature policy: "
 msgstr "Kritikus aláírási eljárásmód: "
@@ -9221,6 +9226,21 @@ msgstr ""
 msgid "manage the command history"
 msgstr ""
 
+#, fuzzy
+#~| msgid "selected digest algorithm is invalid\n"
+#~ msgid "selected AEAD algorithm is invalid\n"
+#~ msgstr "A kiválasztott kivonatoló algoritmus érvénytelen!\n"
+
+#, fuzzy
+#~| msgid "invalid personal cipher preferences\n"
+#~ msgid "invalid personal AEAD preferences\n"
+#~ msgstr "Érvénytelen személyes rejtjelező-preferenciák!\n"
+
+#, fuzzy
+#~ msgid "AEAD algorithm '%s' may not be used in %s mode\n"
+#~ msgstr ""
+#~ "Lehet, hogy nem használhatja \"%s\" rejtjelező algoritmust %s módban!\n"
+
 #~ msgid "forcing symmetric cipher %s (%d) violates recipient preferences\n"
 #~ msgstr "A %s (%d) rejtjelező használata sérti a címzett preferenciáit!\n"
 
@@ -10842,9 +10862,6 @@ msgstr ""
 
 #~ msgid "delete signatures"
 #~ msgstr "aláírások törlése"
-
-#~ msgid "set preference list"
-#~ msgstr "preferencialista beállítása"
 
 #~ msgid "updated preferences"
 #~ msgstr "preferenciák frissítése"

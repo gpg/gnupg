@@ -402,6 +402,11 @@ msgstr ""
 msgid "enable putty support"
 msgstr "non está soportado"
 
+#, fuzzy
+#| msgid "not supported"
+msgid "enable Win32-OpenSSH support"
+msgstr "non está soportado"
+
 msgid "Options controlling the security"
 msgstr ""
 
@@ -1860,8 +1865,9 @@ msgstr "AVISO: \"%s\" é unha opción a extinguir\n"
 msgid "error creating passphrase: %s\n"
 msgstr "erro ao crea-lo contrasinal: %s\n"
 
-#, c-format
-msgid "can't use a symmetric ESK packet due to the S2K mode\n"
+#, fuzzy, c-format
+#| msgid "can't use a symmetric ESK packet due to the S2K mode\n"
+msgid "can't use a SKESK packet due to the S2K mode\n"
 msgstr "non se pode empregar un paquete simétrico ESK debido ao modo S2K\n"
 
 #, fuzzy, c-format
@@ -1943,8 +1949,17 @@ msgstr "chave secreta non utilizable"
 msgid "remove as much as possible from key during export"
 msgstr ""
 
+#, fuzzy
+#| msgid "generate a revocation certificate"
+msgid "export only revocation certificates"
+msgstr "xerar un certificado de revocación"
+
 msgid "use the GnuPG key backup format"
 msgstr ""
+
+#, fuzzy
+msgid "export secret keys using the GnuPG format"
+msgstr "gravando a chave secreta en `%s'\n"
 
 #, fuzzy
 #| msgid "%s: skipped: %s\n"
@@ -2434,6 +2449,11 @@ msgstr "amosar en que chaveiro está unha chave listada"
 msgid "show expiration dates during signature listings"
 msgstr "Non hai unha sinatura correspondiente no chaveiro secreto\n"
 
+#, fuzzy
+#| msgid "set preference list"
+msgid "show preferences"
+msgstr "estabrece-la lista de preferencias"
+
 #, fuzzy, c-format
 msgid "unknown TOFU policy '%s'\n"
 msgstr "destinatario por defecto `%s' descoñecido\n"
@@ -2595,11 +2615,6 @@ msgid "selected cipher algorithm is invalid\n"
 msgstr "o algoritmo de cifrado seleccionado non é válido\n"
 
 #, fuzzy, c-format
-#| msgid "selected digest algorithm is invalid\n"
-msgid "selected AEAD algorithm is invalid\n"
-msgstr "o algoritmo de resumo seleccionado non é válido\n"
-
-#, fuzzy, c-format
 msgid "selected compression algorithm is invalid\n"
 msgstr "o algoritmo de cifrado seleccionado non é válido\n"
 
@@ -2644,11 +2659,6 @@ msgstr "preferencias por defecto non válidas\n"
 msgid "invalid personal cipher preferences\n"
 msgstr "preferencias de cifrado personais non válidas\n"
 
-#, fuzzy, c-format
-#| msgid "invalid personal cipher preferences\n"
-msgid "invalid personal AEAD preferences\n"
-msgstr "preferencias de cifrado personais non válidas\n"
-
 #, c-format
 msgid "invalid personal digest preferences\n"
 msgstr "preferencias de resumo personais non válidas\n"
@@ -2665,10 +2675,6 @@ msgstr "tamaño de chave non válido; empregando %u bits\n"
 #, c-format
 msgid "%s does not yet work with %s\n"
 msgstr "¡%s aínda non traballa con %s!\n"
-
-#, fuzzy, c-format
-msgid "AEAD algorithm '%s' may not be used in %s mode\n"
-msgstr "non se pode empregar o algoritmo de cifrado \"%s\" no modo %s\n"
 
 #, fuzzy, c-format
 msgid "compression algorithm '%s' may not be used in %s mode\n"
@@ -3881,18 +3887,6 @@ msgstr "erro: pegada dactilar non válida\n"
 msgid "subkey \"%s\" not found\n"
 msgstr "non se atopou a chave `%s': %s\n"
 
-msgid "AEAD: "
-msgstr ""
-
-msgid "Digest: "
-msgstr "Resumo: "
-
-msgid "Features: "
-msgstr "Características: "
-
-msgid "Keyserver no-modify"
-msgstr ""
-
 msgid "Preferred keyserver: "
 msgstr ""
 
@@ -4741,6 +4735,18 @@ msgstr "¿Crear realmente? "
 
 msgid "never     "
 msgstr "nunca     "
+
+msgid "AEAD: "
+msgstr ""
+
+msgid "Digest: "
+msgstr "Resumo: "
+
+msgid "Features: "
+msgstr "Características: "
+
+msgid "Keyserver no-modify"
+msgstr ""
 
 msgid "Critical signature policy: "
 msgstr "Normativa de sinaturas críticas: "
@@ -9273,6 +9279,20 @@ msgstr ""
 msgid "manage the command history"
 msgstr ""
 
+#, fuzzy
+#~| msgid "selected digest algorithm is invalid\n"
+#~ msgid "selected AEAD algorithm is invalid\n"
+#~ msgstr "o algoritmo de resumo seleccionado non é válido\n"
+
+#, fuzzy
+#~| msgid "invalid personal cipher preferences\n"
+#~ msgid "invalid personal AEAD preferences\n"
+#~ msgstr "preferencias de cifrado personais non válidas\n"
+
+#, fuzzy
+#~ msgid "AEAD algorithm '%s' may not be used in %s mode\n"
+#~ msgstr "non se pode empregar o algoritmo de cifrado \"%s\" no modo %s\n"
+
 #~ msgid "forcing symmetric cipher %s (%d) violates recipient preferences\n"
 #~ msgstr ""
 #~ "forza-la cifra simétrica %s (%d) viola as preferencias do destinatario\n"
@@ -10910,9 +10930,6 @@ msgstr ""
 
 #~ msgid "delete signatures"
 #~ msgstr "borrar sinaturas"
-
-#~ msgid "set preference list"
-#~ msgstr "estabrece-la lista de preferencias"
 
 #~ msgid "updated preferences"
 #~ msgstr "preferencias actualizadas"
