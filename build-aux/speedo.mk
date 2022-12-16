@@ -141,6 +141,10 @@ help-wixlib:
 	@echo 'Afterwards w32-msi-release will also build a wixlib.'
 
 
+# NB: we can't use +$(MAKE) here because we would need to define the
+# dependencies of our packages.  This does not make much sense given that
+# we have a clear order in how they are build and concurrent builds
+# would anyway clutter up the logs.
 SPEEDOMAKE := $(MAKE) -f $(SPEEDO_MK) UPD_SWDB=1
 
 native: check-tools
@@ -235,7 +239,7 @@ STATIC=0
 # external packages.
 TARBALLS=$(shell pwd)/../tarballs
 
-#  Number of parallel make jobs
+#  Number of parallel make jobs for each package
 MAKE_J=3
 
 # Name to use for the w32 installer and sources
@@ -258,6 +262,8 @@ $(eval $(call READ_AUTOGEN_template,AUTHENTICODE_CERTS))
 $(eval $(call READ_AUTOGEN_template,OSSLSIGNCODE))
 $(eval $(call READ_AUTOGEN_template,OSSLPKCS11ENGINE))
 $(eval $(call READ_AUTOGEN_template,SCUTEMODULE))
+$(eval $(call READ_AUTOGEN_template,OVERRIDE_TARBALLS))
+
 
 # All files given in AUTHENTICODE_FILES are signed before
 # they are put into the installer.
@@ -267,6 +273,7 @@ AUTHENTICODE_FILES= \
                     gpg-agent.exe             \
                     gpg-connect-agent.exe     \
                     gpg-preset-passphrase.exe \
+                    gpg-check-pattern.exe     \
                     gpg-wks-client.exe        \
                     gpg.exe                   \
                     gpgconf.exe               \
@@ -884,14 +891,14 @@ endif
 # The playground area is our scratch area, where we unpack, build and
 # install the packages.
 $(stampdir)/stamp-directories:
-	$(MKDIR) $(root) || true
-	$(MKDIR) $(stampdir) || true
-	$(MKDIR) $(sdir)  || true
-	$(MKDIR) $(bdir)  || true
-	$(MKDIR) $(idir)   || true
+	$(MKDIR) -p $(root)
+	$(MKDIR) -p $(stampdir)
+	$(MKDIR) -p $(sdir)
+	$(MKDIR) -p $(bdir)
+	$(MKDIR) -p $(idir)
 ifeq ($(TARGETOS),w32)
-	$(MKDIR) $(bdir6)  || true
-	$(MKDIR) $(idir6)   || true
+	$(MKDIR) -p $(bdir6)
+	$(MKDIR) -p $(idir6)
 endif
 	touch $(stampdir)/stamp-directories
 
@@ -1010,6 +1017,13 @@ $(stampdir)/stamp-$(1)-00-unpack: $(stampdir)/stamp-directories
 	   cd "$$$${pkg}"; 				\
 	   AUTOGEN_SH_SILENT=1 ./autogen.sh;            \
          elif [ -n "$$$${tar}" ]; then			\
+           tar2="$(OVERRIDE_TARBALLS)/$$$$(basename $$$${tar})";\
+           if [ -f "$$$${tar2}" ]; then                 \
+             tar="$$$$tar2";                            \
+             echo "speedo: /*";                         \
+             echo "speedo:  * Note: using an override"; \
+             echo "speedo:  */";                        \
+           fi;                                          \
 	   echo "speedo: unpacking $(1) from $$$${tar}"; \
            case "$$$${tar}" in				\
              *.gz) pretar=zcat ;;	   		\
@@ -1535,9 +1549,10 @@ endif
 
 
 #
-# Check availibility of standard tools
+# Check availibility of standard tools and prepare everything.
 #
-check-tools:
+check-tools: $(stampdir)/stamp-directories
+
 
 
 #
