@@ -1,7 +1,7 @@
 # configure.ac - for GnuPG 2.1
 # Copyright (C) 1998-2019 Werner Koch
 # Copyright (C) 1998-2021 Free Software Foundation, Inc.
-# Copyright (C) 2003-2021 g10 Code GmbH
+# Copyright (C) 2003-2022 g10 Code GmbH
 #
 # This file is part of GnuPG.
 #
@@ -28,8 +28,8 @@ min_automake_version="1.16.3"
 # another commit and push so that the git magic is able to work.
 m4_define([mym4_package],[gnupg])
 m4_define([mym4_major], [2])
-m4_define([mym4_minor], [3])
-m4_define([mym4_micro], [9])
+m4_define([mym4_minor], [4])
+m4_define([mym4_micro], [0])
 
 # To start a new development series, i.e a new major or minor number
 # you need to mark an arbitrary commit before the first beta release
@@ -63,7 +63,7 @@ NEED_LIBASSUAN_API=2
 NEED_LIBASSUAN_VERSION=2.5.0
 
 NEED_KSBA_API=1
-NEED_KSBA_VERSION=1.3.4
+NEED_KSBA_VERSION=1.6.3
 
 NEED_NTBTLS_API=1
 NEED_NTBTLS_VERSION=0.1.0

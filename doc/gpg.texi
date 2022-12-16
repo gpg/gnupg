@@ -1754,7 +1754,8 @@ Set what trust model GnuPG should follow. The models are:
   @item tofu
   @opindex trust-model:tofu
   @anchor{trust-model-tofu}
-  TOFU stands for Trust On First Use.  In this trust model, the first
+  TOFU stands for Trust On First Use.  In this experimental trust
+  model, the first
   time a key is seen, it is memorized.  If later another key with a
   user id with the same email address is seen, both keys are marked as
   suspect.  In that case, the next time either is used, a warning is
@@ -1803,7 +1804,8 @@ Set what trust model GnuPG should follow. The models are:
 
   @item tofu+pgp
   @opindex trust-model:tofu+pgp
-  This trust model combines TOFU with the Web of Trust.  This is done
+  This experimental trust model combines TOFU with the Web of Trust.
+  This is done
   by computing the trust level for each model and then taking the
   maximum trust level where the trust levels are ordered as follows:
   @code{unknown < undefined < marginal < fully < ultimate < expired <
