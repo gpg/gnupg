@@ -2026,7 +2026,16 @@ do_export_one_keyblock (ctrl_t ctrl, kbnode_t keyblock, u32 *keyid,
                                                hexgrip, pk, NULL);
               if (err)
                 {
-                  if (gpg_err_code (err) == GPG_ERR_FULLY_CANCELED)
+                  /* If we receive a fully canceled error we stop
+                   * immediately.  If we receive a cancel for a public
+                   * key we also stop immediately because a
+                   * public/secret key is always required first
+                   * (right, we could instead write a stub key but
+                   * that is also kind of surprising).  If we receive
+                   * a subkey we skip to the next subkey.  */
+                  if (gpg_err_code (err) == GPG_ERR_FULLY_CANCELED
+                      || (node->pkt->pkttype == PKT_PUBLIC_KEY
+                          && gpg_err_code (err) == GPG_ERR_CANCELED))
                     goto leave;
                   write_status_error ("export_keys.secret", err);
                   skip_until_subkey = 1;
