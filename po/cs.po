@@ -28,6 +28,7 @@
 # action → způsob užití (klíče)
 # administrator → správce
 # cache → keš
+# compliance rules → pravidla normy
 # distribution point → místo distribuce
 # DP (distribution point (of CRL)) → DP
 # load → zavést
@@ -37,9 +38,9 @@
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: gnupg2 2.3.4\n"
+"Project-Id-Version: gnupg2 2.3.8\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"PO-Revision-Date: 2022-02-20 16:09+01:00\n"
+"PO-Revision-Date: 2022-11-13 14:21+01:00\n"
 "Last-Translator: Petr Pisar <petr.pisar@atlas.cz>\n"
 "Language-Team: Czech <gnupg-i18n@gnupg.org>\n"
 "Language: cs\n"
@@ -296,10 +297,9 @@ msgstr "PIN nebyl zopakován správně; zkuste to znovu"
 msgid "Please enter the PIN%s%s%s to unlock the card"
 msgstr "Prosím, zadejte PIN%s%s%s, abyste odemkli kartu"
 
-#, fuzzy, c-format
-#| msgid "error writing to %s: %s\n"
+#, c-format
 msgid "error writing to pipe: %s\n"
-msgstr "chyba při zápisu do %s: %s\n"
+msgstr "chyba při zápisu do roury: %s\n"
 
 msgid "Enter new passphrase"
 msgstr "Vložte nové heslo"
@@ -776,14 +776,9 @@ msgstr "Změním jej později"
 msgid "Please insert the card with serial number"
 msgstr "Prosím, vložte kartu se sériovým číslem"
 
-#, fuzzy, c-format
-#| msgid ""
-#| "An ssh process requested the use of key%%0A  %s%%0A  (%s)%%0ADo you want "
-#| "to allow this?"
+#, c-format
 msgid "Requested the use of key%%0A  %s%%0A  %s%%0ADo you want to allow this?"
-msgstr ""
-"Proces SSH si vyžádal použití klíče%%0A  %s%%0A  (%s)%%0APřejete si to "
-"povolit?"
+msgstr "Vyžádáno použití klíče%%0A  %s%%0A  %s%%0APřejete si to povolit?"
 
 #, c-format
 msgid ""
@@ -1849,10 +1844,9 @@ msgstr "zašifrováno pomocí %s/%s.%s pro: „%s“\n"
 msgid "option '%s' may not be used in %s mode\n"
 msgstr "volba „%s“ se nesmí používat v režimu %s\n"
 
-#, fuzzy, c-format
-#| msgid "%s.%s encrypted data\n"
+#, c-format
 msgid "%s encrypted data\n"
-msgstr "data zašifrovaná pomocí %s.%s\n"
+msgstr "data zašifrovaná pomocí %s\n"
 
 #, c-format
 msgid "encrypted with unknown algorithm %d\n"
@@ -3793,10 +3787,8 @@ msgstr "Jste si jistý, že jej chcete stále přidat? (a/N) "
 msgid "You may not add a photo ID to a PGP2-style key.\n"
 msgstr "Neměli by jste přidávat fotografický ID k PGP2 klíči.\n"
 
-#, fuzzy
-#| msgid "Such a user ID already exists on this key!\n"
 msgid "Such a user ID already exists on this key!"
-msgstr "Takový identifikátor uživatele již u tohoto klíče existuje!\n"
+msgstr "Takový identifikátor uživatele již u tohoto klíče existuje!"
 
 msgid "Delete this good signature? (y/N/q)"
 msgstr "Smazat tento dobrý podpis? (a/N/u)"
@@ -4759,7 +4751,7 @@ msgstr "dešifrování selhalo: %s\n"
 
 #, c-format
 msgid "operation forced to fail due to unfulfilled compliance rules\n"
-msgstr ""
+msgstr "operace byla přinucena selhat, protože nebyla splněna pravidla normy\n"
 
 #, c-format
 msgid "Note: sender requested \"for-your-eyes-only\"\n"
@@ -6816,7 +6808,7 @@ msgid "error getting key usage information: %s\n"
 msgstr "chyba při zjišťování informací o použití klíče: %s\n"
 
 msgid "Tor might be in use - network access is limited"
-msgstr ""
+msgstr "Možná se používá Tor – přístup k síti je omezen"
 
 #, c-format
 msgid "validation model requested by certificate: %s"
@@ -8070,11 +8062,8 @@ msgstr "volání crl_cache_insert přes vydavatele selhalo: %s\n"
 msgid "reader to file mapping table full - waiting\n"
 msgstr "tabulka mapování čtenáře na soubor je plná – čeká se\n"
 
-# Poslední argument je název protokolu
-#, fuzzy
-#| msgid "CRL access not possible due to Tor mode\n"
 msgid "CRL access not possible due to Tor mode"
-msgstr "Přístup k CRL není možný kvůli režimu Tor\n"
+msgstr "Přístup k CRL není možný kvůli režimu Tor"
 
 # Poslední argument je název protokolu
 #, c-format
@@ -8246,10 +8235,8 @@ msgstr "|URL|všechny HTTP požadavky přesměruje na URL"
 msgid "use system's HTTP proxy setting"
 msgstr "používat systémové nastavení HTTP proxy"
 
-#, fuzzy
-#| msgid "Configuration for HTTP servers"
 msgid "Configuration for OpenPGP servers"
-msgstr "Nastavení HTTP serverů"
+msgstr "Nastavení pro servery OpenPGP"
 
 msgid "|URL|use keyserver at URL"
 msgstr "|URL|používat server klíčů na URL"
@@ -8257,10 +8244,8 @@ msgstr "|URL|používat server klíčů na URL"
 msgid "|FILE|use the CA certificates in FILE for HKP over TLS"
 msgstr "|SOUBOR|pro HKP přes TLS použije certifikáty CA ze SOUBORU"
 
-#, fuzzy
-#| msgid "Configuration for HTTP servers"
 msgid "Configuration for X.509 servers"
-msgstr "Nastavení HTTP serverů"
+msgstr "Nastavení pro servery X.509"
 
 msgid "inhibit the use of LDAP"
 msgstr "zakáže použití LDAP"
@@ -8491,10 +8476,8 @@ msgstr "chyba při čtení z odpovídače: %s\n"
 msgid "response from server too large; limit is %d bytes\n"
 msgstr "odpověď serveru je příliš velká, limit je %d bajtů\n"
 
-#, fuzzy
-#| msgid "OCSP request not possible due to Tor mode\n"
 msgid "OCSP request not possible due to Tor mode"
-msgstr "OCSP dotaz není možný kvůli režimu Tor\n"
+msgstr "OCSP dotaz není možný kvůli režimu Tor"
 
 #, c-format
 msgid "OCSP request not possible due to disabled HTTP\n"
@@ -8955,12 +8938,14 @@ msgstr "Příkazy pro správu Yubikey"
 msgid "manage the command history"
 msgstr "spravuje historii příkazů"
 
+#, c-format
 #~ msgid "error writing to temporary file: %s\n"
 #~ msgstr "chyba při zápisu do dočasného souboru: %s\n"
 
 #~ msgid "run in supervised mode"
 #~ msgstr "poběží v režimu dohledu"
 
+#, c-format
 #~ msgid "forcing symmetric cipher %s (%d) violates recipient preferences\n"
 #~ msgstr "vyžádaná symetrická šifra %s (%d) nevyhovuje předvolbám příjemce\n"
 
@@ -8976,12 +8961,15 @@ msgstr "spravuje historii příkazů"
 #~ msgid "Configuration of LDAP servers to use"
 #~ msgstr "Nastavení používaných LDAP serverů"
 
+#, c-format
 #~ msgid "selfsigned certificate has a BAD signature"
 #~ msgstr "sám sebou podepsaný certifikát má CHYBNÝ podpis"
 
+#, c-format
 #~ msgid "detected card with S/N: %s\n"
 #~ msgstr "nalezena karta se sériovým číslem: %s\n"
 
+#, c-format
 #~ msgid "no authentication key for ssh on card: %s\n"
 #~ msgstr "na kartě není autentizační klíč pro SSH: %s\n"
 
@@ -8991,15 +8979,19 @@ msgstr "spravuje historii příkazů"
 #~ msgid "use a log file for the server"
 #~ msgstr "použít pro server soubor s protokolem"
 
+#, c-format
 #~ msgid "Note: no default option file '%s'\n"
 #~ msgstr "Poznámka: neexistuje implicitní soubor s možnostmi „%s“\n"
 
+#, c-format
 #~ msgid "option file '%s': %s\n"
 #~ msgstr "soubor s možnostmi „%s“: %s\n"
 
+#, c-format
 #~ msgid "connection to %s established\n"
 #~ msgstr "spojení k programu %s ustanoveno\n"
 
+#, c-format
 #~ msgid "no running gpg-agent - starting '%s'\n"
 #~ msgstr "gpg-agent neběží – spouští se „%s“\n"
 
@@ -9030,33 +9022,43 @@ msgstr "spravuje historii příkazů"
 #~ msgid "invalid option"
 #~ msgstr "neplatný parametr"
 
+#, c-format
 #~ msgid "missing argument for option \"%.50s\"\n"
 #~ msgstr "postrádám argument u volby „%.50s“\n"
 
+#, c-format
 #~ msgid "option \"%.50s\" does not expect an argument\n"
 #~ msgstr "volba „%.50s“ nečeká argument\n"
 
+#, c-format
 #~ msgid "invalid command \"%.50s\"\n"
 #~ msgstr "neplatný příkaz „%.50s“\n"
 
+#, c-format
 #~ msgid "option \"%.50s\" is ambiguous\n"
 #~ msgstr "volba „%.50s“ není jednoznačná\n"
 
+#, c-format
 #~ msgid "command \"%.50s\" is ambiguous\n"
 #~ msgstr "příkaz „%.50s“ není jednoznačný\n"
 
+#, c-format
 #~ msgid "invalid option \"%.50s\"\n"
 #~ msgstr "neplatný parametr „%.50s“\n"
 
+#, c-format
 #~ msgid "unable to execute program '%s': %s\n"
 #~ msgstr "nelze spustit program „%s“: %s\n"
 
+#, c-format
 #~ msgid "unable to execute external program\n"
 #~ msgstr "nelze spustit externí program\n"
 
+#, c-format
 #~ msgid "unable to read external program response: %s\n"
 #~ msgstr "nelze přečíst odpověď externího programu: %s\n"
 
+#, c-format
 #~ msgid "Note: old default options file '%s' ignored\n"
 #~ msgstr "Poznámka: starý implicitní soubor s možnostmi „%s“ ignorován\n"
 
@@ -9066,34 +9068,42 @@ msgstr "spravuje historii příkazů"
 #~ msgid "elevate the trust of signatures with valid PKA data"
 #~ msgstr "vyzvednout důvěru podpisů s platnými daty PKA"
 
+#, c-format
 #~ msgid "   (%d) ECC and ECC\n"
 #~ msgstr "   (%d) ECC a ECC\n"
 
 #~ msgid "honor the PKA record set on a key when retrieving keys"
 #~ msgstr "respektovat PKA záznamy klíče při získávání klíčů"
 
+#, c-format
 #~ msgid "requesting key %s from %s server %s\n"
 #~ msgstr "požaduji klíč %s z %s serveru %s\n"
 
+#, c-format
 #~ msgid "Note: Verified signer's address is '%s'\n"
 #~ msgstr "Poznámka: Podepisovatelova ověřená adresa je „%s“\n"
 
+#, c-format
 #~ msgid "Note: Signer's address '%s' does not match DNS entry\n"
 #~ msgstr ""
 #~ "Poznámka: Podepisovatelova adresa „%s“ se neshoduje s DNS záznamem\n"
 
+#, c-format
 #~ msgid "trustlevel adjusted to FULL due to valid PKA info\n"
 #~ msgstr "úroveň důvěry opravena na PLNOU, kvůli platné PKA informaci\n"
 
+#, c-format
 #~ msgid "trustlevel adjusted to NEVER due to bad PKA info\n"
 #~ msgstr "úroveň důvěry opravena na ŽÁDNOU, kvůli špatné PKA informaci\n"
 
 #~ msgid "|FILE|write a server mode log to FILE"
 #~ msgstr "|SOUBOR|zapisovat protokol režimu server do SOUBORU"
 
+#, c-format
 #~ msgid "%s:%u: no hostname given\n"
 #~ msgstr "%s:%u: nebyl zadán název stroje\n"
 
+#, c-format
 #~ msgid "could not parse keyserver\n"
 #~ msgstr "nelze rozebrat serveru klíčů\n"
 
@@ -9142,66 +9152,87 @@ msgstr "spravuje historii příkazů"
 #~ "Vnitřní LDAP pomůcka pro pro Dirmngr.\n"
 #~ "Rozhraní a volby se mohou bez upozornění změnit.\n"
 
+#, c-format
 #~ msgid "invalid port number %d\n"
 #~ msgstr "neplatné číslo portu %d\n"
 
+#, c-format
 #~ msgid "scanning result for attribute '%s'\n"
 #~ msgstr "ve výsledku se hledá atribut „%s“\n"
 
+#, c-format
 #~ msgid "error writing to stdout: %s\n"
 #~ msgstr "chyba při zápisu na standardní výstup: %s\n"
 
+#, c-format
 #~ msgid "          available attribute '%s'\n"
 #~ msgstr "          dostupný atribut „%s“\n"
 
+#, c-format
 #~ msgid "attribute '%s' not found\n"
 #~ msgstr "atribut „%s“ nenalezen\n"
 
+#, c-format
 #~ msgid "found attribute '%s'\n"
 #~ msgstr "nalezen atribut „%s“\n"
 
+#, c-format
 #~ msgid "processing url '%s'\n"
 #~ msgstr "zpracovává se URL „%s“\n"
 
+#, c-format
 #~ msgid "          user '%s'\n"
 #~ msgstr "          uživatel „%s“\n"
 
+#, c-format
 #~ msgid "          pass '%s'\n"
 #~ msgstr "          heslo „%s“\n"
 
+#, c-format
 #~ msgid "          host '%s'\n"
 #~ msgstr "          stroj „%s“\n"
 
+#, c-format
 #~ msgid "          port %d\n"
 #~ msgstr "          port %d\n"
 
+#, c-format
 #~ msgid "            DN '%s'\n"
 #~ msgstr "            DN „%s“\n"
 
+#, c-format
 #~ msgid "        filter '%s'\n"
 #~ msgstr "        filtr „%s“\n"
 
+#, c-format
 #~ msgid "          attr '%s'\n"
 #~ msgstr "          atribut „%s“\n"
 
+#, c-format
 #~ msgid "no host name in '%s'\n"
 #~ msgstr "v „%s“ chybí název stroje\n"
 
+#, c-format
 #~ msgid "no attribute given for query '%s'\n"
 #~ msgstr "u dotazu „%s“ nezadán žádný atribut\n"
 
+#, c-format
 #~ msgid "WARNING: using first attribute only\n"
 #~ msgstr "POZOR: použije se pouze první atribut\n"
 
+#, c-format
 #~ msgid "LDAP init to '%s:%d' failed: %s\n"
 #~ msgstr "Inicializace LDAP u „%s:%d“ selhala: %s\n"
 
+#, c-format
 #~ msgid "binding to '%s:%d' failed: %s\n"
 #~ msgstr "napojení k „%s:%d“ selhalo: %s\n"
 
+#, c-format
 #~ msgid "searching '%s' failed: %s\n"
 #~ msgstr "hledávání „%s“ neuspělo: %s\n"
 
+#, c-format
 #~ msgid "start_cert_fetch: invalid pattern '%s'\n"
 #~ msgstr "start_cert_fetch: chybný vzor „%s“\n"
 
@@ -9258,72 +9289,95 @@ msgstr "spravuje historii příkazů"
 #~ "Syntaxe: symcryptrun --class TŘÍDA --program PROGRAM --keyfile SOUBOR "
 #~ "[VOLBY…] PŘÍKAZ [VSTUPNÍ_SOUBOR]\n"
 
+#, c-format
 #~ msgid "%s on %s aborted with status %i\n"
 #~ msgstr "%s nad %s byl ukončen s kódem %i\n"
 
+#, c-format
 #~ msgid "%s on %s failed with status %i\n"
 #~ msgstr "%s nad %s selhal s kódem %i\n"
 
+#, c-format
 #~ msgid "can't create temporary directory '%s': %s\n"
 #~ msgstr "nelze vytvořit dočasný adresář „%s“: %s\n"
 
+#, c-format
 #~ msgid "could not open %s for writing: %s\n"
 #~ msgstr "%s nelze otevřít pro zápis: %s\n"
 
+#, c-format
 #~ msgid "error closing %s: %s\n"
 #~ msgstr "chyba při zavírání chyba %s: %s\n"
 
+#, c-format
 #~ msgid "no --program option provided\n"
 #~ msgstr "nebyla zadána volba --program\n"
 
+#, c-format
 #~ msgid "only --decrypt and --encrypt are supported\n"
 #~ msgstr "pouze --decrypt a --encrypt jsou podporovány\n"
 
+#, c-format
 #~ msgid "no --keyfile option provided\n"
 #~ msgstr "nebyla zadána volba --keyfile\n"
 
+#, c-format
 #~ msgid "cannot allocate args vector\n"
 #~ msgstr "nelze alokovat pole argumentů\n"
 
+#, c-format
 #~ msgid "could not create pipe: %s\n"
 #~ msgstr "nelze vytvořit rouru: %s\n"
 
+#, c-format
 #~ msgid "could not create pty: %s\n"
 #~ msgstr "nelze vytvořit PTY: %s\n"
 
+#, c-format
 #~ msgid "could not fork: %s\n"
 #~ msgstr "nelze se rozdvojit (fork): %s\n"
 
+#, c-format
 #~ msgid "execv failed: %s\n"
 #~ msgstr "execv selhalo: %s\n"
 
+#, c-format
 #~ msgid "select failed: %s\n"
 #~ msgstr "služba select() selhala: %s\n"
 
+#, c-format
 #~ msgid "read failed: %s\n"
 #~ msgstr "čtení selhalo: %s\n"
 
+#, c-format
 #~ msgid "pty read failed: %s\n"
 #~ msgstr "čtení z PTY selhalo: %s\n"
 
+#, c-format
 #~ msgid "waitpid failed: %s\n"
 #~ msgstr "služba waitpid() selhala: %s\n"
 
+#, c-format
 #~ msgid "child aborted with status %i\n"
 #~ msgstr "potomek byl ukončen s kódem %i\n"
 
+#, c-format
 #~ msgid "cannot allocate infile string: %s\n"
 #~ msgstr "nelze alokovat řetězec infile: %s\n"
 
+#, c-format
 #~ msgid "cannot allocate outfile string: %s\n"
 #~ msgstr "nelze alokovat řetězec outfile: %s\n"
 
+#, c-format
 #~ msgid "either %s or %s must be given\n"
 #~ msgstr "musí být zadáno buď %s, nebo %s\n"
 
+#, c-format
 #~ msgid "no class provided\n"
 #~ msgstr "nezadána žádná třída\n"
 
+#, c-format
 #~ msgid "class %s is not supported\n"
 #~ msgstr "třída %s není podporována\n"
 
@@ -9339,6 +9393,7 @@ msgstr "spravuje historii příkazů"
 #~ msgid "Sex ((M)ale, (F)emale or space): "
 #~ msgstr "Zadejte pohlaví: M – mužské, F – ženské, nebo stiskněte mezerník: "
 
+#, c-format
 #~ msgid " using certificate ID 0x%08lX\n"
 #~ msgstr " pomocí certifikátu s ID 0x%08lX\n"
 
