@@ -1,4 +1,4 @@
-Noteworthy changes in version 2.4.0 (unreleased)
+Noteworthy changes in version 2.4.0 (2022-12-16)
 ------------------------------------------------
 
   * gpg: New command --quick-update-pref.  [rGd40d23b233]
