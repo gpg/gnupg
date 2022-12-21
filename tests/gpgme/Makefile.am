@@ -47,8 +47,7 @@ check: xcheck
 
 .PHONY: xcheck
 xcheck:
-	@$(MKDIR_P) setup.scm/tests \
-	  tests/gpg lang/qt/tests lang/python/tests
+	@$(MKDIR_P) tests/gpg lang/qt/tests lang/python/tests
 	$(TESTS_ENVIRONMENT) $(abs_top_builddir)/tests/gpgscm/gpgscm$(EXEEXT) \
 	  $(abs_srcdir)/run-tests.scm $(TESTFLAGS) $(TESTS)
 
@@ -61,4 +60,4 @@ CLEANFILES = *.log report.xml
 all-local: $(required_pgms)
 
 clean-local:
-	-rm -rf setup.scm/tests tests/gpg lang/qt/tests lang/python/tests
+	-rm -rf tests lang
