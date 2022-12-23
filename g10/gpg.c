@@ -3804,9 +3804,11 @@ main (int argc, char **argv)
     set_debug (debug_level);
     if (opt.verbose) /* Print the compatibility flags.  */
       parse_compatibility_flags (NULL, &opt.compat_flags, compatibility_flags);
+
     gnupg_set_compliance_extra_info (CO_EXTRA_INFO_MIN_RSA, opt.min_rsa_length);
     if ((opt.compat_flags & COMPAT_VSD_ALLOW_OCB))
       gnupg_set_compliance_extra_info (CO_EXTRA_INFO_VSD_ALLOW_OCB, 1);
+
     if (DBG_CLOCK)
       log_clock ("start");
 

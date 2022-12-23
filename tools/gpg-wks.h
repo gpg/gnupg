@@ -39,6 +39,7 @@ struct
   int use_sendmail;
   int with_colons;
   int no_autostart;
+  int add_revocs;
   const char *output;
   const char *gpg_program;
   const char *directory;
@@ -80,6 +81,8 @@ struct uidinfo_list_s
   time_t created; /* Time the userid was created.  */
   char *mbox;  /* NULL or the malloced mailbox from UID.  */
   unsigned int flags;  /* These flags are cleared on creation.  */
+  unsigned int expired:1;
+  unsigned int revoked:1;
   char uid[1];
 };
 typedef struct uidinfo_list_s *uidinfo_list_t;
@@ -91,11 +94,14 @@ void wks_set_status_fd (int fd);
 void wks_write_status (int no, const char *format, ...) GPGRT_ATTR_PRINTF(2,3);
 void free_uidinfo_list (uidinfo_list_t list);
 gpg_error_t wks_get_key (estream_t *r_key, const char *fingerprint,
-                         const char *addrspec, int exact);
+                         const char *addrspec, int exact, int binary);
 gpg_error_t wks_list_key (estream_t key, char **r_fpr,
                           uidinfo_list_t *r_mboxes);
 gpg_error_t wks_filter_uid (estream_t *r_newkey, estream_t key,
                             const char *uid, int binary);
+gpg_error_t wks_armor_key (estream_t *r_newkey, estream_t key,
+                           const char *prefix);
+gpg_error_t wks_find_add_revocs (estream_t key, const char *addrspec);
 gpg_error_t wks_send_mime (mime_maker_t mime);
 gpg_error_t wks_parse_policy (policy_flags_t flags, estream_t stream,
                               int ignore_unknown);

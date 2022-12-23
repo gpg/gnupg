@@ -1915,6 +1915,11 @@ msgstr "エクスポートの際、利用できない部分を除去する"
 msgid "remove as much as possible from key during export"
 msgstr "エクスポートの際、できるだけ除去する"
 
+#, fuzzy
+#| msgid "generate a revocation certificate"
+msgid "export only revocation certificates"
+msgstr "失効証明書を生成"
+
 msgid "use the GnuPG key backup format"
 msgstr "GnuPGの鍵のバックアップフォーマットを使います"
 
@@ -6255,6 +6260,11 @@ msgstr "RSAのモジュラスがないか、%dビットのものではありま�
 #, c-format
 msgid "RSA public exponent missing or larger than %d bits\n"
 msgstr "RSA公開指数がないか %d ビットより大きすぎます\n"
+
+#, fuzzy
+#| msgid "the NullPIN has not yet been changed\n"
+msgid "Note: PIN has not yet been enabled."
+msgstr "NullPINが変更されていません\n"
 
 #, c-format
 msgid "PIN callback returned error: %s\n"

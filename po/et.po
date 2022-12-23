@@ -2036,6 +2036,11 @@ msgstr "mittekasutatav salajane võti"
 msgid "remove as much as possible from key during export"
 msgstr ""
 
+#, fuzzy
+#| msgid "generate a revocation certificate"
+msgid "export only revocation certificates"
+msgstr "genereeri tühistamise sertifikaat"
+
 msgid "use the GnuPG key backup format"
 msgstr ""
 
@@ -6664,6 +6669,11 @@ msgstr ""
 #, c-format
 msgid "RSA public exponent missing or larger than %d bits\n"
 msgstr ""
+
+#, fuzzy
+#| msgid "Note: This key has been disabled.\n"
+msgid "Note: PIN has not yet been enabled."
+msgstr "Märkus: See võti on blokeeritud.\n"
 
 #, c-format
 msgid "PIN callback returned error: %s\n"

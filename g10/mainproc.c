@@ -765,7 +765,7 @@ proc_encrypted (CTX c, PACKET *pkt)
     result = GPG_ERR_NO_SECKEY;
 
   /* Compute compliance with CO_DE_VS.  */
-  if (!result && is_status_enabled ()
+  if (!result && (is_status_enabled () || opt.flags.require_compliance)
       /* Overriding session key voids compliance.  */
       && !opt.override_session_key
       /* Check symmetric cipher.  */

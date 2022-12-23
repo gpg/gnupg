@@ -101,7 +101,8 @@ wks_write_status (int no, const char *format, ...)
  * updated.  C-style escaping is removed from UID.  On error ERRNO is
  * set and NULL returned. */
 static uidinfo_list_t
-append_to_uidinfo_list (uidinfo_list_t *list, const char *uid, time_t created)
+append_to_uidinfo_list (uidinfo_list_t *list, const char *uid, time_t created,
+                        int expired, int revoked)
 {
   uidinfo_list_t r, sl;
   char *plainuid;
@@ -121,6 +122,8 @@ append_to_uidinfo_list (uidinfo_list_t *list, const char *uid, time_t created)
   sl->created = created;
   sl->flags = 0;
   sl->mbox = mailbox_from_userid (plainuid);
+  sl->expired = !!expired;
+  sl->revoked = !!revoked;
   sl->next = NULL;
   if (!*list)
     *list = sl;
@@ -150,6 +153,21 @@ free_uidinfo_list (uidinfo_list_t list)
 }
 
 
+static void
+debug_gpg_invocation (const char *func, const char **argv)
+{
+  int i;
+
+  if (!(opt.debug & DBG_EXTPROG_VALUE))
+    return;
+
+  log_debug ("%s: exec '%s' with", func, opt.gpg_program);
+  for (i=0; argv[i]; i++)
+    log_printf (" '%s'", argv[i]);
+  log_printf ("\n");
+}
+
+
 
 struct get_key_status_parm_s
 {
@@ -164,7 +182,8 @@ get_key_status_cb (void *opaque, const char *keyword, char *args)
 {
   struct get_key_status_parm_s *parm = opaque;
 
-  /*log_debug ("%s: %s\n", keyword, args);*/
+  if (DBG_CRYPTO)
+    log_debug ("%s: %s\n", keyword, args);
   if (!strcmp (keyword, "EXPORTED"))
     {
       parm->count++;
@@ -177,10 +196,11 @@ get_key_status_cb (void *opaque, const char *keyword, char *args)
  * mail address ADDRSPEC is included in the key.  If EXACT is set the
  * returned user id must match Addrspec exactly and not just in the
  * addr-spec (mailbox) part.  The key is returned as a new memory
- * stream at R_KEY.  */
+ * stream at R_KEY.  If BINARY is set the returned key is
+ * non-armored.  */
 gpg_error_t
 wks_get_key (estream_t *r_key, const char *fingerprint, const char *addrspec,
-             int exact)
+             int exact, int binary)
 {
   gpg_error_t err;
   ccparray_t ccp;
@@ -202,8 +222,9 @@ wks_get_key (estream_t *r_key, const char *fingerprint, const char *addrspec,
     }
 
   /* Prefix the key with the MIME content type.  */
-  es_fputs ("Content-Type: application/pgp-keys\n"
-            "\n", key);
+  if (!binary)
+    es_fputs ("Content-Type: application/pgp-keys\n"
+              "\n", key);
 
   filterexp = es_bsprintf ("keep-uid=%s= %s", exact? "uid":"mbox", addrspec);
   if (!filterexp)
@@ -223,7 +244,8 @@ wks_get_key (estream_t *r_key, const char *fingerprint, const char *addrspec,
   ccparray_put (&ccp, "--batch");
   ccparray_put (&ccp, "--status-fd=2");
   ccparray_put (&ccp, "--always-trust");
-  ccparray_put (&ccp, "--armor");
+  if (!binary)
+    ccparray_put (&ccp, "--armor");
   ccparray_put (&ccp, "--export-options=export-minimal");
   ccparray_put (&ccp, "--export-filter");
   ccparray_put (&ccp, filterexp);
@@ -239,6 +261,7 @@ wks_get_key (estream_t *r_key, const char *fingerprint, const char *addrspec,
       goto leave;
     }
   parm.fpr = fingerprint;
+  debug_gpg_invocation (__func__, argv);
   err = gnupg_exec_tool_stream (opt.gpg_program, argv, NULL,
                                 NULL, key,
                                 get_key_status_cb, &parm);
@@ -276,6 +299,22 @@ key_status_cb (void *opaque, const char *keyword, char *args)
 }
 
 
+/* Parse field 1 and set revoked and expired on return.  */
+static void
+set_expired_revoked (const char *string, int *expired, int *revoked)
+{
+  *expired = *revoked = 0;
+  /* Look at letters and stop at the first digit.  */
+  for ( ;*string && !digitp (string); string++)
+    {
+      if (*string == 'e')
+        *expired = 1;
+      else if (*string == 'r')
+        *revoked = 1;
+    }
+}
+
+
 /* Run gpg on KEY and store the primary fingerprint at R_FPR and the
  * list of mailboxes at R_MBOXES.  Returns 0 on success; on error NULL
  * is stored at R_FPR and R_MBOXES and an error code is returned.
@@ -296,6 +335,7 @@ wks_list_key (estream_t key, char **r_fpr, uidinfo_list_t *r_mboxes)
   int lnr;
   char *fpr = NULL;
   uidinfo_list_t mboxes = NULL;
+  int expired, revoked;
 
   if (r_fpr)
     *r_fpr = NULL;
@@ -332,6 +372,7 @@ wks_list_key (estream_t key, char **r_fpr, uidinfo_list_t *r_mboxes)
       err = gpg_error_from_syserror ();
       goto leave;
     }
+  debug_gpg_invocation (__func__, argv);
   err = gnupg_exec_tool_stream (opt.gpg_program, argv, key,
                                 NULL, listing,
                                 key_status_cb, NULL);
@@ -343,6 +384,7 @@ wks_list_key (estream_t key, char **r_fpr, uidinfo_list_t *r_mboxes)
 
   es_rewind (listing);
   lnr = 0;
+  expired = revoked = 0;
   maxlen = 2048; /* Set limit.  */
   while ((len = es_read_line (listing, &line, &length_of_line, &maxlen)) > 0)
     {
@@ -387,12 +429,20 @@ wks_list_key (estream_t key, char **r_fpr, uidinfo_list_t *r_mboxes)
           err = gpg_error (GPG_ERR_INV_ENGINE);
           goto leave;
         }
-      if (lnr > 1 && !strcmp (fields[0], "pub"))
+      if (!strcmp (fields[0], "pub"))
         {
-          /* More than one public key.  */
-          err = gpg_error (GPG_ERR_TOO_MANY);
-          goto leave;
+          if (lnr > 1)
+            {
+              /* More than one public key.  */
+              err = gpg_error (GPG_ERR_TOO_MANY);
+              goto leave;
+            }
+          if (nfields > 1)
+            set_expired_revoked (fields[1], &expired, &revoked);
+          else
+            expired = revoked = 0;
         }
+
       if (!strcmp (fields[0], "sub") || !strcmp (fields[0], "ssb"))
         break; /* We can stop parsing here.  */
 
@@ -407,8 +457,13 @@ wks_list_key (estream_t key, char **r_fpr, uidinfo_list_t *r_mboxes)
         }
       else if (!strcmp (fields[0], "uid") && nfields > 9)
         {
+          int uidexpired, uidrevoked;
+
+          set_expired_revoked (fields[1], &uidexpired, &uidrevoked);
           if (!append_to_uidinfo_list (&mboxes, fields[9],
-                                       parse_timestamp (fields[5], NULL)))
+                                       parse_timestamp (fields[5], NULL),
+                                       expired || uidexpired,
+                                       revoked || uidrevoked))
             {
               err = gpg_error_from_syserror ();
               goto leave;
@@ -510,6 +565,7 @@ wks_filter_uid (estream_t *r_newkey, estream_t key, const char *uid,
       err = gpg_error_from_syserror ();
       goto leave;
     }
+  debug_gpg_invocation (__func__, argv);
   err = gnupg_exec_tool_stream (opt.gpg_program, argv, key,
                                 NULL, newkey,
                                 key_status_cb, NULL);
@@ -527,6 +583,124 @@ wks_filter_uid (estream_t *r_newkey, estream_t key, const char *uid,
   xfree (filterexp);
   xfree (argv);
   es_fclose (newkey);
+  return err;
+}
+
+
+/* Put the ascii-armor around KEY and return that as a new estream
+ * object at R_NEWKEY.  Caller must make sure that KEY has been seeked
+ * to the right position (usually by calling es_rewind).  The
+ * resulting NEWKEY has already been rewound.  If PREFIX is not NULL,
+ * its content is written to NEWKEY propr to the armor; this may be
+ * used for MIME headers. */
+gpg_error_t
+wks_armor_key (estream_t *r_newkey, estream_t key, const char *prefix)
+{
+  gpg_error_t err;
+  estream_t newkey;
+  struct b64state b64state;
+  char buffer[4096];
+  size_t nread;
+
+  *r_newkey = NULL;
+
+  newkey = es_fopenmem (0, "w+b");
+  if (!newkey)
+    {
+      err = gpg_error_from_syserror ();
+      return err;
+    }
+
+  if (prefix)
+    es_fputs (prefix, newkey);
+
+  err = b64enc_start_es (&b64state, newkey, "PGP PUBLIC KEY BLOCK");
+  if (err)
+    goto leave;
+
+  do
+    {
+      nread = es_fread (buffer, 1, sizeof buffer, key);
+      if (!nread)
+	break;
+      err = b64enc_write (&b64state, buffer, nread);
+      if (err)
+        goto leave;
+    }
+  while (!es_feof (key) && !es_ferror (key));
+  if (!es_feof (key) || es_ferror (key))
+    {
+      err = gpg_error_from_syserror ();
+      goto leave;
+    }
+
+  err = b64enc_finish (&b64state);
+  if (err)
+    goto leave;
+
+  es_rewind (newkey);
+  *r_newkey = newkey;
+  newkey = NULL;
+
+ leave:
+  es_fclose (newkey);
+  return err;
+}
+
+
+/* Run gpg to export the revocation certificates for ADDRSPEC.  Add
+ * them to KEY which is expected to be non-armored keyblock.  */
+gpg_error_t
+wks_find_add_revocs (estream_t key, const char *addrspec)
+{
+  gpg_error_t err;
+  ccparray_t ccp;
+  const char **argv = NULL;
+  char *filterexp = NULL;
+
+  filterexp = es_bsprintf ("select=mbox= %s", addrspec);
+  if (!filterexp)
+    {
+      err = gpg_error_from_syserror ();
+      log_error ("error allocating memory buffer: %s\n", gpg_strerror (err));
+      goto leave;
+    }
+
+  ccparray_init (&ccp, 0);
+
+  ccparray_put (&ccp, "--no-options");
+  if (opt.verbose < 2)
+    ccparray_put (&ccp, "--quiet");
+  else
+    ccparray_put (&ccp, "--verbose");
+  ccparray_put (&ccp, "--batch");
+  ccparray_put (&ccp, "--status-fd=2");
+  ccparray_put (&ccp, "--export-options=export-revocs");
+  ccparray_put (&ccp, "--export-filter");
+  ccparray_put (&ccp, filterexp);
+  ccparray_put (&ccp, "--export");
+  ccparray_put (&ccp, addrspec);
+
+  ccparray_put (&ccp, NULL);
+  argv = ccparray_get (&ccp, NULL);
+  if (!argv)
+    {
+      err = gpg_error_from_syserror ();
+      goto leave;
+    }
+  debug_gpg_invocation (__func__, argv);
+  err = gnupg_exec_tool_stream (opt.gpg_program, argv, NULL,
+                                NULL, key,
+                                key_status_cb, NULL);
+  if (err)
+    {
+      log_error ("exporting revocs failed: %s\n", gpg_strerror (err));
+      goto leave;
+    }
+
+ leave:
+  xfree (filterexp);
+  xfree (argv);
   return err;
 }
 
@@ -1103,7 +1277,7 @@ wks_cmd_install_key (const char *fname, const char *userid)
     {
       /* FNAME looks like a fingerprint.  Get the key from the
        * standard keyring.  */
-      err = wks_get_key (&fp, fname, addrspec, 0);
+      err = wks_get_key (&fp, fname, addrspec, 0, 1);
       if (err)
         {
           log_error ("error getting key '%s' (uid='%s'): %s\n",
@@ -1140,6 +1314,12 @@ wks_cmd_install_key (const char *fname, const char *userid)
         continue; /* Should not happen anyway.  */
       if (ascii_strcasecmp (uid->mbox, addrspec))
         continue; /* Not the requested addrspec.  */
+      if (uid->expired)
+        {
+          if (opt.verbose)
+            log_info ("ignoring expired user id '%s'\n", uid->uid);
+          continue;
+        }
       any = 1;
       if (uid->created > thistime)
         {
@@ -1174,6 +1354,24 @@ wks_cmd_install_key (const char *fname, const char *userid)
     es_fclose (fp);
     fp = fp2;
   }
+
+  if (opt.add_revocs)
+    {
+      if (es_fseek (fp, 0, SEEK_END))
+        {
+          err = gpg_error_from_syserror ();
+          log_error ("error seeking stream: %s\n", gpg_strerror (err));
+          goto leave;
+        }
+      err = wks_find_add_revocs (fp, addrspec);
+      if (err)
+        {
+          log_error ("error finding revocations for '%s': %s\n",
+                     addrspec, gpg_strerror (err));
+          goto leave;
+        }
+      es_rewind (fp);
+    }
 
   err = wks_install_key_core (fp, addrspec);
   if (!opt.quiet)

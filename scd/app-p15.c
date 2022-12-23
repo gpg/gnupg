@@ -744,7 +744,15 @@ select_and_read_record (app_t app, unsigned short efid, int recno,
   /* On CardOS with a Linear TLV file structure the records starts
    * with some tag (often the record number) followed by the length
    * byte for this record.  Detect and remove this prefix.  */
-  if (*buflen > 2 && (*buffer)[0] != 0x30 && (*buffer)[1] == *buflen - 2)
+  if (*buflen == 2 && !(*buffer)[0] && !(*buffer)[1])
+    ;  /* deleted record.  */
+  else if (*buflen > 3 && (*buffer)[0] == 0xff
+           && buf16_to_uint ((*buffer)+1) == *buflen - 3)
+    {
+      memmove (*buffer, *buffer + 3, *buflen - 3);
+      *buflen = *buflen - 3;
+    }
+  else if (*buflen > 2 && (*buffer)[0] != 0x30 && (*buffer)[1] == *buflen - 2)
     {
       memmove (*buffer, *buffer + 2, *buflen - 2);
       *buflen = *buflen - 2;
@@ -1771,6 +1779,9 @@ read_ef_prkdf (app_t app, unsigned short fid, prkdf_object_t *result)
      starting with 0x00 or 0xff as these values are commonly used to
      pad data blocks and are no valid ASN.1 encoding.  Note the
      special handling for record mode at the end of the loop. */
+  if (record_mode && buflen == 2 && !buffer[0] && !buffer[1])
+    goto next_record;  /* Deleted record - continue with next */
+
   while (n && *p && *p != 0xff)
     {
       const unsigned char *pp;
@@ -2026,6 +2037,8 @@ read_ef_prkdf (app_t app, unsigned short fid, prkdf_object_t *result)
               err = 0;
             goto leave;
           }
+          if (buflen == 2 && !buffer[0] && !buffer[1])
+            goto next_record;  /* Deleted record - continue with next */
           p = buffer;
           n = buflen;
         }
@@ -2075,6 +2088,9 @@ read_ef_pukdf (app_t app, unsigned short fid, pukdf_object_t *result)
    * starting with 0x00 or 0xff as these values are commonly used to
    * pad data blocks and are no valid ASN.1 encoding.  Note the
    * special handling for record mode at the end of the loop. */
+  if (record_mode && buflen == 2 && !buffer[0] && !buffer[1])
+    goto next_record;  /* Deleted record - continue with next */
+
   while (n && *p && *p != 0xff)
     {
       const unsigned char *pp;
@@ -2352,6 +2368,8 @@ read_ef_pukdf (app_t app, unsigned short fid, pukdf_object_t *result)
               err = 0;
             goto leave;
           }
+          if (buflen == 2 && !buffer[0] && !buffer[1])
+            goto next_record;  /* Deleted record - continue with next */
           p = buffer;
           n = buflen;
         }
@@ -2402,6 +2420,9 @@ read_ef_cdf (app_t app, unsigned short fid, int cdftype, cdf_object_t *result)
      starting with 0x00 or 0xff as these values are commonly used to
      pad data blocks and are no valid ASN.1 encoding.  Note the
      special handling for record mode at the end of the loop. */
+  if (record_mode && buflen == 2 && !buffer[0] && !buffer[1])
+    goto next_record;  /* Deleted record - continue with next */
+
   while (n && *p && *p != 0xff)
     {
       const unsigned char *pp;
@@ -2623,8 +2644,8 @@ read_ef_cdf (app_t app, unsigned short fid, int cdftype, cdf_object_t *result)
       err = 0;
 
     next_record:
-      xfree (authid);
-      xfree (label);
+      xfree (authid); authid = NULL;
+      xfree (label); label = NULL;
       /* If the card uses a record oriented file structure, read the
        * next record.  Otherwise we keep on parsing the current buffer.  */
       recno++;
@@ -2633,11 +2654,14 @@ read_ef_cdf (app_t app, unsigned short fid, int cdftype, cdf_object_t *result)
           xfree (buffer); buffer = NULL;
           err = select_and_read_record (app, 0, recno, "CDF",
                                         &buffer, &buflen, NULL);
-          if (err) {
-            if (gpg_err_code (err) == GPG_ERR_NOT_FOUND)
-              err = 0;
-            goto leave;
-          }
+          if (err)
+            {
+              if (gpg_err_code (err) == GPG_ERR_NOT_FOUND)
+                err = 0;
+              goto leave;
+            }
+          if (buflen == 2 && !buffer[0] && !buffer[1])
+            goto next_record;  /* Deleted record - continue with next */
           p = buffer;
           n = buflen;
         }
@@ -2726,6 +2750,9 @@ read_ef_aodf (app_t app, unsigned short fid, aodf_object_t *result)
      starting with 0x00 or 0xff as these values are commonly used to
      pad data blocks and are no valid ASN.1 encoding.  Note the
      special handling for record mode at the end of the loop.  */
+  if (record_mode && buflen == 2 && !buffer[0] && !buffer[1])
+    goto next_record;  /* Deleted record - continue with next */
+
   while (n && *p && *p != 0xff)
     {
       const unsigned char *pp;
@@ -3295,6 +3322,8 @@ read_ef_aodf (app_t app, unsigned short fid, aodf_object_t *result)
               err = 0;
             goto leave;
           }
+          if (buflen == 2 && !buffer[0] && !buffer[1])
+            goto next_record;  /* Deleted record - continue with next */
           p = buffer;
           n = buflen;
         }

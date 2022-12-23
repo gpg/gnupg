@@ -222,6 +222,14 @@ operation.  The format of @var{file} is one mail address (just the
 addrspec, e.g. "postel@@isi.edu") per line.  Empty lines and lines
 starting with a '#' are ignored.
 
+@item --add-revocs
+@opindex add-revocs
+If enabled append revocation certificates for the same addrspec as
+used in the WKD to the key.  Modern gpg version are able to import and
+apply them for existing keys.  Note that when used with the
+@option{--mirror} command the revocation are searched in the local
+keyring and not in an LDAP directory.
+
 @item --verbose
 @opindex verbose
 Enable extra informational output.

@@ -801,7 +801,6 @@ change_name (void)
     {
       tty_printf (_("Error: Combined name too long "
                     "(limit is %d characters).\n"), 39);
-      xfree (isoname);
       rc = gpg_error (GPG_ERR_TOO_LARGE);
       goto leave;
     }

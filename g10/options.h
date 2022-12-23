@@ -391,6 +391,7 @@ EXTERN_UNLESS_MAIN_MODULE int memory_stat_debug_mode;
 #define EXPORT_PKA_FORMAT                (1<<6)
 #define EXPORT_DANE_FORMAT               (1<<7)
 #define EXPORT_BACKUP                    (1<<10)
+#define EXPORT_REVOCS                    (1<<11)
 
 #define LIST_SHOW_PHOTOS                 (1<<0)
 #define LIST_SHOW_POLICY_URLS            (1<<1)

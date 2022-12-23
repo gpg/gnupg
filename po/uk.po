@@ -1975,6 +1975,11 @@ msgstr "вилучити невикористовувані частини кл�
 msgid "remove as much as possible from key during export"
 msgstr "вилучити максимум частин з ключа під час експортування"
 
+#, fuzzy
+#| msgid "generate a revocation certificate"
+msgid "export only revocation certificates"
+msgstr "створити сертифікат відкликання"
+
 msgid "use the GnuPG key backup format"
 msgstr "використовувати формат резервних копій ключів GnuPG"
 
@@ -6599,6 +6604,11 @@ msgid "RSA public exponent missing or larger than %d bits\n"
 msgstr ""
 "Не вистачає відкритого показника RSA або розмірність показника перевищує %d "
 "бітів\n"
+
+#, fuzzy
+#| msgid "the NullPIN has not yet been changed\n"
+msgid "Note: PIN has not yet been enabled."
+msgstr "NullPIN ще не було змінено\n"
 
 #, c-format
 msgid "PIN callback returned error: %s\n"
