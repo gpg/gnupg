@@ -9,7 +9,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnupg-2.1.0\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"PO-Revision-Date: 2022-12-09 09:06+0100\n"
+"PO-Revision-Date: 2023-01-11 10:09+0100\n"
 "Last-Translator: Werner Koch <wk@gnupg.org>\n"
 "Language-Team: German <de@li.org>\n"
 "Language: de\n"
@@ -1835,14 +1835,12 @@ msgid "error creating passphrase: %s\n"
 msgstr "Fehler beim Erzeugen des Passwortes: %s\n"
 
 #, c-format
-msgid "can't use a symmetric ESK packet due to the S2K mode\n"
-msgstr ""
-"Aufgrund des S2K-Modus kann ein symmetrisches ESK Paket nicht benutzt "
-"werden\n"
+msgid "can't use a SKESK packet due to the S2K mode\n"
+msgstr "Aufgrund des S2K-Modus kann ein SKESK Paket nicht benutzt werden\n"
 
 #, c-format
-msgid "using cipher %s\n"
-msgstr "benutze Cipher %s\n"
+msgid "using cipher %s.%s\n"
+msgstr "benutze Cipher %s.%s\n"
 
 #, c-format
 msgid "'%s' already compressed\n"
@@ -1879,8 +1877,8 @@ msgstr ""
 "Empfängervoreinstellungen.\n"
 
 #, c-format
-msgid "%s/%s encrypted for: \"%s\"\n"
-msgstr "%s/%s verschlüsselt für: %s\n"
+msgid "%s/%s.%s encrypted for: \"%s\"\n"
+msgstr "%s/%s.%s verschlüsselt für:\"%s\n"
 
 #, c-format
 msgid "option '%s' may not be used in %s mode\n"
@@ -2420,6 +2418,9 @@ msgstr "Anzeigen des Schlüsselbundes, in dem ein Schlüssel drin ist"
 
 msgid "show expiration dates during signature listings"
 msgstr "Das Ablaufdatum mit den Signaturen anlisten"
+
+msgid "show preferences"
+msgstr "Voreinstellungen anzeigen"
 
 #, c-format
 msgid "unknown TOFU policy '%s'\n"
@@ -3776,18 +3777,6 @@ msgstr "\"%s\" ist kein gültiger Fingerabdruck\n"
 msgid "subkey \"%s\" not found\n"
 msgstr "Unterschlüssel \"%s\" nicht gefunden\n"
 
-msgid "AEAD: "
-msgstr "AEAD: "
-
-msgid "Digest: "
-msgstr "Digest: "
-
-msgid "Features: "
-msgstr "Eigenschaften: "
-
-msgid "Keyserver no-modify"
-msgstr "Keyserver no-modify"
-
 msgid "Preferred keyserver: "
 msgstr "Bevorzugter Schlüsselserver:"
 
@@ -4583,6 +4572,18 @@ msgstr "Wirklich erzeugen? (j/N) "
 
 msgid "never     "
 msgstr "niemals   "
+
+msgid "AEAD: "
+msgstr "AEAD: "
+
+msgid "Digest: "
+msgstr "Digest: "
+
+msgid "Features: "
+msgstr "Eigenschaften: "
+
+msgid "Keyserver no-modify"
+msgstr "Keyserver no-modify"
 
 msgid "Critical signature policy: "
 msgstr "Entscheidende Beglaubigungsrichtlinie: "
@@ -7587,6 +7588,10 @@ msgid "checking for qualified certificate failed: %s\n"
 msgstr "Prüfung auf ein qualifiziertes Zertifikats fehlgeschlagen: %s\n"
 
 #, c-format
+msgid "%s/%s signature using %s key %s\n"
+msgstr "%s/%s Signatur mittels %s-Schlüssel %s\n"
+
+#, c-format
 msgid "Signature made "
 msgstr "Signatur erzeugt am "
 
@@ -8946,6 +8951,9 @@ msgid ""
 msgstr ""
 "Syntax: gpg-check-pattern [optionen] Musterdatei\n"
 "Das von stdin gelesene Passwort gegen die Musterdatei prüfen\n"
+
+#~ msgid "%s/%s encrypted for: \"%s\"\n"
+#~ msgstr "%s/%s verschlüsselt für: %s\n"
 
 #~ msgid "forcing symmetric cipher %s (%d) violates recipient preferences\n"
 #~ msgstr ""
