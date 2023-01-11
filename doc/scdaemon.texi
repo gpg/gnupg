@@ -251,7 +251,7 @@ socket.
 @item --pcsc-shared
 @opindex pcsc-shared
 Use shared mode to access the card via PC/SC.  This is a somewhat
-dangerous option because Scdaemon assumes exclusivbe access to teh
+dangerous option because Scdaemon assumes exclusive access to the
 card and for example caches certain information from the card.  Use
 this option only if you know what you are doing.
 
@@ -774,4 +774,3 @@ length up to N bytes.  If N is not given a default value is used
 @command{gpg2}(1)
 @end ifset
 @include see-also-note.texi
-

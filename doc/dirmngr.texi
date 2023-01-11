@@ -320,8 +320,8 @@ keyserver name, optional keyserver configuration options may be
 provided.  These are the same as the @option{--keyserver-options} of
 @command{gpg}, but apply only to this particular keyserver.
 
-Most keyservers synchronize with each other, so there is generally no
-need to send keys to more than one server. Somes keyservers use round
+Some keyservers synchronize with each other, so there is not always a
+need to send keys to more than one server. Some keyservers use round
 robin DNS to give a different keyserver each time you use it.
 
 If exactly two keyservers are configured and only one is a Tor hidden
