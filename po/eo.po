@@ -1897,11 +1897,11 @@ msgid "error creating passphrase: %s\n"
 msgstr "eraro dum kreado de pasfrazo: %s\n"
 
 #, c-format
-msgid "can't use a symmetric ESK packet due to the S2K mode\n"
+msgid "can't use a SKESK packet due to the S2K mode\n"
 msgstr ""
 
 #, fuzzy, c-format
-msgid "using cipher %s\n"
+msgid "using cipher %s.%s\n"
 msgstr "subskribado malsukcesis: %s\n"
 
 #, fuzzy, c-format
@@ -1938,7 +1938,7 @@ msgid ""
 msgstr "NOTO: ĉifrad-metodo %d ne trovita en preferoj\n"
 
 #, fuzzy, c-format
-msgid "%s/%s encrypted for: \"%s\"\n"
+msgid "%s/%s.%s encrypted for: \"%s\"\n"
 msgstr "%s/%s-ĉifrita por: %s\n"
 
 #, fuzzy, c-format
@@ -2522,6 +2522,11 @@ msgstr "montri, en kiu ŝlosilaro estas listigita ŝlosilo"
 #, fuzzy
 msgid "show expiration dates during signature listings"
 msgstr "Mankas responda subskribo en sekreta ŝlosilaro\n"
+
+#, fuzzy
+#| msgid "set preference list"
+msgid "show preferences"
+msgstr "agordi liston de preferoj"
 
 #, fuzzy, c-format
 msgid "unknown TOFU policy '%s'\n"
@@ -3933,18 +3938,6 @@ msgstr "%s: nevalida dosiero-versio %d\n"
 msgid "subkey \"%s\" not found\n"
 msgstr "ŝlosilo '%s' ne trovita: %s\n"
 
-msgid "AEAD: "
-msgstr ""
-
-msgid "Digest: "
-msgstr ""
-
-msgid "Features: "
-msgstr ""
-
-msgid "Keyserver no-modify"
-msgstr ""
-
 msgid "Preferred keyserver: "
 msgstr ""
 
@@ -4761,6 +4754,18 @@ msgid "Really create? (y/N) "
 msgstr "Ĉu vere krei? "
 
 msgid "never     "
+msgstr ""
+
+msgid "AEAD: "
+msgstr ""
+
+msgid "Digest: "
+msgstr ""
+
+msgid "Features: "
+msgstr ""
+
+msgid "Keyserver no-modify"
 msgstr ""
 
 #, fuzzy
@@ -7698,6 +7703,10 @@ msgid "checking for qualified certificate failed: %s\n"
 msgstr "kontrolo de kreita subskribo malsukcesis: %s\n"
 
 #, fuzzy, c-format
+msgid "%s/%s signature using %s key %s\n"
+msgstr "Subskribo farita je %.*s per %s, ŝlosilo %08lX\n"
+
+#, fuzzy, c-format
 msgid "Signature made "
 msgstr "Ĉi tiu ŝlosilo eksvalidiĝos je %s.\n"
 
@@ -9060,6 +9069,10 @@ msgid ""
 "Syntax: gpg-check-pattern [options] patternfile\n"
 "Check a passphrase given on stdin against the patternfile\n"
 msgstr ""
+
+#, fuzzy
+#~ msgid "%s/%s encrypted for: \"%s\"\n"
+#~ msgstr "%s/%s-ĉifrita por: %s\n"
 
 #, fuzzy
 #~ msgid "error writing to temporary file: %s\n"
@@ -10462,9 +10475,6 @@ msgstr ""
 
 #~ msgid "change the expire date"
 #~ msgstr "ŝanĝi la daton de eksvalidiĝo"
-
-#~ msgid "set preference list"
-#~ msgstr "agordi liston de preferoj"
 
 #~ msgid "updated preferences"
 #~ msgstr "aktualigitaj preferoj"

@@ -1788,12 +1788,14 @@ msgstr ""
 msgid "error creating passphrase: %s\n"
 msgstr "パスフレーズの作成エラー: %s\n"
 
-#, c-format
-msgid "can't use a symmetric ESK packet due to the S2K mode\n"
+#, fuzzy, c-format
+#| msgid "can't use a symmetric ESK packet due to the S2K mode\n"
+msgid "can't use a SKESK packet due to the S2K mode\n"
 msgstr "S2Kモードのため、共通鍵ESKパケットを使えません\n"
 
-#, c-format
-msgid "using cipher %s\n"
+#, fuzzy, c-format
+#| msgid "using cipher %s\n"
+msgid "using cipher %s.%s\n"
 msgstr "暗号方式 %s を使います\n"
 
 #, c-format
@@ -1827,8 +1829,9 @@ msgid ""
 msgstr ""
 "*警告*: 圧縮アルゴリズム %s (%d) の強制が、受取人の優先指定をそむきます\n"
 
-#, c-format
-msgid "%s/%s encrypted for: \"%s\"\n"
+#, fuzzy, c-format
+#| msgid "%s/%s encrypted for: \"%s\"\n"
+msgid "%s/%s.%s encrypted for: \"%s\"\n"
 msgstr "%s/%s暗号化 受信者:\"%s\"\n"
 
 #, c-format
@@ -2352,6 +2355,11 @@ msgstr "鍵の一覧に鍵リングの名前を表示する"
 
 msgid "show expiration dates during signature listings"
 msgstr "署名の一覧時に有効期限の日付を表示する"
+
+#, fuzzy
+#| msgid "list preferences (expert)"
+msgid "show preferences"
+msgstr "優先指定の一覧 (エキスパート)"
 
 #, c-format
 msgid "unknown TOFU policy '%s'\n"
@@ -3654,18 +3662,6 @@ msgstr "\"%s\"は正しいフィンガープリントではありません\n"
 msgid "subkey \"%s\" not found\n"
 msgstr "副鍵\"%s\"が見つかりません\n"
 
-msgid "AEAD: "
-msgstr "AEAD: "
-
-msgid "Digest: "
-msgstr "ダイジェスト: "
-
-msgid "Features: "
-msgstr "機能: "
-
-msgid "Keyserver no-modify"
-msgstr "鍵サーバ 修正しない"
-
 msgid "Preferred keyserver: "
 msgstr "優先鍵サーバ: "
 
@@ -4441,6 +4437,18 @@ msgstr "本当に作成しますか? (y/N) "
 
 msgid "never     "
 msgstr "無期限    "
+
+msgid "AEAD: "
+msgstr "AEAD: "
+
+msgid "Digest: "
+msgstr "ダイジェスト: "
+
+msgid "Features: "
+msgstr "機能: "
+
+msgid "Keyserver no-modify"
+msgstr "鍵サーバ 修正しない"
 
 msgid "Critical signature policy: "
 msgstr "クリティカルな署名ポリシー: "
@@ -7259,6 +7267,11 @@ msgstr "署名者 %dのために使われたハッシュアルゴリズム: %s (
 msgid "checking for qualified certificate failed: %s\n"
 msgstr "適正な認定証明書の検査に失敗しました: %s\n"
 
+#, fuzzy, c-format
+#| msgid "Signature made %s using %s key ID %s\n"
+msgid "%s/%s signature using %s key %s\n"
+msgstr "%sに%s鍵ID %sで施された署名\n"
+
 #, c-format
 msgid "Signature made "
 msgstr "施された署名 "
@@ -8578,6 +8591,9 @@ msgid ""
 msgstr ""
 "形式: gpg-check-pattern [オプション] パターンファイル\n"
 "パターンファイルに対して標準入力のパスフレーズを確認する\n"
+
+#~ msgid "%s/%s encrypted for: \"%s\"\n"
+#~ msgstr "%s/%s暗号化 受信者:\"%s\"\n"
 
 #~ msgid "forcing symmetric cipher %s (%d) violates recipient preferences\n"
 #~ msgstr "共通鍵暗号方式 %s (%d) の強制が、受取人の優先指定をそむきます\n"

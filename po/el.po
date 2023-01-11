@@ -1901,12 +1901,14 @@ msgstr ""
 msgid "error creating passphrase: %s\n"
 msgstr "σφάλμα στη δημιουργία της φράσης κλειδί: %s\n"
 
-#, c-format
-msgid "can't use a symmetric ESK packet due to the S2K mode\n"
+#, fuzzy, c-format
+#| msgid "can't use a symmetric ESK packet due to the S2K mode\n"
+msgid "can't use a SKESK packet due to the S2K mode\n"
 msgstr "αδυναμία χρήσης ενός συμμετρικού πακέτου ESK λόγω της κατάστασης S2K\n"
 
-#, c-format
-msgid "using cipher %s\n"
+#, fuzzy, c-format
+#| msgid "using cipher %s\n"
+msgid "using cipher %s.%s\n"
 msgstr "χρήση του κρυπταλγόριθμου: %s\n"
 
 #, fuzzy, c-format
@@ -1945,8 +1947,9 @@ msgstr ""
 "ο εξαναγκασμός χρήσης του αλγορίθμου συμπίεσης %s (%d) παραβιάζει τις\n"
 "επιλογές του παραλήπτη\n"
 
-#, c-format
-msgid "%s/%s encrypted for: \"%s\"\n"
+#, fuzzy, c-format
+#| msgid "%s/%s encrypted for: \"%s\"\n"
+msgid "%s/%s.%s encrypted for: \"%s\"\n"
 msgstr "%s/%s κρυπτογραφήθηκε για: \"%s\"\n"
 
 #, fuzzy, c-format
@@ -2543,6 +2546,11 @@ msgstr "απεικόνιση της κλειδοθήκης στην οποία �
 #, fuzzy
 msgid "show expiration dates during signature listings"
 msgstr "Δεν βρέθηκε αντίστοιχη υπογραφή στη μυστική κλειδοθήκη\n"
+
+#, fuzzy
+#| msgid "set preference list"
+msgid "show preferences"
+msgstr "ορισμός απεικόνισης επιλογών"
 
 #, fuzzy, c-format
 msgid "unknown TOFU policy '%s'\n"
@@ -3958,18 +3966,6 @@ msgstr "σφάλμα: μη έγκυρο αποτύπωμα\n"
 msgid "subkey \"%s\" not found\n"
 msgstr "το κλειδί '%s' δε βρέθηκε: %s\n"
 
-msgid "AEAD: "
-msgstr ""
-
-msgid "Digest: "
-msgstr "Περίληψη: "
-
-msgid "Features: "
-msgstr "Δυνατότητε: "
-
-msgid "Keyserver no-modify"
-msgstr ""
-
 msgid "Preferred keyserver: "
 msgstr ""
 
@@ -4804,6 +4800,18 @@ msgstr "Σίγουρα να δημιουργηθεί; "
 
 msgid "never     "
 msgstr "ποτέ     "
+
+msgid "AEAD: "
+msgstr ""
+
+msgid "Digest: "
+msgstr "Περίληψη: "
+
+msgid "Features: "
+msgstr "Δυνατότητε: "
+
+msgid "Keyserver no-modify"
+msgstr ""
 
 msgid "Critical signature policy: "
 msgstr "Πολιτική κρίσιμης υπογραφής: "
@@ -7772,6 +7780,10 @@ msgid "checking for qualified certificate failed: %s\n"
 msgstr "απέτυχε ο έλεγχος της υπογραφής που δημιουργήθηκε: %s\n"
 
 #, fuzzy, c-format
+msgid "%s/%s signature using %s key %s\n"
+msgstr "Υπογραφή έγινε στο %.*s με χρήση του κλειδιού%s ID %08lX\n"
+
+#, fuzzy, c-format
 msgid "Signature made "
 msgstr "Υπογραφή έληξε στις %s.\n"
 
@@ -9141,6 +9153,9 @@ msgid ""
 "Syntax: gpg-check-pattern [options] patternfile\n"
 "Check a passphrase given on stdin against the patternfile\n"
 msgstr ""
+
+#~ msgid "%s/%s encrypted for: \"%s\"\n"
+#~ msgstr "%s/%s κρυπτογραφήθηκε για: \"%s\"\n"
 
 #~ msgid "forcing symmetric cipher %s (%d) violates recipient preferences\n"
 #~ msgstr ""
@@ -10671,9 +10686,6 @@ msgstr ""
 
 #~ msgid "change the expire date"
 #~ msgstr "αλλαγή της ημερομηνίας λήξης"
-
-#~ msgid "set preference list"
-#~ msgstr "ορισμός απεικόνισης επιλογών"
 
 #~ msgid "updated preferences"
 #~ msgstr "αναωεωμένες επιλογές"

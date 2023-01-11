@@ -1915,12 +1915,14 @@ msgstr ""
 msgid "error creating passphrase: %s\n"
 msgstr "erreur de création de la phrase secrète : %s\n"
 
-#, c-format
-msgid "can't use a symmetric ESK packet due to the S2K mode\n"
+#, fuzzy, c-format
+#| msgid "can't use a symmetric ESK packet due to the S2K mode\n"
+msgid "can't use a SKESK packet due to the S2K mode\n"
 msgstr "impossible d'utiliser un paquet ESK symétrique en mode S2K\n"
 
-#, c-format
-msgid "using cipher %s\n"
+#, fuzzy, c-format
+#| msgid "using cipher %s\n"
+msgid "using cipher %s.%s\n"
 msgstr "utilisation de l'algorithme de chiffrement %s\n"
 
 #, c-format
@@ -1958,8 +1960,9 @@ msgstr ""
 "Attention : forcer l'algorithme de compression %s (%d) est en\n"
 "            désaccord avec les préférences du destinataire\n"
 
-#, c-format
-msgid "%s/%s encrypted for: \"%s\"\n"
+#, fuzzy, c-format
+#| msgid "%s/%s encrypted for: \"%s\"\n"
+msgid "%s/%s.%s encrypted for: \"%s\"\n"
 msgstr "%s/%s chiffré pour : « %s »\n"
 
 #, fuzzy, c-format
@@ -2557,6 +2560,11 @@ msgstr "montrer le nom du porte-clefs en affichant les clefs"
 
 msgid "show expiration dates during signature listings"
 msgstr "montrer les dates d'expiration en affichant les signatures"
+
+#, fuzzy
+#| msgid "list preferences (expert)"
+msgid "show preferences"
+msgstr "afficher les préférences (expert)"
 
 #, fuzzy, c-format
 #| msgid "unknown option '%s'\n"
@@ -3930,18 +3938,6 @@ msgstr "« %s » n’est pas une empreinte\n"
 msgid "subkey \"%s\" not found\n"
 msgstr "clef « %s » introuvable : %s\n"
 
-msgid "AEAD: "
-msgstr ""
-
-msgid "Digest: "
-msgstr "Hachage : "
-
-msgid "Features: "
-msgstr "Fonctionnalités : "
-
-msgid "Keyserver no-modify"
-msgstr "Serveur de clefs sans modification"
-
 msgid "Preferred keyserver: "
 msgstr "Serveur de clefs favori : "
 
@@ -4766,6 +4762,18 @@ msgstr "Faut-il vraiment la créer ? (o/N) "
 
 msgid "never     "
 msgstr "jamais    "
+
+msgid "AEAD: "
+msgstr ""
+
+msgid "Digest: "
+msgstr "Hachage : "
+
+msgid "Features: "
+msgstr "Fonctionnalités : "
+
+msgid "Keyserver no-modify"
+msgstr "Serveur de clefs sans modification"
 
 msgid "Critical signature policy: "
 msgstr "Politique de signature critique : "
@@ -7829,6 +7837,11 @@ msgstr "algorithme de hachage utilisé pour le signataire %d : %s (%s)\n"
 msgid "checking for qualified certificate failed: %s\n"
 msgstr "échec de vérification de certificat qualifié : %s\n"
 
+#, fuzzy, c-format
+#| msgid "Signature made %s using %s key ID %s\n"
+msgid "%s/%s signature using %s key %s\n"
+msgstr "Signature faite le %s avec la clef %s d'identifiant %s\n"
+
 #, c-format
 msgid "Signature made "
 msgstr "Signature faite le "
@@ -9245,6 +9258,9 @@ msgstr ""
 "Syntaxe : gpg-check-pattern [options] ficmotif\n"
 "Vérifier une phrase secrète donnée sur l'entrée standard par rapport à "
 "ficmotif\n"
+
+#~ msgid "%s/%s encrypted for: \"%s\"\n"
+#~ msgstr "%s/%s chiffré pour : « %s »\n"
 
 #~ msgid "forcing symmetric cipher %s (%d) violates recipient preferences\n"
 #~ msgstr ""

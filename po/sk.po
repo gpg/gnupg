@@ -1902,12 +1902,14 @@ msgstr "vyžiadaná symetrická šifra %s (%d) nevyhovuje predvoľbám príjemcu
 msgid "error creating passphrase: %s\n"
 msgstr "chyba pri vytváraní hesla: %s\n"
 
-#, c-format
-msgid "can't use a symmetric ESK packet due to the S2K mode\n"
+#, fuzzy, c-format
+#| msgid "can't use a symmetric ESK packet due to the S2K mode\n"
+msgid "can't use a SKESK packet due to the S2K mode\n"
 msgstr "v móde S2K nemožno použiť symetrický ESK paket\n"
 
-#, c-format
-msgid "using cipher %s\n"
+#, fuzzy, c-format
+#| msgid "using cipher %s\n"
+msgid "using cipher %s.%s\n"
 msgstr "použitá šifra %s\n"
 
 #, fuzzy, c-format
@@ -1944,8 +1946,9 @@ msgid ""
 msgstr ""
 "vyžiadaný kompresný algoritmus %s (%d) nevyhovuje predvoľbám príjemcu\n"
 
-#, c-format
-msgid "%s/%s encrypted for: \"%s\"\n"
+#, fuzzy, c-format
+#| msgid "%s/%s encrypted for: \"%s\"\n"
+msgid "%s/%s.%s encrypted for: \"%s\"\n"
 msgstr "%s/%s zašifrovaný pre: %s\n"
 
 #, fuzzy, c-format
@@ -2547,6 +2550,11 @@ msgstr "ukáž v ktorom súbore kľúčov je vypísaný kľúč"
 #, fuzzy
 msgid "show expiration dates during signature listings"
 msgstr "V súbore tajných kľúčov chýba zodpovedajúci podpis\n"
+
+#, fuzzy
+#| msgid "set preference list"
+msgid "show preferences"
+msgstr "nastaviť zoznam predvolieb"
 
 #, fuzzy, c-format
 msgid "unknown TOFU policy '%s'\n"
@@ -3957,18 +3965,6 @@ msgstr "chyba: neplatný odtlačok\n"
 msgid "subkey \"%s\" not found\n"
 msgstr "kľúč `%s' nebol nájdený: %s\n"
 
-msgid "AEAD: "
-msgstr ""
-
-msgid "Digest: "
-msgstr "Digest: "
-
-msgid "Features: "
-msgstr "Charakteristiky: "
-
-msgid "Keyserver no-modify"
-msgstr ""
-
 msgid "Preferred keyserver: "
 msgstr ""
 
@@ -4786,6 +4782,18 @@ msgstr "Skutočne vytvoriť? "
 
 msgid "never     "
 msgstr "nikdy     "
+
+msgid "AEAD: "
+msgstr ""
+
+msgid "Digest: "
+msgstr "Digest: "
+
+msgid "Features: "
+msgstr "Charakteristiky: "
+
+msgid "Keyserver no-modify"
+msgstr ""
 
 msgid "Critical signature policy: "
 msgstr "Kritická podpisová politika: "
@@ -7748,6 +7756,11 @@ msgstr ""
 msgid "checking for qualified certificate failed: %s\n"
 msgstr "kontrola vytvoreného podpisu sa nepodarila: %s\n"
 
+# Scripte scannen lt. dl1bke auf "ID (0-9A-F)+" deswegen muß "ID" rein :-(
+#, fuzzy, c-format
+msgid "%s/%s signature using %s key %s\n"
+msgstr "Podpis vytvorený %.*s pomocou %s kľúča ID %08lX\n"
+
 #, fuzzy, c-format
 msgid "Signature made "
 msgstr "Platnosť podpisu vypršala %s\n"
@@ -9117,6 +9130,9 @@ msgid ""
 "Syntax: gpg-check-pattern [options] patternfile\n"
 "Check a passphrase given on stdin against the patternfile\n"
 msgstr ""
+
+#~ msgid "%s/%s encrypted for: \"%s\"\n"
+#~ msgstr "%s/%s zašifrovaný pre: %s\n"
 
 #~ msgid "forcing symmetric cipher %s (%d) violates recipient preferences\n"
 #~ msgstr "vyžiadaná symetrická šifra %s (%d) nevyhovuje predvoľbám príjemcu\n"
@@ -10630,9 +10646,6 @@ msgstr ""
 
 #~ msgid "change the expire date"
 #~ msgstr "zmeniť dobu platnosti"
-
-#~ msgid "set preference list"
-#~ msgstr "nastaviť zoznam predvolieb"
 
 #~ msgid "updated preferences"
 #~ msgstr "aktualizovať predvoľby"

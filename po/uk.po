@@ -1840,12 +1840,14 @@ msgstr ""
 msgid "error creating passphrase: %s\n"
 msgstr "помилка під час спроби створення пароля: %s\n"
 
-#, c-format
-msgid "can't use a symmetric ESK packet due to the S2K mode\n"
+#, fuzzy, c-format
+#| msgid "can't use a symmetric ESK packet due to the S2K mode\n"
+msgid "can't use a SKESK packet due to the S2K mode\n"
 msgstr "не можна використовувати симетричний пакет ESK через режим S2K\n"
 
-#, c-format
-msgid "using cipher %s\n"
+#, fuzzy, c-format
+#| msgid "using cipher %s\n"
+msgid "using cipher %s.%s\n"
 msgstr "використано шифр %s\n"
 
 #, c-format
@@ -1882,8 +1884,9 @@ msgstr ""
 "УВАГА: примусове використання алгоритму стиснення %s (%d) не відповідає "
 "параметрам отримувача\n"
 
-#, c-format
-msgid "%s/%s encrypted for: \"%s\"\n"
+#, fuzzy, c-format
+#| msgid "%s/%s encrypted for: \"%s\"\n"
+msgid "%s/%s.%s encrypted for: \"%s\"\n"
 msgstr "%s/%s зашифровано для «%s»\n"
 
 #, c-format
@@ -2449,6 +2452,11 @@ msgstr "показувати назву сховища ключів у спис�
 
 msgid "show expiration dates during signature listings"
 msgstr "показувати дати завершення строків дії у списку підписів"
+
+#, fuzzy
+#| msgid "list preferences (expert)"
+msgid "show preferences"
+msgstr "список переваг (експертний)"
 
 #, c-format
 msgid "unknown TOFU policy '%s'\n"
@@ -3807,18 +3815,6 @@ msgstr "«%s» не є належним відбитком\n"
 msgid "subkey \"%s\" not found\n"
 msgstr "не знайдено підключ «%s»\n"
 
-msgid "AEAD: "
-msgstr ""
-
-msgid "Digest: "
-msgstr "Контрольна сума: "
-
-msgid "Features: "
-msgstr "Можливості: "
-
-msgid "Keyserver no-modify"
-msgstr "Сервер ключів без можливості зміни"
-
 msgid "Preferred keyserver: "
 msgstr "Основний сервер ключів: "
 
@@ -4625,6 +4621,18 @@ msgstr "Створити? (y/N або т/Н) "
 
 msgid "never     "
 msgstr "ніколи    "
+
+msgid "AEAD: "
+msgstr ""
+
+msgid "Digest: "
+msgstr "Контрольна сума: "
+
+msgid "Features: "
+msgstr "Можливості: "
+
+msgid "Keyserver no-modify"
+msgstr "Сервер ключів без можливості зміни"
 
 msgid "Critical signature policy: "
 msgstr "Критичні правила підпису: "
@@ -7631,6 +7639,11 @@ msgstr "алгоритм хешування, використаний для п�
 msgid "checking for qualified certificate failed: %s\n"
 msgstr "помилка перевірки якості сертифікатів: %s\n"
 
+#, fuzzy, c-format
+#| msgid "Signature made %s using %s key ID %s\n"
+msgid "%s/%s signature using %s key %s\n"
+msgstr "Підпис створено %s ключем %s з ідентифікатором %s\n"
+
 #, c-format
 msgid "Signature made "
 msgstr "Підпис створено "
@@ -8974,6 +8987,9 @@ msgid ""
 msgstr ""
 "Синтаксис: gpg-check-pattern [параметри] файл_шаблонів\n"
 "Перевірити пароль, вказаний у stdin, за допомогою файла_шаблонів\n"
+
+#~ msgid "%s/%s encrypted for: \"%s\"\n"
+#~ msgstr "%s/%s зашифровано для «%s»\n"
 
 #~ msgid "forcing symmetric cipher %s (%d) violates recipient preferences\n"
 #~ msgstr ""

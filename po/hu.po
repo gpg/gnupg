@@ -1894,12 +1894,14 @@ msgstr "A %s (%d) rejtjelező használata sérti a címzett preferenciáit!\n"
 msgid "error creating passphrase: %s\n"
 msgstr "Hiba a jelszó létrehozásakor: %s.\n"
 
-#, c-format
-msgid "can't use a symmetric ESK packet due to the S2K mode\n"
+#, fuzzy, c-format
+#| msgid "can't use a symmetric ESK packet due to the S2K mode\n"
+msgid "can't use a SKESK packet due to the S2K mode\n"
 msgstr "Nem tudok szimmetrikus ESK csomagot használni a S2K mód miatt!\n"
 
-#, c-format
-msgid "using cipher %s\n"
+#, fuzzy, c-format
+#| msgid "using cipher %s\n"
+msgid "using cipher %s.%s\n"
 msgstr "%s rejtjelezést használok.\n"
 
 #, fuzzy, c-format
@@ -1937,8 +1939,9 @@ msgid ""
 "preferences\n"
 msgstr "A %s (%d) tömörítés használata sérti a címzett preferenciáit!\n"
 
-#, c-format
-msgid "%s/%s encrypted for: \"%s\"\n"
+#, fuzzy, c-format
+#| msgid "%s/%s encrypted for: \"%s\"\n"
+msgid "%s/%s.%s encrypted for: \"%s\"\n"
 msgstr "%s/%s titkosítva \"%s\" számára\n"
 
 #, fuzzy, c-format
@@ -2531,6 +2534,11 @@ msgstr "mutatja a kilistázott kulcs kulcskarikáját is"
 #, fuzzy
 msgid "show expiration dates during signature listings"
 msgstr "Nincs megfelelő aláírás a titkoskulcs-karikán.\n"
+
+#, fuzzy
+#| msgid "set preference list"
+msgid "show preferences"
+msgstr "preferencialista beállítása"
 
 #, fuzzy, c-format
 msgid "unknown TOFU policy '%s'\n"
@@ -3931,18 +3939,6 @@ msgstr "Hiba: Érvénytelen ujjlenyomat.\n"
 msgid "subkey \"%s\" not found\n"
 msgstr "\"%s\" kulcs nem található: %s\n"
 
-msgid "AEAD: "
-msgstr ""
-
-msgid "Digest: "
-msgstr "Kivonat: "
-
-msgid "Features: "
-msgstr "Jellemzők: "
-
-msgid "Keyserver no-modify"
-msgstr ""
-
 msgid "Preferred keyserver: "
 msgstr ""
 
@@ -4763,6 +4759,18 @@ msgstr "Valóban létrehozzam? "
 
 msgid "never     "
 msgstr "soha      "
+
+msgid "AEAD: "
+msgstr ""
+
+msgid "Digest: "
+msgstr "Kivonat: "
+
+msgid "Features: "
+msgstr "Jellemzők: "
+
+msgid "Keyserver no-modify"
+msgstr ""
 
 msgid "Critical signature policy: "
 msgstr "Kritikus aláírási eljárásmód: "
@@ -7719,6 +7727,10 @@ msgid "checking for qualified certificate failed: %s\n"
 msgstr "A létrehozott aláírás ellenőrzése sikertelen: %s.\n"
 
 #, fuzzy, c-format
+msgid "%s/%s signature using %s key %s\n"
+msgstr "Aláírva: %.*s; kulcs: %s, %08lX.\n"
+
+#, fuzzy, c-format
 msgid "Signature made "
 msgstr "Az aláírás lejárt: %s.\n"
 
@@ -9084,6 +9096,9 @@ msgid ""
 "Syntax: gpg-check-pattern [options] patternfile\n"
 "Check a passphrase given on stdin against the patternfile\n"
 msgstr ""
+
+#~ msgid "%s/%s encrypted for: \"%s\"\n"
+#~ msgstr "%s/%s titkosítva \"%s\" számára\n"
 
 #~ msgid "forcing symmetric cipher %s (%d) violates recipient preferences\n"
 #~ msgstr "A %s (%d) rejtjelező használata sérti a címzett preferenciáit!\n"
@@ -10601,9 +10616,6 @@ msgstr ""
 
 #~ msgid "change the expire date"
 #~ msgstr "lejárat megváltoztatása"
-
-#~ msgid "set preference list"
-#~ msgstr "preferencialista beállítása"
 
 #~ msgid "updated preferences"
 #~ msgstr "preferenciák frissítése"

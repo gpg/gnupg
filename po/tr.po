@@ -1959,12 +1959,14 @@ msgstr ""
 msgid "error creating passphrase: %s\n"
 msgstr "anahtar parolası oluşturulurken hata: %s\n"
 
-#, c-format
-msgid "can't use a symmetric ESK packet due to the S2K mode\n"
+#, fuzzy, c-format
+#| msgid "can't use a symmetric ESK packet due to the S2K mode\n"
+msgid "can't use a SKESK packet due to the S2K mode\n"
 msgstr "S2K kipi sayesinde bir simetrik ESK paketi kullanılamıyor\n"
 
-#, c-format
-msgid "using cipher %s\n"
+#, fuzzy, c-format
+#| msgid "using cipher %s\n"
+msgid "using cipher %s.%s\n"
 msgstr "%s şifrelemesi kullanılıyor\n"
 
 #, fuzzy, c-format
@@ -2005,8 +2007,9 @@ msgstr ""
 "UYARI: alıcının tercihleriyle çelişen %s (%d) sıkıştırma algoritması "
 "kullanılmak isteniyor\n"
 
-#, c-format
-msgid "%s/%s encrypted for: \"%s\"\n"
+#, fuzzy, c-format
+#| msgid "%s/%s encrypted for: \"%s\"\n"
+msgid "%s/%s.%s encrypted for: \"%s\"\n"
 msgstr "%s/%s \"%s\" için şifrelendi\n"
 
 #, fuzzy, c-format
@@ -2619,6 +2622,11 @@ msgstr "anahtar zinciri ismini anahtar listelerinde gösterir"
 
 msgid "show expiration dates during signature listings"
 msgstr "imza listelemesi sırasında zamanaşımı tarihleri gösterilir"
+
+#, fuzzy
+#| msgid "list preferences (expert)"
+msgid "show preferences"
+msgstr "tercihleri listeler (uzman)"
 
 #, fuzzy, c-format
 #| msgid "unknown option `%s'\n"
@@ -4052,18 +4060,6 @@ msgstr "parmakizi geçersiz"
 msgid "subkey \"%s\" not found\n"
 msgstr "anahtar \"%s\" yok: %s\n"
 
-msgid "AEAD: "
-msgstr ""
-
-msgid "Digest: "
-msgstr "Özet: "
-
-msgid "Features: "
-msgstr "Özellikler: "
-
-msgid "Keyserver no-modify"
-msgstr "Anahtar sunucusu değişmez"
-
 msgid "Preferred keyserver: "
 msgstr "Tercih edilen anahtar sunucusu: "
 
@@ -4912,6 +4908,18 @@ msgstr "Gerçekten oluşturulsun mu? (e/H ya da y/N) "
 
 msgid "never     "
 msgstr "asla    "
+
+msgid "AEAD: "
+msgstr ""
+
+msgid "Digest: "
+msgstr "Özet: "
+
+msgid "Features: "
+msgstr "Özellikler: "
+
+msgid "Keyserver no-modify"
+msgstr "Anahtar sunucusu değişmez"
 
 msgid "Critical signature policy: "
 msgstr "Kritik imza guvencesi: "
@@ -7967,6 +7975,11 @@ msgstr "%d imzacı için kullanılan çittirim algoritması: %s (%s)\n"
 msgid "checking for qualified certificate failed: %s\n"
 msgstr "nitelikli sertifika için sınama başarısız: %s\n"
 
+#, fuzzy, c-format
+#| msgid "Signature made %s using %s key ID %s\n"
+msgid "%s/%s signature using %s key %s\n"
+msgstr "%s imzası, %s anahtarı ve %s kullanıcı kimliği ile yapılmış\n"
+
 #, c-format
 msgid "Signature made "
 msgstr "İmza "
@@ -9507,6 +9520,9 @@ msgstr ""
 "Kullanım: gpg-check-pattern [seçenekler] örüntüdosyası\n"
 "Standart girdiden verilen anahtar parolasını örüntü dosyasıyla "
 "karşılaştırır\n"
+
+#~ msgid "%s/%s encrypted for: \"%s\"\n"
+#~ msgstr "%s/%s \"%s\" için şifrelendi\n"
 
 #~ msgid "forcing symmetric cipher %s (%d) violates recipient preferences\n"
 #~ msgstr ""

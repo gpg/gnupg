@@ -2017,12 +2017,14 @@ msgstr ""
 msgid "error creating passphrase: %s\n"
 msgstr "fel när lösenfras skapades: %s\n"
 
-#, c-format
-msgid "can't use a symmetric ESK packet due to the S2K mode\n"
+#, fuzzy, c-format
+#| msgid "can't use a symmetric ESK packet due to the S2K mode\n"
+msgid "can't use a SKESK packet due to the S2K mode\n"
 msgstr "kan inte använda symmetriska ESK-paket pga S2K-läge\n"
 
-#, c-format
-msgid "using cipher %s\n"
+#, fuzzy, c-format
+#| msgid "using cipher %s\n"
+msgid "using cipher %s.%s\n"
 msgstr "använder %s-chiffer\n"
 
 #, fuzzy, c-format
@@ -2064,8 +2066,9 @@ msgstr ""
 "VARNING: tvinga komprimeringsalgoritmen %s (%d) strider mot "
 "mottagarinställningarna\n"
 
-#, c-format
-msgid "%s/%s encrypted for: \"%s\"\n"
+#, fuzzy, c-format
+#| msgid "%s/%s encrypted for: \"%s\"\n"
+msgid "%s/%s.%s encrypted for: \"%s\"\n"
 msgstr "%s/%s krypterad för: \"%s\"\n"
 
 #, fuzzy, c-format
@@ -2685,6 +2688,11 @@ msgstr "visa nyckelringens namn i nyckellistningar"
 
 msgid "show expiration dates during signature listings"
 msgstr "visa utgångsdatum under signaturlistningar"
+
+#, fuzzy
+#| msgid "list preferences (expert)"
+msgid "show preferences"
+msgstr "lista inställningar (expertläge)"
 
 #, fuzzy, c-format
 #| msgid "unknown option `%s'\n"
@@ -4112,18 +4120,6 @@ msgstr "ogiltigt fingeravtryck"
 msgid "subkey \"%s\" not found\n"
 msgstr "nyckeln \"%s\" hittades inte: %s\n"
 
-msgid "AEAD: "
-msgstr ""
-
-msgid "Digest: "
-msgstr "Sammandrag: "
-
-msgid "Features: "
-msgstr "Funktioner: "
-
-msgid "Keyserver no-modify"
-msgstr "Nyckelserver no-modify"
-
 msgid "Preferred keyserver: "
 msgstr "Föredragen nyckelserver: "
 
@@ -4967,6 +4963,18 @@ msgstr "Verkligen skapa? (j/N) "
 
 msgid "never     "
 msgstr "aldrig"
+
+msgid "AEAD: "
+msgstr ""
+
+msgid "Digest: "
+msgstr "Sammandrag: "
+
+msgid "Features: "
+msgstr "Funktioner: "
+
+msgid "Keyserver no-modify"
+msgstr "Nyckelserver no-modify"
 
 msgid "Critical signature policy: "
 msgstr "Viktig signaturpolicy: "
@@ -8064,6 +8072,11 @@ msgstr "hashalgoritm som används för signerare %d: %s (%s)\n"
 msgid "checking for qualified certificate failed: %s\n"
 msgstr "sökande efter kvalificerat certifikat misslyckades: %s\n"
 
+#, fuzzy, c-format
+#| msgid "Signature made %s using %s key ID %s\n"
+msgid "%s/%s signature using %s key %s\n"
+msgstr "Signatur gjordes %s med %s nyckel-id %s\n"
+
 #, c-format
 msgid "Signature made "
 msgstr "Signatur gjord "
@@ -9607,6 +9620,9 @@ msgid ""
 msgstr ""
 "Syntax: gpg-check-pattern [flaggor] mönsterfil\n"
 "Kontrollera en lösenfras angiven på standard in mot mönsterfilen\n"
+
+#~ msgid "%s/%s encrypted for: \"%s\"\n"
+#~ msgstr "%s/%s krypterad för: \"%s\"\n"
 
 #~ msgid "forcing symmetric cipher %s (%d) violates recipient preferences\n"
 #~ msgstr ""

@@ -1827,13 +1827,15 @@ msgstr ""
 msgid "error creating passphrase: %s\n"
 msgstr "errore nella creazione della passhprase: %s\n"
 
-#, c-format
-msgid "can't use a symmetric ESK packet due to the S2K mode\n"
+#, fuzzy, c-format
+#| msgid "can't use a symmetric ESK packet due to the S2K mode\n"
+msgid "can't use a SKESK packet due to the S2K mode\n"
 msgstr ""
 "impossibile usare un pacchetto ESK simmetrico a causa della modalità S2K\n"
 
-#, c-format
-msgid "using cipher %s\n"
+#, fuzzy, c-format
+#| msgid "using cipher %s\n"
+msgid "using cipher %s.%s\n"
 msgstr "uso il cifrario %s\n"
 
 #, c-format
@@ -1869,8 +1871,9 @@ msgstr ""
 "AVVISO: l'algoritmo di compressione %s (%d) viola le preferenze dei "
 "destinatari\n"
 
-#, c-format
-msgid "%s/%s encrypted for: \"%s\"\n"
+#, fuzzy, c-format
+#| msgid "%s/%s encrypted for: \"%s\"\n"
+msgid "%s/%s.%s encrypted for: \"%s\"\n"
 msgstr "%s/%s cifrato per: \"%s\"\n"
 
 #, c-format
@@ -2423,6 +2426,11 @@ msgstr "mostrare il nome del keyring negli elenchi delle chiavi"
 
 msgid "show expiration dates during signature listings"
 msgstr "mostra date di scadenza durante le inserzioni delle firme"
+
+#, fuzzy
+#| msgid "list preferences (expert)"
+msgid "show preferences"
+msgstr "elenca le preferenze (per esperti)"
 
 #, c-format
 msgid "unknown TOFU policy '%s'\n"
@@ -3768,18 +3776,6 @@ msgstr "\"%s\" non è un'impronta digitale corretta\n"
 msgid "subkey \"%s\" not found\n"
 msgstr "sottochiave \"%s\" non trovata\n"
 
-msgid "AEAD: "
-msgstr "AEAD: "
-
-msgid "Digest: "
-msgstr "Digest: "
-
-msgid "Features: "
-msgstr "Caratteristiche: "
-
-msgid "Keyserver no-modify"
-msgstr "Keyserver no-modify"
-
 msgid "Preferred keyserver: "
 msgstr "Server delle chiavi preferito: "
 
@@ -4579,6 +4575,18 @@ msgstr "Davvero creare? (y/N) "
 
 msgid "never     "
 msgstr "mai       "
+
+msgid "AEAD: "
+msgstr "AEAD: "
+
+msgid "Digest: "
+msgstr "Digest: "
+
+msgid "Features: "
+msgstr "Caratteristiche: "
+
+msgid "Keyserver no-modify"
+msgstr "Keyserver no-modify"
 
 msgid "Critical signature policy: "
 msgstr "Politica critica di firma: "
@@ -7543,6 +7551,11 @@ msgstr "algoritmo hash utilizzato per firmatario %d: %s (%s)\n"
 msgid "checking for qualified certificate failed: %s\n"
 msgstr "controllo del certificato qualificato non riuscito: %s\n"
 
+#, fuzzy, c-format
+#| msgid "Signature made %s using %s key ID %s\n"
+msgid "%s/%s signature using %s key %s\n"
+msgstr "Firma effettuata %s utilizzando l'ID chiave %s %s\n"
+
 #, c-format
 msgid "Signature made "
 msgstr "Firma fatta "
@@ -8900,6 +8913,9 @@ msgid ""
 msgstr ""
 "Sintassi: gpg-check-pattern [opzioni] patternfile\n"
 "Controllare una passphrase data su stdin rispetto al patternfile\n"
+
+#~ msgid "%s/%s encrypted for: \"%s\"\n"
+#~ msgstr "%s/%s cifrato per: \"%s\"\n"
 
 #~ msgid "forcing symmetric cipher %s (%d) violates recipient preferences\n"
 #~ msgstr ""

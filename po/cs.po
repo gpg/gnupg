@@ -1848,12 +1848,14 @@ msgstr ""
 msgid "error creating passphrase: %s\n"
 msgstr "chyba při vytváření hesla: %s\n"
 
-#, c-format
-msgid "can't use a symmetric ESK packet due to the S2K mode\n"
+#, fuzzy, c-format
+#| msgid "can't use a symmetric ESK packet due to the S2K mode\n"
+msgid "can't use a SKESK packet due to the S2K mode\n"
 msgstr "v režimu S2K nelze použít symetrický ESK paket\n"
 
-#, c-format
-msgid "using cipher %s\n"
+#, fuzzy, c-format
+#| msgid "using cipher %s\n"
+msgid "using cipher %s.%s\n"
 msgstr "použití šifry: %s\n"
 
 #, c-format
@@ -1888,8 +1890,9 @@ msgstr ""
 "VAROVÁNÍ: vyžádaný komprimační algoritmus %s (%d) nevyhovuje předvolbám "
 "příjemce\n"
 
-#, c-format
-msgid "%s/%s encrypted for: \"%s\"\n"
+#, fuzzy, c-format
+#| msgid "%s/%s encrypted for: \"%s\"\n"
+msgid "%s/%s.%s encrypted for: \"%s\"\n"
 msgstr "%s/%s zašifrovaný pro: „%s“\n"
 
 #, c-format
@@ -2443,6 +2446,11 @@ msgstr "ukazovat název souboru s klíči při výpisu klíčů"
 
 msgid "show expiration dates during signature listings"
 msgstr "ukazovat data expirace během výpisu podpisů"
+
+#, fuzzy
+#| msgid "list preferences (expert)"
+msgid "show preferences"
+msgstr "vypsat seznam předvoleb (pro experty)"
 
 #, c-format
 msgid "unknown TOFU policy '%s'\n"
@@ -3774,18 +3782,6 @@ msgstr "„%s“ není řádný otisk\n"
 msgid "subkey \"%s\" not found\n"
 msgstr "podklíč „%s“ nenalezen\n"
 
-msgid "AEAD: "
-msgstr "AEAD: "
-
-msgid "Digest: "
-msgstr "Hash: "
-
-msgid "Features: "
-msgstr "Vlastnosti: "
-
-msgid "Keyserver no-modify"
-msgstr "Keyserver bez modifikace"
-
 msgid "Preferred keyserver: "
 msgstr "Preferovaný keyserver: "
 
@@ -4574,6 +4570,18 @@ msgstr "Opravdu vytvořit? (a/N) "
 
 msgid "never     "
 msgstr "nikdy     "
+
+msgid "AEAD: "
+msgstr "AEAD: "
+
+msgid "Digest: "
+msgstr "Hash: "
+
+msgid "Features: "
+msgstr "Vlastnosti: "
+
+msgid "Keyserver no-modify"
+msgstr "Keyserver bez modifikace"
 
 msgid "Critical signature policy: "
 msgstr "Kritická podepisovací politika: "
@@ -7523,6 +7531,12 @@ msgstr "hashovací algoritmus použitý pro podepisovatele %d: %s (%s)\n"
 msgid "checking for qualified certificate failed: %s\n"
 msgstr "kontrola kvalifikovaného certifikátu selhala: %s\n"
 
+# Scripte scannen lt. dl1bke auf "ID (0-9A-F)+" deswegen muß "ID" rein :-(
+#, fuzzy, c-format
+#| msgid "Signature made %s using %s key ID %s\n"
+msgid "%s/%s signature using %s key %s\n"
+msgstr "Podpis vytvořen %s pomocí klíče %s s ID uživatele %s\n"
+
 #, c-format
 msgid "Signature made "
 msgstr "Podpis vytvořen "
@@ -8862,6 +8876,9 @@ msgid ""
 msgstr ""
 "Syntaxe: gpg-check-pattern [volby] soubor_se_vzorem\n"
 "Prověří heslo zadané na vstupu proti souboru se vzory\n"
+
+#~ msgid "%s/%s encrypted for: \"%s\"\n"
+#~ msgstr "%s/%s zašifrovaný pro: „%s“\n"
 
 #~ msgid "forcing symmetric cipher %s (%d) violates recipient preferences\n"
 #~ msgstr "vyžádaná symetrická šifra %s (%d) nevyhovuje předvolbám příjemce\n"

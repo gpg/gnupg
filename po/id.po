@@ -1900,12 +1900,14 @@ msgstr "memaksa cipher simetrik %s (%d) melanggar preferensi penerima\n"
 msgid "error creating passphrase: %s\n"
 msgstr "kesalahan penciptaan passphrase: %s\n"
 
-#, c-format
-msgid "can't use a symmetric ESK packet due to the S2K mode\n"
+#, fuzzy, c-format
+#| msgid "can't use a symmetric ESK packet due to the S2K mode\n"
+msgid "can't use a SKESK packet due to the S2K mode\n"
 msgstr "tidak dapat menggunakan paket simetri ESK karena mode S2K\n"
 
-#, c-format
-msgid "using cipher %s\n"
+#, fuzzy, c-format
+#| msgid "using cipher %s\n"
+msgid "using cipher %s.%s\n"
 msgstr "menggunakan cipher %s\n"
 
 #, fuzzy, c-format
@@ -1943,8 +1945,9 @@ msgid ""
 "preferences\n"
 msgstr "memaksa algoritma kompresi %s (%d) melanggar preferensi penerima\n"
 
-#, c-format
-msgid "%s/%s encrypted for: \"%s\"\n"
+#, fuzzy, c-format
+#| msgid "%s/%s encrypted for: \"%s\"\n"
+msgid "%s/%s.%s encrypted for: \"%s\"\n"
 msgstr "%s/%s dienkripsi untuk: %s\n"
 
 #, fuzzy, c-format
@@ -2534,6 +2537,11 @@ msgstr "tampilkan keyring tempat kunci yang dipilih berada"
 #, fuzzy
 msgid "show expiration dates during signature listings"
 msgstr "Tidak ada signature koresponden di ring rahasia\n"
+
+#, fuzzy
+#| msgid "set preference list"
+msgid "show preferences"
+msgstr "set daftar preferensi"
 
 #, fuzzy, c-format
 msgid "unknown TOFU policy '%s'\n"
@@ -3936,18 +3944,6 @@ msgstr "kesalahan: fingerprint tidak valid\n"
 msgid "subkey \"%s\" not found\n"
 msgstr "kunci '%s' tidak ditemukan: %s\n"
 
-msgid "AEAD: "
-msgstr ""
-
-msgid "Digest: "
-msgstr "Digest: "
-
-msgid "Features: "
-msgstr "Fitur: "
-
-msgid "Keyserver no-modify"
-msgstr ""
-
 msgid "Preferred keyserver: "
 msgstr ""
 
@@ -4772,6 +4768,18 @@ msgstr "Ingin diciptakan? "
 
 msgid "never     "
 msgstr "tidak pernah..."
+
+msgid "AEAD: "
+msgstr ""
+
+msgid "Digest: "
+msgstr "Digest: "
+
+msgid "Features: "
+msgstr "Fitur: "
+
+msgid "Keyserver no-modify"
+msgstr ""
 
 msgid "Critical signature policy: "
 msgstr "Kebijakan signature kritis: "
@@ -7717,6 +7725,10 @@ msgid "checking for qualified certificate failed: %s\n"
 msgstr "Gagal memeriksa signature yang dibuat: %s\n"
 
 #, fuzzy, c-format
+msgid "%s/%s signature using %s key %s\n"
+msgstr "Signature membuat %.*s menggunakan kunci %s ID %08lX\n"
+
+#, fuzzy, c-format
 msgid "Signature made "
 msgstr "Signature kadaluwarsa %s\n"
 
@@ -9082,6 +9094,9 @@ msgid ""
 "Syntax: gpg-check-pattern [options] patternfile\n"
 "Check a passphrase given on stdin against the patternfile\n"
 msgstr ""
+
+#~ msgid "%s/%s encrypted for: \"%s\"\n"
+#~ msgstr "%s/%s dienkripsi untuk: %s\n"
 
 #~ msgid "forcing symmetric cipher %s (%d) violates recipient preferences\n"
 #~ msgstr "memaksa cipher simetrik %s (%d) melanggar preferensi penerima\n"
@@ -10603,9 +10618,6 @@ msgstr ""
 
 #~ msgid "change the expire date"
 #~ msgstr "ubah tanggal kadaluarsa"
-
-#~ msgid "set preference list"
-#~ msgstr "set daftar preferensi"
 
 #~ msgid "updated preferences"
 #~ msgstr "perbarui preferensi"

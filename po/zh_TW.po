@@ -1852,12 +1852,14 @@ msgstr "警告: 強迫使用 %s (%d) 對稱式編密法會違反收件者偏好�
 msgid "error creating passphrase: %s\n"
 msgstr "建立密語時出錯: %s\n"
 
-#, c-format
-msgid "can't use a symmetric ESK packet due to the S2K mode\n"
+#, fuzzy, c-format
+#| msgid "can't use a symmetric ESK packet due to the S2K mode\n"
+msgid "can't use a SKESK packet due to the S2K mode\n"
 msgstr "因處於 S2K 模式下而無法使用對稱式 ESK 封包\n"
 
-#, c-format
-msgid "using cipher %s\n"
+#, fuzzy, c-format
+#| msgid "using cipher %s\n"
+msgid "using cipher %s.%s\n"
 msgstr "正在使用 %s 編密法\n"
 
 #, c-format
@@ -1893,8 +1895,9 @@ msgid ""
 "preferences\n"
 msgstr "警告: 強迫使用 %s (%d) 壓縮演算法會違反收件者偏好設定\n"
 
-#, c-format
-msgid "%s/%s encrypted for: \"%s\"\n"
+#, fuzzy, c-format
+#| msgid "%s/%s encrypted for: \"%s\"\n"
+msgid "%s/%s.%s encrypted for: \"%s\"\n"
 msgstr "%s/%s 已加密給: \"%s\"\n"
 
 #, fuzzy, c-format
@@ -2450,6 +2453,11 @@ msgstr "在金鑰清單中顯示鑰匙圈名稱"
 
 msgid "show expiration dates during signature listings"
 msgstr "列出簽章時顯示有效期限"
+
+#, fuzzy
+#| msgid "list preferences (expert)"
+msgid "show preferences"
+msgstr "列出偏好 (專家模式)"
 
 #, fuzzy, c-format
 #| msgid "unknown option '%s'\n"
@@ -3788,18 +3796,6 @@ msgstr "\"%s\" 不是指紋\n"
 msgid "subkey \"%s\" not found\n"
 msgstr "找不到金鑰 \"%s\": %s\n"
 
-msgid "AEAD: "
-msgstr ""
-
-msgid "Digest: "
-msgstr "摘要: "
-
-msgid "Features: "
-msgstr "特點: "
-
-msgid "Keyserver no-modify"
-msgstr "金鑰伺服器無修改"
-
 msgid "Preferred keyserver: "
 msgstr "偏好的金鑰伺服器: "
 
@@ -4588,6 +4584,18 @@ msgstr "真的要建立嗎? (y/N) "
 
 msgid "never     "
 msgstr "永遠不過期"
+
+msgid "AEAD: "
+msgstr ""
+
+msgid "Digest: "
+msgstr "摘要: "
+
+msgid "Features: "
+msgstr "特點: "
+
+msgid "Keyserver no-modify"
+msgstr "金鑰伺服器無修改"
 
 msgid "Critical signature policy: "
 msgstr "關鍵簽章原則: "
@@ -7458,6 +7466,11 @@ msgstr "簽署者 %d 所用的雜湊演算法: %s (%s)\n"
 msgid "checking for qualified certificate failed: %s\n"
 msgstr "檢查合格憑證時失敗: %s\n"
 
+#, fuzzy, c-format
+#| msgid "Signature made %s using %s key ID %s\n"
+msgid "%s/%s signature using %s key %s\n"
+msgstr "由 %s 建立的簽章, 使用 %s 金鑰 ID %s\n"
+
 #, c-format
 msgid "Signature made "
 msgstr "簽章建立於 "
@@ -8789,6 +8802,9 @@ msgid ""
 msgstr ""
 "語法: gpg-check-pattern [選項] 樣式檔案\n"
 "用樣式檔案來檢查由標準輸入給定的密語\n"
+
+#~ msgid "%s/%s encrypted for: \"%s\"\n"
+#~ msgstr "%s/%s 已加密給: \"%s\"\n"
 
 #~ msgid "forcing symmetric cipher %s (%d) violates recipient preferences\n"
 #~ msgstr "強迫使用 %s (%d) 對稱式編密法會違反收件者偏好設定\n"

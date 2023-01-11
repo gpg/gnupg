@@ -1982,12 +1982,14 @@ msgstr ""
 msgid "error creating passphrase: %s\n"
 msgstr "fejl ved oprettelse af adgangsfrase: %s\n"
 
-#, c-format
-msgid "can't use a symmetric ESK packet due to the S2K mode\n"
+#, fuzzy, c-format
+#| msgid "can't use a symmetric ESK packet due to the S2K mode\n"
+msgid "can't use a SKESK packet due to the S2K mode\n"
 msgstr "kan ikke bruge en symmetrisk ESK-pakke på grund af S2K-tilstanden\n"
 
-#, c-format
-msgid "using cipher %s\n"
+#, fuzzy, c-format
+#| msgid "using cipher %s\n"
+msgid "using cipher %s.%s\n"
 msgstr "bruger chiffer %s\n"
 
 #, fuzzy, c-format
@@ -2028,8 +2030,9 @@ msgstr ""
 "ADVARSEL: Tvang for komprimeringsalgoritme %s (%d) overtræder modtagerens "
 "præferencer\n"
 
-#, c-format
-msgid "%s/%s encrypted for: \"%s\"\n"
+#, fuzzy, c-format
+#| msgid "%s/%s encrypted for: \"%s\"\n"
+msgid "%s/%s.%s encrypted for: \"%s\"\n"
 msgstr "%s/%s krypteret for: »%s«\n"
 
 #, fuzzy, c-format
@@ -2636,6 +2639,11 @@ msgstr "vis nøgleringsnavnet i nøglevisninger"
 
 msgid "show expiration dates during signature listings"
 msgstr "vis udløbsdatoer under underskriftvisninger"
+
+#, fuzzy
+#| msgid "list preferences (expert)"
+msgid "show preferences"
+msgstr "vis præferencer (ekspert)"
 
 #, fuzzy, c-format
 #| msgid "unknown option `%s'\n"
@@ -4047,18 +4055,6 @@ msgstr "ugyldig fingeraftryk"
 msgid "subkey \"%s\" not found\n"
 msgstr "nøglen »%s« blev ikke fundet: %s\n"
 
-msgid "AEAD: "
-msgstr ""
-
-msgid "Digest: "
-msgstr "Sammendrag: "
-
-msgid "Features: "
-msgstr "Funktioner: "
-
-msgid "Keyserver no-modify"
-msgstr "Nøgleserver no-modify"
-
 msgid "Preferred keyserver: "
 msgstr "Fortrukken nøgleserver: "
 
@@ -4889,6 +4885,18 @@ msgstr "Vil du virkelig oprette? (j/N) "
 
 msgid "never     "
 msgstr "aldrig    "
+
+msgid "AEAD: "
+msgstr ""
+
+msgid "Digest: "
+msgstr "Sammendrag: "
+
+msgid "Features: "
+msgstr "Funktioner: "
+
+msgid "Keyserver no-modify"
+msgstr "Nøgleserver no-modify"
 
 msgid "Critical signature policy: "
 msgstr "Kritisk underskriftspolitik: "
@@ -7928,6 +7936,11 @@ msgstr "hashalgoritme brugt for underskriver %d: %s (%s)\n"
 msgid "checking for qualified certificate failed: %s\n"
 msgstr "kontrollerer for kvalificeret certifikat mislykkedes: %s\n"
 
+#, fuzzy, c-format
+#| msgid "Signature made %s using %s key ID %s\n"
+msgid "%s/%s signature using %s key %s\n"
+msgstr "Underskrift lavet %s med %s nøgle-id %s\n"
+
 #, c-format
 msgid "Signature made "
 msgstr "Underskrift lavet "
@@ -9468,6 +9481,9 @@ msgid ""
 msgstr ""
 "Syntaks: gpg-check-pattern [tilvalg] mønsterfil\n"
 "Kontroller en adgangsfrase angivet på stdin mod mønsterfilen\n"
+
+#~ msgid "%s/%s encrypted for: \"%s\"\n"
+#~ msgstr "%s/%s krypteret for: »%s«\n"
 
 #~ msgid "forcing symmetric cipher %s (%d) violates recipient preferences\n"
 #~ msgstr ""

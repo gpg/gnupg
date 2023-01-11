@@ -1966,12 +1966,13 @@ msgstr ""
 msgid "error creating passphrase: %s\n"
 msgstr "error en la creació de la contrasenya: %s\n"
 
-#, c-format
-msgid "can't use a symmetric ESK packet due to the S2K mode\n"
+#, fuzzy, c-format
+#| msgid "can't use a symmetric ESK packet due to the S2K mode\n"
+msgid "can't use a SKESK packet due to the S2K mode\n"
 msgstr "no es pot usar un paquet asimètric ESK al estar en mode S2K\n"
 
 #, fuzzy, c-format
-msgid "using cipher %s\n"
+msgid "using cipher %s.%s\n"
 msgstr "Ha fallat el procés de signatura: %s\n"
 
 #, fuzzy, c-format
@@ -2009,8 +2010,9 @@ msgstr ""
 "forçar l'algoritme de compressió %s (%d) viola les preferències del "
 "destinatari\n"
 
-#, c-format
-msgid "%s/%s encrypted for: \"%s\"\n"
+#, fuzzy, c-format
+#| msgid "%s/%s encrypted for: \"%s\"\n"
+msgid "%s/%s.%s encrypted for: \"%s\"\n"
 msgstr "%s/%s xifrat per a: «%s»\n"
 
 #, fuzzy, c-format
@@ -2623,6 +2625,11 @@ msgstr "mostra en quin anell de claus està una clau llistada"
 #, fuzzy
 msgid "show expiration dates during signature listings"
 msgstr "No hi ha cap signatura corresponent en l'anell secret\n"
+
+#, fuzzy
+#| msgid "set preference list"
+msgid "show preferences"
+msgstr "estableix la llista de preferències"
 
 #, fuzzy, c-format
 msgid "unknown TOFU policy '%s'\n"
@@ -4052,18 +4059,6 @@ msgstr "error: l'empremta digital és invàlida\n"
 msgid "subkey \"%s\" not found\n"
 msgstr "no s'ha trobat la clau «%s»: %s\n"
 
-msgid "AEAD: "
-msgstr ""
-
-msgid "Digest: "
-msgstr "Resum: "
-
-msgid "Features: "
-msgstr "Funcionalitats: "
-
-msgid "Keyserver no-modify"
-msgstr ""
-
 msgid "Preferred keyserver: "
 msgstr ""
 
@@ -4908,6 +4903,18 @@ msgstr "Crear realment? "
 
 msgid "never     "
 msgstr "mai       "
+
+msgid "AEAD: "
+msgstr ""
+
+msgid "Digest: "
+msgstr "Resum: "
+
+msgid "Features: "
+msgstr "Funcionalitats: "
+
+msgid "Keyserver no-modify"
+msgstr ""
 
 msgid "Critical signature policy: "
 msgstr "Política de signatura crítica: "
@@ -7930,6 +7937,11 @@ msgstr ""
 msgid "checking for qualified certificate failed: %s\n"
 msgstr "no s'ha pogut comprovar la signatura creada: %s\n"
 
+# «%.*s» no serà una data?  Caldrà «el» al davant.  ivb
+#, fuzzy, c-format
+msgid "%s/%s signature using %s key %s\n"
+msgstr "Signatura creada el %.*s usant una clau %s ID %08lX\n"
+
 #, fuzzy, c-format
 msgid "Signature made "
 msgstr "Aquesta signatura va caducar el %s\n"
@@ -9312,6 +9324,9 @@ msgid ""
 "Syntax: gpg-check-pattern [options] patternfile\n"
 "Check a passphrase given on stdin against the patternfile\n"
 msgstr ""
+
+#~ msgid "%s/%s encrypted for: \"%s\"\n"
+#~ msgstr "%s/%s xifrat per a: «%s»\n"
 
 #~ msgid "forcing symmetric cipher %s (%d) violates recipient preferences\n"
 #~ msgstr ""
@@ -10885,9 +10900,6 @@ msgstr ""
 
 #~ msgid "change the expire date"
 #~ msgstr "canvia la data de caducitat"
-
-#~ msgid "set preference list"
-#~ msgstr "estableix la llista de preferències"
 
 #~ msgid "updated preferences"
 #~ msgstr "preferències actualitzades"

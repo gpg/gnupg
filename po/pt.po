@@ -1900,12 +1900,13 @@ msgstr ""
 msgid "error creating passphrase: %s\n"
 msgstr "erro na criação da frase secreta: %s\n"
 
-#, c-format
-msgid "can't use a symmetric ESK packet due to the S2K mode\n"
+#, fuzzy, c-format
+#| msgid "can't use a symmetric ESK packet due to the S2K mode\n"
+msgid "can't use a SKESK packet due to the S2K mode\n"
 msgstr "não é possível utilizar o pacote ESK simétrico devido ao modo S2K\n"
 
 #, fuzzy, c-format
-msgid "using cipher %s\n"
+msgid "using cipher %s.%s\n"
 msgstr "assinatura falhou: %s\n"
 
 #, fuzzy, c-format
@@ -1943,8 +1944,9 @@ msgstr ""
 "ao forçar o algoritmo de compressão %s (%d) viola as preferências do "
 "destinatário\n"
 
-#, c-format
-msgid "%s/%s encrypted for: \"%s\"\n"
+#, fuzzy, c-format
+#| msgid "%s/%s encrypted for: \"%s\"\n"
+msgid "%s/%s.%s encrypted for: \"%s\"\n"
 msgstr "%s/%s cifrado para: \"%s\"\n"
 
 #, fuzzy, c-format
@@ -2532,6 +2534,11 @@ msgstr "mostrar em que porta-chave a chave está"
 #, fuzzy
 msgid "show expiration dates during signature listings"
 msgstr "Nenhuma assinatura correspondente no porta-chaves secreto\n"
+
+#, fuzzy
+#| msgid "set preference list"
+msgid "show preferences"
+msgstr "configurar lista de preferências"
 
 #, fuzzy, c-format
 msgid "unknown TOFU policy '%s'\n"
@@ -3939,18 +3946,6 @@ msgstr "%s: versão de ficheiro inválida %d\n"
 msgid "subkey \"%s\" not found\n"
 msgstr "chave `%s' não encontrada: %s\n"
 
-msgid "AEAD: "
-msgstr ""
-
-msgid "Digest: "
-msgstr "'Digest': "
-
-msgid "Features: "
-msgstr "Características: "
-
-msgid "Keyserver no-modify"
-msgstr ""
-
 msgid "Preferred keyserver: "
 msgstr ""
 
@@ -4773,6 +4768,18 @@ msgid "Really create? (y/N) "
 msgstr "Realmente criar? "
 
 msgid "never     "
+msgstr ""
+
+msgid "AEAD: "
+msgstr ""
+
+msgid "Digest: "
+msgstr "'Digest': "
+
+msgid "Features: "
+msgstr "Características: "
+
+msgid "Keyserver no-modify"
 msgstr ""
 
 msgid "Critical signature policy: "
@@ -7717,6 +7724,10 @@ msgid "checking for qualified certificate failed: %s\n"
 msgstr "verificação da assinatura criada falhou: %s\n"
 
 #, fuzzy, c-format
+msgid "%s/%s signature using %s key %s\n"
+msgstr "Assinatura feita em %.*s usando %s, ID da chave %08lX\n"
+
+#, fuzzy, c-format
 msgid "Signature made "
 msgstr "Esta assinatura expirou em %s.\n"
 
@@ -9080,6 +9091,9 @@ msgid ""
 "Syntax: gpg-check-pattern [options] patternfile\n"
 "Check a passphrase given on stdin against the patternfile\n"
 msgstr ""
+
+#~ msgid "%s/%s encrypted for: \"%s\"\n"
+#~ msgstr "%s/%s cifrado para: \"%s\"\n"
 
 #~ msgid "forcing symmetric cipher %s (%d) violates recipient preferences\n"
 #~ msgstr ""
@@ -10553,9 +10567,6 @@ msgstr ""
 
 #~ msgid "change the expire date"
 #~ msgstr "muda a data de validade"
-
-#~ msgid "set preference list"
-#~ msgstr "configurar lista de preferências"
 
 #~ msgid "updated preferences"
 #~ msgstr "preferências actualizadas"

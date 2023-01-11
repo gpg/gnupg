@@ -1920,12 +1920,14 @@ msgstr ""
 msgid "error creating passphrase: %s\n"
 msgstr "eroare la crearea frazei-parolă: %s\n"
 
-#, c-format
-msgid "can't use a symmetric ESK packet due to the S2K mode\n"
+#, fuzzy, c-format
+#| msgid "can't use a symmetric ESK packet due to the S2K mode\n"
+msgid "can't use a SKESK packet due to the S2K mode\n"
 msgstr "nu pot crea un pachet ESK simetric datorită modului S2K\n"
 
-#, c-format
-msgid "using cipher %s\n"
+#, fuzzy, c-format
+#| msgid "using cipher %s\n"
+msgid "using cipher %s.%s\n"
 msgstr "folosesc cifrul %s\n"
 
 #, fuzzy, c-format
@@ -1965,8 +1967,9 @@ msgstr ""
 "AVERTISMENT: forţând algoritmul de compresie %s (%d) violaţi preferinţele "
 "destinatarului\n"
 
-#, c-format
-msgid "%s/%s encrypted for: \"%s\"\n"
+#, fuzzy, c-format
+#| msgid "%s/%s encrypted for: \"%s\"\n"
+msgid "%s/%s.%s encrypted for: \"%s\"\n"
 msgstr "%s/%s cifrat pentru: \"%s\"\n"
 
 #, fuzzy, c-format
@@ -2589,6 +2592,11 @@ msgstr "arată căruia dintre inelele de chei îi aparţine o cheie enumerată"
 #, fuzzy
 msgid "show expiration dates during signature listings"
 msgstr "Nici o semnătură corespunzătoare în inelul secret\n"
+
+#, fuzzy
+#| msgid "showpref"
+msgid "show preferences"
+msgstr "showpref"
 
 #, fuzzy, c-format
 #| msgid "unknown option `%s'\n"
@@ -3986,18 +3994,6 @@ msgstr "amprentă invalidă"
 msgid "subkey \"%s\" not found\n"
 msgstr "cheia \"%s\" nu a fost găsită: %s\n"
 
-msgid "AEAD: "
-msgstr ""
-
-msgid "Digest: "
-msgstr "Rezumat: "
-
-msgid "Features: "
-msgstr "Capabilităţi: "
-
-msgid "Keyserver no-modify"
-msgstr "Server de chei no-modify"
-
 msgid "Preferred keyserver: "
 msgstr "Server de chei preferat: "
 
@@ -4825,6 +4821,18 @@ msgstr "Creaţi într-adevăr? (d/N) "
 
 msgid "never     "
 msgstr "niciodată "
+
+msgid "AEAD: "
+msgstr ""
+
+msgid "Digest: "
+msgstr "Rezumat: "
+
+msgid "Features: "
+msgstr "Capabilităţi: "
+
+msgid "Keyserver no-modify"
+msgstr "Server de chei no-modify"
 
 msgid "Critical signature policy: "
 msgstr "Politică de semnături critică: "
@@ -7819,6 +7827,11 @@ msgid "checking for qualified certificate failed: %s\n"
 msgstr "verificarea semnăturii create a eşuat: %s\n"
 
 #, fuzzy, c-format
+#| msgid "Signature made %s using %s key ID %s\n"
+msgid "%s/%s signature using %s key %s\n"
+msgstr "Semnătură făcută %s folosind cheia %s cu ID %s\n"
+
+#, fuzzy, c-format
 msgid "Signature made "
 msgstr "Semnătură făcută %s\n"
 
@@ -9206,6 +9219,9 @@ msgid ""
 "Syntax: gpg-check-pattern [options] patternfile\n"
 "Check a passphrase given on stdin against the patternfile\n"
 msgstr ""
+
+#~ msgid "%s/%s encrypted for: \"%s\"\n"
+#~ msgstr "%s/%s cifrat pentru: \"%s\"\n"
 
 #~ msgid "forcing symmetric cipher %s (%d) violates recipient preferences\n"
 #~ msgstr ""
@@ -11049,9 +11065,6 @@ msgstr ""
 
 #~ msgid "pref"
 #~ msgstr "pref"
-
-#~ msgid "showpref"
-#~ msgstr "showpref"
 
 #~ msgid "setpref"
 #~ msgstr "setpref"

@@ -1840,12 +1840,14 @@ msgstr ""
 msgid "error creating passphrase: %s\n"
 msgstr "feil under opprettelse av passordfrase: %s\n"
 
-#, c-format
-msgid "can't use a symmetric ESK packet due to the S2K mode\n"
+#, fuzzy, c-format
+#| msgid "can't use a symmetric ESK packet due to the S2K mode\n"
+msgid "can't use a SKESK packet due to the S2K mode\n"
 msgstr "klarte ikke å bruke symmetrisk ESK-pakke på grunn av S2K-modus\n"
 
-#, c-format
-msgid "using cipher %s\n"
+#, fuzzy, c-format
+#| msgid "using cipher %s\n"
+msgid "using cipher %s.%s\n"
 msgstr "bruker krypteringsmetode %s\n"
 
 #, c-format
@@ -1880,8 +1882,9 @@ msgstr ""
 "ADVARSEL: tvungen bruk av komprimeringsalgoritme %s (%d) bryter med "
 "mottakers oppsett\n"
 
-#, c-format
-msgid "%s/%s encrypted for: \"%s\"\n"
+#, fuzzy, c-format
+#| msgid "%s/%s encrypted for: \"%s\"\n"
+msgid "%s/%s.%s encrypted for: \"%s\"\n"
 msgstr "%s/%s kryptert for: «%s»\n"
 
 #, c-format
@@ -2421,6 +2424,11 @@ msgstr "vis nøkkelknippe-navn i nøkkelvisning"
 
 msgid "show expiration dates during signature listings"
 msgstr "vis utløpsdatoer i nøkkelvisning"
+
+#, fuzzy
+#| msgid "list preferences (expert)"
+msgid "show preferences"
+msgstr "vis innstillinger (avansert)"
 
 #, c-format
 msgid "unknown TOFU policy '%s'\n"
@@ -3755,18 +3763,6 @@ msgstr "«%s» er et ugyldig fingeravtrykk\n"
 msgid "subkey \"%s\" not found\n"
 msgstr "fant ikke undernøkkel «%s»\n"
 
-msgid "AEAD: "
-msgstr ""
-
-msgid "Digest: "
-msgstr "Kontrollsum: "
-
-msgid "Features: "
-msgstr "Funksjoner: "
-
-msgid "Keyserver no-modify"
-msgstr "Nøkkeltjener no-modify"
-
 msgid "Preferred keyserver: "
 msgstr "Foretrukket nøkkeltjener: "
 
@@ -4564,6 +4560,18 @@ msgstr "Er du sikker på at du vil fortsette? (j/N) "
 
 msgid "never     "
 msgstr "aldri     "
+
+msgid "AEAD: "
+msgstr ""
+
+msgid "Digest: "
+msgstr "Kontrollsum: "
+
+msgid "Features: "
+msgstr "Funksjoner: "
+
+msgid "Keyserver no-modify"
+msgstr "Nøkkeltjener no-modify"
 
 msgid "Critical signature policy: "
 msgstr "Regler for kritisk signatur: "
@@ -7452,6 +7460,11 @@ msgstr "kontrollsum-algoritme brukt av undertegnet %d: %s (%s)\n"
 msgid "checking for qualified certificate failed: %s\n"
 msgstr "søk etter godkjent sertifikat mislyktes: %s\n"
 
+#, fuzzy, c-format
+#| msgid "Signature made %s using %s key ID %s\n"
+msgid "%s/%s signature using %s key %s\n"
+msgstr "Signatur laget %s ved hjelp av %s-nøkkel ID %s\n"
+
 #, c-format
 msgid "Signature made "
 msgstr "Signatur fullført"
@@ -8778,6 +8791,9 @@ msgid ""
 msgstr ""
 "Syntaks: gpg-check-pattern [valg] mønsterfil\n"
 "Kontroller passordfrase oppgitt på standard innkanal mot valgt mønsterfil\n"
+
+#~ msgid "%s/%s encrypted for: \"%s\"\n"
+#~ msgstr "%s/%s kryptert for: «%s»\n"
 
 #~ msgid "forcing symmetric cipher %s (%d) violates recipient preferences\n"
 #~ msgstr "tvungen bruk av krypt.metode %s (%d) bryter med mottakers oppsett\n"

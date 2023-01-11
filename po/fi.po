@@ -1913,12 +1913,14 @@ msgstr "valittu symmetrinen salain %s (%d) ei ole vastaanottajan suosima\n"
 msgid "error creating passphrase: %s\n"
 msgstr "virhe luotaessa salasanaa: %s\n"
 
-#, c-format
-msgid "can't use a symmetric ESK packet due to the S2K mode\n"
+#, fuzzy, c-format
+#| msgid "can't use a symmetric ESK packet due to the S2K mode\n"
+msgid "can't use a SKESK packet due to the S2K mode\n"
 msgstr "symmetristä ESK-pakettia ei voi käyttää S2K-tilan vuoksi\n"
 
-#, c-format
-msgid "using cipher %s\n"
+#, fuzzy, c-format
+#| msgid "using cipher %s\n"
+msgid "using cipher %s.%s\n"
 msgstr "käytetään salakirjoitusalgoritmia %s\n"
 
 #, fuzzy, c-format
@@ -1954,8 +1956,9 @@ msgid ""
 "preferences\n"
 msgstr "valittu pakkausalgoritmi %s (%d) ei ole vastaanottajan suosima\n"
 
-#, c-format
-msgid "%s/%s encrypted for: \"%s\"\n"
+#, fuzzy, c-format
+#| msgid "%s/%s encrypted for: \"%s\"\n"
+msgid "%s/%s.%s encrypted for: \"%s\"\n"
 msgstr "%s/%s salattu vastaanottajalle: \"%s\"\n"
 
 #, fuzzy, c-format
@@ -2548,6 +2551,11 @@ msgstr "näytä mihin avainrenkaaseen tulostettu avain kuuluu"
 #, fuzzy
 msgid "show expiration dates during signature listings"
 msgstr "Salaisesta avainrenkaasta ei löydy vastaavaa allekirjoitusta\n"
+
+#, fuzzy
+#| msgid "set preference list"
+msgid "show preferences"
+msgstr "näytä valinnat"
 
 #, fuzzy, c-format
 msgid "unknown TOFU policy '%s'\n"
@@ -3953,18 +3961,6 @@ msgstr "virhe: sormenjälki on väärä\n"
 msgid "subkey \"%s\" not found\n"
 msgstr "avainta \"%s\" ei löydy: %s\n"
 
-msgid "AEAD: "
-msgstr ""
-
-msgid "Digest: "
-msgstr "Tiiviste: "
-
-msgid "Features: "
-msgstr "Ominaisuudet: "
-
-msgid "Keyserver no-modify"
-msgstr ""
-
 msgid "Preferred keyserver: "
 msgstr ""
 
@@ -4789,6 +4785,18 @@ msgstr "Haluatko varmasti luoda? "
 
 msgid "never     "
 msgstr "ei koskaan"
+
+msgid "AEAD: "
+msgstr ""
+
+msgid "Digest: "
+msgstr "Tiiviste: "
+
+msgid "Features: "
+msgstr "Ominaisuudet: "
+
+msgid "Keyserver no-modify"
+msgstr ""
 
 msgid "Critical signature policy: "
 msgstr "Kriittinen allekirjoituskäytäntö: "
@@ -7755,6 +7763,11 @@ msgid "checking for qualified certificate failed: %s\n"
 msgstr "luodun allekirjoituksen tarkistus epäonnistui: %s\n"
 
 #, fuzzy, c-format
+msgid "%s/%s signature using %s key %s\n"
+msgstr ""
+"Allekirjoitus tehty %.*s käyttämällä %s-algoritmia avaintunnuksella %08lX\n"
+
+#, fuzzy, c-format
 msgid "Signature made "
 msgstr "Allekirjoitus vanheni %s\n"
 
@@ -9123,6 +9136,9 @@ msgid ""
 "Syntax: gpg-check-pattern [options] patternfile\n"
 "Check a passphrase given on stdin against the patternfile\n"
 msgstr ""
+
+#~ msgid "%s/%s encrypted for: \"%s\"\n"
+#~ msgstr "%s/%s salattu vastaanottajalle: \"%s\"\n"
 
 #~ msgid "forcing symmetric cipher %s (%d) violates recipient preferences\n"
 #~ msgstr "valittu symmetrinen salain %s (%d) ei ole vastaanottajan suosima\n"
@@ -10646,9 +10662,6 @@ msgstr ""
 
 #~ msgid "change the expire date"
 #~ msgstr "muuta voimassoloaikaa"
-
-#~ msgid "set preference list"
-#~ msgstr "näytä valinnat"
 
 #~ msgid "updated preferences"
 #~ msgstr "päivitä valinnat"

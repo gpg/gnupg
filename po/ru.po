@@ -1809,12 +1809,14 @@ msgstr ""
 msgid "error creating passphrase: %s\n"
 msgstr "ошибка при создании фразы-пароля: %s\n"
 
-#, c-format
-msgid "can't use a symmetric ESK packet due to the S2K mode\n"
+#, fuzzy, c-format
+#| msgid "can't use a symmetric ESK packet due to the S2K mode\n"
+msgid "can't use a SKESK packet due to the S2K mode\n"
 msgstr "не могу использовать симметричный пакет ESK из-за режима S2K\n"
 
-#, c-format
-msgid "using cipher %s\n"
+#, fuzzy, c-format
+#| msgid "using cipher %s\n"
+msgid "using cipher %s.%s\n"
 msgstr "используется симметричный шифр %s\n"
 
 #, c-format
@@ -1847,8 +1849,9 @@ msgid ""
 "preferences\n"
 msgstr "Внимание: сжатие алгоритмом %s (%d) нарушает предпочтения получателя\n"
 
-#, c-format
-msgid "%s/%s encrypted for: \"%s\"\n"
+#, fuzzy, c-format
+#| msgid "%s/%s encrypted for: \"%s\"\n"
+msgid "%s/%s.%s encrypted for: \"%s\"\n"
 msgstr "%s/%s зашифровано для пользователя \"%s\"\n"
 
 #, c-format
@@ -2401,6 +2404,11 @@ msgstr "показывать в списке ключей название та�
 
 msgid "show expiration dates during signature listings"
 msgstr "показывать в списке подписей сроки действия"
+
+#, fuzzy
+#| msgid "list preferences (expert)"
+msgid "show preferences"
+msgstr "список предпочтений (экспертам)"
 
 #, c-format
 msgid "unknown TOFU policy '%s'\n"
@@ -3743,18 +3751,6 @@ msgstr "\"%s\" - не правильный отпечаток\n"
 msgid "subkey \"%s\" not found\n"
 msgstr "подключ \"%s\" не найден\n"
 
-msgid "AEAD: "
-msgstr "AEAD: "
-
-msgid "Digest: "
-msgstr "Хеш: "
-
-msgid "Features: "
-msgstr "Характеристики: "
-
-msgid "Keyserver no-modify"
-msgstr "Не изменять на сервере"
-
 msgid "Preferred keyserver: "
 msgstr "Предпочтительный сервер ключей: "
 
@@ -4552,6 +4548,18 @@ msgstr "Действительно создать? (y/N) "
 
 msgid "never     "
 msgstr "никогда   "
+
+msgid "AEAD: "
+msgstr "AEAD: "
+
+msgid "Digest: "
+msgstr "Хеш: "
+
+msgid "Features: "
+msgstr "Характеристики: "
+
+msgid "Keyserver no-modify"
+msgstr "Не изменять на сервере"
 
 msgid "Critical signature policy: "
 msgstr "Критические правила подписи: "
@@ -7496,6 +7504,11 @@ msgstr "хеш-функция для пользователя %d: %s (%s)\n"
 msgid "checking for qualified certificate failed: %s\n"
 msgstr "сбой при проверке квалифицированной подписи: %s\n"
 
+#, fuzzy, c-format
+#| msgid "Signature made %s using %s key ID %s\n"
+msgid "%s/%s signature using %s key %s\n"
+msgstr "Подпись сделана %s ключом %s с идентификатором %s\n"
+
 #, c-format
 msgid "Signature made "
 msgstr "Подпись сделана "
@@ -8855,6 +8868,9 @@ msgid ""
 msgstr ""
 "Синтаксис: gpg-check-pattern [параметры] файл_образцов\n"
 "Проверить фразу-пароль, поступающую из stdin, по файлу образцов\n"
+
+#~ msgid "%s/%s encrypted for: \"%s\"\n"
+#~ msgstr "%s/%s зашифровано для пользователя \"%s\"\n"
 
 #~ msgid "forcing symmetric cipher %s (%d) violates recipient preferences\n"
 #~ msgstr ""

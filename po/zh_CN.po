@@ -1771,12 +1771,14 @@ msgstr "警告： 强制对称密文 %s (%d) 与接收者的偏好设置冲突\n
 msgid "error creating passphrase: %s\n"
 msgstr "创建密码时出现错误：%s\n"
 
-#, c-format
-msgid "can't use a symmetric ESK packet due to the S2K mode\n"
+#, fuzzy, c-format
+#| msgid "can't use a symmetric ESK packet due to the S2K mode\n"
+msgid "can't use a SKESK packet due to the S2K mode\n"
 msgstr "由于在 S2K 模式，不能使用一个对称的 ESK 封包\n"
 
-#, c-format
-msgid "using cipher %s\n"
+#, fuzzy, c-format
+#| msgid "using cipher %s\n"
+msgid "using cipher %s.%s\n"
 msgstr "使用加密 %s\n"
 
 #, c-format
@@ -1809,8 +1811,9 @@ msgid ""
 "preferences\n"
 msgstr "警告： 强制压缩算法 %s (%d) 与接收者的偏好设置冲突\n"
 
-#, c-format
-msgid "%s/%s encrypted for: \"%s\"\n"
+#, fuzzy, c-format
+#| msgid "%s/%s encrypted for: \"%s\"\n"
+msgid "%s/%s.%s encrypted for: \"%s\"\n"
 msgstr "%s/%s 已经加密给：“%s”\n"
 
 #, c-format
@@ -2329,6 +2332,11 @@ msgstr "列出密钥时显示钥匙环的名称"
 
 msgid "show expiration dates during signature listings"
 msgstr "列出签名时显示过期日期"
+
+#, fuzzy
+#| msgid "list preferences (expert)"
+msgid "show preferences"
+msgstr "列出偏好设置（专家模式）"
 
 #, c-format
 msgid "unknown TOFU policy '%s'\n"
@@ -3619,18 +3627,6 @@ msgstr "“%s” 不是一个正确的指纹\n"
 msgid "subkey \"%s\" not found\n"
 msgstr "子密钥 “%s” 未找到\n"
 
-msgid "AEAD: "
-msgstr "AEAD： "
-
-msgid "Digest: "
-msgstr "摘要： "
-
-msgid "Features: "
-msgstr "特点： "
-
-msgid "Keyserver no-modify"
-msgstr "公钥服务器不可修改"
-
 msgid "Preferred keyserver: "
 msgstr "首选公钥服务器： "
 
@@ -4399,6 +4395,18 @@ msgstr "真的要创建吗？(y/N) "
 
 msgid "never     "
 msgstr "永不     "
+
+msgid "AEAD: "
+msgstr "AEAD： "
+
+msgid "Digest: "
+msgstr "摘要： "
+
+msgid "Features: "
+msgstr "特点： "
+
+msgid "Keyserver no-modify"
+msgstr "公钥服务器不可修改"
 
 msgid "Critical signature policy: "
 msgstr "紧急签名策略： "
@@ -7178,6 +7186,11 @@ msgstr "为签名者 %d 使用的散列算法：%s (%s)\n"
 msgid "checking for qualified certificate failed: %s\n"
 msgstr "检查合格证书失败：%s\n"
 
+#, fuzzy, c-format
+#| msgid "Signature made %s using %s key ID %s\n"
+msgid "%s/%s signature using %s key %s\n"
+msgstr "于 %s 创建的签名，使用 %s，密钥号 %s\n"
+
 #, c-format
 msgid "Signature made "
 msgstr "已签名 "
@@ -8497,6 +8510,9 @@ msgid ""
 msgstr ""
 "语法：gpg-check-pattern [选项] patternfile\n"
 "按照 patternfile 检查一个由标准输入（stdin）给定的密码\n"
+
+#~ msgid "%s/%s encrypted for: \"%s\"\n"
+#~ msgstr "%s/%s 已经加密给：“%s”\n"
 
 #~ msgid "forcing symmetric cipher %s (%d) violates recipient preferences\n"
 #~ msgstr "强行对称密文算法 %s (%d) 与接收者的偏好设置冲突\n"
