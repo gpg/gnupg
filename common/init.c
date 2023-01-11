@@ -30,6 +30,9 @@
 #include <config.h>
 
 #ifdef HAVE_W32_SYSTEM
+# if _WIN32_WINNT < 0x0600
+#   define _WIN32_WINNT 0x0600  /* Required for SetProcessDEPPolicy.  */
+# endif
 # ifdef HAVE_WINSOCK2_H
 #  include <winsock2.h>
 # endif
@@ -239,7 +242,21 @@ _init_common_subsystems (gpg_err_source_t errsource, int *argcp, char ***argvp)
   log_set_socket_dir_cb (gnupg_socketdir);
 
 #if HAVE_W32_SYSTEM
-  /* For Standard Windows we use our own parser for the command line
+  /* Make sure that Data Execution Prevention is enabled.  */
+  if (GetSystemDEPPolicy () >= 2)
+    {
+      DWORD flags;
+      BOOL perm;
+
+      if (!GetProcessDEPPolicy (GetCurrentProcess (), &flags, &perm))
+        log_info ("error getting DEP policy: %s\n",
+                  w32_strerror (GetLastError()));
+      else if (!(flags & PROCESS_DEP_ENABLE)
+               && !SetProcessDEPPolicy (PROCESS_DEP_ENABLE))
+        log_info ("Warning: Enabling DEP failed: %s (%d,%d)\n",
+                  w32_strerror (GetLastError ()), (int)flags, (int)perm);
+    }
+  /* On Windows we use our own parser for the command line
    * so that we can return an array of utf-8 encoded strings.  */
   prepare_w32_commandline (argcp, argvp);
 #else
