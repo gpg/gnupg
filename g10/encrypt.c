@@ -1137,10 +1137,6 @@ write_pubkey_enc (ctrl_t ctrl,
       if ( opt.verbose )
         {
           char *ustr = get_user_id_string_native (ctrl, enc->keyid);
-          log_info (_("%s/%s encrypted for: \"%s\"\n"),
-                    openpgp_pk_algo_name (enc->pubkey_algo),
-                    openpgp_cipher_algo_name (dek->algo),
-                    ustr );
           log_info (_("%s/%s.%s encrypted for: \"%s\"\n"),
                     openpgp_pk_algo_name (enc->pubkey_algo),
                     openpgp_cipher_algo_name (dek->algo),
