@@ -887,7 +887,7 @@ parse_rereadable_options (ARGPARSE_ARGS *pargs, int reread)
 /* This fucntion is called after option parsing to adjust some values
  * and call option setup functions.  */
 static void
-post_option_parsing (void)
+post_option_parsing (enum cmd_and_opt_values cmd)
 {
   /* It would be too surpirsing if the quick timeout is larger than
    * the standard value.  */
@@ -895,7 +895,18 @@ post_option_parsing (void)
     opt.connect_quick_timeout = opt.connect_timeout;
 
   set_debug ();
-  set_tor_mode ();
+  /* For certain commands we do not want to set/test for Tor mode
+   * because that is somewhat expensive.  */
+  switch (cmd)
+    {
+    case aGPGConfList:
+    case aGPGConfTest:
+    case aGPGConfVersions:
+      break;
+    default:
+      set_tor_mode ();
+      break;
+    }
 }
 
 
@@ -1208,7 +1219,7 @@ main (int argc, char **argv)
       log_printf ("\n");
     }
 
-  post_option_parsing ();
+  post_option_parsing (cmd);
 
   /* Get LDAP server list from file unless --ldapserver has been used.  */
 #if USE_LDAP
@@ -1944,7 +1955,7 @@ reread_configuration (void)
     }
   gnupg_argparse (NULL, &pargs, NULL);  /* Release internal state.  */
   xfree (twopart);
-  post_option_parsing ();
+  post_option_parsing (0);
 }
 
 
