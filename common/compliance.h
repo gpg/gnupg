@@ -47,7 +47,7 @@ enum gnupg_compliance_mode
 enum pk_use_case
   {
     PK_USE_ENCRYPTION, PK_USE_DECRYPTION,
-    PK_USE_SIGNING, PK_USE_VERIFICATION,
+    PK_USE_SIGNING, PK_USE_VERIFICATION
   };
 
 /* Flags to distinguish public key algorithm variants.  */

@@ -300,6 +300,7 @@ gpgsm_verify (ctrl_t ctrl, int in_fd, int data_fd, estream_t out_fp)
       unsigned int nbits;
       int pkalgo;
       char *pkalgostr = NULL;
+      char *pkcurve = NULL;
       char *pkfpr = NULL;
       unsigned int pkalgoflags, verifyflags;
 
@@ -458,7 +459,7 @@ gpgsm_verify (ctrl_t ctrl, int in_fd, int data_fd, estream_t out_fp)
 
       pkfpr = gpgsm_get_fingerprint_hexstring (cert, GCRY_MD_SHA1);
       pkalgostr = gpgsm_pubkey_algo_string (cert, NULL);
-      pkalgo = gpgsm_get_key_algo_info (cert, &nbits);
+      pkalgo = gpgsm_get_key_algo_info2 (cert, &nbits, &pkcurve);
       /* Remap the ECC algo to the algo we use.  Note that EdDSA has
        * already been mapped.  */
       if (pkalgo == GCRY_PK_ECC)
@@ -513,9 +514,19 @@ gpgsm_verify (ctrl_t ctrl, int in_fd, int data_fd, estream_t out_fp)
           goto next_signer;
         }
 
+      /* Print compliance warning for the key.  */
+      if (!opt.quiet
+          && !gnupg_pk_is_compliant (opt.compliance, pkalgo, pkalgoflags,
+                                     NULL, nbits, pkcurve))
+          {
+            log_info (_("WARNING: This key is not suitable for signing"
+                        " in %s mode\n"),
+                      gnupg_compliance_option_string (opt.compliance));
+          }
+
       /* Check compliance with CO_DE_VS.  */
       if (gnupg_pk_is_compliant (CO_DE_VS, pkalgo, pkalgoflags,
-                                 NULL, nbits, NULL)
+                                 NULL, nbits, pkcurve)
           && gnupg_gcrypt_is_compliant (CO_DE_VS)
           && gnupg_digest_is_compliant (CO_DE_VS, sigval_hash_algo))
         gpgsm_status (ctrl, STATUS_VERIFICATION_COMPLIANCE_MODE,
@@ -527,7 +538,6 @@ gpgsm_verify (ctrl_t ctrl, int in_fd, int data_fd, estream_t out_fp)
                        " unfulfilled compliance rules\n"));
           gpgsm_errors_seen = 1;
         }
-
 
       /* Now we can check the signature.  */
       if (msgdigest)
@@ -709,6 +719,7 @@ gpgsm_verify (ctrl_t ctrl, int in_fd, int data_fd, estream_t out_fp)
       gcry_sexp_release (sigval);
       xfree (msgdigest);
       xfree (pkalgostr);
+      xfree (pkcurve);
       xfree (pkfpr);
       ksba_cert_release (cert);
       cert = NULL;

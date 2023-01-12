@@ -88,7 +88,9 @@ gnupg_initialize_compliance (int gnupg_module_name)
   log_assert (! initialized);
 
   /* We accept both OpenPGP-style and gcrypt-style algorithm ids.
-   * Assert that they are compatible.  */
+   * Assert that they are compatible. At some places gcrypt ids are
+   * used which can't be encoded in an OpenPGP algo octet; we also
+   * assert this.  */
   log_assert ((int) GCRY_PK_RSA          == (int) PUBKEY_ALGO_RSA);
   log_assert ((int) GCRY_PK_RSA_E        == (int) PUBKEY_ALGO_RSA_E);
   log_assert ((int) GCRY_PK_RSA_S        == (int) PUBKEY_ALGO_RSA_S);
@@ -96,6 +98,9 @@ gnupg_initialize_compliance (int gnupg_module_name)
   log_assert ((int) GCRY_PK_DSA          == (int) PUBKEY_ALGO_DSA);
   log_assert ((int) GCRY_PK_ECC          == (int) PUBKEY_ALGO_ECDH);
   log_assert ((int) GCRY_PK_ELG          == (int) PUBKEY_ALGO_ELGAMAL);
+  log_assert ((int) GCRY_PK_ECDSA        > 255);
+  log_assert ((int) GCRY_PK_ECDH         > 255);
+  log_assert ((int) GCRY_PK_EDDSA        > 255);
   log_assert ((int) GCRY_CIPHER_NONE     == (int) CIPHER_ALGO_NONE);
   log_assert ((int) GCRY_CIPHER_IDEA     == (int) CIPHER_ALGO_IDEA);
   log_assert ((int) GCRY_CIPHER_3DES     == (int) CIPHER_ALGO_3DES);
@@ -164,6 +169,9 @@ gnupg_pk_is_compliant (enum gnupg_compliance_mode compliance, int algo,
     case PUBKEY_ALGO_ECDH:
     case PUBKEY_ALGO_ECDSA:
     case PUBKEY_ALGO_EDDSA:
+    case GCRY_PK_ECDSA:
+    case GCRY_PK_ECDH:
+    case GCRY_PK_EDDSA:
       algotype = is_ecc;
       break;
 
@@ -216,7 +224,9 @@ gnupg_pk_is_compliant (enum gnupg_compliance_mode compliance, int algo,
 
           result = (curvename
                     && (algo == PUBKEY_ALGO_ECDH
-                        || algo == PUBKEY_ALGO_ECDSA)
+                        || algo == PUBKEY_ALGO_ECDSA
+                        || algo == GCRY_PK_ECDH
+                        || algo == GCRY_PK_ECDSA)
                     && (!strcmp (curvename, "brainpoolP256r1")
                         || !strcmp (curvename, "brainpoolP384r1")
                         || !strcmp (curvename, "brainpoolP512r1")));
@@ -297,6 +307,7 @@ gnupg_pk_is_allowed (enum gnupg_compliance_mode compliance,
           break;
 
 	case PUBKEY_ALGO_ECDH:
+	case GCRY_PK_ECDH:
 	  if (use == PK_USE_DECRYPTION)
             result = 1;
           else if (use == PK_USE_ENCRYPTION)
@@ -321,6 +332,7 @@ gnupg_pk_is_allowed (enum gnupg_compliance_mode compliance,
           break;
 
 	case PUBKEY_ALGO_ECDSA:
+	case GCRY_PK_ECDSA:
           if (use == PK_USE_VERIFICATION)
             result = 1;
           else

@@ -2149,7 +2149,11 @@ gpgsm_validate_chain (ctrl_t ctrl, ksba_cert_t cert, ksba_isotime_t checktime,
       && !(flags & VALIDATE_FLAG_CHAIN_MODEL)
       && (rootca_flags.valid && rootca_flags.chain_model))
     {
-      do_list (0, listmode, listfp, _("switching to chain model"));
+      /* The root CA indicated that the chain model is to be used but
+       * we have not yet used it.  Thus do the validation again using
+       * the chain model.  */
+      if (opt.verbose)
+        do_list (0, listmode, listfp, _("switching to chain model"));
       rc = do_validate_chain (ctrl, cert, checktime,
                               r_exptime, listmode, listfp,
                               (flags |= VALIDATE_FLAG_CHAIN_MODEL),
