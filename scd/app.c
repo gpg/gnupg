@@ -66,6 +66,20 @@ print_progress_line (void *opaque, const char *what, int pc, int cur, int tot)
 }
 
 
+/* Map a cardtype to a string.  Never returns NULL.  */
+const char *
+strcardtype (cardtype_t t)
+{
+  switch (t)
+    {
+    case CARDTYPE_GENERIC:     return "generic";
+    case CARDTYPE_GNUK:        return "gnuk";
+    case CARDTYPE_YUBIKEY:     return "yubikey";
+    case CARDTYPE_ZEITCONTROL: return "zeitcontrol";
+    }
+  return "?";
+}
+
 /* Map an application type to a string.  Never returns NULL.  */
 const char *
 strapptype (apptype_t t)
@@ -803,8 +817,18 @@ app_write_learn_status (app_t app, ctrl_t ctrl, unsigned int flags)
     return gpg_error (GPG_ERR_UNSUPPORTED_OPERATION);
 
   /* We do not send APPTYPE if only keypairinfo is requested.  */
-  if (app->apptype && !(flags & 1))
-    send_status_direct (ctrl, "APPTYPE", strapptype (app->apptype));
+  if (!(flags & APP_LEARN_FLAG_KEYPAIRINFO))
+    {
+      if (app->cardtype)
+        send_status_direct (ctrl, "CARDTYPE", strcardtype (app->cardtype));
+      if (app->cardversion)
+        send_status_printf (ctrl, "CARDVERSION", "%X", app->cardversion);
+      if (app->apptype)
+        send_status_direct (ctrl, "APPTYPE", strapptype (app->apptype));
+      if (app->appversion)
+        send_status_printf (ctrl, "APPVERSION", "%X", app->appversion);
+    }
+
   err = lock_app (app, ctrl);
   if (err)
     return err;
@@ -885,6 +909,11 @@ app_getattr (app_t app, ctrl_t ctrl, const char *name)
   if (!app->ref_count)
     return gpg_error (GPG_ERR_CARD_NOT_INITIALIZED);
 
+  if (name && !strcmp (name, "CARDTYPE"))
+    {
+      send_status_direct (ctrl, "CARDTYPE", strcardtype (app->cardtype));
+      return 0;
+    }
   if (app->apptype && name && !strcmp (name, "APPTYPE"))
     {
       send_status_direct (ctrl, "APPTYPE", strapptype (app->apptype));
