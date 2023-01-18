@@ -3203,6 +3203,7 @@ main (int argc, char **argv)
 	  case oCompress:
 	    /* this is the -z command line option */
 	    opt.compress_level = opt.bz2_compress_level = pargs.r.ret_int;
+            opt.explicit_compress_option = 1;
 	    break;
 	  case oCompressLevel: opt.compress_level = pargs.r.ret_int; break;
 	  case oBZ2CompressLevel: opt.bz2_compress_level = pargs.r.ret_int; break;

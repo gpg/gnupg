@@ -98,6 +98,7 @@ struct
   int def_digest_algo;
   int cert_digest_algo;
   int compress_algo;
+  int explicit_compress_option; /* A compress option was explicitly given. */
   int compress_level;
   int bz2_compress_level;
   int bz2_decompress_lowmem;
