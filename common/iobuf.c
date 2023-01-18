@@ -1,7 +1,7 @@
 /* iobuf.c  -  File Handling for OpenPGP.
  * Copyright (C) 1998, 1999, 2000, 2001, 2003, 2004, 2006, 2007, 2008,
  *               2009, 2010, 2011  Free Software Foundation, Inc.
- * Copyright (C) 2015  g10 Code GmbH
+ * Copyright (C) 2015, 2023  g10 Code GmbH
  *
  * This file is part of GnuPG.
  *
@@ -93,6 +93,9 @@ typedef struct
   int no_cache;
   int eof_seen;
   int print_only_name; /* Flags indicating that fname is not a real file.  */
+  char peeked[32];     /* Read ahead buffer.  */
+  byte npeeked;        /* Number of bytes valid in peeked.  */
+  byte upeeked;        /* Number of bytes used from peeked.  */
   char fname[1];       /* Name of the file.  */
 } file_filter_ctx_t;
 
@@ -454,7 +457,16 @@ file_filter (void *opaque, int control, iobuf_t chain, byte * buf,
   if (control == IOBUFCTRL_UNDERFLOW)
     {
       log_assert (size); /* We need a buffer.  */
-      if (a->eof_seen)
+      if (a->npeeked > a->upeeked)
+        {
+          nbytes = a->npeeked - a->upeeked;
+          if (nbytes > size)
+            nbytes = size;
+          memcpy (buf, a->peeked + a->upeeked, nbytes);
+          a->upeeked += nbytes;
+          *ret_len = nbytes;
+        }
+      else if (a->eof_seen)
 	{
 	  rc = -1;
 	  *ret_len = 0;
@@ -573,6 +585,68 @@ file_filter (void *opaque, int control, iobuf_t chain, byte * buf,
       a->eof_seen = 0;
       a->keep_open = 0;
       a->no_cache = 0;
+      a->npeeked = 0;
+      a->upeeked = 0;
+    }
+  else if (control == IOBUFCTRL_PEEK)
+    {
+      /* Peek on the input.  */
+#ifdef HAVE_W32_SYSTEM
+      unsigned long nread;
+
+      nbytes = 0;
+      if (!ReadFile (f, a->peeked, sizeof a->peeked, &nread, NULL))
+        {
+          int ec = (int) GetLastError ();
+          if (ec != ERROR_BROKEN_PIPE)
+            {
+              rc = gpg_error_from_errno (ec);
+              log_error ("%s: read error: ec=%d\n", a->fname, ec);
+            }
+          a->npeeked = 0;
+        }
+      else if (!nread)
+        {
+          a->eof_seen = 1;
+          a->npeeked = 0;
+        }
+      else
+        {
+          a->npeeked = nread;
+        }
+
+#else /* Unix */
+
+      int n;
+
+    peek_more:
+      do
+        {
+          n = read (f, a->peeked + a->npeeked, sizeof a->peeked - a->npeeked);
+        }
+      while (n == -1 && errno == EINTR);
+      if (n > 0)
+        {
+          a->npeeked += n;
+          if (a->npeeked < sizeof a->peeked)
+            goto peek_more;
+        }
+      else if (!n) /* eof */
+        {
+          a->eof_seen = 1;
+        }
+      else /* error */
+        {
+          rc = gpg_error_from_syserror ();
+          if (gpg_err_code (rc) != GPG_ERR_EPIPE)
+            log_error ("%s: read error: %s\n", a->fname, gpg_strerror (rc));
+        }
+#endif /* Unix */
+
+      size = a->npeeked < size? a->npeeked : size;
+      memcpy (buf, a->peeked, size);
+      *ret_len = size;
+      rc = 0;  /* Return success - the user needs to check ret_len.  */
     }
   else if (control == IOBUFCTRL_DESC)
     {
@@ -1485,6 +1559,25 @@ iobuf_ioctl (iobuf_t a, iobuf_ioctl_t cmd, int intval, void *ptrval)
       if (!a && !intval && ptrval)
         {
           return fd_cache_synchronize (ptrval);
+        }
+    }
+  else if (cmd == IOBUF_IOCTL_PEEK)
+    {
+      /* Peek at a justed opened file.  Use this only directly after a
+       * file has been opened for reading.  Don't use it after you did
+       * a seek.  This works only if just file filter has been
+       * pushed.  Expects a buffer wit size INTVAL at PTRVAL and returns
+       * the number of bytes put into the buffer.  */
+      if (DBG_IOBUF)
+	log_debug ("iobuf-%d.%d: ioctl '%s' peek\n",
+		   a ? a->no : -1, a ? a->subno : -1, iobuf_desc (a, desc));
+      if (a->filter == file_filter && ptrval && intval)
+        {
+          file_filter_ctx_t *fcx = a->filter_ov;
+          size_t len = intval;
+
+          if (!file_filter (fcx, IOBUFCTRL_PEEK, NULL, ptrval, &len))
+            return (int)len;
         }
     }
 

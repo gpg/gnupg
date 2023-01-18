@@ -106,6 +106,7 @@ enum
     IOBUFCTRL_FLUSH     = 4,
     IOBUFCTRL_DESC	= 5,
     IOBUFCTRL_CANCEL    = 6,
+    IOBUFCTRL_PEEK      = 7,
     IOBUFCTRL_USER	= 16
   };
 
@@ -116,7 +117,8 @@ typedef enum
     IOBUF_IOCTL_KEEP_OPEN        = 1, /* Uses intval.  */
     IOBUF_IOCTL_INVALIDATE_CACHE = 2, /* Uses ptrval.  */
     IOBUF_IOCTL_NO_CACHE         = 3, /* Uses intval.  */
-    IOBUF_IOCTL_FSYNC            = 4  /* Uses ptrval.  */
+    IOBUF_IOCTL_FSYNC            = 4, /* Uses ptrval.  */
+    IOBUF_IOCTL_PEEK             = 5  /* Uses intval and ptrval.  */
   } iobuf_ioctl_t;
 
 enum iobuf_use

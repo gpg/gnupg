@@ -466,7 +466,7 @@ decode_c_string (const char *src)
 /* Check whether (BUF,LEN) is valid header for an OpenPGP compressed
  * packet.  LEN should be at least 6.  */
 static int
-is_openpgp_compressed_packet (unsigned char *buf, size_t len)
+is_openpgp_compressed_packet (const unsigned char *buf, size_t len)
 {
   int c, ctb, pkttype;
   int lenbytes;
@@ -508,63 +508,46 @@ is_openpgp_compressed_packet (unsigned char *buf, size_t len)
 
 
 /*
- * Check if the file is compressed.
+ * Check if the file is compressed.  You need to pass the first bytes
+ * of the file as (BUF,BUFLEN).  Returns true if the buffer seems to
+ * be compressed.
  */
 int
-is_file_compressed (const char *s, int *ret_rc)
+is_file_compressed (const byte *buf, unsigned int buflen)
 {
-    iobuf_t a;
-    byte buf[6];
-    int i;
-    int rc = 0;
-    int overflow;
+  int i;
 
-    struct magic_compress_s {
-        size_t len;
-        byte magic[4];
-    } magic[] = {
-        { 3, { 0x42, 0x5a, 0x68, 0x00 } }, /* bzip2 */
-        { 3, { 0x1f, 0x8b, 0x08, 0x00 } }, /* gzip */
-        { 4, { 0x50, 0x4b, 0x03, 0x04 } }, /* (pk)zip */
-    };
+  struct magic_compress_s
+  {
+    byte len;
+    byte magic[5];
+  } magic[] =
+      {
+       { 3, { 0x42, 0x5a, 0x68, 0x00 } }, /* bzip2 */
+       { 3, { 0x1f, 0x8b, 0x08, 0x00 } }, /* gzip */
+       { 4, { 0x50, 0x4b, 0x03, 0x04 } }, /* (pk)zip */
+       { 5, { '%', 'P', 'D', 'F', '-'} }  /* PDF */
+  };
 
-    if ( iobuf_is_pipe_filename (s) || !ret_rc )
-        return 0; /* We can't check stdin or no file was given */
-
-    a = iobuf_open( s );
-    if ( a == NULL ) {
-        *ret_rc = gpg_error_from_syserror ();
-        return 0;
-    }
-    iobuf_ioctl (a, IOBUF_IOCTL_NO_CACHE, 1, NULL);
-
-    if ( iobuf_get_filelength( a, &overflow ) < 6 && !overflow) {
-        *ret_rc = 0;
-        goto leave;
+  if ( buflen < 6 )
+    {
+      return 0;  /* Too short to check - assume uncompressed.  */
     }
 
-    if ( iobuf_read( a, buf, 6 ) == -1 ) {
-        *ret_rc = a->error;
-        goto leave;
-    }
-
-    for ( i = 0; i < DIM( magic ); i++ ) {
-        if ( !memcmp( buf, magic[i].magic, magic[i].len ) ) {
-            *ret_rc = 0;
-            rc = 1;
-            goto leave;
+  for ( i = 0; i < DIM (magic); i++ )
+    {
+      if ( !memcmp( buf, magic[i].magic, magic[i].len ))
+        {
+          return 1; /* Is compressed.  */
         }
     }
 
-    if (is_openpgp_compressed_packet (buf, 6))
-      {
-        *ret_rc = 0;
-        rc = 1;
-      }
+  if (buflen >= 6 && is_openpgp_compressed_packet (buf, buflen))
+    {
+      return 1; /* Already compressed.  */
+    }
 
- leave:
-    iobuf_close( a );
-    return rc;
+  return 0;  /* Not detected as compressed.  */
 }
 
 
