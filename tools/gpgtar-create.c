@@ -1141,6 +1141,7 @@ gpgtar_create (char **inpattern, const char *files_from, int null_names,
     {
       strlist_t arg;
       ccparray_t ccp;
+      int except[2] = { -1, -1 };
       const char **argv;
 
       /* '--encrypt' may be combined with '--symmetric', but 'encrypt'
@@ -1164,6 +1165,7 @@ gpgtar_create (char **inpattern, const char *files_from, int null_names,
 
           snprintf (tmpbuf, sizeof tmpbuf, "--status-fd=%d", opt.status_fd);
           ccparray_put (&ccp, tmpbuf);
+          except[0] = opt.status_fd;
         }
 
       ccparray_put (&ccp, "--output");
@@ -1195,7 +1197,8 @@ gpgtar_create (char **inpattern, const char *files_from, int null_names,
           goto leave;
         }
 
-      err = gnupg_spawn_process (opt.gpg_program, argv, NULL,
+      err = gnupg_spawn_process (opt.gpg_program, argv,
+                                 except[0] == -1? NULL : except,
                                  (GNUPG_SPAWN_KEEP_STDOUT
                                   | GNUPG_SPAWN_KEEP_STDERR),
                                  &outstream, NULL, NULL, &pid);
