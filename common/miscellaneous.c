@@ -472,13 +472,16 @@ is_file_compressed (const byte *buf, unsigned int buflen)
   struct magic_compress_s
   {
     byte len;
+    byte extchk;
     byte magic[5];
   } magic[] =
       {
-       { 3, { 0x42, 0x5a, 0x68, 0x00 } }, /* bzip2 */
-       { 3, { 0x1f, 0x8b, 0x08, 0x00 } }, /* gzip */
-       { 4, { 0x50, 0x4b, 0x03, 0x04 } }, /* (pk)zip */
-       { 5, { '%', 'P', 'D', 'F', '-'} }  /* PDF */
+       { 3, 0, { 0x42, 0x5a, 0x68, 0x00 } }, /* bzip2 */
+       { 3, 0, { 0x1f, 0x8b, 0x08, 0x00 } }, /* gzip */
+       { 4, 0, { 0x50, 0x4b, 0x03, 0x04 } }, /* (pk)zip */
+       { 5, 0, { '%', 'P', 'D', 'F', '-'} }, /* PDF */
+       { 4, 1, { 0xff, 0xd8, 0xff, 0xe0 } }, /* Maybe JFIF */
+       { 5, 2, { 0x89, 'P','N','G', 0x0d} }  /* Likely PNG */
   };
 
   if ( buflen < 6 )
@@ -488,9 +491,24 @@ is_file_compressed (const byte *buf, unsigned int buflen)
 
   for ( i = 0; i < DIM (magic); i++ )
     {
-      if ( !memcmp( buf, magic[i].magic, magic[i].len ))
+      if (!memcmp( buf, magic[i].magic, magic[i].len))
         {
-          return 1; /* Is compressed.  */
+          switch (magic[i].extchk)
+            {
+            case 0:
+              return 1; /* Is compressed.  */
+            case 1:
+              if (buflen > 11 && !memcmp (buf + 6, "JFIF", 5))
+                return 1; /* JFIF: this likely a compressed JPEG.  */
+              break;
+            case 2:
+              if (buflen > 8
+                  && buf[5] == 0x0a && buf[6] == 0x1a && buf[7] == 0x0a)
+                return 1; /* This is a PNG.  */
+              break;
+            default:
+              break;
+            }
         }
     }
 
