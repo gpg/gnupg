@@ -468,6 +468,7 @@ gpgtar_list (const char *filename, int decrypt)
     {
       strlist_t arg;
       ccparray_t ccp;
+      int except[2] = { -1, -1 };
       const char **argv;
 
       ccparray_init (&ccp, 0);
@@ -481,6 +482,7 @@ gpgtar_list (const char *filename, int decrypt)
 
           snprintf (tmpbuf, sizeof tmpbuf, "--status-fd=%d", opt.status_fd);
           ccparray_put (&ccp, tmpbuf);
+          except[0] = opt.status_fd;
         }
       ccparray_put (&ccp, "--output");
       ccparray_put (&ccp, "-");
@@ -501,7 +503,9 @@ gpgtar_list (const char *filename, int decrypt)
           goto leave;
         }
 
-      err = gnupg_spawn_process (opt.gpg_program, argv, NULL, NULL,
+      err = gnupg_spawn_process (opt.gpg_program, argv,
+                                 except[0] == -1? NULL : except,
+                                 NULL,
                                  ((filename? 0 : GNUPG_SPAWN_KEEP_STDIN)
                                   | GNUPG_SPAWN_KEEP_STDERR),
                                  NULL, &stream, NULL, &pid);
