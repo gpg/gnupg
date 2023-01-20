@@ -358,6 +358,10 @@ gnupg_pk_is_allowed (enum gnupg_compliance_mode compliance,
 
 
 	case PUBKEY_ALGO_EDDSA:
+          if (use == PK_USE_VERIFICATION)
+            result = 1;
+          else /* We may not create such signatures in de-vs mode.  */
+            result = 0;
 	  break;
 
 	default:

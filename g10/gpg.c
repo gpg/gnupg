@@ -350,7 +350,6 @@ enum cmd_and_opt_values
     oShowSessionKey,
     oOverrideSessionKey,
     oOverrideSessionKeyFD,
-    oOverrideComplianceCheck,
     oNoRandomSeedFile,
     oAutoKeyRetrieve,
     oNoAutoKeyRetrieve,
@@ -856,7 +855,6 @@ static ARGPARSE_OPTS opts[] = {
   ARGPARSE_s_s (oCipherAlgo, "cipher-algo", "@"),
   ARGPARSE_s_s (oDigestAlgo, "digest-algo", "@"),
   ARGPARSE_s_s (oCertDigestAlgo, "cert-digest-algo", "@"),
-  ARGPARSE_s_n (oOverrideComplianceCheck, "override-compliance-check", "@"),
   /* Options to override new security defaults.  */
   ARGPARSE_s_n (oAllowWeakKeySignatures, "allow-weak-key-signatures", "@"),
   ARGPARSE_s_n (oAllowWeakDigestAlgos, "allow-weak-digest-algos", "@"),
@@ -953,6 +951,7 @@ static ARGPARSE_OPTS opts[] = {
   ARGPARSE_s_n (oNoop, "no-force-mdc", "@"),
   ARGPARSE_s_n (oNoop, "disable-mdc", "@"),
   ARGPARSE_s_n (oNoop, "no-disable-mdc", "@"),
+  ARGPARSE_s_n (oNoop, "override-compliance-check", "@"),
 
 
   ARGPARSE_group (302, N_(
@@ -3593,10 +3592,6 @@ main (int argc, char **argv)
             opt.flags.allow_weak_key_signatures = 1;
             break;
 
-          case oOverrideComplianceCheck:
-            opt.flags.override_compliance_check = 1;
-            break;
-
           case oFakedSystemTime:
             {
               size_t len = strlen (pargs.r.ret_str);
@@ -3791,15 +3786,6 @@ main (int argc, char **argv)
 		 "--require-secmem");
         write_status_failure ("option-checking", gpg_error(GPG_ERR_GENERAL));
 	g10_exit(2);
-      }
-
-    /* We allow overriding the compliance check only in non-batch mode
-     * so that the user has a chance to see the message.  */
-    if (opt.flags.override_compliance_check && opt.batch)
-      {
-        opt.flags.override_compliance_check = 0;
-        log_info ("Note: '%s' ignored due to batch mode\n",
-                  "--override-compliance-check");
       }
 
     set_debug (debug_level);
