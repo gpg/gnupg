@@ -892,18 +892,27 @@ wks_free_policy (policy_flags_t policy)
 }
 
 
-/* Write the content of SRC to the new file FNAME.  */
-static gpg_error_t
-write_to_file (estream_t src, const char *fname)
+/* Write the content of SRC to the new file FNAME.  If FNAME is NULL
+ * SRC is written to stdout. */
+gpg_error_t
+wks_write_to_file (estream_t src, const char *fname)
 {
   gpg_error_t err;
   estream_t dst;
   char buffer[4096];
   size_t nread, written;
 
-  dst = es_fopen (fname, "wb");
-  if (!dst)
-    return gpg_error_from_syserror ();
+  if (!fname)
+    {
+      dst = es_stdout;
+      es_set_binary (es_stdout);
+    }
+  else
+    {
+      dst = es_fopen (fname, "wb");
+      if (!dst)
+        return gpg_error_from_syserror ();
+    }
 
   do
     {
@@ -918,12 +927,15 @@ write_to_file (estream_t src, const char *fname)
   if (!es_feof (src) || es_ferror (src) || es_ferror (dst))
     {
       err = gpg_error_from_syserror ();
-      es_fclose (dst);
-      gnupg_remove (fname);
+      if (dst != es_stdout)
+        {
+          es_fclose (dst);
+          gnupg_remove (fname);
+        }
       return err;
     }
 
-  if (es_fclose (dst))
+  if (dst != es_stdout && es_fclose (dst))
     {
       err = gpg_error_from_syserror ();
       log_error ("error closing '%s': %s\n", fname, gpg_strerror (err));
@@ -1225,7 +1237,7 @@ wks_install_key_core (estream_t key, const char *addrspec)
     goto leave;
 
   /* Publish.  */
-  err = write_to_file (key, huname);
+  err = wks_write_to_file (key, huname);
   if (err)
     {
       log_error ("copying key to '%s' failed: %s\n", huname,gpg_strerror (err));

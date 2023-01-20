@@ -1126,6 +1126,19 @@ command_check (char *userid)
                  addrspec);
       err = gpg_error (GPG_ERR_CERT_REVOKED);
     }
+  else if (opt.output)
+    {
+      /* Save to file.  */
+      const char *fname = opt.output;
+
+      if (*fname == '-' && !fname[1])
+        fname = NULL;
+      es_rewind (key);
+      err = wks_write_to_file (key, fname);
+      if (err)
+        log_error ("writing key to '%s' failed: %s\n",
+                   fname? fname : "[stdout]", gpg_strerror (err));
+    }
 
  leave:
   xfree (fpr);
