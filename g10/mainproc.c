@@ -2516,7 +2516,7 @@ check_sig_and_print (CTX c, kbnode_t node)
         }
 
       /* Compute compliance with CO_DE_VS.  */
-      if (pk && is_status_enabled ()
+      if (pk
           && gnupg_gcrypt_is_compliant (CO_DE_VS)
           && gnupg_pk_is_compliant (CO_DE_VS, pk->pubkey_algo, 0, pk->pkey,
                                     nbits_from_pk (pk), NULL)
