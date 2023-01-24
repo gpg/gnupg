@@ -147,6 +147,7 @@ enum cmd_and_opt_values
   oS2KCalibration,
   oAutoExpandSecmem,
   oListenBacklog,
+  oInactivityTimeout,
 
   oWriteEnvFile,
 
@@ -185,7 +186,7 @@ static gpgrt_opt_t opts[] = {
   ARGPARSE_s_s (oHomedir,    "homedir",      "@"),
   ARGPARSE_conffile (oOptions, "options", N_("|FILE|read options from FILE")),
   ARGPARSE_noconffile (oNoOptions, "no-options", "@"),
-
+  ARGPARSE_s_i (oInactivityTimeout, "inactivity-timeout", "@"),
 
   ARGPARSE_header ("Monitor", N_("Options controlling the diagnostic output")),
 
