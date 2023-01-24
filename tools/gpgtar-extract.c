@@ -369,6 +369,7 @@ gpgtar_extract (const char *filename, int decrypt)
     {
       strlist_t arg;
       ccparray_t ccp;
+      int except[2] = { -1, -1 };
       const char **argv;
 
       ccparray_init (&ccp, 0);
@@ -382,6 +383,7 @@ gpgtar_extract (const char *filename, int decrypt)
 
           snprintf (tmpbuf, sizeof tmpbuf, "--status-fd=%d", opt.status_fd);
           ccparray_put (&ccp, tmpbuf);
+          except[0] = opt.status_fd;
         }
       if (opt.with_log)
         {
@@ -411,7 +413,7 @@ gpgtar_extract (const char *filename, int decrypt)
       err = gnupg_process_spawn (opt.gpg_program, argv,
                                  ((filename ? GNUPG_PROCESS_STDIN_NULL : 0)
                                   | GNUPG_PROCESS_STDOUT_PIPE),
-                                 NULL, NULL, &proc);
+                                 gnupg_spawn_helper, except, &proc);
       xfree (argv);
       if (err)
         goto leave;

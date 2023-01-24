@@ -47,6 +47,7 @@ check: xcheck
 
 .PHONY: xcheck
 xcheck:
+	@$(MKDIR_P) tests/gpg lang/qt/tests lang/python/tests
 	$(TESTS_ENVIRONMENT) $(abs_top_builddir)/tests/gpgscm/gpgscm$(EXEEXT) \
 	  $(abs_srcdir)/run-tests.scm $(TESTFLAGS) $(TESTS)
 
@@ -57,3 +58,6 @@ CLEANFILES = *.log report.xml
 # We need to depend on a couple of programs so that the tests don't
 # start before all programs are built.
 all-local: $(required_pgms)
+
+clean-local:
+	-rm -rf tests lang

@@ -189,7 +189,9 @@ fields are (future versions may specify additional fields):
 @itemx -o
 @opindex output
 Write the created mail to @var{file} instead of stdout.  Note that the
-value @code{-} for @var{file} is the same as writing to stdout.
+value @code{-} for @var{file} is the same as writing to stdout.  If
+this option is used with the @option{--check} command and a key was
+found it is written to the given file.
 
 @item --status-fd @var{n}
 @opindex status-fd

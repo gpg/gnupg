@@ -1243,7 +1243,7 @@ cmd_list (card_info_t info, char *argstr)
 
   if (!info->serialno || info->need_sn_cmd)
     {
-      /* This is probably the first call or was explictly requested.
+      /* This is probably the first call or was explicitly requested.
        * We need to send a SERIALNO command to scdaemon so that our
        * session knows all cards.  */
       err = scd_serialno (NULL, NULL);
@@ -2740,7 +2740,7 @@ cmd_passwd (card_info_t info, char *argstr)
        "in non-interactive and without a PINREF a default value is\n"
        "used for these cards.  The option --reset is used with TCOS\n"
        "cards to reset the PIN using the PUK or vice versa; --nullpin\n"
-       "is used for these cards to set the intial PIN.",
+       "is used for these cards to set the initial PIN.",
        0);
 
   if (opt.interactive || opt.verbose)
@@ -2939,7 +2939,7 @@ cmd_passwd (card_info_t info, char *argstr)
       else if (!ascii_strcasecmp (pinref, "OPENPGP.3"))
         log_info ("Admin PIN changed.\n");
       else if (reset_mode)
-        log_info ("PIN resetted.\n");
+        log_info ("PIN reset.\n");
       else
         log_info ("PIN changed.\n");
 

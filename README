@@ -1,10 +1,10 @@
-                       The GNU Privacy Guard 2
-                      =========================
-                            Version 2.3
+                       The GNU Privacy Guard
+                      =======================
+                            Version 2.4
 
           Copyright 1997-2019 Werner Koch
           Copyright 1998-2021 Free Software Foundation, Inc.
-          Copyright 2003-2022 g10 Code GmbH
+          Copyright 2003-2023 g10 Code GmbH
 
 
 * INTRODUCTION
@@ -27,7 +27,7 @@
 
 * BUILD INSTRUCTIONS
 
-  GnuPG 2.3 depends on the following GnuPG related packages:
+  GnuPG 2.4 depends on the following GnuPG related packages:
 
     npth         (https://gnupg.org/ftp/gcrypt/npth/)
     libgpg-error (https://gnupg.org/ftp/gcrypt/libgpg-error/)
@@ -74,7 +74,7 @@
 
   You may run
 
-    gpgconf --list-dirs
+    gpgconf -L
 
   to view the directories used by GnuPG.
 
@@ -112,6 +112,31 @@
 
 
 * RECOMMENDATIONS
+
+** Key database daemon
+
+  Since version 2.3.0 it is possible to store the keys in an SQLite
+  database instead of the keyring.kbx file.  This is in particular
+  useful for large keyrings or if many instances of gpg and gpgsm may
+  run concurrently.  This is implemented using another daemon process,
+  the "keyboxd".  To enable the use of the keyboxd put the option
+  "use-keyboxd" into the configuration file ~/.gnupg/common.conf or the
+  global /etc/gnupg/common.conf.  See also doc/examples/common.conf.
+  Only public keys and X.509 certificates are managed by the keyboxd;
+  private keys are still stored as separate files.
+
+  Note that there is no automatic migration; if the use-keyboxd option
+  is enabled keys are not taken from pubring.kbx.  To migrate existing
+  keys to the keyboxd do this:
+
+  1. Disable the keyboxd (remove use-keyboxd from common.conf)
+  2. Export all public keys
+       gpg --export --export-options backup  > allkeys.gpg
+       gpgsm --export --armor                > allcerts.gpg
+  3. Enable the keyboxd (add use-keyboxd to common.conf)
+  4. Import all public keys
+       gpg --import --import-options restore < allkeys.gpg
+       gpgsm --import                        < allcerts.crt
 
 ** Socket directory
 
@@ -203,8 +228,7 @@
   offers see https://gnupg.org/service.html .  Maintaining and
   improving GnuPG requires a lot of time.  Since 2001, g10 Code GmbH,
   a German company owned and headed by GnuPG's principal author Werner
-  Koch, is bearing the majority of these costs.  To keep GnuPG in a
-  healthy state, they need your support.
+  Koch, is bearing the majority of these costs.
 
 # This file is Free Software; as a special exception the authors gives
 # unlimited permission to copy and/or distribute it, with or without

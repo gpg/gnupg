@@ -28,6 +28,7 @@
 # action → způsob užití (klíče)
 # administrator → správce
 # cache → keš
+# compliance rules → pravidla normy
 # distribution point → místo distribuce
 # DP (distribution point (of CRL)) → DP
 # load → zavést
@@ -37,9 +38,9 @@
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: gnupg2 2.3.4\n"
+"Project-Id-Version: gnupg2 2.3.8\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"PO-Revision-Date: 2022-02-20 16:09+01:00\n"
+"PO-Revision-Date: 2022-11-13 14:21+01:00\n"
 "Last-Translator: Petr Pisar <petr.pisar@atlas.cz>\n"
 "Language-Team: Czech <gnupg-i18n@gnupg.org>\n"
 "Language: cs\n"
@@ -296,10 +297,9 @@ msgstr "PIN nebyl zopakován správně; zkuste to znovu"
 msgid "Please enter the PIN%s%s%s to unlock the card"
 msgstr "Prosím, zadejte PIN%s%s%s, abyste odemkli kartu"
 
-#, fuzzy, c-format
-#| msgid "error writing to %s: %s\n"
+#, c-format
 msgid "error writing to pipe: %s\n"
-msgstr "chyba při zápisu do %s: %s\n"
+msgstr "chyba při zápisu do roury: %s\n"
 
 msgid "Enter new passphrase"
 msgstr "Vložte nové heslo"
@@ -416,6 +416,9 @@ msgstr "|ALGORITMUS|ukazovat otisky SSH pomocí ALGORITMU"
 
 msgid "enable putty support"
 msgstr "zapnout podporu pro PuTTY"
+
+msgid "enable Win32-OpenSSH support"
+msgstr "zapnout podporu pro Win32-OpenSSH"
 
 msgid "Options controlling the security"
 msgstr "Volby ovlivňující bezpečnost"
@@ -776,14 +779,9 @@ msgstr "Změním jej později"
 msgid "Please insert the card with serial number"
 msgstr "Prosím, vložte kartu se sériovým číslem"
 
-#, fuzzy, c-format
-#| msgid ""
-#| "An ssh process requested the use of key%%0A  %s%%0A  (%s)%%0ADo you want "
-#| "to allow this?"
+#, c-format
 msgid "Requested the use of key%%0A  %s%%0A  %s%%0ADo you want to allow this?"
-msgstr ""
-"Proces SSH si vyžádal použití klíče%%0A  %s%%0A  (%s)%%0APřejete si to "
-"povolit?"
+msgstr "Vyžádáno použití klíče%%0A  %s%%0A  %s%%0APřejete si to povolit?"
 
 #, c-format
 msgid ""
@@ -1810,7 +1808,7 @@ msgid "error creating passphrase: %s\n"
 msgstr "chyba při vytváření hesla: %s\n"
 
 #, c-format
-msgid "can't use a symmetric ESK packet due to the S2K mode\n"
+msgid "can't use a SKESK packet due to the S2K mode\n"
 msgstr "v režimu S2K nelze použít symetrický ESK paket\n"
 
 #, c-format
@@ -1849,10 +1847,9 @@ msgstr "zašifrováno pomocí %s/%s.%s pro: „%s“\n"
 msgid "option '%s' may not be used in %s mode\n"
 msgstr "volba „%s“ se nesmí používat v režimu %s\n"
 
-#, fuzzy, c-format
-#| msgid "%s.%s encrypted data\n"
+#, c-format
 msgid "%s encrypted data\n"
-msgstr "data zašifrovaná pomocí %s.%s\n"
+msgstr "data zašifrovaná pomocí %s\n"
 
 #, c-format
 msgid "encrypted with unknown algorithm %d\n"
@@ -1882,8 +1879,18 @@ msgstr "odstranit nepoužitelné části z klíče při exportu"
 msgid "remove as much as possible from key during export"
 msgstr "odstranit při exportu z klíče vše, co lze"
 
+#, fuzzy
+#| msgid "generate a revocation certificate"
+msgid "export only revocation certificates"
+msgstr "vytvořit revokační certifikát"
+
 msgid "use the GnuPG key backup format"
 msgstr "použít záložní formát klíče GnuPG"
+
+#, fuzzy
+#| msgid "exporting secret keys not allowed\n"
+msgid "export secret keys using the GnuPG format"
+msgstr "exportování tajného klíče není povoleno\n"
 
 msgid " - skipped"
 msgstr " – přeskočeno"
@@ -2329,6 +2336,11 @@ msgstr "ukazovat název souboru s klíči při výpisu klíčů"
 msgid "show expiration dates during signature listings"
 msgstr "ukazovat data expirace během výpisu podpisů"
 
+#, fuzzy
+#| msgid "list preferences (expert)"
+msgid "show preferences"
+msgstr "vypsat seznam předvoleb (pro experty)"
+
 #, c-format
 msgid "unknown TOFU policy '%s'\n"
 msgstr "neznámá TOFU politika „%s“\n"
@@ -2485,10 +2497,6 @@ msgid "selected cipher algorithm is invalid\n"
 msgstr "vybraný šifrovací algoritmus je neplatný\n"
 
 #, c-format
-msgid "selected AEAD algorithm is invalid\n"
-msgstr "vybraný algoritmus AEAD je neplatný\n"
-
-#, c-format
 msgid "selected compression algorithm is invalid\n"
 msgstr "vybraný kompresní algoritmus je neplatný\n"
 
@@ -2537,10 +2545,6 @@ msgid "invalid personal cipher preferences\n"
 msgstr "neplatné uživatelské předvolby pro šifrování\n"
 
 #, c-format
-msgid "invalid personal AEAD preferences\n"
-msgstr "neplatné uživatelské předvolby pro AEAD\n"
-
-#, c-format
 msgid "invalid personal digest preferences\n"
 msgstr "neplatné uživatelské předvolby pro hashování\n"
 
@@ -2555,10 +2559,6 @@ msgstr "neplatná velikost bloku – použije se %d\n"
 #, c-format
 msgid "%s does not yet work with %s\n"
 msgstr "%s dosud není funkční s %s\n"
-
-#, c-format
-msgid "AEAD algorithm '%s' may not be used in %s mode\n"
-msgstr "AEAD algoritmus „%s“ se nesmí používat v režimu %s\n"
 
 #, c-format
 msgid "compression algorithm '%s' may not be used in %s mode\n"
@@ -3683,18 +3683,6 @@ msgstr "„%s“ není řádný otisk\n"
 msgid "subkey \"%s\" not found\n"
 msgstr "podklíč „%s“ nenalezen\n"
 
-msgid "AEAD: "
-msgstr "AEAD: "
-
-msgid "Digest: "
-msgstr "Hash: "
-
-msgid "Features: "
-msgstr "Vlastnosti: "
-
-msgid "Keyserver no-modify"
-msgstr "Keyserver bez modifikace"
-
 msgid "Preferred keyserver: "
 msgstr "Preferovaný keyserver: "
 
@@ -3793,10 +3781,8 @@ msgstr "Jste si jistý, že jej chcete stále přidat? (a/N) "
 msgid "You may not add a photo ID to a PGP2-style key.\n"
 msgstr "Neměli by jste přidávat fotografický ID k PGP2 klíči.\n"
 
-#, fuzzy
-#| msgid "Such a user ID already exists on this key!\n"
 msgid "Such a user ID already exists on this key!"
-msgstr "Takový identifikátor uživatele již u tohoto klíče existuje!\n"
+msgstr "Takový identifikátor uživatele již u tohoto klíče existuje!"
 
 msgid "Delete this good signature? (y/N/q)"
 msgstr "Smazat tento dobrý podpis? (a/N/u)"
@@ -4494,6 +4480,18 @@ msgstr "Opravdu vytvořit? (a/N) "
 msgid "never     "
 msgstr "nikdy     "
 
+msgid "AEAD: "
+msgstr "AEAD: "
+
+msgid "Digest: "
+msgstr "Hash: "
+
+msgid "Features: "
+msgstr "Vlastnosti: "
+
+msgid "Keyserver no-modify"
+msgstr "Keyserver bez modifikace"
+
 msgid "Critical signature policy: "
 msgstr "Kritická podepisovací politika: "
 
@@ -4759,7 +4757,7 @@ msgstr "dešifrování selhalo: %s\n"
 
 #, c-format
 msgid "operation forced to fail due to unfulfilled compliance rules\n"
-msgstr ""
+msgstr "operace byla přinucena selhat, protože nebyla splněna pravidla normy\n"
 
 #, c-format
 msgid "Note: sender requested \"for-your-eyes-only\"\n"
@@ -6816,7 +6814,7 @@ msgid "error getting key usage information: %s\n"
 msgstr "chyba při zjišťování informací o použití klíče: %s\n"
 
 msgid "Tor might be in use - network access is limited"
-msgstr ""
+msgstr "Možná se používá Tor – přístup k síti je omezen"
 
 #, c-format
 msgid "validation model requested by certificate: %s"
@@ -8070,11 +8068,8 @@ msgstr "volání crl_cache_insert přes vydavatele selhalo: %s\n"
 msgid "reader to file mapping table full - waiting\n"
 msgstr "tabulka mapování čtenáře na soubor je plná – čeká se\n"
 
-# Poslední argument je název protokolu
-#, fuzzy
-#| msgid "CRL access not possible due to Tor mode\n"
 msgid "CRL access not possible due to Tor mode"
-msgstr "Přístup k CRL není možný kvůli režimu Tor\n"
+msgstr "Přístup k CRL není možný kvůli režimu Tor"
 
 # Poslední argument je název protokolu
 #, c-format
@@ -8246,10 +8241,8 @@ msgstr "|URL|všechny HTTP požadavky přesměruje na URL"
 msgid "use system's HTTP proxy setting"
 msgstr "používat systémové nastavení HTTP proxy"
 
-#, fuzzy
-#| msgid "Configuration for HTTP servers"
 msgid "Configuration for OpenPGP servers"
-msgstr "Nastavení HTTP serverů"
+msgstr "Nastavení pro servery OpenPGP"
 
 msgid "|URL|use keyserver at URL"
 msgstr "|URL|používat server klíčů na URL"
@@ -8257,10 +8250,8 @@ msgstr "|URL|používat server klíčů na URL"
 msgid "|FILE|use the CA certificates in FILE for HKP over TLS"
 msgstr "|SOUBOR|pro HKP přes TLS použije certifikáty CA ze SOUBORU"
 
-#, fuzzy
-#| msgid "Configuration for HTTP servers"
 msgid "Configuration for X.509 servers"
-msgstr "Nastavení HTTP serverů"
+msgstr "Nastavení pro servery X.509"
 
 msgid "inhibit the use of LDAP"
 msgstr "zakáže použití LDAP"
@@ -8491,10 +8482,8 @@ msgstr "chyba při čtení z odpovídače: %s\n"
 msgid "response from server too large; limit is %d bytes\n"
 msgstr "odpověď serveru je příliš velká, limit je %d bajtů\n"
 
-#, fuzzy
-#| msgid "OCSP request not possible due to Tor mode\n"
 msgid "OCSP request not possible due to Tor mode"
-msgstr "OCSP dotaz není možný kvůli režimu Tor\n"
+msgstr "OCSP dotaz není možný kvůli režimu Tor"
 
 #, c-format
 msgid "OCSP request not possible due to disabled HTTP\n"
@@ -8954,6 +8943,15 @@ msgstr "Příkazy pro správu Yubikey"
 
 msgid "manage the command history"
 msgstr "spravuje historii příkazů"
+
+#~ msgid "selected AEAD algorithm is invalid\n"
+#~ msgstr "vybraný algoritmus AEAD je neplatný\n"
+
+#~ msgid "invalid personal AEAD preferences\n"
+#~ msgstr "neplatné uživatelské předvolby pro AEAD\n"
+
+#~ msgid "AEAD algorithm '%s' may not be used in %s mode\n"
+#~ msgstr "AEAD algoritmus „%s“ se nesmí používat v režimu %s\n"
 
 #~ msgid "error writing to temporary file: %s\n"
 #~ msgstr "chyba při zápisu do dočasného souboru: %s\n"

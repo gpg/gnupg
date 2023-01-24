@@ -305,20 +305,6 @@ copy_buffer_flush (struct copy_buffer *c, estream_t sink)
 }
 
 
-static void
-setup_close_all (struct spawn_cb_arg *sca)
-{
-  int *user_except = sca->arg;
-#ifdef HAVE_W32_SYSTEM
-  if (user_except[0] == -1)
-    sca->ask_inherit = 0;
-  else
-    sca->ask_inherit = 1;
-#else
-  sca->except_fds = user_except;
-#endif
-}
-
 /* Run the program PGMNAME with the command line arguments given in
  * the NULL terminates array ARGV.  If INPUT is not NULL it will be
  * fed to stdin of the process.  stderr is logged using log_info and
@@ -433,7 +419,7 @@ gnupg_exec_tool_stream (const char *pgmname, const char *argv[],
                                : GNUPG_PROCESS_STDIN_NULL)
                               | GNUPG_PROCESS_STDOUT_PIPE
                               | GNUPG_PROCESS_STDERR_PIPE),
-                             setup_close_all, exceptclose, &proc);
+                             gnupg_spawn_helper, exceptclose, &proc);
   gnupg_process_get_streams (proc, GNUPG_PROCESS_STREAM_NONBLOCK,
                              input? &infp : NULL, &outfp, &errfp);
   if (extrapipe[0] != -1)

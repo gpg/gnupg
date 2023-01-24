@@ -350,7 +350,7 @@ check_cert_policy (ksba_cert_t cert, int listmode, estream_t fplist)
       /* With no critical policies this is only a warning */
       if (!any_critical)
         {
-          if (!opt.quiet)
+          if (opt.verbose)
             do_list (0, listmode, fplist,
                      _("Note: non-critical certificate policy not allowed"));
           return 0;
@@ -380,7 +380,8 @@ check_cert_policy (ksba_cert_t cert, int listmode, estream_t fplist)
                   /* With no critical policies this is only a warning */
                   if (!any_critical)
                     {
-                      do_list (0, listmode, fplist,
+                      if (opt.verbose)
+                        do_list (0, listmode, fplist,
                      _("Note: non-critical certificate policy not allowed"));
                       return 0;
                     }
@@ -1187,11 +1188,13 @@ gpgsm_is_root_cert (ksba_cert_t cert)
 
 /* This is a helper for gpgsm_validate_chain. */
 static gpg_error_t
-is_cert_still_valid (ctrl_t ctrl, int force_ocsp, int lm, estream_t fp,
+is_cert_still_valid (ctrl_t ctrl, int chain_model, int lm, estream_t fp,
                      ksba_cert_t subject_cert, ksba_cert_t issuer_cert,
                      int *any_revoked, int *any_no_crl, int *any_crl_too_old)
 {
   gpg_error_t err;
+  gnupg_isotime_t revoked_at;
+  char *reason;
 
   if (ctrl->offline || (opt.no_crl_check && !ctrl->use_ocsp))
     {
@@ -1201,7 +1204,7 @@ is_cert_still_valid (ctrl_t ctrl, int force_ocsp, int lm, estream_t fp,
     }
 
 
-  if (!(force_ocsp || ctrl->use_ocsp)
+  if (!(chain_model || ctrl->use_ocsp)
       && !opt.enable_issuer_based_crl_check)
     {
       err = ksba_cert_get_crl_dist_point (subject_cert, 0, NULL, NULL, NULL);
@@ -1220,7 +1223,20 @@ is_cert_still_valid (ctrl_t ctrl, int force_ocsp, int lm, estream_t fp,
 
   err = gpgsm_dirmngr_isvalid (ctrl,
                                subject_cert, issuer_cert,
-                               force_ocsp? 2 : !!ctrl->use_ocsp);
+                               chain_model? 2 : !!ctrl->use_ocsp,
+                               revoked_at, &reason);
+  if (gpg_err_code (err) == GPG_ERR_CERT_REVOKED)
+    {
+      gnupg_copy_time (ctrl->revoked_at, revoked_at);
+      xfree (ctrl->revocation_reason);
+      ctrl->revocation_reason = reason;
+      reason = NULL;
+    }
+  else
+    {
+      xfree (reason);
+      reason = (NULL);
+    }
   audit_log_ok (ctrl->audit, AUDIT_CRL_CHECK, err);
 
   if (err)
@@ -1230,7 +1246,22 @@ is_cert_still_valid (ctrl_t ctrl, int force_ocsp, int lm, estream_t fp,
       switch (gpg_err_code (err))
         {
         case GPG_ERR_CERT_REVOKED:
-          do_list (1, lm, fp, _("certificate has been revoked"));
+          if (!check_isotime (ctrl->revoked_at))
+            {
+              char *tmpstr;
+              const unsigned char *t = ctrl->revoked_at;
+
+              tmpstr = xtryasprintf ("%.4s-%.2s-%.2s %.2s:%.2s:%s (%s)",
+                                     t, t+4, t+6, t+9, t+11, t+13,
+                                     ctrl->revocation_reason?
+                                     ctrl->revocation_reason : "");
+
+              do_list (1, lm, fp, "%s: %s",
+                       _("certificate has been revoked"), tmpstr);
+              xfree (tmpstr);
+            }
+          else
+            do_list (1, lm, fp, _("certificate has been revoked"));
           *any_revoked = 1;
           /* Store that in the keybox so that key listings are able to
              return the revoked flag.  We don't care about error,
@@ -2158,11 +2189,14 @@ gpgsm_validate_chain (ctrl_t ctrl, ksba_cert_t cert, ksba_isotime_t checktime,
     {
       *retflags |= VALIDATE_FLAG_STEED;
     }
-  else if (gpg_err_code (rc) == GPG_ERR_CERT_EXPIRED
-      && !(flags & VALIDATE_FLAG_CHAIN_MODEL)
-      && (rootca_flags.valid && rootca_flags.chain_model))
+  else if (!(flags & VALIDATE_FLAG_CHAIN_MODEL)
+           && (rootca_flags.valid && rootca_flags.chain_model))
     {
-      do_list (0, listmode, listfp, _("switching to chain model"));
+      /* The root CA indicated that the chain model is to be used but
+       * we have not yet used it.  Thus do the validation again using
+       * the chain model.  */
+      if (opt.verbose)
+        do_list (0, listmode, listfp, _("switching to chain model"));
       rc = do_validate_chain (ctrl, cert, checktime,
                               r_exptime, listmode, listfp,
                               (flags |= VALIDATE_FLAG_CHAIN_MODEL),

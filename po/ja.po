@@ -386,6 +386,11 @@ msgstr "|ALGO|ssh署名の表示にALGOを使う"
 msgid "enable putty support"
 msgstr "puttyサポートを有功にする"
 
+#, fuzzy
+#| msgid "enable putty support"
+msgid "enable Win32-OpenSSH support"
+msgstr "puttyサポートを有功にする"
+
 msgid "Options controlling the security"
 msgstr "セキュリティを制御するオプション"
 
@@ -1763,8 +1768,9 @@ msgstr "*警告*: 鍵%sは、%sモードでは、暗号化に適しません\n"
 msgid "error creating passphrase: %s\n"
 msgstr "パスフレーズの作成エラー: %s\n"
 
-#, c-format
-msgid "can't use a symmetric ESK packet due to the S2K mode\n"
+#, fuzzy, c-format
+#| msgid "can't use a symmetric ESK packet due to the S2K mode\n"
+msgid "can't use a SKESK packet due to the S2K mode\n"
 msgstr "S2Kモードのため、共通鍵ESKパケットを使えません\n"
 
 #, c-format
@@ -1834,8 +1840,18 @@ msgstr "エクスポートの際、利用できない部分を除去する"
 msgid "remove as much as possible from key during export"
 msgstr "エクスポートの際、できるだけ除去する"
 
+#, fuzzy
+#| msgid "generate a revocation certificate"
+msgid "export only revocation certificates"
+msgstr "失効証明書を生成"
+
 msgid "use the GnuPG key backup format"
 msgstr "GnuPGの鍵のバックアップフォーマットを使います"
+
+#, fuzzy
+#| msgid "exporting secret keys not allowed\n"
+msgid "export secret keys using the GnuPG format"
+msgstr "秘密鍵のエクスポートは認められません\n"
 
 msgid " - skipped"
 msgstr " - スキップされました"
@@ -2267,6 +2283,11 @@ msgstr "鍵の一覧に鍵リングの名前を表示する"
 msgid "show expiration dates during signature listings"
 msgstr "署名の一覧時に有効期限の日付を表示する"
 
+#, fuzzy
+#| msgid "list preferences (expert)"
+msgid "show preferences"
+msgstr "優先指定の一覧 (エキスパート)"
+
 #, c-format
 msgid "unknown TOFU policy '%s'\n"
 msgstr "不明のTOFUポリシー'%s'\n"
@@ -2423,10 +2444,6 @@ msgid "selected cipher algorithm is invalid\n"
 msgstr "選択された暗号アルゴリズムは無効です\n"
 
 #, c-format
-msgid "selected AEAD algorithm is invalid\n"
-msgstr "選択されたAEADアルゴリズムは無効です\n"
-
-#, c-format
 msgid "selected compression algorithm is invalid\n"
 msgstr "選択された圧縮アルゴリズムは無効です\n"
 
@@ -2471,10 +2488,6 @@ msgid "invalid personal cipher preferences\n"
 msgstr "無効な個人用暗号方式の優先指定\n"
 
 #, c-format
-msgid "invalid personal AEAD preferences\n"
-msgstr "無効な個人用AEAD方式の優先指定\n"
-
-#, c-format
 msgid "invalid personal digest preferences\n"
 msgstr "無効な個人用ダイジェストの優先指定\n"
 
@@ -2489,10 +2502,6 @@ msgstr "無効なチャンク長 - %dビットにします\n"
 #, c-format
 msgid "%s does not yet work with %s\n"
 msgstr "%sは%sではまだ機能しません\n"
-
-#, c-format
-msgid "AEAD algorithm '%s' may not be used in %s mode\n"
-msgstr "AEADアルゴリズム'%s'を%sモードで使うことはできません\n"
 
 #, c-format
 msgid "compression algorithm '%s' may not be used in %s mode\n"
@@ -3595,18 +3604,6 @@ msgstr "\"%s\"は正しいフィンガープリントではありません\n"
 msgid "subkey \"%s\" not found\n"
 msgstr "副鍵\"%s\"が見つかりません\n"
 
-msgid "AEAD: "
-msgstr "AEAD: "
-
-msgid "Digest: "
-msgstr "ダイジェスト: "
-
-msgid "Features: "
-msgstr "機能: "
-
-msgid "Keyserver no-modify"
-msgstr "鍵サーバ 修正しない"
-
 msgid "Preferred keyserver: "
 msgstr "優先鍵サーバ: "
 
@@ -4391,6 +4388,18 @@ msgstr "本当に作成しますか? (y/N) "
 
 msgid "never     "
 msgstr "無期限    "
+
+msgid "AEAD: "
+msgstr "AEAD: "
+
+msgid "Digest: "
+msgstr "ダイジェスト: "
+
+msgid "Features: "
+msgstr "機能: "
+
+msgid "Keyserver no-modify"
+msgstr "鍵サーバ 修正しない"
 
 msgid "Critical signature policy: "
 msgstr "クリティカルな署名ポリシー: "
@@ -8695,6 +8704,15 @@ msgstr "Yubikey管理コマンド"
 
 msgid "manage the command history"
 msgstr "コマンド履歴を管理する"
+
+#~ msgid "selected AEAD algorithm is invalid\n"
+#~ msgstr "選択されたAEADアルゴリズムは無効です\n"
+
+#~ msgid "invalid personal AEAD preferences\n"
+#~ msgstr "無効な個人用AEAD方式の優先指定\n"
+
+#~ msgid "AEAD algorithm '%s' may not be used in %s mode\n"
+#~ msgstr "AEADアルゴリズム'%s'を%sモードで使うことはできません\n"
 
 #~ msgid "forcing symmetric cipher %s (%d) violates recipient preferences\n"
 #~ msgstr "共通鍵暗号方式 %s (%d) の強制が、受取人の優先指定をそむきます\n"

@@ -1,7 +1,7 @@
 # configure.ac - for GnuPG 2.1
 # Copyright (C) 1998-2019 Werner Koch
 # Copyright (C) 1998-2021 Free Software Foundation, Inc.
-# Copyright (C) 2003-2021 g10 Code GmbH
+# Copyright (C) 2003-2023 g10 Code GmbH
 #
 # This file is part of GnuPG.
 #
@@ -28,8 +28,8 @@ min_automake_version="1.16.3"
 # another commit and push so that the git magic is able to work.
 m4_define([mym4_package],[gnupg])
 m4_define([mym4_major], [2])
-m4_define([mym4_minor], [3])
-m4_define([mym4_micro], [9])
+m4_define([mym4_minor], [4])
+m4_define([mym4_micro], [1])
 
 # To start a new development series, i.e a new major or minor number
 # you need to mark an arbitrary commit before the first beta release
@@ -52,6 +52,7 @@ AC_INIT([mym4_package],[mym4_version],[https://bugs.gnupg.org])
 
 # When changing the SWDB tag please also adjust the hard coded tags in
 # build-aux/speedo.mk, build-aux/getswdb.sh, and Makefile.am
+# As well as the source info for the man pages.
 AC_DEFINE_UNQUOTED(GNUPG_SWDB_TAG, "gnupg24", [swdb tag for this branch])
 
 NEED_GPGRT_VERSION=1.46
@@ -63,7 +64,7 @@ NEED_LIBASSUAN_API=2
 NEED_LIBASSUAN_VERSION=2.5.0
 
 NEED_KSBA_API=1
-NEED_KSBA_VERSION=1.3.4
+NEED_KSBA_VERSION=1.6.3
 
 NEED_NTBTLS_API=1
 NEED_NTBTLS_VERSION=0.1.0
@@ -524,21 +525,7 @@ AH_BOTTOM([
 #define GNUPG_OPENPGP_REVOC_DIR "openpgp-revocs.d"
 #define GNUPG_CACHE_DIR         "cache.d"
 
-/* GnuPG has always been a part of the GNU project and thus we have
- * shown the FSF as holder of the copyright.  We continue to do so for
- * the reason that without the FSF the free software used all over the
- * world would not have come into existence.  However, under Windows
- * we print a different copyright string with --version because the
- * copyright assignments of g10 Code and Werner Koch were terminated
- * many years ago, g10 Code is still the major contributor to the
- * code, and Windows is not an FSF endorsed platform.  Note that the
- * actual list of copyright holders can be found in the AUTHORS file.  */
-#ifdef HAVE_W32_SYSTEM
-#define GNUPG_DEF_COPYRIGHT_LINE "Copyright (C) 2021 g10 Code GmbH"
-#else
-#define GNUPG_DEF_COPYRIGHT_LINE \
-        "Copyright (C) 2021 Free Software Foundation, Inc."
-#endif
+#define GNUPG_DEF_COPYRIGHT_LINE "Copyright (C) 2023 g10 Code GmbH"
 
 /* For some systems (DOS currently), we hardcode the path here.  For
    POSIX systems the values are constructed by the Makefiles, so that
@@ -691,7 +678,6 @@ try_gettext=yes
 require_iconv=yes
 have_dosish_system=no
 have_w32_system=no
-have_w32ce_system=no
 have_android_system=no
 use_simple_gettext=no
 mmap_needed=yes
@@ -710,15 +696,7 @@ case "${host}" in
         have_w32_system=yes
         require_iconv=no
         require_pipe_to_unblock_pselect=no
-        case "${host}" in
-          *-mingw32ce*)
-            have_w32ce_system=yes
-            ;;
-          *)
-            AC_DEFINE(HAVE_DRIVE_LETTERS,1,
-                      [Defined if the OS supports drive letters.])
-            ;;
-        esac
+        AC_DEFINE(HAVE_DRIVE_LETTERS,1, [Defined if the OS supports drive letters.])
         try_gettext="no"
 	use_simple_gettext=yes
 	mmap_needed=no
@@ -803,13 +781,9 @@ AM_CONDITIONAL(USE_SIMPLE_GETTEXT, test x"$use_simple_gettext" = xyes)
 
 if test "$have_w32_system" = yes; then
    AC_DEFINE(HAVE_W32_SYSTEM,1, [Defined if we run on a W32 API based system])
-   if test "$have_w32ce_system" = yes; then
-      AC_DEFINE(HAVE_W32CE_SYSTEM,1,[Defined if we run on WindowsCE])
-   fi
    AC_CHECK_HEADERS([winsock2.h])
 fi
 AM_CONDITIONAL(HAVE_W32_SYSTEM, test "$have_w32_system" = yes)
-AM_CONDITIONAL(HAVE_W32CE_SYSTEM, test "$have_w32ce_system" = yes)
 
 if test "$have_android_system" = yes; then
    AC_DEFINE(HAVE_ANDROID_SYSTEM,1, [Defined if we build for an Android system])
@@ -1273,9 +1247,6 @@ AC_DEFINE_UNQUOTED(NAME_OF_SENDMAIL,"$SENDMAIL",
 # Construct a printable name of the OS
 #
 case "${host}" in
-    *-mingw32ce*)
-        PRINTABLE_OS_NAME="W32CE"
-        ;;
     *-mingw32*)
         PRINTABLE_OS_NAME="MingW32"
         ;;
@@ -1575,11 +1546,7 @@ GNUPG_CHECK_GNUMAKE
 # requiring any network stuff but linking to code in libcommon which
 # tracks in winsock stuff (e.g. init_common_subsystems).
 if test "$have_w32_system" = yes; then
-   if test "$have_w32ce_system" = yes; then
-     W32SOCKLIBS="-lws2"
-   else
-     W32SOCKLIBS="-lws2_32"
-   fi
+   W32SOCKLIBS="-lws2_32"
    NETLIBS="${NETLIBS} ${W32SOCKLIBS}"
 fi
 
@@ -2063,16 +2030,6 @@ if test "$have_ksba" = "no"; then
 ***   https://gnupg.org/ftp/gcrypt/libksba/
 *** (at least version $NEED_KSBA_VERSION using API $NEED_KSBA_API is required).
 ***]])
-fi
-if test "$gnupg_have_ldap" = yes; then
-  if test "$have_w32ce_system" = yes; then
-    AC_MSG_NOTICE([[
-*** Note that CeGCC might be broken, a package fixing this is:
-***    http://files.kolab.org/local/windows-ce/
-***                           source/wldap32_0.1-mingw32ce.orig.tar.gz
-***                           binary/wldap32-ce-arm-dev_0.1-1_all.deb
-***]])
-   fi
 fi
 if test "$have_npth" = "no"; then
     die=yes

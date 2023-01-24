@@ -406,6 +406,11 @@ msgstr "|ALGO|использовать для отображения отпеч�
 msgid "enable putty support"
 msgstr "включить поддержку putty"
 
+#, fuzzy
+#| msgid "enable putty support"
+msgid "enable Win32-OpenSSH support"
+msgstr "включить поддержку putty"
+
 msgid "Options controlling the security"
 msgstr "Параметры, управляющие безопасностью"
 
@@ -1812,8 +1817,9 @@ msgstr "Внимание: ключ %s не подходит для шифров�
 msgid "error creating passphrase: %s\n"
 msgstr "ошибка при создании фразы-пароля: %s\n"
 
-#, c-format
-msgid "can't use a symmetric ESK packet due to the S2K mode\n"
+#, fuzzy, c-format
+#| msgid "can't use a symmetric ESK packet due to the S2K mode\n"
+msgid "can't use a SKESK packet due to the S2K mode\n"
 msgstr "не могу использовать симметричный пакет ESK из-за режима S2K\n"
 
 #, fuzzy, c-format
@@ -1888,8 +1894,18 @@ msgstr "удалить при экспорте непригодные части
 msgid "remove as much as possible from key during export"
 msgstr "при экспорте удалить из ключа как можно больше"
 
+#, fuzzy
+#| msgid "generate a revocation certificate"
+msgid "export only revocation certificates"
+msgstr "создать сертификат отзыва"
+
 msgid "use the GnuPG key backup format"
 msgstr "пользоваться архивным форматом ключей GnuPG"
+
+#, fuzzy
+#| msgid "exporting secret keys not allowed\n"
+msgid "export secret keys using the GnuPG format"
+msgstr "экспорт секретных ключей не разрешен\n"
 
 msgid " - skipped"
 msgstr " - пропущено"
@@ -2349,6 +2365,11 @@ msgstr "показывать в списке ключей название та�
 msgid "show expiration dates during signature listings"
 msgstr "показывать в списке подписей сроки действия"
 
+#, fuzzy
+#| msgid "list preferences (expert)"
+msgid "show preferences"
+msgstr "список предпочтений (экспертам)"
+
 #, c-format
 msgid "unknown TOFU policy '%s'\n"
 msgstr "неизвестные правила TOFU '%s'\n"
@@ -2508,11 +2529,6 @@ msgstr "отказываюсь работать с небезопасной па
 msgid "selected cipher algorithm is invalid\n"
 msgstr "выбран недопустимый алгоритм шифрования\n"
 
-#, fuzzy, c-format
-#| msgid "selected digest algorithm is invalid\n"
-msgid "selected AEAD algorithm is invalid\n"
-msgstr "выбрана недопустимая хеш-функция\n"
-
 #, c-format
 msgid "selected compression algorithm is invalid\n"
 msgstr "выбран недопустимый алгоритм сжатия\n"
@@ -2557,11 +2573,6 @@ msgstr "недопустимые предпочтения по умолчани�
 msgid "invalid personal cipher preferences\n"
 msgstr "недопустимые личные предпочтения шифра\n"
 
-#, fuzzy, c-format
-#| msgid "invalid personal cipher preferences\n"
-msgid "invalid personal AEAD preferences\n"
-msgstr "недопустимые личные предпочтения шифра\n"
-
 #, c-format
 msgid "invalid personal digest preferences\n"
 msgstr "недопустимые личные предпочтения хеш-функции\n"
@@ -2578,11 +2589,6 @@ msgstr "неверный размер ключа; использую %u бит\n
 #, c-format
 msgid "%s does not yet work with %s\n"
 msgstr "%s пока не работает совместно с %s!\n"
-
-#, fuzzy, c-format
-#| msgid "cipher algorithm '%s' may not be used in %s mode\n"
-msgid "AEAD algorithm '%s' may not be used in %s mode\n"
-msgstr "алгоритм шифрования '%s' нельзя использовать в режиме %s\n"
 
 #, c-format
 msgid "compression algorithm '%s' may not be used in %s mode\n"
@@ -3729,18 +3735,6 @@ msgstr "\"%s\" - не правильный отпечаток\n"
 msgid "subkey \"%s\" not found\n"
 msgstr "подключ \"%s\" не найден\n"
 
-msgid "AEAD: "
-msgstr "AEAD: "
-
-msgid "Digest: "
-msgstr "Хеш: "
-
-msgid "Features: "
-msgstr "Характеристики: "
-
-msgid "Keyserver no-modify"
-msgstr "Не изменять на сервере"
-
 msgid "Preferred keyserver: "
 msgstr "Предпочтительный сервер ключей: "
 
@@ -4564,6 +4558,18 @@ msgstr "Действительно создать? (y/N) "
 
 msgid "never     "
 msgstr "никогда   "
+
+msgid "AEAD: "
+msgstr "AEAD: "
+
+msgid "Digest: "
+msgstr "Хеш: "
+
+msgid "Features: "
+msgstr "Характеристики: "
+
+msgid "Keyserver no-modify"
+msgstr "Не изменять на сервере"
 
 msgid "Critical signature policy: "
 msgstr "Критические правила подписи: "
@@ -9094,6 +9100,21 @@ msgstr ""
 
 msgid "manage the command history"
 msgstr ""
+
+#, fuzzy
+#~| msgid "selected digest algorithm is invalid\n"
+#~ msgid "selected AEAD algorithm is invalid\n"
+#~ msgstr "выбрана недопустимая хеш-функция\n"
+
+#, fuzzy
+#~| msgid "invalid personal cipher preferences\n"
+#~ msgid "invalid personal AEAD preferences\n"
+#~ msgstr "недопустимые личные предпочтения шифра\n"
+
+#, fuzzy
+#~| msgid "cipher algorithm '%s' may not be used in %s mode\n"
+#~ msgid "AEAD algorithm '%s' may not be used in %s mode\n"
+#~ msgstr "алгоритм шифрования '%s' нельзя использовать в режиме %s\n"
 
 #~ msgid "forcing symmetric cipher %s (%d) violates recipient preferences\n"
 #~ msgstr ""

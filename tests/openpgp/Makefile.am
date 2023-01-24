@@ -245,9 +245,9 @@ sample_msgs = samplemsgs/clearsig-1-key-1.asc \
 	      samplemsgs/clearsig-2-keys-1.asc \
 	      samplemsgs/clearsig-2-keys-2.asc \
 	      samplemsgs/enc-sym-cfb-1.asc \
-	      samplemsgs/enc-sym-cfb-1.asc \
+	      samplemsgs/enc-sym-cfb-2.asc \
 	      samplemsgs/enc-sym-ocb-1.asc \
-	      samplemsgs/enc-sym-ocb-1.asc \
+	      samplemsgs/enc-sym-ocb-2.asc \
 	      samplemsgs/enc-1-key-1.asc \
 	      samplemsgs/enc-1-key-2.asc \
 	      samplemsgs/enc-2-keys-1.asc \

@@ -23,7 +23,9 @@
 #define OCSP_H
 
 gpg_error_t ocsp_isvalid (ctrl_t ctrl, ksba_cert_t cert, const char *cert_fpr,
-                          int force_default_responder);
+                          int force_default_responder,
+                          gnupg_isotime_t r_revoked_at,
+                          const char **r_reason);
 
 /* Release the list of OCSP certificates hold in the CTRL object. */
 void release_ctrl_ocsp_certs (ctrl_t ctrl);

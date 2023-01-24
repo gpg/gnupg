@@ -106,7 +106,7 @@ gpg_keyboxd_deinit_session_data (ctrl_t ctrl)
               err = assuan_transact (kbl->ctx, "TRANSACTION commit",
                                      NULL, NULL, NULL, NULL, NULL, NULL);
               if (err)
-                log_error ("error commiting last transaction: %s\n",
+                log_error ("error committing last transaction: %s\n",
                             gpg_strerror (err));
               in_transaction = 0;
             }

@@ -650,10 +650,13 @@ check_signature (ctrl_t ctrl,
 /* Check whether the certificate either given by fingerprint CERT_FPR
    or directly through the CERT object is valid by running an OCSP
    transaction.  With FORCE_DEFAULT_RESPONDER set only the configured
-   default responder is used. */
+   default responder is used.  If R_REVOKED_AT or R_REASON are not
+   NULL and the certificat has been revoked the revocation time and
+   the reasons are stored there. */
 gpg_error_t
 ocsp_isvalid (ctrl_t ctrl, ksba_cert_t cert, const char *cert_fpr,
-              int force_default_responder)
+              int force_default_responder, ksba_isotime_t r_revoked_at,
+              const char **r_reason)
 {
   gpg_error_t err;
   ksba_ocsp_t ocsp = NULL;
@@ -672,6 +675,12 @@ ocsp_isvalid (ctrl_t ctrl, ksba_cert_t cert, const char *cert_fpr,
   char *oid;
   ksba_name_t name;
   fingerprint_list_t default_signer = NULL;
+  const char *sreason;
+
+  if (r_revoked_at)
+    *r_revoked_at = 0;
+  if (r_reason)
+    *r_reason = NULL;
 
   /* Get the certificate.  */
   if (cert)
@@ -842,8 +851,36 @@ ocsp_isvalid (ctrl_t ctrl, ksba_cert_t cert, const char *cert_fpr,
                       more important message than the failure of our
                       cache. */
         }
-    }
 
+      switch (reason)
+        {
+        case KSBA_CRLREASON_UNSPECIFIED:
+          sreason = "unspecified"; break;
+        case KSBA_CRLREASON_KEY_COMPROMISE:
+          sreason = "key compromise"; break;
+        case KSBA_CRLREASON_CA_COMPROMISE:
+          sreason = "CA compromise"; break;
+        case KSBA_CRLREASON_AFFILIATION_CHANGED:
+          sreason = "affiliation changed"; break;
+        case KSBA_CRLREASON_SUPERSEDED:
+          sreason = "superseded"; break;
+        case KSBA_CRLREASON_CESSATION_OF_OPERATION:
+          sreason = "cessation of operation"; break;
+        case KSBA_CRLREASON_CERTIFICATE_HOLD:
+          sreason = "certificate on hold"; break;
+        case KSBA_CRLREASON_REMOVE_FROM_CRL:
+          sreason = "removed from CRL"; break;
+        case KSBA_CRLREASON_PRIVILEGE_WITHDRAWN:
+          sreason = "privilege withdrawn"; break;
+        case KSBA_CRLREASON_AA_COMPROMISE:
+          sreason = "AA compromise"; break;
+        case KSBA_CRLREASON_OTHER:
+          sreason = "other"; break;
+        default: sreason = "?"; break;
+        }
+    }
+  else
+    sreason = "";
 
   if (opt.verbose)
     {
@@ -855,29 +892,19 @@ ocsp_isvalid (ctrl_t ctrl, ksba_cert_t cert, const char *cert_fpr,
                 this_update, next_update);
       if (status == KSBA_STATUS_REVOKED)
         log_info (_("certificate has been revoked at: %s due to: %s\n"),
-                  revocation_time,
-                  reason == KSBA_CRLREASON_UNSPECIFIED?   "unspecified":
-                  reason == KSBA_CRLREASON_KEY_COMPROMISE? "key compromise":
-                  reason == KSBA_CRLREASON_CA_COMPROMISE?   "CA compromise":
-                  reason == KSBA_CRLREASON_AFFILIATION_CHANGED?
-                                                      "affiliation changed":
-                  reason == KSBA_CRLREASON_SUPERSEDED?   "superseded":
-                  reason == KSBA_CRLREASON_CESSATION_OF_OPERATION?
-                                                  "cessation of operation":
-                  reason == KSBA_CRLREASON_CERTIFICATE_HOLD?
-                                                  "certificate on hold":
-                  reason == KSBA_CRLREASON_REMOVE_FROM_CRL?
-                                                  "removed from CRL":
-                  reason == KSBA_CRLREASON_PRIVILEGE_WITHDRAWN?
-                                                  "privilege withdrawn":
-                  reason == KSBA_CRLREASON_AA_COMPROMISE? "AA compromise":
-                  reason == KSBA_CRLREASON_OTHER?   "other":"?");
+                  revocation_time, sreason);
 
     }
 
 
   if (status == KSBA_STATUS_REVOKED)
-    err = gpg_error (GPG_ERR_CERT_REVOKED);
+    {
+      err = gpg_error (GPG_ERR_CERT_REVOKED);
+      if (r_revoked_at)
+        gnupg_copy_time (r_revoked_at, revocation_time);
+      if (r_reason)
+        *r_reason = sreason;
+    }
   else if (status == KSBA_STATUS_UNKNOWN)
     err = gpg_error (GPG_ERR_NO_DATA);
   else if (status != KSBA_STATUS_GOOD)

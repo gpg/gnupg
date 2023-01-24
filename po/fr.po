@@ -423,6 +423,11 @@ msgstr ""
 msgid "enable putty support"
 msgstr "activer la prise en charge de putty"
 
+#, fuzzy
+#| msgid "enable putty support"
+msgid "enable Win32-OpenSSH support"
+msgstr "activer la prise en charge de putty"
+
 msgid "Options controlling the security"
 msgstr "Options contrôlant la sécurité"
 
@@ -1900,8 +1905,9 @@ msgstr "Attention : « %s%s » est une option obsolète — non prise en com
 msgid "error creating passphrase: %s\n"
 msgstr "erreur de création de la phrase secrète : %s\n"
 
-#, c-format
-msgid "can't use a symmetric ESK packet due to the S2K mode\n"
+#, fuzzy, c-format
+#| msgid "can't use a symmetric ESK packet due to the S2K mode\n"
+msgid "can't use a SKESK packet due to the S2K mode\n"
 msgstr "impossible d'utiliser un paquet ESK symétrique en mode S2K\n"
 
 #, fuzzy, c-format
@@ -1979,8 +1985,18 @@ msgstr "supprimer les parties inutilisables de la clef pendant l'exportation"
 msgid "remove as much as possible from key during export"
 msgstr "supprimer autant que possible de la clef pendant l'exportation"
 
+#, fuzzy
+#| msgid "generate a revocation certificate"
+msgid "export only revocation certificates"
+msgstr "générer un certificat de révocation"
+
 msgid "use the GnuPG key backup format"
 msgstr ""
+
+#, fuzzy
+#| msgid "exporting secret keys not allowed\n"
+msgid "export secret keys using the GnuPG format"
+msgstr "il est interdit d'exporter les clefs secrètes\n"
 
 msgid " - skipped"
 msgstr " — ignoré"
@@ -2478,6 +2494,11 @@ msgstr "montrer le nom du porte-clefs en affichant les clefs"
 msgid "show expiration dates during signature listings"
 msgstr "montrer les dates d'expiration en affichant les signatures"
 
+#, fuzzy
+#| msgid "list preferences (expert)"
+msgid "show preferences"
+msgstr "afficher les préférences (expert)"
+
 #, fuzzy, c-format
 #| msgid "unknown option '%s'\n"
 msgid "unknown TOFU policy '%s'\n"
@@ -2640,11 +2661,6 @@ msgstr "ne sera pas exécuté avec une mémoire non sécurisée à cause de %s\n
 msgid "selected cipher algorithm is invalid\n"
 msgstr "l'algorithme de chiffrement sélectionné est incorrect\n"
 
-#, fuzzy, c-format
-#| msgid "selected digest algorithm is invalid\n"
-msgid "selected AEAD algorithm is invalid\n"
-msgstr "la fonction de hachage sélectionnée est incorrecte\n"
-
 #, c-format
 msgid "selected compression algorithm is invalid\n"
 msgstr "l'algorithme de compression sélectionné est incorrect\n"
@@ -2689,11 +2705,6 @@ msgstr "préférences par défaut incorrectes\n"
 msgid "invalid personal cipher preferences\n"
 msgstr "préférences personnelles de chiffrement incorrectes\n"
 
-#, fuzzy, c-format
-#| msgid "invalid personal cipher preferences\n"
-msgid "invalid personal AEAD preferences\n"
-msgstr "préférences personnelles de chiffrement incorrectes\n"
-
 #, c-format
 msgid "invalid personal digest preferences\n"
 msgstr "préférences personnelles de hachage incorrectes\n"
@@ -2710,11 +2721,6 @@ msgstr "taille incorrecte ; utilisation de %u bits\n"
 #, c-format
 msgid "%s does not yet work with %s\n"
 msgstr "%s ne fonctionne pas encore avec %s\n"
-
-#, fuzzy, c-format
-#| msgid "you may not use cipher algorithm '%s' while in %s mode\n"
-msgid "AEAD algorithm '%s' may not be used in %s mode\n"
-msgstr "impossible d'utiliser l'algorithme de chiffrement « %s » en mode %s.\n"
 
 #, fuzzy, c-format
 #| msgid "you may not use compression algorithm '%s' while in %s mode\n"
@@ -3886,18 +3892,6 @@ msgstr "« %s » n’est pas une empreinte\n"
 msgid "subkey \"%s\" not found\n"
 msgstr "clef « %s » introuvable : %s\n"
 
-msgid "AEAD: "
-msgstr ""
-
-msgid "Digest: "
-msgstr "Hachage : "
-
-msgid "Features: "
-msgstr "Fonctionnalités : "
-
-msgid "Keyserver no-modify"
-msgstr "Serveur de clefs sans modification"
-
 msgid "Preferred keyserver: "
 msgstr "Serveur de clefs favori : "
 
@@ -4747,6 +4741,18 @@ msgstr "Faut-il vraiment la créer ? (o/N) "
 
 msgid "never     "
 msgstr "jamais    "
+
+msgid "AEAD: "
+msgstr ""
+
+msgid "Digest: "
+msgstr "Hachage : "
+
+msgid "Features: "
+msgstr "Fonctionnalités : "
+
+msgid "Keyserver no-modify"
+msgstr "Serveur de clefs sans modification"
 
 msgid "Critical signature policy: "
 msgstr "Politique de signature critique : "
@@ -9464,6 +9470,22 @@ msgstr ""
 
 msgid "manage the command history"
 msgstr ""
+
+#, fuzzy
+#~| msgid "selected digest algorithm is invalid\n"
+#~ msgid "selected AEAD algorithm is invalid\n"
+#~ msgstr "la fonction de hachage sélectionnée est incorrecte\n"
+
+#, fuzzy
+#~| msgid "invalid personal cipher preferences\n"
+#~ msgid "invalid personal AEAD preferences\n"
+#~ msgstr "préférences personnelles de chiffrement incorrectes\n"
+
+#, fuzzy
+#~| msgid "you may not use cipher algorithm '%s' while in %s mode\n"
+#~ msgid "AEAD algorithm '%s' may not be used in %s mode\n"
+#~ msgstr ""
+#~ "impossible d'utiliser l'algorithme de chiffrement « %s » en mode %s.\n"
 
 #~ msgid "forcing symmetric cipher %s (%d) violates recipient preferences\n"
 #~ msgstr ""

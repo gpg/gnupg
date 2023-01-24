@@ -81,6 +81,8 @@ struct uidinfo_list_s
   time_t created; /* Time the userid was created.  */
   char *mbox;  /* NULL or the malloced mailbox from UID.  */
   unsigned int flags;  /* These flags are cleared on creation.  */
+  unsigned int expired:1;
+  unsigned int revoked:1;
   char uid[1];
 };
 typedef struct uidinfo_list_s *uidinfo_list_t;
@@ -104,6 +106,7 @@ gpg_error_t wks_send_mime (mime_maker_t mime);
 gpg_error_t wks_parse_policy (policy_flags_t flags, estream_t stream,
                               int ignore_unknown);
 void wks_free_policy (policy_flags_t policy);
+gpg_error_t wks_write_to_file (estream_t src, const char *fname);
 
 gpg_error_t wks_fname_from_userid (const char *userid, int hash_only,
                                    char **r_fname, char **r_addrspec);

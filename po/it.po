@@ -389,6 +389,11 @@ msgstr "|ALGO|usa ALGO per mostrare le impronte digitali ssh"
 msgid "enable putty support"
 msgstr "abilitare il supporto putty"
 
+#, fuzzy
+#| msgid "enable putty support"
+msgid "enable Win32-OpenSSH support"
+msgstr "abilitare il supporto putty"
+
 msgid "Options controlling the security"
 msgstr "Opzioni che controllano la sicurezza"
 
@@ -1797,8 +1802,9 @@ msgstr "AVVISO: la chiave %s non è adatta per la crittografia in modalità %s\n
 msgid "error creating passphrase: %s\n"
 msgstr "errore nella creazione della passhprase: %s\n"
 
-#, c-format
-msgid "can't use a symmetric ESK packet due to the S2K mode\n"
+#, fuzzy, c-format
+#| msgid "can't use a symmetric ESK packet due to the S2K mode\n"
+msgid "can't use a SKESK packet due to the S2K mode\n"
 msgstr ""
 "impossibile usare un pacchetto ESK simmetrico a causa della modalità S2K\n"
 
@@ -1873,8 +1879,18 @@ msgstr "rimuovere parti inutilizzabili dalla chiave durante l'esportazione"
 msgid "remove as much as possible from key during export"
 msgstr "rimuovere il più possibile dalla chiave durante l'esportazione"
 
+#, fuzzy
+#| msgid "generate a revocation certificate"
+msgid "export only revocation certificates"
+msgstr "genera un certificato di revoca"
+
 msgid "use the GnuPG key backup format"
 msgstr "utilizzare il formato di backup della chiave GnuPG"
+
+#, fuzzy
+#| msgid "exporting secret keys not allowed\n"
+msgid "export secret keys using the GnuPG format"
+msgstr "esportazione di chiavi segrete non consentita\n"
 
 msgid " - skipped"
 msgstr " - saltato"
@@ -2320,6 +2336,11 @@ msgstr "mostrare il nome del keyring negli elenchi delle chiavi"
 msgid "show expiration dates during signature listings"
 msgstr "mostra date di scadenza durante le inserzioni delle firme"
 
+#, fuzzy
+#| msgid "list preferences (expert)"
+msgid "show preferences"
+msgstr "elenca le preferenze (per esperti)"
+
 #, c-format
 msgid "unknown TOFU policy '%s'\n"
 msgstr "criterio TOFU sconosciuto '%s'\n"
@@ -2477,10 +2498,6 @@ msgid "selected cipher algorithm is invalid\n"
 msgstr "l'algoritmo di cifratura selezionato non è valido\n"
 
 #, c-format
-msgid "selected AEAD algorithm is invalid\n"
-msgstr "l'algoritmo AEAD selezionato non è valido\n"
-
-#, c-format
 msgid "selected compression algorithm is invalid\n"
 msgstr "algoritmo di compressione selezionato non valido\n"
 
@@ -2525,10 +2542,6 @@ msgid "invalid personal cipher preferences\n"
 msgstr "preferenze personali del cifrario non valide\n"
 
 #, c-format
-msgid "invalid personal AEAD preferences\n"
-msgstr "preferenze AEAD personali non valide\n"
-
-#, c-format
 msgid "invalid personal digest preferences\n"
 msgstr "preferenze personali del digest non valide\n"
 
@@ -2543,10 +2556,6 @@ msgstr "dimensione del blocco non valida - utilizzando %d\n"
 #, c-format
 msgid "%s does not yet work with %s\n"
 msgstr "%s non funziona ancora con %s\n"
-
-#, c-format
-msgid "AEAD algorithm '%s' may not be used in %s mode\n"
-msgstr "L'algoritmo AEAD '%s' non può essere utilizzato %s modalità\n"
 
 #, c-format
 msgid "compression algorithm '%s' may not be used in %s mode\n"
@@ -3690,18 +3699,6 @@ msgstr "\"%s\" non è un'impronta digitale corretta\n"
 msgid "subkey \"%s\" not found\n"
 msgstr "sottochiave \"%s\" non trovata\n"
 
-msgid "AEAD: "
-msgstr "AEAD: "
-
-msgid "Digest: "
-msgstr "Digest: "
-
-msgid "Features: "
-msgstr "Caratteristiche: "
-
-msgid "Keyserver no-modify"
-msgstr "Keyserver no-modify"
-
 msgid "Preferred keyserver: "
 msgstr "Server delle chiavi preferito: "
 
@@ -4512,6 +4509,18 @@ msgstr "Davvero creare? (y/N) "
 
 msgid "never     "
 msgstr "mai       "
+
+msgid "AEAD: "
+msgstr "AEAD: "
+
+msgid "Digest: "
+msgstr "Digest: "
+
+msgid "Features: "
+msgstr "Caratteristiche: "
+
+msgid "Keyserver no-modify"
+msgstr "Keyserver no-modify"
 
 msgid "Critical signature policy: "
 msgstr "Politica critica di firma: "
@@ -9013,6 +9022,15 @@ msgstr "Comandi di gestione Yubikey"
 
 msgid "manage the command history"
 msgstr "gestire la cronologia dei comandi"
+
+#~ msgid "selected AEAD algorithm is invalid\n"
+#~ msgstr "l'algoritmo AEAD selezionato non è valido\n"
+
+#~ msgid "invalid personal AEAD preferences\n"
+#~ msgstr "preferenze AEAD personali non valide\n"
+
+#~ msgid "AEAD algorithm '%s' may not be used in %s mode\n"
+#~ msgstr "L'algoritmo AEAD '%s' non può essere utilizzato %s modalità\n"
 
 #~ msgid "forcing symmetric cipher %s (%d) violates recipient preferences\n"
 #~ msgstr ""

@@ -9,7 +9,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnupg-2.3.0\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"PO-Revision-Date: 2022-10-07 09:52+0200\n"
+"PO-Revision-Date: 2022-12-16 16:11+0100\n"
 "Last-Translator: Werner Koch <wk@gnupg.org>\n"
 "Language-Team: German <de@li.org>\n"
 "Language: de\n"
@@ -396,6 +396,9 @@ msgstr "Verwende ALGO für SSH Fingerabdrücke"
 
 msgid "enable putty support"
 msgstr "PuTTY Unterstützung einschalten"
+
+msgid "enable Win32-OpenSSH support"
+msgstr "Win32-OpenSSH Unterstützung einschalten"
 
 msgid "Options controlling the security"
 msgstr "Optionen zur Einstellung der Sicherheit"
@@ -1812,10 +1815,8 @@ msgid "error creating passphrase: %s\n"
 msgstr "Fehler beim Erzeugen des Passwortes: %s\n"
 
 #, c-format
-msgid "can't use a symmetric ESK packet due to the S2K mode\n"
-msgstr ""
-"Aufgrund des S2K-Modus kann ein symmetrisches ESK Paket nicht benutzt "
-"werden\n"
+msgid "can't use a SKESK packet due to the S2K mode\n"
+msgstr "Aufgrund des S2K-Modus kann ein SKESK Paket nicht benutzt werden\n"
 
 #, c-format
 msgid "using cipher %s.%s\n"
@@ -1886,8 +1887,14 @@ msgstr "Unbrauchbare Teile des Schlüssel während des Exports entfernen"
 msgid "remove as much as possible from key during export"
 msgstr "Während des Exports soviel wie möglich vom Schlüssel entfernen"
 
+msgid "export only revocation certificates"
+msgstr "Nur Schlüsselwiderruf-Zertifikate exportieren"
+
 msgid "use the GnuPG key backup format"
 msgstr "Das GnuPG Datensicherungsformat für Schlüssel benutzen"
+
+msgid "export secret keys using the GnuPG format"
+msgstr "Geheime Schlüssel im GnuPG Format exportieren"
 
 msgid " - skipped"
 msgstr " - übersprungen"
@@ -2335,6 +2342,9 @@ msgstr "Anzeigen des Schlüsselbundes, in dem ein Schlüssel drin ist"
 msgid "show expiration dates during signature listings"
 msgstr "Das Ablaufdatum mit den Signaturen anlisten"
 
+msgid "show preferences"
+msgstr "Voreinstellungen anzeigen"
+
 #, c-format
 msgid "unknown TOFU policy '%s'\n"
 msgstr "Unbekannte TOFU Regel '%s'\n"
@@ -2493,10 +2503,6 @@ msgid "selected cipher algorithm is invalid\n"
 msgstr "Das ausgewählte Verschlüsselungsverfahren ist ungültig\n"
 
 #, c-format
-msgid "selected AEAD algorithm is invalid\n"
-msgstr "Das ausgewählte AEAD-Verfahren ist ungültig\n"
-
-#, c-format
 msgid "selected compression algorithm is invalid\n"
 msgstr "Das ausgewählte Komprimierungsverfahren ist ungültig\n"
 
@@ -2541,10 +2547,6 @@ msgid "invalid personal cipher preferences\n"
 msgstr "ungültige private Verschlüsselungsvoreinstellungen\n"
 
 #, c-format
-msgid "invalid personal AEAD preferences\n"
-msgstr "ungültige private AEAD-Voreinstellungen\n"
-
-#, c-format
 msgid "invalid personal digest preferences\n"
 msgstr "ungültige private Hashvoreinstellungen\n"
 
@@ -2559,10 +2561,6 @@ msgstr "Ungültige \"Chunk\"-Größe; %d wird verwendet\n"
 #, c-format
 msgid "%s does not yet work with %s\n"
 msgstr "%s arbeitet noch nicht mit %s zusammen\n"
-
-#, c-format
-msgid "AEAD algorithm '%s' may not be used in %s mode\n"
-msgstr "Das AEAD-Verfahren %s darf im %s Modus nicht verwendet werden.\n"
 
 #, c-format
 msgid "compression algorithm '%s' may not be used in %s mode\n"
@@ -3716,18 +3714,6 @@ msgstr "\"%s\" ist kein gültiger Fingerabdruck\n"
 msgid "subkey \"%s\" not found\n"
 msgstr "Unterschlüssel \"%s\" nicht gefunden\n"
 
-msgid "AEAD: "
-msgstr "AEAD: "
-
-msgid "Digest: "
-msgstr "Digest: "
-
-msgid "Features: "
-msgstr "Eigenschaften: "
-
-msgid "Keyserver no-modify"
-msgstr "Keyserver no-modify"
-
 msgid "Preferred keyserver: "
 msgstr "Bevorzugter Schlüsselserver:"
 
@@ -4533,6 +4519,18 @@ msgstr "Wirklich erzeugen? (j/N) "
 
 msgid "never     "
 msgstr "niemals   "
+
+msgid "AEAD: "
+msgstr "AEAD: "
+
+msgid "Digest: "
+msgstr "Digest: "
+
+msgid "Features: "
+msgstr "Eigenschaften: "
+
+msgid "Keyserver no-modify"
+msgstr "Keyserver no-modify"
 
 msgid "Critical signature policy: "
 msgstr "Entscheidende Beglaubigungsrichtlinie: "
@@ -9069,6 +9067,15 @@ msgstr "Verwaltungskommandos für Yubikeys"
 
 msgid "manage the command history"
 msgstr "Verwaltung der Kommandohistorie"
+
+#~ msgid "selected AEAD algorithm is invalid\n"
+#~ msgstr "Das ausgewählte AEAD-Verfahren ist ungültig\n"
+
+#~ msgid "invalid personal AEAD preferences\n"
+#~ msgstr "ungültige private AEAD-Voreinstellungen\n"
+
+#~ msgid "AEAD algorithm '%s' may not be used in %s mode\n"
+#~ msgstr "Das AEAD-Verfahren %s darf im %s Modus nicht verwendet werden.\n"
 
 #~ msgid "forcing symmetric cipher %s (%d) violates recipient preferences\n"
 #~ msgstr ""

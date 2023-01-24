@@ -1,6 +1,6 @@
 #! /bin/sh
 # autogen.sh
-# Copyright (C) 2003, 2014, 2017, 2018 g10 Code GmbH
+# Copyright (C) 2003, 2014, 2017, 2018, 2022 g10 Code GmbH
 #
 # This file is free software; as a special exception the author gives
 # unlimited permission to copy and/or distribute it, with or without
@@ -15,7 +15,7 @@
 # configure it for the respective package.  It is maintained as part of
 # GnuPG and source copied by other packages.
 #
-# Version: 2018-02-21
+# Version: 2022-12-09
 
 configure_ac="configure.ac"
 
@@ -137,8 +137,6 @@ extraoptions=
 # List of optional variables sourced from autogen.rc and ~/.gnupg-autogen.rc
 w32_toolprefixes=
 w32_extraoptions=
-w32ce_toolprefixes=
-w32ce_extraoptions=
 w64_toolprefixes=
 w64_extraoptions=
 amd64_toolprefixes=
@@ -146,7 +144,6 @@ amd64_toolprefixes=
 # What follows are variables which are sourced but default to
 # environment variables or lacking them hardcoded values.
 #w32root=
-#w32ce_root=
 #w64root=
 #amd64root=
 
@@ -161,11 +158,6 @@ case "$1" in
         ;;
     --build-w32)
         myhost="w32"
-        shift
-        ;;
-    --build-w32ce)
-        myhost="w32"
-        myhostsub="ce"
         shift
         ;;
     --build-w64)
@@ -274,12 +266,6 @@ fi
 # ******************
 if [ "$myhost" = "w32" ]; then
     case $myhostsub in
-        ce)
-          w32root="$w32ce_root"
-          [ -z "$w32root" ] && w32root="$HOME/w32ce_root"
-          toolprefixes="$w32ce_toolprefixes arm-mingw32ce"
-          extraoptions="$extraoptions $w32ce_extraoptions"
-          ;;
         64)
           w32root="$w64root"
           [ -z "$w32root" ] && w32root="$HOME/w64root"

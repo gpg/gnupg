@@ -78,17 +78,10 @@ check_key_verify_compliance (PKT_public_key *pk)
                             NULL))
     {
       /* Compliance failure.  */
-      log_info (_("key %s may not be used for signing in %s mode\n"),
+      log_error (_("key %s may not be used for signing in %s mode\n"),
                  keystr_from_pk (pk),
                  gnupg_compliance_option_string (opt.compliance));
-      if (opt.flags.override_compliance_check)
-        log_info (_("continuing verification anyway due to option %s\n"),
-                  "--override-compliance-failure");
-      else
-        {
-          log_inc_errorcount (); /* We used log info above.  */
-          err = gpg_error (GPG_ERR_PUBKEY_ALGO);
-        }
+      err = gpg_error (GPG_ERR_PUBKEY_ALGO);
     }
 
   return err;

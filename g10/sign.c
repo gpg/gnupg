@@ -1037,6 +1037,9 @@ sign_file (ctrl_t ctrl, strlist_t filenames, int detached, strlist_t locusr,
   int multifile = 0;
   u32 duration=0;
   pt_extra_hash_data_t extrahash = NULL;
+  char peekbuf[32];
+  int  peekbuflen = 0;
+
 
   pfx = new_progress_context ();
   afx = new_armor_context ();
@@ -1094,6 +1097,14 @@ sign_file (ctrl_t ctrl, strlist_t filenames, int detached, strlist_t locusr,
                      strerror (errno));
           goto leave;
 	}
+
+      peekbuflen = iobuf_ioctl (inp, IOBUF_IOCTL_PEEK, sizeof peekbuf, peekbuf);
+      if (peekbuflen < 0)
+        {
+          peekbuflen = 0;
+          if (DBG_FILTER)
+            log_debug ("peeking at input failed\n");
+        }
 
       handle_progress (pfx, inp, fname);
     }
@@ -1251,8 +1262,14 @@ sign_file (ctrl_t ctrl, strlist_t filenames, int detached, strlist_t locusr,
     {
       int compr_algo = opt.compress_algo;
 
-      /* If not forced by user */
-      if (compr_algo==-1)
+      if (!opt.explicit_compress_option
+          && is_file_compressed (peekbuf, peekbuflen))
+        {
+          if (opt.verbose)
+            log_info(_("'%s' already compressed\n"), fname? fname: "[stdin]");
+          compr_algo = 0;
+        }
+      else if (compr_algo==-1)
         {
           /* If we're not encrypting, then select_algo_from_prefs
            * will fail and we'll end up with the default.  If we are

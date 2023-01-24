@@ -22,18 +22,9 @@ AM_CPPFLAGS =
 include $(top_srcdir)/am/cmacros.am
 
 examples = examples/README examples/scd-event examples/trustlist.txt	\
-	   examples/VS-NfD.prf examples/Automatic.prf                   \
-           examples/debug.prf  examples/qualified.txt                   \
+           examples/qualified.txt                                       \
 	   examples/common.conf                                         \
            examples/gpgconf.rnames examples/gpgconf.conf                \
-	   examples/systemd-user/README 				\
-	   examples/systemd-user/dirmngr.service 			\
-	   examples/systemd-user/dirmngr.socket				\
-	   examples/systemd-user/gpg-agent.service 			\
-	   examples/systemd-user/gpg-agent.socket 			\
-	   examples/systemd-user/gpg-agent-ssh.socket 			\
-	   examples/systemd-user/gpg-agent-browser.socket		\
-	   examples/systemd-user/gpg-agent-extra.socket 		\
 	   examples/pwpattern.list
 
 helpfiles = help.txt help.be.txt help.ca.txt help.cs.txt		\
@@ -43,8 +34,6 @@ helpfiles = help.txt help.be.txt help.ca.txt help.cs.txt		\
             help.ja.txt help.nb.txt help.pl.txt help.pt.txt		\
             help.pt_BR.txt help.ro.txt help.ru.txt help.sk.txt		\
             help.sv.txt help.tr.txt help.zh_CN.txt help.zh_TW.txt
-
-profiles =
 
 EXTRA_DIST = samplekeys.asc mksamplekeys com-certs.pem \
 	     gnupg-logo.pdf gnupg-logo.png gnupg-logo-tr.png \
@@ -61,7 +50,7 @@ BUILT_SOURCES = gnupg-module-overview.png gnupg-module-overview.pdf \
 
 info_TEXINFOS = gnupg.texi
 
-dist_pkgdata_DATA =  $(helpfiles) $(profiles)
+dist_pkgdata_DATA =  $(helpfiles)
 
 nobase_dist_doc_DATA = FAQ DETAILS HACKING DCO TRANSLATE OpenPGP KEYSERVER \
                        $(examples)
@@ -85,7 +74,7 @@ DVIPS = TEXINPUTS="$(srcdir)$(PATH_SEPARATOR)$$TEXINPUTS" dvips
 AM_MAKEINFOFLAGS = -I $(srcdir) --css-ref=/share/site.css
 
 YAT2M_OPTIONS = -I $(srcdir) \
-        --release "GnuPG @PACKAGE_VERSION@" --source "GNU Privacy Guard 2.3"
+        --release "GnuPG @PACKAGE_VERSION@" --source "GNU Privacy Guard 2.4"
 
 myman_sources = gnupg7.texi gpg.texi gpgsm.texi gpg-agent.texi \
 	        dirmngr.texi scdaemon.texi tools.texi wks.texi \

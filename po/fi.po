@@ -415,6 +415,11 @@ msgstr ""
 msgid "enable putty support"
 msgstr "ei tuettu"
 
+#, fuzzy
+#| msgid "not supported"
+msgid "enable Win32-OpenSSH support"
+msgstr "ei tuettu"
+
 msgid "Options controlling the security"
 msgstr ""
 
@@ -1867,8 +1872,9 @@ msgstr "VAROITUS: \"%s\" on paheksuttu valitsin\n"
 msgid "error creating passphrase: %s\n"
 msgstr "virhe luotaessa salasanaa: %s\n"
 
-#, c-format
-msgid "can't use a symmetric ESK packet due to the S2K mode\n"
+#, fuzzy, c-format
+#| msgid "can't use a symmetric ESK packet due to the S2K mode\n"
+msgid "can't use a SKESK packet due to the S2K mode\n"
 msgstr "symmetristä ESK-pakettia ei voi käyttää S2K-tilan vuoksi\n"
 
 #, fuzzy, c-format
@@ -1951,8 +1957,17 @@ msgstr "salaista avainta ei voi käyttää"
 msgid "remove as much as possible from key during export"
 msgstr ""
 
+#, fuzzy
+#| msgid "generate a revocation certificate"
+msgid "export only revocation certificates"
+msgstr "luo mitätöintivarmenne"
+
 msgid "use the GnuPG key backup format"
 msgstr ""
+
+#, fuzzy
+msgid "export secret keys using the GnuPG format"
+msgstr "kirjoitan salaisen avaimen kohteeseen \"%s\"\n"
 
 #, fuzzy
 #| msgid "%s: skipped: %s\n"
@@ -2443,6 +2458,11 @@ msgstr "näytä mihin avainrenkaaseen tulostettu avain kuuluu"
 msgid "show expiration dates during signature listings"
 msgstr "Salaisesta avainrenkaasta ei löydy vastaavaa allekirjoitusta\n"
 
+#, fuzzy
+#| msgid "set preference list"
+msgid "show preferences"
+msgstr "näytä valinnat"
+
 #, fuzzy, c-format
 msgid "unknown TOFU policy '%s'\n"
 msgstr "tuntematon oletusvastaanottaja \"%s\"\n"
@@ -2604,11 +2624,6 @@ msgid "selected cipher algorithm is invalid\n"
 msgstr "valittu salausalgoritmi ei kelpaa\n"
 
 #, fuzzy, c-format
-#| msgid "selected digest algorithm is invalid\n"
-msgid "selected AEAD algorithm is invalid\n"
-msgstr "valittu tiivistealgoritmi ei kelpaa\n"
-
-#, fuzzy, c-format
 msgid "selected compression algorithm is invalid\n"
 msgstr "valittu salausalgoritmi ei kelpaa\n"
 
@@ -2654,11 +2669,6 @@ msgstr "virheelliset oletusarvoiset valinnat\n"
 msgid "invalid personal cipher preferences\n"
 msgstr "virheelliset henkilökohtaisen salaimen valinnat\n"
 
-#, fuzzy, c-format
-#| msgid "invalid personal cipher preferences\n"
-msgid "invalid personal AEAD preferences\n"
-msgstr "virheelliset henkilökohtaisen salaimen valinnat\n"
-
 #, c-format
 msgid "invalid personal digest preferences\n"
 msgstr "virheelliset henkilökohtaiset tiivisteen valinnat\n"
@@ -2675,10 +2685,6 @@ msgstr "avaimen koko on virheellinen, käytetään %u bittiä\n"
 #, c-format
 msgid "%s does not yet work with %s\n"
 msgstr "%s ja %s eivät vielä toimi yhdessä\n"
-
-#, fuzzy, c-format
-msgid "AEAD algorithm '%s' may not be used in %s mode\n"
-msgstr "salausalgoritmia \"%s\" ei voi käyttää %s-tilassa\n"
 
 #, fuzzy, c-format
 msgid "compression algorithm '%s' may not be used in %s mode\n"
@@ -3881,18 +3887,6 @@ msgstr "virhe: sormenjälki on väärä\n"
 msgid "subkey \"%s\" not found\n"
 msgstr "avainta \"%s\" ei löydy: %s\n"
 
-msgid "AEAD: "
-msgstr ""
-
-msgid "Digest: "
-msgstr "Tiiviste: "
-
-msgid "Features: "
-msgstr "Ominaisuudet: "
-
-msgid "Keyserver no-modify"
-msgstr ""
-
 msgid "Preferred keyserver: "
 msgstr ""
 
@@ -4731,6 +4725,18 @@ msgstr "Haluatko varmasti luoda? "
 
 msgid "never     "
 msgstr "ei koskaan"
+
+msgid "AEAD: "
+msgstr ""
+
+msgid "Digest: "
+msgstr "Tiiviste: "
+
+msgid "Features: "
+msgstr "Ominaisuudet: "
+
+msgid "Keyserver no-modify"
+msgstr ""
 
 msgid "Critical signature policy: "
 msgstr "Kriittinen allekirjoituskäytäntö: "
@@ -9261,6 +9267,20 @@ msgstr ""
 msgid "manage the command history"
 msgstr ""
 
+#, fuzzy
+#~| msgid "selected digest algorithm is invalid\n"
+#~ msgid "selected AEAD algorithm is invalid\n"
+#~ msgstr "valittu tiivistealgoritmi ei kelpaa\n"
+
+#, fuzzy
+#~| msgid "invalid personal cipher preferences\n"
+#~ msgid "invalid personal AEAD preferences\n"
+#~ msgstr "virheelliset henkilökohtaisen salaimen valinnat\n"
+
+#, fuzzy
+#~ msgid "AEAD algorithm '%s' may not be used in %s mode\n"
+#~ msgstr "salausalgoritmia \"%s\" ei voi käyttää %s-tilassa\n"
+
 #~ msgid "forcing symmetric cipher %s (%d) violates recipient preferences\n"
 #~ msgstr "valittu symmetrinen salain %s (%d) ei ole vastaanottajan suosima\n"
 
@@ -10888,9 +10908,6 @@ msgstr ""
 
 #~ msgid "delete signatures"
 #~ msgstr "poista allekirjoitus"
-
-#~ msgid "set preference list"
-#~ msgstr "näytä valinnat"
 
 #~ msgid "updated preferences"
 #~ msgstr "päivitä valinnat"

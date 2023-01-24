@@ -124,9 +124,53 @@ wkd_get_status_cb (void *opaque, const char *line)
 {
   struct wkd_get_parm_s *parm = opaque;
   gpg_error_t err = 0;
+  const char *s, *s2;
+  const char *warn = NULL;
+  int is_note = 0;
 
-  (void)line;
   (void)parm;
+
+  /* Note: The code below is mostly duplicated from g10/call-dirmngr.c */
+  if ((s = has_leading_keyword (line, "WARNING"))
+      || (is_note = !!(s = has_leading_keyword (line, "NOTE"))))
+    {
+      if ((s2 = has_leading_keyword (s, "wkd_cached_result")))
+        {
+          if (opt.verbose)
+            warn = _("WKD uses a cached result");
+        }
+      else if ((s2 = has_leading_keyword (s, "tor_not_running")))
+        warn = _("Tor is not running");
+      else if ((s2 = has_leading_keyword (s, "tor_config_problem")))
+        warn = _("Tor is not properly configured");
+      else if ((s2 = has_leading_keyword (s, "dns_config_problem")))
+        warn = _("DNS is not properly configured");
+      else if ((s2 = has_leading_keyword (s, "http_redirect")))
+        warn = _("unacceptable HTTP redirect from server");
+      else if ((s2 = has_leading_keyword (s, "http_redirect_cleanup")))
+        warn = _("unacceptable HTTP redirect from server was cleaned up");
+      else if ((s2 = has_leading_keyword (s, "tls_cert_error")))
+        warn = _("server uses an invalid certificate");
+      else
+        warn = NULL;
+
+      if (warn)
+        {
+          if (is_note)
+            log_info (_("Note: %s\n"), warn);
+          else
+            log_info (_("WARNING: %s\n"), warn);
+          if (s2 && opt.verbose)
+            {
+              while (*s2 && !spacep (s2))
+                s2++;
+              while (*s2 && spacep (s2))
+                s2++;
+              if (*s2)
+                log_info ("(%s)\n", s2);
+            }
+        }
+    }
 
   return err;
 }

@@ -403,6 +403,11 @@ msgstr "|АЛГО|використати алгоритм АЛГО для пок
 msgid "enable putty support"
 msgstr "увімкнути підтримку putty"
 
+#, fuzzy
+#| msgid "enable putty support"
+msgid "enable Win32-OpenSSH support"
+msgstr "увімкнути підтримку putty"
+
 msgid "Options controlling the security"
 msgstr "Параметри керування захистом"
 
@@ -1829,8 +1834,9 @@ msgstr "УВАГА: ключ %s не можна використовувати �
 msgid "error creating passphrase: %s\n"
 msgstr "помилка під час спроби створення пароля: %s\n"
 
-#, c-format
-msgid "can't use a symmetric ESK packet due to the S2K mode\n"
+#, fuzzy, c-format
+#| msgid "can't use a symmetric ESK packet due to the S2K mode\n"
+msgid "can't use a SKESK packet due to the S2K mode\n"
 msgstr "не можна використовувати симетричний пакет ESK через режим S2K\n"
 
 #, fuzzy, c-format
@@ -1910,8 +1916,18 @@ msgstr "вилучити невикористовувані частини кл�
 msgid "remove as much as possible from key during export"
 msgstr "вилучити максимум частин з ключа під час експортування"
 
+#, fuzzy
+#| msgid "generate a revocation certificate"
+msgid "export only revocation certificates"
+msgstr "створити сертифікат відкликання"
+
 msgid "use the GnuPG key backup format"
 msgstr "використовувати формат резервних копій ключів GnuPG"
+
+#, fuzzy
+#| msgid "exporting secret keys not allowed\n"
+msgid "export secret keys using the GnuPG format"
+msgstr "експортування закритих ключів заборонено\n"
 
 msgid " - skipped"
 msgstr " - пропущено"
@@ -2380,6 +2396,11 @@ msgstr "показувати назву сховища ключів у спис�
 msgid "show expiration dates during signature listings"
 msgstr "показувати дати завершення строків дії у списку підписів"
 
+#, fuzzy
+#| msgid "list preferences (expert)"
+msgid "show preferences"
+msgstr "список переваг (експертний)"
+
 #, c-format
 msgid "unknown TOFU policy '%s'\n"
 msgstr "невідомі правила TOFU «%s»\n"
@@ -2540,11 +2561,6 @@ msgstr "не буде запущено з помилками у захисті �
 msgid "selected cipher algorithm is invalid\n"
 msgstr "вибраний алгоритм шифрування є некоректним\n"
 
-#, fuzzy, c-format
-#| msgid "selected digest algorithm is invalid\n"
-msgid "selected AEAD algorithm is invalid\n"
-msgstr "вибраний алгоритм побудови контрольних сум є некоректним\n"
-
 #, c-format
 msgid "selected compression algorithm is invalid\n"
 msgstr "вибраний алгоритм стискання є некоректним\n"
@@ -2592,11 +2608,6 @@ msgstr "некоректні типові параметри\n"
 msgid "invalid personal cipher preferences\n"
 msgstr "некоректні особисті параметри шифрування\n"
 
-#, fuzzy, c-format
-#| msgid "invalid personal cipher preferences\n"
-msgid "invalid personal AEAD preferences\n"
-msgstr "некоректні особисті параметри шифрування\n"
-
 #, c-format
 msgid "invalid personal digest preferences\n"
 msgstr "некоректні особисті параметри контрольної суми\n"
@@ -2613,11 +2624,6 @@ msgstr "некоректний розмір ключа; використовує
 #, c-format
 msgid "%s does not yet work with %s\n"
 msgstr "%s ще не може працювати разом з %s\n"
-
-#, fuzzy, c-format
-#| msgid "cipher algorithm '%s' may not be used in %s mode\n"
-msgid "AEAD algorithm '%s' may not be used in %s mode\n"
-msgstr "алгоритм шифрування «%s» не можна використовувати у режимі %s\n"
 
 #, c-format
 msgid "compression algorithm '%s' may not be used in %s mode\n"
@@ -3774,18 +3780,6 @@ msgstr "«%s» не є належним відбитком\n"
 msgid "subkey \"%s\" not found\n"
 msgstr "не знайдено підключ «%s»\n"
 
-msgid "AEAD: "
-msgstr ""
-
-msgid "Digest: "
-msgstr "Контрольна сума: "
-
-msgid "Features: "
-msgstr "Можливості: "
-
-msgid "Keyserver no-modify"
-msgstr "Сервер ключів без можливості зміни"
-
 msgid "Preferred keyserver: "
 msgstr "Основний сервер ключів: "
 
@@ -4617,6 +4611,18 @@ msgstr "Створити? (y/N або т/Н) "
 
 msgid "never     "
 msgstr "ніколи    "
+
+msgid "AEAD: "
+msgstr ""
+
+msgid "Digest: "
+msgstr "Контрольна сума: "
+
+msgid "Features: "
+msgstr "Можливості: "
+
+msgid "Keyserver no-modify"
+msgstr "Сервер ключів без можливості зміни"
 
 msgid "Critical signature policy: "
 msgstr "Критичні правила підпису: "
@@ -9190,6 +9196,21 @@ msgstr ""
 
 msgid "manage the command history"
 msgstr ""
+
+#, fuzzy
+#~| msgid "selected digest algorithm is invalid\n"
+#~ msgid "selected AEAD algorithm is invalid\n"
+#~ msgstr "вибраний алгоритм побудови контрольних сум є некоректним\n"
+
+#, fuzzy
+#~| msgid "invalid personal cipher preferences\n"
+#~ msgid "invalid personal AEAD preferences\n"
+#~ msgstr "некоректні особисті параметри шифрування\n"
+
+#, fuzzy
+#~| msgid "cipher algorithm '%s' may not be used in %s mode\n"
+#~ msgid "AEAD algorithm '%s' may not be used in %s mode\n"
+#~ msgstr "алгоритм шифрування «%s» не можна використовувати у режимі %s\n"
 
 #~ msgid "forcing symmetric cipher %s (%d) violates recipient preferences\n"
 #~ msgstr ""

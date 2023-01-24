@@ -1,7 +1,7 @@
 /* encrypt.c - Main encryption driver
  * Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005,
  *               2006, 2009 Free Software Foundation, Inc.
- * Copyright (C) 2016 g10 Code GmbH
+ * Copyright (C) 2016, 2023 g10 Code GmbH
  *
  * This file is part of GnuPG.
  *
@@ -17,6 +17,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, see <https://www.gnu.org/licenses/>.
+ * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
 #include <config.h>
@@ -409,6 +410,8 @@ encrypt_simple (const char *filename, int mode, int use_seskey)
   text_filter_context_t tfx;
   progress_filter_context_t *pfx;
   int do_compress = !!default_compress_algo();
+  char peekbuf[32];
+  int  peekbuflen;
 
   if (!gnupg_rng_is_compliant (opt.compliance))
     {
@@ -445,6 +448,14 @@ encrypt_simple (const char *filename, int mode, int use_seskey)
       return rc;
     }
 
+  peekbuflen = iobuf_ioctl (inp, IOBUF_IOCTL_PEEK, sizeof peekbuf, peekbuf);
+  if (peekbuflen < 0)
+    {
+      peekbuflen = 0;
+      if (DBG_FILTER)
+        log_debug ("peeking at input failed\n");
+    }
+
   handle_progress (pfx, inp, filename);
 
   if (opt.textmode)
@@ -470,8 +481,7 @@ encrypt_simple (const char *filename, int mode, int use_seskey)
       if (use_seskey && s2k->mode != 1 && s2k->mode != 3)
         {
           use_seskey = 0;
-          log_info (_("can't use a SKESK packet"
-                      "due to the S2K mode\n"));
+          log_info (_("can't use a SKESK packet due to the S2K mode\n"));
         }
 
       /* See whether we want to use AEAD.  */
@@ -510,10 +520,11 @@ encrypt_simple (const char *filename, int mode, int use_seskey)
   if (do_compress
       && cfx.dek
       && (cfx.dek->use_mdc || cfx.dek->use_aead)
-      && is_file_compressed(filename, &rc))
+      && !opt.explicit_compress_option
+      && is_file_compressed (peekbuf, peekbuflen))
     {
       if (opt.verbose)
-        log_info(_("'%s' already compressed\n"), filename);
+        log_info(_("'%s' already compressed\n"), filename? filename: "[stdin]");
       do_compress = 0;
     }
 
@@ -781,6 +792,8 @@ encrypt_crypt (ctrl_t ctrl, int filefd, const char *filename,
   progress_filter_context_t *pfx;
   PK_LIST pk_list;
   int do_compress;
+  char peekbuf[32];
+  int  peekbuflen;
 
   if (filefd != -1 && filename)
     return gpg_error (GPG_ERR_INV_ARG);  /* Both given.  */
@@ -853,6 +866,14 @@ encrypt_crypt (ctrl_t ctrl, int filefd, const char *filename,
   if (opt.verbose)
     log_info (_("reading from '%s'\n"), iobuf_get_fname_nonnull (inp));
 
+  peekbuflen = iobuf_ioctl (inp, IOBUF_IOCTL_PEEK, sizeof peekbuf, peekbuf);
+  if (peekbuflen < 0)
+    {
+      peekbuflen = 0;
+      if (DBG_FILTER)
+        log_debug ("peeking at input failed\n");
+    }
+
   handle_progress (pfx, inp, filename);
 
   if (opt.textmode)
@@ -885,10 +906,11 @@ encrypt_crypt (ctrl_t ctrl, int filefd, const char *filename,
    * ciphertext attacks. */
   if (do_compress
       && (cfx.dek->use_mdc || cfx.dek->use_aead)
-      && is_file_compressed (filename, &rc2))
+      && !opt.explicit_compress_option
+      && is_file_compressed (peekbuf, peekbuflen))
     {
       if (opt.verbose)
-        log_info(_("'%s' already compressed\n"), filename);
+        log_info(_("'%s' already compressed\n"), filename? filename: "[stdin]");
       do_compress = 0;
     }
   if (rc2)

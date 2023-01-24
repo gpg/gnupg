@@ -2624,7 +2624,7 @@ cmd_scd (assuan_context_t ctx, char *line)
       argc = split_fields (l, argv, DIM (argv));
 
       /* These commands are allowed.  */
-      if ((argc == 1 && !strcmp (argv[0], "SERIALNO"))
+      if ((argc >= 1 && !strcmp (argv[0], "SERIALNO"))
           || (argc == 2
               && !strcmp (argv[0], "GETINFO")
               && !strcmp (argv[1], "version"))

@@ -8,8 +8,6 @@ trustlist.txt   A list of trustworthy root certificates
 
 gpgconf.conf    A sample configuration file for gpgconf.
 
-systemd-user    Sample files for a Linux-only init system.
-
 qualified.txt   Sample file for qualified.txt.
 
 common.conf     Sample file for common options.

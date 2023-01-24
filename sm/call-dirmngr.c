@@ -64,6 +64,8 @@ struct isvalid_status_parm_s {
   ctrl_t ctrl;
   int seen;
   unsigned char fpr[20];
+  gnupg_isotime_t revoked_at;
+  char *revocation_reason;  /* malloced or NULL */
 };
 
 
@@ -491,6 +493,19 @@ isvalid_status_cb (void *opaque, const char *line)
       if (!*s || !unhexify_fpr (s, parm->fpr))
         parm->seen++; /* Bump it to indicate an error. */
     }
+  else if ((s = has_leading_keyword (line, "REVOCATIONINFO")))
+    {
+      if (*s && strlen (s) >= 15)
+        {
+          memcpy (parm->revoked_at, s, 15);
+          parm->revoked_at[15] = 0;
+        }
+      s += 15;
+      while (*s && spacep (s))
+        s++;
+      xfree (parm->revocation_reason);
+      parm->revocation_reason = *s? xtrystrdup (s) : NULL;
+    }
   else if (warning_and_note_printer (line))
     {
     }
@@ -510,12 +525,17 @@ isvalid_status_cb (void *opaque, const char *line)
 
   Values for USE_OCSP:
      0 = Do CRL check.
-     1 = Do an OCSP check but fallback to CRL unless CRLS are disabled.
-     2 = Do only an OCSP check using only the default responder.
+     1 = Do an OCSP check but fallback to CRL unless CRLs are disabled.
+     2 = Do only an OCSP check (used for the chain model).
+
+   If R_REVOKED_AT pr R_REASON are not NULL and the certificate has
+   been revoked the revocation time and the reason are copied to there.
+   The caller needs to free R_REASON.
  */
-int
+gpg_error_t
 gpgsm_dirmngr_isvalid (ctrl_t ctrl,
-                       ksba_cert_t cert, ksba_cert_t issuer_cert, int use_ocsp)
+                       ksba_cert_t cert, ksba_cert_t issuer_cert, int use_ocsp,
+                       gnupg_isotime_t r_revoked_at, char **r_reason)
 {
   static int did_options;
   int rc;
@@ -523,6 +543,11 @@ gpgsm_dirmngr_isvalid (ctrl_t ctrl,
   char line[ASSUAN_LINELENGTH];
   struct inq_certificate_parm_s parm;
   struct isvalid_status_parm_s stparm;
+
+  if (r_revoked_at)
+    *r_revoked_at = 0;
+  if (r_reason)
+    *r_reason = NULL;
 
   rc = start_dirmngr (ctrl);
   if (rc)
@@ -553,6 +578,8 @@ gpgsm_dirmngr_isvalid (ctrl_t ctrl,
   stparm.ctrl = ctrl;
   stparm.seen = 0;
   memset (stparm.fpr, 0, 20);
+  stparm.revoked_at[0] = 0;
+  stparm.revocation_reason = NULL;
 
   /* It is sufficient to send the options only once because we have
    * one connection per process only.  */
@@ -563,9 +590,8 @@ gpgsm_dirmngr_isvalid (ctrl_t ctrl,
                          NULL, NULL, NULL, NULL, NULL, NULL);
       did_options = 1;
     }
-  snprintf (line, DIM(line), "ISVALID%s%s %s%s%s",
-            use_ocsp == 2 || opt.no_crl_check ? " --only-ocsp":"",
-            use_ocsp == 2? " --force-default-responder":"",
+  snprintf (line, DIM(line), "ISVALID%s %s%s%s",
+            (use_ocsp == 2 || opt.no_crl_check) ? " --only-ocsp":"",
             certid,
             use_ocsp? " ":"",
             use_ocsp? certfpr:"");
@@ -577,6 +603,19 @@ gpgsm_dirmngr_isvalid (ctrl_t ctrl,
                         isvalid_status_cb, &stparm);
   if (opt.verbose > 1)
     log_info ("response of dirmngr: %s\n", rc? gpg_strerror (rc): "okay");
+
+  if (gpg_err_code (rc) == GPG_ERR_CERT_REVOKED
+      && !check_isotime (stparm.revoked_at))
+    {
+      if (r_revoked_at)
+        gnupg_copy_time (r_revoked_at, stparm.revoked_at);
+      if (r_reason)
+        {
+          *r_reason = stparm.revocation_reason;
+          stparm.revocation_reason = NULL;
+        }
+
+    }
 
   if (!rc && stparm.seen)
     {
@@ -635,7 +674,9 @@ gpgsm_dirmngr_isvalid (ctrl_t ctrl,
           ksba_cert_release (rspcert);
         }
     }
+
   release_dirmngr (ctrl);
+  xfree (stparm.revocation_reason);
   return rc;
 }
 

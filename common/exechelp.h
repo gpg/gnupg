@@ -249,6 +249,9 @@ struct spawn_cb_arg {
 
 #define GNUPG_PROCESS_STREAM_NONBLOCK     (1 << 16)
 
+/* Spawn helper.  */
+void gnupg_spawn_helper (struct spawn_cb_arg *sca);
+
 /* Spawn PGMNAME.  */
 gpg_err_code_t gnupg_process_spawn (const char *pgmname, const char *argv[],
                                     unsigned int flags,

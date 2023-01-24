@@ -24,7 +24,7 @@
 # Location of the released tarball archives.  This is prefixed by
 # the variable RELEASE_ARCHIVE in ~/.gnupg-autogen.rc.  For example:
 # RELEASE_ARCHIVE=user@host:archive/tarballs
-RELEASE_ARCHIVE_SUFFIX  = gnupg/v2.3
+RELEASE_ARCHIVE_SUFFIX  = gnupg/v2.4
 # The variable RELEASE_SIGNKEY in ~/.gnupg-autogen.rc is used
 # to specify the key for signing.  For example:
 # RELEASE_SIGNKEY=D8692123C4065DEA5E0F3AB5249B39D24F25E3B6
@@ -238,11 +238,26 @@ release:
 	 ./autogen.sh --force; \
 	 cd $(abs_top_builddir); \
 	 rm -rf dist; mkdir dist ; cd dist ; \
+         mkopt=""; \
+	 if [ -n "$$CUSTOM_SWDB" ]; then \
+            mkopt="CUSTOM_SWB=1"; \
+	    x=$$(grep '^OVERRIDE_TARBALLS=' \
+                 $$HOME/.gnupg-autogen.rc|cut -d= -f2);\
+	    if [ -f "$$x/swdb.lst" ]; then \
+	      echo "/* Copying swdb.lst from the overrides directory */"; \
+              cp "$$x/swdb.lst" . ; \
+              cp "$$x/swdb.lst.sig" . ; \
+	    fi; \
+	 fi; \
+	 echo "/* Running configure */";\
 	 $(abs_top_srcdir)/configure --enable-maintainer-mode; \
+	 echo "/* Running make distcheck */";\
 	 $(MAKE) distcheck TESTFLAGS=--parallel; \
+	 echo "/* Unpacking release */";\
 	 $(AMTAR) xjf $(RELEASE_NAME).tar.bz2 ;\
 	 target=w32-release ;\
 	 [ -n "$(WITH_MSI)" ] && target=w32-msi-release ;\
+	 echo "/* Running $(MAKE) -f  $(RELEASE_NAME)/build-aux/speedo.mk $${target} */";\
 	 $(MAKE) -f  $(RELEASE_NAME)/build-aux/speedo.mk $${target} ;\
 	 echo "/* Build finished at $$(date -uIseconds) */" ;\
 	 echo "/*" ;\

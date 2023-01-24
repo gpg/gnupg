@@ -311,16 +311,16 @@ Use @var{name} as your keyserver.  This is the server that @command{gpg}
 communicates with to receive keys, send keys, and search for
 keys.  The format of the @var{name} is a URI:
 `scheme:[//]keyservername[:port]' The scheme is the type of keyserver:
-"hkp" for the HTTP (or compatible) keyservers, "ldap" for the LDAP
-keyservers, or "mailto" for the Graff email keyserver. Note that your
-particular installation of GnuPG may have other keyserver types
-available as well. Keyserver schemes are case-insensitive. After the
-keyserver name, optional keyserver configuration options may be
-provided.  These are the same as the @option{--keyserver-options} of
-@command{gpg}, but apply only to this particular keyserver.
+"hkp" for the HTTP (or compatible) keyservers or "ldap" for the LDAP
+keyservers. Note that your particular installation of GnuPG may have
+other keyserver types available as well. Keyserver schemes are
+case-insensitive. After the keyserver name, optional keyserver
+configuration options may be provided.  These are the same as the
+@option{--keyserver-options} of @command{gpg}, but apply only to this
+particular keyserver.
 
-Most keyservers synchronize with each other, so there is generally no
-need to send keys to more than one server. Somes keyservers use round
+Some keyservers synchronize with each other, so there is not always a
+need to send keys to more than one server. Some keyservers use round
 robin DNS to give a different keyserver each time you use it.
 
 If exactly two keyservers are configured and only one is a Tor hidden
@@ -751,7 +751,7 @@ allow-ocsp
 To make sure that new options are read or that after the installation
 of a new GnuPG versions the right dirmngr version is running, you
 should kill an existing dirmngr so that a new instance is started as
-needed by the otehr components:
+needed by the other components:
 
 @example
 gpgconf --kill dirmngr

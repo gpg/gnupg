@@ -1110,6 +1110,20 @@ spawn_detached (gnupg_process_t process,
   return 0;
 }
 
+void
+gnupg_spawn_helper (struct spawn_cb_arg *sca)
+{
+  int *user_except = sca->arg;
+#ifdef HAVE_W32_SYSTEM
+  if (user_except[0] == -1)
+    sca->ask_inherit = 0;
+  else
+    sca->ask_inherit = 1;
+#else
+  sca->except_fds = user_except;
+#endif
+}
+
 gpg_err_code_t
 gnupg_process_spawn (const char *pgmname, const char *argv1[],
                      unsigned int flags,
