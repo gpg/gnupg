@@ -499,17 +499,27 @@ main (int argc, char **argv)
 
   switch (cmd)
     {
+    case aDecrypt:
     case aList:
       if (argc > 1)
         gpgrt_usage (1);
-      fname = argc ? *argv : NULL;
+      fname = (argc && strcmp (*argv, "-"))? *argv : NULL;
       if (opt.filename)
         log_info ("note: ignoring option --set-filename\n");
       if (files_from)
         log_info ("note: ignoring option --files-from\n");
-      err = gpgtar_list (fname, !skip_crypto);
-      if (err && log_get_errorcount (0) == 0)
-        log_error ("listing archive failed: %s\n", gpg_strerror (err));
+      if (cmd == aDecrypt)
+        {
+          err = gpgtar_extract (fname, !skip_crypto);
+          if (err && !log_get_errorcount (0))
+            log_error ("extracting archive failed: %s\n", gpg_strerror (err));
+        }
+      else
+        {
+          err = gpgtar_list (fname, !skip_crypto);
+          if (err && !log_get_errorcount (0))
+            log_error ("listing archive failed: %s\n", gpg_strerror (err));
+        }
       break;
 
     case aEncrypt:
@@ -528,19 +538,6 @@ main (int argc, char **argv)
                            cmd == aSign || cmd == aSignEncrypt);
       if (err && log_get_errorcount (0) == 0)
         log_error ("creating archive failed: %s\n", gpg_strerror (err));
-      break;
-
-    case aDecrypt:
-      if (argc != 1)
-        gpgrt_usage (1);
-      if (opt.outfile)
-        log_info ("note: ignoring option --output\n");
-      if (files_from)
-        log_info ("note: ignoring option --files-from\n");
-      fname = argc ? *argv : NULL;
-      err = gpgtar_extract (fname, !skip_crypto);
-      if (err && log_get_errorcount (0) == 0)
-        log_error ("extracting archive failed: %s\n", gpg_strerror (err));
       break;
 
     default:
