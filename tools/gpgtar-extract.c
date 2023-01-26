@@ -198,6 +198,8 @@ extract_directory (const char *dirname, tar_header_t hdr, strlist_t exthdr)
             {
               *p = 0;
               rc = gnupg_mkdir (fname, "-rwx------");
+              if (gpg_err_code (rc) == GPG_ERR_EEXIST)
+                rc = 0;
               *p = '/';
               if (rc)
                 break;
