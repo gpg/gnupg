@@ -9,9 +9,9 @@
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: gnupg 2.2.37\n"
+"Project-Id-Version: gnupg 2.2.40\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"PO-Revision-Date: 2022-09-01 14:50+0900\n"
+"PO-Revision-Date: 2023-01-26 15:20+0900\n"
 "Last-Translator: NIIBE Yutaka <gniibe@fsij.org>\n"
 "Language-Team: none\n"
 "Language: ja\n"
@@ -390,13 +390,13 @@ msgid "ignore requests to change the X display"
 msgstr "Xディスプレイの変更要求を無視する"
 
 msgid "enable ssh support"
-msgstr "sshサポートを有功にする"
+msgstr "sshサポートを有効にする"
 
 msgid "|ALGO|use ALGO to show ssh fingerprints"
 msgstr "|ALGO|ssh署名の表示にALGOを使う"
 
 msgid "enable putty support"
-msgstr "puttyサポートを有功にする"
+msgstr "puttyサポートを有効にする"
 
 msgid "Options controlling the security"
 msgstr "セキュリティを制御するオプション"
@@ -1788,15 +1788,13 @@ msgstr ""
 msgid "error creating passphrase: %s\n"
 msgstr "パスフレーズの作成エラー: %s\n"
 
-#, fuzzy, c-format
-#| msgid "can't use a symmetric ESK packet due to the S2K mode\n"
+#, c-format
 msgid "can't use a SKESK packet due to the S2K mode\n"
-msgstr "S2Kモードのため、共通鍵ESKパケットを使えません\n"
+msgstr "S2Kモードのため、SKESKパケットを使えません\n"
 
-#, fuzzy, c-format
-#| msgid "using cipher %s\n"
+#, c-format
 msgid "using cipher %s.%s\n"
-msgstr "暗号方式 %s を使います\n"
+msgstr "暗号方式 %s.%s を使います\n"
 
 #, c-format
 msgid "'%s' already compressed\n"
@@ -1829,10 +1827,9 @@ msgid ""
 msgstr ""
 "*警告*: 圧縮アルゴリズム %s (%d) の強制が、受取人の優先指定をそむきます\n"
 
-#, fuzzy, c-format
-#| msgid "%s/%s encrypted for: \"%s\"\n"
+#, c-format
 msgid "%s/%s.%s encrypted for: \"%s\"\n"
-msgstr "%s/%s暗号化 受信者:\"%s\"\n"
+msgstr "%s/%s.%s 暗号化 受信者:\"%s\"\n"
 
 #, c-format
 msgid "option '%s' may not be used in %s mode\n"
@@ -1918,10 +1915,8 @@ msgstr "エクスポートの際、利用できない部分を除去する"
 msgid "remove as much as possible from key during export"
 msgstr "エクスポートの際、できるだけ除去する"
 
-#, fuzzy
-#| msgid "generate a revocation certificate"
 msgid "export only revocation certificates"
-msgstr "失効証明書を生成"
+msgstr "失効証明書だけをエクスポートする"
 
 msgid "use the GnuPG key backup format"
 msgstr "GnuPGの鍵のバックアップフォーマットを使います"
@@ -2356,10 +2351,8 @@ msgstr "鍵の一覧に鍵リングの名前を表示する"
 msgid "show expiration dates during signature listings"
 msgstr "署名の一覧時に有効期限の日付を表示する"
 
-#, fuzzy
-#| msgid "list preferences (expert)"
 msgid "show preferences"
-msgstr "優先指定の一覧 (エキスパート)"
+msgstr "優先指定の表示"
 
 #, c-format
 msgid "unknown TOFU policy '%s'\n"
@@ -6269,10 +6262,8 @@ msgstr "RSAのモジュラスがないか、%dビットのものではありま�
 msgid "RSA public exponent missing or larger than %d bits\n"
 msgstr "RSA公開指数がないか %d ビットより大きすぎます\n"
 
-#, fuzzy
-#| msgid "the NullPIN has not yet been changed\n"
 msgid "Note: PIN has not yet been enabled."
-msgstr "NullPINが変更されていません\n"
+msgstr "注意: PINが有効となっていません。"
 
 #, c-format
 msgid "PIN callback returned error: %s\n"
@@ -7267,10 +7258,9 @@ msgstr "署名者 %dのために使われたハッシュアルゴリズム: %s (
 msgid "checking for qualified certificate failed: %s\n"
 msgstr "適正な認定証明書の検査に失敗しました: %s\n"
 
-#, fuzzy, c-format
-#| msgid "Signature made %s using %s key ID %s\n"
+#, c-format
 msgid "%s/%s signature using %s key %s\n"
-msgstr "%sに%s鍵ID %sで施された署名\n"
+msgstr "%s/%s 件の %s の鍵 %s でなされた署名\n"
 
 #, c-format
 msgid "Signature made "
