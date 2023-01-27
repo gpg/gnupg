@@ -314,6 +314,7 @@ define(GNUPG_CHECK_IPC,
              #include <sys/types.h>
              #include <sys/ipc.h>
              #include <sys/shm.h>
+             #include <stdlib.h>
              int main()
              {
                int id;
