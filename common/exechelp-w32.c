@@ -1202,6 +1202,17 @@ spawn_detached (gnupg_process_t process,
 }
 
 
+void
+gnupg_spawn_helper (struct spawn_cb_arg *sca)
+{
+  int *user_except = sca->arg;
+
+  if (user_except[0] == -1)
+    sca->ask_inherit = 0;
+  else
+    sca->ask_inherit = 1;
+}
+
 gpg_err_code_t
 gnupg_process_spawn (const char *pgmname, const char *argv[],
                      unsigned int flags,
