@@ -45,6 +45,7 @@ struct
   int answer_yes;
   int answer_no;
   int status_fd;
+  estream_t status_stream;
   int require_compliance;
   int with_log;
 } opt;

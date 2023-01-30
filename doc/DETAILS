@@ -1151,7 +1151,13 @@ pkd:0:1024:B665B1435F4C2 .... FF26ABB:
            - learncard :: Send by the agent and gpgsm while learing
                           the data of a smartcard.
            - card_busy :: A smartcard is still working
-           - scd_locked :: Waiting for other clients to unlock the scdaemon
+           - scd_locked :: Waiting for other clients to unlock the
+                           scdaemon
+           - gpgtar :: Here <char> has a special meaning: 's'
+                       indicates total size and 'c' file count.  A
+                       <total> of zero indicates that gpgtar is in the
+                       scanning phase.  A positive <total> is used in
+                       the writing phase.
 
     When <what> refers to a file path, it may be truncated.
 

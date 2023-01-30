@@ -1,5 +1,5 @@
 /* gpgtar-create.c - Create a TAR archive
- * Copyright (C) 2016-2017, 2019-2022 g10 Code GmbH
+ * Copyright (C) 2016-2017, 2019-2023 g10 Code GmbH
  * Copyright (C) 2010, 2012, 2013 Werner Koch
  * Copyright (C) 2010 Free Software Foundation, Inc.
  *
@@ -49,10 +49,19 @@
 #define lstat(a,b) gnupg_stat ((a), (b))
 #endif
 
+/* Number of files to be write.  */
+static unsigned long global_total_files;
 
-/* Count the number of written headers.  Extended headers are not
- * counted. */
-static unsigned long global_header_count;
+/* Count the number of written file and thus headers.  Extended
+ * headers are not counted. */
+static unsigned long global_written_files;
+
+/* Total data expected to be written.  */
+static unsigned long long global_total_data;
+
+/* Number of data bytes written so far.  */
+static unsigned long long global_written_data;
+
 
 
 /* Object to control the file scanning.  */
@@ -62,9 +71,61 @@ struct scanctrl_s
 {
   tar_header_t flist;
   tar_header_t *flist_tail;
+  unsigned long file_count;
   int nestlevel;
 };
 
+
+/* See ../g10/progress.c:write_status_progress for some background.  */
+static void
+write_progress (int countmode, unsigned long long current,
+                unsigned long long total_arg)
+{
+  char units[] = "BKMGTPEZY?";
+  int unitidx = 0;
+  uint64_t total = total_arg;
+
+  if (!opt.status_stream)
+    return;  /* Not enabled.  */
+
+  if (countmode)
+    {
+      if (total && current > total)
+        current = total;
+    }
+  else if (total)  /* Size mode: This may use units.  */
+    {
+      if (current > total)
+        current = total;
+
+      while (total > 1024*1024)
+        {
+          total /= 1024;
+          current /= 1024;
+          unitidx++;
+        }
+    }
+  else /* Size mode */
+    {
+      while (current > 1024*1024)
+        {
+          current /= 1024;
+          unitidx++;
+        }
+    }
+
+  if (unitidx > sizeof units - 1)
+    unitidx = sizeof units - 1;
+
+  if (countmode)
+    es_fprintf (opt.status_stream, "[GNUPG:] PROGRESS gpgtar c %zu %zu\n",
+                (size_t)current, (size_t)total);
+  else
+    es_fprintf (opt.status_stream, "[GNUPG:] PROGRESS gpgtar s %zu %zu %c%s\n",
+                (size_t)current, (size_t)total,
+                units[unitidx],
+                unitidx? "iB" : "");
+}
 
 
 /* On Windows convert name to UTF8 and return it; caller must release
@@ -300,6 +361,12 @@ add_entry (const char *dname, const char *entryname, scanctrl_t scanctrl)
         gpgtar_print_header (hdr, NULL, log_get_stream ());
       *scanctrl->flist_tail = hdr;
       scanctrl->flist_tail = &hdr->next;
+      scanctrl->file_count++;
+      /* Print a progress line during scnanning in increments of 5000
+       * and not of 100 as we doing during write: Scanning is of
+       * course much faster.  */
+      if (!(scanctrl->file_count % 5000))
+        write_progress (1, scanctrl->file_count, 0);
     }
 
   return 0;
@@ -709,7 +776,7 @@ build_header (void *record, tar_header_t hdr, strlist_t *r_exthdr)
            * will do.  To ease testing we also put in the PID.  The
            * count is bumped after the header has been written.  */
           snprintf (raw->name, sizeof raw->name-1, "_@paxheader.%u.%lu",
-                    (unsigned int)getpid(), global_header_count + 1);
+                    (unsigned int)getpid(), global_written_files + 1);
         }
     }
 
@@ -881,7 +948,7 @@ write_extended_header (estream_t stream, const void *record, strlist_t exthdr)
 
 
 static gpg_error_t
-write_file (estream_t stream, tar_header_t hdr)
+write_file (estream_t stream, tar_header_t hdr, unsigned int *skipped_open)
 {
   gpg_error_t err;
   char record[RECORDSIZE];
@@ -895,7 +962,7 @@ write_file (estream_t stream, tar_header_t hdr)
     {
       if (gpg_err_code (err) == GPG_ERR_NOT_SUPPORTED)
         {
-          log_info ("skipping unsupported file '%s'\n", hdr->name);
+          log_info ("silently skipping unsupported file '%s'\n", hdr->name);
           err = 0;
         }
       return err;
@@ -907,9 +974,12 @@ write_file (estream_t stream, tar_header_t hdr)
       if (!infp)
         {
           err = gpg_error_from_syserror ();
-          log_error ("can't open '%s': %s - skipped\n",
+          log_info ("can't open '%s': %s - skipped\n",
                      hdr->name, gpg_strerror (err));
-          return err;
+          ++*skipped_open;
+          if (!*skipped_open) /* Protect against overflow.  */
+            --*skipped_open;
+          return 0;
         }
     }
   else
@@ -920,7 +990,9 @@ write_file (estream_t stream, tar_header_t hdr)
   err = write_record (stream, record);
   if (err)
     goto leave;
-  global_header_count++;
+  global_written_files++;
+  if (!(global_written_files % 100))
+    write_progress (1, global_written_files, global_total_files);
 
   if (hdr->typeflag == TF_REGULAR)
     {
@@ -946,6 +1018,9 @@ write_file (estream_t stream, tar_header_t hdr)
           err = write_record (stream, record);
           if (err)
             goto leave;
+          global_written_data += nbytes;
+          if (!((global_written_data/nbytes) % (2048*100)))
+            write_progress (0, global_written_data, global_total_data);
         }
       nread = es_fread (record, 1, 1, infp);
       if (nread)
@@ -995,6 +1070,7 @@ gpgtar_create (char **inpattern, const char *files_from, int null_names,
   estream_t outstream = NULL;
   int eof_seen = 0;
   pid_t pid = (pid_t)(-1);
+  unsigned int skipped_open = 0;
 
   memset (scanctrl, 0, sizeof *scanctrl);
   scanctrl->flist_tail = &scanctrl->flist;
@@ -1137,6 +1213,17 @@ gpgtar_create (char **inpattern, const char *files_from, int null_names,
   if (files_from_stream && files_from_stream != es_stdin)
     es_fclose (files_from_stream);
 
+  global_total_files = global_total_data = 0;
+  global_written_files = global_written_data = 0;
+  for (hdr = scanctrl->flist; hdr; hdr = hdr->next)
+    {
+      global_total_files++;
+      global_total_data += hdr->size;
+    }
+  write_progress (1, 0, global_total_files);
+  write_progress (0, 0, global_total_data);
+
+
   if (encrypt || sign)
     {
       strlist_t arg;
@@ -1228,17 +1315,20 @@ gpgtar_create (char **inpattern, const char *files_from, int null_names,
       es_set_binary (outstream);
     }
 
-
+  skipped_open = 0;
   for (hdr = scanctrl->flist; hdr; hdr = hdr->next)
     {
-      err = write_file (outstream, hdr);
+      err = write_file (outstream, hdr, &skipped_open);
       if (err)
         goto leave;
     }
+
   err = write_eof_mark (outstream);
   if (err)
     goto leave;
 
+  write_progress (1, global_written_files, global_total_files);
+  write_progress (0, global_written_data, global_total_data);
 
   if (pid != (pid_t)(-1))
     {
@@ -1257,6 +1347,12 @@ gpgtar_create (char **inpattern, const char *files_from, int null_names,
           gnupg_release_process (pid);
           pid = (pid_t)(-1);
         }
+    }
+
+  if (skipped_open)
+    {
+      log_info ("number of skipped files: %u\n", skipped_open);
+      log_error ("exiting with failure status due to previous errors\n");
     }
 
  leave:

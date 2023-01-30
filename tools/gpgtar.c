@@ -491,6 +491,32 @@ main (int argc, char **argv)
           log_info (_("NOTE: '%s' is not considered an option\n"), argv[i]);
     }
 
+  /* Set status stream for our own use of --status-fd.  The original
+   * status fd is passed verbatim to gpg.  */
+  if (opt.status_fd)
+    {
+      int fd = translate_sys2libc_fd_int (opt.status_fd, 1);
+
+      if (!gnupg_fd_valid (fd))
+        log_fatal ("status-fd is invalid: %s\n", strerror (errno));
+
+      if (fd == 1)
+        opt.status_stream = es_stdout;
+      else if (fd == 2)
+        opt.status_stream = es_stderr;
+      else
+        {
+          opt.status_stream = es_fdopen (fd, "w");
+          if (opt.status_stream)
+            es_setvbuf (opt.status_stream, NULL, _IOLBF, 0);
+        }
+      if (!opt.status_stream)
+        {
+          log_fatal ("can't open fd %d for status output: %s\n",
+                     fd, strerror (errno));
+        }
+    }
+
   if (! opt.gpg_program)
     opt.gpg_program = gnupg_module_name (GNUPG_MODULE_NAME_GPG);
 
