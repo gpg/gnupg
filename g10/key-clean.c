@@ -35,14 +35,19 @@
 #include "key-clean.h"
 
 
+#define NF_USABLE     8  /* Usable signature and not a revocation.    */
+#define NF_CONSIDER   9  /* Internal use.  */
+#define NF_PROCESSED 10  /* Internal use.  */
+#define NF_REVOC     11  /* Usable revocation.   */
+#define NF_NOKEY     12  /* Key not available.   */
+
 /*
  * Mark the signature of the given UID which are used to certify it.
  * To do this, we first remove all signatures which are not valid and
  * from the remaining we look for the latest one.  If this is not a
  * certification revocation signature we mark the signature by setting
- * node flag bit 8.  Revocations are marked with flag 11, and sigs
- * from unavailable keys are marked with flag 12.  Note that flag bits
- * 9 and 10 are used for internal purposes.
+ * node flag bit NF_USABLE.  Revocations are marked with NF_REVOC, and
+ * sigs from unavailable keys are marked with NF_NOKEY.
  */
 void
 mark_usable_uid_certs (ctrl_t ctrl, kbnode_t keyblock, kbnode_t uidnode,
@@ -57,7 +62,8 @@ mark_usable_uid_certs (ctrl_t ctrl, kbnode_t keyblock, kbnode_t uidnode,
     {
       int rc;
 
-      node->flag &= ~(1<<8 | 1<<9 | 1<<10 | 1<<11 | 1<<12);
+      node->flag &= ~(1<<NF_USABLE | 1<<NF_CONSIDER
+                      | 1<<NF_PROCESSED | 1<<NF_REVOC | 1<<NF_NOKEY);
       if (node->pkt->pkttype == PKT_USER_ID
           || node->pkt->pkttype == PKT_PUBLIC_SUBKEY
           || node->pkt->pkttype == PKT_SECRET_SUBKEY)
@@ -81,19 +87,20 @@ mark_usable_uid_certs (ctrl_t ctrl, kbnode_t keyblock, kbnode_t uidnode,
 	  /* we ignore anything that won't verify, but tag the
 	     no_pubkey case */
 	  if (gpg_err_code (rc) == GPG_ERR_NO_PUBKEY)
-            node->flag |= 1<<12;
+            node->flag |= 1<<NF_NOKEY;
           continue;
         }
-      node->flag |= 1<<9;
+      node->flag |= 1<<NF_CONSIDER;
     }
   /* Reset the remaining flags. */
   for (; node; node = node->next)
-    node->flag &= ~(1<<8 | 1<<9 | 1<<10 | 1<<11 | 1<<12);
+    node->flag &= ~(1<<NF_USABLE | 1<<NF_CONSIDER
+                    | 1<<NF_PROCESSED | 1<<NF_REVOC | 1<<NF_NOKEY);
 
-  /* kbnode flag usage: bit 9 is here set for signatures to consider,
-   * bit 10 will be set by the loop to keep track of keyIDs already
-   * processed, bit 8 will be set for the usable signatures, and bit
-   * 11 will be set for usable revocations. */
+  /* kbnode flag usage: bit NF_CONSIDER is here set for signatures to consider,
+   * bit NF_PROCESSED will be set by the loop to keep track of keyIDs already
+   * processed, bit NF_USABLE will be set for the usable signatures, and bit
+   * NF_REVOC will be set for usable revocations. */
 
   /* For each cert figure out the latest valid one.  */
   for (node=uidnode->next; node; node = node->next)
@@ -105,11 +112,11 @@ mark_usable_uid_certs (ctrl_t ctrl, kbnode_t keyblock, kbnode_t uidnode,
       if (node->pkt->pkttype == PKT_PUBLIC_SUBKEY
           || node->pkt->pkttype == PKT_SECRET_SUBKEY)
         break;
-      if ( !(node->flag & (1<<9)) )
+      if ( !(node->flag & (1<<NF_CONSIDER)) )
         continue; /* not a node to look at */
-      if ( (node->flag & (1<<10)) )
+      if ( (node->flag & (1<<NF_PROCESSED)) )
         continue; /* signature with a keyID already processed */
-      node->flag |= (1<<10); /* mark this node as processed */
+      node->flag |= (1<<NF_PROCESSED); /* mark this node as processed */
       sig = node->pkt->pkt.signature;
       signode = node;
       sigdate = sig->timestamp;
@@ -121,14 +128,14 @@ mark_usable_uid_certs (ctrl_t ctrl, kbnode_t keyblock, kbnode_t uidnode,
           if (n->pkt->pkttype == PKT_PUBLIC_SUBKEY
               || n->pkt->pkttype == PKT_SECRET_SUBKEY)
             break;
-          if ( !(n->flag & (1<<9)) )
+          if ( !(n->flag & (1<<NF_CONSIDER)) )
             continue;
-          if ( (n->flag & (1<<10)) )
+          if ( (n->flag & (1<<NF_PROCESSED)) )
             continue; /* shortcut already processed signatures */
           sig = n->pkt->pkt.signature;
           if (kid[0] != sig->keyid[0] || kid[1] != sig->keyid[1])
             continue;
-          n->flag |= (1<<10); /* mark this node as processed */
+          n->flag |= (1<<NF_PROCESSED); /* mark this node as processed */
 
 	  /* If signode is nonrevocable and unexpired and n isn't,
              then take signode (skip).  It doesn't matter which is
@@ -197,13 +204,13 @@ mark_usable_uid_certs (ctrl_t ctrl, kbnode_t keyblock, kbnode_t uidnode,
 
           if (expire==0 || expire > curtime )
             {
-              signode->flag |= (1<<8); /* yeah, found a good cert */
+              signode->flag |= (1<<NF_USABLE); /* yeah, found a good cert */
               if (next_expire && expire && expire < *next_expire)
                 *next_expire = expire;
             }
         }
       else
-	signode->flag |= (1<<11);
+	signode->flag |= (1<<NF_REVOC);
     }
 }
 
@@ -231,12 +238,13 @@ clean_sigs_from_uid (ctrl_t ctrl, kbnode_t keyblock, kbnode_t uidnode,
      signatures are out, as are any signatures that aren't the last of
      a series of uid sigs or revocations It breaks down like this:
      coming out of mark_usable_uid_certs, if a sig is unflagged, it is
-     not even a candidate.  If a sig has flag 9 or 10, that means it
-     was selected as a candidate and vetted.  If a sig has flag 8 it
-     is a usable signature.  If a sig has flag 11 it is a usable
-     revocation.  If a sig has flag 12 it was issued by an unavailable
-     key.  "Usable" here means the most recent valid
-     signature/revocation in a series from a particular signer.
+     not even a candidate.  If a sig has flag NF_CONSIDER or
+     NF_PROCESSED, that means it was selected as a candidate and
+     vetted.  If a sig has flag NF_USABLE it is a usable signature.
+     If a sig has flag NF_REVOC it is a usable revocation.  If a sig
+     has flag NF_NOKEY it was issued by an unavailable key.  "Usable"
+     here means the most recent valid signature/revocation in a series
+     from a particular signer.
 
      Delete everything that isn't a usable uid sig (which might be
      expired), a usable revocation, or a sig from an unavailable
@@ -252,34 +260,34 @@ clean_sigs_from_uid (ctrl_t ctrl, kbnode_t keyblock, kbnode_t uidnode,
                          && node->pkt->pkt.signature->keyid[1] == keyid[1]) : 1;
 
       /* Keep usable uid sigs ... */
-      if ((node->flag & (1<<8)) && keep)
+      if ((node->flag & (1<<NF_USABLE)) && keep)
 	continue;
 
       /* ... and usable revocations... */
-      if ((node->flag & (1<<11)) && keep)
+      if ((node->flag & (1<<NF_REVOC)) && keep)
 	continue;
 
       /* ... and sigs from unavailable keys. */
       /* disabled for now since more people seem to want sigs from
 	 unavailable keys removed altogether.  */
       /*
-	if(node->flag & (1<<12))
+	if(node->flag & (1<<NF_NOKEY))
 	continue;
       */
 
       /* Everything else we delete */
 
-      /* At this point, if 12 is set, the signing key was unavailable.
-	 If 9 or 10 is set, it's superseded.  Otherwise, it's
-	 invalid. */
+      /* At this point, if NF_NOKEY is set, the signing key was
+       * unavailable.  If NF_CONSIDER or NF_PROCESSED is set, it's
+       * superseded.  Otherwise, it's invalid.  */
 
       if (noisy)
 	log_info ("removing signature from key %s on user ID \"%s\": %s\n",
                   keystr (node->pkt->pkt.signature->keyid),
                   uidnode->pkt->pkt.user_id->name,
-                  node->flag&(1<<12)? "key unavailable":
-                  node->flag&(1<<9)?  "signature superseded"
-                  /* */               :"invalid signature"  );
+                  node->flag&(1<<NF_NOKEY)?    "key unavailable":
+                  node->flag&(1<<NF_CONSIDER)? "signature superseded"
+                  /* */                      : "invalid signature"  );
 
       delete_kbnode (node);
       deleted++;
