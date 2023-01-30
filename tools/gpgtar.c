@@ -493,7 +493,7 @@ main (int argc, char **argv)
 
   /* Set status stream for our own use of --status-fd.  The original
    * status fd is passed verbatim to gpg.  */
-  if (opt.status_fd)
+  if (opt.status_fd != -1)
     {
       int fd = translate_sys2libc_fd_int (opt.status_fd, 1);
 
