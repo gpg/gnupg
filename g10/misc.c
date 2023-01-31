@@ -1563,9 +1563,10 @@ parse_options(char *str,unsigned int *options,
 {
   char *tok;
 
-  if (str && !strcmp (str, "help"))
+  if (str && (!strcmp (str, "help") || !strcmp (str, "full-help")))
     {
       int i,maxlen=0;
+      int full = *str == 'f';
 
       /* Figure out the longest option name so we can line these up
 	 neatly. */
@@ -1577,6 +1578,10 @@ parse_options(char *str,unsigned int *options,
         if(opts[i].help)
 	  es_printf("%s%*s%s\n",opts[i].name,
                     maxlen+2-(int)strlen(opts[i].name),"",_(opts[i].help));
+      if (full)
+        for (i=0; opts[i].name; i++)
+          if(!opts[i].help)
+            es_printf("%s\n",opts[i].name);
 
       g10_exit(0);
     }
