@@ -2047,6 +2047,8 @@ parse_list_options(char *str)
   char *subpackets=""; /* something that isn't NULL */
   struct parse_options lopts[]=
     {
+      {"show-sig-subpackets",LIST_SHOW_SIG_SUBPACKETS,NULL,
+       NULL},
       {"show-photos",LIST_SHOW_PHOTOS,NULL,
        N_("display photo IDs during key listings")},
       {"show-usage",LIST_SHOW_USAGE,NULL,
@@ -2077,20 +2079,25 @@ parse_list_options(char *str)
        N_("show preferences")},
       {"show-pref-verbose", LIST_SHOW_PREF_VERBOSE, NULL,
        N_("show preferences")},
-      {"show-sig-subpackets",LIST_SHOW_SIG_SUBPACKETS,NULL,
-       NULL},
       {"show-only-fpr-mbox",LIST_SHOW_ONLY_FPR_MBOX, NULL,
        NULL},
       {"sort-sigs", LIST_SORT_SIGS, NULL,
        NULL},
       {NULL,0,NULL,NULL}
     };
+  int i;
 
   /* C99 allows for non-constant initializers, but we'd like to
      compile everywhere, so fill in the show-sig-subpackets argument
      here.  Note that if the parse_options array changes, we'll have
-     to change the subscript here. */
-  lopts[13].value=&subpackets;
+     to change the subscript here.  We use a loop here in case the
+     list above is reordered.  */
+  for (i=0; lopts[i].name; i++)
+    if (lopts[i].bit == LIST_SHOW_SIG_SUBPACKETS)
+      {
+        lopts[i].value = &subpackets;
+        break;
+      }
 
   if(parse_options(str,&opt.list_options,lopts,1))
     {
