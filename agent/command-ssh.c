@@ -231,6 +231,22 @@ struct ssh_control_file_s
 };
 
 
+/* Two objects definition to hold keys for later sorting.  */
+struct key_collection_item_s
+{
+  gcry_sexp_t key;  /* Public key. (owned by us)                        */
+  char *cardsn;     /* Serial number of a card or NULL. (owned by us)   */
+  int order;        /* Computed ordinal                                 */
+};
+
+struct key_collection_s
+{
+  struct key_collection_item_s *items;
+  size_t allocated;
+  size_t nitems;
+};
+
+
 /* Prototypes.  */
 static gpg_error_t ssh_handler_request_identities (ctrl_t ctrl,
 						   estream_t request,
@@ -1030,10 +1046,11 @@ read_control_file_item (ssh_control_file_t cf)
    HEXGRIP is found; return success in this case and store true at
    DISABLED if the found key has been disabled.  If R_TTL is not NULL
    a specified TTL for that key is stored there.  If R_CONFIRM is not
-   NULL it is set to 1 if the key has the confirm flag set. */
+   NULL it is set to 1 if the key has the confirm flag set.  The line
+   number where the item was found is stored at R_LNR.  */
 static gpg_error_t
 search_control_file (ssh_control_file_t cf, const char *hexgrip,
-                     int *r_disabled, int *r_ttl, int *r_confirm)
+                     int *r_disabled, int *r_ttl, int *r_confirm, int *r_lnr)
 {
   gpg_error_t err;
 
@@ -1045,6 +1062,8 @@ search_control_file (ssh_control_file_t cf, const char *hexgrip,
     *r_ttl = 0;
   if (r_confirm)
     *r_confirm = 0;
+  if (r_lnr)
+    *r_lnr = -1;
 
   rewind_control_file (cf);
   while (!(err=read_control_file_item (cf)))
@@ -1062,6 +1081,8 @@ search_control_file (ssh_control_file_t cf, const char *hexgrip,
         *r_ttl = cf->item.ttl;
       if (r_confirm)
         *r_confirm = cf->item.confirm;
+      if (r_lnr)
+        *r_lnr = cf->lnr;
     }
   return err;
 }
@@ -1090,7 +1111,7 @@ add_control_entry (ctrl_t ctrl, ssh_key_type_spec_t *spec,
   if (err)
     return err;
 
-  err = search_control_file (cf, hexgrip, &disabled, NULL, NULL);
+  err = search_control_file (cf, hexgrip, &disabled, NULL, NULL, NULL);
   if (err && gpg_err_code(err) == GPG_ERR_EOF)
     {
       struct tm *tp;
@@ -1141,7 +1162,7 @@ ttl_from_sshcontrol (const char *hexgrip)
   if (open_control_file (&cf, 0))
     return 0; /* Error: Use the global default TTL.  */
 
-  if (search_control_file (cf, hexgrip, &disabled, &ttl, NULL)
+  if (search_control_file (cf, hexgrip, &disabled, &ttl, NULL, NULL)
       || disabled)
     ttl = 0;  /* Use the global default if not found or disabled.  */
 
@@ -1164,7 +1185,7 @@ confirm_flag_from_sshcontrol (const char *hexgrip)
   if (open_control_file (&cf, 0))
     return 1; /* Error: Better ask for confirmation.  */
 
-  if (search_control_file (cf, hexgrip, &disabled, NULL, &confirm)
+  if (search_control_file (cf, hexgrip, &disabled, NULL, &confirm, NULL)
       || disabled)
     confirm = 0;  /* If not found or disabled, there is no reason to
                      ask for confirmation.  */
@@ -1250,7 +1271,8 @@ ssh_search_control_file (ssh_control_file_t cf,
   if (i != 40)
     err = gpg_error (GPG_ERR_INV_LENGTH);
   else
-    err = search_control_file (cf, uphexgrip, r_disabled, r_ttl, r_confirm);
+    err = search_control_file (cf, uphexgrip, r_disabled, r_ttl, r_confirm,
+                               NULL);
   if (gpg_err_code (err) == GPG_ERR_EOF)
     err = gpg_error (GPG_ERR_NOT_FOUND);
   return err;
@@ -2483,8 +2505,71 @@ get_ssh_keyinfo_on_cards (ctrl_t ctrl)
   return keyinfo_on_cards;
 }
 
+
+/* Append (KEY,CARDSN,LNR,ORDER) to ARRAY.  The array must initially
+ * be passed as a cleared struct.  ARRAY takes ownership of KEY and
+ * CARDSN.  */
 static gpg_error_t
-ssh_send_available_keys (ctrl_t ctrl, estream_t key_blobs, u32 *key_counter_p)
+add_to_key_array (struct key_collection_s *array, gcry_sexp_t key,
+                  char *cardsn, int order)
+{
+  if (array->nitems == array->allocated)
+    {
+      struct key_collection_item_s *newitems;
+      size_t newsize = ((array->allocated + 63)/64 + 1) * 64;
+
+      newitems = xtryreallocarray (array->items, array->allocated, newsize+1,
+                                   sizeof *newitems);
+      if (!newitems)
+        return gpg_error_from_syserror ();
+      array->allocated = newsize;
+      array->items = newitems;
+    }
+  array->items[array->nitems].key = key;
+  array->items[array->nitems].cardsn = cardsn;
+  array->items[array->nitems].order = order;
+  array->nitems++;
+  return 0;
+}
+
+/* Release the content of ARRAY.  */
+static void
+free_key_array (struct key_collection_s *array)
+{
+  if (array && array->items)
+    {
+      unsigned int n;
+
+      for (n = 0; n < array->nitems; n++)
+        {
+          gcry_sexp_release (array->items[n].key);
+          xfree (array->items[n].cardsn);
+        }
+      xfree (array->items);
+    }
+}
+
+
+/* Helper for the qsort in ssh_send_available_keys.  */
+static int
+compare_key_collection_items (const void *arg_a, const void *arg_b)
+{
+  const struct key_collection_item_s *a
+    = (const struct key_collection_item_s *)arg_a;
+  const struct key_collection_item_s *b
+    = (const struct key_collection_item_s *)arg_b;
+  int res;
+
+  res = a->order - b->order;
+  /* If we are comparing two cards we sort by serial number.  */
+  if (!res && a->order == 1)
+    res = strcmp (a->cardsn?a->cardsn:"", b->cardsn?b->cardsn:"");
+  return res;
+}
+
+
+static gpg_error_t
+ssh_send_available_keys (ctrl_t ctrl, estream_t key_blobs, u32 *r_key_counter)
 {
   gpg_error_t err;
   char *dirname;
@@ -2495,6 +2580,8 @@ ssh_send_available_keys (ctrl_t ctrl, estream_t key_blobs, u32 *key_counter_p)
   struct card_key_info_s *keyinfo_on_cards, *l;
   char *cardsn;
   gcry_sexp_t key_public = NULL;
+  int count;
+  struct key_collection_s keyarray = { NULL };
 
   err = open_control_file (&cf, 0);
   if (err)
@@ -2526,7 +2613,7 @@ ssh_send_available_keys (ctrl_t ctrl, estream_t key_blobs, u32 *key_counter_p)
   while ( (dir_entry = gnupg_readdir (dir)) )
     {
       struct card_key_info_s *l_prev = NULL;
-      int disabled, is_ssh;
+      int disabled, is_ssh, lnr, order;
       unsigned char grip[20];
 
       cardsn = NULL;
@@ -2548,14 +2635,31 @@ ssh_send_available_keys (ctrl_t ctrl, estream_t key_blobs, u32 *key_counter_p)
 
       /* Check if it's listed in "ssh_control" file.  */
       disabled = is_ssh = 0;
-      err = search_control_file (cf, hexgrip, &disabled, NULL, NULL);
+      err = search_control_file (cf, hexgrip, &disabled, NULL, NULL, &lnr);
       if (!err)
         {
           if (!disabled)
-            is_ssh = 1;
+            {
+              is_ssh = 1;
+            }
         }
       else if (gpg_err_code (err) != GPG_ERR_EOF)
         break;
+
+      /* Clamp LNR value and set the ordinal.
+       * Current use of ordinals:
+       *      1..99999  - inserted cards (right now only 1)
+       * 100000..199999 - listed in sshcontrol
+       * 200000..299999 - order taken from Use-for-ssh
+       */
+      if (is_ssh)
+        {
+          if (lnr < 1)
+            lnr = 0;
+          else if (lnr > 99999)
+            lnr = 99999;
+          order = lnr + 100000;
+        }
 
       if (l)
         {
@@ -2570,25 +2674,76 @@ ssh_send_available_keys (ctrl_t ctrl, estream_t key_blobs, u32 *key_counter_p)
           xfree (l->usage);
           xfree (l);
           l = NULL;
+          /* If we want to allow that the user to change the sorting
+           * order of card keys (which are sorted by their s/n), we
+           * would need to get the use-for-ssh: value from the stub
+           * file and set an appropriate ordinal.  */
+          order = 1;
         }
       else if (is_ssh)
         err = agent_public_key_from_file (ctrl, grip, &key_public);
-      else
-        /* Examine the file if it's suitable for SSH.  */
-        err = agent_ssh_key_from_file (ctrl, grip, &key_public);
+      else /* Examine the file if it's suitable for SSH.  */
+        {
+          err = agent_ssh_key_from_file (ctrl, grip, &key_public, &order);
+          if (order < 0 || err)
+            order = 0;
+          else if (order > 99999)
+            order = 99999;
+          order += 200000;
+        }
       if (err)
         {
-          /* Clear ERR, skiping the key in question.  */
+          /* Clear ERR, skipping the key in question.  */
           err = 0;
           continue;
         }
 
-      err = ssh_send_key_public (key_blobs, key_public, cardsn);
-      xfree (cardsn);
+      err = add_to_key_array (&keyarray, key_public, cardsn, order);
+      if (err)
+        {
+          gcry_sexp_release (key_public);
+          xfree (cardsn);
+          goto leave;
+        }
+    }
+
+  gnupg_closedir (dir);
+  ssh_close_control_file (cf);
+
+  /* Lastly, handle remaining keys which don't have the stub files.  */
+  for (l = keyinfo_on_cards, count=0; l; l = l->next, count++)
+     {
+       cardsn = NULL;
+       if (card_key_available (ctrl, l, &key_public, &cardsn))
+         continue;
+
+       err = add_to_key_array (&keyarray, key_public, cardsn, 300000+count);
+       if (err)
+         {
+           gcry_sexp_release (key_public);
+           xfree (cardsn);
+           goto leave;
+         }
+     }
+
+  /* Sort the array.  */
+  qsort (keyarray.items, keyarray.nitems, sizeof *keyarray.items,
+         compare_key_collection_items);
+  if (opt.debug)
+    for (count=0; count < keyarray.nitems; count++)
+      log_debug ("sshkeys[%d]: order=%d, pubkey=%p sn=%s\n",
+                 count, keyarray.items[count].order,
+                 keyarray.items[count].key, keyarray.items[count].cardsn);
+
+  /* And print the keys.  */
+  for (count=0; count < keyarray.nitems; count++)
+    {
+      err = ssh_send_key_public (key_blobs, keyarray.items[count].key,
+                                 keyarray.items[count].cardsn);
       if (err)
         {
           if (opt.debug)
-            gcry_log_debugsxp ("pubkey", key_public);
+            gcry_log_debugsxp ("pubkey", keyarray.items[count].key);
           if (gpg_err_code (err) == GPG_ERR_UNKNOWN_CURVE
               || gpg_err_code (err) == GPG_ERR_INV_CURVE)
             {
@@ -2597,54 +2752,14 @@ ssh_send_available_keys (ctrl_t ctrl, estream_t key_blobs, u32 *key_counter_p)
                * We ignore them.  */
             }
           else
-            {
-              gcry_sexp_release (key_public);
-              break;  /* the readdir loop.  */
-            }
+            goto leave;
         }
-      else /* Success */
-        (*key_counter_p)++;
-
-      gcry_sexp_release (key_public);
     }
+  *r_key_counter = count;
 
-  gnupg_closedir (dir);
-  ssh_close_control_file (cf);
-
-  /* Lastly, handle remaining keys which don't have the stub files.  */
-  for (l = keyinfo_on_cards; l; l = l->next)
-     {
-       cardsn = NULL;
-       if (card_key_available (ctrl, l, &key_public, &cardsn))
-         continue;
-
-       err = ssh_send_key_public (key_blobs, key_public, cardsn);
-       xfree (cardsn);
-       if (err)
-         {
-           if (opt.debug)
-             gcry_log_debugsxp ("pubkey", key_public);
-           if (gpg_err_code (err) == GPG_ERR_UNKNOWN_CURVE
-               || gpg_err_code (err) == GPG_ERR_INV_CURVE)
-             {
-               /* For example a Brainpool curve or a curve we don't
-                * support at all but a smartcard lists that curve.
-                * We ignore them.  */
-             }
-           else
-             {
-               gcry_sexp_release (key_public);
-               break;
-             }
-         }
-       else /* Success.  */
-         (*key_counter_p)++;
-
-       gcry_sexp_release (key_public);
-     }
-
+ leave:
   agent_card_free_keyinfo (keyinfo_on_cards);
-
+  free_key_array (&keyarray);
   return err;
 }
 

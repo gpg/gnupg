@@ -1422,10 +1422,11 @@ agent_raw_key_from_file (ctrl_t ctrl, const unsigned char *grip,
 /* Return the public key for the keygrip GRIP.  The result is stored
    at RESULT.  This function extracts the public key from the private
    key database.  On failure an error code is returned and NULL stored
-   at RESULT. */
+   at RESULT.  If R_SSHORDER is not NULL the ordinal from the
+   Use-for-ssh attribute is stored at that address.  */
 static gpg_error_t
 public_key_from_file (ctrl_t ctrl, const unsigned char *grip,
-                      gcry_sexp_t *result, int for_ssh)
+                      gcry_sexp_t *result, int for_ssh, int *r_sshorder)
 {
   gpg_error_t err;
   int i, idx;
@@ -1451,6 +1452,8 @@ public_key_from_file (ctrl_t ctrl, const unsigned char *grip,
   (void)ctrl;
 
   *result = NULL;
+  if (r_sshorder)
+    *r_sshorder = 0;
 
   err = read_key_file (grip, &s_skey, for_ssh? &keymeta : NULL);
   if (err)
@@ -1470,6 +1473,8 @@ public_key_from_file (ctrl_t ctrl, const unsigned char *grip,
 
       if (!is_ssh)
         return gpg_error (GPG_ERR_WRONG_KEY_USAGE);
+      if (r_sshorder)
+        *r_sshorder = is_ssh;
     }
 
   for (i=0; i < DIM (array); i++)
@@ -1565,15 +1570,15 @@ agent_public_key_from_file (ctrl_t ctrl,
                             const unsigned char *grip,
                             gcry_sexp_t *result)
 {
-  return public_key_from_file (ctrl, grip, result, 0);
+  return public_key_from_file (ctrl, grip, result, 0, NULL);
 }
 
 gpg_error_t
 agent_ssh_key_from_file (ctrl_t ctrl,
                          const unsigned char *grip,
-                         gcry_sexp_t *result)
+                         gcry_sexp_t *result, int *r_order)
 {
-  return public_key_from_file (ctrl, grip, result, 1);
+  return public_key_from_file (ctrl, grip, result, 1, r_order);
 }
 
 
