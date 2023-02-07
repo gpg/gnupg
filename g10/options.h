@@ -426,6 +426,7 @@ EXTERN_UNLESS_MAIN_MODULE int memory_stat_debug_mode;
 #define LIST_SORT_SIGS                   (1<<13)
 #define LIST_SHOW_PREF                   (1<<14)
 #define LIST_SHOW_PREF_VERBOSE           (1<<15)
+#define LIST_SHOW_UNUSABLE_SIGS          (1<<16)
 
 #define VERIFY_SHOW_PHOTOS               (1<<0)
 #define VERIFY_SHOW_POLICY_URLS          (1<<1)

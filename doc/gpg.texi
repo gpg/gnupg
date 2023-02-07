@@ -1405,6 +1405,10 @@ give the opposite meaning.  The options are:
   @opindex list-options:show-unusable-subkeys
   Show revoked and expired subkeys in key listings. Defaults to no.
 
+  @item show-unusable-sigs
+  @opindex list-options:show-unusable-sigs
+  Show key signature made using weak or unsupported algorithms.
+
   @item show-keyring
   @opindex list-options:show-keyring
   Display the keyring name at the head of key listings to show which

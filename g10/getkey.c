@@ -3247,7 +3247,7 @@ buf_to_sig (const byte * buf, size_t len)
  *   has_expired
  *   expired_date
  *
- * On this subkey's most revent valid self-signed packet, the
+ * On this subkey's most recent valid self-signed packet, the
  * following field is set:
  *
  *   flags.chosen_selfsig

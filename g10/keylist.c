@@ -1216,7 +1216,8 @@ cmp_signodes (const void *av, const void *bv)
 }
 
 
-/* Helper for list_keyblock_print.  */
+/* Helper for list_keyblock_print.  The caller must have set
+ * NODFLG_MARK_B to indicate self-signatures.  */
 static void
 list_signature_print (ctrl_t ctrl, kbnode_t keyblock, kbnode_t node,
                       struct keylist_context *listctx)
@@ -1247,6 +1248,11 @@ list_signature_print (ctrl_t ctrl, kbnode_t keyblock, kbnode_t node,
 		case GPG_ERR_UNUSABLE_PUBKEY:
 		  listctx->no_key++;
 		  return;
+                case GPG_ERR_DIGEST_ALGO:
+                case GPG_ERR_PUBKEY_ALGO:
+                  if (!(opt.list_options & LIST_SHOW_UNUSABLE_SIGS))
+                    return;
+                  /* fallthru. */
 		default:
 		  listctx->oth_err++;
 		  sigrc = '%';
@@ -1259,6 +1265,15 @@ list_signature_print (ctrl_t ctrl, kbnode_t keyblock, kbnode_t node,
 	    }
 	  else
 	    {
+              if (!(opt.list_options & LIST_SHOW_UNUSABLE_SIGS)
+                  && (gpg_err_code (openpgp_pk_test_algo (sig->pubkey_algo)
+                                    == GPG_ERR_PUBKEY_ALGO)
+                      || gpg_err_code (openpgp_md_test_algo (sig->digest_algo)
+                                       == GPG_ERR_DIGEST_ALGO)
+                      || (sig->digest_algo == DIGEST_ALGO_SHA1
+                          && !(node->flag & NODFLG_MARK_B) /*no selfsig*/
+                          && !opt.flags.allow_weak_key_signatures)))
+                return;
 	      rc = 0;
 	      sigrc = ' ';
 	    }
@@ -1306,7 +1321,9 @@ list_signature_print (ctrl_t ctrl, kbnode_t keyblock, kbnode_t node,
 	    es_fprintf (es_stdout, "[%s] ", gpg_strerror (rc));
 	  else if (sigrc == '?')
 	    ;
-	  else if (!opt.fast_list_mode)
+	  else if ((node->flag & NODFLG_MARK_B))
+            es_fputs (_("[self-signature]"), es_stdout);
+          else if (!opt.fast_list_mode )
 	    {
 	      size_t n;
 	      char *p = get_user_id (ctrl, sig->keyid, &n, NULL);
@@ -1585,37 +1602,33 @@ list_keyblock_print (ctrl_t ctrl, kbnode_t keyblock, int secret, int fpr,
       else if (opt.list_sigs
 	       && node->pkt->pkttype == PKT_SIGNATURE && !skip_sigs)
 	{
-          if ((opt.list_options & LIST_SORT_SIGS))
+          kbnode_t n;
+          unsigned int sigcount = 0;
+          kbnode_t *sigarray;
+          unsigned int idx;
+
+          for (n=node; n && n->pkt->pkttype == PKT_SIGNATURE; n = n->next)
+            sigcount++;
+          sigarray = xcalloc (sigcount, sizeof *sigarray);
+
+          sigcount = 0;
+          for (n=node; n && n->pkt->pkttype == PKT_SIGNATURE; n = n->next)
             {
-              kbnode_t n;
-              unsigned int sigcount = 0;
-              kbnode_t *sigarray;
-              unsigned int idx;
+              if (keyid_eq (mainkid, n->pkt->pkt.signature->keyid))
+                n->flag |= NODFLG_MARK_B;  /* Is a self-sig.  */
+              else
+                n->flag &= ~NODFLG_MARK_B;
 
-              for (n=node; n && n->pkt->pkttype == PKT_SIGNATURE; n = n->next)
-                sigcount++;
-              sigarray = xcalloc (sigcount, sizeof *sigarray);
-
-              sigcount = 0;
-              for (n=node; n && n->pkt->pkttype == PKT_SIGNATURE; n = n->next)
-                {
-                  if (!keyid_cmp (mainkid, n->pkt->pkt.signature->keyid))
-                    n->flag |= NODFLG_MARK_B;  /* Is a self-sig.  */
-                  else
-                    n->flag &= ~NODFLG_MARK_B;
-
-                  sigarray[sigcount++] = node = n;
-                }
-              /* Note that NODE is now at the last signature.  */
-
-              qsort (sigarray, sigcount, sizeof *sigarray, cmp_signodes);
-
-              for (idx=0; idx < sigcount; idx++)
-                list_signature_print (ctrl, keyblock, sigarray[idx], listctx);
-              xfree (sigarray);
+              sigarray[sigcount++] = node = n;
             }
-          else
-            list_signature_print (ctrl, keyblock, node, listctx);
+          /* Note that NODE is now at the last signature.  */
+
+          if ((opt.list_options & LIST_SORT_SIGS))
+            qsort (sigarray, sigcount, sizeof *sigarray, cmp_signodes);
+
+          for (idx=0; idx < sigcount; idx++)
+            list_signature_print (ctrl, keyblock, sigarray[idx], listctx);
+          xfree (sigarray);
 	}
     }
   es_putc ('\n', es_stdout);

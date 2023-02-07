@@ -2071,6 +2071,8 @@ parse_list_options(char *str)
        N_("show revoked and expired user IDs in key listings")},
       {"show-unusable-subkeys",LIST_SHOW_UNUSABLE_SUBKEYS,NULL,
        N_("show revoked and expired subkeys in key listings")},
+      {"show-unusable-sigs",LIST_SHOW_UNUSABLE_SIGS,NULL,
+       N_("show signatures with invalid algorithms during signature listings")},
       {"show-keyring",LIST_SHOW_KEYRING,NULL,
        N_("show the keyring name in key listings")},
       {"show-sig-expire",LIST_SHOW_SIG_EXPIRE,NULL,
