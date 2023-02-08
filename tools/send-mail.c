@@ -22,6 +22,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <unistd.h>   /* for X_OK */
 
 #include "../common/util.h"
 #include "../common/exectool.h"
@@ -35,6 +36,12 @@ run_sendmail (estream_t data)
   gpg_error_t err;
   const char pgmname[] = NAME_OF_SENDMAIL;
   const char *argv[3];
+
+  if (!*pgmname || gnupg_access (pgmname, X_OK))
+    {
+      log_error ("sendmail tool '%s' is not correctly installed\n", pgmname);
+      return gpg_error (GPG_ERR_ENOENT);
+    }
 
   argv[0] = "-oi";
   argv[1] = "-t";
