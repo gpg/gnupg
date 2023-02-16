@@ -2763,7 +2763,7 @@ merge_selfsigs_main (ctrl_t ctrl, kbnode_t keyblock, int *r_revoked,
        * and there was no way to change it, so we start with the one
        * from the key packet.  We do not support v3 keys anymore but
        * we keep the code in case a future key versions introduces a
-       * hadr expire time again. */
+       * hard expire time again. */
       key_expire = pk->max_expiredate;
       key_expire_seen = 1;
     }
