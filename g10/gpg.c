@@ -443,6 +443,7 @@ enum cmd_and_opt_values
     oForbidGenKey,
     oRequireCompliance,
     oCompatibilityFlags,
+    oAddDesigRevoker,
 
     oNoop
   };
@@ -702,6 +703,7 @@ static gpgrt_opt_t opts[] = {
   ARGPARSE_s_s (oForceOwnertrust, "force-ownertrust", "@"),
   ARGPARSE_s_n (oNoAutoTrustNewKey, "no-auto-trust-new-key", "@"),
 #endif
+  ARGPARSE_s_s (oAddDesigRevoker, "add-desig-revoker", "@"),
 
 
   ARGPARSE_header ("Input", N_("Options controlling the input")),
@@ -3715,6 +3717,13 @@ main (int argc, char **argv)
           case oRequireCompliance:
             opt.flags.require_compliance = 1;
             break;
+
+	  case oAddDesigRevoker:
+            if (!strcmp (pargs.r.ret_str, "clear"))
+              FREE_STRLIST (opt.desig_revokers);
+            else
+              append_to_strlist (&opt.desig_revokers, pargs.r.ret_str);
+	    break;
 
 	  case oNoop: break;
 

@@ -1,6 +1,8 @@
 Noteworthy changes in version 2.4.1 (unreleased)
 ------------------------------------------------
 
+  * gpg: New option --add-desig-revoker.
+
   * gpg: New list-option "show-unusable-sigs".
 
   * gpg: Show "[self-signature]" instead of the user-id in key

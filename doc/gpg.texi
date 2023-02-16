@@ -1750,6 +1750,19 @@ recipient's or signator's key.  If the given key is not locally
 available but an LDAP keyserver is configured the missing key is
 imported from that server.
 
+@item --add-desig-revoker [sensitive:]@var{fingerprint}
+@opindex add-desig-revoker
+Add the key specified by @var{fingerprint} as a designated revoker to
+newly created keys.  If the fingerprint is prefixed with the keyword
+``sensitive:'' that info is normally not exported wit the key.  This
+option may be given several time to add more than one designated
+revoker.  If the keyword ``clear'' is used instead of a fingerprint,
+all designated options previously encountered are discarded.
+Designated revokers are marked on the key as non-revocable.  Note that
+a designated revoker specified using a parameter file will also be
+added to the key.
+
+
 @item --trust-model @{pgp|classic|tofu|tofu+pgp|direct|always|auto@}
 @opindex trust-model
 Set what trust model GnuPG should follow. The models are:
