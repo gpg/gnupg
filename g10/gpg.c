@@ -437,7 +437,7 @@ enum cmd_and_opt_values
     oForbidGenKey,
     oRequireCompliance,
     oCompatibilityFlags,
-    oKbxBufferSize,
+    oAddDesigRevoker,
 
     oNoop
   };
@@ -693,6 +693,7 @@ static ARGPARSE_OPTS opts[] = {
   ARGPARSE_s_n (oNoAutoCheckTrustDB, "no-auto-check-trustdb", "@"),
   ARGPARSE_s_s (oForceOwnertrust, "force-ownertrust", "@"),
 #endif
+  ARGPARSE_s_s (oAddDesigRevoker, "add-desig-revoker", "@"),
 
 
   ARGPARSE_header ("Input", N_("Options controlling the input")),
@@ -910,7 +911,6 @@ static ARGPARSE_OPTS opts[] = {
   /* Esoteric compatibility options.  */
   ARGPARSE_s_n (oRFC2440Text,      "rfc2440-text", "@"),
   ARGPARSE_s_n (oNoRFC2440Text, "no-rfc2440-text", "@"),
-  ARGPARSE_p_u (oKbxBufferSize,  "kbx-buffer-size", "@"),
 
   ARGPARSE_header (NULL, ""),  /* Stop the header group.  */
 
@@ -3655,9 +3655,12 @@ main (int argc, char **argv)
             opt.flags.require_compliance = 1;
             break;
 
-          case oKbxBufferSize:
-            keybox_set_buffersize (pargs.r.ret_ulong, 0);
-            break;
+	  case oAddDesigRevoker:
+            if (!strcmp (pargs.r.ret_str, "clear"))
+              FREE_STRLIST (opt.desig_revokers);
+            else
+              append_to_strlist (&opt.desig_revokers, pargs.r.ret_str);
+	    break;
 
 	  case oNoop: break;
 

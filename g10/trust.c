@@ -59,7 +59,7 @@ register_trusted_key (const char *string)
   /* Some users have conf files with entries like
    *   trusted-key 0x1234567812345678    # foo
    * That is obviously wrong.  Before fixing bug#1206 trailing garbage
-   * on a key specification if was ignored.  We detect the above use case
+   * on a key specification was ignored.  We detect the above use case
    * here and  cut off the junk-looking-like-a comment.  */
   if (strchr (string, '#'))
     {

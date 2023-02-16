@@ -22,6 +22,8 @@ Noteworthy changes in version 2.2.42 (unreleased)
   * gpg: Detect already compressed data also when using a pipe.  Also
     detect JPEG and PNG file formats.  [T6332]
 
+  * gpg: New option --add-desig-revoker.
+
   * gpgsm: Support ECC certificates.  [T6253]
 
   * gpgsm: Print PROGRESS status lines.  Add new --input-size-hint.

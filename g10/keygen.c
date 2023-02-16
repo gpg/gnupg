@@ -3671,14 +3671,29 @@ release_parameter_list (struct para_data_s *r)
     }
 }
 
+/* Return the N-th parameter of name KEY from PARA.  An IDX of 0
+ * returns the first and so on.  */
 static struct para_data_s *
-get_parameter( struct para_data_s *para, enum para_name key )
+get_parameter_idx (struct para_data_s *para, enum para_name key,
+                   unsigned int idx)
 {
-    struct para_data_s *r;
+  struct para_data_s *r;
 
-    for( r = para; r && r->key != key; r = r->next )
-	;
-    return r;
+  for(r = para; r; r = r->next)
+    if (r->key == key)
+      {
+        if (!idx)
+          return r;
+        idx--;
+      }
+  return NULL;
+}
+
+/* Return the first parameter of name KEY from PARA.  */
+static struct para_data_s *
+get_parameter (struct para_data_s *para, enum para_name key)
+{
+  return get_parameter_idx (para, key, 0);
 }
 
 static const char *
@@ -3826,6 +3841,68 @@ parse_parameter_usage (const char *fname,
 }
 
 
+/* Parse the revocation key specified by NAME, check that the public
+ * key exists (so that we can get the required public key algorithm),
+ * and return a parameter wit the revocation key information.  On
+ * error print a diagnostic and return NULL.  */
+static struct para_data_s *
+prepare_desig_revoker (ctrl_t ctrl, const char *name)
+{
+  gpg_error_t err;
+  struct para_data_s *para = NULL;
+  KEYDB_SEARCH_DESC desc;
+  int sensitive = 0;
+  struct revocation_key revkey;
+  PKT_public_key *revoker_pk = NULL;
+  size_t fprlen;
+
+  if (!ascii_strncasecmp (name, "sensitive:", 10) && !spacep (name+10))
+    {
+      name += 10;
+      sensitive = 1;
+    }
+
+  if (classify_user_id (name, &desc, 1)
+      || desc.mode != KEYDB_SEARCH_MODE_FPR)
+    {
+      log_info (_("\"%s\" is not a fingerprint\n"), name);
+      err = gpg_error (GPG_ERR_INV_NAME);
+      goto leave;
+    }
+
+  revoker_pk = xcalloc (1, sizeof *revoker_pk);
+  revoker_pk->req_usage = PUBKEY_USAGE_CERT;
+  err = get_pubkey_byname (ctrl, GET_PUBKEY_NO_AKL,
+                           NULL, revoker_pk, name, NULL, NULL, 1);
+  if (err)
+    goto leave;
+
+  fingerprint_from_pk (revoker_pk, revkey.fpr, &fprlen);
+  if (fprlen != 20)
+    {
+      log_info (_("cannot appoint a PGP 2.x style key as a "
+                  "designated revoker\n"));
+      err = gpg_error (GPG_ERR_UNUSABLE_PUBKEY);
+      goto leave;
+    }
+  revkey.class = 0x80;
+  if (sensitive)
+    revkey.class |= 0x40;
+  revkey.algid = revoker_pk->pubkey_algo;
+
+  para = xcalloc (1, sizeof *para);
+  para->key = pREVOKER;
+  memcpy (&para->u.revkey, &revkey, sizeof revkey);
+
+ leave:
+  if (err)
+    log_error ("invalid revocation key '%s': %s\n", name, gpg_strerror (err));
+  free_public_key (revoker_pk);
+  return para;
+}
+
+
+/* Parse a pREVOKER parameter into its dedicated parts.  */
 static int
 parse_revocation_key (const char *fname,
 		      struct para_data_s *para, enum para_name key)
@@ -3904,10 +3981,11 @@ get_parameter_uint( struct para_data_s *para, enum para_name key )
 }
 
 static struct revocation_key *
-get_parameter_revkey( struct para_data_s *para, enum para_name key )
+get_parameter_revkey (struct para_data_s *para, enum para_name key,
+                      unsigned int idx)
 {
-    struct para_data_s *r = get_parameter( para, key );
-    return r? &r->u.revkey : NULL;
+  struct para_data_s *r = get_parameter_idx (para, key, idx);
+  return r? &r->u.revkey : NULL;
 }
 
 static int
@@ -3918,6 +3996,7 @@ proc_parameter_file (ctrl_t ctrl, struct para_data_s *para, const char *fname,
   const char *s1, *s2, *s3;
   size_t n;
   char *p;
+  strlist_t sl;
   int is_default = 0;
   int have_user_id = 0;
   int err, algo;
@@ -4063,9 +4142,19 @@ proc_parameter_file (ctrl_t ctrl, struct para_data_s *para, const char *fname,
 	}
     }
 
-  /* Set revoker, if any. */
+  /* Set revoker from parameter file, if any.  Must be done first so
+   * that we don't find a parameter set via prepare_desig_revoker.  */
   if (parse_revocation_key (fname, para, pREVOKER))
     return -1;
+
+  /* Check and append revokers from the config file.  */
+  for (sl = opt.desig_revokers; sl; sl = sl->next)
+    {
+      r = prepare_desig_revoker (ctrl, sl->d);
+      if (!r)
+        return -1;
+      append_to_parameter (para, r);
+     }
 
 
   /* Make KEYCREATIONDATE from Creation-Date.  */
@@ -5104,6 +5193,7 @@ do_generate_keypair (ctrl_t ctrl, struct para_data_s *para,
   int algo;
   u32 expire;
   const char *key_from_hexgrip = NULL;
+  unsigned int idx;
 
   if (outctrl->dryrun)
     {
@@ -5205,7 +5295,10 @@ do_generate_keypair (ctrl_t ctrl, struct para_data_s *para,
       keyid_copy (pri_psk->main_keyid, pri_psk->keyid);
     }
 
-  if (!err && (revkey = get_parameter_revkey (para, pREVOKER)))
+  /* Write all signatures specifying designated revokers.  */
+  for (idx=0;
+       !err && (revkey = get_parameter_revkey (para, pREVOKER, idx));
+       idx++)
     err = write_direct_sig (ctrl, pub_root, pri_psk,
                             revkey, timestamp, cache_nonce);
 

@@ -105,6 +105,9 @@ struct
    * the option --sender.  */
   strlist_t sender_list;
 
+  /* A list of fingerprints added as designated revokers to new keys.  */
+  strlist_t desig_revokers;
+
   int def_cert_level;
   int min_cert_level;
   int ask_cert_level;
