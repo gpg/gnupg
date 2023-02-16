@@ -4331,7 +4331,7 @@ already been reported to our bug tracker at @url{https://bugs.gnupg.org}.
 @c ***************  UNATTENDED  **************
 @c ***************              **************
 @c *******************************************
-@manpause
+@mansect notes
 @node Unattended Usage of GPG
 @section Unattended Usage
 
@@ -4402,32 +4402,21 @@ previous subsection ``The quick key manipulation interface''.
 
 The parameters for the key are either read from stdin or given as a
 file on the command line.  The format of the parameter file is as
-follows:
-
-@itemize @bullet
-  @item Text only, line length is limited to about 1000 characters.
-  @item UTF-8 encoding must be used to specify non-ASCII characters.
-  @item Empty lines are ignored.
-  @item Leading and trailing white space is ignored.
-  @item A hash sign as the first non white space character indicates
-  a comment line.
-  @item Control statements are indicated by a leading percent sign, the
-  arguments are separated by white space from the keyword.
-  @item Parameters are specified by a keyword, followed by a colon.  Arguments
-  are separated by white space.
-  @item
-  The first parameter must be @samp{Key-Type}; control statements may be
-  placed anywhere.
-  @item
-  The order of the parameters does not matter except for @samp{Key-Type}
-  which must be the first parameter.  The parameters are only used for
-  the generated keyblock (primary and subkeys); parameters from previous
-  sets are not used.  Some syntactically checks may be performed.
-  @item
-  Key generation takes place when either the end of the parameter file
-  is reached, the next @samp{Key-Type} parameter is encountered or at the
-  control statement @samp{%commit} is encountered.
-@end itemize
+follows: Text only, line length is limited to about 1000 characters.
+UTF-8 encoding must be used to specify non-ASCII characters.  Empty
+lines are ignored.  Leading and trailing white space is ignored.  A
+hash sign as the first non white space character indicates a comment
+line.  Control statements are indicated by a leading percent sign,
+their arguments are separated by white space from the keyword.
+Parameters are specified by a keyword, followed by a colon; arguments
+are separated by white space.  The first parameter must be
+@samp{Key-Type} but control statements may be placed anywhere.  The
+order of the parameters does not matter except for @samp{Key-Type}.
+The parameters are only used for the generated keyblock (primary and
+subkeys); parameters from previous sets are not used.  Some syntax
+checks may be performed.  Key commences when either the end of the
+parameter file is reached, the next @samp{Key-Type} parameter is
+encountered, or the control statement @samp{%commit} is encountered.
 
 @noindent
 Control statements:
@@ -4463,7 +4452,7 @@ See the previous subsection ``Ephemeral home directories''.
 
 @item %ask-passphrase
 @itemx %no-ask-passphrase
-This option is a no-op for GnuPG 2.1 and later.
+This option is a no-op since GnuPG version 2.1.
 
 @item %no-protection
 Using this option allows the creation of keys without any passphrase
