@@ -5057,9 +5057,6 @@ main (int argc, char **argv)
               size_t nn;
 
               p = gcry_random_bytes (n, level);
-#ifdef HAVE_DOSISH_SYSTEM
-              setmode ( fileno(stdout), O_BINARY );
-#endif
               if (hexhack)
                 {
                   for (nn = 0; nn < n; nn++)
@@ -5077,6 +5074,7 @@ main (int argc, char **argv)
                 }
               else
                 {
+                  es_set_binary (es_stdout);
                   es_fwrite( p, n, 1, es_stdout );
                 }
               xfree(p);
