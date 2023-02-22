@@ -1,34 +1,57 @@
+#include <config.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
 #include <dlfcn.h>
 
+#include <gpg-error.h>
 #include <gcrypt.h>
 
+#include "../common/util.h"
 #include "pkcs11.h"
 
-/*
- * For now, we don't COMPUTE_KEYGRIP, assuming Scute.
- * ... which used the ID as keygrip.
- */
-
-#ifdef COMPUTE_KEYGRIP
 static void
 compute_keygrip_rsa (char *keygrip,
                      const char *modulus,  unsigned long modulus_len,
                      const char *exponent,  unsigned long exponent_len)
 {
-  ;
+  gpg_error_t err;
+  gcry_sexp_t s_pkey = NULL;
+  const char *format = "(public-key(rsa(n%b)(e%b)))";
+  unsigned char grip[20];
+
+  err = gcry_sexp_build (&s_pkey, NULL, format,
+                         (int)modulus_len, modulus,
+                         (int)exponent_len, exponent);
+  if (!err && !gcry_pk_get_keygrip (s_pkey, grip))
+    err = gpg_error (GPG_ERR_INTERNAL);
+  else
+    {
+      gcry_sexp_release (s_pkey);
+      bin2hex (grip, 20, keygrip);
+    }
 }
 
 static void
-compute_keygrip_ec (char *keygrip,
-                    const char *oid, unsigned long oid_len,
-                    const char *ecpoint, unsigned long ecpoing_len)
+compute_keygrip_ec (char *keygrip, const char *curve,
+                    const char *ecpoint, unsigned long ecpoint_len)
 {
-  ;
+  gpg_error_t err;
+  gcry_sexp_t s_pkey = NULL;
+  const char *format = "(public-key(ecc(curve %s)(q%b)))";
+  unsigned char grip[20];
+
+  err = gcry_sexp_build (&s_pkey, NULL, format, curve, (int)ecpoint_len,
+                         ecpoint);
+  if (!err && !gcry_pk_get_keygrip (s_pkey, grip))
+    err = gpg_error (GPG_ERR_INTERNAL);
+  else
+    {
+      gcry_sexp_release (s_pkey);
+      bin2hex (grip, 20, keygrip);
+    }
 }
-#endif
+
 
 #define ck_function_list _CK_FUNCTION_LIST
 #define ck_token_info _CK_TOKEN_INFO
@@ -50,7 +73,6 @@ compute_keygrip_ec (char *keygrip,
  *           session -> key_list -> key
  *
  */
-#define KEYGRIP_LEN (40+1)
 
 /*
  * Major use cases:
@@ -72,9 +94,12 @@ struct key {
   struct token *token;  /* Back pointer.  */
   int valid;
   ck_object_handle_t p11_keyid;
-  char keygrip[KEYGRIP_LEN];
+  char keygrip[2*KEYGRIP_LEN+1];
   int key_type;
-  /* Possibly, ID, LABEL, etc.  */
+  unsigned char label[256];
+  unsigned long label_len;
+  unsigned char id[256];
+  unsigned long id_len;
   /* Allowed mechanisms???  */
 };
 
@@ -178,7 +203,7 @@ struct p11dev {
   int d;
 };
 
-static struct p11dev priv;
+static struct p11dev p11_priv;
 
 static unsigned long
 notify_cb (ck_session_handle_t session,
@@ -205,7 +230,7 @@ open_session (struct token *token)
   session_flags = session_flags | CKF_SERIAL_SESSION;
 
   err = ck->f->C_OpenSession (slot_id, session_flags,
-                              (void *)&priv, notify_cb, &session_handle);
+                              (void *)&p11_priv, notify_cb, &session_handle);
   if (err)
     {
       printf ("open_session: %d\n", err);
@@ -271,31 +296,123 @@ logout (struct token *token)
 }
 
 static long
-detect_key (int try_private, struct token *token)
+examine_public_key (struct token *token, struct key *k, unsigned long keytype,
+                    int update_keyid, ck_object_handle_t obj)
+{
+  unsigned long err = 0;
+  struct cryptoki *ck = token->ck;
+  unsigned char modulus[1024];
+  unsigned char exponent[8];
+  unsigned char ecparams[256];
+  unsigned char ecpoint[256];
+  struct ck_attribute templ[3];
+  unsigned long mechanisms[3];
+  int i;
+
+  templ[0].type = CKA_ALLOWED_MECHANISMS;
+  templ[0].pValue = (void *)mechanisms;
+  templ[0].ulValueLen = sizeof (mechanisms);
+
+  if (keytype == CKK_RSA)
+    {
+      k->valid = 1;
+      if (update_keyid)
+        k->p11_keyid = obj;
+      k->key_type = KEY_RSA;
+
+      templ[1].type = CKA_MODULUS;
+      templ[1].pValue = (void *)modulus;
+      templ[1].ulValueLen = sizeof (modulus);
+
+      templ[2].type = CKA_PUBLIC_EXPONENT;
+      templ[2].pValue = (void *)exponent;
+      templ[2].ulValueLen = sizeof (exponent);
+
+      err = ck->f->C_GetAttributeValue (token->session, obj, templ, 3);
+      if (err)
+        {
+          k->valid = -1;
+          return 1;
+        }
+
+      if ((modulus[0] & 0x80))
+        {
+          memmove (modulus+1, modulus, templ[1].ulValueLen);
+          templ[1].ulValueLen++;
+          modulus[0] = 0;
+        }
+
+      /* Found a RSA key.  */
+      printf ("RSA: %d %d %d\n",
+              templ[0].ulValueLen,
+              templ[1].ulValueLen,
+              templ[2].ulValueLen);
+      puts ("Public key:");
+      compute_keygrip_rsa (k->keygrip,
+                           modulus, templ[1].ulValueLen,
+                           exponent, templ[2].ulValueLen);
+      puts (k->keygrip);
+    }
+  else if (keytype == CKK_EC)
+    {
+      char *curve_oid = NULL;
+      const char *curve;
+
+      k->valid = 1;
+      if (update_keyid)
+        k->p11_keyid = obj;
+      k->key_type = KEY_EC;
+
+      templ[1].type = CKA_EC_PARAMS;
+      templ[1].pValue = ecparams;
+      templ[1].ulValueLen = sizeof (ecparams);
+
+      templ[2].type = CKA_EC_POINT;
+      templ[2].pValue = (void *)ecpoint;
+      templ[2].ulValueLen = sizeof (ecpoint);
+
+      err = ck->f->C_GetAttributeValue (token->session, obj, templ, 3);
+      if (err)
+        {
+          k->valid = -1;
+          return 1;
+        }
+
+      /* Found an ECC key.  */
+      printf ("ECC: %d %d %d\n",
+              templ[0].ulValueLen,
+              templ[1].ulValueLen,
+              templ[2].ulValueLen);
+
+      curve_oid = openpgp_oidbuf_to_str (ecparams+1, templ[1].ulValueLen-1);
+      curve = openpgp_oid_to_curve (curve_oid, 1);
+      xfree (curve_oid);
+
+      puts ("Public key:");
+      puts (curve);
+      compute_keygrip_ec (k->keygrip, curve, ecpoint, templ[2].ulValueLen);
+      puts (k->keygrip);
+    }
+
+  return 0;
+}
+
+static long
+detect_private_keys (struct token *token)
 {
   unsigned long err = 0;
   struct cryptoki *ck = token->ck;
 
   struct ck_attribute templ[8];
 
-  unsigned char label[256];
   unsigned long class;
-  unsigned long key_type;
-  unsigned long mechanisms[3];
-  unsigned char id[256];
-  unsigned char modulus[1024];
-  unsigned char exponent[8];
-  unsigned char ecparams[256];
-  unsigned char ecpoint[256];
+  unsigned long keytype;
 
   unsigned long cnt = 0;
   ck_object_handle_t obj;
   int i;
 
-  if (try_private)
-    class = CKO_PRIVATE_KEY;
-  else
-    class = CKO_PUBLIC_KEY;
+  class = CKO_PRIVATE_KEY;
   templ[0].type = CKA_CLASS;
   templ[0].pValue = (void *)&class;
   templ[0].ulValueLen = sizeof (class);
@@ -318,13 +435,88 @@ detect_key (int try_private, struct token *token)
           if (err || any == 0)
             break;
 
+          templ[0].type = CKA_KEY_TYPE;
+          templ[0].pValue = &keytype;
+          templ[0].ulValueLen = sizeof (keytype);
+
+          templ[1].type = CKA_LABEL;
+          templ[1].pValue = (void *)k->label;
+          templ[1].ulValueLen = sizeof (k->label) - 1;
+
+          templ[2].type = CKA_ID;
+          templ[2].pValue = (void *)k->id;
+          templ[2].ulValueLen = sizeof (k->id) - 1;
+
+          err = ck->f->C_GetAttributeValue (token->session, obj, templ, 3);
+          if (err)
+            {
+              continue;
+            }
+
+          cnt++;
+
+          k->label_len = templ[1].ulValueLen;
+          k->label[k->label_len] = 0;
+          k->id_len = templ[2].ulValueLen;
+          k->id[k->id_len] = 0;
+
+          printf ("handle: %ld label: %s key_type: %d id: %s\n",
+                  obj, k->label, keytype, k->id);
+
+          if (examine_public_key (token, k, keytype, 1, obj))
+            continue;
+        }
+
+      token->num_keys = cnt;
+      err = ck->f->C_FindObjectsFinal (token->session);
+      if (err)
+        {
+          return -1;
+        }
+    }
+}
+
+static long
+check_public_keys (struct token *token)
+{
+  unsigned long err = 0;
+  struct cryptoki *ck = token->ck;
+
+  struct ck_attribute templ[8];
+
+  unsigned char label[256];
+  unsigned long class;
+  unsigned long keytype;
+  unsigned char id[256];
+
+  ck_object_handle_t obj;
+  int i;
+
+  class = CKO_PUBLIC_KEY;
+  templ[0].type = CKA_CLASS;
+  templ[0].pValue = (void *)&class;
+  templ[0].ulValueLen = sizeof (class);
+
+  err = ck->f->C_FindObjectsInit (token->session, templ, 1);
+  if (!err)
+    {
+      while (TRUE)
+        {
+          unsigned long any;
+          struct key *k = NULL;
+
+          /* Portable way to get objects... is get it one by one.  */
+          err = ck->f->C_FindObjects (token->session, &obj, 1, &any);
+          if (err || any == 0)
+            break;
+
           templ[0].type = CKA_LABEL;
           templ[0].pValue = (void *)label;
           templ[0].ulValueLen = sizeof (label);
 
           templ[1].type = CKA_KEY_TYPE;
-          templ[1].pValue = &key_type;
-          templ[1].ulValueLen = sizeof (key_type);
+          templ[1].pValue = &keytype;
+          templ[1].ulValueLen = sizeof (keytype);
 
           templ[2].type = CKA_ID;
           templ[2].pValue = (void *)id;
@@ -339,102 +531,31 @@ detect_key (int try_private, struct token *token)
           label[templ[0].ulValueLen] = 0;
           id[templ[2].ulValueLen] = 0;
 
-          printf ("handle: %ld label: %s key_type: %d id: %s\n",
-                  obj, label, key_type, id);
-
-          templ[0].type = CKA_ALLOWED_MECHANISMS;
-          templ[0].pValue = (void *)mechanisms;
-          templ[0].ulValueLen = sizeof (mechanisms);
-
-          if (key_type == CKK_RSA)
+          /* Locate matching private key.  */
+          for (i = 0; i < token->num_keys; i++)
             {
-              templ[1].type = CKA_MODULUS;
-              templ[1].pValue = (void *)modulus;
-              templ[1].ulValueLen = sizeof (modulus);
+              k = &token->key_list[i];
 
-              templ[2].type = CKA_PUBLIC_EXPONENT;
-              templ[2].pValue = (void *)exponent;
-              templ[2].ulValueLen = sizeof (exponent);
-
-              err = ck->f->C_GetAttributeValue (token->session, obj, templ, 3);
-              if (err)
-                {
-                  continue;
-                }
-
-              /* Found a RSA key.  */
-              printf ("RSA: %d %d %d\n",
-                      templ[0].ulValueLen,
-                      templ[1].ulValueLen,
-                      templ[2].ulValueLen);
-              puts ("Public key:");
-              for (i = 0; i < templ[1].ulValueLen; i++)
-                {
-                  printf ("%02x", modulus[i]);
-                  if ((i % 16) == 15)
-                    puts ("");
-                }
-              puts ("");
-
-              k->valid = 1;
-              k->p11_keyid = obj;
-              k->key_type = KEY_RSA;
-#ifdef COMPUTE_KEYGRIP
-              compute_keygrip_rsa (k->keygrip,
-                                   modulus, templ[0].ulValueLen,
-                                   exponent, templ[1].ulValueLen);
-#else
-              memcpy (k->keygrip, id, 40);
-              k->keygrip[40] = 0;
-#endif
-              cnt++;
+              if (k->valid == -1
+                  && k->label_len == templ[0].ulValueLen
+                  && memcmp (label, k->label, k->label_len) == 0
+                  && ((keytype == CKK_RSA && k->key_type == KEY_RSA)
+                      || (keytype == CKK_EC && k->key_type == KEY_EC))
+                  && k->id_len == templ[0].ulValueLen
+                  && memcmp (id, k->id, k->id_len) == 0)
+                break;
             }
-          else if (key_type == CKK_EC)
-            {
-              templ[1].type = CKA_EC_PARAMS;
-              templ[1].pValue = ecparams;
-              templ[1].ulValueLen = sizeof (ecparams);
 
-              templ[2].type = CKA_EC_POINT;
-              templ[2].pValue = (void *)ecpoint;
-              templ[2].ulValueLen = sizeof (ecpoint);
+          if (i == token->num_keys)
+            continue;
 
-              err = ck->f->C_GetAttributeValue (token->session, obj, templ, 3);
-              if (err)
-                {
-                  continue;
-                }
+          printf ("pub: handle: %ld label: %s key_type: %d id: %s\n",
+                  obj, label, keytype, id);
 
-              /* Found an ECC key.  */
-              printf ("ECC: %d %d %d\n",
-                      templ[0].ulValueLen,
-                      templ[1].ulValueLen,
-                      templ[2].ulValueLen);
-              puts ("Public key:");
-              for (i = 0; i < templ[2].ulValueLen; i++)
-                {
-                  printf ("%02x", ecpoint[i]);
-                  if ((i % 16) == 15)
-                    puts ("");
-                }
-              puts ("");
-
-              k->valid = 1;
-              k->p11_keyid = obj;
-              k->key_type = KEY_EC;
-#ifdef COMPUTE_KEYGRIP
-              compute_keygrip_ec (k->keygrip,
-                                  ecparams, templ[1].ulValueLen,
-                                  ecpoint, templ[2].ulValueLen);
-#else
-              memcpy (k->keygrip, id, 40);
-              k->keygrip[40] = 0;
-#endif
-              cnt++;
-            }
+          if (examine_public_key (token, k, keytype, 0, obj))
+            continue;
         }
 
-      token->num_keys = cnt;
       err = ck->f->C_FindObjectsFinal (token->session);
       if (err)
         {
@@ -512,13 +633,31 @@ static long
 learn_keys (struct token *token)
 {
   unsigned long err = 0;
+  int i;
 
-  detect_key (1, token);
+  /* Detect private keys on the token.  */
+  detect_private_keys (token);
+
+  /*
+   * In some implementations (EC key on SoftHSMv2, for example),
+   * public key is not available in CKO_PRIVATE_KEY objects.
+   *
+   * So, try to examine CKO_PUBLIC_KEY objects, if it provides
+   * public keys.
+   */
+  check_public_keys (token);
+
+  for (i = 0; i < token->num_keys; i++)
+    {
+      struct key *k = &token->key_list[i];
+
+      if (k->valid == -1)
+        k->valid = 0;
+    }
+
 #if 0
-  if (token->num_keys == 0)
-    detect_key (0, token);
-#endif
   get_certificate (token);
+#endif
 
   return 0;
 }
@@ -539,9 +678,13 @@ find_key (struct cryptoki *ck, const char *keygrip, struct key **r_key)
         {
           struct key *k = &token->key_list[j];
 
+          if (k->valid != 1)
+            continue;
+
           if (memcmp (k->keygrip, keygrip, 40) == 0)
             {
               *r_key = k;
+              printf ("found a key at %d:%d\n", i, j);
               return 0;
             }
         }
@@ -676,6 +819,10 @@ main (int argc, const char *argv[])
         {
           unsigned char sig[1024];
           unsigned long siglen = sizeof (sig);
+
+          printf ("key object id: %d\n", k->p11_keyid);
+          printf ("key type: %d\n", k->key_type);
+          puts (k->keygrip);
 
           r = do_pksign (k, "test test", 9, sig, &siglen);
           if (!r)

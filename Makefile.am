@@ -87,6 +87,11 @@ scd = scd
 else
 scd =
 endif
+if BUILD_TKDAEMON
+tkd = tkd
+else
+tkd =
+endif
 if BUILD_G13
 g13 = g13
 else
@@ -114,7 +119,7 @@ tpm2d =
 endif
 
 SUBDIRS = m4 common regexp kbx \
-          ${gpg} ${sm} ${agent} ${scd} ${g13} ${dirmngr} \
+          ${gpg} ${sm} ${agent} ${scd} ${tkd} ${g13} ${dirmngr} \
           tools po ${doc} ${tests} ${tpm2d}
 
 dist_doc_DATA = README

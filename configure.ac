@@ -125,6 +125,7 @@ GNUPG_BUILD_PROGRAM(gpgsm, yes)
 # The agent is a required part and can't be disabled anymore.
 build_agent=yes
 GNUPG_BUILD_PROGRAM(scdaemon, yes)
+GNUPG_BUILD_PROGRAM(tkdaemon, yes)
 GNUPG_BUILD_PROGRAM(g13, no)
 GNUPG_BUILD_PROGRAM(dirmngr, yes)
 GNUPG_BUILD_PROGRAM(keyboxd, yes)
@@ -1840,6 +1841,7 @@ AM_CONDITIONAL(BUILD_GPG,         test "$build_gpg" = "yes")
 AM_CONDITIONAL(BUILD_GPGSM,       test "$build_gpgsm" = "yes")
 AM_CONDITIONAL(BUILD_AGENT,       test "$build_agent" = "yes")
 AM_CONDITIONAL(BUILD_SCDAEMON,    test "$build_scdaemon" = "yes")
+AM_CONDITIONAL(BUILD_TKDAEMON,    test "$build_tkdaemon" = "yes")
 AM_CONDITIONAL(BUILD_G13,         test "$build_g13" = "yes")
 AM_CONDITIONAL(BUILD_DIRMNGR,     test "$build_dirmngr" = "yes")
 AM_CONDITIONAL(BUILD_KEYBOXD,     test "$build_keyboxd" = "yes")
@@ -2088,6 +2090,7 @@ g10/Makefile
 sm/Makefile
 agent/Makefile
 scd/Makefile
+tkd/Makefile
 tpm2d/Makefile
 g13/Makefile
 dirmngr/Makefile
