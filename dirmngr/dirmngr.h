@@ -166,6 +166,7 @@ struct
 #define DBG_NETWORK_VALUE 2048  /* debug network I/O.  */
 #define DBG_LOOKUP_VALUE  8192  /* debug lookup details */
 #define DBG_EXTPROG_VALUE 16384 /* debug external program calls */
+#define DBG_KEEPTMP_VALUE 32768 /* keep some temporary files    */
 
 #define DBG_X509    (opt.debug & DBG_X509_VALUE)
 #define DBG_CRYPTO  (opt.debug & DBG_CRYPTO_VALUE)
@@ -177,6 +178,7 @@ struct
 #define DBG_NETWORK (opt.debug & DBG_NETWORK_VALUE)
 #define DBG_LOOKUP  (opt.debug & DBG_LOOKUP_VALUE)
 #define DBG_EXTPROG (opt.debug & DBG_EXTPROG_VALUE)
+#define DBG_KEEPTMP (opt.debug & DBG_KEEPTMP_VALUE)
 
 /* A simple list of certificate references.  FIXME: Better use
    certlist_t also for references (Store NULL at .cert) */

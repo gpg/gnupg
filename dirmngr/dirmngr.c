@@ -324,6 +324,7 @@ static struct debug_flags_s debug_flags [] =
     { DBG_NETWORK_VALUE, "network" },
     { DBG_LOOKUP_VALUE , "lookup"  },
     { DBG_EXTPROG_VALUE, "extprog" },
+    { DBG_KEEPTMP_VALUE, "keeptmp" },
     { 77, NULL } /* 77 := Do not exit on "help" or "?".  */
   };
 
@@ -534,7 +535,7 @@ set_debug (void)
          select the highest debug value and would then clutter their
          disk with debug files which may reveal confidential data.  */
       if (numok)
-        opt.debug &= ~(DBG_HASHING_VALUE);
+        opt.debug &= ~(DBG_HASHING_VALUE|DBG_KEEPTMP_VALUE);
     }
   else
     {
