@@ -326,7 +326,7 @@ struct prkdf_object_s
   char *serial_number;
 
   /* KDF/KEK parameter for OpenPGP's ECDH.  First byte is zero if not
-   * available. .*/
+   * available.  */
   unsigned char ecdh_kdf[4];
 
   /* Length and allocated buffer with the Id of this object. */
