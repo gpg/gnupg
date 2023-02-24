@@ -101,6 +101,7 @@ struct key {
   unsigned char id[256];
   unsigned long id_len;
   /* Allowed mechanisms???  */
+  ck_mechanism_type_t mechanism;
 };
 
 struct token {
@@ -309,14 +310,6 @@ examine_public_key (struct token *token, struct key *k, unsigned long keytype,
   unsigned long mechanisms[3];
   int i;
 
-  /* Yubkey YKCS doesn't offer CKA_ALLOWED_MECHANISMS,
-     unfortunately.  */
-#if 0
-  templ[0].type = CKA_ALLOWED_MECHANISMS;
-  templ[0].pValue = (void *)mechanisms;
-  templ[0].ulValueLen = sizeof (mechanisms);
-#endif
-
   if (keytype == CKK_RSA)
     {
       k->valid = 1;
@@ -355,6 +348,8 @@ examine_public_key (struct token *token, struct key *k, unsigned long keytype,
                            modulus, templ[0].ulValueLen,
                            exponent, templ[1].ulValueLen);
       puts (k->keygrip);
+
+      k->mechanism = CKM_RSA_PKCS;
     }
   else if (keytype == CKK_EC)
     {
@@ -394,6 +389,33 @@ examine_public_key (struct token *token, struct key *k, unsigned long keytype,
       puts (curve);
       compute_keygrip_ec (k->keygrip, curve, ecpoint, templ[1].ulValueLen);
       puts (k->keygrip);
+
+      templ[0].type = CKA_ALLOWED_MECHANISMS;
+      templ[0].pValue = (void *)mechanisms;
+      templ[0].ulValueLen = sizeof (mechanisms);
+
+      err = ck->f->C_GetAttributeValue (token->session, obj, templ, 1);
+      if (!err)
+        {
+          if (templ[0].ulValueLen)
+            {
+              /* Scute works well.  */
+              printf ("mechanism: %x %d\n", mechanisms[0], templ[0].ulValueLen);
+              k->mechanism = mechanisms[0];
+            }
+          else
+            {
+              puts ("SoftHSMv2???");
+              k->mechanism = CKM_ECDSA;
+            }
+        }
+      else
+        {
+          /* Yubkey YKCS doesn't offer CKA_ALLOWED_MECHANISMS,
+             unfortunately.  */
+          puts ("Yubikey???");
+          k->mechanism = CKM_ECDSA_SHA256;
+        }
     }
 
   return 0;
@@ -543,7 +565,7 @@ check_public_keys (struct token *token)
                   && memcmp (label, k->label, k->label_len) == 0
                   && ((keytype == CKK_RSA && k->key_type == KEY_RSA)
                       || (keytype == CKK_EC && k->key_type == KEY_EC))
-                  && k->id_len == templ[0].ulValueLen
+                  && k->id_len == templ[2].ulValueLen
                   && memcmp (id, k->id, k->id_len) == 0)
                 break;
             }
@@ -714,6 +736,7 @@ do_pksign (struct key *key,
   unsigned char data[1024];
   unsigned long data_len;
 
+  mechanism = key->mechanism;
   if (key->key_type == KEY_RSA)
     {
       size_t asnlen = sizeof (data);
@@ -722,11 +745,23 @@ do_pksign (struct key *key,
       gcry_md_hash_buffer (GCRY_MD_SHA256, data+asnlen,
                            u_data, u_data_len);
       data_len = asnlen+gcry_md_get_algo_dlen (GCRY_MD_SHA256);
-
-      mechanism = CKM_RSA_PKCS;
     }
   else if (key->key_type == KEY_EC)
-    mechanism = CKM_ECDSA_SHA256;
+    {
+      if (mechanism == CKM_ECDSA)
+        {
+          /* SoftHSMv2 */
+          memcpy (data, u_data, u_data_len);
+          data_len = u_data_len;
+        }
+      else
+        {
+          /* Scute, YKCS11 */
+          /* XXX: check hash algo and dispatch */
+          gcry_md_hash_buffer (GCRY_MD_SHA256, data, u_data, u_data_len);
+          data_len = gcry_md_get_algo_dlen (GCRY_MD_SHA256);
+        }
+    }
   else if (key->key_type == KEY_EDDSA)
     mechanism = CKM_EDDSA;
 
@@ -736,6 +771,11 @@ do_pksign (struct key *key,
 
   err = ck->f->C_SignInit (token->session, &mechanism_struct,
                            key->p11_keyid);
+  if (err)
+    {
+      printf ("C_SignInit error: %d", err);
+      return err;
+    }
 
   err = ck->f->C_Sign (token->session,
                        data, data_len,
