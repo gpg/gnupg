@@ -637,15 +637,18 @@ learn_keys (struct token *token)
   unsigned long err = 0;
   int i;
 
-  /* Detect private keys on the token.  */
+  /* Detect private keys on the token.
+   * It's good if it also offers raw public key material.
+   */
   detect_private_keys (token);
 
   /*
    * In some implementations (EC key on SoftHSMv2, for example),
-   * public key is not available in CKO_PRIVATE_KEY objects.
+   * attributes for raw public key material is not available in
+   * a CKO_PRIVATE_KEY object.
    *
-   * So, try to examine CKO_PUBLIC_KEY objects, if it provides
-   * public keys.
+   * We try to examine CKO_PUBLIC_KEY objects, too see if it provides
+   * raw public key material in a CKO_PUBLIC_KEY object.
    */
   check_public_keys (token);
 
@@ -658,6 +661,8 @@ learn_keys (struct token *token)
     }
 
 #if 0
+  /* Another way to get raw public key material is get it from the
+     certificate, if available. */
   get_certificate (token);
 #endif
 
@@ -801,7 +806,7 @@ main (int argc, const char *argv[])
             }
 
           /* XXX: Support each PIN for each token.  */
-          if (pin)
+          if (token->login_required && pin)
             login (token, pin, pin_len);
 
 	  puts ("************");
@@ -841,6 +846,9 @@ main (int argc, const char *argv[])
   for (i = 0; i < num_slots; i++)
     {
       struct token *token = &ck->token_list[i];
+
+      if (token->valid && token->login_required && pin)
+        logout (token);
 
       close_session (token);
     }
