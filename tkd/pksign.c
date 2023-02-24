@@ -309,9 +309,13 @@ examine_public_key (struct token *token, struct key *k, unsigned long keytype,
   unsigned long mechanisms[3];
   int i;
 
+  /* Yubkey YKCS doesn't offer CKA_ALLOWED_MECHANISMS,
+     unfortunately.  */
+#if 0
   templ[0].type = CKA_ALLOWED_MECHANISMS;
   templ[0].pValue = (void *)mechanisms;
   templ[0].ulValueLen = sizeof (mechanisms);
+#endif
 
   if (keytype == CKK_RSA)
     {
@@ -320,15 +324,15 @@ examine_public_key (struct token *token, struct key *k, unsigned long keytype,
         k->p11_keyid = obj;
       k->key_type = KEY_RSA;
 
-      templ[1].type = CKA_MODULUS;
-      templ[1].pValue = (void *)modulus;
-      templ[1].ulValueLen = sizeof (modulus);
+      templ[0].type = CKA_MODULUS;
+      templ[0].pValue = (void *)modulus;
+      templ[0].ulValueLen = sizeof (modulus);
 
-      templ[2].type = CKA_PUBLIC_EXPONENT;
-      templ[2].pValue = (void *)exponent;
-      templ[2].ulValueLen = sizeof (exponent);
+      templ[1].type = CKA_PUBLIC_EXPONENT;
+      templ[1].pValue = (void *)exponent;
+      templ[1].ulValueLen = sizeof (exponent);
 
-      err = ck->f->C_GetAttributeValue (token->session, obj, templ, 3);
+      err = ck->f->C_GetAttributeValue (token->session, obj, templ, 2);
       if (err)
         {
           k->valid = -1;
@@ -338,19 +342,18 @@ examine_public_key (struct token *token, struct key *k, unsigned long keytype,
       if ((modulus[0] & 0x80))
         {
           memmove (modulus+1, modulus, templ[1].ulValueLen);
-          templ[1].ulValueLen++;
+          templ[0].ulValueLen++;
           modulus[0] = 0;
         }
 
       /* Found a RSA key.  */
-      printf ("RSA: %d %d %d\n",
+      printf ("RSA: %d %d\n",
               templ[0].ulValueLen,
-              templ[1].ulValueLen,
-              templ[2].ulValueLen);
+              templ[1].ulValueLen);
       puts ("Public key:");
       compute_keygrip_rsa (k->keygrip,
-                           modulus, templ[1].ulValueLen,
-                           exponent, templ[2].ulValueLen);
+                           modulus, templ[0].ulValueLen,
+                           exponent, templ[1].ulValueLen);
       puts (k->keygrip);
     }
   else if (keytype == CKK_EC)
@@ -363,15 +366,15 @@ examine_public_key (struct token *token, struct key *k, unsigned long keytype,
         k->p11_keyid = obj;
       k->key_type = KEY_EC;
 
-      templ[1].type = CKA_EC_PARAMS;
-      templ[1].pValue = ecparams;
-      templ[1].ulValueLen = sizeof (ecparams);
+      templ[0].type = CKA_EC_PARAMS;
+      templ[0].pValue = ecparams;
+      templ[0].ulValueLen = sizeof (ecparams);
 
-      templ[2].type = CKA_EC_POINT;
-      templ[2].pValue = (void *)ecpoint;
-      templ[2].ulValueLen = sizeof (ecpoint);
+      templ[1].type = CKA_EC_POINT;
+      templ[1].pValue = (void *)ecpoint;
+      templ[1].ulValueLen = sizeof (ecpoint);
 
-      err = ck->f->C_GetAttributeValue (token->session, obj, templ, 3);
+      err = ck->f->C_GetAttributeValue (token->session, obj, templ, 2);
       if (err)
         {
           k->valid = -1;
@@ -379,18 +382,17 @@ examine_public_key (struct token *token, struct key *k, unsigned long keytype,
         }
 
       /* Found an ECC key.  */
-      printf ("ECC: %d %d %d\n",
+      printf ("ECC: %d %d\n",
               templ[0].ulValueLen,
-              templ[1].ulValueLen,
-              templ[2].ulValueLen);
+              templ[1].ulValueLen);
 
-      curve_oid = openpgp_oidbuf_to_str (ecparams+1, templ[1].ulValueLen-1);
+      curve_oid = openpgp_oidbuf_to_str (ecparams+1, templ[0].ulValueLen-1);
       curve = openpgp_oid_to_curve (curve_oid, 1);
       xfree (curve_oid);
 
       puts ("Public key:");
       puts (curve);
-      compute_keygrip_ec (k->keygrip, curve, ecpoint, templ[2].ulValueLen);
+      compute_keygrip_ec (k->keygrip, curve, ecpoint, templ[1].ulValueLen);
       puts (k->keygrip);
     }
 
@@ -460,8 +462,8 @@ detect_private_keys (struct token *token)
           k->id_len = templ[2].ulValueLen;
           k->id[k->id_len] = 0;
 
-          printf ("handle: %ld label: %s key_type: %d id: %s\n",
-                  obj, k->label, keytype, k->id);
+          printf ("slot: %x handle: %ld label: %s key_type: %d id: %s\n",
+                  token->slot_id, obj, k->label, keytype, k->id);
 
           if (examine_public_key (token, k, keytype, 1, obj))
             continue;
@@ -549,8 +551,8 @@ check_public_keys (struct token *token)
           if (i == token->num_keys)
             continue;
 
-          printf ("pub: handle: %ld label: %s key_type: %d id: %s\n",
-                  obj, label, keytype, id);
+          printf ("pub: slot: %x handle: %ld label: %s key_type: %d id: %s\n",
+                  token->slot_id, obj, label, keytype, id);
 
           if (examine_public_key (token, k, keytype, 0, obj))
             continue;
