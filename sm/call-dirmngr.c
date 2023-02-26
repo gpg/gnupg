@@ -386,8 +386,8 @@ inq_certificate (void *opaque, const char *line)
       int err;
       ksba_cert_t cert;
 
-
-      err = gpgsm_find_cert (parm->ctrl, line, ski, &cert, 1);
+      err = gpgsm_find_cert (parm->ctrl, line, ski, &cert,
+                             FIND_CERT_ALLOW_AMBIG|FIND_CERT_WITH_EPHEM);
       if (err)
         {
           log_error ("certificate not found: %s\n", gpg_strerror (err));
@@ -1014,7 +1014,8 @@ run_command_inq_cb (void *opaque, const char *line)
       if (!*line)
         return gpg_error (GPG_ERR_ASS_PARAMETER);
 
-      err = gpgsm_find_cert (parm->ctrl, line, NULL, &cert, 1);
+      err = gpgsm_find_cert (parm->ctrl, line, NULL, &cert,
+                             FIND_CERT_ALLOW_AMBIG);
       if (err)
         {
           log_error ("certificate not found: %s\n", gpg_strerror (err));
