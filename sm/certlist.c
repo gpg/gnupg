@@ -514,11 +514,12 @@ gpgsm_release_certlist (certlist_t list)
 int
 gpgsm_find_cert (ctrl_t ctrl,
                  const char *name, ksba_sexp_t keyid, ksba_cert_t *r_cert,
-                 int allow_ambiguous)
+                 unsigned int flags)
 {
   int rc;
   KEYDB_SEARCH_DESC desc;
   KEYDB_HANDLE kh = NULL;
+  int allow_ambiguous = (flags & FIND_CERT_ALLOW_AMBIG);
 
   *r_cert = NULL;
   rc = classify_user_id (name, &desc, 0);
@@ -529,6 +530,9 @@ gpgsm_find_cert (ctrl_t ctrl,
         rc = gpg_error (GPG_ERR_ENOMEM);
       else
         {
+          if ((flags & FIND_CERT_WITH_EPHEM))
+            keydb_set_ephemeral (kh, 1);
+
         nextone:
           rc = keydb_search (ctrl, kh, &desc, 1);
           if (!rc)
