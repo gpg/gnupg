@@ -189,11 +189,12 @@ static gpg_error_t
 cmd_slotlist (assuan_context_t ctx, char *line)
 {
   ctrl_t ctrl = assuan_get_pointer (ctx);
-  gpg_error_t err = 0;
+  gpg_error_t err;
 
   line = skip_options (line);
+  (void)line;
 
-  (void)ctrl;
+  err = token_slotlist (ctrl);
   return err;
 }
 
@@ -216,7 +217,6 @@ cmd_readkey (assuan_context_t ctx, char *line)
   int opt_nokey = 0;
   unsigned char *pk = NULL;
   size_t pklen;
-  token_t token;
   const char *keygrip;
 
   if (has_option (line, "--format=advanced"))
@@ -232,15 +232,7 @@ cmd_readkey (assuan_context_t ctx, char *line)
   if (strlen (keygrip) != 40)
     err = gpg_error (GPG_ERR_INV_ID);
 
-  token = token_get (ctrl, keygrip);
-  if (token)
-    {
-      err = token_readkey (token, opt_info, &pk, &pklen);
-      token_put (token);
-    }
-  else
-    err = gpg_error (GPG_ERR_NO_SECKEY);
-
+  err = token_readkey (ctrl, keygrip, opt_info, &pk, &pklen);
   if (err)
     goto leave;
 
@@ -325,7 +317,6 @@ cmd_pksign (assuan_context_t ctx, char *line)
   gpg_error_t err;
   int hash_algo;
   const char *keygrip;
-  token_t token;
   unsigned char *outdata;
   size_t outdatalen;
 
@@ -347,15 +338,7 @@ cmd_pksign (assuan_context_t ctx, char *line)
   if (strlen (keygrip) != 40)
     err = gpg_error (GPG_ERR_INV_ID);
 
-  token = token_get (ctrl, keygrip);
-  if (token)
-    {
-      err = token_sign (token, keygrip, hash_algo, &outdata, &outdatalen);
-      token_put (token);
-    }
-  else
-    err = gpg_error (GPG_ERR_NO_SECKEY);
-
+  err = token_sign (ctrl, keygrip, hash_algo, &outdata, &outdatalen);
   if (err)
     {
       log_error ("token_sign failed: %s\n", gpg_strerror (err));
@@ -415,6 +398,7 @@ static const char hlp_keyinfo[] =
 static gpg_error_t
 cmd_keyinfo (assuan_context_t ctx, char *line)
 {
+  gpg_error_t err;
   int cap;
   int opt_data;
   const char *keygrip = NULL;
@@ -434,9 +418,9 @@ cmd_keyinfo (assuan_context_t ctx, char *line)
   else
     keygrip = skip_options (line);
 
-  token_keyinfo (ctrl, keygrip, opt_data, cap);
+  err = token_keyinfo (ctrl, keygrip, opt_data, cap);
 
-  return 0;
+  return err;
 }
 
 

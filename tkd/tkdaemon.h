@@ -107,4 +107,18 @@ void send_keyinfo (ctrl_t ctrl, int data, const char *keygrip_str,
                    const char *serialno, const char *idstr,
                    const char *usage);
 
+/*-- pkcs11.c --*/
+gpg_error_t token_slotlist (ctrl_t ctrl);
+gpg_error_t token_sign (ctrl_t ctrl,
+			const char *keygrip, int hash_algo,
+			unsigned char **r_outdata,
+			size_t *r_outdatalen);
+gpg_error_t token_readkey (ctrl_t ctrl,
+			   const char *keygrip, int opt_info,
+			   unsigned char **r_pk,
+			   size_t *r_pklen);
+gpg_error_t token_keyinfo (ctrl_t ctrl, const char *keygrip,
+			   int opt_data, int cap);
+
+
 #endif /*TKDAEMON_H*/

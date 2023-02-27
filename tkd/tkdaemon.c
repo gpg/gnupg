@@ -41,8 +41,8 @@
 #define INCLUDED_BY_MAIN_MODULE 1
 #define GNUPG_COMMON_NEED_AFLOCAL
 #include "tkdaemon.h"
-#include <gcrypt.h>
 
+#include <gcrypt.h>
 #include <assuan.h> /* malloc hooks */
 
 #include "../common/i18n.h"

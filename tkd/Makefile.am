@@ -35,8 +35,3 @@ tkdaemon_LDADD = $(libcommonpth) \
 	$(LIBGCRYPT_LIBS) $(LIBASSUAN_LIBS) $(NPTH_LIBS) \
 	$(GPG_ERROR_LIBS) \
         $(LIBINTL) $(DL_LIBS) $(NETLIBS) $(LIBICONV)
-
-pksign_LDADD = $(libcommonpth) \
-	$(LIBGCRYPT_LIBS) $(LIBASSUAN_LIBS) $(NPTH_LIBS) \
-	$(GPG_ERROR_LIBS) \
-        $(LIBINTL) $(DL_LIBS) $(NETLIBS) $(LIBICONV)
