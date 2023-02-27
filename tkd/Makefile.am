@@ -18,9 +18,7 @@
 
 EXTRA_DIST =
 
-# libexec_PROGRAMS = tkdaemon
-
-noinst_PROGRAMS = pksign
+libexec_PROGRAMS = tkdaemon
 
 AM_CPPFLAGS =
 
@@ -31,7 +29,7 @@ include $(top_srcdir)/am/cmacros.am
 
 tkdaemon_SOURCES = \
 	tkdaemon.c tkdaemon.h \
-	command.c
+	command.c pkcs11.c
 
 tkdaemon_LDADD = $(libcommonpth) \
 	$(LIBGCRYPT_LIBS) $(LIBASSUAN_LIBS) $(NPTH_LIBS) \

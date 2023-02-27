@@ -213,6 +213,9 @@ notify_cb (ck_session_handle_t session,
   struct p11dev *priv = application;
 
   (void)priv;
+  (void)session;
+  (void)event;
+  (void)application;
   return 0;
 }
 
@@ -224,7 +227,6 @@ open_session (struct token *token)
   ck_slot_id_t slot_id = token->slot_id;
   ck_session_handle_t session_handle;
   ck_flags_t session_flags;
-  int option = 0;
 
   session_flags = CKU_USER;
   // session_flags = session_flags | CKF_RW_SESSION;
@@ -234,7 +236,7 @@ open_session (struct token *token)
                               (void *)&p11_priv, notify_cb, &session_handle);
   if (err)
     {
-      printf ("open_session: %d\n", err);
+      log_debug ("open_session: %ld\n", err);
       return -1;
     }
 
@@ -308,7 +310,6 @@ examine_public_key (struct token *token, struct key *k, unsigned long keytype,
   unsigned char ecpoint[256];
   struct ck_attribute templ[3];
   unsigned long mechanisms[3];
-  int i;
 
   if (keytype == CKK_RSA)
     {
@@ -340,9 +341,9 @@ examine_public_key (struct token *token, struct key *k, unsigned long keytype,
         }
 
       /* Found a RSA key.  */
-      printf ("RSA: %d %d\n",
-              templ[0].ulValueLen,
-              templ[1].ulValueLen);
+      log_debug ("RSA: %ld %ld\n",
+                 templ[0].ulValueLen,
+                 templ[1].ulValueLen);
       puts ("Public key:");
       compute_keygrip_rsa (k->keygrip,
                            modulus, templ[0].ulValueLen,
@@ -377,9 +378,9 @@ examine_public_key (struct token *token, struct key *k, unsigned long keytype,
         }
 
       /* Found an ECC key.  */
-      printf ("ECC: %d %d\n",
-              templ[0].ulValueLen,
-              templ[1].ulValueLen);
+      log_debug ("ECC: %ld %ld\n",
+                 templ[0].ulValueLen,
+                 templ[1].ulValueLen);
 
       curve_oid = openpgp_oidbuf_to_str (ecparams+1, templ[0].ulValueLen-1);
       curve = openpgp_oid_to_curve (curve_oid, 1);
@@ -400,7 +401,7 @@ examine_public_key (struct token *token, struct key *k, unsigned long keytype,
           if (templ[0].ulValueLen)
             {
               /* Scute works well.  */
-              printf ("mechanism: %x %d\n", mechanisms[0], templ[0].ulValueLen);
+              log_debug ("mechanism: %lx %ld\n", mechanisms[0], templ[0].ulValueLen);
               k->mechanism = mechanisms[0];
             }
           else
@@ -434,7 +435,6 @@ detect_private_keys (struct token *token)
 
   unsigned long cnt = 0;
   ck_object_handle_t obj;
-  int i;
 
   class = CKO_PRIVATE_KEY;
   templ[0].type = CKA_CLASS;
@@ -484,8 +484,8 @@ detect_private_keys (struct token *token)
           k->id_len = templ[2].ulValueLen;
           k->id[k->id_len] = 0;
 
-          printf ("slot: %x handle: %ld label: %s key_type: %d id: %s\n",
-                  token->slot_id, obj, k->label, keytype, k->id);
+          log_debug ("slot: %lx handle: %ld label: %s key_type: %ld id: %s\n",
+                     token->slot_id, obj, k->label, keytype, k->id);
 
           if (examine_public_key (token, k, keytype, 1, obj))
             continue;
@@ -573,7 +573,7 @@ check_public_keys (struct token *token)
           if (i == token->num_keys)
             continue;
 
-          printf ("pub: slot: %x handle: %ld label: %s key_type: %d id: %s\n",
+          log_debug ("pub: slot: %lx handle: %ld label: %s key_type: %ld id: %s\n",
                   token->slot_id, obj, label, keytype, id);
 
           if (examine_public_key (token, k, keytype, 0, obj))
@@ -588,6 +588,7 @@ check_public_keys (struct token *token)
     }
 }
 
+#if 0
 static long
 get_certificate (struct token *token)
 {
@@ -652,11 +653,11 @@ get_certificate (struct token *token)
 
   return 0;
 }
+#endif
 
 static long
 learn_keys (struct token *token)
 {
-  unsigned long err = 0;
   int i;
 
   /* Detect private keys on the token.
@@ -773,7 +774,7 @@ do_pksign (struct key *key,
                            key->p11_keyid);
   if (err)
     {
-      printf ("C_SignInit error: %d", err);
+      log_error ("C_SignInit error: %ld", err);
       return err;
     }
 
@@ -786,7 +787,7 @@ do_pksign (struct key *key,
   return 0;
 }
 
-
+#ifdef TESTING
 int
 main (int argc, const char *argv[])
 {
@@ -896,9 +897,4 @@ main (int argc, const char *argv[])
   ck->f->C_Finalize (NULL);
   return 0;
 }
-
-/*
-cc -g -o test_tk pksign.c -lgcrypt
-./test_tk /usr/lib/softhsm/libsofthsm2.so <KEYGRIP> 5678
-./test_tk /usr/local/lib/x86_64-linux-gnu/scute.so <KEYGRIP>
- */
+#endif

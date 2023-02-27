@@ -187,6 +187,13 @@ AM_CONDITIONAL(GNUPG_SCDAEMON_PGM, test -n "$GNUPG_SCDAEMON_PGM")
 show_gnupg_scdaemon_pgm="(default)"
 test -n "$GNUPG_SCDAEMON_PGM" && show_gnupg_scdaemon_pgm="$GNUPG_SCDAEMON_PGM"
 
+AC_ARG_WITH(tkdaemon-pgm,
+    [  --with-tkdaemon-pgm=PATH  Use PATH as the default for the tkdaemon)],
+          GNUPG_TKDAEMON_PGM="$withval", GNUPG_TKDAEMON_PGM="" )
+AC_SUBST(GNUPG_TKDAEMON_PGM)
+AM_CONDITIONAL(GNUPG_TKDAEMON_PGM, test -n "$GNUPG_TKDAEMON_PGM")
+show_gnupg_tkdaemon_pgm="(default)"
+test -n "$GNUPG_TKDAEMON_PGM" && show_gnupg_tkdaemon_pgm="$GNUPG_TKDAEMON_PGM"
 
 AC_ARG_WITH(tpm2daemon-pgm,
     [  --with-tpm2daemon-pgm=PATH  Use PATH as the default for the tpm2daemon)],
@@ -1870,6 +1877,9 @@ fi
 if test "$build_scdaemon" = yes ; then
     AC_DEFINE(BUILD_WITH_SCDAEMON,1,[Defined if SCDAEMON is to be build])
 fi
+if test "$build_tkdaemon" = yes ; then
+    AC_DEFINE(BUILD_WITH_TKDAEMON,1,[Defined if TKDAEMON is to be build])
+fi
 if test "$build_dirmngr" = yes ; then
     AC_DEFINE(BUILD_WITH_DIRMNGR,1,[Defined if DIRMNGR is to be build])
 fi
@@ -1907,6 +1917,10 @@ AC_DEFINE_UNQUOTED(SCDAEMON_NAME, "scdaemon", [The name of the scdaemon])
 AC_DEFINE_UNQUOTED(SCDAEMON_DISP_NAME, "SCDaemon",
                                        [The displayed name of scdaemon])
 
+AC_DEFINE_UNQUOTED(TKDAEMON_NAME, "tkdaemon", [The name of the tkdaemon])
+AC_DEFINE_UNQUOTED(TKDAEMON_DISP_NAME, "TKDaemon",
+                                       [The displayed name of tkdaemon])
+
 AC_DEFINE_UNQUOTED(DIRMNGR_NAME, "dirmngr", [The name of the dirmngr])
 AC_DEFINE_UNQUOTED(DIRMNGR_DISP_NAME, "DirMngr",
                                       [The displayed name of dirmngr])
@@ -1936,6 +1950,8 @@ AC_DEFINE_UNQUOTED(DIRMNGR_INFO_NAME, "DIRMNGR_INFO",
                    [The name of the dirmngr info envvar])
 AC_DEFINE_UNQUOTED(SCDAEMON_SOCK_NAME, "S.scdaemon",
                    [The name of the SCdaemon socket])
+AC_DEFINE_UNQUOTED(TKDAEMON_SOCK_NAME, "S.tkdaemon",
+                   [The name of the TKDaemon socket])
 AC_DEFINE_UNQUOTED(KEYBOXD_SOCK_NAME, "S.keyboxd",
                    [The name of the keyboxd socket])
 AC_DEFINE_UNQUOTED(TPM2DAEMON_SOCK_NAME, "S.tpm2daemon",
@@ -2131,6 +2147,7 @@ echo "
         S/MIME:    $build_gpgsm
         Agent:     $build_agent
         Smartcard: $build_scdaemon $build_scdaemon_extra
+        token:     $build_tkdaemon $build_tkdaemon_extra
         TPM:       $build_tpm2d $show_tss_type
         G13:       $build_g13
         Dirmngr:   $build_dirmngr
@@ -2143,6 +2160,7 @@ echo "
         Default agent:      $show_gnupg_agent_pgm
         Default pinentry:   $show_gnupg_pinentry_pgm
         Default scdaemon:   $show_gnupg_scdaemon_pgm
+        Default tkdaemon:   $show_gnupg_tkdaemon_pgm
         Default keyboxd:    $show_gnupg_keyboxd_pgm
         Default tpm2daemon: $show_gnupg_tpm2daemon_pgm
         Default dirmngr:    $show_gnupg_dirmngr_pgm

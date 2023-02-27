@@ -50,6 +50,7 @@ static struct {
   { "GPGSM",     GPGSM_NAME },
   { "GPG_AGENT", GPG_AGENT_NAME },
   { "SCDAEMON",  SCDAEMON_NAME },
+  { "TKDAEMON",  TKDAEMON_NAME },
   { "TPM2DAEMON",TPM2DAEMON_NAME},
   { "DIRMNGR",   DIRMNGR_NAME },
   { "G13",       G13_NAME },
