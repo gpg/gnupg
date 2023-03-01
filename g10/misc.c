@@ -777,21 +777,21 @@ openpgp_pk_algo_usage ( int algo )
     switch ( algo ) {
       case PUBKEY_ALGO_RSA:
           use = (PUBKEY_USAGE_CERT | PUBKEY_USAGE_SIG
-                 | PUBKEY_USAGE_ENC | PUBKEY_USAGE_AUTH);
+                 | PUBKEY_USAGE_ENC | PUBKEY_USAGE_RENC | PUBKEY_USAGE_AUTH);
           break;
       case PUBKEY_ALGO_RSA_E:
       case PUBKEY_ALGO_ECDH:
-          use = PUBKEY_USAGE_ENC;
+          use = PUBKEY_USAGE_ENC | PUBKEY_USAGE_RENC;
           break;
       case PUBKEY_ALGO_RSA_S:
           use = PUBKEY_USAGE_CERT | PUBKEY_USAGE_SIG;
           break;
       case PUBKEY_ALGO_ELGAMAL:
           if (RFC2440)
-             use = PUBKEY_USAGE_ENC;
+             use = PUBKEY_USAGE_ENC | PUBKEY_USAGE_RENC;
           break;
       case PUBKEY_ALGO_ELGAMAL_E:
-          use = PUBKEY_USAGE_ENC;
+          use = PUBKEY_USAGE_ENC | PUBKEY_USAGE_RENC;
           break;
       case PUBKEY_ALGO_DSA:
           use = PUBKEY_USAGE_CERT | PUBKEY_USAGE_SIG | PUBKEY_USAGE_AUTH;

@@ -1067,6 +1067,15 @@ signing.
   "sensitive". If a designated revoker is marked as sensitive, it will
   not be exported by default (see export-options).
 
+  @item addadsk
+  @opindex keyedit:addadsk
+  Add an Additional Decryption Subkey.  The user is asked to enter the
+  fingerprint of another encryption subkey.  Note that the exact
+  fingerprint of another key's encryption subkey needs to be entered.
+  This is because commonly the primary key has no encryption
+  capability.  Use the option @option{--with-subkey-fingerprint} with
+  a list command to display the subkey fingerprints.
+
   @item passwd
   @opindex keyedit:passwd
   Change the passphrase of the secret key.

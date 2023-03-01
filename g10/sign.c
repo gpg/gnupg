@@ -50,11 +50,6 @@
 #endif
 
 
-/* Bitflags to convey hints on what kind of signayire is created.  */
-#define SIGNHINT_KEYSIG  1
-#define SIGNHINT_SELFSIG 2
-
-
 /* Hack */
 static int recipient_digest_algo;
 
@@ -416,7 +411,10 @@ do_sign (ctrl_t ctrl, PKT_public_key *pksk, PKT_signature *sig,
   byte *dp;
   char *hexgrip;
 
-  if (pksk->timestamp > sig->timestamp )
+  /* An ADSK key commonly has a creation date older than the primary
+   * key.  For example because the ADSK is used as an archive key for
+   * a group of users.  */
+  if (pksk->timestamp > sig->timestamp && !(signhints & SIGNHINT_ADSK))
     {
       ulong d = pksk->timestamp - sig->timestamp;
       log_info (ngettext("key %s was created %lu second"
@@ -964,7 +962,7 @@ write_signature_packets (ctrl_t ctrl,
       if (gcry_md_copy (&md, hash))
         BUG ();
 
-      build_sig_subpkt_from_sig (sig, pk);
+      build_sig_subpkt_from_sig (sig, pk, 0);
       mk_notation_policy_etc (ctrl, sig, NULL, pk);
       if (opt.flags.include_key_block && IS_SIG (sig))
         err = mk_sig_subpkt_key_block (ctrl, sig, pk);
@@ -1758,13 +1756,13 @@ sign_symencrypt_file (ctrl_t ctrl, const char *fname, strlist_t locusr)
  *
  * SIGCLASS is the type of signature to create.
  *
- * DIGEST_ALGO is the digest algorithm.  If it is 0 the function
- * selects an appropriate one.
- *
  * TIMESTAMP is the timestamp to use for the signature. 0 means "now"
  *
  * DURATION is the amount of time (in seconds) until the signature
  * expires.
+ *
+ * If CACHED_NONCE is not NULL the agent may use it to avoid
+ * additional pinnetry popups for the same keyblock.
  *
  * This function creates the following subpackets: issuer, created,
  * and expire (if duration is not 0).  Additional subpackets can be
@@ -1833,6 +1831,8 @@ make_keysig_packet (ctrl_t ctrl,
     {
       /* Hash the subkey binding/backsig/revocation.  */
       hash_public_key (md, subpk);
+      if ((subpk->pubkey_usage & PUBKEY_USAGE_RENC))
+        signhints |= SIGNHINT_ADSK;
     }
   else if (sigclass != 0x1F && sigclass != 0x20)
     {
@@ -1852,7 +1852,7 @@ make_keysig_packet (ctrl_t ctrl,
     sig->expiredate = sig->timestamp + duration;
   sig->sig_class = sigclass;
 
-  build_sig_subpkt_from_sig (sig, pksk);
+  build_sig_subpkt_from_sig (sig, pksk, signhints);
   mk_notation_policy_etc (ctrl, sig, pk, pksk);
 
   /* Crucial that the call to mksubpkt comes LAST before the calls
@@ -1976,6 +1976,12 @@ update_keysig_packet (ctrl_t ctrl,
       }
   }
 
+  /* Detect an ADSK key binding signature.  */
+  if ((sig->sig_class == 0x18
+       || sig->sig_class == 0x19 || sig->sig_class == 0x28)
+      && (pk->pubkey_usage & PUBKEY_USAGE_RENC))
+    signhints |= SIGNHINT_ADSK;
+
   /* Note that already expired sigs will remain expired (with a
    * duration of 1) since build-packet.c:build_sig_subpkt_from_sig
    * detects this case. */
@@ -1984,7 +1990,7 @@ update_keysig_packet (ctrl_t ctrl,
    * automagically lower any sig expiration dates to correctly
    * correspond to the differences in the timestamps (i.e. the
    * duration will shrink).  */
-  build_sig_subpkt_from_sig (sig, pksk);
+  build_sig_subpkt_from_sig (sig, pksk, signhints);
 
   if (mksubpkt)
     rc = (*mksubpkt)(sig, opaque);

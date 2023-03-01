@@ -468,6 +468,9 @@ void setup_main_keyids (kbnode_t keyblock);
    data structures.  */
 void merge_keys_and_selfsig (ctrl_t ctrl, kbnode_t keyblock);
 
+/* This function parses the key flags and returns PUBKEY_USAGE_ flags.  */
+unsigned int parse_key_usage (PKT_signature *sig);
+
 char *get_user_id_string_native (ctrl_t ctrl, u32 *keyid);
 char *get_long_user_id_string (ctrl_t ctrl, u32 *keyid);
 char *get_user_id (ctrl_t ctrl, u32 *keyid, size_t *rn, int *r_nouid);

@@ -1724,17 +1724,10 @@ Description of some debug flags:
 
 ** gnupg.org notations
 
-  - adsk@gnupg.org :: Additional decryption subkey.  This notation
-                      gives a list of keys an implementation SHOULD
-                      also encrypt to.  The data consists of an array
-                      of eight-octet numbers holding the Key ID of an
-                      encryption subkey.  This notation is only valid
-                      on an encryption subkey (i.e. with first octet
-                      of the key flags 0x04 or 0x08).  Subkeys not on
-                      the same keyblock MUST NOT be considered.  For
-                      interoperability this notation SHOULD NOT be
-                      marked as criticial.  Due to its nature it MUST
-                      NOT be marked as human readable.
+  - rem@gnupg.org :: Used by Kleopatra to implement the tag feature.
+                     These tags are used to mark keys for easier
+                     searching and grouping.
+
 
 ** Simplified revocation certificates
   Revocation certificates consist only of the signature packet;

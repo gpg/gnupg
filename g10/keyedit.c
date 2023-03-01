@@ -1,7 +1,7 @@
 /* keyedit.c - Edit properties of a key
  * Copyright (C) 1998-2010 Free Software Foundation, Inc.
  * Copyright (C) 1998-2017 Werner Koch
- * Copyright (C) 2015, 2016, 2022 g10 Code GmbH
+ * Copyright (C) 2015, 2016, 2022-2023 g10 Code GmbH
  *
  * This file is part of GnuPG.
  *
@@ -73,6 +73,7 @@ static int menu_delsig (ctrl_t ctrl, kbnode_t pub_keyblock);
 static int menu_clean (ctrl_t ctrl, kbnode_t keyblock, int self_only);
 static void menu_delkey (KBNODE pub_keyblock);
 static int menu_addrevoker (ctrl_t ctrl, kbnode_t pub_keyblock, int sensitive);
+static int menu_addadsk (ctrl_t ctrl, kbnode_t pub_keyblock);
 static gpg_error_t menu_expire (ctrl_t ctrl, kbnode_t pub_keyblock,
                                 int unattended, u32 newexpiration);
 static int menu_changeusage (ctrl_t ctrl, kbnode_t keyblock);
@@ -1243,7 +1244,7 @@ enum cmdids
   cmdREVSIG, cmdREVKEY, cmdREVUID, cmdDELSIG, cmdPRIMARY, cmdDEBUG,
   cmdSAVE, cmdADDUID, cmdADDPHOTO, cmdDELUID, cmdADDKEY, cmdDELKEY,
   cmdADDREVOKER, cmdTOGGLE, cmdSELKEY, cmdPASSWD, cmdTRUST, cmdPREF,
-  cmdEXPIRE, cmdCHANGEUSAGE, cmdBACKSIGN,
+  cmdEXPIRE, cmdCHANGEUSAGE, cmdBACKSIGN, cmdADDADSK,
 #ifndef NO_TRUST_MODELS
   cmdENABLEKEY, cmdDISABLEKEY,
 #endif /*!NO_TRUST_MODELS*/
@@ -1308,6 +1309,8 @@ static struct
   { "delkey", cmdDELKEY, 0, N_("delete selected subkeys")},
   { "addrevoker", cmdADDREVOKER,  KEYEDIT_NEED_SK,
     N_("add a revocation key")},
+  { "addadsk", cmdADDADSK,  KEYEDIT_NEED_SK,
+    N_("add additional decryption subkeys")},
   { "delsig", cmdDELSIG, 0,
     N_("delete signatures from the selected user IDs")},
   { "expire", cmdEXPIRE,  KEYEDIT_NEED_SK | KEYEDIT_NEED_SUBSK,
@@ -1998,6 +2001,15 @@ keyedit_menu (ctrl_t ctrl, const char *username, strlist_t locusr,
 		merge_keys_and_selfsig (ctrl, keyblock);
 	      }
 	  }
+	  break;
+
+	case cmdADDADSK:
+          if (menu_addadsk (ctrl, keyblock))
+            {
+              redisplay = 1;
+              modified = 1;
+              merge_keys_and_selfsig (ctrl, keyblock);
+            }
 	  break;
 
 	case cmdREVUID:
@@ -4640,6 +4652,159 @@ fail:
   free_public_key (revoker_pk);
 
   return 0;
+}
+
+
+/*
+ * Ask for a new additional decryption subkey and add it to the key
+ * block.  Returns true if the keybloxk was changed and false
+ * otherwise.
+ */
+static int
+menu_addadsk (ctrl_t ctrl, kbnode_t pub_keyblock)
+{
+  PKT_public_key *pk;
+  PKT_public_key *sub_pk;
+  PKT_public_key *main_pk;
+  PKT_public_key *adsk_pk = NULL;
+  kbnode_t adsk_keyblock = NULL;
+  PKT_signature *sig = NULL;
+  char *answer = NULL;
+  gpg_error_t err;
+  KEYDB_SEARCH_DESC desc;
+  byte fpr[MAX_FINGERPRINT_LEN];
+  size_t fprlen;
+  kbnode_t node, node2;
+  kbnode_t subkeynode = NULL;
+  PACKET *pkt;  /* (temp. use; will be put into a kbnode_t)  */
+
+  log_assert (pub_keyblock->pkt->pkttype == PKT_PUBLIC_KEY);
+  main_pk = pub_keyblock->pkt->pkt.public_key;
+
+  for (;;)
+    {
+      xfree (answer);
+      answer = cpr_get_utf8
+        ("keyedit.addadsk",
+         _("Enter the fingerprint of the additional decryption subkey: "));
+      if (answer[0] == '\0' || answer[0] == CONTROL_D)
+        {
+          err = gpg_error (GPG_ERR_CANCELED);
+          goto leave;
+        }
+      if (classify_user_id (answer, &desc, 1)
+          || desc.mode != KEYDB_SEARCH_MODE_FPR)
+        {
+          log_info (_("\"%s\" is not a fingerprint\n"), answer);
+          continue;
+        }
+
+      free_public_key (adsk_pk);
+      adsk_pk = xcalloc (1, sizeof *adsk_pk);
+      adsk_pk->req_usage = PUBKEY_USAGE_ENC;
+      release_kbnode (adsk_keyblock);
+      adsk_keyblock = NULL;
+      err = get_pubkey_byname (ctrl, GET_PUBKEY_NO_AKL,
+                               NULL, adsk_pk, answer, &adsk_keyblock, NULL, 1);
+      if (err)
+        {
+          log_info (_("key \"%s\" not found: %s\n"), answer,
+                    gpg_strerror (err));
+          if (!opt.batch && gpg_err_code (err) == GPG_ERR_UNUSABLE_PUBKEY)
+            log_info (_("Did you specify the fingerprint of a subkey?\n"));
+	  continue;
+	}
+
+      for (node = adsk_keyblock; node; node = node->next)
+        {
+          if (node->pkt->pkttype == PKT_PUBLIC_KEY
+              || node->pkt->pkttype == PKT_PUBLIC_SUBKEY)
+            {
+              pk = node->pkt->pkt.public_key;
+              fingerprint_from_pk (pk, fpr, &fprlen);
+              if (fprlen == desc.fprlen
+                  && !memcmp (fpr, desc.u.fpr, fprlen)
+                  && (pk->pubkey_usage & PUBKEY_USAGE_ENC))
+                break;
+            }
+        }
+      if (!node)
+        {
+          err = gpg_error (GPG_ERR_WRONG_KEY_USAGE);
+          log_info (_("key \"%s\" not found: %s\n"), answer,
+                    gpg_strerror (err));
+          if (!opt.batch)
+            log_info (_("Did you specify the fingerprint of a subkey?\n"));
+	  continue;
+        }
+
+      /* Check that the selected subkey is not yet on our keyblock.  */
+      for (node2 = pub_keyblock; node2; node2 = node2->next)
+        {
+          if (node2->pkt->pkttype == PKT_PUBLIC_KEY
+              || node2->pkt->pkttype == PKT_PUBLIC_SUBKEY)
+            {
+              pk = node2->pkt->pkt.public_key;
+              fingerprint_from_pk (pk, fpr, &fprlen);
+              if (fprlen == desc.fprlen
+                  && !memcmp (fpr, desc.u.fpr, fprlen))
+                break;
+            }
+        }
+      if (node2)
+        {
+          log_info (_("key \"%s\" is already on this keyblock\n"), answer);
+          continue;
+        }
+
+      break;
+    }
+
+  /* Append the subkey.
+   * Note that we don't use the ADSK_PK directly because this is the
+   * primary key and in general we use a subkey to which NODE points.
+   * ADSK_PK has only been used to pass the requested key usage to
+   * get_pubkey_byname.   SUB_PK will point to the actual adsk. */
+  log_assert (node->pkt->pkttype == PKT_PUBLIC_KEY
+              || node->pkt->pkttype == PKT_PUBLIC_SUBKEY);
+  sub_pk = copy_public_key_basics (NULL, node->pkt->pkt.public_key);
+  keyid_from_pk (main_pk, sub_pk->main_keyid); /* Fixup main keyid.  */
+  log_assert ((sub_pk->pubkey_usage & PUBKEY_USAGE_ENC));
+  sub_pk->pubkey_usage = PUBKEY_USAGE_RENC;    /* 'e' -> 'r'         */
+  pkt = xcalloc (1, sizeof *pkt);
+  pkt->pkttype = PKT_PUBLIC_SUBKEY;    /* Make sure it is a subkey.  */
+  pkt->pkt.public_key = sub_pk;
+  subkeynode = new_kbnode (pkt);
+
+  /* Make the signature.  */
+  err = make_keysig_packet (ctrl, &sig, main_pk, NULL, sub_pk, main_pk, 0x18,
+                            sub_pk->timestamp, 0,
+                            keygen_add_key_flags_and_expire, sub_pk, NULL);
+  if (err)
+    {
+      write_status_error ("keysig", err);
+      log_error ("creating key binding failed: %s\n", gpg_strerror (err));
+      goto leave;
+    }
+
+  /* Append the subkey packet and the binding signature.  */
+  add_kbnode (pub_keyblock, subkeynode);
+  subkeynode = NULL;
+  pkt = xcalloc (1, sizeof *pkt);
+  pkt->pkttype = PKT_SIGNATURE;
+  pkt->pkt.signature = sig;
+  add_kbnode (pub_keyblock, new_kbnode (pkt));
+
+ leave:
+  xfree (answer);
+  free_public_key (adsk_pk);
+  release_kbnode (adsk_keyblock);
+  release_kbnode (subkeynode);
+  if (!err)
+    return 1; /* The keyblock was modified.  */
+  else
+    return 0; /* Not modified.  */
+
 }
 
 

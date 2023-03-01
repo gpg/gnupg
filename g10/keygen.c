@@ -130,12 +130,6 @@ struct output_control_s
 };
 
 
-struct opaque_data_usage_and_pk {
-    unsigned int usage;
-    PKT_public_key *pk;
-};
-
-
 /* FIXME: These globals vars are ugly.  And using MAX_PREFS even for
  * aeads is useless, given that we don't expects more than a very few
  * algorithms.  */
@@ -256,22 +250,27 @@ write_uid (kbnode_t root, const char *s)
 static void
 do_add_key_flags (PKT_signature *sig, unsigned int use)
 {
-    byte buf[1];
+  byte buf[2] = { 0, 0 };
 
-    buf[0] = 0;
+  /* The spec says that all primary keys MUST be able to certify. */
+  if ( sig->sig_class != 0x18 )
+    buf[0] |= 0x01;
 
-    /* The spec says that all primary keys MUST be able to certify. */
-    if(sig->sig_class!=0x18)
-      buf[0] |= 0x01;
+  if (use & PUBKEY_USAGE_SIG)
+    buf[0] |= 0x02;
+  if (use & PUBKEY_USAGE_ENC)
+    buf[0] |= 0x04 | 0x08;
+  if (use & PUBKEY_USAGE_AUTH)
+    buf[0] |= 0x20;
+  if (use & PUBKEY_USAGE_GROUP)
+    buf[0] |= 0x80;
 
-    if (use & PUBKEY_USAGE_SIG)
-      buf[0] |= 0x02;
-    if (use & PUBKEY_USAGE_ENC)
-        buf[0] |= 0x04 | 0x08;
-    if (use & PUBKEY_USAGE_AUTH)
-        buf[0] |= 0x20;
+  if (use & PUBKEY_USAGE_RENC)
+    buf[1] |= 0x04;
+  if (use & PUBKEY_USAGE_TIME)
+    buf[1] |= 0x08;
 
-    build_sig_subpkt (sig, SIGSUBPKT_KEY_FLAGS, buf, 1);
+  build_sig_subpkt (sig, SIGSUBPKT_KEY_FLAGS, buf, buf[1]? 2:1);
 }
 
 
@@ -318,13 +317,11 @@ keygen_add_key_flags (PKT_signature *sig, void *opaque)
 }
 
 
-static int
+int
 keygen_add_key_flags_and_expire (PKT_signature *sig, void *opaque)
 {
-  struct opaque_data_usage_and_pk *oduap = opaque;
-
-  do_add_key_flags (sig, oduap->usage);
-  return keygen_add_key_expire (sig, oduap->pk);
+  keygen_add_key_flags (sig, opaque);
+  return keygen_add_key_expire (sig, opaque);
 }
 
 
@@ -1215,7 +1212,6 @@ write_keybinding (ctrl_t ctrl, kbnode_t root,
   PKT_signature *sig;
   KBNODE node;
   PKT_public_key *pri_pk, *sub_pk;
-  struct opaque_data_usage_and_pk oduap;
 
   if (opt.verbose)
     log_info(_("writing key binding signature\n"));
@@ -1241,11 +1237,10 @@ write_keybinding (ctrl_t ctrl, kbnode_t root,
     BUG();
 
   /* Make the signature.  */
-  oduap.usage = use;
-  oduap.pk = sub_pk;
+  sub_pk->pubkey_usage = use;
   err = make_keysig_packet (ctrl, &sig, pri_pk, NULL, sub_pk, pri_psk, 0x18,
                             timestamp, 0,
-                            keygen_add_key_flags_and_expire, &oduap,
+                            keygen_add_key_flags_and_expire, sub_pk,
                             cache_nonce);
   if (err)
     {
