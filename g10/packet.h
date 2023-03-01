@@ -290,7 +290,7 @@ typedef struct
   /* The length of ATTRIB_DATA.  */
   unsigned long attrib_len;
   byte *namehash;
-  int help_key_usage;
+  u16 help_key_usage;
   u32 help_key_expire;
   int help_full_count;
   int help_marginal_count;
@@ -388,7 +388,7 @@ typedef struct
   byte    selfsigversion; /* highest version of all of the self-sigs */
   /* The public key algorithm.  (Serialized.)  */
   byte    pubkey_algo;
-  byte    pubkey_usage;   /* for now only used to pass it to getkey() */
+  u16     pubkey_usage;   /* carries the usage info.            */
   byte    req_usage;      /* hack to pass a request to getkey() */
   u32     has_expired;    /* set to the expiration date if expired */
   /* keyid of the primary key.  Never access this value directly.

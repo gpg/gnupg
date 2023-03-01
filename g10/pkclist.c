@@ -821,7 +821,8 @@ find_and_check_key (ctrl_t ctrl, const char *name, unsigned int use,
 {
   int rc;
   PKT_public_key *pk;
-  KBNODE keyblock = NULL;
+  kbnode_t keyblock = NULL;
+  kbnode_t node;
 
   if (!name || !*name)
     return gpg_error (GPG_ERR_INV_USER_ID);
@@ -832,7 +833,7 @@ find_and_check_key (ctrl_t ctrl, const char *name, unsigned int use,
   pk->req_usage = use;
 
   if (from_file)
-    rc = get_pubkey_fromfile (ctrl, pk, name);
+    rc = get_pubkey_fromfile (ctrl, pk, name, &keyblock);
   else
     rc = get_best_pubkey_byname (ctrl, GET_PUBKEY_NORMAL,
                                  NULL, pk, name, &keyblock, 0);
@@ -871,10 +872,10 @@ find_and_check_key (ctrl_t ctrl, const char *name, unsigned int use,
       int trustlevel;
 
       trustlevel = get_validity (ctrl, keyblock, pk, pk->user_id, NULL, 1);
-      release_kbnode (keyblock);
       if ( (trustlevel & TRUST_FLAG_DISABLED) )
         {
           /* Key has been disabled. */
+          release_kbnode (keyblock);
           send_status_inv_recp (13, name);
           log_info (_("%s: skipped: public key is disabled\n"), name);
           free_public_key (pk);
@@ -884,6 +885,7 @@ find_and_check_key (ctrl_t ctrl, const char *name, unsigned int use,
       if ( !do_we_trust_pre (ctrl, pk, trustlevel) )
         {
           /* We don't trust this key.  */
+          release_kbnode (keyblock);
           send_status_inv_recp (10, name);
           free_public_key (pk);
           return GPG_ERR_UNUSABLE_PUBKEY;
@@ -902,19 +904,33 @@ find_and_check_key (ctrl_t ctrl, const char *name, unsigned int use,
     {
       pk_list_t r;
 
-      r = xtrymalloc (sizeof *r);
-      if (!r)
-        {
-          rc = gpg_error_from_syserror ();
-          free_public_key (pk);
-          return rc;
-        }
+      r = xmalloc (sizeof *r);
       r->pk = pk;
       r->next = *pk_list_addr;
       r->flags = mark_hidden? 1:0;
       *pk_list_addr = r;
     }
 
+  for (node = keyblock; node; node = node->next)
+    if (node->pkt->pkttype == PKT_PUBLIC_SUBKEY
+        && ((pk=node->pkt->pkt.public_key)->pubkey_usage & PUBKEY_USAGE_RENC)
+        && pk->flags.valid
+        && !pk->flags.revoked
+        && !pk->flags.disabled
+        && !pk->has_expired
+        && key_present_in_pk_list (*pk_list_addr, pk))
+      {
+        pk_list_t r;
+
+        r = xmalloc (sizeof *r);
+        r->pk = copy_public_key (NULL, pk);
+        r->next = *pk_list_addr;
+        r->flags = mark_hidden? 1:0;  /* FIXME: Use PK_LIST_HIDDEN ? */
+        *pk_list_addr = r;
+      }
+
+
+  release_kbnode (keyblock);
   return 0;
 }
 

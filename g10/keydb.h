@@ -377,7 +377,8 @@ gpg_error_t get_best_pubkey_byname (ctrl_t ctrl, enum get_pubkey_modes mode,
 
 /* Get a public key directly from file FNAME.  */
 gpg_error_t get_pubkey_fromfile (ctrl_t ctrl,
-                                 PKT_public_key *pk, const char *fname);
+                                 PKT_public_key *pk, const char *fname,
+                                 kbnode_t *r_keyblock);
 
 /* Get a public key from a buffer.  */
 gpg_error_t get_pubkey_from_buffer (ctrl_t ctrl, PKT_public_key *pkbuf,
@@ -452,6 +453,9 @@ void setup_main_keyids (kbnode_t keyblock);
 /* This function merges information from the self-signed data into the
    data structures.  */
 void merge_keys_and_selfsig (ctrl_t ctrl, kbnode_t keyblock);
+
+/* This function parses the key flags and returns PUBKEY_USAGE_ flags.  */
+unsigned int parse_key_usage (PKT_signature *sig);
 
 char *get_user_id_string_native (ctrl_t ctrl, u32 *keyid);
 char *get_long_user_id_string (ctrl_t ctrl, u32 *keyid);
