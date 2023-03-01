@@ -1186,6 +1186,15 @@ agent_key_from_file (ctrl_t ctrl, const char *cache_nonce,
     return gpg_error (GPG_ERR_NO_SECKEY);
 
   err = read_key_file (grip? grip : ctrl->keygrip, &s_skey, &keymeta);
+  if (err)
+    {
+      if (gpg_err_code (err) == GPG_ERR_ENOENT)
+        err = gpg_error (GPG_ERR_NO_SECKEY);
+      else
+        log_error ("findkey: error reading key file: %s\n",
+                   gpg_strerror (err));
+      return err;
+    }
 
   /* For use with the protection functions we also need the key as an
      canonical encoded S-expression in a buffer.  Create this buffer
