@@ -1718,7 +1718,8 @@ get_best_pubkey_byname (ctrl_t ctrl, enum get_pubkey_modes mode,
  *
  * This function returns 0 on success.  Otherwise, an error code is
  * returned.  In particular, GPG_ERR_NO_PUBKEY is returned if the key
- * is not found.
+ * is not found.  If R_KEYBLOCK is not NULL and a key was found the
+ * keyblock is stored there; otherwiese NULL is stored there.
  *
  * The self-signed data has already been merged into the public key
  * using merge_selfsigs.  The caller must release the content of PK by
@@ -1726,12 +1727,16 @@ get_best_pubkey_byname (ctrl_t ctrl, enum get_pubkey_modes mode,
  * free_public_key).
  */
 gpg_error_t
-get_pubkey_fromfile (ctrl_t ctrl, PKT_public_key *pk, const char *fname)
+get_pubkey_fromfile (ctrl_t ctrl, PKT_public_key *pk, const char *fname,
+                     kbnode_t *r_keyblock)
 {
   gpg_error_t err;
   kbnode_t keyblock;
   kbnode_t found_key;
   unsigned int infoflags;
+
+  if (r_keyblock)
+    *r_keyblock = NULL;
 
   err = read_key_from_file_or_buffer (ctrl, fname, NULL, 0, &keyblock);
   if (!err)
@@ -1747,7 +1752,10 @@ get_pubkey_fromfile (ctrl_t ctrl, PKT_public_key *pk, const char *fname)
         err = gpg_error (GPG_ERR_UNUSABLE_PUBKEY);
     }
 
-  release_kbnode (keyblock);
+  if (!err && r_keyblock)
+    *r_keyblock = keyblock;
+  else
+    release_kbnode (keyblock);
   return err;
 }
 
