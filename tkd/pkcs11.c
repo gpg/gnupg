@@ -10,49 +10,6 @@
 #include "../common/util.h"
 #include "pkcs11.h"
 
-static void
-compute_keygrip_rsa (char *keygrip,
-                     const char *modulus,  unsigned long modulus_len,
-                     const char *exponent,  unsigned long exponent_len)
-{
-  gpg_error_t err;
-  gcry_sexp_t s_pkey = NULL;
-  const char *format = "(public-key(rsa(n%b)(e%b)))";
-  unsigned char grip[20];
-
-  err = gcry_sexp_build (&s_pkey, NULL, format,
-                         (int)modulus_len, modulus,
-                         (int)exponent_len, exponent);
-  if (!err && !gcry_pk_get_keygrip (s_pkey, grip))
-    err = gpg_error (GPG_ERR_INTERNAL);
-  else
-    {
-      gcry_sexp_release (s_pkey);
-      bin2hex (grip, 20, keygrip);
-    }
-}
-
-static void
-compute_keygrip_ec (char *keygrip, const char *curve,
-                    const char *ecpoint, unsigned long ecpoint_len)
-{
-  gpg_error_t err;
-  gcry_sexp_t s_pkey = NULL;
-  const char *format = "(public-key(ecc(curve %s)(q%b)))";
-  unsigned char grip[20];
-
-  err = gcry_sexp_build (&s_pkey, NULL, format, curve, (int)ecpoint_len,
-                         ecpoint);
-  if (!err && !gcry_pk_get_keygrip (s_pkey, grip))
-    err = gpg_error (GPG_ERR_INTERNAL);
-  else
-    {
-      gcry_sexp_release (s_pkey);
-      bin2hex (grip, 20, keygrip);
-    }
-}
-
-
 #define ck_function_list _CK_FUNCTION_LIST
 #define ck_token_info _CK_TOKEN_INFO
 #define ck_attribute _CK_ATTRIBUTE
@@ -100,8 +57,8 @@ struct key {
   unsigned long label_len;
   unsigned char id[256];
   unsigned long id_len;
-  /* Allowed mechanisms???  */
-  ck_mechanism_type_t mechanism;
+  gcry_sexp_t s_pkey;
+  ck_mechanism_type_t mechanism;  /* for PKCS#11 interface */
 };
 
 struct token {
@@ -297,6 +254,50 @@ logout (struct token *token)
 
   return 0;
 }
+
+
+static void
+compute_keygrip_rsa (char *keygrip,
+                     const char *modulus,  unsigned long modulus_len,
+                     const char *exponent,  unsigned long exponent_len)
+{
+  gpg_error_t err;
+  gcry_sexp_t s_pkey = NULL;
+  const char *format = "(public-key(rsa(n%b)(e%b)))";
+  unsigned char grip[20];
+
+  err = gcry_sexp_build (&s_pkey, NULL, format,
+                         (int)modulus_len, modulus,
+                         (int)exponent_len, exponent);
+  if (!err && !gcry_pk_get_keygrip (s_pkey, grip))
+    err = gpg_error (GPG_ERR_INTERNAL);
+  else
+    {
+      gcry_sexp_release (s_pkey);
+      bin2hex (grip, 20, keygrip);
+    }
+}
+
+static void
+compute_keygrip_ec (char *keygrip, const char *curve,
+                    const char *ecpoint, unsigned long ecpoint_len)
+{
+  gpg_error_t err;
+  gcry_sexp_t s_pkey = NULL;
+  const char *format = "(public-key(ecc(curve %s)(q%b)))";
+  unsigned char grip[20];
+
+  err = gcry_sexp_build (&s_pkey, NULL, format, curve, (int)ecpoint_len,
+                         ecpoint);
+  if (!err && !gcry_pk_get_keygrip (s_pkey, grip))
+    err = gpg_error (GPG_ERR_INTERNAL);
+  else
+    {
+      gcry_sexp_release (s_pkey);
+      bin2hex (grip, 20, keygrip);
+    }
+}
+
 
 static long
 examine_public_key (struct token *token, struct key *k, unsigned long keytype,
@@ -896,5 +897,131 @@ main (int argc, const char *argv[])
 
   ck->f->C_Finalize (NULL);
   return 0;
+}
+#else
+#include "../common/util.h"
+
+#define ENVNAME "PKCS11_MODULE"
+
+gpg_error_t
+token_slotlist (ctrl_t ctrl)
+{
+  gpg_error_t err;
+
+  long r;
+  struct cryptoki *ck = ck_instance;
+  unsigned long num_slots = MAX_SLOTS;
+  ck_slot_id_t  slot_list[MAX_SLOTS];
+  int i;
+  int pin_len = -1;
+  int num_tokens = 0;
+
+  char *module_name;
+
+  module_name = getenv (ENVNAME);
+  if (!module_name)
+    return gpg_error (GPG_ERR_NO_NAME);
+
+  r = get_function_list (ck, module_name);
+  if (r)
+    {
+      return gpg_error (GPG_ERR_INV_RESPONSE);
+    }
+
+  r = get_slot_list (ck, &num_slots, slot_list);
+  if (r)
+    {
+      return gpg_error (GPG_ERR_INV_RESPONSE);
+    }
+
+  for (i = 0; i < num_slots; i++)
+    {
+      struct ck_token_info tk_info;
+      struct token *token = &ck->token_list[num_tokens]; /* Allocate one token in CK */
+
+      token->ck = ck;
+      token->valid = 0;
+      token->slot_id = slot_list[i];
+
+      if (get_token_info (token, &tk_info) == 0)
+        {
+          if ((tk_info.flags & CKF_TOKEN_INITIALIZED) == 0
+              || (tk_info.flags & CKF_USER_PIN_LOCKED) != 0)
+            continue;
+
+          token->login_required = (tk_info.flags & CKF_LOGIN_REQUIRED);
+
+          r = open_session (token);
+          if (r)
+            {
+              log_error ("Error at open_session: %d\n", r);
+              continue;
+            }
+
+#if 0/*INQUIRE PIN and use the pin*/
+          /* XXX: Support each PIN for each token.  */
+          if (token->login_required && pin)
+            login (token, pin, pin_len);
+#endif
+
+          num_tokens++;
+	  r = learn_keys (token);
+        }
+    }
+
+  ck->num_slots = num_tokens;
+
+  return err;
+}
+
+gpg_error_t
+token_sign (ctrl_t ctrl,
+            const char *keygrip, int hash_algo,
+            unsigned char **r_outdata,
+            size_t *r_outdatalen)
+{
+  gpg_error_t err;
+  struct key *k;
+  struct cryptoki *ck = ck_instance;
+
+  r = find_key (ck, keygrip, &k);
+  if (r)
+    return gpg_error (GPG_ERR_NO_SECKEY);
+  else
+    {
+      unsigned char sig[1024];
+      unsigned long siglen = sizeof (sig);
+
+      r = do_pksign (k, "test test", 9, sig, &siglen);
+      if (!r)
+        {
+          int i;
+
+          for (i = 0; i < siglen; i++)
+            printf ("%02x", sig[i]);
+          puts ("");
+        }
+    }
+}
+
+  return err;
+}
+
+gpg_error_t
+token_readkey (ctrl_t ctrl,
+               const char *keygrip, int opt_info,
+               unsigned char **r_pk,
+               size_t *r_pklen)
+{
+  gpg_error_t err;
+  return err;
+}
+
+gpg_error_t
+token_keyinfo (ctrl_t ctrl, const char *keygrip,
+               int opt_data, int cap)
+{
+  gpg_error_t err;
+  return err;
 }
 #endif

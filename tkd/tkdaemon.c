@@ -353,6 +353,7 @@ setup_signal_mask (void)
 #endif
 }
 
+
 int
 main (int argc, char **argv )
 {

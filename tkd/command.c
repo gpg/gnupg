@@ -81,6 +81,12 @@ struct token_ctx_s
    contexts and the anchor in this variable.  */
 static struct server_local_s *session_list;
 
+gpg_error_t
+initialize_module_command (void)
+{
+  return 0;
+}
+
 static void
 finalize (ctrl_t ctrl)
 {
