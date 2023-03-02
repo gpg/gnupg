@@ -6,10 +6,14 @@
 
 #include <gpg-error.h>
 #include <gcrypt.h>
+#include <assuan.h>
 
 #include "../common/util.h"
 #include "pkcs11.h"
 
+/* Maximum allowed total data size for VALUE.  */
+#define MAXLEN_VALUE 4096
+
 #define ck_function_list _CK_FUNCTION_LIST
 #define ck_token_info _CK_TOKEN_INFO
 #define ck_attribute _CK_ATTRIBUTE
@@ -57,7 +61,7 @@ struct key {
   unsigned long label_len;
   unsigned char id[256];
   unsigned long id_len;
-  gcry_sexp_t s_pkey;
+  gcry_sexp_t pubkey;
   ck_mechanism_type_t mechanism;  /* for PKCS#11 interface */
 };
 
@@ -257,7 +261,7 @@ logout (struct token *token)
 
 
 static void
-compute_keygrip_rsa (char *keygrip,
+compute_keygrip_rsa (char *keygrip, gcry_sexp_t *r_pubkey,
                      const char *modulus,  unsigned long modulus_len,
                      const char *exponent,  unsigned long exponent_len)
 {
@@ -266,6 +270,7 @@ compute_keygrip_rsa (char *keygrip,
   const char *format = "(public-key(rsa(n%b)(e%b)))";
   unsigned char grip[20];
 
+  *r_pubkey = NULL;
   err = gcry_sexp_build (&s_pkey, NULL, format,
                          (int)modulus_len, modulus,
                          (int)exponent_len, exponent);
@@ -273,28 +278,30 @@ compute_keygrip_rsa (char *keygrip,
     err = gpg_error (GPG_ERR_INTERNAL);
   else
     {
-      gcry_sexp_release (s_pkey);
       bin2hex (grip, 20, keygrip);
+      *r_pubkey = s_pkey;
     }
 }
 
 static void
-compute_keygrip_ec (char *keygrip, const char *curve,
-                    const char *ecpoint, unsigned long ecpoint_len)
+compute_keygrip_ec (char *keygrip, gcry_sexp_t *r_pubkey,
+                    const char *curve, const char *ecpoint,
+                    unsigned long ecpoint_len)
 {
   gpg_error_t err;
   gcry_sexp_t s_pkey = NULL;
   const char *format = "(public-key(ecc(curve %s)(q%b)))";
   unsigned char grip[20];
 
+  *r_pubkey = NULL;
   err = gcry_sexp_build (&s_pkey, NULL, format, curve, (int)ecpoint_len,
                          ecpoint);
   if (!err && !gcry_pk_get_keygrip (s_pkey, grip))
     err = gpg_error (GPG_ERR_INTERNAL);
   else
     {
-      gcry_sexp_release (s_pkey);
       bin2hex (grip, 20, keygrip);
+      *r_pubkey = s_pkey;
     }
 }
 
@@ -345,11 +352,10 @@ examine_public_key (struct token *token, struct key *k, unsigned long keytype,
       log_debug ("RSA: %ld %ld\n",
                  templ[0].ulValueLen,
                  templ[1].ulValueLen);
-      puts ("Public key:");
-      compute_keygrip_rsa (k->keygrip,
+
+      compute_keygrip_rsa (k->keygrip, &k->pubkey,
                            modulus, templ[0].ulValueLen,
                            exponent, templ[1].ulValueLen);
-      puts (k->keygrip);
 
       k->mechanism = CKM_RSA_PKCS;
     }
@@ -387,10 +393,8 @@ examine_public_key (struct token *token, struct key *k, unsigned long keytype,
       curve = openpgp_oid_to_curve (curve_oid, 1);
       xfree (curve_oid);
 
-      puts ("Public key:");
-      puts (curve);
-      compute_keygrip_ec (k->keygrip, curve, ecpoint, templ[1].ulValueLen);
-      puts (k->keygrip);
+      compute_keygrip_ec (k->keygrip, &k->pubkey,
+                          curve, ecpoint, templ[1].ulValueLen);
 
       templ[0].type = CKA_ALLOWED_MECHANISMS;
       templ[0].pValue = (void *)mechanisms;
@@ -407,7 +411,7 @@ examine_public_key (struct token *token, struct key *k, unsigned long keytype,
             }
           else
             {
-              puts ("SoftHSMv2???");
+              log_debug ("SoftHSMv2???");
               k->mechanism = CKM_ECDSA;
             }
         }
@@ -415,7 +419,7 @@ examine_public_key (struct token *token, struct key *k, unsigned long keytype,
         {
           /* Yubkey YKCS doesn't offer CKA_ALLOWED_MECHANISMS,
              unfortunately.  */
-          puts ("Yubikey???");
+          log_debug ("Yubikey???");
           k->mechanism = CKM_ECDSA_SHA256;
         }
     }
@@ -715,7 +719,7 @@ find_key (struct cryptoki *ck, const char *keygrip, struct key **r_key)
           if (memcmp (k->keygrip, keygrip, 40) == 0)
             {
               *r_key = k;
-              printf ("found a key at %d:%d\n", i, j);
+              log_debug ("found a key at %d:%d\n", i, j);
               return 0;
             }
         }
@@ -725,31 +729,43 @@ find_key (struct cryptoki *ck, const char *keygrip, struct key **r_key)
 }
 
 static long
-do_pksign (struct key *key,
+do_pksign (struct key *key, int hash_algo,
            const unsigned char *u_data, unsigned long u_data_len,
-           unsigned char *r_signature,
+           unsigned char **r_signature,
            unsigned long *r_signature_len)
 {
-  unsigned long err = 0;
+  unsigned long r = 0;
   struct token *token = key->token;
   struct cryptoki *ck = token->ck;
   ck_mechanism_type_t mechanism;
   struct ck_mechanism mechanism_struct;
   unsigned char data[1024];
   unsigned long data_len;
+  unsigned int nbits;
+  unsigned long siglen;
+  unsigned char *sig;
+
+  nbits = gcry_pk_get_nbits (key->pubkey);
 
   mechanism = key->mechanism;
   if (key->key_type == KEY_RSA)
     {
       size_t asnlen = sizeof (data);
 
-      gcry_md_get_asnoid (GCRY_MD_SHA256, data, &asnlen);
-      gcry_md_hash_buffer (GCRY_MD_SHA256, data+asnlen,
+      /* It's CKM_RSA_PKCS, it requires that hash algo OID included in
+         the data to be signed.  */
+      if (!hash_algo)
+        return gpg_error (GPG_ERR_DIGEST_ALGO);
+
+      siglen = (nbits+7)/8;
+      gcry_md_get_asnoid (hash_algo, data, &asnlen);
+      gcry_md_hash_buffer (hash_algo, data+asnlen,
                            u_data, u_data_len);
-      data_len = asnlen+gcry_md_get_algo_dlen (GCRY_MD_SHA256);
+      data_len = asnlen+gcry_md_get_algo_dlen (hash_algo);
     }
   else if (key->key_type == KEY_EC)
     {
+      siglen = (nbits+7)/8;
       if (mechanism == CKM_ECDSA)
         {
           /* SoftHSMv2 */
@@ -759,31 +775,46 @@ do_pksign (struct key *key,
       else
         {
           /* Scute, YKCS11 */
-          /* XXX: check hash algo and dispatch */
-          gcry_md_hash_buffer (GCRY_MD_SHA256, data, u_data, u_data_len);
-          data_len = gcry_md_get_algo_dlen (GCRY_MD_SHA256);
+          gcry_md_hash_buffer (hash_algo, data, u_data, u_data_len);
+          data_len = gcry_md_get_algo_dlen (hash_algo);
         }
     }
   else if (key->key_type == KEY_EDDSA)
-    mechanism = CKM_EDDSA;
+    {
+      mechanism = CKM_EDDSA;
+      siglen = ((nbits+7)/8)*2;
+    }
 
   mechanism_struct.mechanism = mechanism;
   mechanism_struct.parameter = NULL;
   mechanism_struct.parameter_len = 0;
 
-  err = ck->f->C_SignInit (token->session, &mechanism_struct,
-                           key->p11_keyid);
-  if (err)
+  r = ck->f->C_SignInit (token->session, &mechanism_struct,
+                         key->p11_keyid);
+  if (r)
     {
-      log_error ("C_SignInit error: %ld", err);
-      return err;
+      log_error ("C_SignInit error: %ld", r);
+      return gpg_error (GPG_ERR_INV_RESPONSE);
     }
 
-  err = ck->f->C_Sign (token->session,
-                       data, data_len,
-                       r_signature, r_signature_len);
-  if (err)
-    return err;
+  sig = xtrymalloc (siglen);
+  if (!sig)
+    {
+      return gpg_error_from_syserror ();
+    }
+
+  *r_signature_len = siglen;
+
+  r = ck->f->C_Sign (token->session,
+                     data, data_len,
+                     sig, r_signature_len);
+  if (r)
+    {
+      xfree (sig);
+      return gpg_error (GPG_ERR_INV_RESPONSE);
+    }
+
+  *r_signature = sig;
 
   return 0;
 }
@@ -913,11 +944,11 @@ token_slotlist (ctrl_t ctrl)
   unsigned long num_slots = MAX_SLOTS;
   ck_slot_id_t  slot_list[MAX_SLOTS];
   int i;
-  int pin_len = -1;
   int num_tokens = 0;
 
   char *module_name;
 
+  (void)ctrl;
   module_name = getenv (ENVNAME);
   if (!module_name)
     return gpg_error (GPG_ERR_NO_NAME);
@@ -954,7 +985,7 @@ token_slotlist (ctrl_t ctrl)
           r = open_session (token);
           if (r)
             {
-              log_error ("Error at open_session: %d\n", r);
+              log_error ("Error at open_session: %ld\n", r);
               continue;
             }
 
@@ -983,26 +1014,32 @@ token_sign (ctrl_t ctrl,
   gpg_error_t err;
   struct key *k;
   struct cryptoki *ck = ck_instance;
+  unsigned long r;
+
+  /* mismatch: size_t for GnuPG, unsigned long for PKCS#11 */
+  /* mismatch: application prepare buffer for PKCS#11 */
 
   r = find_key (ck, keygrip, &k);
   if (r)
     return gpg_error (GPG_ERR_NO_SECKEY);
   else
     {
-      unsigned char sig[1024];
-      unsigned long siglen = sizeof (sig);
+      assuan_context_t ctx = ctrl->server_local->assuan_ctx;
+      const char *cmd;
+      unsigned char *value;
+      size_t valuelen;
 
-      r = do_pksign (k, "test test", 9, sig, &siglen);
-      if (!r)
-        {
-          int i;
+      cmd = "VALUE";
+      err = assuan_inquire (ctx, cmd, &value, &valuelen, MAXLEN_VALUE);
+      if (err)
+        return err;
 
-          for (i = 0; i < siglen; i++)
-            printf ("%02x", sig[i]);
-          puts ("");
-        }
+      err = do_pksign (k, hash_algo, value, valuelen, r_outdata, r_outdatalen);
+      wipememory (value, valuelen);
+      xfree (value);
+      if (err)
+        return err;
     }
-}
 
   return err;
 }
