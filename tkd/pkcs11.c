@@ -758,6 +758,45 @@ find_key (struct cryptoki *ck, const char *keygrip, struct key **r_key)
   return -1;
 }
 
+struct iter_key {
+  struct cryptoki *ck;
+  int i;
+  int j;
+  unsigned long mask;
+};
+
+static int
+iter_find_key (struct iter_key *iter, struct key **r_key)
+{
+  struct cryptoki *ck = iter->ck;
+  struct token *token = &ck->token_list[iter->i];
+  struct key *k;
+
+  *r_key = NULL;
+
+ again:
+
+  if (iter->j < token->num_keys)
+    iter->j++;
+  else if (iter->i < ck->num_slots)
+    {
+      iter->i++;
+      iter->j = 0;
+    }
+  else
+    return 0;
+
+  k = &token->key_list[iter->j];
+  if ((k->flags & KEY_FLAGS_VALID) == 0)
+    goto again;
+
+  if ((k->flags & iter->mask) == 0)
+    goto again;
+
+  *r_key = k;
+  return 1;
+}
+
 static gpg_error_t
 do_pksign (struct key *key, int hash_algo,
            const unsigned char *u_data, unsigned long u_data_len,
@@ -851,7 +890,7 @@ do_pksign (struct key *key, int hash_algo,
 
   *r_signature = sig;
 
-  return 0;
+  return err;
 }
 
 #define ENVNAME "PKCS11_MODULE"
@@ -859,7 +898,7 @@ do_pksign (struct key *key, int hash_algo,
 gpg_error_t
 token_slotlist (ctrl_t ctrl, assuan_context_t ctx)
 {
-  gpg_error_t err;
+  gpg_error_t err = 0;
 
   long r;
   struct cryptoki *ck = ck_instance;
@@ -973,15 +1012,82 @@ token_readkey (ctrl_t ctrl, assuan_context_t ctx,
                unsigned char **r_pk,
                size_t *r_pklen)
 {
-  gpg_error_t err;
+  gpg_error_t err = 0;
   (void)ctrl;
   return err;
 }
 
 gpg_error_t
-token_keyinfo (ctrl_t ctrl, assuan_context_t ctx,
-               const char *keygrip, int opt_data, int cap)
+token_keyinfo (ctrl_t ctrl, const char *keygrip, int opt_data, int cap)
 {
-  gpg_error_t err;
+  gpg_error_t err = 0;
+  struct cryptoki *ck = ck_instance;
+  struct key *k;
+  const char *usage;
+
+  if (keygrip)
+    {
+      unsigned long r;
+
+      r = find_key (ck, keygrip, &k);
+      if (r)
+        return gpg_error (GPG_ERR_NO_SECKEY);
+
+      if ((k->flags & KEY_FLAGS_USAGE_SIGN))
+        {
+          if ((k->flags & KEY_FLAGS_USAGE_DECRYPT))
+            usage = "se";
+          else
+            usage = "s";
+        }
+      else
+        {
+          if ((k->flags & KEY_FLAGS_USAGE_DECRYPT))
+            usage = "e";
+          else
+            usage = "-";
+        }
+
+      send_keyinfo (ctrl, opt_data, keygrip,
+                    k->label_len ? (const char *)k->label : "-",
+                    k->id_len ? (const char *)k->id : "-",
+                    usage);
+    }
+  else
+    {
+      struct iter_key iter;
+
+      iter.ck = ck;
+      iter.i = iter.j = 0;
+      iter.mask = 0;
+      if (cap == GCRY_PK_USAGE_SIGN)
+        iter.mask |= KEY_FLAGS_USAGE_SIGN;
+      else if (cap == GCRY_PK_USAGE_ENCR)
+        iter.mask |= KEY_FLAGS_USAGE_DECRYPT;
+
+      while (iter_find_key (&iter, &k))
+        {
+          if ((k->flags & KEY_FLAGS_USAGE_SIGN))
+            {
+              if ((k->flags & KEY_FLAGS_USAGE_DECRYPT))
+                usage = "se";
+              else
+                usage = "s";
+            }
+          else
+            {
+              if ((k->flags & KEY_FLAGS_USAGE_DECRYPT))
+                usage = "e";
+              else
+                usage = "-";
+            }
+
+          send_keyinfo (ctrl, opt_data, k->keygrip,
+                    k->label_len ? (const char *)k->label : "-",
+                    k->id_len ? (const char *)k->id : "-",
+                    usage);
+        }
+    }
+
   return err;
 }

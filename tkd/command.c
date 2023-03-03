@@ -423,7 +423,7 @@ cmd_keyinfo (assuan_context_t ctx, char *line)
   else
     keygrip = skip_options (line);
 
-  err = token_keyinfo (ctrl, ctx, keygrip, opt_data, cap);
+  err = token_keyinfo (ctrl, keygrip, opt_data, cap);
 
   return err;
 }
