@@ -101,8 +101,6 @@ static gpgrt_opt_t opts[] = {
                 N_("run in multi server mode (foreground)")),
   ARGPARSE_s_n (oDaemon, "daemon", N_("run in daemon mode (background)")),
   ARGPARSE_s_n (oNoDetach, "no-detach", N_("do not detach from the console")),
-  ARGPARSE_s_n (oSh,    "sh", N_("sh-style command output")),
-  ARGPARSE_s_n (oCsh,   "csh", N_("csh-style command output")),
   ARGPARSE_s_s (oHomedir,    "homedir",      "@"),
   ARGPARSE_conffile (oOptions, "options", N_("|FILE|read options from FILE")),
   ARGPARSE_noconffile (oNoOptions, "no-options", "@"),
