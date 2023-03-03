@@ -2189,8 +2189,21 @@ parse_signature (IOBUF inp, int pkttype, unsigned long pktlen,
 	       && opt.verbose && !glo_ctrl.silence_parse_warnings)
 	log_info ("signature packet without timestamp\n");
 
-      p = parse_sig_subpkt2 (sig, SIGSUBPKT_ISSUER);
-      if (p)
+      /* Set the key id.  We first try the issuer fingerprint and if
+       * this is not found fallback to the issuer.  Note that
+       * only the issuer packet is also searched in the unhashed area.  */
+      p = parse_sig_subpkt (sig->hashed, SIGSUBPKT_ISSUER_FPR, &len);
+      if (p && len == 21 && p[0] == 4)
+        {
+          sig->keyid[0] = buf32_to_u32 (p + 1 + 12);
+	  sig->keyid[1] = buf32_to_u32 (p + 1 + 16);
+	}
+      else if (p && len == 33 && p[0] == 5)
+        {
+          sig->keyid[0] = buf32_to_u32 (p + 1 );
+	  sig->keyid[1] = buf32_to_u32 (p + 1 + 4);
+	}
+      else if ((p = parse_sig_subpkt2 (sig, SIGSUBPKT_ISSUER)))
 	{
 	  sig->keyid[0] = buf32_to_u32 (p);
 	  sig->keyid[1] = buf32_to_u32 (p + 4);
