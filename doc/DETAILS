@@ -1706,14 +1706,20 @@ Description of some debug flags:
   - RFC-5915 :: ECC Private Key Structure
   - RFC-5958 :: Asymmetric Key Packages
   - RFC-6337 :: ECC in OpenPGP
+  - RFC-7748 :: Elliptic Curves for Security (X25519 and X448)
+  - RFC-8410 :: Algorithm Identifiers for Ed25519, Ed448, X25519, and X448
   - RFC-7292 :: PKCS #12: Personal Information Exchange Syntax v1.1
   - RFC-8351 :: The PKCS #8 EncryptedPrivateKeyInfo Media Type
   - RFC-8550 :: S/MIME Version 4.0 Certificate Handling
   - RFC-8551 :: S/MIME Version 4.0 Message Specification
   - RFC-2634 :: Enhanced Security Services for S/MIME
   - RFC-5035 :: Enhanced Security Services (ESS) Update
+  - RFC-7253 :: The OCB Authenticated-Encryption Algorithm
 
   - draft-koch-openpgp-2015-rfc4880bis :: Updates to RFC-4880
+
+  - T6390 :: Notes on use of X25519 in GnuPG (https://dev.gnupg.org/T6390)
+
 
 ** v3 fingerprints
    For packet version 3 we calculate the keyids this way:

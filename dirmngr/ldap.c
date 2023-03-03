@@ -525,7 +525,7 @@ make_one_filter (const char *pattern, char **r_result)
         {
           /* We need just the BaseDN.  This assumes that the Subject
            * is correcly stored in the DT.  This is however not always
-           * the case and the actual DN is different ffrom the
+           * the case and the actual DN is different from the
            * subject.  In this case we won't find anything.  */
           if (extfilt_need_escape (pattern)
               && !(pattern = pattern_buffer = extfilt_escape (pattern)))
