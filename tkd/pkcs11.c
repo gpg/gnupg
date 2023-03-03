@@ -350,7 +350,7 @@ examine_public_key (struct token *token, struct key *k, unsigned long keytype,
       k->flags &= ~KEY_FLAGS_NO_PUBKEY;
       if ((modulus[0] & 0x80))
         {
-          memmove (modulus+1, modulus, templ[1].ulValueLen);
+          memmove (modulus+1, modulus, templ[0].ulValueLen);
           templ[0].ulValueLen++;
           modulus[0] = 0;
         }
