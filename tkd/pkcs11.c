@@ -50,18 +50,24 @@ enum key_type {
   KEY_EDDSA,
 };
 
+#define KEY_FLAGS_VALID          (1 << 0)
+#define KEY_FLAGS_NO_PUBKEY      (1 << 1)
+#define KEY_FLAGS_USAGE_SIGN     (1 << 2)
+#define KEY_FLAGS_USAGE_DECRYPT  (1 << 3)
+
 struct key {
   struct token *token;  /* Back pointer.  */
-  int valid;
-  ck_object_handle_t p11_keyid;
-  char keygrip[2*KEYGRIP_LEN+1];
+  unsigned long flags;
   int key_type;
+  char keygrip[2*KEYGRIP_LEN+1];
+  gcry_sexp_t pubkey;
+  /* PKCS#11 interface */
   unsigned char label[256];
   unsigned long label_len;
   unsigned char id[256];
   unsigned long id_len;
-  gcry_sexp_t pubkey;
-  ck_mechanism_type_t mechanism;  /* for PKCS#11 interface */
+  ck_object_handle_t p11_keyid;
+  ck_mechanism_type_t mechanism;
 };
 
 struct token {
@@ -317,10 +323,10 @@ examine_public_key (struct token *token, struct key *k, unsigned long keytype,
   unsigned char ecpoint[256];
   struct ck_attribute templ[3];
   unsigned long mechanisms[3];
+  unsigned char supported;
 
   if (keytype == CKK_RSA)
     {
-      k->valid = 1;
       if (update_keyid)
         k->p11_keyid = obj;
       k->key_type = KEY_RSA;
@@ -336,10 +342,12 @@ examine_public_key (struct token *token, struct key *k, unsigned long keytype,
       err = ck->f->C_GetAttributeValue (token->session, obj, templ, 2);
       if (err)
         {
-          k->valid = -1;
+          k->flags |= KEY_FLAGS_NO_PUBKEY;
           return 1;
         }
 
+      k->flags |= KEY_FLAGS_VALID;
+      k->flags &= ~KEY_FLAGS_NO_PUBKEY;
       if ((modulus[0] & 0x80))
         {
           memmove (modulus+1, modulus, templ[1].ulValueLen);
@@ -363,7 +371,6 @@ examine_public_key (struct token *token, struct key *k, unsigned long keytype,
       char *curve_oid = NULL;
       const char *curve;
 
-      k->valid = 1;
       if (update_keyid)
         k->p11_keyid = obj;
       k->key_type = KEY_EC;
@@ -379,10 +386,12 @@ examine_public_key (struct token *token, struct key *k, unsigned long keytype,
       err = ck->f->C_GetAttributeValue (token->session, obj, templ, 2);
       if (err)
         {
-          k->valid = -1;
+          k->flags |= KEY_FLAGS_NO_PUBKEY;
           return 1;
         }
 
+      k->flags |= KEY_FLAGS_VALID;
+      k->flags &= ~KEY_FLAGS_NO_PUBKEY;
       /* Found an ECC key.  */
       log_debug ("ECC: %ld %ld\n",
                  templ[0].ulValueLen,
@@ -423,6 +432,26 @@ examine_public_key (struct token *token, struct key *k, unsigned long keytype,
         }
     }
 
+  templ[0].type = CKA_SIGN;
+  templ[0].pValue = (void *)&supported;
+  templ[0].ulValueLen = sizeof (supported);
+
+  err = ck->f->C_GetAttributeValue (token->session, obj, templ, 1);
+  if (!err && supported)
+    {
+      k->flags |= KEY_FLAGS_USAGE_SIGN;
+    }
+
+  templ[0].type = CKA_DECRYPT;
+  templ[0].pValue = (void *)&supported;
+  templ[0].ulValueLen = sizeof (supported);
+
+  err = ck->f->C_GetAttributeValue (token->session, obj, templ, 1);
+  if (!err && supported)
+    {
+      k->flags |= KEY_FLAGS_USAGE_DECRYPT;
+    }
+
   return 0;
 }
 
@@ -456,7 +485,7 @@ detect_private_keys (struct token *token)
           struct key *k = &token->key_list[cnt]; /* Allocate a key.  */
 
           k->token = token;
-          k->valid = 0;
+          k->flags = 0;
 
           /* Portable way to get objects... is get it one by one.  */
           err = ck->f->C_FindObjects (token->session, &obj, 1, &any);
@@ -565,7 +594,7 @@ check_public_keys (struct token *token)
             {
               k = &token->key_list[i];
 
-              if (k->valid == -1
+              if ((k->flags & KEY_FLAGS_NO_PUBKEY)
                   && k->label_len == templ[0].ulValueLen
                   && memcmp (label, k->label, k->label_len) == 0
                   && ((keytype == CKK_RSA && k->key_type == KEY_RSA)
@@ -685,8 +714,8 @@ learn_keys (struct token *token)
     {
       struct key *k = &token->key_list[i];
 
-      if (k->valid == -1)
-        k->valid = 0;
+      if ((k->flags & KEY_FLAGS_NO_PUBKEY))
+        k->flags &= ~KEY_FLAGS_NO_PUBKEY;
     }
 
 #if 0
@@ -714,7 +743,7 @@ find_key (struct cryptoki *ck, const char *keygrip, struct key **r_key)
         {
           struct key *k = &token->key_list[j];
 
-          if (k->valid != 1)
+          if ((k->flags & KEY_FLAGS_VALID) == 0)
             continue;
 
           if (memcmp (k->keygrip, keygrip, 40) == 0)
