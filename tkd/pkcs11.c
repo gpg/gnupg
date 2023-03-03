@@ -4,10 +4,9 @@
 #include <string.h>
 #include <dlfcn.h>
 
-#include <gpg-error.h>
-#include <gcrypt.h>
-#include <assuan.h>
+#include "tkdaemon.h"
 
+#include <gcrypt.h>
 #include "../common/util.h"
 #include "pkcs11.h"
 
@@ -503,6 +502,7 @@ detect_private_keys (struct token *token)
           return -1;
         }
     }
+  return 0;
 }
 
 static long
@@ -591,6 +591,7 @@ check_public_keys (struct token *token)
           return -1;
         }
     }
+  return 0;
 }
 
 #if 0
@@ -728,12 +729,13 @@ find_key (struct cryptoki *ck, const char *keygrip, struct key **r_key)
   return -1;
 }
 
-static long
+static gpg_error_t
 do_pksign (struct key *key, int hash_algo,
            const unsigned char *u_data, unsigned long u_data_len,
            unsigned char **r_signature,
            unsigned long *r_signature_len)
 {
+  gpg_error_t err = 0;
   unsigned long r = 0;
   struct token *token = key->token;
   struct cryptoki *ck = token->ck;
@@ -783,7 +785,11 @@ do_pksign (struct key *key, int hash_algo,
     {
       mechanism = CKM_EDDSA;
       siglen = ((nbits+7)/8)*2;
+      memcpy (data, u_data, u_data_len);
+      data_len = u_data_len;
     }
+  else
+    return gpg_error (GPG_ERR_BAD_SECKEY);
 
   mechanism_struct.mechanism = mechanism;
   mechanism_struct.parameter = NULL;
@@ -819,123 +825,10 @@ do_pksign (struct key *key, int hash_algo,
   return 0;
 }
 
-#ifdef TESTING
-int
-main (int argc, const char *argv[])
-{
-  long r;
-  struct cryptoki *ck = ck_instance;
-  unsigned long num_slots = MAX_SLOTS;
-  ck_slot_id_t  slot_list[MAX_SLOTS];
-  int i;
-  const unsigned char *pin = NULL;
-  int pin_len = -1;
-  const char *keygrip = NULL;
-  int num_tokens = 0;
-
-  r = get_function_list (ck, argv[1]);
-  if (r)
-    {
-      return 1;
-    }
-
-  if (argc >= 3)
-    keygrip = argv[2];
-
-  if (argc >= 4)
-    {
-      pin = argv[3];
-      pin_len = strlen (argv[3]);
-    }
-
-  r = get_slot_list (ck, &num_slots, slot_list);
-  if (r)
-    {
-      return 1;
-    }
-
-  for (i = 0; i < num_slots; i++)
-    {
-      struct ck_token_info tk_info;
-      struct token *token = &ck->token_list[num_tokens]; /* Allocate one token in CK */
-
-      token->ck = ck;
-      token->valid = 0;
-      token->slot_id = slot_list[i];
-
-      if (get_token_info (token, &tk_info) == 0)
-        {
-          if ((tk_info.flags & CKF_TOKEN_INITIALIZED) == 0
-              || (tk_info.flags & CKF_USER_PIN_LOCKED) != 0)
-            continue;
-
-          token->login_required = (tk_info.flags & CKF_LOGIN_REQUIRED);
-
-          r = open_session (token);
-          if (r)
-            {
-              printf ("Error at open_session: %d\n", r);
-              continue;
-            }
-
-          /* XXX: Support each PIN for each token.  */
-          if (token->login_required && pin)
-            login (token, pin, pin_len);
-
-	  puts ("************");
-          num_tokens++;
-	  r = learn_keys (token);
-        }
-    }
-
-  ck->num_slots = num_tokens;
-
-  if (keygrip)
-    {
-      struct key *k;
-
-      r = find_key (ck, keygrip, &k);
-      if (!r)
-        {
-          unsigned char sig[1024];
-          unsigned long siglen = sizeof (sig);
-
-          printf ("key object id: %d\n", k->p11_keyid);
-          printf ("key type: %d\n", k->key_type);
-          puts (k->keygrip);
-
-          r = do_pksign (k, "test test", 9, sig, &siglen);
-          if (!r)
-            {
-              int i;
-
-              for (i = 0; i < siglen; i++)
-                printf ("%02x", sig[i]);
-              puts ("");
-            }
-        }
-    }
-
-  for (i = 0; i < num_slots; i++)
-    {
-      struct token *token = &ck->token_list[i];
-
-      if (token->valid && token->login_required && pin)
-        logout (token);
-
-      close_session (token);
-    }
-
-  ck->f->C_Finalize (NULL);
-  return 0;
-}
-#else
-#include "../common/util.h"
-
 #define ENVNAME "PKCS11_MODULE"
 
 gpg_error_t
-token_slotlist (ctrl_t ctrl)
+token_slotlist (ctrl_t ctrl, assuan_context_t ctx)
 {
   gpg_error_t err;
 
@@ -949,6 +842,7 @@ token_slotlist (ctrl_t ctrl)
   char *module_name;
 
   (void)ctrl;
+  (void)ctx;
   module_name = getenv (ENVNAME);
   if (!module_name)
     return gpg_error (GPG_ERR_NO_NAME);
@@ -1006,7 +900,7 @@ token_slotlist (ctrl_t ctrl)
 }
 
 gpg_error_t
-token_sign (ctrl_t ctrl,
+token_sign (ctrl_t ctrl, assuan_context_t ctx,
             const char *keygrip, int hash_algo,
             unsigned char **r_outdata,
             size_t *r_outdatalen)
@@ -1016,6 +910,7 @@ token_sign (ctrl_t ctrl,
   struct cryptoki *ck = ck_instance;
   unsigned long r;
 
+  (void)ctrl;
   /* mismatch: size_t for GnuPG, unsigned long for PKCS#11 */
   /* mismatch: application prepare buffer for PKCS#11 */
 
@@ -1024,7 +919,6 @@ token_sign (ctrl_t ctrl,
     return gpg_error (GPG_ERR_NO_SECKEY);
   else
     {
-      assuan_context_t ctx = ctrl->server_local->assuan_ctx;
       const char *cmd;
       unsigned char *value;
       size_t valuelen;
@@ -1045,20 +939,20 @@ token_sign (ctrl_t ctrl,
 }
 
 gpg_error_t
-token_readkey (ctrl_t ctrl,
+token_readkey (ctrl_t ctrl, assuan_context_t ctx,
                const char *keygrip, int opt_info,
                unsigned char **r_pk,
                size_t *r_pklen)
 {
   gpg_error_t err;
+  (void)ctrl;
   return err;
 }
 
 gpg_error_t
-token_keyinfo (ctrl_t ctrl, const char *keygrip,
-               int opt_data, int cap)
+token_keyinfo (ctrl_t ctrl, assuan_context_t ctx,
+               const char *keygrip, int opt_data, int cap)
 {
   gpg_error_t err;
   return err;
 }
-#endif

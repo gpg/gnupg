@@ -32,7 +32,6 @@
 #endif
 
 #include "tkdaemon.h"
-#include <assuan.h>
 #include "../common/asshelp.h"
 #include "../common/server-help.h"
 #include "../common/ssh-utils.h"
@@ -200,7 +199,7 @@ cmd_slotlist (assuan_context_t ctx, char *line)
   line = skip_options (line);
   (void)line;
 
-  err = token_slotlist (ctrl);
+  err = token_slotlist (ctrl, ctx);
   return err;
 }
 
@@ -238,7 +237,7 @@ cmd_readkey (assuan_context_t ctx, char *line)
   if (strlen (keygrip) != 40)
     err = gpg_error (GPG_ERR_INV_ID);
 
-  err = token_readkey (ctrl, keygrip, opt_info, &pk, &pklen);
+  err = token_readkey (ctrl, ctx, keygrip, opt_info, &pk, &pklen);
   if (err)
     goto leave;
 
@@ -344,7 +343,7 @@ cmd_pksign (assuan_context_t ctx, char *line)
   if (strlen (keygrip) != 40)
     err = gpg_error (GPG_ERR_INV_ID);
 
-  err = token_sign (ctrl, keygrip, hash_algo, &outdata, &outdatalen);
+  err = token_sign (ctrl, ctx, keygrip, hash_algo, &outdata, &outdatalen);
   if (err)
     {
       log_error ("token_sign failed: %s\n", gpg_strerror (err));
@@ -424,7 +423,7 @@ cmd_keyinfo (assuan_context_t ctx, char *line)
   else
     keygrip = skip_options (line);
 
-  err = token_keyinfo (ctrl, keygrip, opt_data, cap);
+  err = token_keyinfo (ctrl, ctx, keygrip, opt_data, cap);
 
   return err;
 }

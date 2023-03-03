@@ -43,7 +43,6 @@
 #include "tkdaemon.h"
 
 #include <gcrypt.h>
-#include <assuan.h> /* malloc hooks */
 
 #include "../common/i18n.h"
 #include "../common/sysutils.h"
