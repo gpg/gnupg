@@ -841,10 +841,8 @@ iter_find_key (struct iter_key *iter, struct key **r_key)
 }
 
 static gpg_error_t
-do_pksign (struct key *key, int hash_algo,
-           const unsigned char *u_data, unsigned long u_data_len,
-           unsigned char **r_signature,
-           unsigned long *r_signature_len)
+setup_pksign (struct key *key, int hash_algo,
+              unsigned char **r_signature, unsigned long *r_signature_len)
 {
   gpg_error_t err = 0;
   unsigned long r = 0;
@@ -852,8 +850,6 @@ do_pksign (struct key *key, int hash_algo,
   struct cryptoki *ck = token->ck;
   ck_mechanism_type_t mechanism;
   struct ck_mechanism mechanism_struct;
-  unsigned char data[1024];
-  unsigned long data_len;
   unsigned int nbits;
   unsigned long siglen;
   unsigned char *sig;
@@ -863,14 +859,66 @@ do_pksign (struct key *key, int hash_algo,
   mechanism = key->mechanism;
   if (key->key_type == KEY_RSA)
     {
-      size_t asnlen = sizeof (data);
-
       /* It's CKM_RSA_PKCS, it requires that hash algo OID included in
          the data to be signed.  */
       if (!hash_algo)
         return gpg_error (GPG_ERR_DIGEST_ALGO);
 
       siglen = (nbits+7)/8;
+    }
+  else if (key->key_type == KEY_EC)
+    {
+      siglen = ((nbits+7)/8) * 2;
+    }
+  else if (key->key_type == KEY_EDDSA)
+    {
+      mechanism = CKM_EDDSA;
+      siglen = ((nbits+7)/8)*2;
+    }
+  else
+    return gpg_error (GPG_ERR_BAD_SECKEY);
+
+  mechanism_struct.mechanism = mechanism;
+  mechanism_struct.parameter = NULL;
+  mechanism_struct.parameter_len = 0;
+
+  r = ck->f->C_SignInit (token->session, &mechanism_struct,
+                         key->p11_keyid);
+  if (r)
+    {
+      log_error ("C_SignInit error: %ld", r);
+      return gpg_error (GPG_ERR_INV_RESPONSE);
+    }
+
+  sig = xtrymalloc (siglen);
+  if (!sig)
+    return gpg_error_from_syserror ();
+
+  *r_signature = sig;
+  *r_signature_len = siglen;
+
+  return err;
+}
+
+static gpg_error_t
+do_pksign (struct key *key, int hash_algo,
+           const unsigned char *u_data, unsigned long u_data_len,
+           unsigned char *signature,
+           unsigned long *r_signature_len)
+{
+  gpg_error_t err = 0;
+  unsigned long r = 0;
+  struct token *token = key->token;
+  struct cryptoki *ck = token->ck;
+  ck_mechanism_type_t mechanism;
+  unsigned char data[1024];
+  unsigned long data_len;
+
+  mechanism = key->mechanism;
+  if (key->key_type == KEY_RSA)
+    {
+      size_t asnlen = sizeof (data);
+
       gcry_md_get_asnoid (hash_algo, data, &asnlen);
       gcry_md_hash_buffer (hash_algo, data+asnlen,
                            u_data, u_data_len);
@@ -878,7 +926,6 @@ do_pksign (struct key *key, int hash_algo,
     }
   else if (key->key_type == KEY_EC)
     {
-      siglen = ((nbits+7)/8) * 2;
       if (mechanism == CKM_ECDSA)
         {
           /* SoftHSMv2 */
@@ -908,43 +955,19 @@ do_pksign (struct key *key, int hash_algo,
   else if (key->key_type == KEY_EDDSA)
     {
       mechanism = CKM_EDDSA;
-      siglen = ((nbits+7)/8)*2;
       memcpy (data, u_data, u_data_len);
       data_len = u_data_len;
     }
   else
     return gpg_error (GPG_ERR_BAD_SECKEY);
 
-  mechanism_struct.mechanism = mechanism;
-  mechanism_struct.parameter = NULL;
-  mechanism_struct.parameter_len = 0;
-
-  r = ck->f->C_SignInit (token->session, &mechanism_struct,
-                         key->p11_keyid);
-  if (r)
-    {
-      log_error ("C_SignInit error: %ld", r);
-      return gpg_error (GPG_ERR_INV_RESPONSE);
-    }
-
-  sig = xtrymalloc (siglen);
-  if (!sig)
-    {
-      return gpg_error_from_syserror ();
-    }
-
-  *r_signature_len = siglen;
-
   r = ck->f->C_Sign (token->session,
                      data, data_len,
-                     sig, r_signature_len);
+                     signature, r_signature_len);
   if (r)
     {
-      xfree (sig);
       return gpg_error (GPG_ERR_INV_RESPONSE);
     }
-
-  *r_signature = sig;
 
   return err;
 }
@@ -1038,6 +1061,7 @@ token_sign (ctrl_t ctrl, assuan_context_t ctx,
   /* mismatch: size_t for GnuPG, unsigned long for PKCS#11 */
   /* mismatch: application prepare buffer for PKCS#11 */
 
+  *r_outdata = NULL;
   r = find_key (ck, keygrip, &k);
   if (r)
     return gpg_error (GPG_ERR_NO_SECKEY);
@@ -1046,17 +1070,29 @@ token_sign (ctrl_t ctrl, assuan_context_t ctx,
       const char *cmd;
       unsigned char *value;
       size_t valuelen;
+      unsigned char *sig = NULL;
+
+      err = setup_pksign (k, hash_algo, &sig, r_outdatalen);
+      if (err)
+        return err;
 
       cmd = "VALUE";
       err = assuan_inquire (ctx, cmd, &value, &valuelen, MAXLEN_VALUE);
       if (err)
-        return err;
+        {
+          xfree (sig);
+          return err;
+        }
 
-      err = do_pksign (k, hash_algo, value, valuelen, r_outdata, r_outdatalen);
+      err = do_pksign (k, hash_algo, value, valuelen, sig, r_outdatalen);
       wipememory (value, valuelen);
       xfree (value);
       if (err)
-        return err;
+        {
+          xfree (sig);
+          return err;
+        }
+      *r_outdata = sig;
     }
 
   return err;
