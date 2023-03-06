@@ -878,7 +878,7 @@ do_pksign (struct key *key, int hash_algo,
     }
   else if (key->key_type == KEY_EC)
     {
-      siglen = (nbits+7)/8;
+      siglen = ((nbits+7)/8) * 2;
       if (mechanism == CKM_ECDSA)
         {
           /* SoftHSMv2 */
@@ -887,6 +887,19 @@ do_pksign (struct key *key, int hash_algo,
         }
       else
         {
+          if (!hash_algo)
+            {
+              /* Not specified by user, determine from MECHANISM */
+              if (mechanism == CKM_ECDSA_SHA256)
+                hash_algo = GCRY_MD_SHA256;
+              else if (mechanism == CKM_ECDSA_SHA384)
+                hash_algo = GCRY_MD_SHA384;
+              else if (mechanism == CKM_ECDSA_SHA384)
+                hash_algo = GCRY_MD_SHA512;
+              else
+                return gpg_error (GPG_ERR_DIGEST_ALGO);
+            }
+
           /* Scute, YKCS11 */
           gcry_md_hash_buffer (hash_algo, data, u_data, u_data_len);
           data_len = gcry_md_get_algo_dlen (hash_algo);
