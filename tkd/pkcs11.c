@@ -10,6 +10,10 @@
 #include "../common/util.h"
 #include "pkcs11.h"
 
+/* Maximum length allowed as a PIN; used for INQUIRE NEEDPIN.  That
+ * length needs to small compared to the maximum Assuan line length.  */
+#define MAXLEN_PIN 100
+
 /* Maximum allowed total data size for VALUE.  */
 #define MAXLEN_VALUE 4096
 
@@ -1030,11 +1034,29 @@ token_slotlist (ctrl_t ctrl, assuan_context_t ctx)
               continue;
             }
 
-#if 0/*INQUIRE PIN and use the pin*/
-          /* XXX: Support each PIN for each token.  */
-          if (token->login_required && pin)
-            login (token, pin, pin_len);
-#endif
+          if (token->login_required)
+            {
+              char *command;
+              int rc;
+              unsigned char *value;
+              size_t valuelen;
+
+              log_debug ("asking for PIN '%ld'\n", token->slot_id);
+
+              rc = gpgrt_asprintf (&command, "NEEDPIN %ld", token->slot_id);
+              if (rc < 0)
+                return gpg_error (gpg_err_code_from_errno (errno));
+
+              assuan_begin_confidential (ctx);
+              err = assuan_inquire (ctx, command, &value, &valuelen, MAXLEN_PIN);
+              assuan_end_confidential (ctx);
+              xfree (command);
+              if (err)
+                return err;
+
+              login (token, value, valuelen);
+              xfree (value);
+            }
 
           num_tokens++;
 	  r = learn_keys (token);
