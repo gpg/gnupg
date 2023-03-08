@@ -1863,7 +1863,7 @@ read_public_key (app_t app, ctrl_t ctrl, u32 created_at, int keyno,
 
       len = gcry_sexp_sprint (s_pkey, GCRYSEXP_FMT_CANON, NULL, 0);
       keybuf = xtrymalloc (len);
-      if (!data)
+      if (!keybuf)
         {
           err = gpg_error_from_syserror ();
           gcry_sexp_release (s_pkey);
