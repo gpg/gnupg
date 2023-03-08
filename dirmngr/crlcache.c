@@ -125,6 +125,13 @@
 # define O_BINARY 0
 #endif
 
+
+/* Reason flags for an invalid CRL.  */
+#define INVCRL_TOO_OLD       1
+#define INVCRL_UNKNOWN_EXTN  2
+#define INVCRL_GENERAL       127
+
+
 static const char oidstr_crlNumber[] = "2.5.29.20";
 /* static const char oidstr_issuingDistributionPoint[] = "2.5.29.28"; */
 static const char oidstr_authorityKeyIdentifier[] = "2.5.29.35";
@@ -569,8 +576,8 @@ open_dir (crl_cache_t *r_cache)
           if (*line == 'i')
             {
               entry->invalid = atoi (line+1);
-              if (entry->invalid < 1)
-                entry->invalid = 1;
+              if (!entry->invalid)
+                entry->invalid = INVCRL_GENERAL;
             }
           else if (*line == 'u')
             entry->user_trust_req = 1;
@@ -2338,7 +2345,7 @@ crl_cache_insert (ctrl_t ctrl, const char *url, ksba_reader_t reader)
                      nextupdate);
           if (!err2)
             err2 = gpg_error (GPG_ERR_CRL_TOO_OLD);
-          invalidate_crl |= 1;
+          invalidate_crl |= INVCRL_TOO_OLD;
         }
     }
 
@@ -2353,7 +2360,7 @@ crl_cache_insert (ctrl_t ctrl, const char *url, ksba_reader_t reader)
       log_error (_("unknown critical CRL extension %s\n"), oid);
       if (!err2)
         err2 = gpg_error (GPG_ERR_INV_CRL);
-      invalidate_crl |= 2;
+      invalidate_crl |= INVCRL_UNKNOWN_EXTN;
     }
   if (gpg_err_code (err) == GPG_ERR_EOF
       || gpg_err_code (err) == GPG_ERR_NO_DATA )
@@ -2492,6 +2499,7 @@ list_one_crl_entry (crl_cache_t cache, crl_cache_entry_t e, estream_t fp)
   int rc;
   int warn = 0;
   const unsigned char *s;
+  unsigned int invalid;
 
   es_fputs ("--------------------------------------------------------\n", fp );
   es_fprintf (fp, _("Begin CRL dump (retrieved via %s)\n"), e->url );
@@ -2516,13 +2524,20 @@ list_one_crl_entry (crl_cache_t cache, crl_cache_entry_t e, estream_t fp)
               !e->user_trust_req? "[system]" :
               e->check_trust_anchor? e->check_trust_anchor:"[missing]");
 
-  if ((e->invalid & 1))
-    es_fprintf (fp, _(" ERROR: The CRL will not be used "
-                      "because it was still too old after an update!\n"));
-  if ((e->invalid & 2))
-    es_fprintf (fp, _(" ERROR: The CRL will not be used "
+  invalid = e->invalid;
+  if ((invalid & INVCRL_TOO_OLD))
+    {
+      invalid &= ~INVCRL_TOO_OLD;
+      es_fprintf (fp, _(" ERROR: The CRL will not be used "
+                        "because it was still too old after an update!\n"));
+    }
+  if ((invalid & INVCRL_UNKNOWN_EXTN))
+    {
+      invalid &= ~INVCRL_UNKNOWN_EXTN;
+      es_fprintf (fp, _(" ERROR: The CRL will not be used "
                       "due to an unknown critical extension!\n"));
-  if ((e->invalid & ~3))
+    }
+  if (invalid)  /* INVCRL_GENERAL or some other bits are set.  */
     es_fprintf (fp, _(" ERROR: The CRL will not be used\n"));
 
   cdb = lock_db_file (cache, e);
