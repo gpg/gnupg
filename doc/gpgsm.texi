@@ -480,8 +480,10 @@ This usually means that Dirmngr is employed to search for the
 certificate.  Note that this option makes a "web bug" like behavior
 possible.  LDAP server operators can see which keys you request, so by
 sending you a message signed by a brand new key (which you naturally
-will not have on your local keybox), the operator can tell both your IP
-address and the time when you verified the signature.
+will not have on your local keybox), the operator can tell both your
+IP address and the time when you verified the signature.  Note that if
+CRL checking is not disabled issuer certificates are retrieved in any
+case using the caIssuers authorityInfoAccess method.
 
 
 @anchor{gpgsm-option --validation-model}
