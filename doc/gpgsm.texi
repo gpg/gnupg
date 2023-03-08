@@ -408,6 +408,10 @@ Do not print a warning when the so called "secure memory" cannot be used.
 When running in server mode, append all logging output to @var{file}.
 Use @file{socket://} to log to socket.
 
+@item --log-time
+@opindex log-time
+Prefix all log output with a timestamp even if no log file is used.
+
 @end table
 
 

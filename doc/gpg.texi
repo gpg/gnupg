@@ -3199,6 +3199,10 @@ Write log output to file descriptor @var{n} and not to STDERR.
 Same as @option{--logger-fd}, except the logger data is written to
 file @var{file}.  Use @file{socket://} to log to s socket.
 
+@item --log-time
+@opindex log-time
+Prefix all log output with a timestamp even if no log file is used.
+
 @item --attribute-fd @var{n}
 @opindex attribute-fd
 Write attribute subpackets to the file descriptor @var{n}. This is most
