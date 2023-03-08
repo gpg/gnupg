@@ -54,10 +54,10 @@ enum key_type {
   KEY_EDDSA,
 };
 
-#define KEY_FLAGS_VALID          (1 << 0)
-#define KEY_FLAGS_NO_PUBKEY      (1 << 1)
-#define KEY_FLAGS_USAGE_SIGN     (1 << 2)
-#define KEY_FLAGS_USAGE_DECRYPT  (1 << 3)
+#define KEY_FLAG_VALID          (1 << 0)
+#define KEY_FLAG_NO_PUBKEY      (1 << 1)
+#define KEY_FLAG_USAGE_SIGN     (1 << 2)
+#define KEY_FLAG_USAGE_DECRYPT  (1 << 3)
 
 struct key {
   struct token *token;  /* Back pointer.  */
@@ -346,12 +346,12 @@ examine_public_key (struct token *token, struct key *k, unsigned long keytype,
       err = ck->f->C_GetAttributeValue (token->session, obj, templ, 2);
       if (err)
         {
-          k->flags |= KEY_FLAGS_NO_PUBKEY;
+          k->flags |= KEY_FLAG_NO_PUBKEY;
           return 1;
         }
 
-      k->flags |= KEY_FLAGS_VALID;
-      k->flags &= ~KEY_FLAGS_NO_PUBKEY;
+      k->flags |= KEY_FLAG_VALID;
+      k->flags &= ~KEY_FLAG_NO_PUBKEY;
       if ((modulus[0] & 0x80))
         {
           memmove (modulus+1, modulus, templ[0].ulValueLen);
@@ -390,12 +390,12 @@ examine_public_key (struct token *token, struct key *k, unsigned long keytype,
       err = ck->f->C_GetAttributeValue (token->session, obj, templ, 2);
       if (err)
         {
-          k->flags |= KEY_FLAGS_NO_PUBKEY;
+          k->flags |= KEY_FLAG_NO_PUBKEY;
           return 1;
         }
 
-      k->flags |= KEY_FLAGS_VALID;
-      k->flags &= ~KEY_FLAGS_NO_PUBKEY;
+      k->flags |= KEY_FLAG_VALID;
+      k->flags &= ~KEY_FLAG_NO_PUBKEY;
       /* Found an ECC key.  */
       log_debug ("ECC: %ld %ld\n",
                  templ[0].ulValueLen,
@@ -444,7 +444,7 @@ examine_public_key (struct token *token, struct key *k, unsigned long keytype,
   if (!err)
     {
       /* XXX: Scute has the attribute, but not set.  */
-      k->flags |= KEY_FLAGS_USAGE_SIGN;
+      k->flags |= KEY_FLAG_USAGE_SIGN;
     }
 
   templ[0].type = CKA_DECRYPT;
@@ -454,7 +454,7 @@ examine_public_key (struct token *token, struct key *k, unsigned long keytype,
   err = ck->f->C_GetAttributeValue (token->session, obj, templ, 1);
   if (!err && supported)
     {
-      k->flags |= KEY_FLAGS_USAGE_DECRYPT;
+      k->flags |= KEY_FLAG_USAGE_DECRYPT;
     }
 
   return 0;
@@ -599,7 +599,7 @@ check_public_keys (struct token *token)
             {
               k = &token->key_list[i];
 
-              if ((k->flags & KEY_FLAGS_NO_PUBKEY)
+              if ((k->flags & KEY_FLAG_NO_PUBKEY)
                   && k->label_len == templ[0].ulValueLen
                   && memcmp (label, k->label, k->label_len) == 0
                   && ((keytype == CKK_RSA && k->key_type == KEY_RSA)
@@ -719,8 +719,8 @@ learn_keys (struct token *token)
     {
       struct key *k = &token->key_list[i];
 
-      if ((k->flags & KEY_FLAGS_NO_PUBKEY))
-        k->flags &= ~KEY_FLAGS_NO_PUBKEY;
+      if ((k->flags & KEY_FLAG_NO_PUBKEY))
+        k->flags &= ~KEY_FLAG_NO_PUBKEY;
     }
 
 #if 0
@@ -751,7 +751,7 @@ find_key (struct cryptoki *ck, const char *keygrip, struct key **r_key)
         {
           struct key *k = &token->key_list[j];
 
-          if ((k->flags & KEY_FLAGS_VALID) == 0)
+          if ((k->flags & KEY_FLAG_VALID) == 0)
             continue;
 
           if (memcmp (k->keygrip, keygrip, 40) == 0)
@@ -783,11 +783,11 @@ iter_find_key_setup (struct iter_key *iter, struct cryptoki *ck, int cap)
   iter->j = 0;
   iter->mask = 0;
   if (cap == GCRY_PK_USAGE_SIGN)
-    iter->mask |= KEY_FLAGS_USAGE_SIGN;
+    iter->mask |= KEY_FLAG_USAGE_SIGN;
   else if (cap == GCRY_PK_USAGE_ENCR)
-    iter->mask = KEY_FLAGS_USAGE_DECRYPT;
+    iter->mask = KEY_FLAG_USAGE_DECRYPT;
   else
-    iter->mask = KEY_FLAGS_USAGE_SIGN | KEY_FLAGS_USAGE_DECRYPT;
+    iter->mask = KEY_FLAG_USAGE_SIGN | KEY_FLAG_USAGE_DECRYPT;
 }
 
 static int
@@ -830,7 +830,7 @@ iter_find_key (struct iter_key *iter, struct key **r_key)
 	    if (token && iter->j < token->num_keys)
 	      {
 		k = &token->key_list[iter->j++];
-		if ((k->flags & KEY_FLAGS_VALID) && (k->flags & iter->mask))
+		if ((k->flags & KEY_FLAG_VALID) && (k->flags & iter->mask))
 		  {
 		    /* Found */
 		    *r_key = k;
@@ -1120,14 +1120,43 @@ token_sign (ctrl_t ctrl, assuan_context_t ctx,
   return err;
 }
 
+static const char *
+get_usage_string (struct key *k)
+{
+  const char *usage = NULL;
+
+  if ((k->flags & KEY_FLAG_USAGE_SIGN))
+    {
+      if ((k->flags & KEY_FLAG_USAGE_DECRYPT))
+        usage = "se";
+      else
+        usage = "s";
+    }
+  else
+    {
+      if ((k->flags & KEY_FLAG_USAGE_DECRYPT))
+        usage = "e";
+      else
+        usage = "-";
+    }
+
+  return usage;
+}
+
 gpg_error_t
-token_readkey (ctrl_t ctrl, assuan_context_t ctx,
-               const char *keygrip, int opt_info,
-               unsigned char **r_pk,
-               size_t *r_pklen)
+token_readkey (ctrl_t ctrl, assuan_context_t ctx, const char *keygrip)
 {
   gpg_error_t err = 0;
+  struct key *k;
+  struct cryptoki *ck = ck_instance;
+  unsigned long r;
+
   (void)ctrl;
+
+  r = find_key (ck, keygrip, &k);
+  if (r)
+    return gpg_error (GPG_ERR_NO_SECKEY);
+
   return err;
 }
 
@@ -1147,21 +1176,7 @@ token_keyinfo (ctrl_t ctrl, const char *keygrip, int opt_data, int cap)
       if (r)
         return gpg_error (GPG_ERR_NO_SECKEY);
 
-      if ((k->flags & KEY_FLAGS_USAGE_SIGN))
-        {
-          if ((k->flags & KEY_FLAGS_USAGE_DECRYPT))
-            usage = "se";
-          else
-            usage = "s";
-        }
-      else
-        {
-          if ((k->flags & KEY_FLAGS_USAGE_DECRYPT))
-            usage = "e";
-          else
-            usage = "-";
-        }
-
+      usage = get_usage_string (k);
       send_keyinfo (ctrl, opt_data, keygrip,
                     k->label_len ? (const char *)k->label : "-",
                     k->id_len ? (const char *)k->id : "-",
@@ -1174,21 +1189,7 @@ token_keyinfo (ctrl_t ctrl, const char *keygrip, int opt_data, int cap)
       iter_find_key_setup (&iter, ck, cap);
       while (iter_find_key (&iter, &k))
 	{
-	  if ((k->flags & KEY_FLAGS_USAGE_SIGN))
-	    {
-	      if ((k->flags & KEY_FLAGS_USAGE_DECRYPT))
-		usage = "se";
-	      else
-		usage = "s";
-	    }
-	  else
-	    {
-	      if ((k->flags & KEY_FLAGS_USAGE_DECRYPT))
-		usage = "e";
-	      else
-		usage = "-";
-	    }
-
+          usage = get_usage_string (k);
 	  send_keyinfo (ctrl, opt_data, k->keygrip,
 			k->label_len ? (const char *)k->label : "-",
 			k->id_len ? (const char *)k->id : "-",

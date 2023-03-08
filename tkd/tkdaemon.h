@@ -115,9 +115,7 @@ gpg_error_t token_sign (ctrl_t ctrl, assuan_context_t ctx,
 			unsigned char **r_outdata,
 			size_t *r_outdatalen);
 gpg_error_t token_readkey (ctrl_t ctrl, assuan_context_t ctx,
-			   const char *keygrip, int opt_info,
-			   unsigned char **r_pk,
-			   size_t *r_pklen);
+                           const char *keygrip);
 gpg_error_t token_keyinfo (ctrl_t ctrl,
                            const char *keygrip, int opt_data, int cap);
 
