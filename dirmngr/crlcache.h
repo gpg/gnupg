@@ -27,6 +27,7 @@ typedef enum
     CRL_CACHE_VALID = 0,
     CRL_CACHE_INVALID,
     CRL_CACHE_DONTKNOW,
+    CRL_CACHE_NOTTRUSTED,
     CRL_CACHE_CANTUSE
   }
 crl_cache_result_t;

@@ -521,6 +521,7 @@ isvalid_status_cb (void *opaque, const char *line)
 
   GPG_ERR_CERTIFICATE_REVOKED
   GPG_ERR_NO_CRL_KNOWN
+  GPG_ERR_INV_CRL_OBJ
   GPG_ERR_CRL_TOO_OLD
 
   Values for USE_OCSP:

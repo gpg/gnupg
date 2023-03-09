@@ -164,7 +164,7 @@ struct crl_cache_entry_s
   unsigned int cdb_use_count;  /* Current use count. */
   unsigned int cdb_lru_count;  /* Used for LRU purposes. */
   int dbfile_checked;          /* Set to true if the dbfile_hash value has
-                                  been checked one. */
+                                  been checked once. */
 };
 
 
@@ -1402,7 +1402,7 @@ cache_isvalid (ctrl_t ctrl, const char *issuer_hash,
         {
           if (opt.verbose)
             log_info ("no system trust and client does not trust either\n");
-          retval = CRL_CACHE_CANTUSE;
+          retval = CRL_CACHE_NOTTRUSTED;
         }
       else
         {
@@ -1522,8 +1522,11 @@ crl_cache_cert_isvalid (ctrl_t ctrl, ksba_cert_t cert,
     case CRL_CACHE_DONTKNOW:
       err = gpg_error (GPG_ERR_NO_CRL_KNOWN);
       break;
+    case CRL_CACHE_NOTTRUSTED:
+      err = gpg_error (GPG_ERR_NOT_TRUSTED);
+      break;
     case CRL_CACHE_CANTUSE:
-      err = gpg_error (GPG_ERR_NO_CRL_KNOWN);
+      err = gpg_error (GPG_ERR_INV_CRL_OBJ);
       break;
     default:
       log_fatal ("cache_isvalid returned invalid status code %d\n", result);
@@ -2104,7 +2107,7 @@ crl_parse_insert (ctrl_t ctrl, ksba_crl_t crl,
         }
     }
   while (stopreason != KSBA_SR_READY);
-  assert (!err);
+  log_assert (!err);
 
 
  failure:
@@ -2729,8 +2732,6 @@ crl_cache_reload_crl (ctrl_t ctrl, ksba_cert_t cert)
 
           any_dist_point = 1;
 
-          if (opt.verbose)
-            log_info ("fetching CRL from '%s'\n", distpoint_uri);
           crl_close_reader (reader);
           err = crl_fetch (ctrl, distpoint_uri, &reader);
           if (err)

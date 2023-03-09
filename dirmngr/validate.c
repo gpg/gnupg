@@ -255,6 +255,7 @@ check_revocations (ctrl_t ctrl, chain_item_t chain)
   int any_revoked = 0;
   int any_no_crl = 0;
   int any_crl_too_old = 0;
+  int any_not_trusted = 0;
   chain_item_t ci;
 
   log_assert (ctrl->check_revocations_nest_level >= 0);
@@ -266,7 +267,8 @@ check_revocations (ctrl_t ctrl, chain_item_t chain)
       return gpg_error(GPG_ERR_BAD_CERT_CHAIN);
     }
   ctrl->check_revocations_nest_level++;
-
+  if (opt.verbose)
+    log_info ("[%d] start checking CRLs\n", ctrl->check_revocations_nest_level);
 
   for (ci=chain; ci; ci = ci->next)
     {
@@ -293,17 +295,19 @@ check_revocations (ctrl_t ctrl, chain_item_t chain)
           if (!err)
             err = crl_cache_cert_isvalid (ctrl, ci->cert, 0);
         }
+      if (opt.verbose)
+        log_info ("[%d] result of checking this CRL: %s\n",
+                  ctrl->check_revocations_nest_level, gpg_strerror (err));
       switch (gpg_err_code (err))
         {
         case 0: err = 0; break;
         case GPG_ERR_CERT_REVOKED: any_revoked = 1; err = 0; break;
         case GPG_ERR_NO_CRL_KNOWN: any_no_crl = 1; err = 0; break;
+        case GPG_ERR_NOT_TRUSTED:  any_not_trusted = 1; err = 0; break;
         case GPG_ERR_CRL_TOO_OLD: any_crl_too_old = 1; err = 0; break;
         default: break;
         }
     }
-  ctrl->check_revocations_nest_level--;
-
 
   if (err)
     ;
@@ -311,10 +315,16 @@ check_revocations (ctrl_t ctrl, chain_item_t chain)
     err = gpg_error (GPG_ERR_CERT_REVOKED);
   else if (any_no_crl)
     err = gpg_error (GPG_ERR_NO_CRL_KNOWN);
+  else if (any_not_trusted)
+    err = gpg_error (GPG_ERR_NOT_TRUSTED);
   else if (any_crl_too_old)
     err = gpg_error (GPG_ERR_CRL_TOO_OLD);
   else
     err = 0;
+  if (opt.verbose)
+    log_info ("[%d] result of checking all CRLs: %s\n",
+              ctrl->check_revocations_nest_level, gpg_strerror (err));
+  ctrl->check_revocations_nest_level--;
   return err;
 }
 

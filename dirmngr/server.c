@@ -1360,8 +1360,11 @@ cmd_isvalid (assuan_context_t ctx, char *line)
               goto again;
             }
           break;
+        case CRL_CACHE_NOTTRUSTED:
+          err = gpg_error (GPG_ERR_NOT_TRUSTED);
+          break;
         case CRL_CACHE_CANTUSE:
-          err = gpg_error (GPG_ERR_NO_CRL_KNOWN);
+          err = gpg_error (GPG_ERR_INV_CRL_OBJ);
           break;
         default:
           log_fatal ("crl_cache_isvalid returned invalid code\n");
@@ -1469,7 +1472,7 @@ cmd_checkcrl (assuan_context_t ctx, char *line)
         goto leave;
     }
 
-  assert (cert);
+  log_assert (cert);
 
   err = crl_cache_cert_isvalid (ctrl, cert, ctrl->force_crl_refresh);
   if (gpg_err_code (err) == GPG_ERR_NO_CRL_KNOWN)
