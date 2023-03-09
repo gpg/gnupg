@@ -56,8 +56,10 @@ gpg_agent_SOURCES = \
 	protect.c \
 	trustlist.c \
 	divert-scd.c \
+	divert-tkd.c \
 	cvt-openpgp.c cvt-openpgp.h \
 	call-scd.c \
+	call-tkd.c \
 	call-daemon.c \
 	$(tpm2_sources) \
 	learncard.c
