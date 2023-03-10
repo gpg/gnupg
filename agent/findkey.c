@@ -1821,16 +1821,22 @@ agent_write_shadow_key (const unsigned char *grip,
   unsigned char *shdkey;
   size_t len;
 
-  /* Just in case some caller did not parse the stuff correctly, skip
-   * leading spaces.  */
-  while (spacep (serialno))
-    serialno++;
-  while (spacep (keyid))
-    keyid++;
+  if (serialno == NULL && keyid == NULL)
+    /* It's a token, identified by the keygrip.  */
+    shadow_info = NULL;
+  else
+    {
+      /* Just in case some caller did not parse the stuff correctly, skip
+       * leading spaces.  */
+      while (spacep (serialno))
+        serialno++;
+      while (spacep (keyid))
+        keyid++;
 
-  shadow_info = make_shadow_info (serialno, keyid);
-  if (!shadow_info)
-    return gpg_error_from_syserror ();
+      shadow_info = make_shadow_info (serialno, keyid);
+      if (!shadow_info)
+        return gpg_error_from_syserror ();
+    }
 
   err = agent_shadow_key (pkbuf, shadow_info, &shdkey);
   xfree (shadow_info);

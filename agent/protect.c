@@ -1545,10 +1545,15 @@ agent_shadow_key_type (const unsigned char *pubkey,
   int depth = 0;
   char *p;
   size_t pubkey_len = gcry_sexp_canon_len (pubkey, 0, NULL,NULL);
-  size_t shadow_info_len = gcry_sexp_canon_len (shadow_info, 0, NULL,NULL);
+  size_t shadow_info_len;
 
-  if (!pubkey_len || !shadow_info_len)
+  if (!pubkey_len)
     return gpg_error (GPG_ERR_INV_VALUE);
+  if (shadow_info)
+    shadow_info_len = gcry_sexp_canon_len (shadow_info, 0, NULL,NULL);
+  else
+    shadow_info_len = 0;
+
   s = pubkey;
   if (*s != '(')
     return gpg_error (GPG_ERR_INV_SEXP);
@@ -1604,7 +1609,8 @@ agent_shadow_key_type (const unsigned char *pubkey,
   memcpy (p, pubkey+14, point - (pubkey+14));
   p += point - (pubkey+14);
   p += sprintf (p, "(8:shadowed%d:%s", (int)strlen(type), type);
-  memcpy (p, shadow_info, shadow_info_len);
+  if (shadow_info_len)
+    memcpy (p, shadow_info, shadow_info_len);
   p += shadow_info_len;
   *p++ = ')';
   memcpy (p, point, pubkey_len - (point - pubkey));
@@ -1618,7 +1624,10 @@ agent_shadow_key (const unsigned char *pubkey,
                   const unsigned char *shadow_info,
                   unsigned char **result)
 {
-  return agent_shadow_key_type (pubkey, shadow_info, "t1-v1", result);
+  if (shadow_info)
+    return agent_shadow_key_type (pubkey, shadow_info, "t1-v1", result);
+  else
+    return agent_shadow_key_type (pubkey, NULL, "tkd-v1", result);
 }
 
 /* Parse a canonical encoded shadowed key and return a pointer to the

@@ -1303,6 +1303,7 @@ cmd_keyattr (assuan_context_t ctx, char *line)
 static const char hlp_readkey[] =
   "READKEY [--no-data] [--format=ssh] <hexstring_with_keygrip>\n"
   "                    --card <keyid>\n"
+  "                    --token <hexstring_with_keygrip>\n"
   "\n"
   "Return the public key for the given keygrip or keyid.\n"
   "With --card, private key file with card information will be created.";
@@ -1315,13 +1316,14 @@ cmd_readkey (assuan_context_t ctx, char *line)
   gcry_sexp_t s_pkey = NULL;
   unsigned char *pkbuf = NULL;
   size_t pkbuflen;
-  int opt_card, opt_no_data, opt_format_ssh;
+  int opt_card, opt_token, opt_no_data, opt_format_ssh;
 
   if (ctrl->restricted)
     return leave_cmd (ctx, gpg_error (GPG_ERR_FORBIDDEN));
 
   opt_no_data = has_option (line, "--no-data");
   opt_card = has_option (line, "--card");
+  opt_token = has_option (line, "--token");
   opt_format_ssh = has_option (line, "--format=ssh");
 
   line = skip_options (line);
@@ -1372,6 +1374,34 @@ cmd_readkey (assuan_context_t ctx, char *line)
 
       xfree (serialno);
       xfree (keyidbuf);
+    }
+  else if (opt_token)
+    {
+      const char *keygrip = line;
+
+      rc = agent_tkd_readkey (ctrl, keygrip, &pkbuf, &pkbuflen);
+      if (rc)
+        goto leave;
+      rc = gcry_sexp_sscan (&s_pkey, NULL, (char*)pkbuf, pkbuflen);
+      if (rc)
+        goto leave;
+
+      if (!gcry_pk_get_keygrip (s_pkey, grip))
+        {
+          rc = gcry_pk_testkey (s_pkey);
+          if (rc == 0)
+            rc = gpg_error (GPG_ERR_INTERNAL);
+
+          goto leave;
+        }
+
+      if (agent_key_available (grip))
+        {
+          /* (Shadow)-key is not available in our key storage.  */
+          rc = agent_write_shadow_key (grip, NULL, NULL, pkbuf, 0);
+          if (rc)
+            goto leave;
+        }
     }
   else
     {

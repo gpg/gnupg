@@ -342,9 +342,11 @@ to keys stored on a token:
    (comment whatever)
 )
 
-The currently used protocols are "t1-v1" (token info version 1) and
-"tpm2-v1" (TPM format key information).  The second list with the
-information has this layout for "t1-v1":
+The currently used protocols are "t1-v1" (token info version 1),
+"tpm2-v1" (TPM format key information), and "tkd-v1" (token daemon
+info version 1).
+
+The second list with the information has this layout for "t1-v1":
 
 (card_serial_number id_string_of_key fixed_pin_length)
 
@@ -353,12 +355,14 @@ the PIN; a value of 0 indicates that this information is not
 available.  The rationale for this field is that some pinpad equipped
 readers don't allow passing a variable length PIN.
 
-This is the (info) layout for "tpm2-v1":
+For "tpm2-v1", the layout of the (info) is:
 
 (parent tpm_private_string tpm_public_string)
 
 Although this precise format is encapsulated inside the tpm2daemon
 itself and nothing in gpg ever uses this.
+
+For "tkd-v1", the layout of the (info) part is nothing.
 
 More items may be added to the list.
 

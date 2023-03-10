@@ -748,8 +748,8 @@ int agent_tkd_pksign (ctrl_t ctrl,
                       const char *keygrip,
                       const unsigned char *indata, size_t indatalen,
                       unsigned char **r_buf, size_t *r_buflen);
-int agent_tkd_readkey (ctrl_t ctrl, const char *id,
-                       unsigned char **r_buf, char **r_keyref);
+int agent_tkd_readkey (ctrl_t ctrl, const char *keygrip,
+                       unsigned char **r_buf, size_t *r_buflen);
 
 /*-- learncard.c --*/
 int agent_handle_learn (ctrl_t ctrl, int send, void *assuan_context, int force);

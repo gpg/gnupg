@@ -128,6 +128,52 @@ pin_cb (ctrl_t ctrl, const char *prompt, char **passphrase)
 			      hexgrip, CACHE_MODE_USER, NULL);
 }
 
+/* Read a key with KEYGRIP and return it in a malloced buffer pointed
+ * to by R_BUF as a valid S-expression.  If R_BUFLEN is not NULL the
+ * length is stored there. */
+int
+agent_tkd_readkey (ctrl_t ctrl, const char *keygrip,
+                   unsigned char **r_buf, size_t *r_buflen)
+{
+  int rc;
+  char line[ASSUAN_LINELENGTH];
+  membuf_t data;
+  size_t buflen;
+
+  *r_buf = NULL;
+  if (r_buflen)
+    *r_buflen = 0;
+
+  rc = start_tkd (ctrl);
+  if (rc)
+    return rc;
+
+  init_membuf (&data, 1024);
+  snprintf (line, DIM(line), "READKEY %s", keygrip);
+  rc = assuan_transact (daemon_ctx (ctrl), line,
+                        put_membuf_cb, &data,
+                        NULL, NULL, NULL, NULL);
+  if (rc)
+    {
+      xfree (get_membuf (&data, &buflen));
+      return unlock_tkd (ctrl, rc);
+    }
+  *r_buf = get_membuf (&data, &buflen);
+  if (!*r_buf)
+    return unlock_tkd (ctrl, gpg_error (GPG_ERR_ENOMEM));
+
+  if (!gcry_sexp_canon_len (*r_buf, buflen, NULL, NULL))
+    {
+      xfree (*r_buf); *r_buf = NULL;
+      return unlock_tkd (ctrl, gpg_error (GPG_ERR_INV_VALUE));
+    }
+  if (r_buflen)
+    *r_buflen = buflen;
+
+  return unlock_tkd (ctrl, 0);
+}
+
+
 int
 agent_tkd_pksign (ctrl_t ctrl, const char *keygrip,
                   const unsigned char *digest, size_t digestlen,
@@ -154,7 +200,7 @@ agent_tkd_pksign (ctrl_t ctrl, const char *keygrip,
   inqparm.extralen = digestlen;
   inqparm.pin = NULL;
 
-  snprintf(line, sizeof(line), "PKSIGN");
+  snprintf (line, sizeof(line), "PKSIGN %s", keygrip);
 
   rc = assuan_transact (daemon_ctx (ctrl), line,
 			put_membuf_cb, &data,
