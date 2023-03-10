@@ -2788,13 +2788,14 @@ static const char hlp_getinfo[] =
   "Multi purpose command to return certain information.  \n"
   "Supported values of WHAT are:\n"
   "\n"
-  "version     - Return the version of the program.\n"
-  "pid         - Return the process id of the server.\n"
+  "version     - Return the version of the program\n"
+  "pid         - Return the process id of the server\n"
   "tor         - Return OK if running in Tor mode\n"
   "dnsinfo     - Return info about the DNS resolver\n"
-  "socket_name - Return the name of the socket.\n"
-  "session_id  - Return the current session_id.\n"
+  "socket_name - Return the name of the socket\n"
+  "session_id  - Return the current session_id\n"
   "workqueue   - Inspect the work queue\n"
+  "stats       - Print stats\n"
   "getenv NAME - Return value of envvar NAME\n";
 static gpg_error_t
 cmd_getinfo (assuan_context_t ctx, char *line)
@@ -2861,6 +2862,12 @@ cmd_getinfo (assuan_context_t ctx, char *line)
   else if (!strcmp (line, "workqueue"))
     {
       workqueue_dump_queue (ctrl);
+      err = 0;
+    }
+  else if (!strcmp (line, "stats"))
+    {
+      cert_cache_print_stats (ctrl);
+      domaininfo_print_stats (ctrl);
       err = 0;
     }
   else if (!strncmp (line, "getenv", 6)
@@ -3221,7 +3228,8 @@ dirmngr_status_help (ctrl_t ctrl, const char *text)
 
 
 /* Print a help status line using a printf like format.  The function
- * splits text at LFs.  */
+ * splits text at LFs.  With CTRL beeing NULL, the function behaves
+ * like log_info.  */
 gpg_error_t
 dirmngr_status_helpf (ctrl_t ctrl, const char *format, ...)
 {
@@ -3230,12 +3238,20 @@ dirmngr_status_helpf (ctrl_t ctrl, const char *format, ...)
   char *buf;
 
   va_start (arg_ptr, format);
-  buf = es_vbsprintf (format, arg_ptr);
-  err = buf? 0 : gpg_error_from_syserror ();
+  if (ctrl)
+    {
+      buf = es_vbsprintf (format, arg_ptr);
+      err = buf? 0 : gpg_error_from_syserror ();
+      if (!err)
+        err = dirmngr_status_help (ctrl, buf);
+      es_free (buf);
+    }
+  else
+    {
+      log_logv (GPGRT_LOGLVL_INFO, format, arg_ptr);
+      err = 0;
+    }
   va_end (arg_ptr);
-  if (!err)
-    err = dirmngr_status_help (ctrl, buf);
-  es_free (buf);
   return err;
 }
 

@@ -266,7 +266,7 @@ gpg_error_t dirmngr_load_swdb (ctrl_t ctrl, int force);
 
 
 /*-- domaininfo.c --*/
-void domaininfo_print_stats (void);
+void domaininfo_print_stats (ctrl_t ctrl);
 int  domaininfo_is_wkd_not_supported (const char *domain);
 void domaininfo_set_no_name (const char *domain);
 void domaininfo_set_wkd_supported (const char *domain);

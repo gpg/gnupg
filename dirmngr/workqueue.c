@@ -59,7 +59,7 @@ workqueue_dump_queue (ctrl_t ctrl)
   wqitem_t item;
   unsigned int count;
 
-  /* Temporarily detach the entiere workqueue so that other threads don't
+  /* Temporarily detach the entire workqueue so that other threads don't
    * get into our way.  */
   saved_workqueue = workqueue;
   workqueue = NULL;
@@ -74,8 +74,8 @@ workqueue_dump_queue (ctrl_t ctrl)
                           item->func? item->func (NULL, NULL): "nop",
                           item->args, strlen (item->args) > 100? "[...]":"");
 
-  /* Restore then workqueue.  Actually we append the saved queue do a
-   * possibly updated workqueue.  */
+  /* Restore the workqueue.  Actually we append the saved queue to
+   * handle a possibly updated workqueue.  */
   if (!(item=workqueue))
     workqueue = saved_workqueue;
   else

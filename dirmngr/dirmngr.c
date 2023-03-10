@@ -2031,8 +2031,9 @@ handle_signal (int signo)
       break;
 
     case SIGUSR1:
-      cert_cache_print_stats ();
-      domaininfo_print_stats ();
+      /* See also cmd_getinfo:"stats".  */
+      cert_cache_print_stats (NULL);
+      domaininfo_print_stats (NULL);
       break;
 
     case SIGUSR2:

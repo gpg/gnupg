@@ -81,7 +81,7 @@ hash_domain (const char *domain)
 
 
 void
-domaininfo_print_stats (void)
+domaininfo_print_stats (ctrl_t ctrl)
 {
   int bidx;
   domaininfo_t di;
@@ -112,11 +112,12 @@ domaininfo_print_stats (void)
       if (minlen == -1 || len < minlen)
         minlen = len;
     }
-  log_info ("domaininfo: items=%d chainlen=%d..%d nn=%d nf=%d ns=%d s=%d\n",
-            count,
-            minlen > 0? minlen : 0,
-            maxlen,
-            no_name, wkd_not_found, wkd_not_supported, wkd_supported);
+  dirmngr_status_helpf
+    (ctrl, "domaininfo: items=%d chainlen=%d..%d nn=%d nf=%d ns=%d s=%d\n",
+     count,
+     minlen > 0? minlen : 0,
+     maxlen,
+     no_name, wkd_not_found, wkd_not_supported, wkd_supported);
 }
 
 
