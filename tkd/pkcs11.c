@@ -976,7 +976,6 @@ do_pksign (struct key *key, int hash_algo,
   return err;
 }
 
-#define ENVNAME "PKCS11_MODULE"
 
 gpg_error_t
 token_slotlist (ctrl_t ctrl, assuan_context_t ctx)
@@ -1152,7 +1151,7 @@ token_readkey (ctrl_t ctrl, assuan_context_t ctx, const char *keygrip)
   unsigned long r;
 
   (void)ctrl;
-
+  (void)ctx;
   r = find_key (ck, keygrip, &k);
   if (r)
     return gpg_error (GPG_ERR_NO_SECKEY);
