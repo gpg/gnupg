@@ -1218,12 +1218,6 @@ cmd_keyattr (assuan_context_t ctx, char *line)
   if (ctrl->restricted)
     return leave_cmd (ctx, gpg_error (GPG_ERR_FORBIDDEN));
 
-  if (!opt.enable_extended_key_format)
-    {
-      err = gpg_error (GPG_ERR_NOT_SUPPORTED);
-      goto leave;
-    }
-
   opt_delete = has_option (line, "--delete");
 
   line = skip_options (line);
@@ -2910,7 +2904,7 @@ cmd_import_key (assuan_context_t ctx, char *line)
   if (passphrase)
     {
       err = agent_protect (key, passphrase, &finalkey, &finalkeylen,
-                           ctrl->s2k_count, -1);
+                           ctrl->s2k_count);
       if (!err)
         err = agent_write_private_key (grip, finalkey, finalkeylen, force,
                                        NULL, NULL, opt_timestamp);
