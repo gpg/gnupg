@@ -1315,9 +1315,10 @@ show_other_registry_entries (estream_t outfp)
     const char *name;
   } names[] =
   {
-    { 1, "HKLM\\Software\\Gpg4win:Install Directory" },
     { 1, "HKLM\\Software\\Gpg4win:Desktop-Version" },
     { 1, "HKLM\\Software\\Gpg4win:VS-Desktop-Version" },
+    { 1, "\\Software\\Gpg4win:Install Directory" },
+    { 1, "\\Software\\GnuPG:Install Directory" },
     { 1, "\\" GNUPG_REGISTRY_DIR ":HomeDir" },
     { 1, "\\" GNUPG_REGISTRY_DIR ":DefaultLogFile" },
     { 2, "\\Software\\Microsoft\\Office\\Outlook\\Addins\\GNU.GpgOL"
