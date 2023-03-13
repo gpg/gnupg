@@ -1,7 +1,8 @@
 /* findkey.c - Locate the secret key
  * Copyright (C) 2001, 2002, 2003, 2004, 2005, 2007,
  *               2010, 2011 Free Software Foundation, Inc.
- * Copyright (C) 2014 Werner Koch
+ * Copyright (C) 2014, 2019 Werner Koch
+ * Copyright (C) 2023 g10 Code GmbH
  *
  * This file is part of GnuPG.
  *
@@ -67,20 +68,23 @@ fname_from_keygrip (const unsigned char *grip)
 }
 
 
-/* Note: Ownership of FNAME and FP are moved to this function.
- * OLD_FORMAT is true if the file exists but is still in the
- * non-extended mode format.  If MAYBE_UPDATE is set the function
- * assumes that the file exists but writes it only if it figures that
- * an update is required.  */
-static gpg_error_t
-write_extended_private_key (int maybe_update,
-                            char *fname, estream_t fp,
-                            int old_format, int newkey,
-                            const void *buf, size_t len, time_t timestamp,
-                            const char *serialno, const char *keyref,
-                            const char *dispserialno)
+/* Write the S-expression formatted key (BUFFER,LENGTH) to our key
+ * storage.  With FORCE passed as true an existing key with the given
+ * GRIP will get overwritten.  If SERIALNO and KEYREF are given a
+ * Token line is added to the key if the extended format is used.  If
+ * TIMESTAMP is not zero and the key doies not yet exists it will be
+ * recorded as creation date.  */
+int
+agent_write_private_key (const unsigned char *grip,
+                         const void *buffer, size_t length, int force,
+                         const char *serialno, const char *keyref,
+                         const char *dispserialno,
+                         time_t timestamp)
 {
   gpg_error_t err;
+  char *fname;
+  estream_t fp;
+  int update, newkey;
   nvc_t pk = NULL;
   gcry_sexp_t key = NULL;
   int remove = 0;
@@ -89,53 +93,121 @@ write_extended_private_key (int maybe_update,
   char *dispserialno_buffer = NULL;
   char **tokenfields = NULL;
 
-  if (old_format || newkey)
+  fname = fname_from_keygrip (grip);
+  if (!fname)
+    return out_of_core ();
+
+  /* FIXME: Write to a temp file first so that write failures during
+     key updates won't lead to a key loss.  */
+
+  if (!force && !gnupg_access (fname, F_OK))
     {
-      /* We must create a new NVC if the key is still in the old
-       * format and of course if it is a new key.  */
-      pk = nvc_new_private_key ();
-      if (!pk)
+      log_error ("secret key file '%s' already exists\n", fname);
+      xfree (fname);
+      return gpg_error (GPG_ERR_EEXIST);
+    }
+
+  fp = es_fopen (fname, force? "rb+,mode=-rw" : "wbx,mode=-rw");
+  if (!fp)
+    {
+      gpg_error_t tmperr = gpg_error_from_syserror ();
+
+      if (force && gpg_err_code (tmperr) == GPG_ERR_ENOENT)
         {
-          err = gpg_error_from_syserror ();
-          goto leave;
+          fp = es_fopen (fname, "wbx,mode=-rw");
+          if (!fp)
+            tmperr = gpg_error_from_syserror ();
         }
-      maybe_update = 0; /* Always write.  */
+      if (!fp)
+        {
+          log_error ("can't create '%s': %s\n", fname, gpg_strerror (tmperr));
+          xfree (fname);
+          return tmperr;
+        }
+      update = 0;
+      newkey = 1;
+    }
+  else if (force)
+    {
+      gpg_error_t rc;
+      char first;
+
+      /* See if an existing key is in extended format.  */
+      if (es_fread (&first, 1, 1, fp) != 1)
+        {
+          rc = gpg_error_from_syserror ();
+          log_error ("error reading first byte from '%s': %s\n",
+                     fname, strerror (errno));
+          xfree (fname);
+          es_fclose (fp);
+          return rc;
+        }
+
+      rc = es_fseek (fp, 0, SEEK_SET);
+      if (rc)
+        {
+          log_error ("error seeking in '%s': %s\n", fname, strerror (errno));
+          xfree (fname);
+          es_fclose (fp);
+          return rc;
+        }
+
+      if (first == '(')
+        {
+          /* Key is still in the old format - force it into extended
+           * format.  We do not request an update here because an
+           * existing key is not yet in extended key format and no
+           * extended infos are yet available.  */
+          update = 0;
+          newkey = 0;
+        }
+      else
+        {
+          /* Key is already in the extended format.  */
+          update = 1;
+          newkey = 0;
+        }
     }
   else
-    { /* Parse the existing NVC.  */
+    {
+      /* The key file did not exist: we assume this is a new key and
+       * write the Created: entry.  */
+      update = 0;
+      newkey = 1;
+    }
+
+
+  if (update)
+    {
       int lineno = 0;
 
       err = nvc_parse_private_key (&pk, &lineno, fp);
-      if (err)
+      if (err && gpg_err_code (err) != GPG_ERR_ENOENT)
         {
           log_error ("error parsing '%s' line %d: %s\n",
                      fname, lineno, gpg_strerror (err));
           goto leave;
         }
     }
+  else
+    {
+      pk = nvc_new_private_key ();
+      if (!pk)
+        {
+          err = gpg_error_from_syserror ();
+          goto leave;
+        }
+    }
   es_clearerr (fp);
 
-  err = gcry_sexp_sscan (&key, NULL, buf, len);
+  /* Turn (BUFFER,LENGTH) into a gcrypt s-expression and set it into
+   * our name value container.  */
+  err = gcry_sexp_sscan (&key, NULL, buffer, length);
   if (err)
     goto leave;
-
   err = nvc_set_private_key (pk, key);
   if (err)
     goto leave;
-
-  /* If a timestamp has been supplied and the key is new write a
-   * creation timestamp.  Note that we can't add this item if we are
-   * still in the old format.  We also add an extra check that there
-   * is no Created item yet.  */
-  if (timestamp && newkey && !nvc_lookup (pk, "Created:"))
-    {
-      gnupg_isotime_t timebuf;
-
-      epoch2isotime (timebuf, timestamp);
-      err = nvc_add (pk, "Created:", timebuf);
-      if (err)
-        goto leave;
-    }
 
   /* If requested write a Token line.  */
   if (serialno && keyref)
@@ -179,13 +251,12 @@ write_extended_private_key (int maybe_update,
           err = nvc_add (pk, "Token:", token);
           if (err)
             goto leave;
-          maybe_update = 0; /* Force write.  */
         }
       else
         {
           /* Token exists: Update the display s/n.  It may have
            * changed due to changes in a newer software version.  */
-          if (maybe_update && s && (tokenfields = strtokenize (s, " \t\n"))
+          if (s && (tokenfields = strtokenize (s, " \t\n"))
               && tokenfields[0] && tokenfields[1] && tokenfields[2]
               && tokenfields[3]
               && !strcmp (tokenfields[3], dispserialno))
@@ -195,34 +266,44 @@ write_extended_private_key (int maybe_update,
               err = nve_set (item, token);
               if (err)
                 goto leave;
-              maybe_update = 0; /* Force write.  */
             }
         }
     }
 
+  /* If a timestamp has been supplied and the key is new, write a
+   * creation timestamp.  (We douple check that there is no Created
+   * item yet.)*/
+  if (timestamp && newkey && !nvc_lookup (pk, "Created:"))
+    {
+      gnupg_isotime_t timebuf;
+
+      epoch2isotime (timebuf, timestamp);
+      err = nvc_add (pk, "Created:", timebuf);
+      if (err)
+        goto leave;
+    }
+
+  /* Back to start and write.  */
   err = es_fseek (fp, 0, SEEK_SET);
   if (err)
     goto leave;
 
-  if (!maybe_update)
+  err = nvc_write (pk, fp);
+  if (!err)
+    err = es_fflush (fp);
+  if (err)
     {
-      err = nvc_write (pk, fp);
-      if (!err)
-        err = es_fflush (fp);
-      if (err)
-        {
-          log_error ("error writing '%s': %s\n", fname, gpg_strerror (err));
-          remove = 1;
-          goto leave;
-        }
+      log_error ("error writing '%s': %s\n", fname, gpg_strerror (err));
+      remove = 1;
+      goto leave;
+    }
 
-      if (ftruncate (es_fileno (fp), es_ftello (fp)))
-        {
-          err = gpg_error_from_syserror ();
-          log_error ("error truncating '%s': %s\n", fname, gpg_strerror (err));
-          remove = 1;
-          goto leave;
-        }
+  if (ftruncate (es_fileno (fp), es_ftello (fp)))
+    {
+      err = gpg_error_from_syserror ();
+      log_error ("error truncating '%s': %s\n", fname, gpg_strerror (err));
+      remove = 1;
+      goto leave;
     }
 
   if (es_fclose (fp))
@@ -235,8 +316,7 @@ write_extended_private_key (int maybe_update,
   else
     fp = NULL;
 
-  if (!maybe_update)
-    bump_key_eventcounter ();
+  bump_key_eventcounter ();
 
  leave:
   es_fclose (fp);
@@ -250,136 +330,6 @@ write_extended_private_key (int maybe_update,
   gcry_sexp_release (key);
   nvc_release (pk);
   return err;
-}
-
-/* Write an S-expression formatted key to our key storage.  With FORCE
- * passed as true an existing key with the given GRIP will get
- * overwritten.  If TIMESTAMP is not zero and the key does not yet
- * exists it will be recorded as creation date.  If SERIALNO, KEYREF,
- * of DISPSERIALNO are not NULL they will be recorded as well.  */
-int
-agent_write_private_key (const unsigned char *grip,
-                         const void *buffer, size_t length,
-                         int force, time_t timestamp,
-                         const char *serialno, const char *keyref,
-                         const char *dispserialno)
-{
-  char *fname;
-  estream_t fp;
-
-  fname = fname_from_keygrip (grip);
-  if (!fname)
-    return gpg_error_from_syserror ();
-
-  /* FIXME: Write to a temp file first so that write failures during
-     key updates won't lead to a key loss.  */
-
-  if (!force && !gnupg_access (fname, F_OK))
-    {
-      log_error ("secret key file '%s' already exists\n", fname);
-      xfree (fname);
-      return gpg_error (GPG_ERR_EEXIST);
-    }
-
-  fp = es_fopen (fname, force? "rb+,mode=-rw" : "wbx,mode=-rw");
-  if (!fp)
-    {
-      gpg_error_t tmperr = gpg_error_from_syserror ();
-
-      if (force && gpg_err_code (tmperr) == GPG_ERR_ENOENT)
-        {
-          fp = es_fopen (fname, "wbx,mode=-rw");
-          if (!fp)
-            tmperr = gpg_error_from_syserror ();
-        }
-      if (!fp)
-        {
-          log_error ("can't create '%s': %s\n", fname, gpg_strerror (tmperr));
-          xfree (fname);
-          return tmperr;
-        }
-    }
-  else if (force)
-    {
-      gpg_error_t rc;
-      char first;
-
-      /* See if an existing key is in extended format.  */
-      if (es_fread (&first, 1, 1, fp) != 1)
-        {
-          rc = gpg_error_from_syserror ();
-          log_error ("error reading first byte from '%s': %s\n",
-                     fname, strerror (errno));
-          xfree (fname);
-          es_fclose (fp);
-          return rc;
-        }
-
-      rc = es_fseek (fp, 0, SEEK_SET);
-      if (rc)
-        {
-          log_error ("error seeking in '%s': %s\n", fname, strerror (errno));
-          xfree (fname);
-          es_fclose (fp);
-          return rc;
-        }
-
-      if (first != '(')
-        {
-          /* Key is already in the extended format.  */
-          return write_extended_private_key (0, fname, fp, 0, 0,
-                                             buffer, length,
-                                             timestamp, serialno, keyref,
-                                             dispserialno);
-        }
-      if (first == '(' && opt.enable_extended_key_format)
-        {
-          /* Key is in the old format - but we want the extended format.  */
-          return write_extended_private_key (0, fname, fp, 1, 0,
-                                             buffer, length,
-                                             timestamp, serialno, keyref,
-                                             dispserialno);
-        }
-    }
-
-  if (opt.enable_extended_key_format)
-    return write_extended_private_key (0, fname, fp, 0, 1,
-                                       buffer, length,
-                                       timestamp, serialno, keyref,
-                                       dispserialno);
-
-  if (es_fwrite (buffer, length, 1, fp) != 1)
-    {
-      gpg_error_t tmperr = gpg_error_from_syserror ();
-      log_error ("error writing '%s': %s\n", fname, gpg_strerror (tmperr));
-      es_fclose (fp);
-      gnupg_remove (fname);
-      xfree (fname);
-      return tmperr;
-    }
-
-  /* When force is given, the file might have to be truncated.  */
-  if (force && ftruncate (es_fileno (fp), es_ftello (fp)))
-    {
-      gpg_error_t tmperr = gpg_error_from_syserror ();
-      log_error ("error truncating '%s': %s\n", fname, gpg_strerror (tmperr));
-      es_fclose (fp);
-      gnupg_remove (fname);
-      xfree (fname);
-      return tmperr;
-    }
-
-  if (es_fclose (fp))
-    {
-      gpg_error_t tmperr = gpg_error_from_syserror ();
-      log_error ("error closing '%s': %s\n", fname, gpg_strerror (tmperr));
-      gnupg_remove (fname);
-      xfree (fname);
-      return tmperr;
-    }
-  bump_key_eventcounter ();
-  xfree (fname);
-  return 0;
 }
 
 
@@ -837,19 +787,14 @@ read_key_file (const unsigned char *grip, gcry_sexp_t *result, nvc_t *r_keymeta)
   unsigned char *buf;
   size_t buflen, erroff;
   gcry_sexp_t s_skey;
-  char hexgrip[40+4+1];
   char first;
 
   *result = NULL;
   if (r_keymeta)
     *r_keymeta = NULL;
 
-  bin2hex (grip, 20, hexgrip);
-  strcpy (hexgrip+40, ".key");
-
-  fname = make_filename (gnupg_homedir (), GNUPG_PRIVATE_KEYS_DIR,
-                         hexgrip, NULL);
-  fp = es_fopen (fname, "rb");
+  fname = fname_from_keygrip (grip);
+  fp = fname? es_fopen (fname, "rb") : NULL;
   if (!fp)
     {
       err = gpg_error_from_syserror ();
@@ -1722,15 +1667,13 @@ agent_delete_key (ctrl_t ctrl, const char *desc_text,
 
 
 /* Write an S-expression formatted shadow key to our key storage.
-   Shadow key is created by an S-expression public key in PKBUF and
-   card's SERIALNO and the IDSTRING.  With FORCE passed as true an
-   existing key with the given GRIP will get overwritten. If
-   DISPSERIALNO is not NULL the human readable s/n will also be
-   recorded in the key file.  If MAYBE_UPDATE is set it is assumed that
-   the shadow key already exists and we test whether we should update
-   it (FORCE is ignored in this case).  */
+ * Shadow key is created by an S-expression public key in PKBUF and
+ * card's SERIALNO and the IDSTRING.  With FORCE passed as true an
+ * existing key with the given GRIP will get overwritten. If
+ * DISPSERIALNO is not NULL the human readable s/n will also be
+ * recorded in the key file.   */
 gpg_error_t
-agent_write_shadow_key (int maybe_update, const unsigned char *grip,
+agent_write_shadow_key (const unsigned char *grip,
                         const char *serialno, const char *keyid,
                         const unsigned char *pkbuf, int force,
                         const char *dispserialno)
@@ -1739,12 +1682,6 @@ agent_write_shadow_key (int maybe_update, const unsigned char *grip,
   unsigned char *shadow_info;
   unsigned char *shdkey;
   size_t len;
-  char *fname = NULL;
-  estream_t fp = NULL;
-  char first;
-
-  if (maybe_update && !opt.enable_extended_key_format)
-    return 0;  /* Silently ignore.  */
 
   /* Just in case some caller did not parse the stuff correctly, skip
    * leading spaces.  */
@@ -1766,62 +1703,11 @@ agent_write_shadow_key (int maybe_update, const unsigned char *grip,
     }
 
   len = gcry_sexp_canon_len (shdkey, 0, NULL, NULL);
-
-  if (maybe_update)  /* Update mode.  */
-    {
-      fname = fname_from_keygrip (grip);
-      if (!fname)
-        {
-          err = gpg_error_from_syserror ();
-          goto leave;
-        }
-
-      fp = es_fopen (fname, "rb+,mode=-rw");
-      if (!fp)
-        {
-          err = gpg_error_from_syserror ();
-          log_error ("shadow key file '%s' disappeared\n", fname);
-          goto leave;
-        }
-
-      /* See if an existing key is in extended format.  */
-      if (es_fread (&first, 1, 1, fp) != 1)
-        {
-          err = gpg_error_from_syserror ();
-          log_error ("error reading first byte from '%s': %s\n",
-                     fname, gpg_strerror (err));
-          goto leave;
-        }
-
-      if (es_fseek (fp, 0, SEEK_SET))
-        {
-          err = gpg_error_from_syserror ();
-          log_error ("error seeking in '%s': %s\n", fname, gpg_strerror (err));
-          goto leave;
-        }
-
-      /* "(first == '(')" indicates that the key is in the old format.  */
-      err = write_extended_private_key (maybe_update,
-                                        fname, fp, (first == '('), 0,
-                                        shdkey, len,
-                                        0, serialno, keyid,
-                                        dispserialno);
-      fname = NULL;  /* Ownership was transferred.  */
-      fp = NULL;     /* Ditto.  */
-    }
-  else  /* Standard mode */
-    {
-      err = agent_write_private_key (grip, shdkey, len, force, 0,
-                                     serialno, keyid, dispserialno);
-    }
-
- leave:
-  xfree (fname);
-  es_fclose (fp);
+  err = agent_write_private_key (grip, shdkey, len, force,
+                                 serialno, keyid, dispserialno, 0);
   xfree (shdkey);
   if (err)
-    log_error ("error %s key: %s\n", maybe_update? "updating":"writing",
-               gpg_strerror (err));
+    log_error ("error writing key: %s\n", gpg_strerror (err));
 
   return err;
 }

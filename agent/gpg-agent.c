@@ -116,8 +116,6 @@ enum cmd_and_opt_values
   oCheckSymPassphrasePattern,
   oMaxPassphraseDays,
   oEnablePassphraseHistory,
-  oDisableExtendedKeyFormat,
-  oEnableExtendedKeyFormat,
   oStealSocket,
   oUseStandardSocket,
   oNoUseStandardSocket,
@@ -227,8 +225,6 @@ static ARGPARSE_OPTS opts[] = {
                 /* */           "@"
 #endif
                 ),
-  ARGPARSE_s_n (oDisableExtendedKeyFormat, "disable-extended-key-format", "@"),
-  ARGPARSE_s_n (oEnableExtendedKeyFormat, "enable-extended-key-format", "@"),
   ARGPARSE_s_i (oListenBacklog, "listen-backlog", "@"),
   ARGPARSE_op_u (oAutoExpandSecmem, "auto-expand-secmem", "@"),
   ARGPARSE_s_s (oFakedSystemTime, "faked-system-time", "@"),
@@ -303,7 +299,8 @@ static ARGPARSE_OPTS opts[] = {
   ARGPARSE_s_n (oNoUseStandardSocket, "no-use-standard-socket", "@"),
 
   /* Dummy options.  */
-
+  ARGPARSE_s_n (oNoop, "disable-extended-key-format", "@"),
+  ARGPARSE_s_n (oNoop, "enable-extended-key-format", "@"),
 
   ARGPARSE_end () /* End of list */
 };
@@ -874,7 +871,6 @@ parse_rereadable_options (ARGPARSE_ARGS *pargs, int reread)
       opt.check_sym_passphrase_pattern = NULL;
       opt.max_passphrase_days = MAX_PASSPHRASE_DAYS;
       opt.enable_passphrase_history = 0;
-      opt.enable_extended_key_format = 1;
       opt.ignore_cache_for_signing = 0;
       opt.allow_mark_trusted = 1;
       opt.sys_trustlist_name = NULL;
@@ -954,14 +950,6 @@ parse_rereadable_options (ARGPARSE_ARGS *pargs, int reread)
       break;
     case oEnablePassphraseHistory:
       opt.enable_passphrase_history = 1;
-      break;
-
-    case oEnableExtendedKeyFormat:
-      opt.enable_extended_key_format = 2;
-      break;
-    case oDisableExtendedKeyFormat:
-      if (opt.enable_extended_key_format != 2)
-        opt.enable_extended_key_format = 0;
       break;
 
     case oIgnoreCacheForSigning: opt.ignore_cache_for_signing = 1; break;

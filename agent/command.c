@@ -975,7 +975,6 @@ cmd_genkey (assuan_context_t ctx, char *line)
 }
 
 
-
 
 static const char hlp_readkey[] =
   "READKEY [--no-data] <hexstring_with_keygrip>\n"
@@ -1040,20 +1039,11 @@ cmd_readkey (assuan_context_t ctx, char *line)
         }
 
       agent_card_getattr (ctrl, "$DISPSERIALNO", &dispserialno);
-      if (agent_key_available (grip))
-        {
-          /* Shadow-key is not available in our key storage.  */
-          rc = agent_write_shadow_key (0, grip, serialno, keyid, pkbuf, 0,
-                                       dispserialno);
-        }
-      else
-        {
-          /* Shadow-key is available in our key storage but ne check
-           * whether we need to update it with a new display-s/n or
-           * whatever.  */
-          rc = agent_write_shadow_key (1, grip, serialno, keyid, pkbuf, 0,
-                                       dispserialno);
-        }
+      /* Shadow-key is or is not available in our key storage.  In
+       * any case we need to check whether we need to update with
+       * a new display-s/n or whatever.  */
+      rc = agent_write_shadow_key (grip, serialno, keyid, pkbuf, 0,
+                                   dispserialno);
       if (rc)
         goto leave;
 
@@ -2435,14 +2425,14 @@ cmd_import_key (assuan_context_t ctx, char *line)
   if (passphrase)
     {
       err = agent_protect (key, passphrase, &finalkey, &finalkeylen,
-                           ctrl->s2k_count, -1);
+                           ctrl->s2k_count);
       if (!err)
         err = agent_write_private_key (grip, finalkey, finalkeylen, force,
-                                       opt_timestamp, NULL, NULL, NULL);
+                                       NULL, NULL, NULL, opt_timestamp);
     }
   else
     err = agent_write_private_key (grip, key, realkeylen, force,
-                                   opt_timestamp, NULL, NULL, NULL);
+                                   NULL, NULL, NULL, opt_timestamp);
 
  leave:
   gcry_sexp_release (openpgp_sexp);

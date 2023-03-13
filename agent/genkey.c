@@ -59,7 +59,7 @@ store_key (gcry_sexp_t private, const char *passphrase, int force,
     {
       unsigned char *p;
 
-      rc = agent_protect (buf, passphrase, &p, &len, s2k_count, -1);
+      rc = agent_protect (buf, passphrase, &p, &len, s2k_count);
       if (rc)
         {
           xfree (buf);
@@ -69,8 +69,8 @@ store_key (gcry_sexp_t private, const char *passphrase, int force,
       buf = p;
     }
 
-  rc = agent_write_private_key (grip, buf, len, force, timestamp,
-                                NULL, NULL, NULL);
+  rc = agent_write_private_key (grip, buf, len, force,
+                                NULL, NULL, NULL, timestamp);
   xfree (buf);
   return rc;
 }
