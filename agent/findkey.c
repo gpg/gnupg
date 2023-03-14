@@ -27,10 +27,8 @@
 #include <string.h>
 #include <ctype.h>
 #include <fcntl.h>
-#include <assert.h>
 #include <unistd.h>
 #include <sys/stat.h>
-#include <assert.h>
 #include <npth.h> /* (we use pth_sleep) */
 
 #include "agent.h"
@@ -41,6 +39,12 @@
 #ifndef O_BINARY
 #define O_BINARY 0
 #endif
+
+
+static gpg_error_t read_key_file (const unsigned char *grip,
+                                  gcry_sexp_t *result, nvc_t *r_keymeta);
+static gpg_error_t is_shadowed_key (gcry_sexp_t s_skey);
+
 
 /* Helper to pass data to the check callback of the unprotect function. */
 struct try_unprotect_arg_s
@@ -53,15 +57,16 @@ struct try_unprotect_arg_s
 };
 
 
-/* Return the file name for the 20 byte keygrip GRIP.  Return NULL on
- * error. */
+/* Return the file name for the 20 byte keygrip GRIP.  With FOR_NEW
+ * create a file name for later renaming to the actual name.  Return
+ * NULL on error. */
 static char *
-fname_from_keygrip (const unsigned char *grip)
+fname_from_keygrip (const unsigned char *grip, int for_new)
 {
-  char hexgrip[40+4+1];
+  char hexgrip[40+4+4+1];
 
   bin2hex (grip, 20, hexgrip);
-  strcpy (hexgrip+40, ".key");
+  strcpy (hexgrip+40, for_new? ".key.tmp" : ".key");
 
   return make_filename_try (gnupg_homedir (), GNUPG_PRIVATE_KEYS_DIR,
                             hexgrip, NULL);
@@ -70,8 +75,8 @@ fname_from_keygrip (const unsigned char *grip)
 
 /* Write the S-expression formatted key (BUFFER,LENGTH) to our key
  * storage.  With FORCE passed as true an existing key with the given
- * GRIP will get overwritten.  If SERIALNO and KEYREF are given a
- * Token line is added to the key if the extended format is used.  If
+ * GRIP will be overwritten.  If SERIALNO and KEYREF are given a Token
+ * line is added to the key if the extended format is used.  If
  * TIMESTAMP is not zero and the key doies not yet exists it will be
  * recorded as creation date.  */
 int
@@ -82,115 +87,40 @@ agent_write_private_key (const unsigned char *grip,
                          time_t timestamp)
 {
   gpg_error_t err;
-  char *fname;
+  char *oldfname = NULL;
+  char *fname = NULL;
   estream_t fp;
-  int update, newkey;
+  int newkey = 0;
   nvc_t pk = NULL;
   gcry_sexp_t key = NULL;
+  int is_regular;
   int remove = 0;
   char *token0 = NULL;
   char *token = NULL;
   char *dispserialno_buffer = NULL;
   char **tokenfields = NULL;
+  int blocksigs = 0;
 
-  fname = fname_from_keygrip (grip);
-  if (!fname)
+  oldfname = fname_from_keygrip (grip, 0);
+  if (!oldfname)
     return out_of_core ();
 
-  /* FIXME: Write to a temp file first so that write failures during
-     key updates won't lead to a key loss.  */
-
-  if (!force && !gnupg_access (fname, F_OK))
+  err = read_key_file (grip, &key, &pk);
+  if (err)
     {
-      log_error ("secret key file '%s' already exists\n", fname);
-      xfree (fname);
-      return gpg_error (GPG_ERR_EEXIST);
-    }
-
-  fp = es_fopen (fname, force? "rb+,mode=-rw" : "wbx,mode=-rw");
-  if (!fp)
-    {
-      gpg_error_t tmperr = gpg_error_from_syserror ();
-
-      if (force && gpg_err_code (tmperr) == GPG_ERR_ENOENT)
-        {
-          fp = es_fopen (fname, "wbx,mode=-rw");
-          if (!fp)
-            tmperr = gpg_error_from_syserror ();
-        }
-      if (!fp)
-        {
-          log_error ("can't create '%s': %s\n", fname, gpg_strerror (tmperr));
-          xfree (fname);
-          return tmperr;
-        }
-      update = 0;
-      newkey = 1;
-    }
-  else if (force)
-    {
-      gpg_error_t rc;
-      char first;
-
-      /* See if an existing key is in extended format.  */
-      if (es_fread (&first, 1, 1, fp) != 1)
-        {
-          rc = gpg_error_from_syserror ();
-          log_error ("error reading first byte from '%s': %s\n",
-                     fname, strerror (errno));
-          xfree (fname);
-          es_fclose (fp);
-          return rc;
-        }
-
-      rc = es_fseek (fp, 0, SEEK_SET);
-      if (rc)
-        {
-          log_error ("error seeking in '%s': %s\n", fname, strerror (errno));
-          xfree (fname);
-          es_fclose (fp);
-          return rc;
-        }
-
-      if (first == '(')
-        {
-          /* Key is still in the old format - force it into extended
-           * format.  We do not request an update here because an
-           * existing key is not yet in extended key format and no
-           * extended infos are yet available.  */
-          update = 0;
-          newkey = 0;
-        }
+      if (gpg_err_code (err) == GPG_ERR_ENOENT)
+        newkey = 1;
       else
         {
-          /* Key is already in the extended format.  */
-          update = 1;
-          newkey = 0;
-        }
-    }
-  else
-    {
-      /* The key file did not exist: we assume this is a new key and
-       * write the Created: entry.  */
-      update = 0;
-      newkey = 1;
-    }
-
-
-  if (update)
-    {
-      int lineno = 0;
-
-      err = nvc_parse_private_key (&pk, &lineno, fp);
-      if (err && gpg_err_code (err) != GPG_ERR_ENOENT)
-        {
-          log_error ("error parsing '%s' line %d: %s\n",
-                     fname, lineno, gpg_strerror (err));
+          log_error ("can't open '%s': %s\n", oldfname, gpg_strerror (err));
           goto leave;
         }
     }
-  else
+
+  if (!pk)
     {
+      /* Key is still in the old format or does not exist - create a
+       * new container.  */
       pk = nvc_new_private_key ();
       if (!pk)
         {
@@ -198,16 +128,35 @@ agent_write_private_key (const unsigned char *grip,
           goto leave;
         }
     }
-  es_clearerr (fp);
+
+  /* Check whether we already have a regular key.  */
+  is_regular = (key && gpg_err_code (is_shadowed_key (key)) != GPG_ERR_TRUE);
 
   /* Turn (BUFFER,LENGTH) into a gcrypt s-expression and set it into
    * our name value container.  */
+  gcry_sexp_release (key);
   err = gcry_sexp_sscan (&key, NULL, buffer, length);
   if (err)
     goto leave;
   err = nvc_set_private_key (pk, key);
   if (err)
     goto leave;
+
+  /* Check that we do not update a regular key with a shadow key.  */
+  if (is_regular && gpg_err_code (is_shadowed_key (key)) == GPG_ERR_TRUE)
+    {
+      log_info ("updating regular key file '%s'"
+                " by a shadow key inhibited\n", oldfname);
+      err = 0;  /* Simply ignore the error.  */
+      goto leave;
+    }
+  /* Check that we update a regular key only in force mode.  */
+  if (is_regular && !force)
+    {
+      log_error ("secret key file '%s' already exists\n", oldfname);
+      err = gpg_error (GPG_ERR_EEXIST);
+      goto leave;
+    }
 
   /* If requested write a Token line.  */
   if (serialno && keyref)
@@ -283,10 +232,14 @@ agent_write_private_key (const unsigned char *grip,
         goto leave;
     }
 
-  /* Back to start and write.  */
-  err = es_fseek (fp, 0, SEEK_SET);
-  if (err)
-    goto leave;
+  /* Create a temporary file for writing.  */
+  fname = fname_from_keygrip (grip, 1);
+  fp = fname ? es_fopen (fname, "wbx,mode=-rw") : NULL;
+  if (!fp)
+    {
+      log_error ("can't create '%s': %s\n", fname, gpg_strerror (err));
+      goto leave;
+    }
 
   err = nvc_write (pk, fp);
   if (!err)
@@ -298,14 +251,6 @@ agent_write_private_key (const unsigned char *grip,
       goto leave;
     }
 
-  if (ftruncate (es_fileno (fp), es_ftello (fp)))
-    {
-      err = gpg_error_from_syserror ();
-      log_error ("error truncating '%s': %s\n", fname, gpg_strerror (err));
-      remove = 1;
-      goto leave;
-    }
-
   if (es_fclose (fp))
     {
       err = gpg_error_from_syserror ();
@@ -313,16 +258,27 @@ agent_write_private_key (const unsigned char *grip,
       remove = 1;
       goto leave;
     }
-  else
-    fp = NULL;
+  fp = NULL;
+
+  err = gnupg_rename_file (fname, oldfname, &blocksigs);
+  if (err)
+    {
+      err = gpg_error_from_syserror ();
+      log_error ("error renaming '%s': %s\n", fname, gpg_strerror (err));
+      remove = 1;
+      goto leave;
+    }
 
   bump_key_eventcounter ();
 
  leave:
+  if (blocksigs)
+    gnupg_unblock_all_signals ();
   es_fclose (fp);
-  if (remove)
+  if (remove && fname)
     gnupg_remove (fname);
   xfree (fname);
+  xfree (oldfname);
   xfree (token);
   xfree (token0);
   xfree (dispserialno_buffer);
@@ -345,7 +301,7 @@ try_unprotect_cb (struct pin_entry_info_s *pi)
   gnupg_isotime_t now, protected_at, tmptime;
   char *desc = NULL;
 
-  assert (!arg->unprotected_key);
+  log_assert (!arg->unprotected_key);
 
   arg->change_required = 0;
   err = agent_unprotect (ctrl, arg->protected_key, pi->pin, protected_at,
@@ -722,7 +678,7 @@ unprotect (ctrl_t ctrl, const char *cache_nonce, const char *desc_text,
     }
   else
     {
-      assert (arg.unprotected_key);
+      log_assert (arg.unprotected_key);
       if (arg.change_required)
         {
           /* The callback told as that the user should change their
@@ -730,7 +686,7 @@ unprotect (ctrl_t ctrl, const char *cache_nonce, const char *desc_text,
           size_t canlen, erroff;
           gcry_sexp_t s_skey;
 
-          assert (arg.unprotected_key);
+          log_assert (arg.unprotected_key);
           canlen = gcry_sexp_canon_len (arg.unprotected_key, 0, NULL, NULL);
           rc = gcry_sexp_sscan (&s_skey, &erroff,
                                 (char*)arg.unprotected_key, canlen);
@@ -774,17 +730,17 @@ unprotect (ctrl_t ctrl, const char *cache_nonce, const char *desc_text,
 
 /* Read the key identified by GRIP from the private key directory and
  * return it as an gcrypt S-expression object in RESULT.  If R_KEYMETA
- * is not NULl and the extended key format is used, the meta data
- * items are stored there.  However the "Key:" item is removed from
- * it.  On failure returns an error code and stores NULL at RESULT. */
+ * is not NULL, the meta data items are stored there.  However the
+ * "Key:" item is removed.  Returns an error code and stores NULL at
+ * RESULT. */
 static gpg_error_t
 read_key_file (const unsigned char *grip, gcry_sexp_t *result, nvc_t *r_keymeta)
 {
   gpg_error_t err;
   char *fname;
-  estream_t fp;
+  estream_t fp = NULL;
   struct stat st;
-  unsigned char *buf;
+  unsigned char *buf = NULL;
   size_t buflen, erroff;
   gcry_sexp_t s_skey;
   char first;
@@ -793,15 +749,19 @@ read_key_file (const unsigned char *grip, gcry_sexp_t *result, nvc_t *r_keymeta)
   if (r_keymeta)
     *r_keymeta = NULL;
 
-  fname = fname_from_keygrip (grip);
-  fp = fname? es_fopen (fname, "rb") : NULL;
+  fname = fname_from_keygrip (grip, 0);
+  if (!fname)
+    {
+      err = gpg_error_from_syserror ();
+      goto leave;
+    }
+  fp = es_fopen (fname, "rb");
   if (!fp)
     {
       err = gpg_error_from_syserror ();
       if (gpg_err_code (err) != GPG_ERR_ENOENT)
         log_error ("can't open '%s': %s\n", fname, gpg_strerror (err));
-      xfree (fname);
-      return err;
+      goto leave;
     }
 
   if (es_fread (&first, 1, 1, fp) != 1)
@@ -809,18 +769,14 @@ read_key_file (const unsigned char *grip, gcry_sexp_t *result, nvc_t *r_keymeta)
       err = gpg_error_from_syserror ();
       log_error ("error reading first byte from '%s': %s\n",
                  fname, gpg_strerror (err));
-      xfree (fname);
-      es_fclose (fp);
-      return err;
+      goto leave;
     }
 
   if (es_fseek (fp, 0, SEEK_SET))
     {
       err = gpg_error_from_syserror ();
       log_error ("error seeking in '%s': %s\n", fname, gpg_strerror (err));
-      xfree (fname);
-      es_fclose (fp);
-      return err;
+      goto leave;
     }
 
   if (first != '(')
@@ -830,8 +786,6 @@ read_key_file (const unsigned char *grip, gcry_sexp_t *result, nvc_t *r_keymeta)
       int line;
 
       err = nvc_parse_private_key (&pk, &line, fp);
-      es_fclose (fp);
-
       if (err)
         log_error ("error parsing '%s' line %d: %s\n",
                    fname, line, gpg_strerror (err));
@@ -849,17 +803,14 @@ read_key_file (const unsigned char *grip, gcry_sexp_t *result, nvc_t *r_keymeta)
         *r_keymeta = pk;
       else
         nvc_release (pk);
-      xfree (fname);
-      return err;
+      goto leave;
     }
 
   if (fstat (es_fileno (fp), &st))
     {
       err = gpg_error_from_syserror ();
       log_error ("can't stat '%s': %s\n", fname, gpg_strerror (err));
-      xfree (fname);
-      es_fclose (fp);
-      return err;
+      goto leave;
     }
 
   buflen = st.st_size;
@@ -869,11 +820,7 @@ read_key_file (const unsigned char *grip, gcry_sexp_t *result, nvc_t *r_keymeta)
       err = gpg_error_from_syserror ();
       log_error ("error allocating %zu bytes for '%s': %s\n",
                  buflen, fname, gpg_strerror (err));
-      xfree (fname);
-      es_fclose (fp);
-      xfree (buf);
-      return err;
-
+      goto leave;
     }
 
   if (es_fread (buf, buflen, 1, fp) != 1)
@@ -881,25 +828,24 @@ read_key_file (const unsigned char *grip, gcry_sexp_t *result, nvc_t *r_keymeta)
       err = gpg_error_from_syserror ();
       log_error ("error reading %zu bytes from '%s': %s\n",
                  buflen, fname, gpg_strerror (err));
-      xfree (fname);
-      es_fclose (fp);
-      xfree (buf);
-      return err;
+      goto leave;
     }
 
   /* Convert the file into a gcrypt S-expression object.  */
   err = gcry_sexp_sscan (&s_skey, &erroff, (char*)buf, buflen);
-  xfree (fname);
-  es_fclose (fp);
-  xfree (buf);
   if (err)
     {
       log_error ("failed to build S-Exp (off=%u): %s\n",
                  (unsigned int)erroff, gpg_strerror (err));
-      return err;
+      goto leave;
     }
   *result = s_skey;
-  return 0;
+
+ leave:
+  es_fclose (fp);
+  xfree (fname);
+  xfree (buf);
+  return err;
 }
 
 
@@ -1270,6 +1216,29 @@ agent_is_eddsa_key (gcry_sexp_t s_key)
 }
 
 
+/* This function returns GPG_ERR_TRUE if S_SKEY represents a shadowed
+ * key.  0 is return for other key types.  Any other error may occur
+ * if S_SKEY is not valid.  */
+static gpg_error_t
+is_shadowed_key (gcry_sexp_t s_skey)
+{
+  gpg_error_t err;
+  unsigned char *buf;
+  size_t buflen;
+
+  err = make_canon_sexp (s_skey, &buf, &buflen);
+  if (err)
+    return err;
+
+  if (agent_private_key_type (buf) == PRIVATE_KEY_SHADOWED)
+    err = gpg_error (GPG_ERR_TRUE);
+
+  wipememory (buf, buflen);
+  xfree (buf);
+  return err;
+}
+
+
 /* Return the key for the keygrip GRIP.  The result is stored at
    RESULT.  This function extracts the key from the private key
    database and returns it as an S-expression object as it is.  On
@@ -1376,7 +1345,7 @@ agent_public_key_from_file (ctrl_t ctrl,
      such a task.  After all that is what we do in protect.c.  Need
      to find common patterns and write a straightformward API to use
      them.  */
-  assert (sizeof (size_t) <= sizeof (void*));
+  log_assert (sizeof (size_t) <= sizeof (void*));
 
   format = xtrymalloc (15+4+7*npkey+10+15+1+1);
   if (!format)
@@ -1401,14 +1370,14 @@ agent_public_key_from_file (ctrl_t ctrl,
       *p++ = '(';
       *p++ = *s++;
       p = stpcpy (p, " %m)");
-      assert (argidx < DIM (args));
+      log_assert (argidx < DIM (args));
       args[argidx++] = &array[idx];
     }
   *p++ = ')';
   if (uri)
     {
       p = stpcpy (p, "(uri %b)");
-      assert (argidx+1 < DIM (args));
+      log_assert (argidx+1 < DIM (args));
       uri_intlen = (int)uri_length;
       args[argidx++] = (void *)&uri_intlen;
       args[argidx++] = (void *)&uri;
@@ -1416,14 +1385,14 @@ agent_public_key_from_file (ctrl_t ctrl,
   if (comment)
     {
       p = stpcpy (p, "(comment %b)");
-      assert (argidx+1 < DIM (args));
+      log_assert (argidx+1 < DIM (args));
       comment_intlen = (int)comment_length;
       args[argidx++] = (void *)&comment_intlen;
       args[argidx++] = (void*)&comment;
     }
   *p++ = ')';
   *p = 0;
-  assert (argidx < DIM (args));
+  log_assert (argidx < DIM (args));
   args[argidx] = NULL;
 
   err = gcry_sexp_build_array (&list, NULL, format, args);
@@ -1520,7 +1489,7 @@ agent_key_info_from_file (ctrl_t ctrl, const unsigned char *grip,
           if (!err)
             {
               n = gcry_sexp_canon_len (s, 0, NULL, NULL);
-              assert (n);
+              log_assert (n);
               *r_shadow_info = xtrymalloc (n);
               if (!*r_shadow_info)
                 err = gpg_error_from_syserror ();
