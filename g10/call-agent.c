@@ -525,7 +525,8 @@ learn_status_cb (void *opaque, const char *line)
       xfree (parm->serialno);
       parm->serialno = store_serialno (line);
       parm->is_v2 = (strlen (parm->serialno) >= 16
-                     && xtoi_2 (parm->serialno+12) >= 2 );
+                     && (xtoi_2 (parm->serialno+12) == 0 /* Yubikey */
+                         || xtoi_2 (parm->serialno+12) >= 2));
     }
   else if (keywordlen == 7 && !memcmp (keyword, "APPTYPE", keywordlen))
     {
