@@ -4824,6 +4824,7 @@ do_writekey (app_t app, ctrl_t ctrl,
   const unsigned char *buf, *tok;
   size_t buflen, toklen;
   int depth;
+  char *algostr = NULL;
 
   (void)ctrl;
 
@@ -4866,17 +4867,41 @@ do_writekey (app_t app, ctrl_t ctrl,
     goto leave;
   if ((err = parse_sexp (&buf, &buflen, &depth, &tok, &toklen)))
     goto leave;
-  if (tok && toklen == 3 && memcmp ("rsa", tok, toklen) == 0)
-    err = rsa_writekey (app, ctrl, pincb, pincb_arg, keyno, buf, buflen, depth);
-  else if (tok && toklen == 3 && memcmp ("ecc", tok, toklen) == 0)
-    err = ecc_writekey (app, ctrl, pincb, pincb_arg, keyno, buf, buflen, depth);
+
+  if (tok && toklen == 3 && (!memcmp ("rsa", tok, toklen)
+                             || !memcmp ("ecc", tok, toklen)))
+    {
+      gcry_sexp_t stmp;
+      if (!gcry_sexp_new (&stmp, keydata, keydatalen, 0))
+        algostr = pubkey_algo_string (stmp, NULL);
+      else
+        algostr = NULL;
+      gcry_sexp_release (stmp);
+      if (app->app_local->keyattr[keyno].keyalgo && algostr
+          && strcmp (app->app_local->keyattr[keyno].keyalgo, algostr))
+        {
+          log_info ("openpgp: changing key attribute from %s to %s\n",
+                    app->app_local->keyattr[keyno].keyalgo, algostr);
+          err = change_keyattr_from_string (app, ctrl, pincb, pincb_arg,
+                                            keyid, algostr, NULL, 0);
+          if (err)
+            return err;
+        }
+
+      if (*tok == 'r')
+        err = rsa_writekey (app, ctrl, pincb, pincb_arg, keyno,
+                            buf,buflen,depth);
+      else
+        err = ecc_writekey (app, ctrl, pincb, pincb_arg, keyno,
+                            buf, buflen, depth);
+    }
   else
     {
       err = gpg_error (GPG_ERR_WRONG_PUBKEY_ALGO);
-      goto leave;
     }
 
  leave:
+  xfree (algostr);
   return err;
 }
 
