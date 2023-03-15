@@ -1028,6 +1028,7 @@ token_init (ctrl_t ctrl, assuan_context_t ctx)
       if (get_token_info (token, &tk_info) == 0)
         {
           if ((tk_info.flags & CKF_TOKEN_INITIALIZED) == 0
+              || (tk_info.flags & CKF_TOKEN_PRESENT) == 0
               || (tk_info.flags & CKF_USER_PIN_LOCKED) != 0)
             continue;
 
