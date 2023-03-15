@@ -516,7 +516,7 @@ void change_pin (int no, int allow_admin);
 void card_status (ctrl_t ctrl, estream_t fp, const char *serialno);
 void card_edit (ctrl_t ctrl, strlist_t commands);
 gpg_error_t  card_generate_subkey (ctrl_t ctrl, kbnode_t pub_keyblock);
-int  card_store_subkey (KBNODE node, int use);
+int  card_store_subkey (KBNODE node, int use, strlist_t *processed_keys);
 #endif
 
 /*-- migrate.c --*/

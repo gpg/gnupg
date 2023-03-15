@@ -1424,6 +1424,8 @@ keyedit_menu (ctrl_t ctrl, const char *username, strlist_t locusr,
   int sec_shadowing = 0;
   int run_subkey_warnings = 0;
   int have_commands = !!commands;
+  strlist_t delseckey_list = NULL;
+  int delseckey_list_warn = 0;
 
   if (opt.command_fd != -1)
     ;
@@ -1498,6 +1500,14 @@ keyedit_menu (ctrl_t ctrl, const char *username, strlist_t locusr,
           run_subkey_warnings = 0;
           if (!count_selected_keys (keyblock))
             subkey_expire_warning (keyblock);
+        }
+
+      if (delseckey_list_warn)
+        {
+          delseckey_list_warn = 0;
+          tty_printf
+            (_("Note: the local copy of the secret key"
+               " will only be deleted with \"save\".\n"));
         }
 
       do
@@ -1872,10 +1882,12 @@ keyedit_menu (ctrl_t ctrl, const char *username, strlist_t locusr,
 	    if (node)
 	      {
 		PKT_public_key *xxpk = node->pkt->pkt.public_key;
-		if (card_store_subkey (node, xxpk ? xxpk->pubkey_usage : 0))
+		if (card_store_subkey (node, xxpk ? xxpk->pubkey_usage : 0,
+                                       &delseckey_list))
 		  {
 		    redisplay = 1;
 		    sec_shadowing = 1;
+                    delseckey_list_warn = 1;
 		  }
 	      }
 	  }
@@ -1952,7 +1964,7 @@ keyedit_menu (ctrl_t ctrl, const char *username, strlist_t locusr,
             pkt->pkttype = PKT_PUBLIC_KEY;
 
             /* Ask gpg-agent to store the secret key to card.  */
-            if (card_store_subkey (node, 0))
+            if (card_store_subkey (node, 0, NULL))
               {
                 redisplay = 1;
                 sec_shadowing = 1;
@@ -2262,6 +2274,27 @@ keyedit_menu (ctrl_t ctrl, const char *username, strlist_t locusr,
                 }
 	    }
 
+          if (delseckey_list)
+            {
+              strlist_t sl;
+              for (err = 0, sl = delseckey_list; sl; sl = sl->next)
+                {
+                  if (*sl->d)
+                    {
+                      err = agent_delete_key (ctrl, sl->d, NULL, 1/*force*/);
+                      if (err)
+                        break;
+                      *sl->d = 0;  /* Mark deleted.  */
+                    }
+                }
+              if (err)
+                {
+                  log_error (_("deleting copy of secret key failed: %s\n"),
+                             gpg_strerror (err));
+                  break; /* the "save".  */
+                }
+            }
+
 	  if (sec_shadowing)
 	    {
 	      err = agent_scd_learn (NULL, 1);
@@ -2291,6 +2324,7 @@ keyedit_menu (ctrl_t ctrl, const char *username, strlist_t locusr,
     } /* End of the main command loop.  */
 
  leave:
+  free_strlist (delseckey_list);
   release_kbnode (keyblock);
   keydb_release (kdbhd);
   xfree (answer);

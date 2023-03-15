@@ -1781,12 +1781,13 @@ card_generate_subkey (ctrl_t ctrl, kbnode_t pub_keyblock)
 }
 
 
-/* Store the key at NODE into the smartcard and modify NODE to
-   carry the serialno stuff instead of the actual secret key
-   parameters.  USE is the usage for that key; 0 means any
-   usage. */
+/* Store the key at NODE into the smartcard and modify NODE to carry
+   the serialno stuff instead of the actual secret key parameters.
+   USE is the usage for that key; 0 means any usage.  If
+   PROCESSED_KEYS is not NULL it is a poiter to an strlist which will
+   be filled with the keygrips of successfully stored keys.  */
 int
-card_store_subkey (KBNODE node, int use)
+card_store_subkey (KBNODE node, int use, strlist_t *processed_keys)
 {
   struct agent_card_info_s info;
   int okay = 0;
@@ -1875,7 +1876,11 @@ card_store_subkey (KBNODE node, int use)
   if (rc)
     log_error (_("KEYTOCARD failed: %s\n"), gpg_strerror (rc));
   else
-    okay = 1;
+    {
+      okay = 1;
+      if (processed_keys)
+        add_to_strlist (processed_keys, hexgrip);
+    }
   xfree (hexgrip);
 
  leave:
