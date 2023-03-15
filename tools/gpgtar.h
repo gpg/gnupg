@@ -54,8 +54,14 @@ struct
 /* An info structure to avoid global variables.  */
 struct tarinfo_s
 {
-  unsigned long long nblocks;     /* Count of processed blocks.  */
+  unsigned long long nblocks;     /* Count of processed blocks.      */
   unsigned long long headerblock; /* Number of current header block. */
+  unsigned long long nextracted;  /* Number of extracted files.      */
+  unsigned long skipped_badname;
+  unsigned long skipped_suspicious;
+  unsigned long skipped_symlinks;
+  unsigned long skipped_hardlinks;
+  unsigned long skipped_other;
 };
 typedef struct tarinfo_s *tarinfo_t;
 

@@ -1183,6 +1183,17 @@ pkd:0:1024:B665B1435F4C2 .... FF26ABB:
     send to the client instead of this status line.  Such an inquiry
     may be used to sync with Pinentry
 
+*** GPGTAR_EXTRACT <tot> <skp> <bad> <sus> <sym> <hrd> <oth>
+    This status line is emitted after gpgtar has extracted files.
+
+    - tot :: Total number of files extracted and stored
+    - skp :: Total number of files skipped during extraction
+    - bad :: Number of files skipped due to a bad file name
+    - sus :: Number of files skipped due to a suspicious file name
+    - sym :: Number of symlinks not restored
+    - hrd :: Number of hard links not restored
+    - oth :: Number of files not extracted due to other reasons.
+
 ** Obsolete status codes
 *** SIGEXPIRED
     Removed on 2011-02-04.  This is deprecated in favor of KEYEXPIRED.
