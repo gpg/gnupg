@@ -94,6 +94,7 @@ struct server_control_s
 void tkd_exit (int rc);
 void tkd_kick_the_loop (void);
 const char *tkd_get_socket_name (void);
+int get_active_connection_count (void);
 
 /*-- command.c --*/
 gpg_error_t initialize_module_command (void);
@@ -109,7 +110,9 @@ void send_keyinfo (ctrl_t ctrl, int data, const char *keygrip_str,
                    const char *usage);
 
 /*-- pkcs11.c --*/
-gpg_error_t token_slotlist (ctrl_t ctrl, assuan_context_t ctx);
+gpg_error_t token_init (ctrl_t ctrl, assuan_context_t ctx);
+gpg_error_t token_fini (ctrl_t ctrl, assuan_context_t ctx);
+
 gpg_error_t token_sign (ctrl_t ctrl, assuan_context_t ctx,
 			const char *keygrip, int hash_algo,
 			unsigned char **r_outdata,

@@ -181,6 +181,55 @@ pin_cb (void *opaque, const char *info, char **retstr)
 }
 #endif
 
+static const char hlp_getinfo[] =
+  "GETINFO <what>\n"
+  "\n"
+  "Multi purpose command to return certain information.  \n"
+  "Supported values of WHAT are:\n"
+  "\n"
+  "  version     - Return the version of the program.\n"
+  "  pid         - Return the process id of the server.\n"
+  "  socket_name - Return the name of the socket.\n"
+  "  connections - Return number of active connections.";
+static gpg_error_t
+cmd_getinfo (assuan_context_t ctx, char *line)
+{
+  int rc = 0;
+  const char *s;
+
+  if (!strcmp (line, "version"))
+    {
+      s = VERSION;
+      rc = assuan_send_data (ctx, s, strlen (s));
+    }
+  else if (!strcmp (line, "pid"))
+    {
+      char numbuf[50];
+
+      snprintf (numbuf, sizeof numbuf, "%lu", (unsigned long)getpid ());
+      rc = assuan_send_data (ctx, numbuf, strlen (numbuf));
+    }
+  else if (!strcmp (line, "socket_name"))
+    {
+      s = tkd_get_socket_name ();
+      if (s)
+        rc = assuan_send_data (ctx, s, strlen (s));
+      else
+        rc = gpg_error (GPG_ERR_NO_DATA);
+    }
+  else if (!strcmp (line, "connections"))
+    {
+      char numbuf[20];
+
+      snprintf (numbuf, sizeof numbuf, "%d", get_active_connection_count ());
+      rc = assuan_send_data (ctx, numbuf, strlen (numbuf));
+    }
+  else
+    rc = set_error (GPG_ERR_ASS_PARAMETER, "unknown value for WHAT");
+  return rc;
+}
+
+
 /* SLOTLIST command
  * A command to (re)scan for available keys, something like SERIALNO
  * command of scdaemon.
@@ -199,7 +248,7 @@ cmd_slotlist (assuan_context_t ctx, char *line)
   line = skip_options (line);
   (void)line;
 
-  err = token_slotlist (ctrl, ctx);
+  err = token_init (ctrl, ctx);
   return err;
 }
 
@@ -386,6 +435,7 @@ register_commands (assuan_context_t ctx)
     { "PKSIGN",       cmd_pksign,   hlp_pksign },
     { "KILLTKD",      cmd_killtkd,  hlp_killtkd },
     { "KEYINFO",      cmd_keyinfo,  hlp_keyinfo },
+    { "GETINFO",      cmd_getinfo,  hlp_getinfo },
     { NULL }
   };
   int i, rc;

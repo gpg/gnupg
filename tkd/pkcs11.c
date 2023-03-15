@@ -85,6 +85,7 @@ struct token {
 };
 
 struct cryptoki {
+  void *handle; /* DL handle to PKCS#11 Module.  */
   struct ck_function_list *f;
   int num_slots;
   struct token token_list[MAX_SLOTS];
@@ -101,15 +102,21 @@ get_function_list (struct cryptoki *ck, const char *libname)
 {
   unsigned long err = 0;
   unsigned long (*p_func) (struct ck_function_list **);
-  void *handle;
 
-  handle = dlopen (libname, RTLD_NOW);
-  if (handle == NULL)
+  if (ck->handle == NULL)
     {
-      return -1;
+      void *handle;
+
+      handle = dlopen (libname, RTLD_NOW);
+      if (handle == NULL)
+        {
+          return -1;
+        }
+
+      ck->handle = handle;
     }
 
-  p_func = (CK_C_GetFunctionList)dlsym (handle, "C_GetFunctionList");
+  p_func = (CK_C_GetFunctionList)dlsym (ck->handle, "C_GetFunctionList");
   if (p_func == NULL)
     {
       return -1;
@@ -978,7 +985,7 @@ do_pksign (struct key *key, int hash_algo,
 
 
 gpg_error_t
-token_slotlist (ctrl_t ctrl, assuan_context_t ctx)
+token_init (ctrl_t ctrl, assuan_context_t ctx)
 {
   gpg_error_t err = 0;
 
@@ -1066,6 +1073,51 @@ token_slotlist (ctrl_t ctrl, assuan_context_t ctx)
 
   return err;
 }
+
+gpg_error_t
+token_fini (ctrl_t ctrl, assuan_context_t ctx)
+{
+  long r;
+  struct cryptoki *ck = ck_instance;
+  int i;
+
+  (void)ctrl;
+  (void)ctx;
+
+  for (i = 0; i < ck->num_slots; i++)
+    {
+      struct token *token = &ck->token_list[i];
+
+      if (!token->valid)
+	continue;
+
+      if (token->login_required)
+        logout (token);
+
+      r = close_session (token);
+      if (r)
+        {
+          log_error ("Error at close_session: %ld\n", r);
+          continue;
+        }
+
+      token->valid = 0;
+    }
+
+  ck->num_slots = 0;
+
+  r = ck->f->C_Finalize (NULL);
+  if (r)
+    {
+      return -1;
+    }
+
+  dlclose (ck->handle);
+  ck->handle = NULL;
+
+  return 0;
+}
+
 
 gpg_error_t
 token_sign (ctrl_t ctrl, assuan_context_t ctx,
