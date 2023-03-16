@@ -104,6 +104,7 @@ struct
 
   int force;          /* Force loading outdated CRLs. */
 
+  char *fake_crl;     /* Name of a file with faked CRL entries.  */
 
   unsigned int connect_timeout;       /* Timeout for connect.  */
   unsigned int connect_quick_timeout; /* Shorter timeout for connect.  */

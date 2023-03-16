@@ -1339,6 +1339,10 @@ cmd_isvalid (assuan_context_t ctx, char *line)
     }
   else if (only_ocsp)
     err = gpg_error (GPG_ERR_NO_CRL_KNOWN);
+  else if (opt.fake_crl && (err = fakecrl_isvalid (ctrl, issuerhash, serialno)))
+    {
+      /* We already got the error code.  */
+    }
   else
     {
       switch (crl_cache_isvalid (ctrl,
@@ -1377,7 +1381,7 @@ cmd_isvalid (assuan_context_t ctx, char *line)
 
 
 /* If the line contains a SHA-1 fingerprint as the first argument,
-   return the FPR vuffer on success.  The function checks that the
+   return the FPR buffer on success.  The function checks that the
    fingerprint consists of valid characters and prints and error
    message if it does not and returns NULL.  Fingerprints are
    considered optional and thus no explicit error is returned. NULL is

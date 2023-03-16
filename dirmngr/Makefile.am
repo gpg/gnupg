@@ -58,6 +58,7 @@ endif
 noinst_HEADERS = dirmngr.h crlcache.h crlfetch.h misc.h
 
 dirmngr_SOURCES = dirmngr.c dirmngr.h server.c crlcache.c crlfetch.c	\
+        fakecrl.c \
 	certcache.c certcache.h \
 	domaininfo.c \
 	workqueue.c \

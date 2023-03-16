@@ -158,6 +158,7 @@ enum cmd_and_opt_values {
   oConnectTimeout,
   oConnectQuickTimeout,
   oListenBacklog,
+  oFakeCRL,
   aTest
 };
 
@@ -274,7 +275,7 @@ static gpgrt_opt_t opts[] = {
                    " points to serverlist")),
   ARGPARSE_s_i (oLDAPTimeout, "ldaptimeout",
                 N_("|N|set LDAP timeout to N seconds")),
-
+  ARGPARSE_s_s (oFakeCRL, "fake-crl", "@"),
 
   ARGPARSE_header ("OCSP", N_("Configuration for OCSP")),
 
@@ -709,6 +710,8 @@ parse_rereadable_options (gpgrt_argparse_t *pargs, int reread)
       opt.ldaptimeout = DEFAULT_LDAP_TIMEOUT;
       ldapserver_list_needs_reset = 1;
       opt.debug_cache_expired_certs = 0;
+      xfree (opt.fake_crl);
+      opt.fake_crl = NULL;
       return 1;
     }
 
@@ -869,6 +872,11 @@ parse_rereadable_options (gpgrt_argparse_t *pargs, int reread)
 
     case oDebugCacheExpiredCerts:
       opt.debug_cache_expired_certs = 0;
+      break;
+
+    case oFakeCRL:
+      xfree (opt.fake_crl);
+      opt.fake_crl = *pargs->r.ret_str? xstrdup (pargs->r.ret_str) : NULL;
       break;
 
     default:

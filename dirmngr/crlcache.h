@@ -45,6 +45,7 @@ crl_sig_result_t;
 struct crl_cache_entry_s;
 typedef struct crl_cache_entry_s *crl_cache_entry_t;
 
+/*-- crlcache.c --*/
 
 void crl_cache_init (void);
 void crl_cache_deinit (void);
@@ -66,6 +67,13 @@ gpg_error_t crl_cache_list (estream_t fp);
 gpg_error_t crl_cache_load (ctrl_t ctrl, const char *filename);
 
 gpg_error_t crl_cache_reload_crl (ctrl_t ctrl, ksba_cert_t cert);
+
+
+/*-- fakecrl.c --*/
+crl_cache_result_t fakecrl_isvalid (ctrl_t ctrl,
+                                    const char *issuer_hash,
+                                    const char *cert_id);
+
 
 
 #endif /* CRLCACHE_H */
