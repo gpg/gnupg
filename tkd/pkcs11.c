@@ -98,43 +98,29 @@ static struct cryptoki ck_instance[1];
 
 
 static long
-get_function_list (struct cryptoki *ck, const char *libname)
+get_function_list (struct cryptoki *ck)
 {
-  unsigned long err = 0;
+  unsigned long r = 0;
   unsigned long (*p_func) (struct ck_function_list **);
-
-  if (ck->handle == NULL)
-    {
-      void *handle;
-
-      handle = dlopen (libname, RTLD_NOW);
-      if (handle == NULL)
-        {
-          return -1;
-        }
-
-      ck->handle = handle;
-    }
 
   p_func = (CK_C_GetFunctionList)dlsym (ck->handle, "C_GetFunctionList");
   if (p_func == NULL)
     {
       return -1;
     }
-  err = p_func (&ck->f);
+  r = p_func (&ck->f);
 
-  if (err || ck->f == NULL)
+  if (r || ck->f == NULL)
     {
       return -1;
     }
 
-  err = ck->f->C_Initialize (NULL);
-  if (err)
+  r = ck->f->C_Initialize (NULL);
+  if (r)
     {
       return -1;
     }
 
-  /* For now, we never call dlclose to unload the LIBNAME */
   return 0;
 }
 
@@ -238,6 +224,9 @@ close_session (struct token *token)
     {
       return -1;
     }
+
+  token->session = 0;
+  token->num_keys = 0;
 
   return 0;
 }
@@ -983,94 +972,168 @@ do_pksign (struct key *key, int hash_algo,
   return err;
 }
 
+gpg_error_t
+token_new (assuan_context_t ctx, struct cryptoki *ck, struct token *token,
+           ck_slot_id_t slot_id)
+{
+  gpg_error_t err = 0;
+  struct ck_token_info tk_info;
+  long r;
+
+  token->ck = ck;
+  token->valid = 0;
+  token->slot_id = slot_id;
+
+  if (get_token_info (token, &tk_info))
+    return gpg_error (GPG_ERR_INV_RESPONSE);
+
+  if ((tk_info.flags & CKF_TOKEN_INITIALIZED) == 0
+      || (tk_info.flags & CKF_TOKEN_PRESENT) == 0
+      || (tk_info.flags & CKF_USER_PIN_LOCKED) != 0)
+    return gpg_error (GPG_ERR_CARD_NOT_PRESENT);
+
+  token->login_required = (tk_info.flags & CKF_LOGIN_REQUIRED);
+
+  r = open_session (token);
+  if (r)
+    {
+      log_error ("Error at open_session: %ld\n", r);
+      return gpg_error (GPG_ERR_INV_RESPONSE);
+    }
+
+  if (token->login_required)
+    {
+      char *command;
+      int rc;
+      unsigned char *value;
+      size_t valuelen;
+
+      log_debug ("asking for PIN '%ld'\n", token->slot_id);
+
+      rc = gpgrt_asprintf (&command, "NEEDPIN %ld", token->slot_id);
+      if (rc < 0)
+        return gpg_error (gpg_err_code_from_errno (errno));
+
+      assuan_begin_confidential (ctx);
+      err = assuan_inquire (ctx, command, &value, &valuelen, MAXLEN_PIN);
+      assuan_end_confidential (ctx);
+      xfree (command);
+      if (err)
+        {
+          close_session (token);
+          return err;
+        }
+
+      login (token, value, valuelen);
+      xfree (value);
+    }
+
+  r = learn_keys (token);
+  return 0;
+}
+
 
 gpg_error_t
-token_init (ctrl_t ctrl, assuan_context_t ctx)
+token_init (ctrl_t ctrl, assuan_context_t ctx, int rescan)
 {
   gpg_error_t err = 0;
 
   long r;
   struct cryptoki *ck = ck_instance;
   unsigned long num_slots = MAX_SLOTS;
-  ck_slot_id_t  slot_list[MAX_SLOTS];
+  ck_slot_id_t slot_list[MAX_SLOTS];
   int i;
-  int num_tokens = 0;
 
   const char *module_name;
 
-  (void)ctrl;
-  (void)ctx;
   module_name = opt.pkcs11_driver;
   if (!module_name)
     return gpg_error (GPG_ERR_NO_NAME);
 
-  r = get_function_list (ck, module_name);
-  if (r)
+  if (ck->handle == NULL)
     {
-      return gpg_error (GPG_ERR_INV_RESPONSE);
+      void *handle;
+      int num_tokens = 0;
+
+      handle = dlopen (module_name, RTLD_NOW);
+      if (handle == NULL)
+        {
+          return -1;
+        }
+
+      ck->handle = handle;
+
+      r = get_function_list (ck);
+      if (r)
+        {
+          dlclose (ck->handle);
+          ck->handle = NULL;
+          return gpg_error (GPG_ERR_INV_RESPONSE);
+        }
+
+      r = get_slot_list (ck, &num_slots, slot_list);
+      if (r)
+        {
+          dlclose (ck->handle);
+          ck->handle = NULL;
+          return gpg_error (GPG_ERR_INV_RESPONSE);
+        }
+
+      for (i = 0; i < num_slots; i++)
+        {
+          struct token *token = &ck->token_list[num_tokens]; /* Allocate one token in CK */
+
+          err = token_new (ctx, ck, token, slot_list[i]);
+          if (!err)
+            num_tokens++;
+        }
+
+      ck->num_slots = num_tokens;
+      return 0;
     }
+  else if (rescan == 0)
+    return 0;
+
+  /* Rescan the slots to see the changes.  */
 
   r = get_slot_list (ck, &num_slots, slot_list);
   if (r)
     {
+      token_fini (ctrl, ctx);
       return gpg_error (GPG_ERR_INV_RESPONSE);
     }
 
   for (i = 0; i < num_slots; i++)
     {
-      struct ck_token_info tk_info;
-      struct token *token = &ck->token_list[num_tokens]; /* Allocate one token in CK */
+      ck_slot_id_t slot_id = slot_list[i];
+      int j;
+      int found = 0;
 
-      token->ck = ck;
-      token->valid = 0;
-      token->slot_id = slot_list[i];
-
-      if (get_token_info (token, &tk_info) == 0)
+      for (j = 0; j < ck->num_slots; j++)
         {
-          if ((tk_info.flags & CKF_TOKEN_INITIALIZED) == 0
-              || (tk_info.flags & CKF_TOKEN_PRESENT) == 0
-              || (tk_info.flags & CKF_USER_PIN_LOCKED) != 0)
-            continue;
+          struct token *token = &ck->token_list[j];
 
-          token->login_required = (tk_info.flags & CKF_LOGIN_REQUIRED);
-
-          r = open_session (token);
-          if (r)
+          if (slot_id == token->slot_id)
             {
-              log_error ("Error at open_session: %ld\n", r);
-              continue;
+              found = 1;
+              break;
             }
+        }
 
-          if (token->login_required)
-            {
-              char *command;
-              int rc;
-              unsigned char *value;
-              size_t valuelen;
-
-              log_debug ("asking for PIN '%ld'\n", token->slot_id);
-
-              rc = gpgrt_asprintf (&command, "NEEDPIN %ld", token->slot_id);
-              if (rc < 0)
-                return gpg_error (gpg_err_code_from_errno (errno));
-
-              assuan_begin_confidential (ctx);
-              err = assuan_inquire (ctx, command, &value, &valuelen, MAXLEN_PIN);
-              assuan_end_confidential (ctx);
-              xfree (command);
-              if (err)
-                return err;
-
-              login (token, value, valuelen);
-              xfree (value);
-            }
-
-          num_tokens++;
-	  r = learn_keys (token);
+      if (found)
+        {
+          /*XXX: rescan the keys??? */
+        }
+      else
+        /* new token */
+        {
+          /* Allocate one token in CK */
+          struct token *token = &ck->token_list[ck->num_slots];
+          err = token_new (ctx, ck, token, slot_id);
+          if (!err)
+            ck->num_slots++;
         }
     }
-
-  ck->num_slots = num_tokens;
 
   return err;
 }
@@ -1081,6 +1144,7 @@ token_fini (ctrl_t ctrl, assuan_context_t ctx)
   long r;
   struct cryptoki *ck = ck_instance;
   int i;
+  int j;
 
   (void)ctrl;
   (void)ctx;
@@ -1090,16 +1154,41 @@ token_fini (ctrl_t ctrl, assuan_context_t ctx)
       struct token *token = &ck->token_list[i];
 
       if (!token->valid)
-	continue;
+        {
+          token->ck = NULL;
+          token->slot_id = 0;
+          token->login_required = 0;
+          continue;
+        }
 
       if (token->login_required)
         logout (token);
 
       r = close_session (token);
       if (r)
+        log_error ("Error at close_session: %ld\n", r);
+
+      token->ck = NULL;
+      token->slot_id = 0;
+      token->login_required = 0;
+
+      for (j = 0; j < token->num_keys; j++)
         {
-          log_error ("Error at close_session: %ld\n", r);
-          continue;
+          struct key *k = &token->key_list[i];
+
+          if ((k->flags & KEY_FLAG_VALID))
+            {
+              gcry_sexp_release (k->pubkey);
+              k->pubkey = NULL;
+            }
+
+          k->token = NULL;
+          k->flags = 0;
+          k->key_type = 0;
+          k->label_len = 0;
+          k->id_len = 0;
+          k->p11_keyid = 0;
+          k->mechanism = 0;
         }
 
       token->valid = 0;
@@ -1112,6 +1201,8 @@ token_fini (ctrl_t ctrl, assuan_context_t ctx)
     {
       return -1;
     }
+
+  ck->f = NULL;
 
   dlclose (ck->handle);
   ck->handle = NULL;

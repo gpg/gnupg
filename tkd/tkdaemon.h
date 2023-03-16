@@ -110,7 +110,7 @@ void send_keyinfo (ctrl_t ctrl, int data, const char *keygrip_str,
                    const char *usage);
 
 /*-- pkcs11.c --*/
-gpg_error_t token_init (ctrl_t ctrl, assuan_context_t ctx);
+gpg_error_t token_init (ctrl_t ctrl, assuan_context_t ctx, int rescan);
 gpg_error_t token_fini (ctrl_t ctrl, assuan_context_t ctx);
 
 gpg_error_t token_sign (ctrl_t ctrl, assuan_context_t ctx,

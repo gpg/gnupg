@@ -248,7 +248,7 @@ cmd_slotlist (assuan_context_t ctx, char *line)
   line = skip_options (line);
   (void)line;
 
-  err = token_init (ctrl, ctx);
+  err = token_init (ctrl, ctx, 1);
   return err;
 }
 
