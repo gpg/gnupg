@@ -170,6 +170,7 @@ enum cmd_and_opt_values {
   oWithKeyScreening,
   oAnswerYes,
   oAnswerNo,
+  oNoPrettyDN,
   oKeyring,
   oDefaultKey,
   oDefRecipient,
@@ -385,7 +386,7 @@ static gpgrt_opt_t opts[] = {
   ARGPARSE_s_n (oWithKeygrip,     "with-keygrip", "@"),
   ARGPARSE_s_n (oWithSecret,      "with-secret", "@"),
   ARGPARSE_s_n (oWithKeyScreening,"with-key-screening", "@"),
-
+  ARGPARSE_s_n (oNoPrettyDN, "no-pretty-dn", "@"),
 
 
   ARGPARSE_header ("Security", N_("Options controlling the security")),
@@ -1316,6 +1317,10 @@ main ( int argc, char **argv)
 
         case oWithKeyScreening:
           opt.with_key_screening = 1;
+          break;
+
+        case oNoPrettyDN:
+          opt.no_pretty_dn = 1;
           break;
 
         case oHomedir: gnupg_set_homedir (pargs.r.ret_str); break;

@@ -85,6 +85,8 @@ struct
 
   int with_key_screening; /* Option  --with-key-screening active.  */
 
+  int no_pretty_dn;       /* Option --no-pretty-dn */
+
   int pinentry_mode;
   int request_origin;
 

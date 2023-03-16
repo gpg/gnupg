@@ -728,7 +728,14 @@ gpgsm_es_print_name2 (estream_t fp, const char *name, int translate)
 void
 gpgsm_es_print_name (estream_t fp, const char *name)
 {
-  gpgsm_es_print_name2 (fp, name, 1);
+  if (opt.no_pretty_dn)
+    {
+      if (!name)
+        name = "[error]";
+      es_write_sanitized (fp, name, strlen (name), NULL, NULL);
+    }
+  else
+    gpgsm_es_print_name2 (fp, name, 1);
 }
 
 
