@@ -264,12 +264,17 @@ cmd_readkey (assuan_context_t ctx, char *line)
   gpg_error_t err;
   const char *keygrip;
 
+  line = xtrystrdup (line); /* Need a copy of the line. */
+  if (!line)
+    return gpg_error_from_syserror ();
+
   keygrip = skip_options (line);
   if (strlen (keygrip) != 40)
     err = gpg_error (GPG_ERR_INV_ID);
 
   err = tkd_readkey (ctrl, ctx, keygrip);
 
+  xfree (line);
   return err;
 }
 
@@ -300,6 +305,10 @@ cmd_pksign (assuan_context_t ctx, char *line)
   else
     return set_error (GPG_ERR_ASS_PARAMETER, "invalid hash algorithm");
 
+  line = xtrystrdup (line); /* Need a copy of the line. */
+  if (!line)
+    return gpg_error_from_syserror ();
+
   keygrip = skip_options (line);
 
   if (strlen (keygrip) != 40)
@@ -316,6 +325,7 @@ cmd_pksign (assuan_context_t ctx, char *line)
       xfree (outdata);
     }
 
+  xfree (line);
   return err;
 }
 
@@ -373,6 +383,10 @@ cmd_keyinfo (assuan_context_t ctx, char *line)
 
   opt_data = has_option (line, "--data");
 
+  line = xtrystrdup (line); /* Need a copy of the line. */
+  if (!line)
+    return gpg_error_from_syserror ();
+
   cap = 0;
   if (has_option (line, "--list"))
     cap = 0;
@@ -387,6 +401,7 @@ cmd_keyinfo (assuan_context_t ctx, char *line)
 
   err = tkd_keyinfo (ctrl, ctx, keygrip, opt_data, cap);
 
+  xfree (line);
   return err;
 }
 

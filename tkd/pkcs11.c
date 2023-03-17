@@ -280,6 +280,7 @@ compute_keygrip_rsa (char *keygrip, gcry_sexp_t *r_pubkey,
   else
     {
       bin2hex (grip, 20, keygrip);
+      log_debug ("keygrip: %s\n", keygrip);
       *r_pubkey = s_pkey;
     }
 }
@@ -302,6 +303,7 @@ compute_keygrip_ec (char *keygrip, gcry_sexp_t *r_pubkey,
   else
     {
       bin2hex (grip, 20, keygrip);
+      log_debug ("keygrip: %s\n", keygrip);
       *r_pubkey = s_pkey;
     }
 }
@@ -730,6 +732,8 @@ find_key (struct cryptoki *ck, const char *keygrip, struct key **r_key)
 {
   int i;
   int j;
+
+  log_debug ("find_key: %s\n", keygrip);
 
   *r_key = NULL;
   for (i = 0; i < ck->num_slots; i++)
@@ -1271,7 +1275,7 @@ tkd_sign (ctrl_t ctrl, assuan_context_t ctx,
       if (err)
         return err;
 
-      cmd = "VALUE";
+      cmd = "EXTRA";
       err = assuan_inquire (ctx, cmd, &value, &valuelen, MAXLEN_VALUE);
       if (err)
         {
@@ -1287,6 +1291,7 @@ tkd_sign (ctrl_t ctrl, assuan_context_t ctx,
           xfree (sig);
           return err;
         }
+
       *r_outdata = sig;
     }
 
