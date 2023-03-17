@@ -1329,24 +1329,36 @@ agent_key_from_file (ctrl_t ctrl, const char *cache_nonce,
           err = agent_get_shadow_info_type (buf, &s, &shadow_type);
           if (!err)
             {
-              n = gcry_sexp_canon_len (s, 0, NULL,NULL);
-              log_assert (n);
-              *shadow_info = xtrymalloc (n);
-              if (!*shadow_info)
+              if (!s)
                 {
-                  err = out_of_core ();
-                  goto shadow_error;
+                  *shadow_info = xstrdup ("tkd");
+                  if (!*shadow_info)
+                    {
+                      err = out_of_core ();
+                      goto shadow_error;
+                    }
                 }
               else
                 {
-                  memcpy (*shadow_info, s, n);
-                  /*
-                   * When it's a key on card (not on tpm2), maks sure
-                   * it's available.
-                   */
-                  if (strcmp (shadow_type, "t1-v1") == 0 && !grip)
-                    err = prompt_for_card (ctrl, ctrl->keygrip,
-                                           keymeta, *shadow_info);
+                  n = gcry_sexp_canon_len (s, 0, NULL,NULL);
+                  log_assert (n);
+                  *shadow_info = xtrymalloc (n);
+                  if (!*shadow_info)
+                    {
+                      err = out_of_core ();
+                      goto shadow_error;
+                    }
+                  else
+                    {
+                      memcpy (*shadow_info, s, n);
+                      /*
+                       * When it's a key on card (not on tpm2), make sure
+                       * it's available.
+                       */
+                      if (strcmp (shadow_type, "t1-v1") == 0 && !grip)
+                        err = prompt_for_card (ctrl, ctrl->keygrip,
+                                               keymeta, *shadow_info);
+                    }
                 }
             }
           else

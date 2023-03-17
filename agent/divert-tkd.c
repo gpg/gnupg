@@ -32,10 +32,8 @@
 #include "../common/sexp-parse.h"
 
 int
-divert_tkd_pksign (ctrl_t ctrl, const unsigned char *grip,
-                   const unsigned char *digest, size_t digestlen, int algo,
+divert_tkd_pksign (ctrl_t ctrl, const unsigned char *digest, size_t digestlen,
                    unsigned char **r_sig, size_t *r_siglen)
 {
-  (void)algo;
-  return agent_tkd_pksign(ctrl, grip, digest, digestlen, r_sig, r_siglen);
+  return agent_tkd_pksign (ctrl, digest, digestlen, r_sig, r_siglen);
 }

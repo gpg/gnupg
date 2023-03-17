@@ -670,8 +670,7 @@ gpg_error_t divert_writekey (ctrl_t ctrl, int force, const char *serialno,
                              const char *keydata, size_t keydatalen);
 /*-- divert-tkd.c --*/
 int divert_tkd_pksign (ctrl_t ctrl,
-                       const unsigned char *grip,
-                       const unsigned char *digest, size_t digestlen, int algo,
+                       const unsigned char *digest, size_t digestlen,
                        unsigned char **r_sig, size_t *r_siglen);
 
 /*-- call-daemon.c --*/
@@ -745,7 +744,6 @@ gpg_error_t agent_card_keyinfo (ctrl_t ctrl, const char *keygrip,
 
 /*-- call-tkd.c --*/
 int agent_tkd_pksign (ctrl_t ctrl,
-                      const char *keygrip,
                       const unsigned char *indata, size_t indatalen,
                       unsigned char **r_buf, size_t *r_buflen);
 int agent_tkd_readkey (ctrl_t ctrl, const char *keygrip,

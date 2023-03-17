@@ -91,17 +91,6 @@ inq_needpin (void *opaque, const char *line)
 }
 
 static gpg_error_t
-inq_keydata (void *opaque, const char *line)
-{
-  struct inq_parm_s *parm = opaque;
-
-  if (has_leading_keyword (line, "KEYDATA"))
-    return assuan_send_data (parm->ctx, parm->keydata, parm->keydatalen);
-  else
-    return inq_needpin (opaque, line);
-}
-
-static gpg_error_t
 inq_extra (void *opaque, const char *line)
 {
   struct inq_parm_s *parm = opaque;
@@ -109,7 +98,7 @@ inq_extra (void *opaque, const char *line)
   if (has_leading_keyword (line, "EXTRA"))
     return assuan_send_data (parm->ctx, parm->extra, parm->extralen);
   else
-    return inq_keydata (opaque, line);
+    return inq_needpin (opaque, line);
 }
 
 static gpg_error_t
@@ -121,11 +110,11 @@ pin_cb (ctrl_t ctrl, const char *prompt, char **passphrase)
   *passphrase = agent_get_cache (ctrl, hexgrip, CACHE_MODE_USER);
   if (*passphrase)
     return 0;
-  return agent_get_passphrase(ctrl, passphrase,
-			      _("Please enter your passphrase, so that the "
-				"secret key can be unlocked for this session"),
-			      prompt, NULL, 0,
-			      hexgrip, CACHE_MODE_USER, NULL);
+  return agent_get_passphrase (ctrl, passphrase,
+                               _("Please enter your passphrase, so that the "
+                                 "secret key can be unlocked for this session"),
+                               prompt, NULL, 0,
+                               hexgrip, CACHE_MODE_USER, NULL);
 }
 
 /* Read a key with KEYGRIP and return it in a malloced buffer pointed
@@ -139,6 +128,7 @@ agent_tkd_readkey (ctrl_t ctrl, const char *keygrip,
   char line[ASSUAN_LINELENGTH];
   membuf_t data;
   size_t buflen;
+  struct inq_parm_s inqparm;
 
   *r_buf = NULL;
   if (r_buflen)
@@ -149,10 +139,17 @@ agent_tkd_readkey (ctrl_t ctrl, const char *keygrip,
     return rc;
 
   init_membuf (&data, 1024);
+
+  inqparm.ctx = daemon_ctx (ctrl);
+  inqparm.getpin_cb = pin_cb;
+  inqparm.ctrl = ctrl;
+  inqparm.pin = NULL;
+
   snprintf (line, DIM(line), "READKEY %s", keygrip);
   rc = assuan_transact (daemon_ctx (ctrl), line,
                         put_membuf_cb, &data,
-                        NULL, NULL, NULL, NULL);
+                        inq_needpin, &inqparm,
+                        NULL, NULL);
   if (rc)
     {
       xfree (get_membuf (&data, &buflen));
@@ -174,9 +171,27 @@ agent_tkd_readkey (ctrl_t ctrl, const char *keygrip,
 }
 
 
+/* Helper returning a command option to describe the used hash
+   algorithm.  See scd/command.c:cmd_pksign.  */
+static const char *
+hash_algo_option (int algo)
+{
+  switch (algo)
+    {
+    case GCRY_MD_MD5   : return "--hash=md5";
+    case GCRY_MD_RMD160: return "--hash=rmd160";
+    case GCRY_MD_SHA1  : return "--hash=sha1";
+    case GCRY_MD_SHA224: return "--hash=sha224";
+    case GCRY_MD_SHA256: return "--hash=sha256";
+    case GCRY_MD_SHA384: return "--hash=sha384";
+    case GCRY_MD_SHA512: return "--hash=sha512";
+    default:             return "";
+    }
+}
+
+
 int
-agent_tkd_pksign (ctrl_t ctrl, const char *keygrip,
-                  const unsigned char *digest, size_t digestlen,
+agent_tkd_pksign (ctrl_t ctrl, const unsigned char *digest, size_t digestlen,
                   unsigned char **r_sig, size_t *r_siglen)
 {
   int rc;
@@ -194,13 +209,13 @@ agent_tkd_pksign (ctrl_t ctrl, const char *keygrip,
   inqparm.ctx = daemon_ctx (ctrl);
   inqparm.getpin_cb = pin_cb;
   inqparm.ctrl = ctrl;
-  // inqparm.keydata = shadow_info;
-  // inqparm.keydatalen = gcry_sexp_canon_len (shadow_info, 0, NULL, NULL);
   inqparm.extra = digest;
   inqparm.extralen = digestlen;
   inqparm.pin = NULL;
 
-  snprintf (line, sizeof(line), "PKSIGN %s", keygrip);
+  bin2hex (ctrl->keygrip, KEYGRIP_LEN, hexgrip);
+  snprintf (line, sizeof(line), "PKSIGN %s %s",
+            hash_algo_option (ctrl->digest.algo), hexgrip);
 
   rc = assuan_transact (daemon_ctx (ctrl), line,
 			put_membuf_cb, &data,

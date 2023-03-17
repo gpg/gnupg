@@ -1697,6 +1697,11 @@ agent_get_shadow_info_type (const unsigned char *shadowkey,
       if (shadow_info)
         *shadow_info = s;
     }
+  else if (smatch(&s, n, "tkd-v1"))
+    {
+      if (shadow_info)
+        *shadow_info = NULL;
+    }
   else
     return gpg_error (GPG_ERR_UNSUPPORTED_PROTOCOL);
   s = saved_s;

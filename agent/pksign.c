@@ -392,7 +392,9 @@ agent_pksign_do (ctrl_t ctrl, const char *cache_nonce,
         }
 
       {
-	if (agent_is_tpm2_key (s_skey))
+        if (!strcmp (shadow_info, "tkd"))
+	  err = divert_tkd_pksign (ctrl, data, datalen, &buf, &len);
+	else if (agent_is_tpm2_key (s_skey))
 	  err = divert_tpm2_pksign (ctrl,
 				    data, datalen,
 				    ctrl->digest.algo,
