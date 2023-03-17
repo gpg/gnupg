@@ -1323,6 +1323,8 @@ tkd_readkey (ctrl_t ctrl, assuan_context_t ctx, const char *keygrip)
   struct key *k;
   struct cryptoki *ck = ck_instance;
   unsigned long r;
+  unsigned char *pk;
+  size_t pklen;
 
   (void)ctrl;
   (void)ctx;
@@ -1338,6 +1340,15 @@ tkd_readkey (ctrl_t ctrl, assuan_context_t ctx, const char *keygrip)
   if (r)
     return gpg_error (GPG_ERR_NO_SECKEY);
 
+  pklen = gcry_sexp_sprint (k->pubkey, GCRYSEXP_FMT_CANON, NULL, 0);
+  pk = xtrymalloc (pklen);
+  if (!pk)
+    {
+      return gpg_error_from_syserror ();
+    }
+  gcry_sexp_sprint (k->pubkey, GCRYSEXP_FMT_CANON, pk, pklen);
+  err = assuan_send_data (ctx, pk, pklen);
+  xfree (pk);
   return err;
 }
 
