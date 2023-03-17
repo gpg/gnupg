@@ -146,8 +146,7 @@ get_slot_list (struct cryptoki *ck,
 }
 
 static long
-get_token_info (struct token *token,
-                struct ck_token_info *tk_info)
+get_token_info (struct token *token, struct ck_token_info *tk_info)
 {
   unsigned long err = 0;
   struct cryptoki *ck = token->ck;
@@ -224,9 +223,6 @@ close_session (struct token *token)
     {
       return -1;
     }
-
-  token->session = 0;
-  token->num_keys = 0;
 
   return 0;
 }
@@ -972,9 +968,9 @@ do_pksign (struct key *key, int hash_algo,
   return err;
 }
 
-gpg_error_t
-token_new (assuan_context_t ctx, struct cryptoki *ck, struct token *token,
-           ck_slot_id_t slot_id)
+static gpg_error_t
+token_open (assuan_context_t ctx, struct cryptoki *ck, struct token *token,
+            ck_slot_id_t slot_id)
 {
   gpg_error_t err = 0;
   struct ck_token_info tk_info;
@@ -1021,6 +1017,7 @@ token_new (assuan_context_t ctx, struct cryptoki *ck, struct token *token,
       if (err)
         {
           close_session (token);
+          token->session = 0;
           return err;
         }
 
@@ -1032,9 +1029,79 @@ token_new (assuan_context_t ctx, struct cryptoki *ck, struct token *token,
   return 0;
 }
 
+static gpg_error_t
+token_close (struct token *token)
+{
+  int j;
+  long r;
+  int num_keys = token->num_keys;
+
+  if (!token->valid)
+    return 0;
+
+  if (token->login_required)
+    logout (token);
+
+  r = close_session (token);
+  if (r)
+    log_error ("Error at close_session: %ld\n", r);
+
+  token->ck = NULL;
+  token->slot_id = 0;
+  token->login_required = 0;
+  token->session = 0;
+  token->num_keys = 0;
+
+  for (j = 0; j < num_keys; j++)
+    {
+      struct key *k = &token->key_list[j];
+
+      if ((k->flags & KEY_FLAG_VALID))
+        {
+          gcry_sexp_release (k->pubkey);
+          k->pubkey = NULL;
+        }
+
+      k->token = NULL;
+      k->flags = 0;
+      k->key_type = 0;
+      k->label_len = 0;
+      k->id_len = 0;
+      k->p11_keyid = 0;
+      k->mechanism = 0;
+    }
+
+  token->valid = 0;
+  return 0;
+}
+
+
+static gpg_error_t
+token_check (struct token *token)
+{
+  struct ck_token_info tk_info;
+
+  if (get_token_info (token, &tk_info))
+    {
+      /* Possibly, invalidate the token and close session.
+       * Now, ingore the error.  */
+      return gpg_error (GPG_ERR_INV_RESPONSE);
+    }
+
+  if ((tk_info.flags & CKF_TOKEN_INITIALIZED) == 0
+      || (tk_info.flags & CKF_TOKEN_PRESENT) == 0
+      || (tk_info.flags & CKF_USER_PIN_LOCKED) != 0)
+    {
+      token_close (token);
+      return gpg_error (GPG_ERR_CARD_NOT_PRESENT);
+    }
+
+  return 0;
+}
+
 
 gpg_error_t
-token_init (ctrl_t ctrl, assuan_context_t ctx, int rescan)
+tkd_init (ctrl_t ctrl, assuan_context_t ctx, int rescan)
 {
   gpg_error_t err = 0;
 
@@ -1083,7 +1150,7 @@ token_init (ctrl_t ctrl, assuan_context_t ctx, int rescan)
         {
           struct token *token = &ck->token_list[num_tokens]; /* Allocate one token in CK */
 
-          err = token_new (ctx, ck, token, slot_list[i]);
+          err = token_open (ctx, ck, token, slot_list[i]);
           if (!err)
             num_tokens++;
         }
@@ -1099,37 +1166,33 @@ token_init (ctrl_t ctrl, assuan_context_t ctx, int rescan)
   r = get_slot_list (ck, &num_slots, slot_list);
   if (r)
     {
-      token_fini (ctrl, ctx);
+      tkd_fini (ctrl, ctx);
       return gpg_error (GPG_ERR_INV_RESPONSE);
     }
 
   for (i = 0; i < num_slots; i++)
     {
-      ck_slot_id_t slot_id = slot_list[i];
       int j;
-      int found = 0;
+      ck_slot_id_t slot_id = slot_list[i];
+      struct token *token = NULL;
 
       for (j = 0; j < ck->num_slots; j++)
-        {
-          struct token *token = &ck->token_list[j];
+        if (slot_id == ck->token_list[j].slot_id)
+          {
+            token = &ck->token_list[j];
+            break;
+          }
 
-          if (slot_id == token->slot_id)
-            {
-              found = 1;
-              break;
-            }
-        }
-
-      if (found)
+      if (token)
         {
-          /*XXX: rescan the keys??? */
+          err = token_check (token);
         }
       else
         /* new token */
         {
           /* Allocate one token in CK */
-          struct token *token = &ck->token_list[ck->num_slots];
-          err = token_new (ctx, ck, token, slot_id);
+          token = &ck->token_list[ck->num_slots];
+          err = token_open (ctx, ck, token, slot_id);
           if (!err)
             ck->num_slots++;
         }
@@ -1139,12 +1202,11 @@ token_init (ctrl_t ctrl, assuan_context_t ctx, int rescan)
 }
 
 gpg_error_t
-token_fini (ctrl_t ctrl, assuan_context_t ctx)
+tkd_fini (ctrl_t ctrl, assuan_context_t ctx)
 {
   long r;
   struct cryptoki *ck = ck_instance;
   int i;
-  int j;
 
   (void)ctrl;
   (void)ctx;
@@ -1153,45 +1215,7 @@ token_fini (ctrl_t ctrl, assuan_context_t ctx)
     {
       struct token *token = &ck->token_list[i];
 
-      if (!token->valid)
-        {
-          token->ck = NULL;
-          token->slot_id = 0;
-          token->login_required = 0;
-          continue;
-        }
-
-      if (token->login_required)
-        logout (token);
-
-      r = close_session (token);
-      if (r)
-        log_error ("Error at close_session: %ld\n", r);
-
-      token->ck = NULL;
-      token->slot_id = 0;
-      token->login_required = 0;
-
-      for (j = 0; j < token->num_keys; j++)
-        {
-          struct key *k = &token->key_list[i];
-
-          if ((k->flags & KEY_FLAG_VALID))
-            {
-              gcry_sexp_release (k->pubkey);
-              k->pubkey = NULL;
-            }
-
-          k->token = NULL;
-          k->flags = 0;
-          k->key_type = 0;
-          k->label_len = 0;
-          k->id_len = 0;
-          k->p11_keyid = 0;
-          k->mechanism = 0;
-        }
-
-      token->valid = 0;
+      token_close (token);
     }
 
   ck->num_slots = 0;
@@ -1212,10 +1236,9 @@ token_fini (ctrl_t ctrl, assuan_context_t ctx)
 
 
 gpg_error_t
-token_sign (ctrl_t ctrl, assuan_context_t ctx,
-            const char *keygrip, int hash_algo,
-            unsigned char **r_outdata,
-            size_t *r_outdatalen)
+tkd_sign (ctrl_t ctrl, assuan_context_t ctx,
+          const char *keygrip, int hash_algo,
+          unsigned char **r_outdata, size_t *r_outdatalen)
 {
   gpg_error_t err;
   struct key *k;
@@ -1225,6 +1248,13 @@ token_sign (ctrl_t ctrl, assuan_context_t ctx,
   (void)ctrl;
   /* mismatch: size_t for GnuPG, unsigned long for PKCS#11 */
   /* mismatch: application prepare buffer for PKCS#11 */
+
+  if (!ck->handle)
+    {
+      err = tkd_init (ctrl, ctx, 0);
+      if (err)
+        return err;
+    }
 
   *r_outdata = NULL;
   r = find_key (ck, keygrip, &k);
@@ -1287,7 +1317,7 @@ get_usage_string (struct key *k)
 }
 
 gpg_error_t
-token_readkey (ctrl_t ctrl, assuan_context_t ctx, const char *keygrip)
+tkd_readkey (ctrl_t ctrl, assuan_context_t ctx, const char *keygrip)
 {
   gpg_error_t err = 0;
   struct key *k;
@@ -1296,6 +1326,14 @@ token_readkey (ctrl_t ctrl, assuan_context_t ctx, const char *keygrip)
 
   (void)ctrl;
   (void)ctx;
+
+  if (!ck->handle)
+    {
+      err = tkd_init (ctrl, ctx, 0);
+      if (err)
+        return err;
+    }
+
   r = find_key (ck, keygrip, &k);
   if (r)
     return gpg_error (GPG_ERR_NO_SECKEY);
@@ -1304,12 +1342,20 @@ token_readkey (ctrl_t ctrl, assuan_context_t ctx, const char *keygrip)
 }
 
 gpg_error_t
-token_keyinfo (ctrl_t ctrl, const char *keygrip, int opt_data, int cap)
+tkd_keyinfo (ctrl_t ctrl, assuan_context_t ctx, const char *keygrip,
+             int opt_data, int cap)
 {
   gpg_error_t err = 0;
   struct cryptoki *ck = ck_instance;
   struct key *k;
   const char *usage;
+
+  if (!ck->handle)
+    {
+      err = tkd_init (ctrl, ctx, 0);
+      if (err)
+        return err;
+    }
 
   if (keygrip)
     {

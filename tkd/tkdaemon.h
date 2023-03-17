@@ -110,17 +110,17 @@ void send_keyinfo (ctrl_t ctrl, int data, const char *keygrip_str,
                    const char *usage);
 
 /*-- pkcs11.c --*/
-gpg_error_t token_init (ctrl_t ctrl, assuan_context_t ctx, int rescan);
-gpg_error_t token_fini (ctrl_t ctrl, assuan_context_t ctx);
+gpg_error_t tkd_init (ctrl_t ctrl, assuan_context_t ctx, int rescan);
+gpg_error_t tkd_fini (ctrl_t ctrl, assuan_context_t ctx);
 
-gpg_error_t token_sign (ctrl_t ctrl, assuan_context_t ctx,
-			const char *keygrip, int hash_algo,
-			unsigned char **r_outdata,
-			size_t *r_outdatalen);
-gpg_error_t token_readkey (ctrl_t ctrl, assuan_context_t ctx,
-                           const char *keygrip);
-gpg_error_t token_keyinfo (ctrl_t ctrl,
-                           const char *keygrip, int opt_data, int cap);
+gpg_error_t tkd_sign (ctrl_t ctrl, assuan_context_t ctx,
+                      const char *keygrip, int hash_algo,
+                      unsigned char **r_outdata,
+                      size_t *r_outdatalen);
+gpg_error_t tkd_readkey (ctrl_t ctrl, assuan_context_t ctx,
+                         const char *keygrip);
+gpg_error_t tkd_keyinfo (ctrl_t ctrl, assuan_context_t ctx,
+                         const char *keygrip, int opt_data, int cap);
 
 
 #endif /*TKDAEMON_H*/

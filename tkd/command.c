@@ -248,7 +248,7 @@ cmd_slotlist (assuan_context_t ctx, char *line)
   line = skip_options (line);
   (void)line;
 
-  err = token_init (ctrl, ctx, 1);
+  err = tkd_init (ctrl, ctx, 1);
   return err;
 }
 
@@ -268,7 +268,7 @@ cmd_readkey (assuan_context_t ctx, char *line)
   if (strlen (keygrip) != 40)
     err = gpg_error (GPG_ERR_INV_ID);
 
-  err = token_readkey (ctrl, ctx, keygrip);
+  err = tkd_readkey (ctrl, ctx, keygrip);
 
   return err;
 }
@@ -305,10 +305,10 @@ cmd_pksign (assuan_context_t ctx, char *line)
   if (strlen (keygrip) != 40)
     err = gpg_error (GPG_ERR_INV_ID);
 
-  err = token_sign (ctrl, ctx, keygrip, hash_algo, &outdata, &outdatalen);
+  err = tkd_sign (ctrl, ctx, keygrip, hash_algo, &outdata, &outdatalen);
   if (err)
     {
-      log_error ("token_sign failed: %s\n", gpg_strerror (err));
+      log_error ("tkd_sign failed: %s\n", gpg_strerror (err));
     }
   else
     {
@@ -385,7 +385,7 @@ cmd_keyinfo (assuan_context_t ctx, char *line)
   else
     keygrip = skip_options (line);
 
-  err = token_keyinfo (ctrl, keygrip, opt_data, cap);
+  err = tkd_keyinfo (ctrl, ctx, keygrip, opt_data, cap);
 
   return err;
 }
