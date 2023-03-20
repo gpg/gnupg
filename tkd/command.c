@@ -230,6 +230,25 @@ cmd_getinfo (assuan_context_t ctx, char *line)
 }
 
 
+static const char hlp_restart[] =
+  "RESTART\n"
+  "\n"
+  "Restart the current connection.\n"
+  "\n"
+  "This is used by gpg-agent to reuse a primary pipe connection.";
+/*
+ * TKDeamon does not have a context for a connection (for now).
+ * So, this command does nothing.
+ */
+static gpg_error_t
+cmd_restart (assuan_context_t ctx, char *line)
+{
+  (void)line;
+  (void)ctx;
+  return 0;
+}
+
+
 /* SLOTLIST command
  * A command to (re)scan for available keys, something like SERIALNO
  * command of scdaemon.
@@ -451,6 +470,7 @@ register_commands (assuan_context_t ctx)
     { "KILLTKD",      cmd_killtkd,  hlp_killtkd },
     { "KEYINFO",      cmd_keyinfo,  hlp_keyinfo },
     { "GETINFO",      cmd_getinfo,  hlp_getinfo },
+    { "RESTART",      cmd_restart,  hlp_restart },
     { NULL }
   };
   int i, rc;
