@@ -672,6 +672,7 @@ gpg_error_t divert_writekey (ctrl_t ctrl, int force, const char *serialno,
 int divert_tkd_pksign (ctrl_t ctrl,
                        const unsigned char *digest, size_t digestlen,
                        unsigned char **r_sig, size_t *r_siglen);
+int divert_tkd_cmd (ctrl_t ctrl, const char *cmdline);
 
 /*-- call-daemon.c --*/
 gpg_error_t daemon_start (enum daemon_type type, ctrl_t ctrl);
@@ -748,6 +749,7 @@ int agent_tkd_pksign (ctrl_t ctrl,
                       unsigned char **r_buf, size_t *r_buflen);
 int agent_tkd_readkey (ctrl_t ctrl, const char *keygrip,
                        unsigned char **r_buf, size_t *r_buflen);
+int agent_tkd_cmd (ctrl_t ctrl, const char *cmdline);
 
 /*-- learncard.c --*/
 int agent_handle_learn (ctrl_t ctrl, int send, void *assuan_context, int force);

@@ -208,10 +208,10 @@ agent_tkd_pksign (ctrl_t ctrl, const unsigned char *digest, size_t digestlen,
 
   inqparm.ctx = daemon_ctx (ctrl);
   inqparm.getpin_cb = pin_cb;
+  inqparm.pin = NULL;
   inqparm.ctrl = ctrl;
   inqparm.extra = digest;
   inqparm.extralen = digestlen;
-  inqparm.pin = NULL;
 
   bin2hex (ctrl->keygrip, KEYGRIP_LEN, hexgrip);
   snprintf (line, sizeof(line), "PKSIGN %s %s",
@@ -239,4 +239,132 @@ agent_tkd_pksign (ctrl_t ctrl, const unsigned char *digest, size_t digestlen,
   *r_sig = get_membuf (&data, r_siglen);
 
   return unlock_tkd (ctrl, 0);
+}
+
+/* This handler is a helper for pincache_put_cb but may also be called
+ * directly for that status code with ARGS being the arguments after
+ * the status keyword (and with white space removed).  */
+static gpg_error_t
+handle_pincache_put (const char *args)
+{
+  gpg_error_t err;
+  const char *s, *key, *pin;
+  char *keybuf = NULL;
+  size_t keylen;
+
+  key = s = args;
+  while (*s && !spacep (s))
+    s++;
+  keylen = s - key;
+  if (keylen < 3)
+    {
+      /* At least we need 2 slashes and slot number.  */
+      log_error ("%s: ignoring invalid key\n", __func__);
+      err = 0;
+      goto leave;
+    }
+
+  keybuf = xtrymalloc (keylen+1);
+  if (!keybuf)
+    {
+      err = gpg_error_from_syserror ();
+      goto leave;
+    }
+  memcpy (keybuf, key, keylen);
+  keybuf[keylen] = 0;
+  key = keybuf;
+
+  while (spacep (s))
+    s++;
+  pin = s;
+  if (!*pin)
+    {
+      /* No value - flush the cache.  The cache module knows aboput
+       * the structure of the key to flush only parts.  */
+      log_debug ("%s: flushing cache '%s'\n", __func__, key);
+      agent_put_cache (NULL, key, CACHE_MODE_PIN, NULL, -1);
+      err = 0;
+      goto leave;
+    }
+
+  log_debug ("%s: caching '%s'->'%s'\n", __func__, key, pin);
+  agent_put_cache (NULL, key, CACHE_MODE_PIN, pin, -1);
+  err = 0;
+
+ leave:
+  xfree (keybuf);
+  return err;
+}
+
+static gpg_error_t
+pass_status_thru (void *opaque, const char *line)
+{
+  gpg_error_t err = 0;
+  assuan_context_t ctx = opaque;
+  char keyword[200];
+  int i;
+
+  if (line[0] == '#' && (!line[1] || spacep (line+1)))
+    {
+      /* We are called in convey comments mode.  Now, if we see a
+         comment marker as keyword we forward the line verbatim to the
+         the caller.  This way the comment lines from scdaemon won't
+         appear as status lines with keyword '#'.  */
+      assuan_write_line (ctx, line);
+    }
+  else
+    {
+      for (i=0; *line && !spacep (line) && i < DIM(keyword)-1; line++, i++)
+        keyword[i] = *line;
+      keyword[i] = 0;
+
+      /* Truncate any remaining keyword stuff.  */
+      for (; *line && !spacep (line); line++)
+        ;
+      while (spacep (line))
+        line++;
+
+      /* We do not want to pass PINCACHE_PUT through.  */
+      if (!strcmp (keyword, "PINCACHE_PUT"))
+        err = handle_pincache_put (line);
+      else
+        assuan_write_status (ctx, keyword, line);
+    }
+  return err;
+}
+
+static gpg_error_t
+pass_data_thru (void *opaque, const void *buffer, size_t length)
+{
+  assuan_context_t ctx = opaque;
+
+  assuan_send_data (ctx, buffer, length);
+  return 0;
+}
+
+int
+agent_tkd_cmd (ctrl_t ctrl, const char *cmdline)
+{
+  int rc;
+  struct inq_parm_s inqparm;
+  int saveflag;
+
+  rc = start_tkd (ctrl);
+  if (rc)
+    return rc;
+
+  inqparm.ctx = daemon_ctx (ctrl);
+  inqparm.getpin_cb = pin_cb;
+  inqparm.pin = NULL;
+
+  saveflag = assuan_get_flag (daemon_ctx (ctrl), ASSUAN_CONVEY_COMMENTS);
+  assuan_set_flag (daemon_ctx (ctrl), ASSUAN_CONVEY_COMMENTS, 1);
+  rc = assuan_transact (daemon_ctx (ctrl), cmdline,
+                        pass_data_thru, daemon_ctx (ctrl),
+                        inq_needpin, &inqparm,
+                        pass_status_thru, daemon_ctx (ctrl));
+
+  assuan_set_flag (daemon_ctx (ctrl), ASSUAN_CONVEY_COMMENTS, saveflag);
+
+  return unlock_tkd (ctrl, rc);
 }

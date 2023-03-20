@@ -2684,6 +2684,53 @@ cmd_scd (assuan_context_t ctx, char *line)
 }
 
 
+static const char hlp_tkd[] =
+  "TKD <commands to pass to the tkdaemon>\n"
+  " \n"
+  "This is a general quote command to redirect everything to the\n"
+  "TKdaemon.";
+static gpg_error_t
+cmd_tkd (assuan_context_t ctx, char *line)
+{
+  int rc;
+#ifdef BUILD_WITH_TKDAEMON
+  ctrl_t ctrl = assuan_get_pointer (ctx);
+
+  if (ctrl->restricted)
+    {
+      const char *argv[5];
+      int argc;
+      char *l;
+
+      l = xtrystrdup (line);
+      if (!l)
+        return gpg_error_from_syserror ();
+
+      argc = split_fields (l, argv, DIM (argv));
+
+      /* These commands are allowed.  */
+      if ((argc >= 1 && !strcmp (argv[0], "SLOTLIST"))
+          || (argc == 2
+              && !strcmp (argv[0], "GETINFO")
+              && !strcmp (argv[1], "version"))
+          || (argc == 2
+              && !strcmp (argv[0], "KEYINFO")
+              && !strcmp (argv[1], "--list=encr")))
+        xfree (l);
+      else
+        {
+          xfree (l);
+          return leave_cmd (ctx, gpg_error (GPG_ERR_FORBIDDEN));
+        }
+    }
+
+  rc = divert_tkd_cmd (ctrl, line);
+#else
+  (void)ctx; (void)line;
+  rc = gpg_error (GPG_ERR_NOT_SUPPORTED);
+#endif
+  return rc;
+}
 
 static const char hlp_keywrap_key[] =
   "KEYWRAP_KEY [--clear] <mode>\n"
@@ -4234,6 +4281,7 @@ register_commands (assuan_context_t ctx)
     { "INPUT",          NULL },
     { "OUTPUT",         NULL },
     { "SCD",            cmd_scd,       hlp_scd },
+    { "TKD",            cmd_tkd,       hlp_tkd },
     { "KEYWRAP_KEY",    cmd_keywrap_key, hlp_keywrap_key },
     { "IMPORT_KEY",     cmd_import_key, hlp_import_key },
     { "EXPORT_KEY",     cmd_export_key, hlp_export_key },

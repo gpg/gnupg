@@ -37,3 +37,9 @@ divert_tkd_pksign (ctrl_t ctrl, const unsigned char *digest, size_t digestlen,
 {
   return agent_tkd_pksign (ctrl, digest, digestlen, r_sig, r_siglen);
 }
+
+int
+divert_tkd_cmd (ctrl_t ctrl, const char *cmdline)
+{
+  return agent_tkd_cmd (ctrl, cmdline);
+}
