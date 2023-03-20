@@ -158,6 +158,7 @@ enum cmd_and_opt_values {
   oConnectTimeout,
   oConnectQuickTimeout,
   oListenBacklog,
+  oFakeCRL,
   aTest
 };
 
@@ -274,7 +275,7 @@ static gpgrt_opt_t opts[] = {
                    " points to serverlist")),
   ARGPARSE_s_i (oLDAPTimeout, "ldaptimeout",
                 N_("|N|set LDAP timeout to N seconds")),
-
+  ARGPARSE_s_s (oFakeCRL, "fake-crl", "@"),
 
   ARGPARSE_header ("OCSP", N_("Configuration for OCSP")),
 
@@ -324,6 +325,7 @@ static struct debug_flags_s debug_flags [] =
     { DBG_NETWORK_VALUE, "network" },
     { DBG_LOOKUP_VALUE , "lookup"  },
     { DBG_EXTPROG_VALUE, "extprog" },
+    { DBG_KEEPTMP_VALUE, "keeptmp" },
     { 77, NULL } /* 77 := Do not exit on "help" or "?".  */
   };
 
@@ -534,7 +536,7 @@ set_debug (void)
          select the highest debug value and would then clutter their
          disk with debug files which may reveal confidential data.  */
       if (numok)
-        opt.debug &= ~(DBG_HASHING_VALUE);
+        opt.debug &= ~(DBG_HASHING_VALUE|DBG_KEEPTMP_VALUE);
     }
   else
     {
@@ -708,6 +710,8 @@ parse_rereadable_options (gpgrt_argparse_t *pargs, int reread)
       opt.ldaptimeout = DEFAULT_LDAP_TIMEOUT;
       ldapserver_list_needs_reset = 1;
       opt.debug_cache_expired_certs = 0;
+      xfree (opt.fake_crl);
+      opt.fake_crl = NULL;
       return 1;
     }
 
@@ -868,6 +872,11 @@ parse_rereadable_options (gpgrt_argparse_t *pargs, int reread)
 
     case oDebugCacheExpiredCerts:
       opt.debug_cache_expired_certs = 0;
+      break;
+
+    case oFakeCRL:
+      xfree (opt.fake_crl);
+      opt.fake_crl = *pargs->r.ret_str? xstrdup (pargs->r.ret_str) : NULL;
       break;
 
     default:
@@ -2030,8 +2039,9 @@ handle_signal (int signo)
       break;
 
     case SIGUSR1:
-      cert_cache_print_stats ();
-      domaininfo_print_stats ();
+      /* See also cmd_getinfo:"stats".  */
+      cert_cache_print_stats (NULL);
+      domaininfo_print_stats (NULL);
       break;
 
     case SIGUSR2:

@@ -37,7 +37,7 @@ void cert_cache_init (strlist_t hkp_cacerts);
 void cert_cache_deinit (int full);
 
 /* Print some statistics to the log file.  */
-void cert_cache_print_stats (void);
+void cert_cache_print_stats (ctrl_t ctrl);
 
 /* Return true if any cert of a class in MASK is permanently loaded.  */
 int cert_cache_any_in_class (unsigned int mask);

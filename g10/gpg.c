@@ -337,6 +337,7 @@ enum cmd_and_opt_values
     oEncryptToDefaultKey,
     oLoggerFD,
     oLoggerFile,
+    oLogTime,
     oUtf8Strings,
     oNoUtf8Strings,
     oDisableCipherAlgo,
@@ -600,6 +601,7 @@ static gpgrt_opt_t opts[] = {
   ARGPARSE_s_s (oLoggerFile, "log-file",
                 N_("|FILE|write server mode logs to FILE")),
   ARGPARSE_s_s (oLoggerFile, "logger-file", "@"),  /* 1.4 compatibility.  */
+  ARGPARSE_s_n (oLogTime, "log-time", "@"),
   ARGPARSE_s_n (oQuickRandom, "debug-quick-random", "@"),
 
 
@@ -1041,6 +1043,7 @@ static int utf8_strings =
 static int maybe_setuid = 1;
 static unsigned int opt_set_iobuf_size;
 static unsigned int opt_set_iobuf_size_used;
+static int opt_log_time;
 
 /* Collection of options used only in this module.  */
 static struct {
@@ -2864,6 +2867,9 @@ main (int argc, char **argv)
           case oLoggerFile:
             logfile = pargs.r.ret_str;
             break;
+          case oLogTime:
+            opt_log_time = 1;
+            break;
 
 	  case oWithFingerprint:
             opt.with_fingerprint = 1;
@@ -3829,6 +3835,9 @@ main (int argc, char **argv)
                                | GPGRT_LOG_WITH_TIME
                                | GPGRT_LOG_WITH_PID ));
       }
+    else if (opt_log_time)
+      log_set_prefix (NULL, (GPGRT_LOG_WITH_PREFIX|GPGRT_LOG_NO_REGISTRY
+                             |GPGRT_LOG_WITH_TIME));
 
     if (opt.verbose > 2)
         log_info ("using character set '%s'\n", get_native_charset ());

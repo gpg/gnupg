@@ -768,7 +768,7 @@ cert_cache_init (strlist_t hkp_cacerts)
   initialization_done = 1;
   release_cache_lock ();
 
-  cert_cache_print_stats ();
+  cert_cache_print_stats (NULL);
 }
 
 /* Deinitialize the certificate cache.  With FULL set to true even the
@@ -811,7 +811,7 @@ cert_cache_deinit (int full)
 
 /* Print some statistics to the log file.  */
 void
-cert_cache_print_stats (void)
+cert_cache_print_stats (ctrl_t ctrl)
 {
   cert_item_t ci;
   int idx;
@@ -848,16 +848,19 @@ cert_cache_print_stats (void)
 
   release_cache_lock ();
 
-  log_info (_("permanently loaded certificates: %u\n"),
-            n_permanent);
-  log_info (_("    runtime cached certificates: %u\n"),
-            n_nonperm);
-  log_info (_("           trusted certificates: %u (%u,%u,%u,%u)\n"),
-            n_trusted,
-            n_trustclass_system,
-            n_trustclass_config,
-            n_trustclass_hkp,
-            n_trustclass_hkpspool);
+  dirmngr_status_helpf (ctrl,
+                 _("permanently loaded certificates: %u\n"),
+                        n_permanent);
+  dirmngr_status_helpf (ctrl,
+                 _("    runtime cached certificates: %u\n"),
+                        n_nonperm);
+  dirmngr_status_helpf (ctrl,
+                 _("           trusted certificates: %u (%u,%u,%u,%u)\n"),
+                        n_trusted,
+                        n_trustclass_system,
+                        n_trustclass_config,
+                        n_trustclass_hkp,
+                        n_trustclass_hkpspool);
 }
 
 

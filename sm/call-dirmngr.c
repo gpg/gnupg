@@ -362,7 +362,7 @@ inq_certificate (void *opaque, const char *line)
     }
   else
     {
-      log_error ("unsupported inquiry '%s'\n", line);
+      log_error ("unsupported certificate inquiry '%s'\n", line);
       return gpg_error (GPG_ERR_ASS_UNKNOWN_INQUIRE);
     }
 
@@ -386,8 +386,8 @@ inq_certificate (void *opaque, const char *line)
       int err;
       ksba_cert_t cert;
 
-
-      err = gpgsm_find_cert (parm->ctrl, line, ski, &cert, 1);
+      err = gpgsm_find_cert (parm->ctrl, line, ski, &cert,
+                             FIND_CERT_ALLOW_AMBIG|FIND_CERT_WITH_EPHEM);
       if (err)
         {
           log_error ("certificate not found: %s\n", gpg_strerror (err));
@@ -521,6 +521,7 @@ isvalid_status_cb (void *opaque, const char *line)
 
   GPG_ERR_CERTIFICATE_REVOKED
   GPG_ERR_NO_CRL_KNOWN
+  GPG_ERR_INV_CRL_OBJ
   GPG_ERR_CRL_TOO_OLD
 
   Values for USE_OCSP:
@@ -1014,7 +1015,8 @@ run_command_inq_cb (void *opaque, const char *line)
       if (!*line)
         return gpg_error (GPG_ERR_ASS_PARAMETER);
 
-      err = gpgsm_find_cert (parm->ctrl, line, NULL, &cert, 1);
+      err = gpgsm_find_cert (parm->ctrl, line, NULL, &cert,
+                             FIND_CERT_ALLOW_AMBIG);
       if (err)
         {
           log_error ("certificate not found: %s\n", gpg_strerror (err));
@@ -1035,9 +1037,33 @@ run_command_inq_cb (void *opaque, const char *line)
       line = s;
       log_info ("dirmngr: %s\n", line);
     }
+  else if ((s = has_leading_keyword (line, "ISTRUSTED")))
+    {
+      /* The server is asking us whether the certificate is a trusted
+         root certificate.  */
+      char fpr[41];
+      struct rootca_flags_s rootca_flags;
+      int n;
+
+      line = s;
+
+      for (s=line,n=0; hexdigitp (s); s++, n++)
+        ;
+      if (*s || n != 40)
+        return gpg_error (GPG_ERR_ASS_PARAMETER);
+      for (s=line, n=0; n < 40; s++, n++)
+        fpr[n] = (*s >= 'a')? (*s & 0xdf): *s;
+      fpr[n] = 0;
+
+      if (!gpgsm_agent_istrusted (parm->ctrl, NULL, fpr, &rootca_flags))
+        rc = assuan_send_data (parm->ctx, "1", 1);
+      else
+        rc = 0;
+      return rc;
+    }
   else
     {
-      log_error ("unsupported inquiry '%s'\n", line);
+      log_error ("unsupported command inquiry '%s'\n", line);
       rc = gpg_error (GPG_ERR_ASS_UNKNOWN_INQUIRE);
     }
 

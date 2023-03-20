@@ -156,8 +156,7 @@ gpg_error_t
 parse_ber_header (unsigned char const **buffer, size_t *size,
                   int *r_class, int *r_tag,
                   int *r_constructed, int *r_ndef,
-                  size_t *r_length, size_t *r_nhdr)
-{
+                  size_t *r_length, size_t *r_nhdr){
   int c;
   unsigned long tag;
   const unsigned char *buf = *buffer;

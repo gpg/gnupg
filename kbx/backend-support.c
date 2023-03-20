@@ -207,6 +207,7 @@ be_is_x509_blob (const unsigned char *blob, size_t bloblen)
    *  SEQUENCE    SEQUENCE    [0]   INTEGER  INTEGER
    *              (tbs)            (version) (s/n)
    *
+   *  Note that v0 certificates don't have an explict version number.
    */
 
   p = blob;
@@ -226,7 +227,11 @@ be_is_x509_blob (const unsigned char *blob, size_t bloblen)
   if (parse_ber_header (&p, &n, &class, &tag, &cons, &ndef, &objlen, &hdrlen))
     return 0; /* Not a proper BER object.  */
   if (!(class == CLASS_CONTEXT && tag == 0 && cons))
-    return 0; /* No context tag.  */
+    {
+      if (class == CLASS_UNIVERSAL && tag == TAG_INTEGER && !cons)
+        return 1; /* Might be a X.509 v0 cert with implict version.  */
+      return 0; /* No context tag.  */
+    }
 
   if (parse_ber_header (&p, &n, &class, &tag, &cons, &ndef, &objlen, &hdrlen))
     return 0; /* Not a proper BER object.  */

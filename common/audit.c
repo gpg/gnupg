@@ -1109,6 +1109,7 @@ proc_type_verify (audit_ctx_t ctx)
             case GPG_ERR_CERT_REVOKED: ok = "bad"; break;
             case GPG_ERR_NOT_ENABLED:  ok = "disabled"; break;
             case GPG_ERR_NO_CRL_KNOWN:
+            case GPG_ERR_INV_CRL_OBJ:
               ok = _("no CRL found for certificate");
               break;
             case GPG_ERR_CRL_TOO_OLD:

@@ -315,6 +315,7 @@ int keygen_set_std_prefs (const char *string,int personal);
 PKT_user_id *keygen_get_std_prefs (void);
 int keygen_add_key_expire( PKT_signature *sig, void *opaque );
 int keygen_add_key_flags (PKT_signature *sig, void *opaque);
+int keygen_add_key_flags_and_expire (PKT_signature *sig, void *opaque);
 int keygen_add_std_prefs( PKT_signature *sig, void *opaque );
 int keygen_upd_std_prefs( PKT_signature *sig, void *opaque );
 int keygen_add_keyserver_url(PKT_signature *sig, void *opaque);
@@ -515,7 +516,7 @@ void change_pin (int no, int allow_admin);
 void card_status (ctrl_t ctrl, estream_t fp, const char *serialno);
 void card_edit (ctrl_t ctrl, strlist_t commands);
 gpg_error_t  card_generate_subkey (ctrl_t ctrl, kbnode_t pub_keyblock);
-int  card_store_subkey (KBNODE node, int use);
+int  card_store_subkey (KBNODE node, int use, strlist_t *processed_keys);
 #endif
 
 /*-- migrate.c --*/

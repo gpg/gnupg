@@ -85,6 +85,8 @@ struct
 
   int with_key_screening; /* Option  --with-key-screening active.  */
 
+  int no_pretty_dn;       /* Option --no-pretty-dn */
+
   int pinentry_mode;
   int request_origin;
 
@@ -404,8 +406,11 @@ int gpgsm_add_cert_to_certlist (ctrl_t ctrl, ksba_cert_t cert,
 int gpgsm_add_to_certlist (ctrl_t ctrl, const char *name, int secret,
                            certlist_t *listaddr, int is_encrypt_to);
 void gpgsm_release_certlist (certlist_t list);
+
+#define FIND_CERT_ALLOW_AMBIG 1
+#define FIND_CERT_WITH_EPHEM  2
 int gpgsm_find_cert (ctrl_t ctrl, const char *name, ksba_sexp_t keyid,
-                     ksba_cert_t *r_cert, int allow_ambiguous);
+                     ksba_cert_t *r_cert, unsigned int flags);
 
 /*-- keylist.c --*/
 gpg_error_t gpgsm_list_keys (ctrl_t ctrl, strlist_t names,

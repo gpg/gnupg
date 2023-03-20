@@ -74,8 +74,7 @@ agent_pkdecrypt (ctrl_t ctrl, const char *desc_text,
     no_shadow_info = 1;
   else if (err)
     {
-      if (gpg_err_code (err) != GPG_ERR_NO_SECKEY)
-        log_error ("failed to read the secret key\n");
+      log_error ("failed to read the secret key\n");
       goto leave;
     }
 
@@ -88,7 +87,7 @@ agent_pkdecrypt (ctrl_t ctrl, const char *desc_text,
           goto leave;
         }
 
-      if (agent_is_tpm2_key (s_skey))
+      if (s_skey && agent_is_tpm2_key (s_skey))
 	err = divert_tpm2_pkdecrypt (ctrl, ciphertext, shadow_info,
                                      &buf, &len, r_padding);
       else
@@ -96,7 +95,15 @@ agent_pkdecrypt (ctrl_t ctrl, const char *desc_text,
                                 &buf, &len, r_padding);
       if (err)
         {
-          log_error ("smartcard decryption failed: %s\n", gpg_strerror (err));
+          /* We restore the original error (ie. no seckey) is no card
+           * has been found and we have no shadow key.  This avoids a
+           * surprising "card removed" error code.  */
+          if ((gpg_err_code (err) == GPG_ERR_CARD_REMOVED
+               || gpg_err_code (err) == GPG_ERR_CARD_NOT_PRESENT)
+              && no_shadow_info)
+            err = gpg_error (GPG_ERR_NO_SECKEY);
+          else
+            log_error ("smartcard decryption failed: %s\n", gpg_strerror (err));
           goto leave;
         }
 

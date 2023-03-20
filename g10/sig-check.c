@@ -363,7 +363,8 @@ check_signature_metadata_validity (PKT_public_key *pk, PKT_signature *sig,
   if (r_revoked)
     *r_revoked = 0;
 
-  if (pk->timestamp > sig->timestamp )
+  if (pk->timestamp > sig->timestamp
+      && !(parse_key_usage (sig) & PUBKEY_USAGE_RENC))
     {
       ulong d = pk->timestamp - sig->timestamp;
       if ( d < 86400 )

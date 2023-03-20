@@ -1543,6 +1543,17 @@ agent_askpin (ctrl_t ctrl,
                             NULL, NULL, NULL, NULL, NULL, NULL);
       if (rc)
         pininfo->with_repeat = 0; /* Pinentry does not support it.  */
+
+      if (pininfo->with_repeat)
+        {
+          snprintf (line, DIM(line), "SETREPEATOK %s",
+                    L_("Passphrases match."));
+          rc = assuan_transact (entry_ctx, line,
+                                NULL, NULL, NULL, NULL, NULL, NULL);
+          if (rc)
+            rc = 0; /* Pinentry does not support it. */
+        }
+
     }
   pininfo->repeat_okay = 0;
   pininfo->status = 0;
@@ -1801,6 +1812,16 @@ agent_get_passphrase (ctrl_t ctrl,
                             NULL, NULL, NULL, NULL, NULL, NULL);
       if (rc)
         pininfo->with_repeat = 0; /* Pinentry does not support it.  */
+
+      if (pininfo->with_repeat)
+        {
+          snprintf (line, DIM(line), "SETREPEATOK %s",
+                    L_("Passphrases match."));
+          rc = assuan_transact (entry_ctx, line,
+                                NULL, NULL, NULL, NULL, NULL, NULL);
+          if (rc)
+            rc = 0; /* Pinentry does not support it. */
+        }
 
       (void)setup_genpin (ctrl);
 

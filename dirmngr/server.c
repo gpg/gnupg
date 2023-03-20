@@ -1339,6 +1339,10 @@ cmd_isvalid (assuan_context_t ctx, char *line)
     }
   else if (only_ocsp)
     err = gpg_error (GPG_ERR_NO_CRL_KNOWN);
+  else if (opt.fake_crl && (err = fakecrl_isvalid (ctrl, issuerhash, serialno)))
+    {
+      /* We already got the error code.  */
+    }
   else
     {
       switch (crl_cache_isvalid (ctrl,
@@ -1360,8 +1364,11 @@ cmd_isvalid (assuan_context_t ctx, char *line)
               goto again;
             }
           break;
+        case CRL_CACHE_NOTTRUSTED:
+          err = gpg_error (GPG_ERR_NOT_TRUSTED);
+          break;
         case CRL_CACHE_CANTUSE:
-          err = gpg_error (GPG_ERR_NO_CRL_KNOWN);
+          err = gpg_error (GPG_ERR_INV_CRL_OBJ);
           break;
         default:
           log_fatal ("crl_cache_isvalid returned invalid code\n");
@@ -1374,7 +1381,7 @@ cmd_isvalid (assuan_context_t ctx, char *line)
 
 
 /* If the line contains a SHA-1 fingerprint as the first argument,
-   return the FPR vuffer on success.  The function checks that the
+   return the FPR buffer on success.  The function checks that the
    fingerprint consists of valid characters and prints and error
    message if it does not and returns NULL.  Fingerprints are
    considered optional and thus no explicit error is returned. NULL is
@@ -1469,7 +1476,7 @@ cmd_checkcrl (assuan_context_t ctx, char *line)
         goto leave;
     }
 
-  assert (cert);
+  log_assert (cert);
 
   err = crl_cache_cert_isvalid (ctrl, cert, ctrl->force_crl_refresh);
   if (gpg_err_code (err) == GPG_ERR_NO_CRL_KNOWN)
@@ -2785,13 +2792,14 @@ static const char hlp_getinfo[] =
   "Multi purpose command to return certain information.  \n"
   "Supported values of WHAT are:\n"
   "\n"
-  "version     - Return the version of the program.\n"
-  "pid         - Return the process id of the server.\n"
+  "version     - Return the version of the program\n"
+  "pid         - Return the process id of the server\n"
   "tor         - Return OK if running in Tor mode\n"
   "dnsinfo     - Return info about the DNS resolver\n"
-  "socket_name - Return the name of the socket.\n"
-  "session_id  - Return the current session_id.\n"
+  "socket_name - Return the name of the socket\n"
+  "session_id  - Return the current session_id\n"
   "workqueue   - Inspect the work queue\n"
+  "stats       - Print stats\n"
   "getenv NAME - Return value of envvar NAME\n";
 static gpg_error_t
 cmd_getinfo (assuan_context_t ctx, char *line)
@@ -2858,6 +2866,12 @@ cmd_getinfo (assuan_context_t ctx, char *line)
   else if (!strcmp (line, "workqueue"))
     {
       workqueue_dump_queue (ctrl);
+      err = 0;
+    }
+  else if (!strcmp (line, "stats"))
+    {
+      cert_cache_print_stats (ctrl);
+      domaininfo_print_stats (ctrl);
       err = 0;
     }
   else if (!strncmp (line, "getenv", 6)
@@ -3218,7 +3232,8 @@ dirmngr_status_help (ctrl_t ctrl, const char *text)
 
 
 /* Print a help status line using a printf like format.  The function
- * splits text at LFs.  */
+ * splits text at LFs.  With CTRL beeing NULL, the function behaves
+ * like log_info.  */
 gpg_error_t
 dirmngr_status_helpf (ctrl_t ctrl, const char *format, ...)
 {
@@ -3227,12 +3242,20 @@ dirmngr_status_helpf (ctrl_t ctrl, const char *format, ...)
   char *buf;
 
   va_start (arg_ptr, format);
-  buf = es_vbsprintf (format, arg_ptr);
-  err = buf? 0 : gpg_error_from_syserror ();
+  if (ctrl)
+    {
+      buf = es_vbsprintf (format, arg_ptr);
+      err = buf? 0 : gpg_error_from_syserror ();
+      if (!err)
+        err = dirmngr_status_help (ctrl, buf);
+      es_free (buf);
+    }
+  else
+    {
+      log_logv (GPGRT_LOGLVL_INFO, format, arg_ptr);
+      err = 0;
+    }
   va_end (arg_ptr);
-  if (!err)
-    err = dirmngr_status_help (ctrl, buf);
-  es_free (buf);
   return err;
 }
 

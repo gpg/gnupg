@@ -36,6 +36,7 @@
 #define GNUPG_KSBA_IO_BASE64      2  /* Plain Base64 format.  */
 #define GNUPG_KSBA_IO_AUTODETECT  4  /* Try to autodetect the format.  */
 #define GNUPG_KSBA_IO_MULTIPEM    8  /* Allow more than one PEM chunk.  */
+#define GNUPG_KSBA_IO_STRIP      16  /* Strip off zero padding.         */
 
 
 /* Context object.  */

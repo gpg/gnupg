@@ -122,6 +122,7 @@ do_list (int is_error, int listmode, estream_t fp, const char *format, ...)
     }
   else
     {
+      es_fflush (es_stdout);
       log_logv (is_error? GPGRT_LOGLVL_ERROR: GPGRT_LOGLVL_INFO,
                 format, arg_ptr);
       log_printf ("\n");
@@ -1480,6 +1481,7 @@ ask_marktrusted (ctrl_t ctrl, ksba_cert_t cert, int listmode)
   int success = 0;
 
   fpr = gpgsm_get_fingerprint_string (cert, GCRY_MD_SHA1);
+  es_fflush (es_stdout);
   log_info (_("fingerprint=%s\n"), fpr? fpr : "?");
   xfree (fpr);
 
@@ -2277,6 +2279,7 @@ gpgsm_basic_cert_check (ctrl_t ctrl, ksba_cert_t cert)
             {
               if (!opt.quiet)
                 {
+                  es_fflush (es_stdout);
                   log_info ("issuer certificate (#/");
                   gpgsm_dump_string (issuer);
                   log_printf (") not found\n");

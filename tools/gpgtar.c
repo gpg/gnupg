@@ -459,7 +459,7 @@ main (int argc, char **argv)
 
   gnupg_reopen_std (GPGTAR_NAME);
   gpgrt_set_strusage (my_strusage);
-  log_set_prefix (GPGTAR_NAME, GPGRT_LOG_WITH_PREFIX);
+  log_set_prefix (GPGTAR_NAME, GPGRT_LOG_WITH_PREFIX|GPGRT_LOG_NO_REGISTRY);
 
   /* Make sure that our subsystems are ready.  */
   i18n_init();
@@ -501,7 +501,11 @@ main (int argc, char **argv)
         log_fatal ("status-fd is invalid: %s\n", strerror (errno));
 
       if (fd == 1)
-        opt.status_stream = es_stdout;
+        {
+          opt.status_stream = es_stdout;
+          if (!skip_crypto)
+            log_fatal ("using stdout for the status-fd is not possible\n");
+        }
       else if (fd == 2)
         opt.status_stream = es_stderr;
       else

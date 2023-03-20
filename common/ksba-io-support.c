@@ -40,6 +40,7 @@
 
 #include "util.h"
 #include "i18n.h"
+#include "tlv.h"
 #include "ksba-io-support.h"
 
 
@@ -65,6 +66,12 @@ struct reader_cb_parm_s
   int autodetect;       /* Try to detect the input encoding. */
   int assume_pem;       /* Assume input encoding is PEM. */
   int assume_base64;    /* Assume input is base64 encoded. */
+  int strip_zeroes;     /* Expect a SEQUENCE followed by zero padding.  */
+                        /* 1 = check state; 2 = reading; 3 = checking  */
+                        /* for zeroes.                                 */
+  int use_maxread;      /* If true read not more than MAXREAD.  */
+  unsigned int maxread; /* # of bytes left to read. */
+  off_t nzeroes;        /* Number of padding zeroes red.        */
 
   int identified;
   int is_pem;
@@ -390,6 +397,55 @@ base64_reader_cb (void *cb_value, char *buffer, size_t count, size_t *nread)
 }
 
 
+/* Read up to 10 bytes to test whether the data consist of a sequence;
+ * if that is true, set the limited flag and record the length of the
+ * entire sequence in PARM.  Unget everything then.  Return true if we
+ * have a sequence with a fixed length.  */
+static int
+starts_with_sequence (struct reader_cb_parm_s *parm)
+{
+  gpg_error_t err;
+  unsigned char peekbuf[10];
+  int npeeked, c;
+  int found = 0;
+  const unsigned char *p;
+  size_t n, objlen, hdrlen;
+  int class, tag, constructed, ndef;
+
+  for (npeeked=0; npeeked < sizeof peekbuf; npeeked++)
+    {
+      c = es_getc (parm->fp);
+      if (c == EOF)
+        goto leave;
+      peekbuf[npeeked] = c;
+    }
+  /* Enough to check for a sequence.  */
+
+  p = peekbuf;
+  n = npeeked;
+  err = parse_ber_header (&p, &n, &class, &tag, &constructed,
+                          &ndef, &objlen, &hdrlen);
+  if (err)
+    {
+      log_debug ("%s: error parsing data: %s\n", __func__, gpg_strerror (err));
+      goto leave;
+    }
+
+  if (class == CLASS_UNIVERSAL && constructed && tag == TAG_SEQUENCE && !ndef)
+    {
+      /* We need to add 1 due to the way we implement the limit.  */
+      parm->maxread = objlen + hdrlen + 1;
+      if (!(parm->maxread < objlen + hdrlen) && parm->maxread)
+        parm->use_maxread = 1;
+      found = 1;
+    }
+
+ leave:
+  while (npeeked)
+    es_ungetc (peekbuf[--npeeked], parm->fp);
+  return found;
+}
+
 
 static int
 simple_reader_cb (void *cb_value, char *buffer, size_t count, size_t *nread)
@@ -402,9 +458,55 @@ simple_reader_cb (void *cb_value, char *buffer, size_t count, size_t *nread)
   if (!buffer)
     return -1; /* not supported */
 
+ restart:
+  if (parm->strip_zeroes)
+    {
+      if (parm->strip_zeroes == 1)
+        {
+          if (starts_with_sequence (parm))
+            parm->strip_zeroes = 2;  /* Found fixed length sequence.  */
+          else
+            parm->strip_zeroes = 0;  /* Disable zero padding check.  */
+        }
+      else if (parm->strip_zeroes == 3)
+        {
+          /* Limit reached - check that only zeroes follow.  */
+          while (!(c = es_getc (parm->fp)))
+            parm->nzeroes++;
+          if (c == EOF)
+            { /* only zeroes found. Reset zero padding engine and
+               * return EOF.  */
+              parm->strip_zeroes = 0;
+              parm->eof_seen = 1;
+              return -1;
+            }
+          /* Not only zeroes. Reset engine and continue.  */
+          parm->strip_zeroes = 0;
+        }
+    }
+
   for (n=0; n < count; n++)
     {
-      c = es_getc (parm->fp);
+      if (parm->use_maxread && !--parm->maxread)
+        {
+          parm->use_maxread = 0;
+          if (parm->strip_zeroes)
+            {
+              parm->strip_zeroes = 3;
+              parm->nzeroes = 0;
+              if (n)
+                goto leave; /* Return what we already got.             */
+              goto restart; /* Immediately check for trailing zeroes.  */
+            }
+        }
+
+      if (parm->nzeroes)
+        {
+          parm->nzeroes--;
+          c = 0;
+        }
+      else
+        c = es_getc (parm->fp);
       if (c == EOF)
         {
           parm->eof_seen = 1;
@@ -417,6 +519,7 @@ simple_reader_cb (void *cb_value, char *buffer, size_t count, size_t *nread)
       *(byte *)buffer++ = c;
     }
 
+ leave:
   *nread = n;
   return 0;
 }
@@ -575,6 +678,7 @@ base64_finish_write (struct writer_cb_parm_s *parm)
  * GNUPG_KSBA_IO_MULTIPEM   - The reader expects that the caller uses
  *                            ksba_reader_clear after EOF until no more
  *                            objects were found.
+ * GNUPG_KSBA_IO_STRIP      - Strip zero padding from some CMS objects.
  *
  * Note that the PEM flag has a higher priority than the BASE64 flag
  * which in turn has a gight priority than the AUTODETECT flag.
@@ -592,6 +696,7 @@ gnupg_ksba_create_reader (gnupg_ksba_io_t *ctx,
   if (!*ctx)
     return out_of_core ();
   (*ctx)->u.rparm.allow_multi_pem = !!(flags & GNUPG_KSBA_IO_MULTIPEM);
+  (*ctx)->u.rparm.strip_zeroes    = !!(flags & GNUPG_KSBA_IO_STRIP);
 
   rc = ksba_reader_new (&r);
   if (rc)

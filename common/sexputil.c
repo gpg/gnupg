@@ -536,7 +536,8 @@ get_rsa_pk_from_canon_sexp (const unsigned char *keydata, size_t keydatalen,
     return err;
   if ((err = parse_sexp (&buf, &buflen, &depth, &tok, &toklen)))
     return err;
-  if (!tok || toklen != 10 || memcmp ("public-key", tok, toklen))
+  if (!tok || !((toklen == 10 && !memcmp ("public-key", tok, toklen))
+                || (toklen == 11 && !memcmp ("private-key", tok, toklen))))
     return gpg_error (GPG_ERR_BAD_PUBKEY);
   if ((err = parse_sexp (&buf, &buflen, &depth, &tok, &toklen)))
     return err;
@@ -1074,6 +1075,8 @@ pubkey_algo_string (gcry_sexp_t s_pkey, enum gcry_pk_algos *r_algoid)
     *r_algoid = 0;
 
   l1 = gcry_sexp_find_token (s_pkey, "public-key", 0);
+  if (!l1)
+    l1 = gcry_sexp_find_token (s_pkey, "private-key", 0);
   if (!l1)
     return xtrystrdup ("E_no_key");
   {

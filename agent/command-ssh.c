@@ -3142,7 +3142,7 @@ ssh_key_to_protected_buffer (gcry_sexp_t key, const char *passphrase,
                                    buffer_new, buffer_new_n);
 
   if (*passphrase)
-    err = agent_protect (buffer_new, passphrase, buffer, buffer_n, 0, -1);
+    err = agent_protect (buffer_new, passphrase, buffer, buffer_n, 0);
   else
     {
       /* The key derivation function does not support zero length
