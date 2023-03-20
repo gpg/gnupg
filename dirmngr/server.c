@@ -146,7 +146,7 @@ get_ldapservers_from_ctrl (ctrl_t ctrl)
 }
 
 /* Release an uri_item_t list.  */
-static void
+void
 release_uri_item_list (uri_item_t list)
 {
   while (list)
@@ -2124,13 +2124,6 @@ cmd_validate (assuan_context_t ctx, char *line)
 static gpg_error_t
 make_keyserver_item (const char *uri, uri_item_t *r_item)
 {
-  gpg_error_t err;
-  uri_item_t item;
-  const char *s;
-  char *tmpstr = NULL;
-
-  *r_item = NULL;
-
   /* We used to have DNS CNAME redirection from the URLs below to
    * sks-keyserver. pools.  The idea was to allow for a quick way to
    * switch to a different set of pools.  The problem with that
@@ -2162,78 +2155,7 @@ make_keyserver_item (const char *uri, uri_item_t *r_item)
   else if (!strcmp (uri, "http://http-keys.gnupg.net"))
     uri = "hkp://pgp.surf.nl:80";
 
-  item = xtrymalloc (sizeof *item + strlen (uri));
-  if (!item)
-    return gpg_error_from_syserror ();
-
-  item->next = NULL;
-  item->parsed_uri = NULL;
-  strcpy (item->uri, uri);
-
-#if USE_LDAP
-  if (!strncmp (uri, "ldap:", 5) && !(uri[5] == '/' && uri[6] == '/'))
-    {
-      /* Special ldap scheme given.  This differs from a valid ldap
-       * scheme in that no double slash follows..  Use http_parse_uri
-       * to put it as opaque value into parsed_uri.  */
-      tmpstr = strconcat ("opaque:", uri+5, NULL);
-      if (!tmpstr)
-        err = gpg_error_from_syserror ();
-      else
-        err = http_parse_uri (&item->parsed_uri, tmpstr, 0);
-    }
-  else if ((s=strchr (uri, ':')) && !(s[1] == '/' && s[2] == '/'))
-    {
-      /* No valid scheme given.  Use http_parse_uri to put the string
-       * as opaque value into parsed_uri.  */
-      tmpstr = strconcat ("opaque:", uri, NULL);
-      if (!tmpstr)
-        err = gpg_error_from_syserror ();
-      else
-        err = http_parse_uri (&item->parsed_uri, tmpstr, 0);
-    }
-  else if (ldap_uri_p (uri))
-    {
-      int fixup = 0;
-      /* Fixme: We should get rid of that parser and repalce it with
-       * our generic (http) URI parser.  */
-
-      /* If no port has been specified and the scheme ist ldaps we use
-       * our idea of the default port because the standard LDAP URL
-       * parser would use 636 here.  This is because we redefined
-       * ldaps to mean starttls.  */
-#ifdef HAVE_W32_SYSTEM
-      if (!strcmp (uri, "ldap:///"))
-          fixup = 1;
-      else
-#endif
-        if (!http_parse_uri (&item->parsed_uri,uri,HTTP_PARSE_NO_SCHEME_CHECK))
-        {
-          if (!item->parsed_uri->port
-              && !strcmp (item->parsed_uri->scheme, "ldaps"))
-            fixup = 2;
-          http_release_parsed_uri (item->parsed_uri);
-          item->parsed_uri = NULL;
-        }
-
-      err = ldap_parse_uri (&item->parsed_uri, uri);
-      if (!err && fixup == 1)
-        item->parsed_uri->ad_current = 1;
-      else if (!err && fixup == 2)
-        item->parsed_uri->port = 389;
-    }
-  else
-#endif /* USE_LDAP */
-    {
-      err = http_parse_uri (&item->parsed_uri, uri, HTTP_PARSE_NO_SCHEME_CHECK);
-    }
-
-  xfree (tmpstr);
-  if (err)
-    xfree (item);
-  else
-    *r_item = item;
-  return err;
+  return ks_action_parse_uri (uri, r_item);
 }
 
 
@@ -2744,6 +2666,86 @@ cmd_ks_put (assuan_context_t ctx, char *line)
 
 
 
+static const char hlp_ad_query[] =
+  "AD_QUERY [--first|--next] [--] <filter_expression> \n"
+  "\n"
+  "Query properties from a Windows Active Directory.\n"
+  "Our extended filter syntax may be used for the filter\n"
+  "expression; see gnupg/dirmngr/ldap-misc.c.  There are\n"
+  "a couple of other options available:\n\n"
+  "  --rootdse - Query the root using serverless binding,\n"
+  "  --attr=<attribs> - Comma delimited list of attributes\n"
+  "                     to return.\n"
+  ;
+static gpg_error_t
+cmd_ad_query (assuan_context_t ctx, char *line)
+{
+  ctrl_t ctrl = assuan_get_pointer (ctx);
+  gpg_error_t err;
+  unsigned int flags = 0;
+  const char *filter;
+  estream_t outfp = NULL;
+  char *p;
+  char **opt_attr = NULL;
+
+  /* No options for now.  */
+  if (has_option (line, "--first"))
+    flags |= KS_GET_FLAG_FIRST;
+  if (has_option (line, "--next"))
+    flags |= KS_GET_FLAG_NEXT;
+  if (has_option (line, "--rootdse"))
+    flags |= KS_GET_FLAG_ROOTDSE;
+  err = get_option_value (line, "--attr", &p);
+  if (err)
+    goto leave;
+  if (p)
+    {
+      opt_attr = strtokenize (p, ",");
+      if (!opt_attr)
+        {
+          err = gpg_error_from_syserror ();
+          xfree (p);
+          goto leave;
+        }
+      xfree (p);
+    }
+  line = skip_options (line);
+  filter = line;
+
+  if ((flags & KS_GET_FLAG_NEXT))
+    {
+      if (*filter || (flags & ~KS_GET_FLAG_NEXT))
+        {
+          err = PARM_ERROR ("No filter or other options allowed with --next");
+          goto leave;
+        }
+    }
+
+  /* Setup an output stream and perform the get.  */
+  outfp = es_fopencookie (ctx, "w", data_line_cookie_functions);
+  if (!outfp)
+    {
+      err = set_error (GPG_ERR_ASS_GENERAL, "error setting up a data stream");
+      goto leave;
+    }
+
+  ctrl->server_local->inhibit_data_logging = 1;
+  ctrl->server_local->inhibit_data_logging_now = 0;
+  ctrl->server_local->inhibit_data_logging_count = 0;
+
+  err = ks_action_query (ctrl,
+                         (flags & KS_GET_FLAG_ROOTDSE)? NULL : "ldap:///",
+                         flags, filter, opt_attr, outfp);
+
+ leave:
+  es_fclose (outfp);
+  xfree (opt_attr);
+  ctrl->server_local->inhibit_data_logging = 0;
+  return leave_cmd (ctx, err);
+}
+
+
+
 static const char hlp_loadswdb[] =
   "LOADSWDB [--force]\n"
   "\n"
@@ -2941,6 +2943,7 @@ register_commands (assuan_context_t ctx)
     { "KS_GET",     cmd_ks_get,     hlp_ks_get },
     { "KS_FETCH",   cmd_ks_fetch,   hlp_ks_fetch },
     { "KS_PUT",     cmd_ks_put,     hlp_ks_put },
+    { "AD_QUERY",   cmd_ad_query,   hlp_ad_query },
     { "GETINFO",    cmd_getinfo,    hlp_getinfo },
     { "LOADSWDB",   cmd_loadswdb,   hlp_loadswdb },
     { "KILLDIRMNGR",cmd_killdirmngr,hlp_killdirmngr },

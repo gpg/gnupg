@@ -1,7 +1,7 @@
 /* ks-engine-ldap.c - talk to a LDAP keyserver
  * Copyright (C) 2001, 2002, 2004, 2005, 2006
  *               2007  Free Software Foundation, Inc.
- * Copyright (C) 2015, 2020  g10 Code GmbH
+ * Copyright (C) 2015, 2020, 2023  g10 Code GmbH
  *
  * This file is part of GnuPG.
  *
@@ -35,6 +35,7 @@
 #include "misc.h"
 #include "../common/userids.h"
 #include "../common/mbox-util.h"
+#include "ks-action.h"
 #include "ks-engine.h"
 #include "ldap-misc.h"
 #include "ldap-parse-uri.h"
@@ -46,6 +47,7 @@
 #define SERVERINFO_PGPKEYV2 2 /* Needs "pgpKeyV2" instead of "pgpKey"*/
 #define SERVERINFO_SCHEMAV2 4 /* Version 2 of the Schema.            */
 #define SERVERINFO_NTDS     8 /* Server is an Active Directory.      */
+#define SERVERINFO_GENERIC 16 /* Connected in genric mode.           */
 
 
 /* The page size requested from the server.  */
@@ -64,6 +66,7 @@ struct ks_engine_ldap_local_s
   LDAPMessage *message;
   LDAPMessage *msg_iter;  /* Iterator for message.  */
   unsigned int serverinfo;
+  int scope;
   char *basedn;
   char *keyspec;
   char *filter;
@@ -196,7 +199,12 @@ ks_ldap_help (ctrl_t ctrl, parsed_uri_t uri)
 static struct ks_engine_ldap_local_s *
 ks_ldap_new_state (void)
 {
-  return xtrycalloc (1, sizeof(struct ks_engine_ldap_local_s));
+  struct ks_engine_ldap_local_s *state;
+
+  state = xtrycalloc (1, sizeof(struct ks_engine_ldap_local_s));
+  if (state)
+    state->scope = LDAP_SCOPE_SUBTREE;
+  return state;
 }
 
 
@@ -221,6 +229,7 @@ ks_ldap_clear_state (struct ks_engine_ldap_local_s *state)
     }
   state->serverinfo = 0;
   xfree (state->basedn);
+  state->scope = LDAP_SCOPE_SUBTREE;
   state->basedn = NULL;
   xfree (state->keyspec);
   state->keyspec = NULL;
@@ -241,6 +250,45 @@ ks_ldap_free_state (struct ks_engine_ldap_local_s *state)
     return;
   ks_ldap_clear_state (state);
   xfree (state);
+}
+
+
+/* Helper for ks_ldap_get and ks_ldap_query.  On return first_mode and
+ * next_mode are set accordingly.  */
+static gpg_error_t
+ks_ldap_prepare_my_state (ctrl_t ctrl, unsigned int ks_get_flags,
+                          int *first_mode, int *next_mode)
+{
+  *first_mode = *next_mode = 0;
+
+  if ((ks_get_flags & KS_GET_FLAG_FIRST))
+    {
+      if (ctrl->ks_get_state)
+        ks_ldap_clear_state (ctrl->ks_get_state);
+      else if (!(ctrl->ks_get_state = ks_ldap_new_state ()))
+        return gpg_error_from_syserror ();
+      *first_mode = 1;
+    }
+
+  if ((ks_get_flags & KS_GET_FLAG_NEXT))
+    {
+      if (!ctrl->ks_get_state || !ctrl->ks_get_state->ldap_conn
+          || !ctrl->ks_get_state->message)
+        {
+          log_error ("ks-ldap: --next requested but no state\n");
+          return gpg_error (GPG_ERR_INV_STATE);
+        }
+      *next_mode = 1;
+    }
+
+  /* Do not keep an old state around if not needed.  */
+  if (!(*first_mode || *next_mode))
+    {
+      ks_ldap_free_state (ctrl->ks_get_state);
+      ctrl->ks_get_state = NULL;
+    }
+
+  return 0;
 }
 
 
@@ -443,7 +491,9 @@ interrogate_ldap_dn (LDAP *ldap_conn, const char *basedn_search,
  *
  * URI describes the server to connect to and various options
  * including whether to use TLS and the username and password (see
- * ldap_parse_uri for a description of the various fields).
+ * ldap_parse_uri for a description of the various fields).  Be
+ * default a PGP keyserver is assumed; if GENERIC is true a generic
+ * ldap conenction is instead established.
  *
  * Returns: The ldap connection handle in *LDAP_CONNP, R_BASEDN is set
  * to the base DN for the PGP key space, several flags will be stored
@@ -456,7 +506,7 @@ interrogate_ldap_dn (LDAP *ldap_conn, const char *basedn_search,
  * If it is NULL, then the server does not appear to be an OpenPGP
  * keyserver.  */
 static gpg_error_t
-my_ldap_connect (parsed_uri_t uri, LDAP **ldap_connp,
+my_ldap_connect (parsed_uri_t uri, unsigned int generic, LDAP **ldap_connp,
                  char **r_basedn, char **r_host, int *r_use_tls,
                  unsigned int *r_serverinfo)
 {
@@ -525,15 +575,15 @@ my_ldap_connect (parsed_uri_t uri, LDAP **ldap_connp,
     }
 
   if (opt.verbose)
-    log_info ("ldap connect to '%s:%d:%s:%s:%s:%s%s%s'\n",
+    log_info ("ldap connect to '%s:%d:%s:%s:%s:%s%s%s'%s\n",
               host, port,
               basedn_arg ? basedn_arg : "",
               bindname ? bindname : "",
               password ? "*****" : "",
               use_tls == 1? "starttls" : use_tls == 2? "ldaptls" : "plain",
               use_ntds ? ",ntds":"",
-              use_areconly? ",areconly":"");
-
+              use_areconly? ",areconly":"",
+              generic? " (generic)":"");
 
   /* If the uri specifies a secure connection and we don't support
      TLS, then fail; don't silently revert to an insecure
@@ -541,7 +591,7 @@ my_ldap_connect (parsed_uri_t uri, LDAP **ldap_connp,
   if (use_tls)
     {
 #ifndef HAVE_LDAP_START_TLS_S
-      log_error ("ldap: can't connect to the server: no TLS support.");
+      log_error ("ks-ldap: can't connect to the server: no TLS support.");
       err = GPG_ERR_LDAP_NOT_SUPPORTED;
       goto out;
 #endif
@@ -612,6 +662,8 @@ my_ldap_connect (parsed_uri_t uri, LDAP **ldap_connp,
   if (opt.ldaptimeout)
     {
       int ver = opt.ldaptimeout;
+
+      /* fixme: also use LDAP_OPT_SEND_TIMEOUT?  */
 
       lerr = ldap_set_option (ldap_conn, LDAP_OPT_TIMELIMIT, &ver);
       if (lerr != LDAP_SUCCESS)
@@ -710,7 +762,21 @@ my_ldap_connect (parsed_uri_t uri, LDAP **ldap_connp,
       /* By default we don't bind as there is usually no need to.  */
     }
 
-  if (basedn_arg && *basedn_arg)
+  if (generic)
+    {
+      /* Generic use of this function for arbitrary LDAP servers.  */
+      *r_serverinfo |= SERVERINFO_GENERIC;
+      if (basedn_arg && *basedn_arg)
+        {
+          basedn = xtrystrdup (basedn_arg);
+          if (!basedn)
+            {
+              err = gpg_error_from_syserror ();
+              goto out;
+            }
+        }
+    }
+  else if (basedn_arg && *basedn_arg)
     {
       /* User specified base DN.  In this case we know the server is a
        * real LDAP server.  */
@@ -830,11 +896,15 @@ my_ldap_connect (parsed_uri_t uri, LDAP **ldap_connp,
   if (!err && opt.debug)
     {
       log_debug ("ldap_conn: %p\n", ldap_conn);
-      log_debug ("server_type: %s\n", ((*r_serverinfo & SERVERINFO_REALLDAP)
-                                       ? "LDAP" : "PGP.com keyserver") );
+      log_debug ("server_type: %s\n",
+                 ((*r_serverinfo & SERVERINFO_GENERIC)
+                  ? "Generic" :
+                  (*r_serverinfo & SERVERINFO_REALLDAP)
+                  ? "LDAP" : "PGP.com keyserver") );
       log_debug ("basedn: %s\n", basedn);
-      log_debug ("pgpkeyattr: %s\n",
-                 (*r_serverinfo & SERVERINFO_PGPKEYV2)? "pgpKeyV2":"pgpKey");
+      if (!(*r_serverinfo & SERVERINFO_GENERIC))
+        log_debug ("pgpkeyattr: %s\n",
+                   (*r_serverinfo & SERVERINFO_PGPKEYV2)? "pgpKeyV2":"pgpKey");
     }
 
   ldapserver_list_free (server);
@@ -949,6 +1019,19 @@ extract_keys (estream_t output,
 }
 
 
+/* For now we do not support LDAP over Tor.  */
+static gpg_error_t
+no_ldap_due_to_tor (ctrl_t ctrl)
+{
+  gpg_error_t err = gpg_error (GPG_ERR_NOT_SUPPORTED);
+  const char *msg = _("LDAP access not possible due to Tor mode");
+
+  log_error ("%s", msg);
+  dirmngr_status_printf (ctrl, "NOTE", "no_ldap_due_to_tor %u %s", err, msg);
+  return err;
+}
+
+
 /* Helper for ks_ldap_get.  Returns 0 if a key was fetched and printed
  * to FP.  The error code GPG_ERR_NO_DATA is returned if no key was
  * printed.  Note that FP is updated by this function. */
@@ -1026,11 +1109,132 @@ return_one_keyblock (LDAP *ldap_conn, LDAPMessage *msg, unsigned int serverinfo,
 }
 
 
-/* Helper for ks_ldap_get.  Note that KEYSPEC is only used for
- * diagnostics. */
+/* Helper for ks_ldap_query.  Returns 0 if an attr was fetched and
+ * printed to FP.  The error code GPG_ERR_NO_DATA is returned if no
+ * data was printed.  Note that FP is updated by this function. */
+static gpg_error_t
+return_all_attributes (LDAP *ld, LDAPMessage *msg, estream_t *fp)
+{
+  gpg_error_t err = 0;
+  BerElement *berctx = NULL;
+  char *attr = NULL;
+  const char *attrprefix;
+  struct berval **values = NULL;
+  int idx;
+  int any = 0;
+  const char *s;
+  const char *val;
+  size_t len;
+  char *mydn;
+
+  mydn = ldap_get_dn (ld, msg);
+  if (!*fp)
+    {
+      *fp = es_fopenmem(0, "rw");
+      if (!*fp)
+        {
+          err = gpg_error_from_syserror ();
+          goto leave;
+        }
+    }
+
+  /* Always print the DN - note that by using only unbkown attributes
+   * it is pissible to list just the DNs with out addiional
+   * linefeeds.  */
+  es_fprintf (*fp, "Dn: %s\n", mydn? mydn : "[oops DN missing]");
+
+  for (npth_unprotect (), attr = ldap_first_attribute (ld, msg, &berctx),
+         npth_protect ();
+       attr;
+       npth_unprotect (), attr = ldap_next_attribute (ld, msg, berctx),
+         npth_protect ())
+    {
+      npth_unprotect ();
+      values = ldap_get_values_len (ld, msg, attr);
+      npth_protect ();
+
+      if (!values)
+        {
+          if (opt.verbose)
+            log_info ("attribute '%s' not found\n", attr);
+          ldap_memfree (attr);
+          attr = NULL;
+          continue;
+        }
+
+      any = 1;
+
+      if (opt.verbose > 1)
+        {
+          log_info ("found attribute '%s'\n", attr);
+          for (idx=0; values[idx]; idx++)
+            log_info ("         length[%d]=%d\n",
+                      idx, (int)values[0]->bv_len);
+        }
+
+      if (!ascii_strcasecmp (attr, "Dn"))
+        attrprefix = "X-";
+      else if (*attr == '#')
+        attrprefix = "X-hash-";
+      else if (*attr == ' ')
+        attrprefix = "X-blank-";
+      else
+        attrprefix = "";
+      /* FIXME: We should remap all invalid chars in ATTR.   */
+
+      for (idx=0; values[idx]; idx++)
+        {
+          es_fprintf (*fp, "%s%s: ", attrprefix, attr);
+          val = values[idx]->bv_val;
+          len = values[idx]->bv_len;
+          while (len && (s = memchr (val, '\n', len)))
+            {
+              s++; /* We als want to print the LF.  */
+              if (es_fwrite (val, s - val, 1, *fp) != 1)
+                goto fwrite_failed;
+              len -= (s-val);
+              val = s;
+              if (len && es_fwrite (" ", 1, 1, *fp) != 1)
+                goto fwrite_failed;
+            }
+          if (len && es_fwrite (val, len, 1, *fp) != 1)
+            goto fwrite_failed;
+          if (es_fwrite ("\n", 1, 1, *fp) != 1)  /* Final LF.  */
+            goto fwrite_failed;
+        }
+
+      ldap_value_free_len (values);
+      values = NULL;
+      ldap_memfree (attr);
+      attr = NULL;
+    }
+
+  /* One final linefeed to prettify the output.  */
+  if (any && es_fwrite ("\n", 1, 1, *fp) != 1)
+    goto fwrite_failed;
+
+
+ leave:
+  if (values)
+    ldap_value_free_len (values);
+  ldap_memfree (attr);
+  if (mydn)
+    ldap_memfree (mydn);
+  ber_free (berctx, 0);
+  return err;
+
+ fwrite_failed:
+  err = gpg_error_from_syserror ();
+  log_error ("error writing to stdout: %s\n", gpg_strerror (err));
+  goto leave;
+}
+
+
+/* Helper for ks_ldap_get and ks_ldap_query.  Note that KEYSPEC is
+ * only used for diagnostics. */
 static gpg_error_t
 search_and_parse (ctrl_t ctrl, const char *keyspec,
-                  LDAP *ldap_conn, char *basedn, char *filter,
+                  LDAP *ldap_conn, char *basedn, int scope, char *filter,
                   char **attrs, LDAPMessage **r_message)
 {
   gpg_error_t err = 0;
@@ -1063,7 +1267,7 @@ search_and_parse (ctrl_t ctrl, const char *keyspec,
     }
 
   npth_unprotect ();
-  l_err = ldap_search_ext_s (ldap_conn, basedn, LDAP_SCOPE_SUBTREE,
+  l_err = ldap_search_ext_s (ldap_conn, basedn, scope,
                              filter, attrs, 0,
                              srvctrls[0]? srvctrls : NULL, NULL, NULL, 0,
                              r_message);
@@ -1128,7 +1332,7 @@ search_and_parse (ctrl_t ctrl, const char *keyspec,
   if (count < 1)
     {
       if (!ctrl->ks_get_state || ctrl->ks_get_state->pageno == 1)
-        log_info ("ks-ldap: key %s not found on keyserver\n", keyspec);
+        log_info ("ks-ldap: '%s' not found on LDAP server\n", keyspec);
 
       if (count == -1)
         err = ldap_to_gpg_err (ldap_conn);
@@ -1148,6 +1352,77 @@ search_and_parse (ctrl_t ctrl, const char *keyspec,
 }
 
 
+/* Fetch all entries from the RootDSE and return them as a name value
+ * object.  */
+static nvc_t
+fetch_rootdse (ctrl_t ctrl, parsed_uri_t uri)
+{
+  gpg_error_t err;
+  estream_t infp = NULL;
+  uri_item_t puri;  /* The broken down URI (only one item used).  */
+  nvc_t nvc = NULL;
+
+  /* FIXME: We need the unparsed URI here - use uri_item_t instead
+   * of fix the parser to fill in original */
+  err = ks_action_parse_uri (uri && uri->original? uri->original : "ldap://",
+                             &puri);
+  if (err)
+    return NULL;
+
+  /* Reset authentication for a serverless.  */
+  puri->parsed_uri->ad_current = 0;
+  puri->parsed_uri->auth = NULL;
+
+  if (!strcmp (puri->parsed_uri->scheme, "ldap")
+      || !strcmp (puri->parsed_uri->scheme, "ldaps")
+      || !strcmp (puri->parsed_uri->scheme, "ldapi")
+      || puri->parsed_uri->opaque)
+    {
+      err = ks_ldap_query (ctrl, puri->parsed_uri, KS_GET_FLAG_ROOTDSE,
+                           "^&base&(objectclass=*)", NULL, &infp);
+      if (err)
+        log_error ("ldap: reading the rootDES failed: %s\n",
+                   gpg_strerror (err));
+      else if ((err = nvc_parse (&nvc, NULL, infp)))
+        log_error ("parsing the rootDES failed: %s\n", gpg_strerror (err));
+    }
+
+  es_fclose (infp);
+  release_uri_item_list (puri);
+  if (err)
+    {
+      nvc_release (nvc);
+      nvc = NULL;
+    }
+  return nvc;
+}
+
+
+/* Return the baseDN for URI which might have already been cached for
+ * this session.  */
+static char *
+basedn_from_rootdse (ctrl_t ctrl, parsed_uri_t uri)
+{
+  const char *s;
+
+  if (!ctrl->rootdse && !ctrl->rootdse_tried)
+    {
+      ctrl->rootdse = fetch_rootdse (ctrl, uri);
+      ctrl->rootdse_tried = 1;
+      if (ctrl->rootdse)
+        {
+          log_debug ("Dump of all rootDSE attributes:\n");
+          nvc_write (ctrl->rootdse, log_get_stream ());
+          log_debug ("End of dump\n");
+        }
+    }
+  s = nvc_get_string (ctrl->rootdse, "defaultNamingContext:");
+  return s? xtrystrdup (s): NULL;
+}
+
+
+
+
 /* Get the key described key the KEYSPEC string from the keyserver
  * identified by URI.  On success R_FP has an open stream to read the
  * data.  KS_GET_FLAGS conveys flags from the client.  */
@@ -1155,13 +1430,14 @@ gpg_error_t
 ks_ldap_get (ctrl_t ctrl, parsed_uri_t uri, const char *keyspec,
 	     unsigned int ks_get_flags, estream_t *r_fp)
 {
-  gpg_error_t err = 0;
+  gpg_error_t err;
   unsigned int serverinfo;
   char *host = NULL;
   int use_tls;
   char *filter = NULL;
   LDAP *ldap_conn = NULL;
   char *basedn = NULL;
+  int scope = LDAP_SCOPE_SUBTREE;
   estream_t fp = NULL;
   LDAPMessage *message = NULL;
   LDAPMessage *msg;
@@ -1182,43 +1458,13 @@ ks_ldap_get (ctrl_t ctrl, parsed_uri_t uri, const char *keyspec,
      NULL
     };
 
-  (void) ctrl;
 
   if (dirmngr_use_tor ())
-    {
-      /* For now we do not support LDAP over Tor.  */
-      log_error (_("LDAP access not possible due to Tor mode\n"));
-      return gpg_error (GPG_ERR_NOT_SUPPORTED);
-    }
+    return no_ldap_due_to_tor (ctrl);
 
-  /* Make sure we got a state.  */
-  if ((ks_get_flags & KS_GET_FLAG_FIRST))
-    {
-      if (ctrl->ks_get_state)
-        ks_ldap_clear_state (ctrl->ks_get_state);
-      else if (!(ctrl->ks_get_state = ks_ldap_new_state ()))
-        return gpg_error_from_syserror ();
-      first_mode = 1;
-    }
-
-  if ((ks_get_flags & KS_GET_FLAG_NEXT))
-    {
-      if (!ctrl->ks_get_state || !ctrl->ks_get_state->ldap_conn
-          || !ctrl->ks_get_state->message)
-        {
-          log_error ("ks_ldap: --next requested but no state\n");
-          return gpg_error (GPG_ERR_INV_STATE);
-        }
-      next_mode = 1;
-    }
-
-  /* Do not keep an old state around if not needed.  */
-  if (!(first_mode || next_mode))
-    {
-      ks_ldap_free_state (ctrl->ks_get_state);
-      ctrl->ks_get_state = NULL;
-    }
-
+  err = ks_ldap_prepare_my_state (ctrl, ks_get_flags, &first_mode, &next_mode);
+  if (err)
+    return err;
 
   if (next_mode)
     {
@@ -1236,6 +1482,7 @@ ks_ldap_get (ctrl_t ctrl, parsed_uri_t uri, const char *keyspec,
           err = search_and_parse (ctrl, ctrl->ks_get_state->keyspec,
                                   ctrl->ks_get_state->ldap_conn,
                                   ctrl->ks_get_state->basedn,
+                                  ctrl->ks_get_state->scope,
                                   ctrl->ks_get_state->filter,
                                   attrs,
                                   &ctrl->ks_get_state->message);
@@ -1284,7 +1531,7 @@ ks_ldap_get (ctrl_t ctrl, parsed_uri_t uri, const char *keyspec,
   else /* Not in --next mode.  */
     {
       /* Make sure we are talking to an OpenPGP LDAP server.  */
-      err = my_ldap_connect (uri, &ldap_conn,
+      err = my_ldap_connect (uri, 0, &ldap_conn,
                              &basedn, &host, &use_tls, &serverinfo);
       if (err || !basedn)
         {
@@ -1311,8 +1558,8 @@ ks_ldap_get (ctrl_t ctrl, parsed_uri_t uri, const char *keyspec,
       /* Replace "dummy".  */
       attrs[0] = (serverinfo & SERVERINFO_PGPKEYV2)? "pgpKeyV2" : "pgpKey";
 
-      err = search_and_parse (ctrl, keyspec, ldap_conn, basedn, filter, attrs,
-                              &message);
+      err = search_and_parse (ctrl, keyspec, ldap_conn, basedn, scope,
+                              filter, attrs, &message);
       if (err)
         goto leave;
 
@@ -1363,6 +1610,7 @@ ks_ldap_get (ctrl_t ctrl, parsed_uri_t uri, const char *keyspec,
       ctrl->ks_get_state->message = message;
       message = NULL;
       ctrl->ks_get_state->serverinfo = serverinfo;
+      ctrl->ks_get_state->scope = scope;
       ctrl->ks_get_state->basedn = basedn;
       basedn = NULL;
       ctrl->ks_get_state->keyspec = keyspec? xtrystrdup (keyspec) : NULL;
@@ -1418,14 +1666,10 @@ ks_ldap_search (ctrl_t ctrl, parsed_uri_t uri, const char *pattern,
   (void) ctrl;
 
   if (dirmngr_use_tor ())
-    {
-      /* For now we do not support LDAP over Tor.  */
-      log_error (_("LDAP access not possible due to Tor mode\n"));
-      return gpg_error (GPG_ERR_NOT_SUPPORTED);
-    }
+    return no_ldap_due_to_tor (ctrl);
 
   /* Make sure we are talking to an OpenPGP LDAP server.  */
-  err = my_ldap_connect (uri, &ldap_conn, &basedn, NULL, NULL, &serverinfo);
+  err = my_ldap_connect (uri, 0, &ldap_conn, &basedn, NULL, NULL, &serverinfo);
   if (err || !basedn)
     {
       if (!err)
@@ -2310,13 +2554,9 @@ ks_ldap_put (ctrl_t ctrl, parsed_uri_t uri,
   (void) ctrl;
 
   if (dirmngr_use_tor ())
-    {
-      /* For now we do not support LDAP over Tor.  */
-      log_error (_("LDAP access not possible due to Tor mode\n"));
-      return gpg_error (GPG_ERR_NOT_SUPPORTED);
-    }
+    return no_ldap_due_to_tor (ctrl);
 
-  err = my_ldap_connect (uri, &ldap_conn, &basedn, NULL, NULL, &serverinfo);
+  err = my_ldap_connect (uri, 0, &ldap_conn, &basedn, NULL, NULL, &serverinfo);
   if (err || !basedn)
     {
       if (!err)
@@ -2539,6 +2779,227 @@ ks_ldap_put (ctrl_t ctrl, parsed_uri_t uri,
   xfree (addlist);
 
   xfree (data_armored);
+
+  return err;
+}
+
+
+
+/* Get the data described by FILTER_ARG from URI.  On success R_FP has
+ * an open stream to read the data.  KS_GET_FLAGS conveys flags from
+ * the client.  ATTRS is a NULL terminated list of attributes to
+ * return or NULL for all. */
+gpg_error_t
+ks_ldap_query (ctrl_t ctrl, parsed_uri_t uri, unsigned int ks_get_flags,
+               const char *filter_arg, char **attrs, estream_t *r_fp)
+{
+  gpg_error_t err;
+  unsigned int serverinfo;
+  char *host = NULL;
+  int use_tls;
+  LDAP *ldap_conn = NULL;
+  char *basedn = NULL;
+  estream_t fp = NULL;
+  char *filter = NULL;
+  int scope = LDAP_SCOPE_SUBTREE;
+  LDAPMessage *message = NULL;
+  LDAPMessage *msg;
+  int anydata = 0;
+  int first_mode = 0;
+  int next_mode = 0;
+  int get_first;
+
+  if (dirmngr_use_tor ())
+    return no_ldap_due_to_tor (ctrl);
+
+  if ((!filter_arg || !*filter_arg) && (ks_get_flags & KS_GET_FLAG_ROOTDSE))
+    filter_arg = "^&base&(objectclass=*)";
+
+  err = ks_ldap_prepare_my_state (ctrl, ks_get_flags, &first_mode, &next_mode);
+  if (err)
+    goto leave;
+
+  if (!next_mode) /* (In --next mode the filter is ignored.)  */
+    {
+      if (!filter_arg || !*filter_arg)
+        {
+          err = gpg_error (GPG_ERR_LDAP_FILTER);
+          goto leave;
+        }
+      err = ldap_parse_extfilter (filter_arg, 0, &basedn, &scope, &filter);
+      if (err)
+        goto leave;
+    }
+
+
+  if (next_mode)
+    {
+    next_again:
+      if (!ctrl->ks_get_state->msg_iter && ctrl->ks_get_state->more_pages)
+        {
+          /* Get the next page of results.  */
+          if (ctrl->ks_get_state->message)
+            {
+              ldap_msgfree (ctrl->ks_get_state->message);
+              ctrl->ks_get_state->message = NULL;
+            }
+          err = search_and_parse (ctrl, ctrl->ks_get_state->keyspec,
+                                  ctrl->ks_get_state->ldap_conn,
+                                  ctrl->ks_get_state->basedn,
+                                  ctrl->ks_get_state->scope,
+                                  ctrl->ks_get_state->filter,
+                                  attrs,
+                                  &ctrl->ks_get_state->message);
+          if (err)
+            goto leave;
+          ctrl->ks_get_state->msg_iter = ctrl->ks_get_state->message;
+          get_first = 1;
+        }
+      else
+        get_first = 0;
+
+      while (ctrl->ks_get_state->msg_iter)
+        {
+          npth_unprotect ();
+          ctrl->ks_get_state->msg_iter
+            = get_first? ldap_first_entry (ctrl->ks_get_state->ldap_conn,
+                                           ctrl->ks_get_state->msg_iter)
+              /*    */ : ldap_next_entry (ctrl->ks_get_state->ldap_conn,
+                                          ctrl->ks_get_state->msg_iter);
+          npth_protect ();
+          get_first = 0;
+          if (ctrl->ks_get_state->msg_iter)
+            {
+              err = return_all_attributes (ctrl->ks_get_state->ldap_conn,
+                                           ctrl->ks_get_state->msg_iter,
+                                           &fp);
+              if (!err)
+                break;  /* Found.  */
+              else if (gpg_err_code (err) == GPG_ERR_NO_DATA)
+                err = 0;  /* Skip empty attributes. */
+              else
+                goto leave;
+            }
+        }
+
+      if (!ctrl->ks_get_state->msg_iter || !fp)
+        {
+          ctrl->ks_get_state->msg_iter = NULL;
+          if (ctrl->ks_get_state->more_pages)
+            goto next_again;
+          err = gpg_error (GPG_ERR_NO_DATA);
+        }
+
+    }
+  else /* Not in --next mode.  */
+    {
+      /* Connect to the LDAP server in generic mode. */
+      char *tmpbasedn;
+
+      err = my_ldap_connect (uri, 1 /*generic*/, &ldap_conn,
+                             &tmpbasedn, &host, &use_tls, &serverinfo);
+      if (err)
+        goto leave;
+      if (basedn)
+        xfree (tmpbasedn); /* Extended syntax overrides.  */
+      else if (tmpbasedn)
+        basedn = tmpbasedn;
+      else if (!(ks_get_flags & KS_GET_FLAG_ROOTDSE))
+        {
+          /* No BaseDN known - get one.  */
+          basedn = basedn_from_rootdse (ctrl, uri);
+        }
+
+      if (opt.debug)
+        {
+          log_debug ("ks-ldap: using basedn: %s\n", basedn);
+          log_debug ("ks-ldap: using filter: %s\n", filter);
+        }
+
+      err = search_and_parse (ctrl, filter, ldap_conn, basedn, scope, filter,
+                              attrs, &message);
+      if (err)
+        goto leave;
+
+
+      for (npth_unprotect (),
+             msg = ldap_first_entry (ldap_conn, message),
+             npth_protect ();
+	   msg;
+           npth_unprotect (),
+             msg = ldap_next_entry (ldap_conn, msg),
+             npth_protect ())
+	{
+          err = return_all_attributes (ldap_conn, msg, &fp);
+          if (!err)
+            {
+              anydata = 1;
+              if (first_mode)
+                break;
+            }
+          else if (gpg_err_code (err) == GPG_ERR_NO_DATA)
+            err = 0;  /* Skip empty/duplicate attributes. */
+          else
+            goto leave;
+	}
+
+      if (ctrl->ks_get_state) /* Save the iterator.  */
+        ctrl->ks_get_state->msg_iter = msg;
+
+      if (!fp) /* Nothing was found.  */
+	err = gpg_error (GPG_ERR_NO_DATA);
+
+      if (!err && anydata)
+        err = dirmngr_status_printf (ctrl, "SOURCE", "%s://%s",
+                                     use_tls? "ldaps" : "ldap",
+                                     host? host:"");
+    }
+
+
+ leave:
+  /* Store our state if needed.  */
+  if (!err && (ks_get_flags & KS_GET_FLAG_FIRST))
+    {
+      log_assert (!ctrl->ks_get_state->ldap_conn);
+      ctrl->ks_get_state->ldap_conn = ldap_conn;
+      ldap_conn = NULL;
+      log_assert (!ctrl->ks_get_state->message);
+      ctrl->ks_get_state->message = message;
+      message = NULL;
+      ctrl->ks_get_state->serverinfo = serverinfo;
+      ctrl->ks_get_state->scope = scope;
+      ctrl->ks_get_state->basedn = basedn;
+      basedn = NULL;
+      ctrl->ks_get_state->keyspec = filter? xtrystrdup (filter) : NULL;
+      ctrl->ks_get_state->filter = filter;
+      filter = NULL;
+    }
+  if ((ks_get_flags & KS_GET_FLAG_NEXT))
+    {
+      /* Keep the state in --next mode even with errors.  */
+      ldap_conn = NULL;
+      message = NULL;
+    }
+
+  if (message)
+    ldap_msgfree (message);
+
+  if (err)
+    es_fclose (fp);
+  else
+    {
+      if (fp)
+	es_fseek (fp, 0, SEEK_SET);
+      *r_fp = fp;
+    }
+
+  xfree (basedn);
+  xfree (host);
+
+  if (ldap_conn)
+    ldap_unbind (ldap_conn);
+
+  xfree (filter);
 
   return err;
 }

@@ -824,7 +824,7 @@ fetch_ldap (LDAP *ld, char *base, int scope, char *filter)
 /* Main processing.  Take the filter and run the LDAP query. The
  * result is printed to stdout, errors are logged to the log stream.
  * To allow searching with a different base it is possible to extend
- * the filer.  For example:
+ * the filter.  For example:
  *
  *   ^CN=foo, OU=My Users&(objectClasses=*)
  *
