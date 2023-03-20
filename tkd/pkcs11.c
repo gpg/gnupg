@@ -920,13 +920,8 @@ do_pksign (struct key *key, int hash_algo,
       size_t asnlen = sizeof (data);
 
       gcry_md_get_asnoid (hash_algo, data, &asnlen);
-#if 0
-      gcry_md_hash_buffer (hash_algo, data+asnlen,
-                           u_data, u_data_len);
-#else
       /* u_data_len == gcry_md_get_algo_dlen (hash_algo) */
       memcpy (data+asnlen, u_data, u_data_len);
-#endif
       data_len = asnlen+gcry_md_get_algo_dlen (hash_algo);
     }
   else if (key->key_type == KEY_EC)
@@ -953,7 +948,8 @@ do_pksign (struct key *key, int hash_algo,
             }
 
           /* Scute, YKCS11 */
-          gcry_md_hash_buffer (hash_algo, data, u_data, u_data_len);
+          /* u_data_len == gcry_md_get_algo_dlen (hash_algo) */
+          memcpy (data, u_data, u_data_len);
           data_len = gcry_md_get_algo_dlen (hash_algo);
         }
     }
