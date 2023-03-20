@@ -1705,6 +1705,8 @@ dirmngr_deinit_default_ctrl (ctrl_t ctrl)
 
   xfree (ctrl->http_proxy);
   ctrl->http_proxy = NULL;
+  nvc_release (ctrl->rootdse);
+  ctrl->rootdse = NULL;
 }
 
 
