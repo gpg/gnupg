@@ -1306,7 +1306,7 @@ static struct
   { "addrevoker", cmdADDREVOKER,  KEYEDIT_NEED_SK,
     N_("add a revocation key")},
   { "addadsk", cmdADDADSK,  KEYEDIT_NEED_SK,
-    N_("add additional decryption subkeys")},
+    N_("add an additional decryption subkey")},
   { "delsig", cmdDELSIG, 0,
     N_("delete signatures from the selected user IDs")},
   { "expire", cmdEXPIRE,  KEYEDIT_NEED_SK | KEYEDIT_NEED_SUBSK,
@@ -3207,6 +3207,69 @@ keyedit_quick_addkey (ctrl_t ctrl, const char *fpr, const char *algostr,
     }
   else
     log_info (_("Key not changed so no update needed.\n"));
+
+ leave:
+  release_kbnode (keyblock);
+  keydb_release (kdbhd);
+}
+
+
+/* Unattended ADSK setup function.
+ *
+ * FPR is the fingerprint of our key.  ADSKFPR is the fingerprint of
+ * another subkey which we want to add as ADSK to our key.
+ */
+void
+keyedit_quick_addadsk (ctrl_t ctrl, const char *fpr, const char *adskfpr)
+{
+  gpg_error_t err;
+  kbnode_t keyblock;
+  KEYDB_HANDLE kdbhd;
+  int modified = 0;
+  PKT_public_key *pk;
+
+#ifdef HAVE_W32_SYSTEM
+  /* See keyedit_menu for why we need this.  */
+  check_trustdb_stale (ctrl);
+#endif
+
+  /* We require a fingerprint because only this uniquely identifies a
+   * key and may thus be used to select a key for unattended adsk
+   * adding. */
+  if (find_by_primary_fpr (ctrl, fpr, &keyblock, &kdbhd))
+    goto leave;
+
+  if (fix_keyblock (ctrl, &keyblock))
+    modified++;
+
+  pk = keyblock->pkt->pkt.public_key;
+  if (pk->flags.revoked)
+    {
+      if (!opt.verbose)
+        show_key_with_all_names (ctrl, es_stdout, keyblock, 0, 0, 0, 0, 0, 1);
+      log_error ("%s%s", _("Key is revoked."), "\n");
+      goto leave;
+    }
+
+  /* Locate and add the ADSK.  Note that the called function already
+   * prints error messages. */
+  if (menu_addadsk (ctrl, keyblock, adskfpr))
+    modified = 1;
+  else
+    log_inc_errorcount ();  /* (We use log_info in menu_adsk) */
+
+  es_fflush (es_stdout);
+
+  /* Store.  */
+  if (modified)
+    {
+      err = keydb_update_keyblock (ctrl, kdbhd, keyblock);
+      if (err)
+        {
+          log_error (_("update failed: %s\n"), gpg_strerror (err));
+          goto leave;
+        }
+    }
 
  leave:
   release_kbnode (keyblock);

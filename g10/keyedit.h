@@ -43,6 +43,7 @@ void keyedit_quick_adduid (ctrl_t ctrl, const char *username,
                            const char *newuid);
 void keyedit_quick_addkey (ctrl_t ctrl, const char *fpr, const char *algostr,
                            const char *usagestr, const char *expirestr);
+void keyedit_quick_addadsk (ctrl_t ctrl, const char *fpr, const char *adskfpr);
 void keyedit_quick_revuid (ctrl_t ctrl, const char *username,
                            const char *uidtorev);
 void keyedit_quick_sign (ctrl_t ctrl, const char *fpr,
