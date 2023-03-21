@@ -130,6 +130,7 @@ enum cmd_and_opt_values
     aQuickRevSig,
     aQuickAddUid,
     aQuickAddKey,
+    aQuickAddADSK,
     aQuickRevUid,
     aQuickSetExpire,
     aQuickSetPrimaryUid,
@@ -486,6 +487,7 @@ static gpgrt_opt_t opts[] = {
   ARGPARSE_c (aQuickAddUid,  "quick-adduid", "@"),
   ARGPARSE_c (aQuickAddKey,  "quick-add-key", "@"),
   ARGPARSE_c (aQuickAddKey,  "quick-addkey", "@"),
+  ARGPARSE_c (aQuickAddADSK, "quick-add-adsk", "@"),
   ARGPARSE_c (aQuickRevUid,  "quick-revoke-uid",
               N_("quickly revoke a user-id")),
   ARGPARSE_c (aQuickRevUid,  "quick-revuid", "@"),
@@ -2691,6 +2693,7 @@ main (int argc, char **argv)
 	  case aQuickKeygen:
 	  case aQuickAddUid:
 	  case aQuickAddKey:
+	  case aQuickAddADSK:
 	  case aQuickRevUid:
 	  case aQuickSetExpire:
 	  case aQuickSetPrimaryUid:
@@ -4302,6 +4305,7 @@ main (int argc, char **argv)
       case aQuickKeygen:
       case aQuickAddUid:
       case aQuickAddKey:
+      case aQuickAddADSK:
       case aQuickRevUid:
       case aQuickSetPrimaryUid:
       case aQuickUpdatePref:
@@ -4766,6 +4770,17 @@ main (int argc, char **argv)
             gen_key_forbidden ();
           else
             keyedit_quick_addkey (ctrl, x_fpr, x_algo, x_usage, x_expire);
+        }
+	break;
+
+      case aQuickAddADSK:
+        {
+          if (argc != 2)
+            wrong_args ("--quick-add-adsk FINGERPRINT ADSK-FINGERPRINT");
+          if (mopt.forbid_gen_key)
+            gen_key_forbidden ();
+          else
+            keyedit_quick_addadsk (ctrl, argv[0], argv[1]);
         }
 	break;
 
