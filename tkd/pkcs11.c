@@ -622,72 +622,73 @@ check_public_keys (struct token *token)
   return 0;
 }
 
-#if 0
 static long
-get_certificate (struct token *token)
+get_certificate (struct token *token,
+                 unsigned char **r_cert, size_t *r_certlen)
 {
-  unsigned long err = 0;
+  unsigned long r = 0;
   struct cryptoki *ck = token->ck;
 
   struct ck_attribute templ[1];
 
   unsigned long class;
   unsigned char certificate[4096];
-  unsigned long cert_len;
-  int certificate_available;
-
-  ck_object_handle_t obj;
-  int i;
+  int certificate_available = 0;
+  unsigned char *cert;
+  size_t certlen;
 
   class = CKO_CERTIFICATE;
   templ[0].type = CKA_CLASS;
   templ[0].pValue = (void *)&class;
   templ[0].ulValueLen = sizeof (class);
 
-  err = ck->f->C_FindObjectsInit (token->session, templ, 1);
-  if (!err)
+  r = ck->f->C_FindObjectsInit (token->session, templ, 1);
+  if (!r)
     {
+      ck_object_handle_t obj;
+
       while (TRUE)
         {
           unsigned long any;
 
           /* Portable way to get objects... is get it one by one.  */
-          err = ck->f->C_FindObjects (token->session, &obj, 1, &any);
-          if (err || any == 0)
+          r = ck->f->C_FindObjects (token->session, &obj, 1, &any);
+          if (r || any == 0)
             break;
 
           templ[0].type = CKA_VALUE;
           templ[0].pValue = (void *)certificate;
           templ[0].ulValueLen = sizeof (certificate);
-          err = ck->f->C_GetAttributeValue (token->session, obj, templ, 1);
-          if (err)
-            certificate_available = 0;
-          else
+          r = ck->f->C_GetAttributeValue (token->session, obj, templ, 1);
+          if (!r)
             {
               certificate_available = 1;
-              cert_len = templ[0].ulValueLen;
-
-              puts ("Certificate available:");
-              for (i = 0; i < cert_len; i++)
-                {
-                  printf ("%02x", certificate[i]);
-                  if ((i % 16) == 15)
-                    puts ("");
-                }
-              puts ("");
+              break;
             }
         }
 
-      err = ck->f->C_FindObjectsFinal (token->session);
-      if (err)
+      r = ck->f->C_FindObjectsFinal (token->session);
+      if (r)
         {
           return -1;
         }
     }
 
+  if (!certificate_available)
+    return -1;
+
+  certlen = templ[0].ulValueLen;
+  cert = xtrymalloc (certlen);
+  if (!cert)
+    {
+      return gpg_error_from_syserror ();
+    }
+
+  memcpy (cert, certificate, certlen);
+  *r_cert = cert;
+  *r_certlen = certlen;
   return 0;
 }
-#endif
 
 static long
 learn_keys (struct token *token)
@@ -716,12 +717,6 @@ learn_keys (struct token *token)
       if ((k->flags & KEY_FLAG_NO_PUBKEY))
         k->flags &= ~KEY_FLAG_NO_PUBKEY;
     }
-
-#if 0
-  /* Another way to get raw public key material is get it from the
-     certificate, if available. */
-  get_certificate (token);
-#endif
 
   return 0;
 }
@@ -1357,6 +1352,39 @@ tkd_readkey (ctrl_t ctrl, assuan_context_t ctx, const char *keygrip)
   xfree (pk);
   return err;
 }
+
+gpg_error_t
+tkd_readcert (ctrl_t ctrl, assuan_context_t ctx, const char *keygrip)
+{
+  gpg_error_t err = 0;
+  struct key *k;
+  struct cryptoki *ck = ck_instance;
+  unsigned long r;
+  unsigned char *cert;
+  size_t certlen;
+
+  (void)ctrl;
+  (void)ctx;
+
+  if (!ck->handle)
+    {
+      err = tkd_init (ctrl, ctx, 0);
+      if (err)
+        return err;
+    }
+
+  r = find_key (ck, keygrip, &k);
+  if (r)
+    return gpg_error (GPG_ERR_NO_SECKEY);
+
+  if (get_certificate (k->token, &cert, &certlen))
+    return gpg_error (GPG_ERR_NOT_FOUND);
+
+  err = assuan_send_data (ctx, cert, certlen);
+  xfree (cert);
+  return err;
+}
+
 
 gpg_error_t
 tkd_keyinfo (ctrl_t ctrl, assuan_context_t ctx, const char *keygrip,

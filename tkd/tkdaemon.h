@@ -121,6 +121,7 @@ gpg_error_t tkd_readkey (ctrl_t ctrl, assuan_context_t ctx,
                          const char *keygrip);
 gpg_error_t tkd_keyinfo (ctrl_t ctrl, assuan_context_t ctx,
                          const char *keygrip, int opt_data, int cap);
-
+gpg_error_t tkd_readcert (ctrl_t ctrl, assuan_context_t ctx,
+                          const char *keygrip);
 
 #endif /*TKDAEMON_H*/

@@ -297,6 +297,31 @@ cmd_readkey (assuan_context_t ctx, char *line)
   return err;
 }
 
+static const char hlp_readcert[] =
+  "READCERT <keygrip>\n"
+  "\n"
+  "Return the certificate for the given KEYGRIP.";
+static gpg_error_t
+cmd_readcert (assuan_context_t ctx, char *line)
+{
+  ctrl_t ctrl = assuan_get_pointer (ctx);
+  gpg_error_t err;
+  const char *keygrip;
+
+  line = xtrystrdup (line); /* Need a copy of the line. */
+  if (!line)
+    return gpg_error_from_syserror ();
+
+  keygrip = skip_options (line);
+  if (strlen (keygrip) != 40)
+    err = gpg_error (GPG_ERR_INV_ID);
+
+  err = tkd_readcert (ctrl, ctx, keygrip);
+
+  xfree (line);
+  return err;
+}
+
 static const char hlp_pksign[] =
   "PKSIGN [--hash=[sha{256,384,512}|none]] <keygrip>\n"
   "\n"
@@ -469,6 +494,7 @@ register_commands (assuan_context_t ctx)
     { "PKSIGN",       cmd_pksign,   hlp_pksign },
     { "KILLTKD",      cmd_killtkd,  hlp_killtkd },
     { "KEYINFO",      cmd_keyinfo,  hlp_keyinfo },
+    { "READCERT",     cmd_readcert, hlp_readcert },
     { "GETINFO",      cmd_getinfo,  hlp_getinfo },
     { "RESTART",      cmd_restart,  hlp_restart },
     { NULL }
