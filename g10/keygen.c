@@ -523,6 +523,10 @@ keygen_set_std_prefs (const char *string,int personal)
 	xfree (prefstringbuf);
       }
 
+    /* For now we require a compat flag to set OCB into the preferences.  */
+    if (!(opt.compat_flags & COMPAT_VSD_ALLOW_OCB))
+      ocb = 0;
+
     if(!rc)
       {
 	if(personal)
