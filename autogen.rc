@@ -22,7 +22,6 @@ case "$myhost" in
       --with-libgcrypt-prefix=@SYSROOT@
       --with-libassuan-prefix=@SYSROOT@
       --with-zlib=@SYSROOT@
-      --with-regex=@SYSROOT@
       --with-npth-prefix=@SYSROOT@
       --disable-g13
       "
