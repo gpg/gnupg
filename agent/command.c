@@ -2491,14 +2491,17 @@ cmd_passwd (assuan_context_t ctx, char *line)
 
 
 static const char hlp_preset_passphrase[] =
-  "PRESET_PASSPHRASE [--inquire] <string_or_keygrip> <timeout> [<hexstring>]\n"
+  "PRESET_PASSPHRASE [--inquire] [--restricted] \\\n"
+  "                  <string_or_keygrip> <timeout> [<hexstring>]\n"
   "\n"
   "Set the cached passphrase/PIN for the key identified by the keygrip\n"
   "to passwd for the given time, where -1 means infinite and 0 means\n"
   "the default (currently only a timeout of -1 is allowed, which means\n"
   "to never expire it).  If passwd is not provided, ask for it via the\n"
   "pinentry module unless --inquire is passed in which case the passphrase\n"
-  "is retrieved from the client via a server inquire.\n";
+  "is retrieved from the client via a server inquire.  The option\n"
+  "--restricted can be used to put the passphrase into the cache used\n"
+  "by restricted connections.";
 static gpg_error_t
 cmd_preset_passphrase (assuan_context_t ctx, char *line)
 {
@@ -2509,6 +2512,7 @@ cmd_preset_passphrase (assuan_context_t ctx, char *line)
   int ttl;
   size_t len;
   int opt_inquire;
+  int opt_restricted;
 
   if (ctrl->restricted)
     return leave_cmd (ctx, gpg_error (GPG_ERR_FORBIDDEN));
@@ -2517,6 +2521,7 @@ cmd_preset_passphrase (assuan_context_t ctx, char *line)
     return set_error (GPG_ERR_NOT_SUPPORTED, "no --allow-preset-passphrase");
 
   opt_inquire = has_option (line, "--inquire");
+  opt_restricted = has_option (line, "--restricted");
   line = skip_options (line);
   grip_clear = line;
   while (*line && (*line != ' ' && *line != '\t'))
@@ -2579,7 +2584,11 @@ cmd_preset_passphrase (assuan_context_t ctx, char *line)
 
   if (!rc)
     {
+      int save_restricted = ctrl->restricted;
+      if (opt_restricted)
+        ctrl->restricted = 1;
       rc = agent_put_cache (ctrl, grip_clear, CACHE_MODE_ANY, passphrase, ttl);
+      ctrl->restricted = save_restricted;
       if (opt_inquire)
         {
 	  wipememory (passphrase, len);

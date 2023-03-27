@@ -63,11 +63,13 @@ enum cmd_and_opt_values
   oNoVerbose = 500,
 
   oHomedir,
+  oRestricted,
 
 aTest };
 
 
 static const char *opt_passphrase;
+static int opt_restricted;
 
 static gpgrt_opt_t opts[] = {
 
@@ -79,6 +81,7 @@ static gpgrt_opt_t opts[] = {
   { oForget,  "forget",  256, "forget passphrase"},
 
   { oHomedir, "homedir", 2, "@" },
+  { oRestricted,  "restricted", 0, "put into the restricted cache"},
 
   ARGPARSE_end ()
 };
@@ -156,7 +159,9 @@ preset_passphrase (const char *keygrip)
       return;
     }
 
-  rc = asprintf (&line, "PRESET_PASSPHRASE %s -1 %s\n", keygrip,
+  rc = asprintf (&line, "PRESET_PASSPHRASE %s%s -1 %s\n",
+                 opt_restricted? "--restricted ":"",
+                 keygrip,
 		 passphrase_esc);
   wipememory (passphrase_esc, strlen (passphrase_esc));
   xfree (passphrase_esc);
@@ -231,6 +236,8 @@ main (int argc, char **argv)
         case oPreset: cmd = oPreset; break;
         case oForget: cmd = oForget; break;
         case oPassphrase: opt_passphrase = pargs.r.ret_str; break;
+
+        case oRestricted: opt_restricted = 1; break;
 
         default : pargs.err = 2; break;
 	}
