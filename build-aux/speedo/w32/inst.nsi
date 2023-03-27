@@ -659,7 +659,6 @@ Section "GnuPG" SEC_gnupg
   File "share/gnupg/sks-keyservers.netCA.pem"
 
   SetOutPath "$INSTDIR\share\doc\gnupg\examples"
-  File "share/doc/gnupg/examples/VS-NfD.prf"
   File "share/doc/gnupg/examples/Automatic.prf"
   File "share/doc/gnupg/examples/pwpattern.list"
 
@@ -1324,7 +1323,6 @@ Section "-un.gnupg"
   Delete "$INSTDIR\bin\gpg-check-pattern.exe"
   Delete "$INSTDIR\bin\gpg-wks-client.exe"
 
-  Delete "$INSTDIR\share\doc\gnupg\examples\VS-NfD.prf"
   Delete "$INSTDIR\share\doc\gnupg\examples\Automatic.prf"
   Delete "$INSTDIR\share\doc\gnupg\examples\pwpattern.list"
   RMDir  "$INSTDIR\share\doc\gnupg\examples"

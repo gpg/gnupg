@@ -22,7 +22,7 @@ AM_CPPFLAGS =
 include $(top_srcdir)/am/cmacros.am
 
 examples = examples/README examples/scd-event examples/trustlist.txt	\
-	   examples/VS-NfD.prf examples/Automatic.prf                   \
+	   examples/Automatic.prf                                       \
            examples/debug.prf                                           \
            examples/gpgconf.rnames examples/gpgconf.conf                \
 	   examples/systemd-user/README 				\

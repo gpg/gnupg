@@ -157,9 +157,6 @@ and then manually edited:
       <Component Id="cmpB5509E83C14EE3080355A3EAF09D1C8D" Directory="dir6694D0A4AAD84EF827096DD86D1B4FA2" Guid="FEC81836-944E-4613-A498-E620B981EB04">
         <File Id="fil0615847C26E386E0B892124531F2ABBC" KeyPath="yes" Source="$(var.SourceDir)\lib\libnpth.dll.a" Name="libnpth.imp"/>
       </Component>
-      <Component Id="cmp909B0412FDFCFD5092D93932AF982A72" Directory="dirC2E6BF1CC65903EA3A1AD83349586122" Guid="D30E7138-0D1C-48F4-8F53-E1EC6333F610">
-        <File Id="fil322067E40CE41C36574A7CC520D75876" KeyPath="yes" Source="$(var.SourceDir)\share\doc\gnupg\examples\VS-NfD.prf" Name="VS-NfD.prf"/>
-      </Component>
       <Component Id="cmp909B0412FDFCFD5092D93932AF982A73" Directory="dirC2E6BF1CC65903EA3A1AD83349586122" Guid="D30E7138-0D1C-48F4-8F53-E1EC6333F611">
         <File Id="fil322067E40CE41C36574A7CC520D75877" KeyPath="yes" Source="$(var.SourceDir)\share\doc\gnupg\examples\Automatic.prf" Name="Automatic.prf"/>
       </Component>
