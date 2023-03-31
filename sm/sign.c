@@ -300,7 +300,6 @@ add_certificate_list (ctrl_t ctrl, ksba_cms_t cms, ksba_cert_t cert)
 }
 
 
-#if KSBA_VERSION_NUMBER >= 0x010400 && 0 /* 1.4.0 */
 static gpg_error_t
 add_signed_attribute (ksba_cms_t cms, const char *attrstr)
 {
@@ -378,7 +377,12 @@ add_signed_attribute (ksba_cms_t cms, const char *attrstr)
     }
 
   /* Store the data in the CMS object for all signers.  */
+#if 0
   err = ksba_cms_add_attribute (cms, -1, fields[0], 0, der, derlen);
+#else
+  (void)cms;
+  err = gpg_error (GPG_ERR_NOT_IMPLEMENTED);
+#endif
   if (err)
     {
       log_error ("invalid attribute specification '%s': %s\n",
@@ -391,7 +395,6 @@ add_signed_attribute (ksba_cms_t cms, const char *attrstr)
   xfree (fields);
   return err;
 }
-#endif /*ksba >= 1.4.0 */
 
 
 
@@ -474,9 +477,7 @@ gpgsm_sign (ctrl_t ctrl, certlist_t signerlist,
   if (!err)
     err = ksba_cms_set_content_type
       (cms, 1,
-#if KSBA_VERSION_NUMBER >= 0x010400 && 0
        opt.authenticode? KSBA_CT_SPC_IND_DATA_CTX :
-#endif
        KSBA_CT_DATA
        );
   if (err)
@@ -758,8 +759,6 @@ gpgsm_sign (ctrl_t ctrl, certlist_t signerlist,
         }
     }
 
-  /* We can add signed attributes only when build against libksba 1.4.  */
-#if KSBA_VERSION_NUMBER >= 0x010400 && 0 /* 1.4.0 */
   {
     strlist_t sl;
 
@@ -767,10 +766,6 @@ gpgsm_sign (ctrl_t ctrl, certlist_t signerlist,
       if ((err = add_signed_attribute (cms, sl->d)))
         goto leave;
   }
-#else
-  if (opt.attributes)
-    log_info ("Note: option --attribute is ignored by this version\n");
-#endif /*ksba >= 1.4.0  */
 
 
   /* We need to write at least a minimal list of our capabilities to

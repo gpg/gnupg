@@ -622,7 +622,7 @@ outputs an endless stream of hex-encoded octets.  The special level
 @item --gen-prime @var{mode}  @var{bits}
 @opindex gen-prime
 Use the source, Luke :-). The output format is subject to change
-with ant release.
+with any release.
 
 
 @item --enarmor

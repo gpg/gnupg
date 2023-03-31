@@ -1695,6 +1695,7 @@ Description of some debug flags:
   - RFC-1750 :: Randomness Recommendations for Security
   - RFC-1991 :: PGP Message Exchange Formats (obsolete)
   - RFC-2144 :: The CAST-128 Encryption Algorithm
+  - RFC-2253 :: UTF-8 String Representation of Distinguished Names.
   - RFC-2279 :: UTF-8, a transformation format of ISO 10646
   - RFC-2440 :: OpenPGP (obsolete).
   - RFC-3156 :: MIME Security with Pretty Good Privacy (PGP).
@@ -1813,3 +1814,27 @@ Description of some debug flags:
    it is also possible to set them direct: Use a "=" character
    directly followed by a combination of "a" (for authentication), "s"
    (for signing), or "c" (for certification).
+
+** extendedKeyUsage and keyUsage in gpgsm
+
+This table describes how the extended KeyUsage masks the KeyUsage.
+
+  | ExtKeyUsage     | Valid KeyUsages  |
+  |-----------------+------------------|
+  | serverAuth      | digitalSignature |
+  |                 | keyEncipherment  |
+  |                 | keyAgreement     |
+  |-----------------+------------------|
+  | clientAuth      | digitalSignature |
+  |                 | keyAgreement     |
+  |-----------------+------------------|
+  | codeSigning     | digitalSignature |
+  |-----------------+------------------|
+  | emailProtection | digitalSignature |
+  |                 | nonRepudiation   |
+  |                 | keyEncipherment  |
+  |                 | keyAgreement     |
+  |-----------------+------------------|
+  | timeStamping    | digitalSignature |
+  |                 | nonRepudiation   |
+  |-----------------+------------------|
