@@ -1,6 +1,8 @@
 /* sign.c - Sign a message
  * Copyright (C) 2001, 2002, 2003, 2008,
  *               2010 Free Software Foundation, Inc.
+ * Copyright (C) 2003-2012, 2016-2017, 2019,
+ *               2020, 2022-2023 g10 Code GmbH
  *
  * This file is part of GnuPG.
  *
@@ -16,6 +18,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, see <https://www.gnu.org/licenses/>.
+ * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
 #include <config.h>
@@ -32,6 +35,7 @@
 
 #include "keydb.h"
 #include "../common/i18n.h"
+#include "../common/tlv.h"
 
 
 /* Hash the data and return if something was hashed.  Return -1 on error.  */
@@ -398,6 +402,216 @@ add_signed_attribute (ksba_cms_t cms, const char *attrstr)
 
 
 
+/* This function takes a binary detached signature in (BLOB,BLOBLEN)
+ * and writes it to OUT_FP.  The core of the function is to replace
+ * NDEF length sequences in the input to those with fixed inputs.
+ * This helps certain other implementations to properly verify
+ * detached signature.  Moreover, it allows our own trailing zero
+ * stripping code - which we need for PDF signatures - to work
+ * correctly.
+ *
+ * Example start of a detached signature as created by us:
+ *   0 NDEF: SEQUENCE {      -- 1st sequence
+ *   2    9:   OBJECT IDENTIFIER signedData (1 2 840 113549 1 7 2)
+ *  13 NDEF:   [0] {         -- 2nd sequence
+ *  15 NDEF:     SEQUENCE {  -- 3rd sequence
+ *  17    1:       INTEGER 1 -- version
+ *  20   15:       SET {     -- set of algorithms
+ *  22   13:         SEQUENCE {
+ *  24    9:           OBJECT IDENTIFIER sha-256 (2 16 840 1 101 3 4 2 1)
+ *  35    0:           NULL
+ *         :           }
+ *         :         }
+ *  37 NDEF:       SEQUENCE { -- 4th pretty short sequence
+ *  39    9:         OBJECT IDENTIFIER data (1 2 840 113549 1 7 1)
+ *         :         }
+ *  52  869:       [0] {
+ * Our goal is to replace the NDEF by fixed length tags.
+ */
+static gpg_error_t
+write_detached_signature (ctrl_t ctrl, const void *blob, size_t bloblen,
+                          estream_t out_fp)
+{
+  gpg_error_t err;
+  const unsigned char *p, *psave;
+  size_t n, nsave, objlen, objlensave, hdrlen;
+  int class, tag, cons, ndef;
+  const unsigned char *p_ctoid, *p_version, *p_algoset, *p_dataoid;
+  size_t               n_ctoid,  n_version,  n_algoset,  n_dataoid;
+  const unsigned char *p_certset, *p_signerinfos;
+  size_t               n_certset,  n_signerinfos;
+  int i;
+  ksba_der_t dbld;
+  unsigned char *finalder = NULL;
+  size_t finalderlen;
+
+  p = blob;
+  n = bloblen;
+  if ((err=parse_ber_header (&p,&n,&class,&tag,&cons,&ndef,&objlen,&hdrlen)))
+    return err;
+  if (!(class == CLASS_UNIVERSAL && tag == TAG_SEQUENCE && cons))
+    return gpg_error (GPG_ERR_INV_CMS_OBJ); /* No 1st sequence.  */
+
+  if ((err=parse_ber_header (&p,&n,&class,&tag,&cons,&ndef,&objlen,&hdrlen)))
+    return err;
+  if (!(class == CLASS_UNIVERSAL && tag == TAG_OBJECT_ID && !cons))
+    return gpg_error (GPG_ERR_INV_CMS_OBJ); /* No signedData OID.  */
+  if (objlen > n)
+    return gpg_error (GPG_ERR_BAD_BER);     /* Object larger than data. */
+  p_ctoid = p;
+  n_ctoid = objlen;
+  p += objlen;
+  n -= objlen;
+
+  if ((err=parse_ber_header (&p,&n,&class,&tag,&cons,&ndef,&objlen,&hdrlen)))
+    return err;
+  if (!(class == CLASS_CONTEXT && tag == 0 && cons))
+    return gpg_error (GPG_ERR_INV_CMS_OBJ); /* No 2nd sequence.  */
+
+  if ((err=parse_ber_header (&p,&n,&class,&tag,&cons,&ndef,&objlen,&hdrlen)))
+    return err;
+  if (!(class == CLASS_UNIVERSAL && tag == TAG_SEQUENCE && cons))
+    return gpg_error (GPG_ERR_INV_CMS_OBJ); /* No 3rd sequence.  */
+
+  if ((err=parse_ber_header (&p,&n,&class,&tag,&cons,&ndef,&objlen,&hdrlen)))
+    return err;
+  if (!(class == CLASS_UNIVERSAL && tag == TAG_INTEGER))
+    return gpg_error (GPG_ERR_INV_CMS_OBJ); /* No version.  */
+  if (objlen > n)
+    return gpg_error (GPG_ERR_BAD_BER);     /* Object larger than data. */
+  p_version = p;
+  n_version = objlen;
+  p += objlen;
+  n -= objlen;
+
+  p_algoset = p;
+  if ((err=parse_ber_header (&p,&n,&class,&tag,&cons,&ndef,&objlen,&hdrlen)))
+    return err;
+  if (!(class == CLASS_UNIVERSAL && tag == TAG_SET && cons && !ndef))
+    return gpg_error (GPG_ERR_INV_CMS_OBJ); /* No set of algorithms.  */
+  if (objlen > n)
+    return gpg_error (GPG_ERR_BAD_BER);     /* Object larger than data. */
+  n_algoset = hdrlen + objlen;
+  p += objlen;
+  n -= objlen;
+
+  if ((err=parse_ber_header (&p,&n,&class,&tag,&cons,&ndef,&objlen,&hdrlen)))
+    return err;
+  if (!(class == CLASS_UNIVERSAL && tag == TAG_SEQUENCE && cons))
+    return gpg_error (GPG_ERR_INV_CMS_OBJ); /* No 4th sequence.  */
+
+  if ((err=parse_ber_header (&p,&n,&class,&tag,&cons,&ndef,&objlen,&hdrlen)))
+    return err;
+  if (!(class == CLASS_UNIVERSAL && tag == TAG_OBJECT_ID && !cons))
+    return gpg_error (GPG_ERR_INV_CMS_OBJ); /* No data OID.  */
+  if (objlen > n)
+    return gpg_error (GPG_ERR_BAD_BER);     /* Object larger than data. */
+  p_dataoid = p;
+  n_dataoid = objlen;
+  p += objlen;
+  n -= objlen;
+
+  if ((err=parse_ber_header (&p,&n,&class,&tag,&cons,&ndef,&objlen,&hdrlen)))
+    return err;
+  if (!(class == CLASS_UNIVERSAL && tag == TAG_NONE && !cons && !objlen))
+    return gpg_error (GPG_ERR_INV_CMS_OBJ); /* No End tag.  */
+
+  /* certificates [0] IMPLICIT CertificateSet OPTIONAL,
+   * Note: We ignore the following
+   *       crls [1] IMPLICIT CertificateRevocationLists OPTIONAL
+   * because gpgsm does not create them.   */
+  if ((err=parse_ber_header (&p,&n,&class,&tag,&cons,&ndef,&objlen,&hdrlen)))
+    return err;
+  if (class == CLASS_CONTEXT && tag == 0 && cons)
+    {
+      if (objlen > n)
+        return gpg_error (GPG_ERR_BAD_BER);     /* Object larger than data. */
+      p_certset = p;
+      n_certset = objlen;
+      p += objlen;
+      n -= objlen;
+      if ((err=parse_ber_header (&p,&n,&class,&tag,&cons,&ndef,
+                                 &objlen,&hdrlen)))
+        return err;
+    }
+  else
+    {
+      p_certset = NULL;
+      n_certset = 0;
+    }
+
+  /*  SignerInfos ::= SET OF SignerInfo  */
+  if (!(class == CLASS_UNIVERSAL && tag == TAG_SET && cons && !ndef))
+    return gpg_error (GPG_ERR_INV_CMS_OBJ); /* No set of signerInfos.  */
+  if (objlen > n)
+    return gpg_error (GPG_ERR_BAD_BER);     /* Object larger than data. */
+  p_signerinfos = p;
+  n_signerinfos = objlen;
+  p += objlen;
+  n -= objlen;
+
+  /* For the fun of it check the 3 end tags.  */
+  for (i=0; i < 3; i++)
+    {
+      if ((err=parse_ber_header (&p,&n,&class,&tag,&cons,&ndef,
+                                 &objlen,&hdrlen)))
+        return err;
+      if (!(class == CLASS_UNIVERSAL && tag == TAG_NONE && !cons && !objlen))
+        return gpg_error (GPG_ERR_INV_CMS_OBJ); /* No End tag.  */
+    }
+  if (n)
+    return gpg_error (GPG_ERR_INV_CMS_OBJ); /* Garbage */
+
+  /*---- From here on we jump to leave on error.  ----*/
+
+  /* Now create a new object from the collected data.  */
+  dbld = ksba_der_builder_new (16);  /* (pre-allocate 16 items)  */
+  if (!dbld)
+    {
+      err = gpg_error_from_syserror ();
+      goto leave;
+    }
+  ksba_der_add_tag (dbld, 0, KSBA_TYPE_SEQUENCE);
+  ksba_der_add_val ( dbld, 0, KSBA_TYPE_OBJECT_ID, p_ctoid, n_ctoid);
+  ksba_der_add_tag ( dbld, KSBA_CLASS_CONTEXT, 0);
+  ksba_der_add_tag (  dbld, 0, KSBA_TYPE_SEQUENCE);
+  ksba_der_add_val (   dbld, 0, KSBA_TYPE_INTEGER, p_version, n_version);
+  ksba_der_add_der (   dbld, p_algoset, n_algoset);
+  ksba_der_add_tag (   dbld, 0, KSBA_TYPE_SEQUENCE);
+  ksba_der_add_val (    dbld, 0, KSBA_TYPE_OBJECT_ID, p_dataoid, n_dataoid);
+  ksba_der_add_end (   dbld);
+  if (p_certset)
+    {
+      ksba_der_add_tag (   dbld, KSBA_CLASS_CONTEXT, 0);
+      ksba_der_add_der (    dbld, p_certset, n_certset);
+      ksba_der_add_end (   dbld);
+    }
+  ksba_der_add_tag (   dbld, 0, KSBA_TYPE_SET);
+  ksba_der_add_der (    dbld, p_signerinfos, n_signerinfos);
+  ksba_der_add_end (   dbld);
+  ksba_der_add_end (  dbld);
+  ksba_der_add_end ( dbld);
+  ksba_der_add_end (dbld);
+
+  err = ksba_der_builder_get (dbld, &finalder, &finalderlen);
+  if (err)
+    goto leave;
+
+  if (es_fwrite (finalder, finalderlen, 1, out_fp) != 1)
+    {
+      err = gpg_error_from_syserror ();
+      goto leave;
+    }
+
+
+ leave:
+  ksba_der_release (dbld);
+  ksba_free (finalder);
+  return err;
+}
+
+
+
 /* Perform a sign operation.
 
    Sign the data received on DATA-FD in embedded mode or in detached
@@ -412,6 +626,7 @@ gpgsm_sign (ctrl_t ctrl, certlist_t signerlist,
   gpg_error_t err;
   gnupg_ksba_io_t b64writer = NULL;
   ksba_writer_t writer;
+  estream_t sig_fp = NULL;  /* Used for detached signatures.  */
   ksba_cms_t cms = NULL;
   ksba_stop_reason_t stopreason;
   KEYDB_HANDLE kh = NULL;
@@ -422,6 +637,7 @@ gpgsm_sign (ctrl_t ctrl, certlist_t signerlist,
   ksba_isotime_t signed_at;
   certlist_t cl;
   int release_signerlist = 0;
+  int binary_detached = detached && !ctrl->create_pem && !ctrl->create_base64;
 
   audit_set_type (ctrl->audit, AUDIT_TYPE_SIGN);
 
@@ -444,11 +660,25 @@ gpgsm_sign (ctrl_t ctrl, certlist_t signerlist,
       goto leave;
     }
 
+  /* Note that in detached mode the b64 write is actually a binary
+   * writer because we need to fixup the created signature later.
+   * Note that we do this only for binary output because we have no
+   * PEM writer interface outside of the ksba create writer code.  */
   ctrl->pem_name = "SIGNED MESSAGE";
-  rc = gnupg_ksba_create_writer
-    (&b64writer, ((ctrl->create_pem? GNUPG_KSBA_IO_PEM : 0)
-                  | (ctrl->create_base64? GNUPG_KSBA_IO_BASE64 : 0)),
-     ctrl->pem_name, out_fp, &writer);
+  if (binary_detached)
+    {
+      sig_fp = es_fopenmem (0, "w+");
+      rc = sig_fp? 0 : gpg_error_from_syserror ();
+      if (!rc)
+        rc = gnupg_ksba_create_writer (&b64writer, 0, NULL, sig_fp, &writer);
+    }
+  else
+    {
+      rc = gnupg_ksba_create_writer
+        (&b64writer, ((ctrl->create_pem? GNUPG_KSBA_IO_PEM : 0)
+                      | (ctrl->create_base64? GNUPG_KSBA_IO_BASE64 : 0)),
+         ctrl->pem_name, out_fp, &writer);
+    }
   if (rc)
     {
       log_error ("can't create writer: %s\n", gpg_strerror (rc));
@@ -944,6 +1174,22 @@ gpgsm_sign (ctrl_t ctrl, certlist_t signerlist,
       goto leave;
     }
 
+  if (binary_detached)
+    {
+      void *blob = NULL;
+      size_t bloblen;
+
+      rc = es_fclose_snatch (sig_fp, &blob, &bloblen);
+      sig_fp = NULL;
+      if (rc)
+        goto leave;
+      rc = write_detached_signature (ctrl, blob, bloblen, out_fp);
+      xfree (blob);
+      if (rc)
+        goto leave;
+    }
+
+
   audit_log (ctrl->audit, AUDIT_SIGNING_DONE);
   log_info ("signature created\n");
 
@@ -957,5 +1203,6 @@ gpgsm_sign (ctrl_t ctrl, certlist_t signerlist,
   gnupg_ksba_destroy_writer (b64writer);
   keydb_release (kh);
   gcry_md_close (data_md);
+  es_fclose (sig_fp);
   return rc;
 }
