@@ -433,8 +433,8 @@ write_detached_signature (ctrl_t ctrl, const void *blob, size_t bloblen,
                           estream_t out_fp)
 {
   gpg_error_t err;
-  const unsigned char *p, *psave;
-  size_t n, nsave, objlen, objlensave, hdrlen;
+  const unsigned char *p;
+  size_t n, objlen, hdrlen;
   int class, tag, cons, ndef;
   const unsigned char *p_ctoid, *p_version, *p_algoset, *p_dataoid;
   size_t               n_ctoid,  n_version,  n_algoset,  n_dataoid;
@@ -444,6 +444,8 @@ write_detached_signature (ctrl_t ctrl, const void *blob, size_t bloblen,
   ksba_der_t dbld;
   unsigned char *finalder = NULL;
   size_t finalderlen;
+
+  (void)ctrl;
 
   p = blob;
   n = bloblen;
