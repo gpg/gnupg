@@ -76,13 +76,14 @@ gpg_error_t ks_ldap_search (ctrl_t ctrl, parsed_uri_t uri, const char *pattern,
 			    estream_t *r_fp);
 gpg_error_t ks_ldap_get (ctrl_t ctrl, parsed_uri_t uri,
 			 const char *keyspec, unsigned int ks_get_flags,
-                         estream_t *r_fp);
+                         gnupg_isotime_t newer, estream_t *r_fp);
 gpg_error_t ks_ldap_put (ctrl_t ctrl, parsed_uri_t uri,
 			 void *data, size_t datalen,
 			 void *info, size_t infolen);
 gpg_error_t ks_ldap_query (ctrl_t ctrl, parsed_uri_t uri,
                            unsigned int ks_get_flags,
-                           const char *filter, char **attrs, estream_t *r_fp);
+                           const char *filter, char **attrs,
+                           gnupg_isotime_t newer, estream_t *r_fp);
 
 
 #endif /*DIRMNGR_KS_ENGINE_H*/

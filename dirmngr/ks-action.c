@@ -335,7 +335,8 @@ ks_action_search (ctrl_t ctrl, uri_item_t keyservers,
    keyservers and write the result to the provided output stream.  */
 gpg_error_t
 ks_action_get (ctrl_t ctrl, uri_item_t keyservers,
-	       strlist_t patterns, unsigned int ks_get_flags, estream_t outfp)
+	       strlist_t patterns, unsigned int ks_get_flags,
+               gnupg_isotime_t newer, estream_t outfp)
 {
   gpg_error_t err = 0;
   gpg_error_t first_err = 0;
@@ -380,7 +381,7 @@ ks_action_get (ctrl_t ctrl, uri_item_t keyservers,
 #if USE_LDAP
 	      if (is_ldap)
 		err = ks_ldap_get (ctrl, uri->parsed_uri, sl->d, ks_get_flags,
-                                   &infp);
+                                   newer, &infp);
 	      else
 #endif
               if (is_hkp_s)
@@ -547,7 +548,8 @@ ks_action_put (ctrl_t ctrl, uri_item_t keyservers,
  * the filter expression FILTER.  Write the result to OUTFP.  */
 gpg_error_t
 ks_action_query (ctrl_t ctrl, const char *url, unsigned int ks_get_flags,
-                 const char *filter, char **attrs, estream_t outfp)
+                 const char *filter, char **attrs,
+                 gnupg_isotime_t newer, estream_t outfp)
 {
 #if USE_LDAP
   gpg_error_t err;
@@ -574,7 +576,7 @@ ks_action_query (ctrl_t ctrl, const char *url, unsigned int ks_get_flags,
       || puri->parsed_uri->opaque)
     {
       err = ks_ldap_query (ctrl, puri->parsed_uri, ks_get_flags, filter,
-                           attrs, &infp);
+                           attrs, newer, &infp);
       if (!err)
         err = copy_stream (infp, outfp);
     }

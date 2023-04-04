@@ -1015,6 +1015,15 @@ extract_keys (estream_t output,
     }
   my_ldap_value_free (vals);
 
+  vals = ldap_get_values (ldap_conn, message, "modifyTimestamp");
+  if (vals && vals[0])
+    {
+      gnupg_isotime_t atime;
+      if (!rfc4517toisotime (atime, vals[0]))
+        es_fprintf (output, "chg:%s:\n", atime);
+    }
+  my_ldap_value_free (vals);
+
   es_fprintf (output, "INFO %s END\n", certid);
 }
 
@@ -1379,7 +1388,7 @@ fetch_rootdse (ctrl_t ctrl, parsed_uri_t uri)
       || puri->parsed_uri->opaque)
     {
       err = ks_ldap_query (ctrl, puri->parsed_uri, KS_GET_FLAG_ROOTDSE,
-                           "^&base&(objectclass=*)", NULL, &infp);
+                           "^&base&(objectclass=*)", NULL, NULL, &infp);
       if (err)
         log_error ("ldap: reading the rootDES failed: %s\n",
                    gpg_strerror (err));
@@ -1428,7 +1437,7 @@ basedn_from_rootdse (ctrl_t ctrl, parsed_uri_t uri)
  * data.  KS_GET_FLAGS conveys flags from the client.  */
 gpg_error_t
 ks_ldap_get (ctrl_t ctrl, parsed_uri_t uri, const char *keyspec,
-	     unsigned int ks_get_flags, estream_t *r_fp)
+	     unsigned int ks_get_flags, gnupg_isotime_t newer, estream_t *r_fp)
 {
   gpg_error_t err;
   unsigned int serverinfo;
@@ -1453,7 +1462,7 @@ ks_ldap_get (ctrl_t ctrl, parsed_uri_t uri, const char *keyspec,
     {
      "dummy", /* (to be be replaced.)  */
      "pgpcertid", "pgpuserid", "pgpkeyid", "pgprevoked", "pgpdisabled",
-     "pgpkeycreatetime", "modifytimestamp", "pgpkeysize", "pgpkeytype",
+     "pgpkeycreatetime", "modifyTimestamp", "pgpkeysize", "pgpkeytype",
      "gpgfingerprint",
      NULL
     };
@@ -1551,6 +1560,28 @@ ks_ldap_get (ctrl_t ctrl, parsed_uri_t uri, const char *keyspec,
         err = keyspec_to_ldap_filter (keyspec, &filter, 1, serverinfo);
       if (err)
         goto leave;
+
+      if (*newer)
+        {
+          char *tstr, *fstr;
+
+          tstr = isotime2rfc4517 (newer);
+          if (!tstr)
+            {
+              err = gpg_error_from_syserror ();
+              goto leave;
+            }
+          fstr = strconcat ("(&", filter,
+                            "(modifyTimestamp>=", tstr, "))", NULL);
+          xfree (tstr);
+          if (!fstr)
+            {
+              err = gpg_error_from_syserror ();
+              goto leave;
+            }
+          xfree (filter);
+          filter = fstr;
+        }
 
       if (opt.debug)
         log_debug ("ks-ldap: using filter: %s\n", filter);
@@ -1705,7 +1736,7 @@ ks_ldap_search (ctrl_t ctrl, parsed_uri_t uri, const char *pattern,
     char *attrs[] =
       {
 	"pgpcertid", "pgpuserid", "pgprevoked", "pgpdisabled",
-	"pgpkeycreatetime", "pgpkeyexpiretime", "modifytimestamp",
+	"pgpkeycreatetime", "pgpkeyexpiretime", "modifyTimestamp",
 	"pgpkeysize", "pgpkeytype", "gpgfingerprint",
         NULL
       };
@@ -1859,19 +1890,17 @@ ks_ldap_search (ctrl_t ctrl, parsed_uri_t uri, const char *pattern,
 		  }
                 my_ldap_value_free (vals);
 
-#if 0
-		/* This is not yet specified in the keyserver
-		   protocol, but may be someday. */
 		es_fputc (':', fp);
 
-		vals = ldap_get_values (ldap_conn, each, "modifytimestamp");
-		if(vals && vals[0] strlen (vals[0]) == 15)
+		vals = ldap_get_values (ldap_conn, each, "modifyTimestamp");
+		if(vals && vals[0])
 		  {
-		    es_fprintf (fp, "%u",
-				(unsigned int) ldap2epochtime (vals[0]));
+                    gnupg_isotime_t atime;
+                    if (rfc4517toisotime (atime, vals[0]))
+                      *atime = 0;
+                    es_fprintf (fp, "%s", atime);
 		  }
                 my_ldap_value_free (vals);
-#endif
 
 		es_fprintf (fp, "\n");
 
@@ -2791,7 +2820,8 @@ ks_ldap_put (ctrl_t ctrl, parsed_uri_t uri,
  * return or NULL for all. */
 gpg_error_t
 ks_ldap_query (ctrl_t ctrl, parsed_uri_t uri, unsigned int ks_get_flags,
-               const char *filter_arg, char **attrs, estream_t *r_fp)
+               const char *filter_arg, char **attrs,
+               gnupg_isotime_t newer, estream_t *r_fp)
 {
   gpg_error_t err;
   unsigned int serverinfo;
@@ -2829,6 +2859,30 @@ ks_ldap_query (ctrl_t ctrl, parsed_uri_t uri, unsigned int ks_get_flags,
       err = ldap_parse_extfilter (filter_arg, 0, &basedn, &scope, &filter);
       if (err)
         goto leave;
+      if (newer && *newer)
+        {
+          char *tstr, *fstr;
+
+          tstr = isotime2rfc4517 (newer);
+          if (!tstr)
+            {
+              err = gpg_error_from_syserror ();
+              goto leave;
+            }
+          if (filter && *filter)
+            fstr = strconcat ("(&", filter,
+                              "(modifyTimestamp>=", tstr, "))", NULL);
+          else
+            fstr = strconcat ("(modifyTimestamp>=", tstr, ")", NULL);
+          xfree (tstr);
+          if (!fstr)
+            {
+              err = gpg_error_from_syserror ();
+              goto leave;
+            }
+          xfree (filter);
+          filter = fstr;
+        }
     }
 
 

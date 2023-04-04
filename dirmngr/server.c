@@ -2438,22 +2438,28 @@ cmd_ks_search (assuan_context_t ctx, char *line)
 
 
 static const char hlp_ks_get[] =
-  "KS_GET [--quick] [--ldap] [--first|--next] {<pattern>}\n"
+  "KS_GET [--quick] [--newer=TIME] [--ldap] [--first|--next] {<pattern>}\n"
   "\n"
   "Get the keys matching PATTERN from the configured OpenPGP keyservers\n"
   "(see command KEYSERVER).  Each pattern should be a keyid, a fingerprint,\n"
   "or an exact name indicated by the '=' prefix.  Option --quick uses a\n"
   "shorter timeout; --ldap will use only ldap servers.  With --first only\n"
-  "the first item is returned; --next is used to return the next item";
+  "the first item is returned; --next is used to return the next item\n"
+  "Option --newer works only with certain LDAP servers.";
 static gpg_error_t
 cmd_ks_get (assuan_context_t ctx, char *line)
 {
   ctrl_t ctrl = assuan_get_pointer (ctx);
   gpg_error_t err;
-  strlist_t list, sl;
+  strlist_t list = NULL;
+  strlist_t sl;
+  const char *s;
   char *p;
   estream_t outfp;
   unsigned int flags = 0;
+  gnupg_isotime_t opt_newer;
+
+  *opt_newer = 0;
 
   if (has_option (line, "--quick"))
     ctrl->timeout = opt.connect_quick_timeout;
@@ -2463,13 +2469,18 @@ cmd_ks_get (assuan_context_t ctx, char *line)
     flags |= KS_GET_FLAG_FIRST;
   if (has_option (line, "--next"))
     flags |= KS_GET_FLAG_NEXT;
+  if ((s = option_value (line, "--newer"))
+      && !string2isotime (opt_newer, s))
+    {
+      err = set_error (GPG_ERR_SYNTAX, "invalid time format");
+      goto leave;
+    }
   line = skip_options (line);
 
   /* Break the line into a strlist.  Each pattern is by
      definition percent-plus escaped.  However we only support keyids
      and fingerprints and thus the client has no need to apply the
      escaping.  */
-  list = NULL;
   for (p=line; *p; line = p)
     {
       while (*p && *p != ' ')
@@ -2546,7 +2557,7 @@ cmd_ks_get (assuan_context_t ctx, char *line)
       ctrl->server_local->inhibit_data_logging_now = 0;
       ctrl->server_local->inhibit_data_logging_count = 0;
       err = ks_action_get (ctrl, ctrl->server_local->keyservers,
-                           list, flags, outfp);
+                           list, flags, opt_newer, outfp);
       es_fclose (outfp);
       ctrl->server_local->inhibit_data_logging = 0;
     }
@@ -2687,6 +2698,10 @@ cmd_ad_query (assuan_context_t ctx, char *line)
   estream_t outfp = NULL;
   char *p;
   char **opt_attr = NULL;
+  const char *s;
+  gnupg_isotime_t opt_newer;
+
+  *opt_newer = 0;
 
   /* No options for now.  */
   if (has_option (line, "--first"))
@@ -2695,6 +2710,12 @@ cmd_ad_query (assuan_context_t ctx, char *line)
     flags |= KS_GET_FLAG_NEXT;
   if (has_option (line, "--rootdse"))
     flags |= KS_GET_FLAG_ROOTDSE;
+  if ((s = option_value (line, "--newer"))
+      && !string2isotime (opt_newer, s))
+    {
+      err = set_error (GPG_ERR_SYNTAX, "invalid time format");
+      goto leave;
+    }
   err = get_option_value (line, "--attr", &p);
   if (err)
     goto leave;
@@ -2735,7 +2756,7 @@ cmd_ad_query (assuan_context_t ctx, char *line)
 
   err = ks_action_query (ctrl,
                          (flags & KS_GET_FLAG_ROOTDSE)? NULL : "ldap:///",
-                         flags, filter, opt_attr, outfp);
+                         flags, filter, opt_attr, opt_newer, outfp);
 
  leave:
   es_fclose (outfp);
