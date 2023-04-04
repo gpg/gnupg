@@ -33,6 +33,7 @@
 #include "keydb.h"
 #include "../common/i18n.h"
 #include "../common/asshelp.h"
+#include "../common/comopt.h"
 #include "../kbx/kbx-client-util.h"
 
 
@@ -242,8 +243,23 @@ maybe_create_keybox (char *filename, int force, int *r_created)
           *last_slash_in_filename = save_slash;
           goto leave;
         }
+      *last_slash_in_filename = save_slash;
+
+      if (!opt.use_keyboxd
+          && !parse_comopt (GNUPG_MODULE_NAME_GPG, 0)
+          && comopt.use_keyboxd)
+        {
+          /* The above try_make_homedir created a new default hoemdir
+           * and also wrote a new common.conf.  Thus we now see that
+           * use-keyboxd has been set.  Let's set this option and
+           * return a dedicated error code.  */
+          opt.use_keyboxd = comopt.use_keyboxd;
+          rc = gpg_error (GPG_ERR_TRUE);
+          goto leave;
+        }
     }
-  *last_slash_in_filename = save_slash;
+  else
+    *last_slash_in_filename = save_slash;
 
   /* To avoid races with other instances of gpg trying to create or
      update the keybox (it is removed during an update for a short
@@ -459,9 +475,13 @@ keydb_add_resource (ctrl_t ctrl, const char *url, int force, int *auto_created)
  leave:
   if (err)
     {
-      log_error ("keyblock resource '%s': %s\n", filename, gpg_strerror (err));
-      gpgsm_status_with_error (ctrl, STATUS_ERROR,
-                               "add_keyblock_resource", err);
+      if (gpg_err_code (err) != GPG_ERR_TRUE)
+        {
+          log_error ("keyblock resource '%s': %s\n",
+                     filename, gpg_strerror (err));
+          gpgsm_status_with_error (ctrl, STATUS_ERROR,
+                                   "add_keyblock_resource", err);
+        }
     }
   else
     any_registered = 1;

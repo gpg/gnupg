@@ -4187,17 +4187,27 @@ main (int argc, char **argv)
      * need to add the keyrings if we are running under SELinux, this
      * is so that the rings are added to the list of secured files.
      * We do not add any keyring if --no-keyring or --use-keyboxd has
-     * been used.  */
+     * been used.  Note that keydb_add_resource may create a new
+     * homedir and also tries to write a common.conf to enable the use
+     * of the keyboxd - in this case a special error code is returned
+     * and use_keyboxd is then also set.  */
     if (!opt.use_keyboxd
         && default_keyring >= 0
         && (ALWAYS_ADD_KEYRINGS
             || (cmd != aDeArmor && cmd != aEnArmor && cmd != aGPGConfTest)))
       {
+        gpg_error_t tmperr = 0;
+
 	if (!nrings || default_keyring > 0)  /* Add default ring. */
-	    keydb_add_resource ("pubring" EXTSEP_S GPGEXT_GPG,
-                                KEYDB_RESOURCE_FLAG_DEFAULT);
-	for (sl = nrings; sl; sl = sl->next )
-          keydb_add_resource (sl->d, sl->flags);
+          tmperr = keydb_add_resource ("pubring" EXTSEP_S GPGEXT_GPG,
+                                       KEYDB_RESOURCE_FLAG_DEFAULT);
+        if (gpg_err_code (tmperr) == GPG_ERR_TRUE && opt.use_keyboxd)
+          ;  /* The keyboxd has been enabled.  */
+        else
+          {
+            for (sl = nrings; sl; sl = sl->next )
+              keydb_add_resource (sl->d, sl->flags);
+          }
       }
     FREE_STRLIST(nrings);
 

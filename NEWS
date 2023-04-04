@@ -1,6 +1,9 @@
 Noteworthy changes in version 2.4.1 (unreleased)
 ------------------------------------------------
 
+  * If the ~/.gnupg home directory does not exist, the keyboxd is now
+    automagically enabled.
+
   * gpg: New option --add-desig-revoker.  [rG3d094e2bcf]
 
   * gpg: New list-option "show-unusable-sigs".  Also show

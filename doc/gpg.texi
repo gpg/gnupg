@@ -3915,7 +3915,9 @@ current home directory (@pxref{option --homedir}).
   @efindex common.conf
   This is an optional configuration file read by @command{@gpgname} on
   startup.  It may contain options pertaining to all components of
-  GnuPG.  Its current main use is for the "use-keyboxd" option.
+  GnuPG.  Its current main use is for the "use-keyboxd" option.  If
+  the default home directory @file{~/.gnupg} does not exist, GnuPG creates
+  this directory and a @file{common.conf} file with "use_keyboxd".
 
 @end table
 

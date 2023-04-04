@@ -128,6 +128,9 @@
   Only public keys and X.509 certificates are managed by the keyboxd;
   private keys are still stored as separate files.
 
+  Since version 2.4.1 the keyboxd will be used by default for a fresh
+  install; i.e. if a ~/.gnupg directory did not yet exist.
+
   Note that there is no automatic migration; if the use-keyboxd option
   is enabled keys are not taken from pubring.kbx.  To migrate existing
   keys to the keyboxd do this:

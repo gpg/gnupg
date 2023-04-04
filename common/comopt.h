@@ -35,7 +35,6 @@
 
 
 /* Common options for all GnuPG components.  */
-EXTERN_UNLESS_MAIN_MODULE
 struct
 {
   char *logfile;     /* Socket used by daemons for logging.  */

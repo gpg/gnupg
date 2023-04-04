@@ -37,6 +37,7 @@
 #include "../kbx/keybox.h"
 #include "keydb.h"
 #include "../common/i18n.h"
+#include "../common/comopt.h"
 
 #include "keydb-private.h"  /* For struct keydb_handle_s */
 
@@ -265,8 +266,24 @@ maybe_create_keyring_or_box (char *filename, int is_box, int force_create)
           *last_slash_in_filename = save_slash;
           goto leave;
         }
+
+      *last_slash_in_filename = save_slash;
+
+      if (!opt.use_keyboxd
+          && !parse_comopt (GNUPG_MODULE_NAME_GPG, 0)
+          && comopt.use_keyboxd)
+        {
+          /* The above try_make_homedir created a new default hoemdir
+           * and also wrote a new common.conf.  Thus we now see that
+           * use-keyboxd has been set.  Let's set this option and
+           * return a dedicated error code.  */
+          opt.use_keyboxd = comopt.use_keyboxd;
+          rc = gpg_error (GPG_ERR_TRUE);
+          goto leave;
+        }
     }
-  *last_slash_in_filename = save_slash;
+  else
+    *last_slash_in_filename = save_slash;
 
   /* To avoid races with other instances of gpg trying to create or
      update the keyring (it is removed during an update for a short
@@ -555,7 +572,8 @@ keydb_search_desc_dump (struct keydb_search_desc *desc)
  * If KEYDB_RESOURCE_FLAG_READONLY is set and the resource is a
  * keyring (not a keybox), then the keyring is marked as read only and
  * operations just as keyring_insert_keyblock will return
- * GPG_ERR_ACCESS.  */
+ * GPG_ERR_ACCESS.
+ */
 gpg_error_t
 keydb_add_resource (const char *url, unsigned int flags)
 {
@@ -774,9 +792,12 @@ keydb_add_resource (const char *url, unsigned int flags)
  leave:
   if (err)
     {
-      log_error (_("keyblock resource '%s': %s\n"),
-                 filename, gpg_strerror (err));
-      write_status_error ("add_keyblock_resource", err);
+      if (gpg_err_code (err) != GPG_ERR_TRUE)
+        {
+          log_error (_("keyblock resource '%s': %s\n"),
+                     filename, gpg_strerror (err));
+          write_status_error ("add_keyblock_resource", err);
+        }
     }
   else
     any_registered = 1;
