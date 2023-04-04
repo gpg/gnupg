@@ -332,3 +332,90 @@ ldap_parse_extfilter (const char *string, int silent,
     }
   return err;
 }
+
+
+
+/* Scan an ISO timestamp and return a Generalized Time according to
+ * RFC-4517.  The only supported format is "yyyymmddThhmmss[Z]"
+ * delimited by white space, nul, a colon or a comma.  Returns a
+ * malloced string or NULL for an invalid string or on memory
+ * error.  */
+char *
+isotime2rfc4517 (const char *string)
+{
+  int year, month, day, hour, minu, sec;
+
+  if (!isotime_p (string))
+    {
+      errno = 0;
+      return NULL;
+    }
+
+  year  = atoi_4 (string);
+  month = atoi_2 (string + 4);
+  day   = atoi_2 (string + 6);
+  hour  = atoi_2 (string + 9);
+  minu  = atoi_2 (string + 11);
+  sec   = atoi_2 (string + 13);
+
+  /* Basic checks (1600 due to the LDAP time format base)  */
+  if (year < 1600 || month < 1 || month > 12 || day < 1 || day > 31
+      || hour > 23 || minu > 59 || sec > 61 )
+    {
+      errno = 0;
+      return NULL;
+    }
+
+  return gpgrt_bsprintf ("%04d%02d%02d%02d%02d%02d.0Z",
+                         year, month, day, hour, minu, sec);
+}
+
+
+/* Parse an LDAP Generalized Time string and update the provided
+ * isotime buffer.  On error return and error code.  */
+gpg_error_t
+rfc4517toisotime (gnupg_isotime_t timebuf, const char *string)
+{
+  int i;
+  int year, month, day, hour, minu, sec;
+  const char *s;
+
+  for (i=0, s=string; i < 10; i++, s++)  /* Need yyyymmddhh  */
+    if (!digitp (s))
+      return gpg_error (GPG_ERR_INV_TIME);
+  year  = atoi_4 (string);
+  month = atoi_2 (string + 4);
+  day   = atoi_2 (string + 6);
+  hour  = atoi_2 (string + 9);
+  minu = 0;
+  sec = 0;
+  if (digitp (s) && digitp (s+1))
+    {
+      minu = atoi_2 (s);
+      s += 2;
+      if (digitp (s) && digitp (s+1))
+        {
+          sec = atoi_2 (s);
+          s += 2;
+        }
+    }
+  if (*s == '.' || *s == ',')
+    {
+      s++;
+      if (!digitp (s))  /* At least one digit of the fraction required.  */
+        return gpg_error (GPG_ERR_INV_TIME);
+      s++;
+      while (digitp (s))
+        s++;
+    }
+  if (*s == 'Z' && (!s[1] || spacep (s+1)))
+    ; /* stop here.  */
+  else if (*s == '-' || *s == '+')
+    return gpg_error (GPG_ERR_NOT_IMPLEMENTED);  /* FIXME */
+  else
+    return gpg_error (GPG_ERR_INV_TIME);
+
+  snprintf (timebuf, sizeof (gnupg_isotime_t), "%04d%02d%02dT%02d%02d%02d",
+            year, month, day, hour, minu, sec);
+  return 0;
+}
