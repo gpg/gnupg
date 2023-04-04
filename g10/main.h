@@ -42,7 +42,7 @@
 #endif
 
 #define DEFAULT_DIGEST_ALGO     ((GNUPG)? DIGEST_ALGO_SHA256:DIGEST_ALGO_SHA1)
-#define DEFAULT_S2K_DIGEST_ALGO DIGEST_ALGO_SHA1
+#define DEFAULT_S2K_DIGEST_ALGO  DEFAULT_DIGEST_ALGO
 #ifdef HAVE_ZIP
 # define DEFAULT_COMPRESS_ALGO   COMPRESS_ALGO_ZIP
 #else
@@ -235,7 +235,7 @@ int  cpr_get_answer_okay_cancel (const char *keyword,
 /*-- helptext.c --*/
 void display_online_help( const char *keyword );
 
-/*-- encode.c --*/
+/*-- encrypt.c --*/
 gpg_error_t setup_symkey (STRING2KEY **symkey_s2k,DEK **symkey_dek);
 aead_algo_t use_aead (pk_list_t pk_list, int algo);
 int use_mdc (pk_list_t pk_list,int algo);

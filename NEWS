@@ -7,12 +7,18 @@ Noteworthy changes in version 2.4.1 (unreleased)
     "[self-signature]" instead of the user-id in key signature
     listings.  [rG103acfe9ca]
 
+  * gpg: For symmetric encryption the default S2K hash is now SHA256.
+    [T6367]
+
   * gpgsm: Verification of detached signatures does now strip trailing
     zeroes from the input if --assume-binary is used.  [rG2a13f7f9dc]
 
   * gpgsm: Non-armored detached signature are now created without
     using indefinite form length octets.  This improves compatibility
-    with some PDF signature verification software.
+    with some PDF signature verification software.  [rG8996b0b655]
+
+  * dirmngr: The LDAP modifyTimestamp is now returned by some
+    keyserver commands.  [rG56d309133f]
 
   * gpg: Make list-options "show-sig-subpackets" work again.
     Fixes regression in 2.4.0.  [rG5a223303d7]
