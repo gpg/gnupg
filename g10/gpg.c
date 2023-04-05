@@ -446,6 +446,7 @@ enum cmd_and_opt_values
     oRequireCompliance,
     oCompatibilityFlags,
     oAddDesigRevoker,
+    oAssertSigner,
 
     oNoop
   };
@@ -708,7 +709,7 @@ static gpgrt_opt_t opts[] = {
   ARGPARSE_s_n (oNoAutoTrustNewKey, "no-auto-trust-new-key", "@"),
 #endif
   ARGPARSE_s_s (oAddDesigRevoker, "add-desig-revoker", "@"),
-
+  ARGPARSE_s_s (oAssertSigner,    "assert-signer", "@"),
 
   ARGPARSE_header ("Input", N_("Options controlling the input")),
 
@@ -1032,8 +1033,12 @@ static struct compatibility_flags_s compatibility_flags [] =
 /* The list of the default AKL methods.  */
 #define DEFAULT_AKL_LIST "local,wkd"
 
-
+/* Can be set to true to force gpg to return with EXIT_FAILURE.  */
 int g10_errors_seen = 0;
+/* If opt.assert_signer_list is used and this variabale is not true
+ * gpg will be forced to return EXIT_FAILURE.  */
+int assert_signer_true = 0;
+
 
 static int utf8_strings =
 #ifdef HAVE_W32_SYSTEM
@@ -3734,6 +3739,11 @@ main (int argc, char **argv)
               append_to_strlist (&opt.desig_revokers, pargs.r.ret_str);
 	    break;
 
+          case oAssertSigner:
+            add_to_strlist (&opt.assert_signer_list, pargs.r.ret_str);
+	    break;
+
+
 	  case oNoop: break;
 
 	  default:
@@ -5448,7 +5458,15 @@ g10_exit( int rc )
   gnupg_block_all_signals ();
   emergency_cleanup ();
 
-  rc = rc? rc : log_get_errorcount(0)? 2 : g10_errors_seen? 1 : 0;
+  if (rc)
+    ;
+  else if (log_get_errorcount(0))
+    rc = 2;
+  else if (g10_errors_seen)
+    rc = 1;
+  else if (opt.assert_signer_list && !assert_signer_true)
+    rc = 1;
+
   exit (rc);
 }
 

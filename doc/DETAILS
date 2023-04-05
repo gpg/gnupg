@@ -522,6 +522,11 @@ pkd:0:1024:B665B1435F4C2 .... FF26ABB:
     Epoch or an ISO 8601 string which can be detected by the presence
     of the letter 'T'.
 
+*** ASSERT_SIGNER <fingerprint>
+    This is emitted for the matching <fingerprint> when option
+    --assert-signer is used.  The fingerprint is printed with
+    uppercase hex digits.
+
 *** SIG_ID  <radix64_string>  <sig_creation_date>  <sig-timestamp>
     This is emitted only for signatures of class 0 or 1 which have
     been verified okay.  The string is a signature id and may be used

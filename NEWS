@@ -1,10 +1,12 @@
 Noteworthy changes in version 2.4.1 (unreleased)
 ------------------------------------------------
 
-  * If the ~/.gnupg home directory does not exist, the keyboxd is now
+  * If the ~/.gnupg directory does not exist, the keyboxd is now
     automagically enabled.
 
   * gpg: New option --add-desig-revoker.  [rG3d094e2bcf]
+
+  * gpg: New option --assert-signer.
 
   * gpg: New list-option "show-unusable-sigs".  Also show
     "[self-signature]" instead of the user-id in key signature

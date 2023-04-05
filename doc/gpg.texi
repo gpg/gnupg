@@ -264,11 +264,11 @@ out the actual signed data, but there are other pitfalls with this
 format as well.  It is suggested to avoid cleartext signatures in
 favor of detached signatures.
 
-Note: Sometimes the use of the @command{gpgv} tool is easier than
-using the full-fledged @command{gpg} with this option.  @command{gpgv}
-is designed to compare signed data against a list of trusted keys and
-returns with success only for a good signature.  It has its own manual
-page.
+Note: To check whether a file was signed by a certain key the option
+@option{--assert-signer} can be used.  As an alternative the
+@command{gpgv} tool can be used.  @command{gpgv} is designed to
+compare signed data against a list of trusted keys and returns with
+success only for a good signature.  It has its own manual page.
 
 
 @item --multifile
@@ -1888,6 +1888,24 @@ Set what trust model GnuPG should follow. The models are:
   exists.  Note that a tofu trust model is not considered here and
   must be enabled explicitly.
 @end table
+
+@item --always-trust
+@opindex always-trust
+Identical to @option{--trust-model always}.
+
+@item --assert-signer @var{fpr_or_file}
+@opindex assert-signer
+This option checks whether at least one valid signature on a file has
+been made with the specified key.  The key is either specified as a
+fingerprint or a file listing fingerprints.  The fingerprint must be
+given or listed in compact format (no colons or spaces in between).
+This option can be given multiple times and each fingerprint is
+checked against the signing key as well as the corresponding primary
+key.  If @var{fpr_or_file} specifies a file, empty lines are ignored
+as well as all lines starting with a hash sign.  With this option gpg
+is guaranteed to return with an exit code of 0 if and only if a
+signature has been encountered, is valid, and the key matches one of
+the fingerprints given by this option.
 
 
 @item --auto-key-locate @var{mechanisms}
@@ -3855,10 +3873,6 @@ any. See also @option{--photo-viewer}. These options are deprecated. Use
 Display the keyring name at the head of key listings to show which
 keyring a given key resides on. This option is deprecated: use
 @option{--list-options [no-]show-keyring} instead.
-
-@item --always-trust
-@opindex always-trust
-Identical to @option{--trust-model always}. This option is deprecated.
 
 @item --show-notation
 @itemx --no-show-notation

@@ -235,6 +235,10 @@ struct
      value. */
   int limit_card_insert_tries;
 
+  /* The list of --assert-signer option values.  Note: The values are
+   * modify to be uppercase if they represent a fingerrint */
+  strlist_t assert_signer_list;
+
   struct
   {
     /* If set, require an 0x19 backsig to be present on signatures

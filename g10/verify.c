@@ -1,6 +1,8 @@
 /* verify.c - Verify signed data
  * Copyright (C) 1998, 1999, 2000, 2001, 2002, 2004, 2005, 2006,
  *               2007, 2010 Free Software Foundation, Inc.
+ * Copyright (C) 2003, 2006-2008, 2010-2011, 2015-2017,
+ *               2020, 2023 g10 Code GmbH
  *
  * This file is part of GnuPG.
  *
@@ -16,6 +18,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, see <https://www.gnu.org/licenses/>.
+ * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
 #include <config.h>
@@ -280,4 +283,125 @@ gpg_verify (ctrl_t ctrl, int sig_fd, int data_fd, estream_t out_fp)
   release_progress_context (pfx);
   release_armor_context (afx);
   return rc;
+}
+
+
+static int
+is_fingerprint (const char *string)
+{
+  int n;
+
+  if (!string || !*string)
+    return 0;
+  for (n=0; hexdigitp (string); string++)
+    n++;
+  if (!*string && (n == 40 || n == 64))
+    return 1;  /* v4 or v5 fingerprint.  */
+
+  return 0;
+}
+
+
+/* This function shall be called with the main and subkey fingerprint
+ * iff a signature is fully valid.  If the option --assert-signer is
+ * active it check whether the signing key matches one of the keys
+ * given by this option and if so, sets a global flag.  */
+void
+check_assert_signer_list (const char *mainpkhex, const char *pkhex)
+{
+  gpg_error_t err;
+  strlist_t item;
+  const char *fname;
+  estream_t fp = NULL;
+  int lnr;
+  int n, c;
+  char *p, *pend;
+  char line[256];
+
+  if (!opt.assert_signer_list)
+    return;  /* Nothing to do.  */
+  if (assert_signer_true)
+    return;  /* Already one valid signature seen.  */
+
+  for (item = opt.assert_signer_list; item; item = item->next)
+    {
+      if (is_fingerprint (item->d))
+        {
+          ascii_strupr (item->d);
+          if (!strcmp (item->d, mainpkhex) || !strcmp (item->d, pkhex))
+            {
+              assert_signer_true = 1;
+              write_status_text (STATUS_ASSERT_SIGNER, item->d);
+              if (!opt.quiet)
+                log_info ("signer '%s' matched\n", item->d);
+              goto leave;
+            }
+        }
+      else  /* Assume this is a file - read and compare.  */
+        {
+          fname = item->d;
+          es_fclose (fp);
+          fp = es_fopen (fname, "r");
+          if (!fp)
+            {
+              err = gpg_error_from_syserror ();
+              log_error (_("error opening '%s': %s\n"),
+                         fname, gpg_strerror (err));
+              continue;
+            }
+
+          lnr = 0;
+          err = 0;
+          while (es_fgets (line, DIM(line)-1, fp))
+            {
+              lnr++;
+
+              n = strlen (line);
+              if (!n || line[n-1] != '\n')
+                {
+                  /* Eat until end of line. */
+                  while ( (c=es_getc (fp)) != EOF && c != '\n')
+                    ;
+                  err = gpg_error (GPG_ERR_INCOMPLETE_LINE);
+                  log_error (_("file '%s', line %d: %s\n"),
+                             fname, lnr, gpg_strerror (err));
+                  continue;
+                }
+              line[--n] = 0; /* Chop the LF. */
+              if (n && line[n-1] == '\r')
+                line[--n] = 0; /* Chop an optional CR. */
+
+              /* Allow for empty lines and spaces */
+              for (p=line; spacep (p); p++)
+                ;
+              if (!*p || *p == '#')
+                continue;
+
+              /* Get the first token and ignore trailing stuff.  */
+              for (pend = p; *pend && !spacep (pend); pend++)
+                ;
+              *pend = 0;
+              ascii_strupr (p);
+
+              if (!strcmp (p, mainpkhex) || !strcmp (p, pkhex))
+                {
+                  assert_signer_true = 1;
+                  write_status_text (STATUS_ASSERT_SIGNER, p);
+                  if (!opt.quiet)
+                    log_info ("signer '%s' matched '%s', line %d\n",
+                              p, fname, lnr);
+                  goto leave;
+                }
+            }
+          if (!err && !es_feof (fp))
+            {
+              err = gpg_error_from_syserror ();
+              log_error (_("error reading '%s', line %d: %s\n"),
+                         fname, lnr, gpg_strerror (err));
+            }
+        }
+    }
+
+ leave:
+  es_fclose (fp);
 }
