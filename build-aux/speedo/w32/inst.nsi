@@ -1462,7 +1462,8 @@ Function .onInit
   ;;!define MUI_LANGDLL_ALWAYSSHOW
   !insertmacro MUI_LANGDLL_DISPLAY
 
-  Call G4wRunOnce
+  # Temporay disabled until we have fixed the DLL issue (wk 2023-04-05)
+  # Call G4wRunOnce
 
   SetOutPath $TEMP
 #!ifdef SOURCES
