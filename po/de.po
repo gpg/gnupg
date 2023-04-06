@@ -344,7 +344,7 @@ msgid "Please enter the passphrase to%0Aprotect your new key"
 msgstr "Bitte geben Sie das Passwort ein,%0Aum Ihren Schlüssel zu schützen."
 
 msgid "Please enter the new passphrase"
-msgstr "Bitte geben Sie das Passwort ein:"
+msgstr "Bitte geben Sie das neue Passwort ein:"
 
 msgid "Options used for startup"
 msgstr "Optionen zum Start des Programms"
@@ -6642,7 +6642,7 @@ msgstr "Lesen des öffentlichen Schlüssels fehlgeschlagen: %s\n"
 #. * the %s at the start and end of the string.
 #, c-format
 msgid "%sNumber: %s%%0AHolder: %s%%0ACounter: %lu%s"
-msgstr "%sNummer: %s%%0ABesitzer: %s%%0AAnzahl: %lu%s"
+msgstr "%sNummer: %s%%0ABesitzer: %s%%0AZähler: %lu%s"
 
 #, c-format
 msgid "using default PIN as %s\n"
