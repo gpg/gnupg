@@ -444,8 +444,9 @@ openpgp_curve_to_oid (const char *name, unsigned int *r_nbits, int *r_algo)
   if (name)
     {
       for (i=0; oidtable[i].name; i++)
-        if (!strcmp (oidtable[i].name, name)
-            || (oidtable[i].alias && !strcmp (oidtable[i].alias, name)))
+        if (!ascii_strcasecmp (oidtable[i].name, name)
+            || (oidtable[i].alias
+                && !ascii_strcasecmp (oidtable[i].alias, name)))
           {
             oidstr = oidtable[i].oidstr;
             nbits  = oidtable[i].nbits;
@@ -457,7 +458,7 @@ openpgp_curve_to_oid (const char *name, unsigned int *r_nbits, int *r_algo)
           /* If not found assume the input is already an OID and check
              whether we support it.  */
           for (i=0; oidtable[i].name; i++)
-            if (!strcmp (name, oidtable[i].oidstr))
+            if (!ascii_strcasecmp (name, oidtable[i].oidstr))
               {
                 oidstr = oidtable[i].oidstr;
                 nbits  = oidtable[i].nbits;
@@ -506,9 +507,10 @@ openpgp_oid_or_name_to_curve (const char *oidname, int canon)
     return NULL;
 
   for (i=0; oidtable[i].name; i++)
-    if (!strcmp (oidtable[i].oidstr, oidname)
-        || !strcmp (oidtable[i].name, oidname)
-        || (oidtable[i].alias &&!strcmp (oidtable[i].alias, oidname)))
+    if (!ascii_strcasecmp (oidtable[i].oidstr, oidname)
+        || !ascii_strcasecmp (oidtable[i].name, oidname)
+        || (oidtable[i].alias
+            && !ascii_strcasecmp (oidtable[i].alias, oidname)))
       return !canon && oidtable[i].alias? oidtable[i].alias : oidtable[i].name;
 
   return NULL;
@@ -570,8 +572,9 @@ openpgp_is_curve_supported (const char *name, int *r_algo,
     *r_nbits = 0;
   for (idx = 0; idx < DIM (oidtable) && oidtable[idx].name; idx++)
     {
-      if ((!strcmp (name, oidtable[idx].name)
-           || (oidtable[idx].alias && !strcmp (name, (oidtable[idx].alias))))
+      if ((!ascii_strcasecmp (name, oidtable[idx].name)
+           || (oidtable[idx].alias
+               && !ascii_strcasecmp (name, (oidtable[idx].alias))))
           && curve_supported_p (oidtable[idx].name))
         {
           if (r_algo)
@@ -673,7 +676,7 @@ get_keyalgo_string (enum gcry_pk_algos algo,
         {
           if (keyalgo_strings[i].algo == algo
               && keyalgo_strings[i].curve && curve
-              && !strcmp (keyalgo_strings[i].curve, curve))
+              && !ascii_strcasecmp (keyalgo_strings[i].curve, curve))
             return keyalgo_strings[i].name;
         }
 
