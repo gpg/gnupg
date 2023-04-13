@@ -105,11 +105,16 @@ gpgsm_verify (ctrl_t ctrl, int in_fd, int data_fd, estream_t out_fp)
   int signer;
   const char *algoid;
   int algo;
-  int is_detached;
+  int is_detached, maybe_detached;
   estream_t in_fp = NULL;
   char *p;
 
   audit_set_type (ctrl->audit, AUDIT_TYPE_VERIFY);
+
+  /* Although we detect detached signatures during the parsing phase,
+   * we need to know it earlier and thus accept the caller idea of
+   * what to verify.  */
+  maybe_detached = (data_fd != -1);
 
   kh = keydb_new (ctrl);
   if (!kh)
@@ -131,7 +136,8 @@ gpgsm_verify (ctrl_t ctrl, int in_fd, int data_fd, estream_t out_fp)
   rc = gnupg_ksba_create_reader
     (&b64reader, ((ctrl->is_pem? GNUPG_KSBA_IO_PEM : 0)
                   | (ctrl->is_base64? GNUPG_KSBA_IO_BASE64 : 0)
-                  | (ctrl->autodetect_encoding? GNUPG_KSBA_IO_AUTODETECT : 0)),
+                  | (ctrl->autodetect_encoding? GNUPG_KSBA_IO_AUTODETECT : 0)
+                  | (maybe_detached? GNUPG_KSBA_IO_STRIP : 0)),
      in_fp, &reader);
   if (rc)
     {

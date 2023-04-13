@@ -1718,7 +1718,8 @@ get_best_pubkey_byname (ctrl_t ctrl, enum get_pubkey_modes mode,
  *
  * This function returns 0 on success.  Otherwise, an error code is
  * returned.  In particular, GPG_ERR_NO_PUBKEY is returned if the key
- * is not found.
+ * is not found.  If R_KEYBLOCK is not NULL and a key was found the
+ * keyblock is stored there; otherwiese NULL is stored there.
  *
  * The self-signed data has already been merged into the public key
  * using merge_selfsigs.  The caller must release the content of PK by
@@ -1726,12 +1727,16 @@ get_best_pubkey_byname (ctrl_t ctrl, enum get_pubkey_modes mode,
  * free_public_key).
  */
 gpg_error_t
-get_pubkey_fromfile (ctrl_t ctrl, PKT_public_key *pk, const char *fname)
+get_pubkey_fromfile (ctrl_t ctrl, PKT_public_key *pk, const char *fname,
+                     kbnode_t *r_keyblock)
 {
   gpg_error_t err;
   kbnode_t keyblock;
   kbnode_t found_key;
   unsigned int infoflags;
+
+  if (r_keyblock)
+    *r_keyblock = NULL;
 
   err = read_key_from_file_or_buffer (ctrl, fname, NULL, 0, &keyblock);
   if (!err)
@@ -1747,7 +1752,10 @@ get_pubkey_fromfile (ctrl_t ctrl, PKT_public_key *pk, const char *fname)
         err = gpg_error (GPG_ERR_UNUSABLE_PUBKEY);
     }
 
-  release_kbnode (keyblock);
+  if (!err && r_keyblock)
+    *r_keyblock = keyblock;
+  else
+    release_kbnode (keyblock);
   return err;
 }
 
@@ -1809,12 +1817,12 @@ get_pubkey_from_buffer (ctrl_t ctrl, PKT_public_key *pkbuf,
  * returned public key may be a subkey rather than the primary key.
  * Note: The self-signed data has already been merged into the public
  * key using merge_selfsigs.  Free *PK by calling
- * release_public_key_parts (or, if PK was allocated using xfree, you
+ * release_public_key_parts (or, if PK was allocated using xmalloc, you
  * can use free_public_key, which calls release_public_key_parts(PK)
  * and then xfree(PK)).
  *
  * If PK->REQ_USAGE is set, it is used to filter the search results.
- * (Thus, if PK is not NULL, PK->REQ_USAGE must be valid!!!)  See the
+ * Thus, if PK is not NULL, PK->REQ_USAGE must be valid!  See the
  * documentation for finish_lookup to understand exactly how this is
  * used.
  *
@@ -2417,7 +2425,8 @@ merge_keys_and_selfsig (ctrl_t ctrl, kbnode_t keyblock)
 }
 
 
-static int
+/* This function parses the key flags and returns PUBKEY_USAGE_ flags.  */
+unsigned int
 parse_key_usage (PKT_signature * sig)
 {
   int key_usage = 0;
@@ -2707,7 +2716,7 @@ merge_selfsigs_main (ctrl_t ctrl, kbnode_t keyblock, int *r_revoked,
        * and there was no way to change it, so we start with the one
        * from the key packet.  We do not support v3 keys anymore but
        * we keep the code in case a future key versions introduces a
-       * hadr expire time again. */
+       * hard expire time again. */
       key_expire = pk->max_expiredate;
       key_expire_seen = 1;
     }
@@ -3247,7 +3256,7 @@ buf_to_sig (const byte * buf, size_t len)
  *   has_expired
  *   expired_date
  *
- * On this subkey's most revent valid self-signed packet, the
+ * On this subkey's most recent valid self-signed packet, the
  * following field is set:
  *
  *   flags.chosen_selfsig

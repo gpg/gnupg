@@ -56,9 +56,15 @@
       | GCRY_PK_USAGE_AUTH | GCRY_PK_USAGE_UNKN) >= 256
 # error Please choose another value for PUBKEY_USAGE_NONE
 #endif
-#define PUBKEY_USAGE_RENC    512                 /* Restricted encryption.  */
-#define PUBKEY_USAGE_TIME    1024                /* Timestamp use.  */
 #define PUBKEY_USAGE_GROUP   512                 /* Group flag.  */
+#define PUBKEY_USAGE_RENC    1024                /* Restricted encryption.  */
+#define PUBKEY_USAGE_TIME    2048                /* Timestamp use.  */
+
+/* Bitflags to convey hints on what kind of signature is created.  */
+#define SIGNHINT_KEYSIG  1
+#define SIGNHINT_SELFSIG 2
+#define SIGNHINT_ADSK    4
+
 
 /* Helper macros.  */
 #define is_RSA(a)     ((a)==PUBKEY_ALGO_RSA || (a)==PUBKEY_ALGO_RSA_E \
@@ -287,7 +293,7 @@ typedef struct
   /* The length of ATTRIB_DATA.  */
   unsigned long attrib_len;
   byte *namehash;
-  int help_key_usage;
+  u16 help_key_usage;
   u32 help_key_expire;
   int help_full_count;
   int help_marginal_count;
@@ -388,7 +394,7 @@ typedef struct
   byte    selfsigversion; /* highest version of all of the self-sigs */
   /* The public key algorithm.  (Serialized.)  */
   byte    pubkey_algo;
-  byte    pubkey_usage;   /* for now only used to pass it to getkey() */
+  u16     pubkey_usage;   /* carries the usage info.            */
   byte    req_usage;      /* hack to pass a request to getkey() */
   byte    fprlen;         /* 0 or length of FPR.  */
   u32     has_expired;    /* set to the expiration date if expired */
@@ -861,7 +867,8 @@ gpg_error_t gpg_mpi_write_nohdr (iobuf_t out, gcry_mpi_t a);
 u32 calc_packet_length( PACKET *pkt );
 void build_sig_subpkt( PKT_signature *sig, sigsubpkttype_t type,
 			const byte *buffer, size_t buflen );
-void build_sig_subpkt_from_sig (PKT_signature *sig, PKT_public_key *pksk);
+void build_sig_subpkt_from_sig (PKT_signature *sig, PKT_public_key *pksk,
+                                unsigned int signhints);
 int  delete_sig_subpkt(subpktarea_t *buffer, sigsubpkttype_t type );
 void build_attribute_subpkt(PKT_user_id *uid,byte type,
 			    const void *buf,u32 buflen,
@@ -883,6 +890,7 @@ void free_user_id( PKT_user_id *uid );
 void free_comment( PKT_comment *rem );
 void free_packet (PACKET *pkt, parse_packet_ctx_t parsectx);
 prefitem_t *copy_prefs (const prefitem_t *prefs);
+PKT_public_key *copy_public_key_basics (PKT_public_key *d, PKT_public_key *s);
 PKT_public_key *copy_public_key( PKT_public_key *d, PKT_public_key *s );
 PKT_signature *copy_signature( PKT_signature *d, PKT_signature *s );
 PKT_user_id *scopy_user_id (PKT_user_id *sd );

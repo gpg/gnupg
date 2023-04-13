@@ -35,14 +35,16 @@
 
 
 /* Common options for all GnuPG components.  */
-EXTERN_UNLESS_MAIN_MODULE
-struct
+struct gnupg_comopt_s
 {
   char *logfile;     /* Socket used by daemons for logging.  */
   int use_keyboxd;   /* Use the keyboxd as storage backend.  */
   int no_autostart;  /* Do not start gpg-agent.              */
   char *keyboxd_program;  /* Use this as keyboxd program.    */
-} comopt;
+};
+
+
+extern struct gnupg_comopt_s comopt;
 
 
 gpg_error_t parse_comopt (int module_id, int verbose);

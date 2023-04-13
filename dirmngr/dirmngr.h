@@ -36,6 +36,7 @@
 #include "../common/sysutils.h" /* (gnupg_fd_t) */
 #include "../common/asshelp.h"  /* (assuan_context_t) */
 #include "../common/i18n.h"
+#include "../common/name-value.h"
 #include "dirmngr-status.h"
 #include "http.h"     /* (parsed_uri_t) */
 
@@ -104,6 +105,7 @@ struct
 
   int force;          /* Force loading outdated CRLs. */
 
+  char *fake_crl;     /* Name of a file with faked CRL entries.  */
 
   unsigned int connect_timeout;       /* Timeout for connect.  */
   unsigned int connect_quick_timeout; /* Shorter timeout for connect.  */
@@ -166,6 +168,7 @@ struct
 #define DBG_NETWORK_VALUE 2048  /* debug network I/O.  */
 #define DBG_LOOKUP_VALUE  8192  /* debug lookup details */
 #define DBG_EXTPROG_VALUE 16384 /* debug external program calls */
+#define DBG_KEEPTMP_VALUE 32768 /* keep some temporary files    */
 
 #define DBG_X509    (opt.debug & DBG_X509_VALUE)
 #define DBG_CRYPTO  (opt.debug & DBG_CRYPTO_VALUE)
@@ -177,6 +180,7 @@ struct
 #define DBG_NETWORK (opt.debug & DBG_NETWORK_VALUE)
 #define DBG_LOOKUP  (opt.debug & DBG_LOOKUP_VALUE)
 #define DBG_EXTPROG (opt.debug & DBG_EXTPROG_VALUE)
+#define DBG_KEEPTMP (opt.debug & DBG_KEEPTMP_VALUE)
 
 /* A simple list of certificate references.  FIXME: Better use
    certlist_t also for references (Store NULL at .cert) */
@@ -217,9 +221,12 @@ struct server_control_s
   int audit_events;  /* Send audit events to client.  */
   char *http_proxy;  /* The used http_proxy or NULL.  */
 
+  nvc_t rootdse;     /* Container wit the rootDSE properties.  */
+
   unsigned int timeout; /* Timeout for connect calls in ms.  */
 
   unsigned int http_no_crl:1;  /* Do not check CRLs for https.  */
+  unsigned int rootdse_tried:1;/* Already tried to get the rootDSE.  */
 };
 
 
@@ -238,6 +245,8 @@ void ks_hkp_reload (void);
 void ks_hkp_init (void);
 
 /*-- server.c --*/
+void release_uri_item_list (uri_item_t list);
+
 ldap_server_t get_ldapservers_from_ctrl (ctrl_t ctrl);
 ksba_cert_t get_cert_local (ctrl_t ctrl, const char *issuer);
 ksba_cert_t get_issuing_cert_local (ctrl_t ctrl, const char *issuer);
@@ -264,7 +273,7 @@ gpg_error_t dirmngr_load_swdb (ctrl_t ctrl, int force);
 
 
 /*-- domaininfo.c --*/
-void domaininfo_print_stats (void);
+void domaininfo_print_stats (ctrl_t ctrl);
 int  domaininfo_is_wkd_not_supported (const char *domain);
 void domaininfo_set_no_name (const char *domain);
 void domaininfo_set_wkd_supported (const char *domain);

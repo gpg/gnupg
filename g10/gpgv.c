@@ -118,7 +118,7 @@ static struct debug_flags_s debug_flags [] =
 
 
 int g10_errors_seen = 0;
-
+int assert_signer_true = 0;
 
 static char *
 make_libversion (const char *libname, const char *(*getfnc)(const char*))

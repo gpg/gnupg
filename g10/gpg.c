@@ -130,6 +130,7 @@ enum cmd_and_opt_values
     aQuickRevSig,
     aQuickAddUid,
     aQuickAddKey,
+    aQuickAddADSK,
     aQuickRevUid,
     aQuickSetExpire,
     aQuickSetPrimaryUid,
@@ -337,6 +338,7 @@ enum cmd_and_opt_values
     oEncryptToDefaultKey,
     oLoggerFD,
     oLoggerFile,
+    oLogTime,
     oUtf8Strings,
     oNoUtf8Strings,
     oDisableCipherAlgo,
@@ -443,6 +445,8 @@ enum cmd_and_opt_values
     oForbidGenKey,
     oRequireCompliance,
     oCompatibilityFlags,
+    oAddDesigRevoker,
+    oAssertSigner,
 
     oNoop
   };
@@ -484,6 +488,7 @@ static gpgrt_opt_t opts[] = {
   ARGPARSE_c (aQuickAddUid,  "quick-adduid", "@"),
   ARGPARSE_c (aQuickAddKey,  "quick-add-key", "@"),
   ARGPARSE_c (aQuickAddKey,  "quick-addkey", "@"),
+  ARGPARSE_c (aQuickAddADSK, "quick-add-adsk", "@"),
   ARGPARSE_c (aQuickRevUid,  "quick-revoke-uid",
               N_("quickly revoke a user-id")),
   ARGPARSE_c (aQuickRevUid,  "quick-revuid", "@"),
@@ -599,6 +604,7 @@ static gpgrt_opt_t opts[] = {
   ARGPARSE_s_s (oLoggerFile, "log-file",
                 N_("|FILE|write server mode logs to FILE")),
   ARGPARSE_s_s (oLoggerFile, "logger-file", "@"),  /* 1.4 compatibility.  */
+  ARGPARSE_s_n (oLogTime, "log-time", "@"),
   ARGPARSE_s_n (oQuickRandom, "debug-quick-random", "@"),
 
 
@@ -702,7 +708,8 @@ static gpgrt_opt_t opts[] = {
   ARGPARSE_s_s (oForceOwnertrust, "force-ownertrust", "@"),
   ARGPARSE_s_n (oNoAutoTrustNewKey, "no-auto-trust-new-key", "@"),
 #endif
-
+  ARGPARSE_s_s (oAddDesigRevoker, "add-desig-revoker", "@"),
+  ARGPARSE_s_s (oAssertSigner,    "assert-signer", "@"),
 
   ARGPARSE_header ("Input", N_("Options controlling the input")),
 
@@ -1026,8 +1033,12 @@ static struct compatibility_flags_s compatibility_flags [] =
 /* The list of the default AKL methods.  */
 #define DEFAULT_AKL_LIST "local,wkd"
 
-
+/* Can be set to true to force gpg to return with EXIT_FAILURE.  */
 int g10_errors_seen = 0;
+/* If opt.assert_signer_list is used and this variabale is not true
+ * gpg will be forced to return EXIT_FAILURE.  */
+int assert_signer_true = 0;
+
 
 static int utf8_strings =
 #ifdef HAVE_W32_SYSTEM
@@ -1039,6 +1050,7 @@ static int utf8_strings =
 static int maybe_setuid = 1;
 static unsigned int opt_set_iobuf_size;
 static unsigned int opt_set_iobuf_size_used;
+static int opt_log_time;
 
 /* Collection of options used only in this module.  */
 static struct {
@@ -2047,6 +2059,8 @@ parse_list_options(char *str)
   char *subpackets=""; /* something that isn't NULL */
   struct parse_options lopts[]=
     {
+      {"show-sig-subpackets",LIST_SHOW_SIG_SUBPACKETS,NULL,
+       NULL},
       {"show-photos",LIST_SHOW_PHOTOS,NULL,
        N_("display photo IDs during key listings")},
       {"show-usage",LIST_SHOW_USAGE,NULL,
@@ -2069,6 +2083,8 @@ parse_list_options(char *str)
        N_("show revoked and expired user IDs in key listings")},
       {"show-unusable-subkeys",LIST_SHOW_UNUSABLE_SUBKEYS,NULL,
        N_("show revoked and expired subkeys in key listings")},
+      {"show-unusable-sigs",LIST_SHOW_UNUSABLE_SIGS,NULL,
+       N_("show signatures with invalid algorithms during signature listings")},
       {"show-keyring",LIST_SHOW_KEYRING,NULL,
        N_("show the keyring name in key listings")},
       {"show-sig-expire",LIST_SHOW_SIG_EXPIRE,NULL,
@@ -2077,20 +2093,25 @@ parse_list_options(char *str)
        N_("show preferences")},
       {"show-pref-verbose", LIST_SHOW_PREF_VERBOSE, NULL,
        N_("show preferences")},
-      {"show-sig-subpackets",LIST_SHOW_SIG_SUBPACKETS,NULL,
-       NULL},
       {"show-only-fpr-mbox",LIST_SHOW_ONLY_FPR_MBOX, NULL,
        NULL},
       {"sort-sigs", LIST_SORT_SIGS, NULL,
        NULL},
       {NULL,0,NULL,NULL}
     };
+  int i;
 
   /* C99 allows for non-constant initializers, but we'd like to
      compile everywhere, so fill in the show-sig-subpackets argument
      here.  Note that if the parse_options array changes, we'll have
-     to change the subscript here. */
-  lopts[13].value=&subpackets;
+     to change the subscript here.  We use a loop here in case the
+     list above is reordered.  */
+  for (i=0; lopts[i].name; i++)
+    if (lopts[i].bit == LIST_SHOW_SIG_SUBPACKETS)
+      {
+        lopts[i].value = &subpackets;
+        break;
+      }
 
   if(parse_options(str,&opt.list_options,lopts,1))
     {
@@ -2677,6 +2698,7 @@ main (int argc, char **argv)
 	  case aQuickKeygen:
 	  case aQuickAddUid:
 	  case aQuickAddKey:
+	  case aQuickAddADSK:
 	  case aQuickRevUid:
 	  case aQuickSetExpire:
 	  case aQuickSetPrimaryUid:
@@ -2852,6 +2874,9 @@ main (int argc, char **argv)
             break;
           case oLoggerFile:
             logfile = pargs.r.ret_str;
+            break;
+          case oLogTime:
+            opt_log_time = 1;
             break;
 
 	  case oWithFingerprint:
@@ -3707,6 +3732,18 @@ main (int argc, char **argv)
             opt.flags.require_compliance = 1;
             break;
 
+	  case oAddDesigRevoker:
+            if (!strcmp (pargs.r.ret_str, "clear"))
+              FREE_STRLIST (opt.desig_revokers);
+            else
+              append_to_strlist (&opt.desig_revokers, pargs.r.ret_str);
+	    break;
+
+          case oAssertSigner:
+            add_to_strlist (&opt.assert_signer_list, pargs.r.ret_str);
+	    break;
+
+
 	  case oNoop: break;
 
 	  default:
@@ -3811,6 +3848,9 @@ main (int argc, char **argv)
                                | GPGRT_LOG_WITH_TIME
                                | GPGRT_LOG_WITH_PID ));
       }
+    else if (opt_log_time)
+      log_set_prefix (NULL, (GPGRT_LOG_WITH_PREFIX|GPGRT_LOG_NO_REGISTRY
+                             |GPGRT_LOG_WITH_TIME));
 
     if (opt.verbose > 2)
         log_info ("using character set '%s'\n", get_native_charset ());
@@ -4157,17 +4197,27 @@ main (int argc, char **argv)
      * need to add the keyrings if we are running under SELinux, this
      * is so that the rings are added to the list of secured files.
      * We do not add any keyring if --no-keyring or --use-keyboxd has
-     * been used.  */
+     * been used.  Note that keydb_add_resource may create a new
+     * homedir and also tries to write a common.conf to enable the use
+     * of the keyboxd - in this case a special error code is returned
+     * and use_keyboxd is then also set.  */
     if (!opt.use_keyboxd
         && default_keyring >= 0
         && (ALWAYS_ADD_KEYRINGS
             || (cmd != aDeArmor && cmd != aEnArmor && cmd != aGPGConfTest)))
       {
+        gpg_error_t tmperr = 0;
+
 	if (!nrings || default_keyring > 0)  /* Add default ring. */
-	    keydb_add_resource ("pubring" EXTSEP_S GPGEXT_GPG,
-                                KEYDB_RESOURCE_FLAG_DEFAULT);
-	for (sl = nrings; sl; sl = sl->next )
-          keydb_add_resource (sl->d, sl->flags);
+          tmperr = keydb_add_resource ("pubring" EXTSEP_S GPGEXT_GPG,
+                                       KEYDB_RESOURCE_FLAG_DEFAULT);
+        if (gpg_err_code (tmperr) == GPG_ERR_TRUE && opt.use_keyboxd)
+          ;  /* The keyboxd has been enabled.  */
+        else
+          {
+            for (sl = nrings; sl; sl = sl->next )
+              keydb_add_resource (sl->d, sl->flags);
+          }
       }
     FREE_STRLIST(nrings);
 
@@ -4275,6 +4325,7 @@ main (int argc, char **argv)
       case aQuickKeygen:
       case aQuickAddUid:
       case aQuickAddKey:
+      case aQuickAddADSK:
       case aQuickRevUid:
       case aQuickSetPrimaryUid:
       case aQuickUpdatePref:
@@ -4742,6 +4793,17 @@ main (int argc, char **argv)
         }
 	break;
 
+      case aQuickAddADSK:
+        {
+          if (argc != 2)
+            wrong_args ("--quick-add-adsk FINGERPRINT ADSK-FINGERPRINT");
+          if (mopt.forbid_gen_key)
+            gen_key_forbidden ();
+          else
+            keyedit_quick_addadsk (ctrl, argv[0], argv[1]);
+        }
+	break;
+
       case aQuickRevUid:
         {
           const char *uid, *uidtorev;
@@ -5048,9 +5110,6 @@ main (int argc, char **argv)
               size_t nn;
 
               p = gcry_random_bytes (n, level);
-#ifdef HAVE_DOSISH_SYSTEM
-              setmode ( fileno(stdout), O_BINARY );
-#endif
               if (hexhack)
                 {
                   for (nn = 0; nn < n; nn++)
@@ -5068,6 +5127,7 @@ main (int argc, char **argv)
                 }
               else
                 {
+                  es_set_binary (es_stdout);
                   es_fwrite( p, n, 1, es_stdout );
                 }
               xfree(p);
@@ -5398,7 +5458,15 @@ g10_exit( int rc )
   gnupg_block_all_signals ();
   emergency_cleanup ();
 
-  rc = rc? rc : log_get_errorcount(0)? 2 : g10_errors_seen? 1 : 0;
+  if (rc)
+    ;
+  else if (log_get_errorcount(0))
+    rc = 2;
+  else if (g10_errors_seen)
+    rc = 1;
+  else if (opt.assert_signer_list && !assert_signer_true)
+    rc = 1;
+
   exit (rc);
 }
 

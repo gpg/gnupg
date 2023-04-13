@@ -37,14 +37,6 @@
 #include "../common/tlv.h"
 #include "../common/compliance.h"
 
-/* We can provide an enum value which is only availabale with KSBA
- * 1.6.0 so that we can compile even against older versions.  Some
- * calls will of course return an error in this case.  This value is
- * currently not used because the cipher mode is sufficient here.  */
-/* #if KSBA_VERSION_NUMBER < 0x010600  /\* 1.6.0 *\/ */
-/* # define KSBA_CT_AUTHENVELOPED_DATA 10 */
-/* #endif */
-
 
 struct decrypt_filter_parm_s
 {

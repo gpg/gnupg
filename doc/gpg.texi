@@ -264,11 +264,11 @@ out the actual signed data, but there are other pitfalls with this
 format as well.  It is suggested to avoid cleartext signatures in
 favor of detached signatures.
 
-Note: Sometimes the use of the @command{gpgv} tool is easier than
-using the full-fledged @command{gpg} with this option.  @command{gpgv}
-is designed to compare signed data against a list of trusted keys and
-returns with success only for a good signature.  It has its own manual
-page.
+Note: To check whether a file was signed by a certain key the option
+@option{--assert-signer} can be used.  As an alternative the
+@command{gpgv} tool can be used.  @command{gpgv} is designed to
+compare signed data against a list of trusted keys and returns with
+success only for a good signature.  It has its own manual page.
 
 
 @item --multifile
@@ -622,7 +622,7 @@ outputs an endless stream of hex-encoded octets.  The special level
 @item --gen-prime @var{mode}  @var{bits}
 @opindex gen-prime
 Use the source, Luke :-). The output format is subject to change
-with ant release.
+with any release.
 
 
 @item --enarmor
@@ -769,6 +769,15 @@ expire in N seconds, N days, N weeks, N months, or N years use
 specifying a value, or using ``-'' results in a key expiring in a
 reasonable default interval.  The values ``never'', ``none'' can be
 used for no expiration date.
+
+@item --quick-add-adsk @var{fpr} @var{adskfpr}
+@opindex quick-add-adsk
+Directly add an Additional Decryption Subkey to the key identified by
+the fingerprint @var{fpr}.  @var{adskfpr} is the fingerprint of
+another key's encryption subkey.  A subkey is commonly used here
+because by default a primary key has no encryption capability.  Use
+the option @option{--with-subkey-fingerprint} with a list command to
+display the subkey fingerprints.
 
 @item --generate-key
 @opindex generate-key
@@ -1066,6 +1075,15 @@ signing.
   Add a designated revoker to the key. This takes one optional argument:
   "sensitive". If a designated revoker is marked as sensitive, it will
   not be exported by default (see export-options).
+
+  @item addadsk
+  @opindex keyedit:addadsk
+  Add an Additional Decryption Subkey.  The user is asked to enter the
+  fingerprint of another encryption subkey.  Note that the exact
+  fingerprint of another key's encryption subkey needs to be entered.
+  This is because commonly the primary key has no encryption
+  capability.  Use the option @option{--with-subkey-fingerprint} with
+  a list command to display the subkey fingerprints.
 
   @item passwd
   @opindex keyedit:passwd
@@ -1404,6 +1422,10 @@ give the opposite meaning.  The options are:
   @item show-unusable-subkeys
   @opindex list-options:show-unusable-subkeys
   Show revoked and expired subkeys in key listings. Defaults to no.
+
+  @item show-unusable-sigs
+  @opindex list-options:show-unusable-sigs
+  Show key signature made using weak or unsupported algorithms.
 
   @item show-keyring
   @opindex list-options:show-keyring
@@ -1746,6 +1768,19 @@ recipient's or signator's key.  If the given key is not locally
 available but an LDAP keyserver is configured the missing key is
 imported from that server.
 
+@item --add-desig-revoker [sensitive:]@var{fingerprint}
+@opindex add-desig-revoker
+Add the key specified by @var{fingerprint} as a designated revoker to
+newly created keys.  If the fingerprint is prefixed with the keyword
+``sensitive:'' that info is normally not exported wit the key.  This
+option may be given several time to add more than one designated
+revoker.  If the keyword ``clear'' is used instead of a fingerprint,
+all designated options previously encountered are discarded.
+Designated revokers are marked on the key as non-revocable.  Note that
+a designated revoker specified using a parameter file will also be
+added to the key.
+
+
 @item --trust-model @{pgp|classic|tofu|tofu+pgp|direct|always|auto@}
 @opindex trust-model
 Set what trust model GnuPG should follow. The models are:
@@ -1853,6 +1888,24 @@ Set what trust model GnuPG should follow. The models are:
   exists.  Note that a tofu trust model is not considered here and
   must be enabled explicitly.
 @end table
+
+@item --always-trust
+@opindex always-trust
+Identical to @option{--trust-model always}.
+
+@item --assert-signer @var{fpr_or_file}
+@opindex assert-signer
+This option checks whether at least one valid signature on a file has
+been made with the specified key.  The key is either specified as a
+fingerprint or a file listing fingerprints.  The fingerprint must be
+given or listed in compact format (no colons or spaces in between).
+This option can be given multiple times and each fingerprint is
+checked against the signing key as well as the corresponding primary
+key.  If @var{fpr_or_file} specifies a file, empty lines are ignored
+as well as all lines starting with a hash sign.  With this option gpg
+is guaranteed to return with an exit code of 0 if and only if a
+signature has been encountered, is valid, and the key matches one of
+the fingerprints given by this option.
 
 
 @item --auto-key-locate @var{mechanisms}
@@ -3173,6 +3226,10 @@ Write log output to file descriptor @var{n} and not to STDERR.
 Same as @option{--logger-fd}, except the logger data is written to
 file @var{file}.  Use @file{socket://} to log to s socket.
 
+@item --log-time
+@opindex log-time
+Prefix all log output with a timestamp even if no log file is used.
+
 @item --attribute-fd @var{n}
 @opindex attribute-fd
 Write attribute subpackets to the file descriptor @var{n}. This is most
@@ -3817,10 +3874,6 @@ Display the keyring name at the head of key listings to show which
 keyring a given key resides on. This option is deprecated: use
 @option{--list-options [no-]show-keyring} instead.
 
-@item --always-trust
-@opindex always-trust
-Identical to @option{--trust-model always}. This option is deprecated.
-
 @item --show-notation
 @itemx --no-show-notation
 @opindex show-notation
@@ -3876,7 +3929,9 @@ current home directory (@pxref{option --homedir}).
   @efindex common.conf
   This is an optional configuration file read by @command{@gpgname} on
   startup.  It may contain options pertaining to all components of
-  GnuPG.  Its current main use is for the "use-keyboxd" option.
+  GnuPG.  Its current main use is for the "use-keyboxd" option.  If
+  the default home directory @file{~/.gnupg} does not exist, GnuPG creates
+  this directory and a @file{common.conf} file with "use_keyboxd".
 
 @end table
 
@@ -4327,7 +4382,7 @@ already been reported to our bug tracker at @url{https://bugs.gnupg.org}.
 @c ***************  UNATTENDED  **************
 @c ***************              **************
 @c *******************************************
-@manpause
+@mansect notes
 @node Unattended Usage of GPG
 @section Unattended Usage
 
@@ -4398,32 +4453,21 @@ previous subsection ``The quick key manipulation interface''.
 
 The parameters for the key are either read from stdin or given as a
 file on the command line.  The format of the parameter file is as
-follows:
-
-@itemize @bullet
-  @item Text only, line length is limited to about 1000 characters.
-  @item UTF-8 encoding must be used to specify non-ASCII characters.
-  @item Empty lines are ignored.
-  @item Leading and trailing white space is ignored.
-  @item A hash sign as the first non white space character indicates
-  a comment line.
-  @item Control statements are indicated by a leading percent sign, the
-  arguments are separated by white space from the keyword.
-  @item Parameters are specified by a keyword, followed by a colon.  Arguments
-  are separated by white space.
-  @item
-  The first parameter must be @samp{Key-Type}; control statements may be
-  placed anywhere.
-  @item
-  The order of the parameters does not matter except for @samp{Key-Type}
-  which must be the first parameter.  The parameters are only used for
-  the generated keyblock (primary and subkeys); parameters from previous
-  sets are not used.  Some syntactically checks may be performed.
-  @item
-  Key generation takes place when either the end of the parameter file
-  is reached, the next @samp{Key-Type} parameter is encountered or at the
-  control statement @samp{%commit} is encountered.
-@end itemize
+follows: Text only, line length is limited to about 1000 characters.
+UTF-8 encoding must be used to specify non-ASCII characters.  Empty
+lines are ignored.  Leading and trailing white space is ignored.  A
+hash sign as the first non white space character indicates a comment
+line.  Control statements are indicated by a leading percent sign,
+their arguments are separated by white space from the keyword.
+Parameters are specified by a keyword, followed by a colon; arguments
+are separated by white space.  The first parameter must be
+@samp{Key-Type} but control statements may be placed anywhere.  The
+order of the parameters does not matter except for @samp{Key-Type}.
+The parameters are only used for the generated keyblock (primary and
+subkeys); parameters from previous sets are not used.  Some syntax
+checks may be performed.  Key commences when either the end of the
+parameter file is reached, the next @samp{Key-Type} parameter is
+encountered, or the control statement @samp{%commit} is encountered.
 
 @noindent
 Control statements:
@@ -4459,7 +4503,7 @@ See the previous subsection ``Ephemeral home directories''.
 
 @item %ask-passphrase
 @itemx %no-ask-passphrase
-This option is a no-op for GnuPG 2.1 and later.
+This option is a no-op since GnuPG version 2.1.
 
 @item %no-protection
 Using this option allows the creation of keys without any passphrase

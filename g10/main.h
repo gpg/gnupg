@@ -42,7 +42,7 @@
 #endif
 
 #define DEFAULT_DIGEST_ALGO     ((GNUPG)? DIGEST_ALGO_SHA256:DIGEST_ALGO_SHA1)
-#define DEFAULT_S2K_DIGEST_ALGO DIGEST_ALGO_SHA1
+#define DEFAULT_S2K_DIGEST_ALGO  DEFAULT_DIGEST_ALGO
 #ifdef HAVE_ZIP
 # define DEFAULT_COMPRESS_ALGO   COMPRESS_ALGO_ZIP
 #else
@@ -83,6 +83,7 @@ struct weakhash
 
 /*-- gpg.c --*/
 extern int g10_errors_seen;
+extern int assert_signer_true;
 
 #if __GNUC__ > 2 || (__GNUC__ == 2 && __GNUC_MINOR__ >= 5 )
   void g10_exit(int rc) __attribute__ ((__noreturn__));
@@ -235,7 +236,7 @@ int  cpr_get_answer_okay_cancel (const char *keyword,
 /*-- helptext.c --*/
 void display_online_help( const char *keyword );
 
-/*-- encode.c --*/
+/*-- encrypt.c --*/
 gpg_error_t setup_symkey (STRING2KEY **symkey_s2k,DEK **symkey_dek);
 aead_algo_t use_aead (pk_list_t pk_list, int algo);
 int use_mdc (pk_list_t pk_list,int algo);
@@ -315,6 +316,7 @@ int keygen_set_std_prefs (const char *string,int personal);
 PKT_user_id *keygen_get_std_prefs (void);
 int keygen_add_key_expire( PKT_signature *sig, void *opaque );
 int keygen_add_key_flags (PKT_signature *sig, void *opaque);
+int keygen_add_key_flags_and_expire (PKT_signature *sig, void *opaque);
 int keygen_add_std_prefs( PKT_signature *sig, void *opaque );
 int keygen_upd_std_prefs( PKT_signature *sig, void *opaque );
 int keygen_add_keyserver_url(PKT_signature *sig, void *opaque);
@@ -491,6 +493,7 @@ void print_file_status( int status, const char *name, int what );
 int verify_signatures (ctrl_t ctrl, int nfiles, char **files );
 int verify_files (ctrl_t ctrl, int nfiles, char **files );
 int gpg_verify (ctrl_t ctrl, int sig_fd, int data_fd, estream_t out_fp);
+void check_assert_signer_list (const char *mainpkhex, const char *pkhex);
 
 /*-- decrypt.c --*/
 int decrypt_message (ctrl_t ctrl, const char *filename );
@@ -515,7 +518,7 @@ void change_pin (int no, int allow_admin);
 void card_status (ctrl_t ctrl, estream_t fp, const char *serialno);
 void card_edit (ctrl_t ctrl, strlist_t commands);
 gpg_error_t  card_generate_subkey (ctrl_t ctrl, kbnode_t pub_keyblock);
-int  card_store_subkey (KBNODE node, int use);
+int  card_store_subkey (KBNODE node, int use, strlist_t *processed_keys);
 #endif
 
 /*-- migrate.c --*/

@@ -608,13 +608,14 @@ nvc_get_string (nvc_t nvc, const char *name)
 }
 
 
-/* Return true if NAME exists and its value is true; that is either
- * "yes", "true", or a decimal value unequal to 0.  */
+/* Return true (ie. a non-zero value) if NAME exists and its value is
+ * true; that is either "yes", "true", or a decimal value unequal to 0.  */
 int
 nvc_get_boolean (nvc_t nvc, const char *name)
 {
   nve_t item;
   const char *s;
+  int n;
 
   if (!nvc)
     return 0;
@@ -622,9 +623,12 @@ nvc_get_boolean (nvc_t nvc, const char *name)
   if (!item)
     return 0;
   s = nve_value (item);
-  if (s && (atoi (s)
-            || !ascii_strcasecmp (s, "yes")
-            || !ascii_strcasecmp (s, "true")))
+  if (!s)
+    return 0;
+  n = atoi (s);
+  if (n)
+    return n;
+  if (!ascii_strcasecmp (s, "yes") || !ascii_strcasecmp (s, "true"))
     return 1;
   return 0;
 }

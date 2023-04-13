@@ -2656,6 +2656,7 @@ transfer_secret_keys (ctrl_t ctrl, struct import_stats_s *stats,
                    * in case of cv25519.  We have only opaque MPIs here. */
                   if (pk->pubkey_algo == PUBKEY_ALGO_ECDH
                       && !strcmp (curvestr, "1.3.6.1.4.1.3029.1.5.1")
+                      && !gcry_mpi_get_flag (pk->pkey[i], GCRYMPI_FLAG_USER1)
                       && gcry_mpi_get_flag (pk->pkey[i], GCRYMPI_FLAG_OPAQUE))
                     {
                       const unsigned char *pp;

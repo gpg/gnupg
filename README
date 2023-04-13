@@ -53,7 +53,9 @@
 
   As with all packages, you just have to do
 
-    ./configure
+    mkdir build
+    cd build
+    ../configure
     make
     make check
     make install
@@ -81,7 +83,8 @@
   To quickly build all required software without installing it, the
   Speedo method may be used:
 
-    make -f build-aux/speedo.mk  native
+    cd build
+    make -f ../build-aux/speedo.mk  native
 
   This method downloads all required libraries and does a native build
   of GnuPG to PLAY/inst/.  GNU make is required and you need to set
@@ -124,6 +127,9 @@
   global /etc/gnupg/common.conf.  See also doc/examples/common.conf.
   Only public keys and X.509 certificates are managed by the keyboxd;
   private keys are still stored as separate files.
+
+  Since version 2.4.1 the keyboxd will be used by default for a fresh
+  install; i.e. if a ~/.gnupg directory did not yet exist.
 
   Note that there is no automatic migration; if the use-keyboxd option
   is enabled keys are not taken from pubring.kbx.  To migrate existing

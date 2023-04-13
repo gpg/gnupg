@@ -777,21 +777,21 @@ openpgp_pk_algo_usage ( int algo )
     switch ( algo ) {
       case PUBKEY_ALGO_RSA:
           use = (PUBKEY_USAGE_CERT | PUBKEY_USAGE_SIG
-                 | PUBKEY_USAGE_ENC | PUBKEY_USAGE_AUTH);
+                 | PUBKEY_USAGE_ENC | PUBKEY_USAGE_RENC | PUBKEY_USAGE_AUTH);
           break;
       case PUBKEY_ALGO_RSA_E:
       case PUBKEY_ALGO_ECDH:
-          use = PUBKEY_USAGE_ENC;
+          use = PUBKEY_USAGE_ENC | PUBKEY_USAGE_RENC;
           break;
       case PUBKEY_ALGO_RSA_S:
           use = PUBKEY_USAGE_CERT | PUBKEY_USAGE_SIG;
           break;
       case PUBKEY_ALGO_ELGAMAL:
           if (RFC2440)
-             use = PUBKEY_USAGE_ENC;
+             use = PUBKEY_USAGE_ENC | PUBKEY_USAGE_RENC;
           break;
       case PUBKEY_ALGO_ELGAMAL_E:
-          use = PUBKEY_USAGE_ENC;
+          use = PUBKEY_USAGE_ENC | PUBKEY_USAGE_RENC;
           break;
       case PUBKEY_ALGO_DSA:
           use = PUBKEY_USAGE_CERT | PUBKEY_USAGE_SIG | PUBKEY_USAGE_AUTH;
@@ -1563,9 +1563,10 @@ parse_options(char *str,unsigned int *options,
 {
   char *tok;
 
-  if (str && !strcmp (str, "help"))
+  if (str && (!strcmp (str, "help") || !strcmp (str, "full-help")))
     {
       int i,maxlen=0;
+      int full = *str == 'f';
 
       /* Figure out the longest option name so we can line these up
 	 neatly. */
@@ -1577,6 +1578,10 @@ parse_options(char *str,unsigned int *options,
         if(opts[i].help)
 	  es_printf("%s%*s%s\n",opts[i].name,
                     maxlen+2-(int)strlen(opts[i].name),"",_(opts[i].help));
+      if (full)
+        for (i=0; opts[i].name; i++)
+          if(!opts[i].help)
+            es_printf("%s\n",opts[i].name);
 
       g10_exit(0);
     }

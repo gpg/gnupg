@@ -522,6 +522,11 @@ pkd:0:1024:B665B1435F4C2 .... FF26ABB:
     Epoch or an ISO 8601 string which can be detected by the presence
     of the letter 'T'.
 
+*** ASSERT_SIGNER <fingerprint>
+    This is emitted for the matching <fingerprint> when option
+    --assert-signer is used.  The fingerprint is printed with
+    uppercase hex digits.
+
 *** SIG_ID  <radix64_string>  <sig_creation_date>  <sig-timestamp>
     This is emitted only for signatures of class 0 or 1 which have
     been verified okay.  The string is a signature id and may be used
@@ -1151,7 +1156,13 @@ pkd:0:1024:B665B1435F4C2 .... FF26ABB:
            - learncard :: Send by the agent and gpgsm while learing
                           the data of a smartcard.
            - card_busy :: A smartcard is still working
-           - scd_locked :: Waiting for other clients to unlock the scdaemon
+           - scd_locked :: Waiting for other clients to unlock the
+                           scdaemon
+           - gpgtar :: Here <char> has a special meaning: 's'
+                       indicates total size and 'c' file count.  A
+                       <total> of zero indicates that gpgtar is in the
+                       scanning phase.  A positive <total> is used in
+                       the writing phase.
 
     When <what> refers to a file path, it may be truncated.
 
@@ -1176,6 +1187,17 @@ pkd:0:1024:B665B1435F4C2 .... FF26ABB:
     inquiry line with the same name used internally or, if enabled,
     send to the client instead of this status line.  Such an inquiry
     may be used to sync with Pinentry
+
+*** GPGTAR_EXTRACT <tot> <skp> <bad> <sus> <sym> <hrd> <oth>
+    This status line is emitted after gpgtar has extracted files.
+
+    - tot :: Total number of files extracted and stored
+    - skp :: Total number of files skipped during extraction
+    - bad :: Number of files skipped due to a bad file name
+    - sus :: Number of files skipped due to a suspicious file name
+    - sym :: Number of symlinks not restored
+    - hrd :: Number of hard links not restored
+    - oth :: Number of files not extracted due to other reasons.
 
 ** Obsolete status codes
 *** SIGEXPIRED
@@ -1678,6 +1700,7 @@ Description of some debug flags:
   - RFC-1750 :: Randomness Recommendations for Security
   - RFC-1991 :: PGP Message Exchange Formats (obsolete)
   - RFC-2144 :: The CAST-128 Encryption Algorithm
+  - RFC-2253 :: UTF-8 String Representation of Distinguished Names.
   - RFC-2279 :: UTF-8, a transformation format of ISO 10646
   - RFC-2440 :: OpenPGP (obsolete).
   - RFC-3156 :: MIME Security with Pretty Good Privacy (PGP).
@@ -1700,14 +1723,20 @@ Description of some debug flags:
   - RFC-5915 :: ECC Private Key Structure
   - RFC-5958 :: Asymmetric Key Packages
   - RFC-6337 :: ECC in OpenPGP
+  - RFC-7748 :: Elliptic Curves for Security (X25519 and X448)
+  - RFC-8410 :: Algorithm Identifiers for Ed25519, Ed448, X25519, and X448
   - RFC-7292 :: PKCS #12: Personal Information Exchange Syntax v1.1
   - RFC-8351 :: The PKCS #8 EncryptedPrivateKeyInfo Media Type
   - RFC-8550 :: S/MIME Version 4.0 Certificate Handling
   - RFC-8551 :: S/MIME Version 4.0 Message Specification
   - RFC-2634 :: Enhanced Security Services for S/MIME
   - RFC-5035 :: Enhanced Security Services (ESS) Update
+  - RFC-7253 :: The OCB Authenticated-Encryption Algorithm
 
   - draft-koch-openpgp-2015-rfc4880bis :: Updates to RFC-4880
+
+  - T6390 :: Notes on use of X25519 in GnuPG (https://dev.gnupg.org/T6390)
+
 
 ** v3 fingerprints
    For packet version 3 we calculate the keyids this way:
@@ -1718,17 +1747,10 @@ Description of some debug flags:
 
 ** gnupg.org notations
 
-  - adsk@gnupg.org :: Additional decryption subkey.  This notation
-                      gives a list of keys an implementation SHOULD
-                      also encrypt to.  The data consists of an array
-                      of eight-octet numbers holding the Key ID of an
-                      encryption subkey.  This notation is only valid
-                      on an encryption subkey (i.e. with first octet
-                      of the key flags 0x04 or 0x08).  Subkeys not on
-                      the same keyblock MUST NOT be considered.  For
-                      interoperability this notation SHOULD NOT be
-                      marked as criticial.  Due to its nature it MUST
-                      NOT be marked as human readable.
+  - rem@gnupg.org :: Used by Kleopatra to implement the tag feature.
+                     These tags are used to mark keys for easier
+                     searching and grouping.
+
 
 ** Simplified revocation certificates
   Revocation certificates consist only of the signature packet;
@@ -1797,3 +1819,27 @@ Description of some debug flags:
    it is also possible to set them direct: Use a "=" character
    directly followed by a combination of "a" (for authentication), "s"
    (for signing), or "c" (for certification).
+
+** extendedKeyUsage and keyUsage in gpgsm
+
+This table describes how the extended KeyUsage masks the KeyUsage.
+
+  | ExtKeyUsage     | Valid KeyUsages  |
+  |-----------------+------------------|
+  | serverAuth      | digitalSignature |
+  |                 | keyEncipherment  |
+  |                 | keyAgreement     |
+  |-----------------+------------------|
+  | clientAuth      | digitalSignature |
+  |                 | keyAgreement     |
+  |-----------------+------------------|
+  | codeSigning     | digitalSignature |
+  |-----------------+------------------|
+  | emailProtection | digitalSignature |
+  |                 | nonRepudiation   |
+  |                 | keyEncipherment  |
+  |                 | keyAgreement     |
+  |-----------------+------------------|
+  | timeStamping    | digitalSignature |
+  |                 | nonRepudiation   |
+  |-----------------+------------------|

@@ -158,7 +158,8 @@ get_inv_recpsgnr_code (gpg_error_t err)
     case GPG_ERR_WRONG_KEY_USAGE: errstr = "3"; break;
     case GPG_ERR_CERT_REVOKED:    errstr = "4"; break;
     case GPG_ERR_CERT_EXPIRED:    errstr = "5"; break;
-    case GPG_ERR_NO_CRL_KNOWN:    errstr = "6"; break;
+    case GPG_ERR_NO_CRL_KNOWN:
+    case GPG_ERR_INV_CRL_OBJ:     errstr = "6"; break;
     case GPG_ERR_CRL_TOO_OLD:     errstr = "7"; break;
     case GPG_ERR_NO_POLICY_MATCH: errstr = "8"; break;
 

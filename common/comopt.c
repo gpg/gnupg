@@ -60,6 +60,8 @@ static gpgrt_opt_t opts[] = {
 };
 
 
+struct gnupg_comopt_s comopt = {NULL};
+
 
 /* Parse the common options in the homedir and etc.  This needs to be
  * called after the gpgrt config directories are set.  MODULE_ID is one of

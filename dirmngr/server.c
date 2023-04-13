@@ -146,7 +146,7 @@ get_ldapservers_from_ctrl (ctrl_t ctrl)
 }
 
 /* Release an uri_item_t list.  */
-static void
+void
 release_uri_item_list (uri_item_t list)
 {
   while (list)
@@ -1339,6 +1339,10 @@ cmd_isvalid (assuan_context_t ctx, char *line)
     }
   else if (only_ocsp)
     err = gpg_error (GPG_ERR_NO_CRL_KNOWN);
+  else if (opt.fake_crl && (err = fakecrl_isvalid (ctrl, issuerhash, serialno)))
+    {
+      /* We already got the error code.  */
+    }
   else
     {
       switch (crl_cache_isvalid (ctrl,
@@ -1360,8 +1364,11 @@ cmd_isvalid (assuan_context_t ctx, char *line)
               goto again;
             }
           break;
+        case CRL_CACHE_NOTTRUSTED:
+          err = gpg_error (GPG_ERR_NOT_TRUSTED);
+          break;
         case CRL_CACHE_CANTUSE:
-          err = gpg_error (GPG_ERR_NO_CRL_KNOWN);
+          err = gpg_error (GPG_ERR_INV_CRL_OBJ);
           break;
         default:
           log_fatal ("crl_cache_isvalid returned invalid code\n");
@@ -1374,7 +1381,7 @@ cmd_isvalid (assuan_context_t ctx, char *line)
 
 
 /* If the line contains a SHA-1 fingerprint as the first argument,
-   return the FPR vuffer on success.  The function checks that the
+   return the FPR buffer on success.  The function checks that the
    fingerprint consists of valid characters and prints and error
    message if it does not and returns NULL.  Fingerprints are
    considered optional and thus no explicit error is returned. NULL is
@@ -1469,7 +1476,7 @@ cmd_checkcrl (assuan_context_t ctx, char *line)
         goto leave;
     }
 
-  assert (cert);
+  log_assert (cert);
 
   err = crl_cache_cert_isvalid (ctrl, cert, ctrl->force_crl_refresh);
   if (gpg_err_code (err) == GPG_ERR_NO_CRL_KNOWN)
@@ -2140,15 +2147,6 @@ cmd_validate (assuan_context_t ctx, char *line)
 static gpg_error_t
 make_keyserver_item (const char *uri, uri_item_t *r_item)
 {
-  gpg_error_t err;
-  uri_item_t item;
-  char *tmpstr = NULL;
-#if USE_LDAP
-  const char *s;
-#endif
-
-  *r_item = NULL;
-
   /* We used to have DNS CNAME redirection from the URLs below to
    * sks-keyserver. pools.  The idea was to allow for a quick way to
    * switch to a different set of pools.  The problem with that
@@ -2180,78 +2178,7 @@ make_keyserver_item (const char *uri, uri_item_t *r_item)
   else if (!strcmp (uri, "http://http-keys.gnupg.net"))
     uri = "hkp://keyserver.ubuntu.com:80";
 
-  item = xtrymalloc (sizeof *item + strlen (uri));
-  if (!item)
-    return gpg_error_from_syserror ();
-
-  item->next = NULL;
-  item->parsed_uri = NULL;
-  strcpy (item->uri, uri);
-
-#if USE_LDAP
-  if (!strncmp (uri, "ldap:", 5) && !(uri[5] == '/' && uri[6] == '/'))
-    {
-      /* Special ldap scheme given.  This differs from a valid ldap
-       * scheme in that no double slash follows..  Use http_parse_uri
-       * to put it as opaque value into parsed_uri.  */
-      tmpstr = strconcat ("opaque:", uri+5, NULL);
-      if (!tmpstr)
-        err = gpg_error_from_syserror ();
-      else
-        err = http_parse_uri (&item->parsed_uri, tmpstr, 0);
-    }
-  else if ((s=strchr (uri, ':')) && !(s[1] == '/' && s[2] == '/'))
-    {
-      /* No valid scheme given.  Use http_parse_uri to put the string
-       * as opaque value into parsed_uri.  */
-      tmpstr = strconcat ("opaque:", uri, NULL);
-      if (!tmpstr)
-        err = gpg_error_from_syserror ();
-      else
-        err = http_parse_uri (&item->parsed_uri, tmpstr, 0);
-    }
-  else if (ldap_uri_p (uri))
-    {
-      int fixup = 0;
-      /* Fixme: We should get rid of that parser and replace it with
-       * our generic (http) URI parser.  */
-
-      /* If no port has been specified and the scheme ist ldaps we use
-       * our idea of the default port because the standard LDAP URL
-       * parser would use 636 here.  This is because we redefined
-       * ldaps to mean starttls.  */
-#ifdef HAVE_W32_SYSTEM
-      if (!strcmp (uri, "ldap:///"))
-          fixup = 1;
-      else
-#endif
-        if (!http_parse_uri (&item->parsed_uri,uri,HTTP_PARSE_NO_SCHEME_CHECK))
-        {
-          if (!item->parsed_uri->port
-              && !strcmp (item->parsed_uri->scheme, "ldaps"))
-            fixup = 2;
-          http_release_parsed_uri (item->parsed_uri);
-          item->parsed_uri = NULL;
-        }
-
-      err = ldap_parse_uri (&item->parsed_uri, uri);
-      if (!err && fixup == 1)
-        item->parsed_uri->ad_current = 1;
-      else if (!err && fixup == 2)
-        item->parsed_uri->port = 389;
-    }
-  else
-#endif /* USE_LDAP */
-    {
-      err = http_parse_uri (&item->parsed_uri, uri, HTTP_PARSE_NO_SCHEME_CHECK);
-    }
-
-  xfree (tmpstr);
-  if (err)
-    xfree (item);
-  else
-    *r_item = item;
-  return err;
+  return ks_action_parse_uri (uri, r_item);
 }
 
 
@@ -2534,22 +2461,28 @@ cmd_ks_search (assuan_context_t ctx, char *line)
 
 
 static const char hlp_ks_get[] =
-  "KS_GET [--quick] [--ldap] [--first|--next] {<pattern>}\n"
+  "KS_GET [--quick] [--newer=TIME] [--ldap] [--first|--next] {<pattern>}\n"
   "\n"
   "Get the keys matching PATTERN from the configured OpenPGP keyservers\n"
   "(see command KEYSERVER).  Each pattern should be a keyid, a fingerprint,\n"
   "or an exact name indicated by the '=' prefix.  Option --quick uses a\n"
   "shorter timeout; --ldap will use only ldap servers.  With --first only\n"
-  "the first item is returned; --next is used to return the next item";
+  "the first item is returned; --next is used to return the next item\n"
+  "Option --newer works only with certain LDAP servers.";
 static gpg_error_t
 cmd_ks_get (assuan_context_t ctx, char *line)
 {
   ctrl_t ctrl = assuan_get_pointer (ctx);
   gpg_error_t err;
-  strlist_t list, sl;
+  strlist_t list = NULL;
+  strlist_t sl;
+  const char *s;
   char *p;
   estream_t outfp;
   unsigned int flags = 0;
+  gnupg_isotime_t opt_newer;
+
+  *opt_newer = 0;
 
   if (has_option (line, "--quick"))
     ctrl->timeout = opt.connect_quick_timeout;
@@ -2559,13 +2492,18 @@ cmd_ks_get (assuan_context_t ctx, char *line)
     flags |= KS_GET_FLAG_FIRST;
   if (has_option (line, "--next"))
     flags |= KS_GET_FLAG_NEXT;
+  if ((s = option_value (line, "--newer"))
+      && !string2isotime (opt_newer, s))
+    {
+      err = set_error (GPG_ERR_SYNTAX, "invalid time format");
+      goto leave;
+    }
   line = skip_options (line);
 
   /* Break the line into a strlist.  Each pattern is by
      definition percent-plus escaped.  However we only support keyids
      and fingerprints and thus the client has no need to apply the
      escaping.  */
-  list = NULL;
   for (p=line; *p; line = p)
     {
       while (*p && *p != ' ')
@@ -2642,7 +2580,7 @@ cmd_ks_get (assuan_context_t ctx, char *line)
       ctrl->server_local->inhibit_data_logging_now = 0;
       ctrl->server_local->inhibit_data_logging_count = 0;
       err = ks_action_get (ctrl, ctrl->server_local->keyservers,
-                           list, flags, outfp);
+                           list, flags, opt_newer, outfp);
       es_fclose (outfp);
       ctrl->server_local->inhibit_data_logging = 0;
     }
@@ -2762,6 +2700,96 @@ cmd_ks_put (assuan_context_t ctx, char *line)
 
 
 
+static const char hlp_ad_query[] =
+  "AD_QUERY [--first|--next] [--] <filter_expression> \n"
+  "\n"
+  "Query properties from a Windows Active Directory.\n"
+  "Our extended filter syntax may be used for the filter\n"
+  "expression; see gnupg/dirmngr/ldap-misc.c.  There are\n"
+  "a couple of other options available:\n\n"
+  "  --rootdse - Query the root using serverless binding,\n"
+  "  --attr=<attribs> - Comma delimited list of attributes\n"
+  "                     to return.\n"
+  ;
+static gpg_error_t
+cmd_ad_query (assuan_context_t ctx, char *line)
+{
+  ctrl_t ctrl = assuan_get_pointer (ctx);
+  gpg_error_t err;
+  unsigned int flags = 0;
+  const char *filter;
+  estream_t outfp = NULL;
+  char *p;
+  char **opt_attr = NULL;
+  const char *s;
+  gnupg_isotime_t opt_newer;
+
+  *opt_newer = 0;
+
+  /* No options for now.  */
+  if (has_option (line, "--first"))
+    flags |= KS_GET_FLAG_FIRST;
+  if (has_option (line, "--next"))
+    flags |= KS_GET_FLAG_NEXT;
+  if (has_option (line, "--rootdse"))
+    flags |= KS_GET_FLAG_ROOTDSE;
+  if ((s = option_value (line, "--newer"))
+      && !string2isotime (opt_newer, s))
+    {
+      err = set_error (GPG_ERR_SYNTAX, "invalid time format");
+      goto leave;
+    }
+  err = get_option_value (line, "--attr", &p);
+  if (err)
+    goto leave;
+  if (p)
+    {
+      opt_attr = strtokenize (p, ",");
+      if (!opt_attr)
+        {
+          err = gpg_error_from_syserror ();
+          xfree (p);
+          goto leave;
+        }
+      xfree (p);
+    }
+  line = skip_options (line);
+  filter = line;
+
+  if ((flags & KS_GET_FLAG_NEXT))
+    {
+      if (*filter || (flags & ~KS_GET_FLAG_NEXT))
+        {
+          err = PARM_ERROR ("No filter or other options allowed with --next");
+          goto leave;
+        }
+    }
+
+  /* Setup an output stream and perform the get.  */
+  outfp = es_fopencookie (ctx, "w", data_line_cookie_functions);
+  if (!outfp)
+    {
+      err = set_error (GPG_ERR_ASS_GENERAL, "error setting up a data stream");
+      goto leave;
+    }
+
+  ctrl->server_local->inhibit_data_logging = 1;
+  ctrl->server_local->inhibit_data_logging_now = 0;
+  ctrl->server_local->inhibit_data_logging_count = 0;
+
+  err = ks_action_query (ctrl,
+                         (flags & KS_GET_FLAG_ROOTDSE)? NULL : "ldap:///",
+                         flags, filter, opt_attr, opt_newer, outfp);
+
+ leave:
+  es_fclose (outfp);
+  xfree (opt_attr);
+  ctrl->server_local->inhibit_data_logging = 0;
+  return leave_cmd (ctx, err);
+}
+
+
+
 static const char hlp_loadswdb[] =
   "LOADSWDB [--force]\n"
   "\n"
@@ -2785,13 +2813,14 @@ static const char hlp_getinfo[] =
   "Multi purpose command to return certain information.  \n"
   "Supported values of WHAT are:\n"
   "\n"
-  "version     - Return the version of the program.\n"
-  "pid         - Return the process id of the server.\n"
+  "version     - Return the version of the program\n"
+  "pid         - Return the process id of the server\n"
   "tor         - Return OK if running in Tor mode\n"
   "dnsinfo     - Return info about the DNS resolver\n"
-  "socket_name - Return the name of the socket.\n"
-  "session_id  - Return the current session_id.\n"
+  "socket_name - Return the name of the socket\n"
+  "session_id  - Return the current session_id\n"
   "workqueue   - Inspect the work queue\n"
+  "stats       - Print stats\n"
   "getenv NAME - Return value of envvar NAME\n";
 static gpg_error_t
 cmd_getinfo (assuan_context_t ctx, char *line)
@@ -2858,6 +2887,12 @@ cmd_getinfo (assuan_context_t ctx, char *line)
   else if (!strcmp (line, "workqueue"))
     {
       workqueue_dump_queue (ctrl);
+      err = 0;
+    }
+  else if (!strcmp (line, "stats"))
+    {
+      cert_cache_print_stats (ctrl);
+      domaininfo_print_stats (ctrl);
       err = 0;
     }
   else if (!strncmp (line, "getenv", 6)
@@ -2959,6 +2994,7 @@ register_commands (assuan_context_t ctx)
     { "KS_GET",     cmd_ks_get,     hlp_ks_get },
     { "KS_FETCH",   cmd_ks_fetch,   hlp_ks_fetch },
     { "KS_PUT",     cmd_ks_put,     hlp_ks_put },
+    { "AD_QUERY",   cmd_ad_query,   hlp_ad_query },
     { "GETINFO",    cmd_getinfo,    hlp_getinfo },
     { "LOADSWDB",   cmd_loadswdb,   hlp_loadswdb },
     { "KILLDIRMNGR",cmd_killdirmngr,hlp_killdirmngr },
@@ -3218,7 +3254,8 @@ dirmngr_status_help (ctrl_t ctrl, const char *text)
 
 
 /* Print a help status line using a printf like format.  The function
- * splits text at LFs.  */
+ * splits text at LFs.  With CTRL beeing NULL, the function behaves
+ * like log_info.  */
 gpg_error_t
 dirmngr_status_helpf (ctrl_t ctrl, const char *format, ...)
 {
@@ -3227,12 +3264,20 @@ dirmngr_status_helpf (ctrl_t ctrl, const char *format, ...)
   char *buf;
 
   va_start (arg_ptr, format);
-  buf = es_vbsprintf (format, arg_ptr);
-  err = buf? 0 : gpg_error_from_syserror ();
+  if (ctrl)
+    {
+      buf = es_vbsprintf (format, arg_ptr);
+      err = buf? 0 : gpg_error_from_syserror ();
+      if (!err)
+        err = dirmngr_status_help (ctrl, buf);
+      es_free (buf);
+    }
+  else
+    {
+      log_logv (GPGRT_LOGLVL_INFO, format, arg_ptr);
+      err = 0;
+    }
   va_end (arg_ptr);
-  if (!err)
-    err = dirmngr_status_help (ctrl, buf);
-  es_free (buf);
   return err;
 }
 

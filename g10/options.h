@@ -111,6 +111,9 @@ struct
    * the option --sender.  */
   strlist_t sender_list;
 
+  /* A list of fingerprints added as designated revokers to new keys.  */
+  strlist_t desig_revokers;
+
   int def_cert_level;
   int min_cert_level;
   int ask_cert_level;
@@ -231,6 +234,10 @@ struct
   /* If > 0, limit the number of card insertion prompts to this
      value. */
   int limit_card_insert_tries;
+
+  /* The list of --assert-signer option values.  Note: The values are
+   * modify to be uppercase if they represent a fingerrint */
+  strlist_t assert_signer_list;
 
   struct
   {
@@ -426,6 +433,7 @@ EXTERN_UNLESS_MAIN_MODULE int memory_stat_debug_mode;
 #define LIST_SORT_SIGS                   (1<<13)
 #define LIST_SHOW_PREF                   (1<<14)
 #define LIST_SHOW_PREF_VERBOSE           (1<<15)
+#define LIST_SHOW_UNUSABLE_SIGS          (1<<16)
 
 #define VERIFY_SHOW_PHOTOS               (1<<0)
 #define VERIFY_SHOW_POLICY_URLS          (1<<1)

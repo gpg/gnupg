@@ -379,12 +379,11 @@ do_encryption (const unsigned char *hashbegin, size_t hashlen,
                const char *passphrase,
                const char *timestamp_exp, size_t timestamp_exp_len,
                unsigned char **result, size_t *resultlen,
-	       unsigned long s2k_count, int use_ocb)
+	       unsigned long s2k_count)
 {
   gcry_cipher_hd_t hd;
   const char *modestr;
-  unsigned char hashvalue[20];
-  int blklen, enclen, outlen;
+  int enclen, outlen;
   unsigned char *iv = NULL;
   unsigned int ivsize;  /* Size of the buffer allocated for IV.  */
   const unsigned char *s2ksalt; /* Points into IV.  */
@@ -398,44 +397,26 @@ do_encryption (const unsigned char *hashbegin, size_t hashlen,
   *resultlen = 0;
   *result = NULL;
 
-  modestr = (use_ocb? "openpgp-s2k3-ocb-aes"
-             /*   */: "openpgp-s2k3-sha1-" PROT_CIPHER_STRING "-cbc");
+  modestr = "openpgp-s2k3-ocb-aes";
 
   rc = gcry_cipher_open (&hd, PROT_CIPHER,
-                         use_ocb? GCRY_CIPHER_MODE_OCB :
-                         GCRY_CIPHER_MODE_CBC,
+                         GCRY_CIPHER_MODE_OCB,
                          GCRY_CIPHER_SECURE);
   if (rc)
     return rc;
 
   /* We need to work on a copy of the data because this makes it
    * easier to add the trailer and the padding and more important we
-   * have to prefix the text with 2 parenthesis.  In CBC mode we
-   * have to allocate enough space for:
-   *
-   *   ((<parameter_list>)(4:hash4:sha120:<hashvalue>)) + padding
-   *
-   * we always append a full block of random bytes as padding but
-   * encrypt only what is needed for a full blocksize.  In OCB mode we
+   * have to prefix the text with 2 parenthesis.  Due to OCB mode we
    * have to allocate enough space for just:
    *
    *   ((<parameter_list>))
    */
-  blklen = gcry_cipher_get_algo_blklen (PROT_CIPHER);
-  if (use_ocb)
-    {
-      /*       ((            )) */
-      outlen = 2 + protlen + 2 ;
-      enclen = outlen + 16 /* taglen */;
-      outbuf = gcry_malloc_secure (enclen);
-    }
-  else
-    {
-      /*       ((            )( 4:hash 4:sha1 20:<hash> ))  <padding>  */
-      outlen = 2 + protlen + 2 + 6   + 6    + 23      + 2 + blklen;
-      enclen = outlen/blklen * blklen;
-      outbuf = gcry_malloc_secure (outlen);
-    }
+
+  /*       ((            )) */
+  outlen = 2 + protlen + 2 ;
+  enclen = outlen + 16 /* taglen */;
+  outbuf = gcry_malloc_secure (enclen);
   if (!outbuf)
     {
       rc = out_of_core ();
@@ -445,10 +426,10 @@ do_encryption (const unsigned char *hashbegin, size_t hashlen,
   /* Allocate a buffer for the nonce and the salt.  */
   if (!rc)
     {
-      /* Allocate random bytes to be used as IV, padding and s2k salt
-       * or in OCB mode for a nonce and the s2k salt.  The IV/nonce is
-       * set later because for OCB we need to set the key first.  */
-      ivsize = (use_ocb? 12 : (blklen*2)) + 8;
+      /* Allocate random bytes to be used as nonce and s2k salt.  The
+       * nonce is set later because for OCB we need to set the key
+       * first.  */
+      ivsize = 12 + 8;
       iv = xtrymalloc (ivsize);
       if (!iv)
         rc = gpg_error_from_syserror ();
@@ -484,40 +465,17 @@ do_encryption (const unsigned char *hashbegin, size_t hashlen,
     goto leave;
 
   /* Set the IV/nonce.  */
-  rc = gcry_cipher_setiv (hd, iv, use_ocb? 12 : blklen);
+  rc = gcry_cipher_setiv (hd, iv, 12);
   if (rc)
     goto leave;
 
-  if (use_ocb)
-    {
-      /* In OCB Mode we use only the public key parameters as AAD.  */
-      rc = gcry_cipher_authenticate (hd, hashbegin, protbegin - hashbegin);
-      if (!rc)
-        rc = gcry_cipher_authenticate (hd, timestamp_exp, timestamp_exp_len);
-      if (!rc)
-        rc = gcry_cipher_authenticate
-          (hd, protbegin+protlen, hashlen - (protbegin+protlen - hashbegin));
-    }
-  else
-    {
-      /* Hash the entire expression for CBC mode.  Because
-       * TIMESTAMP_EXP won't get protected, we can't simply hash a
-       * continuous buffer but need to call md_write several times.  */
-      gcry_md_hd_t md;
-
-      rc = gcry_md_open (&md, GCRY_MD_SHA1, 0 );
-      if (!rc)
-        {
-          gcry_md_write (md, hashbegin, protbegin - hashbegin);
-          gcry_md_write (md, protbegin, protlen);
-          gcry_md_write (md, timestamp_exp, timestamp_exp_len);
-          gcry_md_write (md, protbegin+protlen,
-                         hashlen - (protbegin+protlen - hashbegin));
-          memcpy (hashvalue, gcry_md_read (md, GCRY_MD_SHA1), 20);
-          gcry_md_close (md);
-        }
-    }
-
+  /* In OCB Mode we use only the public key parameters as AAD.  */
+  rc = gcry_cipher_authenticate (hd, hashbegin, protbegin - hashbegin);
+  if (!rc)
+    rc = gcry_cipher_authenticate (hd, timestamp_exp, timestamp_exp_len);
+  if (!rc)
+    rc = gcry_cipher_authenticate
+      (hd, protbegin+protlen, hashlen - (protbegin+protlen - hashbegin));
 
   /* Encrypt.  */
   if (!rc)
@@ -527,36 +485,15 @@ do_encryption (const unsigned char *hashbegin, size_t hashlen,
       *p++ = '(';
       memcpy (p, protbegin, protlen);
       p += protlen;
-      if (use_ocb)
-        {
-          *p++ = ')';
-          *p++ = ')';
-        }
-      else
-        {
-          memcpy (p, ")(4:hash4:sha120:", 17);
-          p += 17;
-          memcpy (p, hashvalue, 20);
-          p += 20;
-          *p++ = ')';
-          *p++ = ')';
-          memcpy (p, iv+blklen, blklen); /* Add padding.  */
-          p += blklen;
-        }
+      *p++ = ')';
+      *p++ = ')';
       log_assert ( p - outbuf == outlen);
-      if (use_ocb)
+      gcry_cipher_final (hd);
+      rc = gcry_cipher_encrypt (hd, outbuf, outlen, NULL, 0);
+      if (!rc)
         {
-          gcry_cipher_final (hd);
-          rc = gcry_cipher_encrypt (hd, outbuf, outlen, NULL, 0);
-          if (!rc)
-            {
-              log_assert (outlen + 16 == enclen);
-              rc = gcry_cipher_gettag (hd, outbuf + outlen, 16);
-            }
-        }
-      else
-        {
-          rc = gcry_cipher_encrypt (hd, outbuf, enclen, NULL, 0);
+          log_assert (outlen + 16 == enclen);
+          rc = gcry_cipher_gettag (hd, outbuf + outlen, 16);
         }
     }
 
@@ -584,7 +521,7 @@ do_encryption (const unsigned char *hashbegin, size_t hashlen,
        (int)strlen (modestr), modestr,
        &saltpos,
        (unsigned int)strlen (countbuf), countbuf,
-       use_ocb? 12 : blklen, &ivpos, use_ocb? 12 : blklen, "",
+       12, &ivpos, 12, "",
        enclen, &encpos, enclen, "");
     if (!p)
       {
@@ -598,7 +535,7 @@ do_encryption (const unsigned char *hashbegin, size_t hashlen,
   *resultlen = strlen (p);
   *result = (unsigned char*)p;
   memcpy (p+saltpos, s2ksalt, 8);
-  memcpy (p+ivpos, iv, use_ocb? 12 : blklen);
+  memcpy (p+ivpos, iv, 12);
   memcpy (p+encpos, outbuf, enclen);
   xfree (iv);
   xfree (outbuf);
@@ -614,13 +551,11 @@ do_encryption (const unsigned char *hashbegin, size_t hashlen,
 
 
 /* Protect the key encoded in canonical format in PLAINKEY.  We assume
-   a valid S-Exp here.  With USE_UCB set to -1 the default scheme is
-   used (ie. either CBC or OCB), set to 0 the old CBC mode is used,
-   and set to 1 OCB is used. */
+ * a valid S-Exp here.  */
 int
 agent_protect (const unsigned char *plainkey, const char *passphrase,
                unsigned char **result, size_t *resultlen,
-	       unsigned long s2k_count, int use_ocb)
+	       unsigned long s2k_count)
 {
   int rc;
   const char *parmlist;
@@ -636,9 +571,6 @@ agent_protect (const unsigned char *plainkey, const char *passphrase,
   int depth = 0;
   unsigned char *p;
   int have_curve = 0;
-
-  if (use_ocb == -1)
-    use_ocb = !!opt.enable_extended_key_format;
 
   /* Create an S-expression with the protected-at timestamp.  */
   memcpy (timestamp_exp, "(12:protected-at15:", 19);
@@ -743,7 +675,7 @@ agent_protect (const unsigned char *plainkey, const char *passphrase,
   rc = do_encryption (hash_begin, hash_end - hash_begin + 1,
                       prot_begin, prot_end - prot_begin + 1,
                       passphrase, timestamp_exp, sizeof (timestamp_exp),
-                      &protected, &protectedlen, s2k_count, use_ocb);
+                      &protected, &protectedlen, s2k_count);
   if (rc)
     return rc;
 

@@ -114,6 +114,7 @@ enum cmd_and_opt_values {
   oNoLogFile,
   oAuditLog,
   oHtmlAuditLog,
+  oLogTime,
 
   oEnableSpecialFilenames,
 
@@ -169,6 +170,7 @@ enum cmd_and_opt_values {
   oWithKeyScreening,
   oAnswerYes,
   oAnswerNo,
+  oNoPrettyDN,
   oKeyring,
   oDefaultKey,
   oDefRecipient,
@@ -288,6 +290,7 @@ static gpgrt_opt_t opts[] = {
                 N_("|FILE|write server mode logs to FILE")),
   ARGPARSE_s_n (oNoLogFile, "no-log-file", "@"),
   ARGPARSE_s_i (oLoggerFD, "logger-fd", "@"),
+  ARGPARSE_s_n (oLogTime, "log-time", "@"),
   ARGPARSE_s_n (oNoSecmemWarn, "no-secmem-warning", "@"),
 
 
@@ -383,7 +386,7 @@ static gpgrt_opt_t opts[] = {
   ARGPARSE_s_n (oWithKeygrip,     "with-keygrip", "@"),
   ARGPARSE_s_n (oWithSecret,      "with-secret", "@"),
   ARGPARSE_s_n (oWithKeyScreening,"with-key-screening", "@"),
-
+  ARGPARSE_s_n (oNoPrettyDN, "no-pretty-dn", "@"),
 
 
   ARGPARSE_header ("Security", N_("Options controlling the security")),
@@ -498,6 +501,9 @@ static int maybe_setuid = 1;
 /* Helper to implement --debug-level and --debug*/
 static const char *debug_level;
 static unsigned int debug_value;
+
+/* Helper for --log-time;  */
+static int opt_log_time;
 
 /* Default value for include-certs.  We need an extra macro for
    gpgconf-list because the variable will be changed by the command
@@ -1247,6 +1253,7 @@ main ( int argc, char **argv)
 
         case oLogFile: logfile = pargs.r.ret_str; break;
         case oNoLogFile: logfile = NULL; break;
+        case oLogTime: opt_log_time = 1; break;
 
         case oAuditLog: auditlog = pargs.r.ret_str; break;
         case oHtmlAuditLog: htmlauditlog = pargs.r.ret_str; break;
@@ -1310,6 +1317,10 @@ main ( int argc, char **argv)
 
         case oWithKeyScreening:
           opt.with_key_screening = 1;
+          break;
+
+        case oNoPrettyDN:
+          opt.no_pretty_dn = 1;
           break;
 
         case oHomedir: gnupg_set_homedir (pargs.r.ret_str); break;
@@ -1579,6 +1590,10 @@ main ( int argc, char **argv)
       log_set_file (logfile);
       log_set_prefix (NULL, GPGRT_LOG_WITH_PREFIX | GPGRT_LOG_WITH_TIME | GPGRT_LOG_WITH_PID);
     }
+  else if (opt_log_time)
+    log_set_prefix (NULL, (GPGRT_LOG_WITH_PREFIX|GPGRT_LOG_NO_REGISTRY
+                           |GPGRT_LOG_WITH_TIME));
+
 
   if (gnupg_faked_time_p ())
     {

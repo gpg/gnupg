@@ -42,10 +42,12 @@ may remove or edit it.
 you want to change it or regenerate `configure' using a newer version
 of `autoconf'.
 
-The simplest way to compile this package is:
+The suggested way to compile this package is:
 
-  1. `cd' to the directory containing the package's source code and type
-     `./configure' to configure the package for your system.
+  1. `cd' to the directory containing the package's source code and
+     create a new directory named `build'.  Then `cd' to that
+     directory and type `../configure' to configure the package for
+     your system.
 
      Running `configure' might take a while.  While running, it prints
      some messages telling which features it is checking for.
@@ -58,14 +60,17 @@ The simplest way to compile this package is:
   4. Type `make install' to install the programs and any data files and
      documentation.
 
-  5. You can remove the program binaries and object files from the
-     source code directory by typing `make clean'.  To also remove the
-     files that `configure' created (so you can compile the package for
-     a different kind of computer), type `make distclean'.  There is
-     also a `make maintainer-clean' target, but that is intended mainly
-     for the package's developers.  If you use it, you may have to get
-     all sorts of other programs in order to regenerate files that came
-     with the distribution.
+  5. You can remove the program binaries and object files by deleting
+     all files from the `build' directory.  In case you did not used a
+     dedicated build directory but build the software directly in the
+     source tree, you can remove the program binaries and object files
+     from the source code directory by typing `make clean'.  To also
+     remove the files that `configure' created (so you can compile the
+     package for a different kind of computer), type `make distclean'.
+     There is also a `make maintainer-clean' target, but that is
+     intended mainly for the package's developers.  If you use it, you
+     may have to get all sorts of other programs in order to
+     regenerate files that came with the distribution.
 
 Compilers and Options
 =====================
@@ -231,4 +236,3 @@ an Autoconf bug.  Until the bug is fixed you can use this workaround:
 
 `configure' also accepts some other, not widely useful, options.  Run
 `configure --help' for more details.
-

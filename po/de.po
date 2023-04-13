@@ -9,7 +9,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnupg-2.3.0\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"PO-Revision-Date: 2022-12-16 16:11+0100\n"
+"PO-Revision-Date: 2023-03-21 09:31+0100\n"
 "Last-Translator: Werner Koch <wk@gnupg.org>\n"
 "Language-Team: German <de@li.org>\n"
 "Language: de\n"
@@ -332,7 +332,7 @@ msgid "Please enter the passphrase to%0Aprotect your new key"
 msgstr "Bitte geben Sie das Passwort ein,%0Aum Ihren Schlüssel zu schützen."
 
 msgid "Please enter the new passphrase"
-msgstr "Bitte geben Sie das Passwort ein:"
+msgstr "Bitte geben Sie das neue Passwort ein:"
 
 msgid "Options used for startup"
 msgstr "Optionen zum Start des Programms"
@@ -404,19 +404,19 @@ msgid "Options controlling the security"
 msgstr "Optionen zur Einstellung der Sicherheit"
 
 msgid "|N|expire cached PINs after N seconds"
-msgstr "|N|Lasse PINs im Cache nach N Sekunden verfallen"
+msgstr "|N|Lösche unbenutzte Passwörter nach N Sekunden aus dem Cache"
 
 msgid "|N|expire SSH keys after N seconds"
-msgstr "|N|Lasse SSH Schlüssel im Cache nach N Sekunden verfallen"
+msgstr "|N|Lösche unbenutzte SSH Passwörter nach N Sekunden aus dem Cache"
 
 msgid "|N|set maximum PIN cache lifetime to N seconds"
-msgstr "|N|Setze die maximale Lebensdauer von PINs im Cache auf N Sekunden"
+msgstr "|N|Lösche Passwörter nach N Sekunden aus dem Cache"
 
 msgid "|N|set maximum SSH key lifetime to N seconds"
-msgstr "|N|Setze die maximale Lebenszeit von SSH Schlüsseln auf N Sekunden"
+msgstr "|N|Lösche SSH Passwörter nach N Sekunden aus dem Cache"
 
 msgid "do not use the PIN cache when signing"
-msgstr "Benutze PINs im Cache nicht beim Signieren"
+msgstr "Benutze den Passwort Cache nicht beim Signieren"
 
 msgid "disallow the use of an external password cache"
 msgstr "Verbiete die Verwendung eines externen Passwordmanagers"
@@ -6715,7 +6715,7 @@ msgstr "Lesen des öffentlichen Schlüssels fehlgeschlagen: %s\n"
 #. * the %s at the start and end of the string.
 #, c-format
 msgid "%sNumber: %s%%0AHolder: %s%%0ACounter: %lu%s"
-msgstr "%sNummer: %s%%0ABesitzer: %s%%0AAnzahl: %lu%s"
+msgstr "%sNummer: %s%%0ABesitzer: %s%%0AZähler: %lu%s"
 
 #, c-format
 msgid "using default PIN as %s\n"

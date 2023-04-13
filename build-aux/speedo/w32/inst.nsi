@@ -669,8 +669,6 @@ Section "GnuPG" SEC_gnupg
   File "share/gnupg/sks-keyservers.netCA.pem"
 
   SetOutPath "$INSTDIR\share\doc\gnupg\examples"
-  File "share/doc/gnupg/examples/VS-NfD.prf"
-  File "share/doc/gnupg/examples/Automatic.prf"
   File "share/doc/gnupg/examples/pwpattern.list"
 
   SetOutPath "$INSTDIR\share\locale\ca\LC_MESSAGES"
@@ -1337,8 +1335,6 @@ Section "-un.gnupg"
   Delete "$INSTDIR\bin\gpg-check-pattern.exe"
   Delete "$INSTDIR\bin\gpg-wks-client.exe"
 
-  Delete "$INSTDIR\share\doc\gnupg\examples\VS-NfD.prf"
-  Delete "$INSTDIR\share\doc\gnupg\examples\Automatic.prf"
   Delete "$INSTDIR\share\doc\gnupg\examples\pwpattern.list"
   RMDir  "$INSTDIR\share\doc\gnupg\examples"
 
@@ -1466,7 +1462,8 @@ Function .onInit
   ;;!define MUI_LANGDLL_ALWAYSSHOW
   !insertmacro MUI_LANGDLL_DISPLAY
 
-  Call G4wRunOnce
+  # Temporay disabled until we have fixed the DLL issue (wk 2023-04-05)
+  # Call G4wRunOnce
 
   SetOutPath $TEMP
 #!ifdef SOURCES

@@ -175,6 +175,9 @@ crl_fetch (ctrl_t ctrl, const char *url, ksba_reader_t *reader)
   if (!url)
     return gpg_error (GPG_ERR_INV_ARG);
 
+  if (opt.verbose)
+    log_info ("fetching CRL from '%s'\n", url);
+
   err = http_parse_uri (&uri, url, 0);
   http_release_parsed_uri (uri);
   if (!err) /* Yes, our HTTP code groks that. */

@@ -38,6 +38,8 @@ gpg_err_code_t ldap_err_to_gpg_err (int code);
 gpg_err_code_t ldap_to_gpg_err (LDAP *ld);
 gpg_error_t ldap_parse_extfilter (const char *string, int silent,
                                   char **r_base, int *r_scope, char **r_filter);
+char *isotime2rfc4517 (const char *string);
+gpg_error_t rfc4517toisotime (gnupg_isotime_t timebuf, const char *string);
 
 
 #endif /*DIRMNGR_LDAP_MISC_H*/

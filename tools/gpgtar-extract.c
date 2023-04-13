@@ -37,7 +37,7 @@
 #include "gpgtar.h"
 
 static gpg_error_t
-check_suspicious_name (const char *name)
+check_suspicious_name (const char *name, tarinfo_t info)
 {
   size_t n;
 
@@ -47,6 +47,7 @@ check_suspicious_name (const char *name)
     {
       log_error ("filename '%s' contains a backslash - "
                  "can't extract on this system\n", name);
+      info->skipped_badname++;
       return gpg_error (GPG_ERR_INV_NAME);
     }
 #endif /*HAVE_DOSISH_SYSTEM*/
@@ -59,6 +60,7 @@ check_suspicious_name (const char *name)
     {
       log_error ("filename '%s' has suspicious parts - not extracting\n",
                  name);
+      info->skipped_suspicious++;
       return gpg_error (GPG_ERR_INV_NAME);
     }
 
@@ -83,7 +85,7 @@ extract_regular (estream_t stream, const char *dirname,
     if (sl->flags == 1)
       fname = sl->d;
 
-  err = check_suspicious_name (fname);
+  err = check_suspicious_name (fname, info);
   if (err)
     goto leave;
 
@@ -131,8 +133,12 @@ extract_regular (estream_t stream, const char *dirname,
   /* Fixme: Set permissions etc.  */
 
  leave:
-  if (!err && opt.verbose)
-    log_info ("extracted '%s'\n", fname);
+  if (!err)
+    {
+      if (opt.verbose)
+        log_info ("extracted '%s'\n", fname);
+      info->nextracted++;
+    }
   es_fclose (outfp);
   if (err && fname && outfp)
     {
@@ -146,7 +152,8 @@ extract_regular (estream_t stream, const char *dirname,
 
 
 static gpg_error_t
-extract_directory (const char *dirname, tar_header_t hdr, strlist_t exthdr)
+extract_directory (const char *dirname, tarinfo_t info,
+                   tar_header_t hdr, strlist_t exthdr)
 {
   gpg_error_t err;
   const char *name;
@@ -158,7 +165,7 @@ extract_directory (const char *dirname, tar_header_t hdr, strlist_t exthdr)
     if (sl->flags == 1)
       name = sl->d;
 
-  err = check_suspicious_name (name);
+  err = check_suspicious_name (name, info);
   if (err)
     goto leave;
 
@@ -198,6 +205,8 @@ extract_directory (const char *dirname, tar_header_t hdr, strlist_t exthdr)
             {
               *p = 0;
               rc = gnupg_mkdir (fname, "-rwx------");
+              if (gpg_err_code (rc) == GPG_ERR_EEXIST)
+                rc = 0;
               *p = '/';
               if (rc)
                 break;
@@ -228,13 +237,19 @@ extract (estream_t stream, const char *dirname, tarinfo_t info,
   if (hdr->typeflag == TF_REGULAR || hdr->typeflag == TF_UNKNOWN)
     err = extract_regular (stream, dirname, info, hdr, exthdr);
   else if (hdr->typeflag == TF_DIRECTORY)
-    err = extract_directory (dirname, hdr, exthdr);
+    err = extract_directory (dirname, info, hdr, exthdr);
   else
     {
       char record[RECORDSIZE];
 
       log_info ("unsupported file type %d for '%s' - skipped\n",
                 (int)hdr->typeflag, hdr->name);
+      if (hdr->typeflag == TF_SYMLINK)
+        info->skipped_symlinks++;
+      else if (hdr->typeflag == TF_HARDLINK)
+        info->skipped_hardlinks++;
+      else
+        info->skipped_other++;
       for (err = 0, n=0; !err && n < hdr->nrecords; n++)
         {
           err = read_record (stream, record);
@@ -326,7 +341,7 @@ gpgtar_extract (const char *filename, int decrypt)
   tarinfo_t tarinfo = &tarinfo_buffer;
   gnupg_process_t proc;
   char *logfilename = NULL;
-
+  unsigned long long notextracted;
 
   memset (&tarinfo_buffer, 0, sizeof tarinfo_buffer);
 
@@ -479,6 +494,36 @@ gpgtar_extract (const char *filename, int decrypt)
     }
 
  leave:
+  notextracted  = tarinfo->skipped_badname;
+  notextracted += tarinfo->skipped_suspicious;
+  notextracted += tarinfo->skipped_symlinks;
+  notextracted += tarinfo->skipped_hardlinks;
+  notextracted += tarinfo->skipped_other;
+  if (opt.status_stream)
+    es_fprintf (opt.status_stream, "[GNUPG:] GPGTAR_EXTRACT"
+                " %llu %llu %lu %lu %lu %lu %lu\n",
+                tarinfo->nextracted,
+                notextracted,
+                tarinfo->skipped_badname,
+                tarinfo->skipped_suspicious,
+                tarinfo->skipped_symlinks,
+                tarinfo->skipped_hardlinks,
+                tarinfo->skipped_other);
+  if (notextracted && !opt.quiet)
+    {
+      log_info ("Number of files not extracted: %llu\n", notextracted);
+      if (tarinfo->skipped_badname)
+        log_info ("     invalid name: %lu\n", tarinfo->skipped_badname);
+      if (tarinfo->skipped_suspicious)
+        log_info ("  suspicious name: %lu\n", tarinfo->skipped_suspicious);
+      if (tarinfo->skipped_symlinks)
+        log_info ("          symlink: %lu\n", tarinfo->skipped_symlinks);
+      if (tarinfo->skipped_hardlinks)
+        log_info ("         hardlink: %lu\n", tarinfo->skipped_hardlinks);
+      if (tarinfo->skipped_other)
+        log_info ("     other reason: %lu\n", tarinfo->skipped_other);
+    }
+
   free_strlist (extheader);
   xfree (header);
   xfree (dirname);

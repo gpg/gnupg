@@ -1515,6 +1515,11 @@ show_configs (estream_t outfp)
   static const char *names[] = { "common.conf", "gpg-agent.conf",
                                  "scdaemon.conf", "dirmngr.conf",
                                  "gpg.conf", "gpgsm.conf" };
+  static const char *envvars[] = { "PATH",
+                                   "http_proxy", "HTTP_PROXY",
+                                   "https_proxy", "HTTPS_PROXY",
+                                   "LD_LIBRARY_PATH", "LD_PRELOAD",
+                                   "LD_AUDIT", "LD_ORIGIN_PATH" };
   gpg_error_t err;
   int idx;
   char *fname;
@@ -1543,6 +1548,11 @@ show_configs (estream_t outfp)
   es_fprintf (outfp, "###\n\n");
 
   list_dirs (outfp, NULL, 1);
+  es_fprintf (outfp, "\n");
+
+  for (idx=0; idx < DIM(envvars); idx++)
+    if ((s = getenv (envvars[idx])))
+      es_fprintf (outfp, "%s=%s\n", envvars[idx], s);
   es_fprintf (outfp, "\n");
 
   fname = make_filename (gnupg_sysconfdir (), "gpgconf.conf", NULL);

@@ -48,6 +48,8 @@ static struct {
 
   { "Curve25519", "1.3.6.1.4.1.3029.1.5.1", 255, "cv25519", PUBKEY_ALGO_ECDH },
   { "Ed25519",    "1.3.6.1.4.1.11591.15.1", 255, "ed25519", PUBKEY_ALGO_EDDSA },
+  { "Curve25519", "1.3.101.110",            255, "cv25519", PUBKEY_ALGO_ECDH },
+  { "Ed25519",    "1.3.101.112",            255, "ed25519", PUBKEY_ALGO_EDDSA },
   { "X448",       "1.3.101.111",            448, "cv448",   PUBKEY_ALGO_ECDH },
   { "Ed448",      "1.3.101.113",            456, "ed448",   PUBKEY_ALGO_EDDSA },
 
@@ -65,13 +67,17 @@ static struct {
 };
 
 
-/* The OID for Curve Ed25519 in OpenPGP format.  */
+/* The OID for Curve Ed25519 in OpenPGP format.  The shorter v5
+ * variant may only be used with v5 keys.  */
 static const char oid_ed25519[] =
   { 0x09, 0x2b, 0x06, 0x01, 0x04, 0x01, 0xda, 0x47, 0x0f, 0x01 };
+static const char oid_ed25519_v5[] = { 0x03, 0x2b, 0x65, 0x70 };
 
-/* The OID for Curve25519 in OpenPGP format.  */
+/* The OID for Curve25519 in OpenPGP format.  The shorter v5
+ * variant may only be used with v5 keys.  */
 static const char oid_cv25519[] =
   { 0x0a, 0x2b, 0x06, 0x01, 0x04, 0x01, 0x97, 0x55, 0x01, 0x05, 0x01 };
+static const char oid_cv25519_v5[] = { 0x03, 0x2b, 0x65, 0x6e };
 
 /* The OID for X448 in OpenPGP format. */
 /*
@@ -321,8 +327,12 @@ openpgp_oid_to_str (gcry_mpi_t a)
 int
 openpgp_oidbuf_is_ed25519 (const void *buf, size_t len)
 {
-  return (buf && len == DIM (oid_ed25519)
-          && !memcmp (buf, oid_ed25519, DIM (oid_ed25519)));
+  if (!buf)
+    return 0;
+  return ((len == DIM (oid_ed25519)
+           && !memcmp (buf, oid_ed25519, DIM (oid_ed25519)))
+          || (len == DIM (oid_ed25519_v5)
+              && !memcmp (buf, oid_ed25519_v5, DIM (oid_ed25519_v5))));
 }
 
 
@@ -345,8 +355,12 @@ openpgp_oid_is_ed25519 (gcry_mpi_t a)
 int
 openpgp_oidbuf_is_cv25519 (const void *buf, size_t len)
 {
-  return (buf && len == DIM (oid_cv25519)
-          && !memcmp (buf, oid_cv25519, DIM (oid_cv25519)));
+  if (!buf)
+    return 0;
+  return ((len == DIM (oid_cv25519)
+           && !memcmp (buf, oid_cv25519, DIM (oid_cv25519)))
+          || (len == DIM (oid_cv25519_v5)
+              && !memcmp (buf, oid_cv25519_v5, DIM (oid_cv25519_v5))));
 }
 
 
@@ -430,8 +444,9 @@ openpgp_curve_to_oid (const char *name, unsigned int *r_nbits, int *r_algo)
   if (name)
     {
       for (i=0; oidtable[i].name; i++)
-        if (!strcmp (oidtable[i].name, name)
-            || (oidtable[i].alias && !strcmp (oidtable[i].alias, name)))
+        if (!ascii_strcasecmp (oidtable[i].name, name)
+            || (oidtable[i].alias
+                && !ascii_strcasecmp (oidtable[i].alias, name)))
           {
             oidstr = oidtable[i].oidstr;
             nbits  = oidtable[i].nbits;
@@ -443,7 +458,7 @@ openpgp_curve_to_oid (const char *name, unsigned int *r_nbits, int *r_algo)
           /* If not found assume the input is already an OID and check
              whether we support it.  */
           for (i=0; oidtable[i].name; i++)
-            if (!strcmp (name, oidtable[i].oidstr))
+            if (!ascii_strcasecmp (name, oidtable[i].oidstr))
               {
                 oidstr = oidtable[i].oidstr;
                 nbits  = oidtable[i].nbits;
@@ -492,9 +507,10 @@ openpgp_oid_or_name_to_curve (const char *oidname, int canon)
     return NULL;
 
   for (i=0; oidtable[i].name; i++)
-    if (!strcmp (oidtable[i].oidstr, oidname)
-        || !strcmp (oidtable[i].name, oidname)
-        || (oidtable[i].alias &&!strcmp (oidtable[i].alias, oidname)))
+    if (!ascii_strcasecmp (oidtable[i].oidstr, oidname)
+        || !ascii_strcasecmp (oidtable[i].name, oidname)
+        || (oidtable[i].alias
+            && !ascii_strcasecmp (oidtable[i].alias, oidname)))
       return !canon && oidtable[i].alias? oidtable[i].alias : oidtable[i].name;
 
   return NULL;
@@ -556,8 +572,9 @@ openpgp_is_curve_supported (const char *name, int *r_algo,
     *r_nbits = 0;
   for (idx = 0; idx < DIM (oidtable) && oidtable[idx].name; idx++)
     {
-      if ((!strcmp (name, oidtable[idx].name)
-           || (oidtable[idx].alias && !strcmp (name, (oidtable[idx].alias))))
+      if ((!ascii_strcasecmp (name, oidtable[idx].name)
+           || (oidtable[idx].alias
+               && !ascii_strcasecmp (name, (oidtable[idx].alias))))
           && curve_supported_p (oidtable[idx].name))
         {
           if (r_algo)
@@ -659,7 +676,7 @@ get_keyalgo_string (enum gcry_pk_algos algo,
         {
           if (keyalgo_strings[i].algo == algo
               && keyalgo_strings[i].curve && curve
-              && !strcmp (keyalgo_strings[i].curve, curve))
+              && !ascii_strcasecmp (keyalgo_strings[i].curve, curve))
             return keyalgo_strings[i].name;
         }
 

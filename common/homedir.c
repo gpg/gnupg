@@ -789,8 +789,42 @@ gnupg_maybe_make_homedir (const char *fname, int quiet)
       if (gnupg_mkdir (fname, "-rwx"))
         log_fatal ( _("can't create directory '%s': %s\n"),
                     fname, strerror(errno) );
-      else if (!quiet )
-        log_info ( _("directory '%s' created\n"), fname );
+      else
+        {
+          estream_t fp;
+          char *fcommon;
+
+          if (!quiet )
+            log_info ( _("directory '%s' created\n"), fname );
+
+#ifdef BUILD_WITH_KEYBOXD
+          /* A new default homedir has been created.  Now create a
+           * common.conf.  */
+          fcommon = make_filename (fname, "common.conf", NULL);
+          fp = es_fopen (fcommon, "wx,mode=-rw-r");
+          if (!fp)
+            {
+              log_info (_("error creating '%s': %s\n"), fcommon,
+                        gpg_strerror (gpg_error_from_syserror ()));
+            }
+          else
+            {
+              if (es_fputs ("use-keyboxd\n", fp) == EOF)
+                {
+                  log_info (_("error writing to '%s': %s\n"), fcommon,
+                            gpg_strerror (es_ferror (fp)
+                                          ? gpg_error_from_syserror ()
+                                          : gpg_error (GPG_ERR_EOF)));
+                  es_fclose (fp);
+                }
+              else if (es_fclose (fp))
+                {
+                  log_info (_("error closing '%s': %s\n"), fcommon,
+                            gpg_strerror (gpg_error_from_syserror ()));
+                }
+            }
+#endif /* BUILD_WITH_KEYBOXD */
+        }
     }
 }
 

@@ -2410,7 +2410,7 @@ check_sig_and_print (CTX c, kbnode_t node)
         }
 
       /* For good signatures print the VALIDSIG status line.  */
-      if (!rc && is_status_enabled () && pk)
+      if (!rc && (is_status_enabled () || opt.assert_signer_list) && pk)
         {
           char pkhex[MAX_FINGERPRINT_LEN*2+1];
           char mainpkhex[MAX_FINGERPRINT_LEN*2+1];
@@ -2430,6 +2430,8 @@ check_sig_and_print (CTX c, kbnode_t node)
                                sig->digest_algo,
                                sig->sig_class,
                                mainpkhex);
+          /* Handle the --assert-signer option.  */
+          check_assert_signer_list (mainpkhex, pkhex);
 	}
 
       /* Print compliance warning for Good signatures.  */
@@ -2510,6 +2512,7 @@ check_sig_and_print (CTX c, kbnode_t node)
                      is not a detached signature.  */
                   log_info (_("WARNING: not a detached signature; "
                               "file '%s' was NOT verified!\n"), dfile);
+                  assert_signer_true = 0;
                 }
               xfree (dfile);
             }

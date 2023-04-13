@@ -699,9 +699,13 @@ speedo_pkg_w64_gpgex_configure = \
 # External packages
 #
 
+# gcc 10.2 takes __udivdi3 from the exception handler DLL and thus
+# requires it.  This is a regression from gcc 8.3 and earlier.  To fix
+# this we need to pass -static-libgcc.
 ifeq ($(TARGETOS),w32)
 speedo_pkg_zlib_make_args = \
-        -fwin32/Makefile.gcc PREFIX=$(host)- IMPLIB=libz.dll.a
+        -fwin32/Makefile.gcc PREFIX=$(host)- IMPLIB=libz.dll.a \
+         LDFLAGS=-static-libgcc
 
 speedo_pkg_zlib_make_args_inst = \
         -fwin32/Makefile.gcc \

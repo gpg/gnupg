@@ -122,7 +122,9 @@ similar to the "shadow" parameter:
 If given and the value is "yes" or "1" the key is allowed for use by
 gpg-agent's ssh-agent implementation.  This is thus the same as
 putting the keygrip into the 'sshcontrol' file.  Only one such item
-should exist.
+should exist.  If another non-zero value between 1 and 99999 is used,
+this is taken to establish the order in which the keys are returned to
+ssh; lower numbers are returned first.
 
 *** Use-for-p11
 If given and the value is "yes" or "1" the key is allowed for use by

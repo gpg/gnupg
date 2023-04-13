@@ -141,13 +141,6 @@ struct
      passphrase change.  */
   int enable_passphrase_history;
 
-  /* If set the extended key format is used for new keys.  Note that
-   * this may have the value 2 in which case
-   * --disable-extended-key-format won't have any effect and thus
-   * effectivley locking it.  This is required to support existing
-   * profiles which lock the use of --enable-extended-key-format. */
-  int enable_extended_key_format;
-
   int running_detached; /* We are running detached from the tty. */
 
   /* If this global option is true, the passphrase cache is ignored
@@ -479,7 +472,7 @@ gpg_error_t agent_public_key_from_file (ctrl_t ctrl,
                                         gcry_sexp_t *result);
 gpg_error_t agent_ssh_key_from_file (ctrl_t ctrl,
                                      const unsigned char *grip,
-                                     gcry_sexp_t *result);
+                                     gcry_sexp_t *result, int *r_order);
 int agent_pk_get_algo (gcry_sexp_t s_key);
 int agent_is_tpm2_key(gcry_sexp_t s_key);
 int agent_key_available (const unsigned char *grip);
@@ -566,7 +559,7 @@ unsigned char get_standard_s2k_count_rfc4880 (void);
 unsigned long get_standard_s2k_time (void);
 int agent_protect (const unsigned char *plainkey, const char *passphrase,
                    unsigned char **result, size_t *resultlen,
-		   unsigned long s2k_count, int use_ocb);
+		   unsigned long s2k_count);
 gpg_error_t agent_unprotect (ctrl_t ctrl,
                      const unsigned char *protectedkey, const char *passphrase,
                      gnupg_isotime_t protected_at,
