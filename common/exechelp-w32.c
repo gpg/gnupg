@@ -34,7 +34,7 @@
 #if !defined(HAVE_W32_SYSTEM)
 #error This code is only used on W32.
 #else
-#define _WIN32_WINNT 0x602
+#define _WIN32_WINNT 0x600
 #endif
 
 #include <stdio.h>
