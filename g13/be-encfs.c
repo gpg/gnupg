@@ -82,9 +82,7 @@ run_umount_helper (const char *mountpoint)
   args[2] = NULL;
 
   err = gnupg_process_spawn (pgmname, args,
-                             (GNUPG_PROCESS_DETACHED | GNUPG_PROCESS_STDIN_NULL
-                              | GNUPG_PROCESS_STDOUT_NULL
-                              | GNUPG_PROCESS_STDERR_NULL),
+                             GNUPG_PROCESS_DETACHED,
                              NULL, NULL, NULL);
   if (err)
     log_error ("failed to run '%s': %s\n",

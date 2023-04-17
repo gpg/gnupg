@@ -2374,10 +2374,7 @@ report_change (int slot, int old_status, int cur_status)
 
       fname = make_filename (gnupg_homedir (), "scd-event", NULL);
       err = gnupg_process_spawn (fname, args,
-                                 (GNUPG_PROCESS_DETACHED
-                                  | GNUPG_PROCESS_STDIN_NULL
-                                  | GNUPG_PROCESS_STDOUT_NULL
-                                  | GNUPG_PROCESS_STDERR_NULL),
+                                 GNUPG_PROCESS_DETACHED,
                                  setup_env, envstr, NULL);
       if (err && gpg_err_code (err) != GPG_ERR_ENOENT)
         log_error ("failed to run event handler '%s': %s\n",

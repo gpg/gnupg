@@ -1096,8 +1096,7 @@ post_syscall (void)
 
 
 static gpg_err_code_t
-spawn_detached (gnupg_process_t process,
-                const char *pgmname, char *cmdline,
+spawn_detached (const char *pgmname, char *cmdline,
                 void (*spawn_cb) (struct spawn_cb_arg *), void *spawn_cb_arg)
 {
   SECURITY_ATTRIBUTES sec_attr;
@@ -1113,7 +1112,6 @@ spawn_detached (gnupg_process_t process,
   ec = gnupg_access (pgmname, X_OK);
   if (ec)
     {
-      xfree (process);
       xfree (cmdline);
       return ec;
     }
@@ -1191,13 +1189,6 @@ spawn_detached (gnupg_process_t process,
 
   CloseHandle (pi.hThread);
   CloseHandle (pi.hProcess);
-
-  process->hProcess = INVALID_HANDLE_VALUE;
-  process->hd_in = INVALID_HANDLE_VALUE;
-  process->hd_out = INVALID_HANDLE_VALUE;
-  process->hd_err = INVALID_HANDLE_VALUE;
-  process->exitcode = -1;
-  process->terminated = 1;
   return 0;
 }
 
@@ -1238,13 +1229,31 @@ gnupg_process_spawn (const char *pgmname, const char *argv[],
 
   check_syscall_func ();
 
-  if (r_process)
-    *r_process = NULL;
-
   /* Build the command line.  */
   ec = build_w32_commandline (pgmname, argv, &cmdline);
   if (ec)
     return ec;
+
+  if ((flags & GNUPG_PROCESS_DETACHED))
+    {
+      if ((flags & GNUPG_PROCESS_STDFDS_SETTING))
+        {
+          xfree (cmdline);
+          return GPG_ERR_INV_FLAG;
+        }
+
+      /* In detached case, it must be no R_PROCESS.  */
+      if (r_process)
+        {
+          xfree (cmdline);
+          return GPG_ERR_INV_ARG;
+        }
+
+      return spawn_detached (pgmname, cmdline, spawn_cb, spawn_cb_arg);
+    }
+
+  if (r_process)
+    *r_process = NULL;
 
   process = xtrymalloc (sizeof (struct gnupg_process));
   if (process == NULL)
@@ -1255,19 +1264,6 @@ gnupg_process_spawn (const char *pgmname, const char *argv[],
 
   process->pgmname = pgmname;
   process->flags = flags;
-
-  if ((flags & GNUPG_PROCESS_DETACHED))
-    {
-      if ((flags & GNUPG_PROCESS_STDFDS_SETTING))
-        {
-          xfree (process);
-          xfree (cmdline);
-          return GPG_ERR_INV_FLAG;
-        }
-
-      *r_process = process;
-      return spawn_detached (process, pgmname, cmdline, spawn_cb, spawn_cb_arg);
-    }
 
   if ((flags & GNUPG_PROCESS_STDINOUT_SOCKETPAIR))
     {

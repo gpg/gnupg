@@ -1034,8 +1034,7 @@ my_exec (const char *pgmname, const char *argv[], struct spawn_cb_arg *sca)
 }
 
 static gpg_err_code_t
-spawn_detached (gnupg_process_t process,
-                const char *pgmname, const char *argv[],
+spawn_detached (const char *pgmname, const char *argv[],
                 void (*spawn_cb) (struct spawn_cb_arg *), void *spawn_cb_arg)
 {
   gpg_err_code_t ec;
@@ -1044,7 +1043,6 @@ spawn_detached (gnupg_process_t process,
   /* FIXME: Is this GnuPG specific or should we keep it.  */
   if (getuid() != geteuid())
     {
-      xfree (process);
       xfree (argv);
       return GPG_ERR_BUG;
     }
@@ -1052,7 +1050,6 @@ spawn_detached (gnupg_process_t process,
   if (access (pgmname, X_OK))
     {
       ec = gpg_err_code_from_syserror ();
-      xfree (process);
       xfree (argv);
       return ec;
     }
@@ -1064,7 +1061,6 @@ spawn_detached (gnupg_process_t process,
     {
       ec = gpg_err_code_from_syserror ();
       log_error (_("error forking process: %s\n"), gpg_strerror (ec));
-      xfree (process);
       xfree (argv);
       return ec;
     }
@@ -1101,12 +1097,6 @@ spawn_detached (gnupg_process_t process,
   else
     post_syscall ();
 
-  process->pid = (pid_t)-1;
-  process->fd_in = -1;
-  process->fd_out = -1;
-  process->fd_err = -1;
-  process->wstatus = -1;
-  process->terminated = 1;
   return 0;
 }
 
@@ -1156,6 +1146,24 @@ gnupg_process_spawn (const char *pgmname, const char *argv1[],
     for (i=0, j=1; argv1[i]; i++, j++)
       argv[j] = argv1[i];
 
+  if ((flags & GNUPG_PROCESS_DETACHED))
+    {
+      if ((flags & GNUPG_PROCESS_STDFDS_SETTING))
+        {
+          xfree (argv);
+          return GPG_ERR_INV_FLAG;
+        }
+
+      /* In detached case, it must be no R_PROCESS.  */
+      if (r_process)
+        {
+          xfree (argv);
+          return GPG_ERR_INV_ARG;
+        }
+
+      return spawn_detached (pgmname, argv, spawn_cb, spawn_cb_arg);
+    }
+
   process = xtrycalloc (1, sizeof (struct gnupg_process));
   if (process == NULL)
     {
@@ -1165,19 +1173,6 @@ gnupg_process_spawn (const char *pgmname, const char *argv1[],
 
   process->pgmname = pgmname;
   process->flags = flags;
-
-  if ((flags & GNUPG_PROCESS_DETACHED))
-    {
-      if ((flags & GNUPG_PROCESS_STDFDS_SETTING))
-        {
-          xfree (process);
-          xfree (argv);
-          return GPG_ERR_INV_FLAG;
-        }
-
-      *r_process = process;
-      return spawn_detached (process, pgmname, argv, spawn_cb, spawn_cb_arg);
-    }
 
   if ((flags & GNUPG_PROCESS_STDINOUT_SOCKETPAIR))
     {
