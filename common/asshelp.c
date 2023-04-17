@@ -523,8 +523,12 @@ start_new_service (assuan_context_t *r_ctx,
           && assuan_socket_connect (ctx, sockname, 0, connect_flags))
         {
 #ifdef HAVE_W32_SYSTEM
-          err = gnupg_spawn_process_detached (program? program : program_name,
-                                              argv, NULL);
+          err = gnupg_process_spawn (program? program : program_name, argv,
+                                     (GNUPG_PROCESS_DETACHED
+                                      |GNUPG_PROCESS_STDIN_NULL
+                                      |GNUPG_PROCESS_STDOUT_NULL
+                                      |GNUPG_PROCESS_STDERR_NULL),
+                                     NULL, NULL, NULL);
 #else /*!W32*/
           err = gnupg_process_spawn (program? program : program_name, argv,
                                      (GNUPG_PROCESS_STDIN_NULL
