@@ -31,6 +31,8 @@ Noteworthy changes in version 2.4.1 (unreleased)
   * gpg: Make list-options "show-sig-subpackets" work again.
     Fixes regression in 2.4.0.  [rG5a223303d7]
 
+  * gpg: Fix the keytocard command for Yubikeys.  [T6378]
+
 
   Release-info: https://dev.gnupg.org/T6454
 

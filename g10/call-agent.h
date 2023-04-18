@@ -108,6 +108,9 @@ gpg_error_t agent_scd_keypairinfo (ctrl_t ctrl, const char *keyref,
 /* Return list of cards.  */
 int agent_scd_cardlist (strlist_t *result);
 
+/* Switch/assure a certain application. */
+gpg_error_t agent_scd_switchapp (const char *appname);
+
 /* Free a keypair info list.  */
 void free_keypair_info (keypair_info_t l);
 

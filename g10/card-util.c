@@ -1289,6 +1289,7 @@ get_info_for_key_operation (struct agent_card_info_s *info)
   int rc;
 
   memset (info, 0, sizeof *info);
+  agent_scd_switchapp ("openpgp");
   rc = agent_scd_getattr ("SERIALNO", info);
   if (rc || !info->serialno || strncmp (info->serialno, "D27600012401", 12)
       || strlen (info->serialno) != 32 )

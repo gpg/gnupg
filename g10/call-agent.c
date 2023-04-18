@@ -1700,6 +1700,30 @@ agent_scd_cardlist (strlist_t *result)
 }
 
 
+/* Make the app APPNAME the one on the card.  This is sometimes
+ * required to make sure no other process has switched a card to
+ * another application.  The only useful APPNAME is "openpgp".  */
+gpg_error_t
+agent_scd_switchapp (const char *appname)
+{
+  int err;
+  char line[ASSUAN_LINELENGTH];
+
+  if (appname && !*appname)
+    appname = NULL;
+
+  err = start_agent (NULL, (1 | FLAG_FOR_CARD_SUPPRESS_ERRORS));
+  if (err)
+    return err;
+
+  snprintf (line, DIM(line), "SCD SWITCHAPP --%s%s",
+            appname? " ":"", appname? appname:"");
+  return assuan_transact (agent_ctx, line,
+                          NULL, NULL, NULL, NULL,
+                          NULL, NULL);
+}
+
+
 
 struct card_keyinfo_parm_s {
   int error;
