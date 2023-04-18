@@ -1606,9 +1606,13 @@ check_external_interference (app_t app, ctrl_t ctrl)
   /*
    * Only when a user is using Yubikey with pcsc-shared configuration,
    * we need this detection.  Otherwise, the card/token is under full
-   * control of scdaemon, there's no problem at all.
+   * control of scdaemon, there's no problem at all.  However, if the
+   * APDU command has been used we better also check whether the AID
+   * is still valid.
    */
-  if (!opt.pcsc_shared || app->card->cardtype != CARDTYPE_YUBIKEY)
+  if (app && app->card && app->card->maybe_check_aid)
+    app->card->maybe_check_aid = 0;
+  else if (!opt.pcsc_shared || app->card->cardtype != CARDTYPE_YUBIKEY)
     return 0;
 
   if (app->fnc.check_aid)
@@ -1646,6 +1650,20 @@ maybe_switch_app (ctrl_t ctrl, card_t card, const char *keyref)
 
   if (!card->app)
     return gpg_error (GPG_ERR_CARD_NOT_INITIALIZED);
+
+  if (card->maybe_check_aid && card->app->fnc.reselect
+      && check_external_interference (card->app, ctrl))
+    {
+      if (DBG_APP)
+        log_debug ("slot %d, app %s: forced re-select due to direct APDU use\n",
+                   card->slot, xstrapptype (card->app));
+      err = card->app->fnc.reselect (card->app, ctrl);
+      if (err)
+        log_error ("slot %d, app %s: forced re-select failed: %s - ignored\n",
+                   card->slot, xstrapptype (card->app), gpg_strerror (err));
+      err = 0;
+    }
+
   if (!ctrl->current_apptype)
     {
       /* For whatever reasons the current apptype has not been set -

@@ -2195,6 +2195,7 @@ cmd_apdu (assuan_context_t ctx, char *line)
       unsigned char *result = NULL;
       size_t resultlen;
 
+      card->maybe_check_aid = 1;
       rc = apdu_send_direct (card->slot, exlen,
                              apdu, apdulen, handle_more,
                              NULL, &result, &resultlen);

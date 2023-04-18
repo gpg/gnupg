@@ -119,6 +119,7 @@ struct card_ctx_s {
   /* Various flags.  */
   unsigned int reset_requested:1;
   unsigned int periodical_check_needed:1;
+  unsigned int maybe_check_aid:1;
 };
 
 
