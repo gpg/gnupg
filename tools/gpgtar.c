@@ -42,6 +42,7 @@
 #include "../common/openpgpdefs.h"
 #include "../common/init.h"
 #include "../common/strlist.h"
+#include "../common/comopt.h"
 
 #include "gpgtar.h"
 
@@ -89,6 +90,7 @@ enum cmd_and_opt_values
     oTarProgram,
 
     /* Debugging.  */
+    oDebug,
     oDryRun
   };
 
@@ -145,6 +147,8 @@ static gpgrt_opt_t opts[] = {
   ARGPARSE_s_s (oTarArgs, "tar-args", "@"),
   ARGPARSE_s_s (oTarProgram, "tar", "@"),
 
+  ARGPARSE_s_s (oDebug, "debug", "@"),
+
   ARGPARSE_end ()
 };
 
@@ -166,7 +170,7 @@ static enum cmd_and_opt_values cmd = 0;
 static int skip_crypto = 0;
 static const char *files_from = NULL;
 static int null_names = 0;
-
+static int any_debug;
 
 
 
@@ -438,6 +442,10 @@ parse_arguments (gpgrt_argparse_t *pargs, gpgrt_opt_t *popts)
           }
           break;
 
+        case oDebug:
+          any_debug = 1;
+          break;
+
         case oDryRun:
           opt.dry_run = 1;
           break;
@@ -471,6 +479,10 @@ main (int argc, char **argv)
   /* Set default options */
   opt.status_fd = -1;
 
+  /* The configuraton directories for use by gpgrt_argparser.  */
+  gpgrt_set_confdir (GPGRT_CONFDIR_SYS, gnupg_sysconfdir ());
+  gpgrt_set_confdir (GPGRT_CONFDIR_USER, gnupg_homedir ());
+
   /* Parse the command line. */
   pargs.argc  = &argc;
   pargs.argv  = &argv;
@@ -480,6 +492,10 @@ main (int argc, char **argv)
 
   if (log_get_errorcount (0))
     exit (2);
+
+  /* Get a log file from common.conf.  */
+  if (!parse_comopt (GNUPG_MODULE_NAME_GPGTAR, any_debug) && comopt.logfile)
+    log_set_file (comopt.logfile);
 
   /* Print a warning if an argument looks like an option.  */
   if (!opt.quiet && !(pargs.flags & ARGPARSE_FLAG_STOP_SEEN))

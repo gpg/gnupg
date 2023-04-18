@@ -1657,6 +1657,9 @@ gnupg_module_name (int which)
     case GNUPG_MODULE_NAME_CARD:
       X(bindir, "tools", "gpg-card");
 
+    case GNUPG_MODULE_NAME_GPGTAR:
+      X(bindir, "tools", "gpgtar");
+
     default:
       BUG ();
     }
