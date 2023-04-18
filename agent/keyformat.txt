@@ -124,7 +124,13 @@ gpg-agent's ssh-agent implementation.  This is thus the same as
 putting the keygrip into the 'sshcontrol' file.  Only one such item
 should exist.  If another non-zero value between 1 and 99999 is used,
 this is taken to establish the order in which the keys are returned to
-ssh; lower numbers are returned first.
+ssh; lower numbers are returned first.  If a negative value is used
+this overrides currently active (inserted) cards and thus allows to
+prefer on-disk keys over inserted cards.  A value of -1 has the
+highest priority; values are capped at -999 and have a lower priority
+but still above the positive values, inserted cards or the order in
+sshcontrol.
+
 
 *** Use-for-p11
 If given and the value is "yes" or "1" the key is allowed for use by

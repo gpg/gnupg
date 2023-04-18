@@ -25,9 +25,14 @@ Noteworthy changes in version 2.4.1 (unreleased)
   * dirmngr: The LDAP modifyTimestamp is now returned by some
     keyserver commands.  [rG56d309133f]
 
+  * ssh: Allow specification of the order keys are presented to ssh.
+    See the man page entry for --enable-ssh-support.  [T5996]
+
   * gpg: Make list-options "show-sig-subpackets" work again.
     Fixes regression in 2.4.0.  [rG5a223303d7]
 
+
+  Release-info: https://dev.gnupg.org/T6454
 
 
 Noteworthy changes in version 2.4.0 (2022-12-16)

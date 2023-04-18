@@ -675,6 +675,39 @@ and allows the use of gpg-agent with the ssh implementation
 @command{putty}.  This is similar to the regular ssh-agent support but
 makes use of Windows message queue as required by @command{putty}.
 
+
+The order in which keys are presented to ssh are:
+@table @code
+
+@item Negative Use-for-ssh values
+      If a key file has the attribute "Use-for-ssh" and its value is
+      negative, these keys are presented first to ssh.  The negative
+      values are capped at -999 with -999 beeing lower ranked than -1.
+      These values can be used to prefer on-disk keys over keys taken
+      from active cards.
+
+@item Active cards
+      Active cards (inserted into a card reader or plugged in tokens)
+      are always tried; they are ordered by their serial numbers.
+
+@item Keys listed in the sshcontrol file
+      Non-disabled keys from the sshcontrol file are presented in the
+      order they appear in this file.  Note that the sshcontrol file
+      is deprecated.
+
+@item Positive Use-for-ssh values
+      If a key file has the attribute "Use-for-ssh" and its value is
+      "yes", "true", or any positive number the key is presented in
+      the order of their values.  "yes" and "true" have a value of 1;
+      other values are capped at 99999.
+
+@end table
+
+Editing the "Use-for-ssh" values can be done with an editor or using
+@command{gpg-connect-agent} and "KEYATTR" (Remember to append a colon
+to the key; i.e. use "Use-for-ssh:").
+
+
 @anchor{option --ssh-fingerprint-digest}
 @item --ssh-fingerprint-digest
 @opindex ssh-fingerprint-digest
@@ -827,6 +860,9 @@ This file is used when support for the secure shell agent protocol has
 been enabled (@pxref{option --enable-ssh-support}). Only keys present in
 this file are used in the SSH protocol.  You should backup this file.
 
+This file is deprecated in favor of the "Use-for-ssh" attribute in the
+key files.
+
 The @command{ssh-add} tool may be used to add new entries to this file;
 you may also add them manually.  Comment lines, indicated by a leading
 hash mark, as well as empty lines are ignored.  An entry starts with
@@ -870,7 +906,6 @@ Note that on larger installations, it is useful to put predefined
 files into the directory @file{@value{SYSCONFSKELDIR}} so that newly created
 users start up with a working configuration.  For existing users the
 a small helper script is provided to create these files (@pxref{addgnupghome}).
-
 
 
 @c

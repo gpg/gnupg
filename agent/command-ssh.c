@@ -2648,7 +2648,8 @@ ssh_send_available_keys (ctrl_t ctrl, estream_t key_blobs, u32 *r_key_counter)
 
       /* Clamp LNR value and set the ordinal.
        * Current use of ordinals:
-       *      1..99999  - inserted cards (right now only 1)
+       *      1..999    - low value Use-for-ssh.
+       *   1000..99999  - inserted cards (right now only 1000)
        * 100000..199999 - listed in sshcontrol
        * 200000..299999 - order taken from Use-for-ssh
        */
@@ -2678,18 +2679,25 @@ ssh_send_available_keys (ctrl_t ctrl, estream_t key_blobs, u32 *r_key_counter)
            * order of card keys (which are sorted by their s/n), we
            * would need to get the use-for-ssh: value from the stub
            * file and set an appropriate ordinal.  */
-          order = 1;
+          order = 1000;
         }
       else if (is_ssh)
         err = agent_public_key_from_file (ctrl, grip, &key_public);
       else /* Examine the file if it's suitable for SSH.  */
         {
           err = agent_ssh_key_from_file (ctrl, grip, &key_public, &order);
-          if (order < 0 || err)
+          if (err)
             order = 0;
+          else if (order < 0)
+            {
+              order = -order;
+              if (order > 999)
+                order = 999;
+            }
           else if (order > 99999)
-            order = 99999;
-          order += 200000;
+            order =  299999;
+          else
+            order += 200000;
         }
       if (err)
         {
