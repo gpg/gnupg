@@ -73,13 +73,6 @@ gpg_error_t gnupg_create_pipe (int filedes[2]);
 void gnupg_close_pipe (int fd);
 
 
-#define GNUPG_SPAWN_NONBLOCK   16
-#define GNUPG_SPAWN_RUN_ASFW   64
-#define GNUPG_SPAWN_DETACHED  128
-#define GNUPG_SPAWN_KEEP_STDIN   256
-#define GNUPG_SPAWN_KEEP_STDOUT  512
-#define GNUPG_SPAWN_KEEP_STDERR 1024
-
 /* The opaque type for a subprocess.  */
 typedef struct gnupg_process *gnupg_process_t;
 #ifdef HAVE_W32_SYSTEM
@@ -100,9 +93,6 @@ struct spawn_cb_arg {
   void *arg;
 };
 #endif
-
-/* Internal flag to ihnerit file descriptor/handle */
-#define GNUPG_PROCESS_INHERIT_FILE        (1 << 0)
 
 #define GNUPG_PROCESS_DETACHED            (1 << 1)
 
