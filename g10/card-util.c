@@ -705,6 +705,14 @@ current_card_status (ctrl_t ctrl, estream_t fp,
         }
       else
         tty_fprintf (fp, "[none]\n");
+
+      if (!info.manufacturer_name)
+        {
+          tty_fprintf (fp, "\n");
+          tty_fprintf (fp, _("Please try command \"%s\""
+                             " if the listing does not look correct\n"),
+                       "openpgp");
+        }
     }
 
   release_kbnode (keyblock);
@@ -2243,7 +2251,7 @@ enum cmdids
     cmdNAME, cmdURL, cmdFETCH, cmdLOGIN, cmdLANG, cmdSEX, cmdCAFPR,
     cmdFORCESIG, cmdGENERATE, cmdPASSWD, cmdPRIVATEDO, cmdWRITECERT,
     cmdREADCERT, cmdUNBLOCK, cmdFACTORYRESET, cmdKDFSETUP,
-    cmdKEYATTR, cmdUIF,
+    cmdKEYATTR, cmdUIF, cmdOPENPGP,
     cmdINVCMD
   };
 
@@ -2281,6 +2289,7 @@ static struct
       N_("setup KDF for PIN authentication (on/single/off)")},
     { "key-attr", cmdKEYATTR, 1, N_("change the key attribute")},
     { "uif", cmdUIF, 1, N_("change the User Interaction Flag")},
+    { "openpgp", cmdOPENPGP, 0, N_("switch to the OpenPGP app")},
     /* Note, that we do not announce these command yet. */
     { "privatedo", cmdPRIVATEDO, 0, NULL },
     { "readcert", cmdREADCERT, 0, NULL },
@@ -2578,6 +2587,11 @@ card_edit (ctrl_t ctrl, strlist_t commands)
                         "       1 <= N <= 3\n");
           else
             uif (arg_number, arg_rest);
+          break;
+
+        case cmdOPENPGP:
+          agent_scd_switchapp ("openpgp");
+          redisplay = 1;
           break;
 
         case cmdQUIT:
