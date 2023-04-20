@@ -143,9 +143,7 @@ do_check_passphrase_pattern (ctrl_t ctrl, const char *pw, unsigned int flags)
   log_assert (i < sizeof argv);
 
   if (gnupg_process_spawn (pgmname, argv,
-                           (GNUPG_PROCESS_STDIN_PIPE
-                            | GNUPG_PROCESS_STDOUT_NULL
-                            | GNUPG_PROCESS_STDERR_NULL),
+                           GNUPG_PROCESS_STDIN_PIPE,
                            NULL, NULL, &proc))
     result = 1; /* Execute error - assume password should no be used.  */
   else

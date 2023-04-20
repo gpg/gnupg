@@ -416,7 +416,7 @@ gnupg_exec_tool_stream (const char *pgmname, const char *argv[],
   err = gnupg_process_spawn (pgmname, argv,
                              ((input
                                ? GNUPG_PROCESS_STDIN_PIPE
-                               : GNUPG_PROCESS_STDIN_NULL)
+                               : 0)
                               | GNUPG_PROCESS_STDOUT_PIPE
                               | GNUPG_PROCESS_STDERR_PIPE),
                              gnupg_spawn_helper, exceptclose, &proc);

@@ -646,14 +646,14 @@ gnupg_process_spawn (const char *pgmname, const char *argv1[],
               return ec;
             }
         }
-      else if ((flags & GNUPG_PROCESS_STDIN_NULL))
+      else if ((flags & GNUPG_PROCESS_STDIN_KEEP))
         {
-          fd_in[0] = -1;
+          fd_in[0] = 0;
           fd_in[1] = -1;
         }
       else
         {
-          fd_in[0] = 0;
+          fd_in[0] = -1;
           fd_in[1] = -1;
         }
 
@@ -671,15 +671,15 @@ gnupg_process_spawn (const char *pgmname, const char *argv1[],
               return ec;
             }
         }
-      else if ((flags & GNUPG_PROCESS_STDOUT_NULL))
+      else if ((flags & GNUPG_PROCESS_STDOUT_KEEP))
         {
           fd_out[0] = -1;
-          fd_out[1] = -1;
+          fd_out[1] = 1;
         }
       else
         {
           fd_out[0] = -1;
-          fd_out[1] = 1;
+          fd_out[1] = -1;
         }
     }
 
@@ -701,15 +701,15 @@ gnupg_process_spawn (const char *pgmname, const char *argv1[],
           return ec;
         }
     }
-  else if ((flags & GNUPG_PROCESS_STDERR_NULL))
+  else if ((flags & GNUPG_PROCESS_STDERR_KEEP))
     {
       fd_err[0] = -1;
-      fd_err[1] = -1;
+      fd_err[1] = 2;
     }
   else
     {
       fd_err[0] = -1;
-      fd_err[1] = 2;
+      fd_err[1] = -1;
     }
 
   pre_syscall ();

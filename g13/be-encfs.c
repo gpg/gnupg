@@ -260,7 +260,7 @@ run_encfs_tool (ctrl_t ctrl, enum encfs_cmds cmd,
   assert (idx <= DIM (argv));
 
   err = gnupg_process_spawn (pgmname, argv,
-                             (GNUPG_PROCESS_STDIN_PIPE | GNUPG_PROCESS_STDOUT_NULL
+                             (GNUPG_PROCESS_STDIN_PIPE
                               | GNUPG_PROCESS_STDERR_PIPE),
                              NULL, NULL, &proc);
   if (err)

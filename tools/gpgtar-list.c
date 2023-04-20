@@ -504,7 +504,7 @@ gpgtar_list (const char *filename, int decrypt)
         }
 
       err = gnupg_process_spawn (opt.gpg_program, argv,
-                                 ((filename ? GNUPG_PROCESS_STDIN_NULL : 0)
+                                 ((filename ? 0 : GNUPG_PROCESS_STDIN_KEEP)
                                   | GNUPG_PROCESS_STDOUT_PIPE),
                                  gnupg_spawn_helper, except, &proc);
       xfree (argv);

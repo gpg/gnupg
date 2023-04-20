@@ -1285,7 +1285,9 @@ gpgtar_create (char **inpattern, const char *files_from, int null_names,
         }
 
       err = gnupg_process_spawn (opt.gpg_program, argv,
-                                 GNUPG_PROCESS_STDIN_PIPE,
+                                 (GNUPG_PROCESS_STDIN_PIPE
+                                  | GNUPG_PROCESS_STDOUT_KEEP
+                                  | GNUPG_PROCESS_STDERR_KEEP),
                                  gnupg_spawn_helper, except, &proc);
       xfree (argv);
       if (err)

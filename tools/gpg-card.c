@@ -3670,8 +3670,10 @@ cmd_gpg (card_info_t info, char *argstr, int use_gpgsm)
     }
 
   err = gnupg_process_spawn (use_gpgsm? opt.gpgsm_program:opt.gpg_program,
-                             argv, GNUPG_PROCESS_STDIN_NULL, NULL, NULL,
-                             &proc);
+                             argv,
+                             (GNUPG_PROCESS_STDOUT_KEEP
+                              | GNUPG_PROCESS_STDERR_KEEP),
+                             NULL, NULL, &proc);
   if (!err)
     {
       err = gnupg_process_wait (proc, 1);

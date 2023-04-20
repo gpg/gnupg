@@ -528,10 +528,7 @@ start_new_service (assuan_context_t *r_ctx,
                                      NULL, NULL, NULL);
 #else /*!W32*/
           err = gnupg_process_spawn (program? program : program_name, argv,
-                                     (GNUPG_PROCESS_STDIN_NULL
-                                      |GNUPG_PROCESS_STDOUT_NULL
-                                      |GNUPG_PROCESS_STDERR_NULL),
-                                     NULL, NULL, NULL);
+                                     0, NULL, NULL, NULL);
 #endif /*!W32*/
           if (err)
             log_error ("failed to start %s '%s': %s\n",

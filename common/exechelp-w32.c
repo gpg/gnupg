@@ -639,14 +639,14 @@ gnupg_process_spawn (const char *pgmname, const char *argv[],
           return ec;
         }
     }
-  else if ((flags & GNUPG_PROCESS_STDIN_NULL))
+  else if ((flags & GNUPG_PROCESS_STDIN_KEEP))
     {
-      hd_in[0] = w32_open_null (0);
+      hd_in[0] = GetStdHandle (STD_INPUT_HANDLE);
       hd_in[1] = INVALID_HANDLE_VALUE;
     }
   else
     {
-      hd_in[0] = GetStdHandle (STD_INPUT_HANDLE);
+      hd_in[0] = w32_open_null (0);
       hd_in[1] = INVALID_HANDLE_VALUE;
     }
 
@@ -664,15 +664,15 @@ gnupg_process_spawn (const char *pgmname, const char *argv[],
           return ec;
         }
     }
-  else if ((flags & GNUPG_PROCESS_STDOUT_NULL))
+  else if ((flags & GNUPG_PROCESS_STDOUT_KEEP))
     {
       hd_out[0] = INVALID_HANDLE_VALUE;
-      hd_out[1] = w32_open_null (1);
+      hd_out[1] = GetStdHandle (STD_OUTPUT_HANDLE);
     }
   else
     {
       hd_out[0] = INVALID_HANDLE_VALUE;
-      hd_out[1] = GetStdHandle (STD_OUTPUT_HANDLE);
+      hd_out[1] = w32_open_null (1);
     }
 
   if ((flags & GNUPG_PROCESS_STDERR_PIPE))
@@ -693,15 +693,15 @@ gnupg_process_spawn (const char *pgmname, const char *argv[],
           return ec;
         }
     }
-  else if ((flags & GNUPG_PROCESS_STDERR_NULL))
+  else if ((flags & GNUPG_PROCESS_STDERR_KEEP))
     {
       hd_err[0] = INVALID_HANDLE_VALUE;
-      hd_err[1] = w32_open_null (1);
+      hd_err[1] = GetStdHandle (STD_ERROR_HANDLE);
     }
   else
     {
       hd_err[0] = INVALID_HANDLE_VALUE;
-      hd_err[1] = GetStdHandle (STD_ERROR_HANDLE);
+      hd_err[1] = w32_open_null (1);
     }
 
   memset (&si, 0, sizeof si);
@@ -754,19 +754,19 @@ gnupg_process_spawn (const char *pgmname, const char *argv[],
       if (si.lpAttributeList == NULL)
         {
           if ((flags & GNUPG_PROCESS_STDIN_PIPE)
-              || (flags & GNUPG_PROCESS_STDIN_NULL))
+              || !(flags & GNUPG_PROCESS_STDIN_KEEP))
             CloseHandle (hd_in[0]);
           if ((flags & GNUPG_PROCESS_STDIN_PIPE))
             CloseHandle (hd_in[1]);
           if ((flags & GNUPG_PROCESS_STDOUT_PIPE))
             CloseHandle (hd_out[0]);
           if ((flags & GNUPG_PROCESS_STDOUT_PIPE)
-              || (flags & GNUPG_PROCESS_STDOUT_NULL))
+              || !(flags & GNUPG_PROCESS_STDOUT_KEEP))
             CloseHandle (hd_out[1]);
           if ((flags & GNUPG_PROCESS_STDERR_PIPE))
             CloseHandle (hd_err[0]);
           if ((flags & GNUPG_PROCESS_STDERR_PIPE)
-              || (flags & GNUPG_PROCESS_STDERR_NULL))
+              || !(flags & GNUPG_PROCESS_STDERR_KEEP))
             CloseHandle (hd_err[1]);
           xfree (wpgmname);
           xfree (wcmdline);
@@ -824,19 +824,19 @@ gnupg_process_spawn (const char *pgmname, const char *argv[],
         log_error ("CreateProcess failed: ec=%d\n",
                           (int)GetLastError ());
       if ((flags & GNUPG_PROCESS_STDIN_PIPE)
-          || (flags & GNUPG_PROCESS_STDIN_NULL))
+          || !(flags & GNUPG_PROCESS_STDIN_KEEP))
         CloseHandle (hd_in[0]);
       if ((flags & GNUPG_PROCESS_STDIN_PIPE))
         CloseHandle (hd_in[1]);
       if ((flags & GNUPG_PROCESS_STDOUT_PIPE))
         CloseHandle (hd_out[0]);
       if ((flags & GNUPG_PROCESS_STDOUT_PIPE)
-          || (flags & GNUPG_PROCESS_STDOUT_NULL))
+          || !(flags & GNUPG_PROCESS_STDOUT_KEEP))
         CloseHandle (hd_out[1]);
       if ((flags & GNUPG_PROCESS_STDERR_PIPE))
         CloseHandle (hd_err[0]);
       if ((flags & GNUPG_PROCESS_STDERR_PIPE)
-          || (flags & GNUPG_PROCESS_STDERR_NULL))
+          || !(flags & GNUPG_PROCESS_STDERR_KEEP))
         CloseHandle (hd_err[1]);
       xfree (wpgmname);
       xfree (wcmdline);
@@ -852,13 +852,13 @@ gnupg_process_spawn (const char *pgmname, const char *argv[],
   xfree (cmdline);
 
   if ((flags & GNUPG_PROCESS_STDIN_PIPE)
-      || (flags & GNUPG_PROCESS_STDIN_NULL))
+      || !(flags & GNUPG_PROCESS_STDIN_KEEP))
     CloseHandle (hd_in[0]);
   if ((flags & GNUPG_PROCESS_STDOUT_PIPE)
-      || (flags & GNUPG_PROCESS_STDOUT_NULL))
+      || !(flags & GNUPG_PROCESS_STDOUT_KEEP))
     CloseHandle (hd_out[1]);
   if ((flags & GNUPG_PROCESS_STDERR_PIPE)
-      || (flags & GNUPG_PROCESS_STDERR_NULL))
+      || !(flags & GNUPG_PROCESS_STDERR_KEEP))
     CloseHandle (hd_err[1]);
 
   /* log_debug ("CreateProcess ready: hProcess=%p hThread=%p" */
