@@ -3175,9 +3175,10 @@ cmd_delete_key (assuan_context_t ctx, char *line)
 #endif
 
 static const char hlp_keytocard[] =
-  "KEYTOCARD [--force] <hexgrip> <serialno> <keyref> [<timestamp>]\n"
+  "KEYTOCARD [--force] <hexgrip> <serialno> <keyref> [<timestamp> [<ecdh>]]\n"
   "\n"
-  "TIMESTAMP is required for OpenPGP and defaults to the Epoch.  The\n"
+  "TIMESTAMP is required for OpenPGP and defaults to the Epoch.\n"
+  "ECDH are the hexified ECDH parameters for OpenPGP.\n"
   "SERIALNO is used for checking; use \"-\" to disable the check.";
 static gpg_error_t
 cmd_keytocard (assuan_context_t ctx, char *line)
@@ -3194,6 +3195,9 @@ cmd_keytocard (assuan_context_t ctx, char *line)
   size_t keydatalen;
   unsigned char *shadow_info = NULL;
   time_t timestamp;
+  char *ecdh_params = NULL;
+  unsigned int ecdh_params_len;
+  unsigned int extralen1, extralen2;
 
   if (ctrl->restricted)
     return leave_cmd (ctx, gpg_error (GPG_ERR_FORBIDDEN));
@@ -3240,10 +3244,38 @@ cmd_keytocard (assuan_context_t ctx, char *line)
 
   /* Default to the creation time as stored in the private key.  The
    * parameter is here so that gpg can make sure that the timestamp as
-   * used for key creation (and thus the openPGP fingerprint) is
-   * used.  */
+   * used.  It is also important for OpenPGP cards to allow computing
+   * of the fingerprint.  Same goes for the ECDH params.  */
   if (argc > 3)
-    timestamp = isotime2epoch (argv[3]);
+    {
+      timestamp = isotime2epoch (argv[3]);
+      if (argc > 4)
+        {
+          size_t n;
+
+          err = parse_hexstring (ctx, argv[4], &n);
+          if (err)
+            goto leave;  /* Badly formatted ecdh params. */
+          n /= 2;
+          if (n < 4)
+            {
+              err = set_error (GPG_ERR_ASS_PARAMETER, "ecdh param too short");
+              goto leave;
+            }
+          ecdh_params_len = n;
+          ecdh_params = xtrymalloc (ecdh_params_len);
+          if (!ecdh_params)
+            {
+              err = gpg_error_from_syserror ();
+              goto leave;
+            }
+          if (hex2bin (argv[4], ecdh_params, ecdh_params_len) < 0)
+            {
+              err = set_error (GPG_ERR_BUG, "hex2bin");
+              goto leave;
+            }
+        }
+    }
   else if (timestamp == (time_t)(-1))
     timestamp = isotime2epoch ("19700101T000000");
 
@@ -3254,9 +3286,12 @@ cmd_keytocard (assuan_context_t ctx, char *line)
     }
 
   /* Note: We can't use make_canon_sexp because we need to allocate a
-   * few extra bytes for our hack below.  */
+   * few extra bytes for our hack below.  The 20 for extralen2
+   * accounts for the sexp length of ecdh_params.  */
   keydatalen = gcry_sexp_sprint (s_skey, GCRYSEXP_FMT_CANON, NULL, 0);
-  keydata = xtrymalloc_secure (keydatalen + 30);
+  extralen1 = 30;
+  extralen2 = ecdh_params? (20+20+ecdh_params_len) : 0;
+  keydata = xtrymalloc_secure (keydatalen + extralen1 + extralen2);
   if (keydata == NULL)
     {
       err = gpg_error_from_syserror ();
@@ -3265,15 +3300,31 @@ cmd_keytocard (assuan_context_t ctx, char *line)
   gcry_sexp_sprint (s_skey, GCRYSEXP_FMT_CANON, keydata, keydatalen);
   gcry_sexp_release (s_skey);
   s_skey = NULL;
+
   keydatalen--;			/* Decrement for last '\0'.  */
+
   /* Hack to insert the timestamp "created-at" into the private key.  */
-  snprintf (keydata+keydatalen-1, 30, KEYTOCARD_TIMESTAMP_FORMAT, timestamp);
+  snprintf (keydata+keydatalen-1, extralen1, KEYTOCARD_TIMESTAMP_FORMAT,
+            timestamp);
   keydatalen += 10 + 19 - 1;
+
+  /* Hack to insert the timestamp "ecdh-params" into the private key.  */
+  if (ecdh_params)
+    {
+      snprintf (keydata+keydatalen-1, extralen2, "(11:ecdh-params%u:",
+                ecdh_params_len);
+      keydatalen += strlen (keydata+keydatalen-1) -1;
+      memcpy (keydata+keydatalen, ecdh_params, ecdh_params_len);
+      keydatalen += ecdh_params_len;
+      memcpy (keydata+keydatalen, "))", 3);
+      keydatalen += 2;
+    }
 
   err = divert_writekey (ctrl, force, serialno, keyref, keydata, keydatalen);
   xfree (keydata);
 
  leave:
+  xfree (ecdh_params);
   gcry_sexp_release (s_skey);
   xfree (shadow_info);
   return leave_cmd (ctx, err);

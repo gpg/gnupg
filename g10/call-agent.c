@@ -1096,7 +1096,8 @@ agent_keytotpm (ctrl_t ctrl, const char *hexgrip)
  */
 int
 agent_keytocard (const char *hexgrip, int keyno, int force,
-                 const char *serialno, const char *timestamp)
+                 const char *serialno, const char *timestamp,
+                 const char *ecdh_param_str)
 {
   int rc;
   char line[ASSUAN_LINELENGTH];
@@ -1104,8 +1105,9 @@ agent_keytocard (const char *hexgrip, int keyno, int force,
 
   memset (&parm, 0, sizeof parm);
 
-  snprintf (line, DIM(line), "KEYTOCARD %s%s %s OPENPGP.%d %s",
-            force?"--force ": "", hexgrip, serialno, keyno, timestamp);
+  snprintf (line, DIM(line), "KEYTOCARD %s%s %s OPENPGP.%d %s%s%s",
+            force?"--force ": "", hexgrip, serialno, keyno, timestamp,
+            ecdh_param_str? " ":"", ecdh_param_str? ecdh_param_str:"");
 
   rc = start_agent (NULL, 1);
   if (rc)

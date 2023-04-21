@@ -869,10 +869,12 @@ parse_login_data (app_t app)
 
 #define MAX_ARGS_STORE_FPR 3
 
-/* Note, that FPR must be at least 20 bytes. */
+/* Note, that FPR must be at least 20 bytes.  If UPDATE is not set,
+ * the fingerprint and the creation date is not actually stored but
+ * the fingerprint is only returned in FPR.  */
 static gpg_error_t
-store_fpr (app_t app, int keynumber, u32 timestamp, unsigned char *fpr,
-           int algo, ...)
+store_fpr (app_t app, int update, int keynumber, u32 timestamp,
+           unsigned char *fpr, int algo, ...)
 {
   unsigned int n, nbits;
   unsigned char *buffer, *p;
@@ -936,6 +938,9 @@ store_fpr (app_t app, int keynumber, u32 timestamp, unsigned char *fpr,
   gcry_md_hash_buffer (GCRY_MD_SHA1, fpr, buffer, n+3);
 
   xfree (buffer);
+
+  if (!update)
+    return 0;
 
   tag = (app->appversion > 0x0007? 0xC7 : 0xC6) + keynumber;
   flush_cache_item (app, 0xC5);
@@ -1605,7 +1610,8 @@ retrieve_key_material (FILE *fp, const char *hexkeyid,
 
 
 static gpg_error_t
-rsa_read_pubkey (app_t app, ctrl_t ctrl, u32 created_at,  int keyno,
+rsa_read_pubkey (app_t app, ctrl_t ctrl, int meta_update,
+                 u32 created_at,  int keyno,
                  const unsigned char *data, size_t datalen, gcry_sexp_t *r_sexp)
 {
   gpg_error_t err;
@@ -1642,7 +1648,11 @@ rsa_read_pubkey (app_t app, ctrl_t ctrl, u32 created_at,  int keyno,
     {
       unsigned char fprbuf[20];
 
-      err = store_fpr (app, keyno, created_at, fprbuf, PUBKEY_ALGO_RSA,
+      /* If META_UPDATE is not set we only compute but not store the
+       * fingerprint.  This might return a wrong fingerprint if
+       * CREATED_AT is not set.  */
+      err = store_fpr (app, meta_update, keyno,
+                       created_at, fprbuf, PUBKEY_ALGO_RSA,
                        m, mlen, e, elen);
       if (err)
         return err;
@@ -1714,7 +1724,8 @@ ecdh_params (const char *curve)
 }
 
 static gpg_error_t
-ecc_read_pubkey (app_t app, ctrl_t ctrl, u32 created_at, int keyno,
+ecc_read_pubkey (app_t app, ctrl_t ctrl, int meta_update,
+                 u32 created_at, int keyno,
                  const unsigned char *data, size_t datalen, gcry_sexp_t *r_sexp)
 {
   gpg_error_t err;
@@ -1783,7 +1794,12 @@ ecc_read_pubkey (app_t app, ctrl_t ctrl, u32 created_at, int keyno,
     {
       unsigned char fprbuf[20];
 
-      err = store_fpr (app, keyno, created_at, fprbuf, algo, oidbuf, oid_len,
+      /* If META_UPDATE is not set we only compute but not store the
+       * fingerprint.  This might return a wrong fingerprint if
+       * CREATED_AT is not set or the ECDH params do not match the
+       * current defaults. */
+      err = store_fpr (app, meta_update, keyno,
+                       created_at, fprbuf, algo, oidbuf, oid_len,
                        qbuf, ecc_q_len, ecdh_params (curve), (size_t)4);
       if (err)
         goto leave;
@@ -1826,13 +1842,15 @@ store_keygrip (app_t app, int keyno)
 
 
 /* Parse tag-length-value data for public key in BUFFER of BUFLEN
-   length.  Key of KEYNO in APP is updated with an S-expression of
-   public key.  When CTRL is not NULL, fingerprint is computed with
-   CREATED_AT, and fingerprint is written to the card, and key data
-   and fingerprint are send back to the client side.
+ * length.  Key of KEYNO in APP is updated with an S-expression of
+ * public key.  If CTRL is not NULL, the fingerprint is computed with
+ * CREATED_AT and key data and fingerprint are send back to the client
+ * side.  If also META_UPDATE is true the fingerprint and the creation
+ * date are also written to the card.
  */
 static gpg_error_t
-read_public_key (app_t app, ctrl_t ctrl, u32 created_at, int keyno,
+read_public_key (app_t app, ctrl_t ctrl, int meta_update,
+                 u32 created_at, int keyno,
                  const unsigned char *buffer, size_t buflen)
 {
   gpg_error_t err;
@@ -1848,10 +1866,10 @@ read_public_key (app_t app, ctrl_t ctrl, u32 created_at, int keyno,
     }
 
   if (app->app_local->keyattr[keyno].key_type == KEY_TYPE_RSA)
-    err = rsa_read_pubkey (app, ctrl, created_at, keyno,
+    err = rsa_read_pubkey (app, ctrl, meta_update, created_at, keyno,
                            data, datalen, &s_pkey);
   else if (app->app_local->keyattr[keyno].key_type == KEY_TYPE_ECC)
-    err = ecc_read_pubkey (app, ctrl, created_at, keyno,
+    err = ecc_read_pubkey (app, ctrl, meta_update, created_at, keyno,
                            data, datalen, &s_pkey);
   else
     err = gpg_error (GPG_ERR_NOT_IMPLEMENTED);
@@ -1947,14 +1965,19 @@ get_public_key (app_t app, int keyno)
           /* Yubikey returns wrong code.  Fix it up.  */
           if (APP_CARD(app)->cardtype == CARDTYPE_YUBIKEY)
             err = gpg_error (GPG_ERR_NO_OBJ);
-	  /* Yubikey NEO (!CARDTYPE_YUBIKEY) also returns wrong code.  Fix it up.  */
+	  /* Yubikey NEO (!CARDTYPE_YUBIKEY) also returns wrong code.
+           * Fix it up.  */
 	  else if (gpg_err_code (err) == GPG_ERR_CARD)
             err = gpg_error (GPG_ERR_NO_OBJ);
           log_error (_("reading public key failed: %s\n"), gpg_strerror (err));
           goto leave;
         }
 
-      err = read_public_key (app, NULL, 0U, keyno, buffer, buflen);
+      /* Note that we use 0 for the creation date and thus the - via
+       * status lines - returned fingerprint will only be valid if the
+       * key has also been created with that date.  A similar problem
+       * occurs with the ECDH params which are fixed in the code.  */
+      err = read_public_key (app, NULL, 0, 0U, keyno, buffer, buflen);
     }
   else
     {
@@ -4520,7 +4543,7 @@ rsa_writekey (app_t app, ctrl_t ctrl,
       goto leave;
     }
 
-  err = store_fpr (app, keyno, created_at, fprbuf, PUBKEY_ALGO_RSA,
+  err = store_fpr (app, 1, keyno, created_at, fprbuf, PUBKEY_ALGO_RSA,
                    rsa_n, rsa_n_len, rsa_e, rsa_e_len);
   if (err)
     goto leave;
@@ -4545,6 +4568,8 @@ ecc_writekey (app_t app, ctrl_t ctrl,
   const unsigned char *ecc_q = NULL;
   const unsigned char *ecc_d = NULL;
   size_t ecc_q_len, ecc_d_len;
+  const unsigned char *ecdh_param = NULL;
+  size_t ecdh_param_len = 0;
   const char *curve = NULL;
   u32 created_at = 0;
   const char *oidstr;
@@ -4557,7 +4582,7 @@ ecc_writekey (app_t app, ctrl_t ctrl,
   unsigned char fprbuf[20];
   size_t ecc_d_fixed_len;
 
-  /* (private-key(ecc(curve%s)(q%m)(d%m))(created-at%d)):
+  /* (private-key(ecc(curve%s)(q%m)(d%m))(created-at%d)(ecdh-params%s)):
      curve = "NIST P-256" */
   /* (private-key(ecc(curve%s)(q%m)(d%m))(created-at%d)):
      curve = "secp256k1" */
@@ -4652,6 +4677,7 @@ ecc_writekey (app_t app, ctrl_t ctrl,
         }
       if ((err = parse_sexp (&buf, &buflen, &depth, &tok, &toklen)))
         goto leave;
+
       if (tok && toklen == 10 && !memcmp ("created-at", tok, toklen))
         {
           if ((err = parse_sexp (&buf,&buflen,&depth,&tok,&toklen)))
@@ -4663,6 +4689,17 @@ ecc_writekey (app_t app, ctrl_t ctrl,
                 created_at = created_at*10 + (*tok - '0');
             }
         }
+      else if (tok && toklen == 11 && !memcmp ("ecdh-params", tok, toklen))
+        {
+          if ((err = parse_sexp (&buf,&buflen,&depth,&tok,&toklen)))
+            goto leave;
+          if (tok)
+            {
+              ecdh_param = tok;
+              ecdh_param_len = toklen;
+            }
+        }
+
       /* Skip until end of list. */
       last_depth2 = depth;
       while (!(err = parse_sexp (&buf, &buflen, &depth, &tok, &toklen))
@@ -4693,6 +4730,13 @@ ecc_writekey (app_t app, ctrl_t ctrl,
     algo = PUBKEY_ALGO_EDDSA;
   else
     algo = PUBKEY_ALGO_ECDSA;
+
+  if (algo == PUBKEY_ALGO_ECDH && !ecdh_param)
+    {
+      log_error ("opgp: ecdh parameters missing\n");
+      err = gpg_error (GPG_ERR_INV_VALUE);
+      goto leave;
+    }
 
   oidstr = openpgp_curve_to_oid (curve, &n, NULL);
   ecc_d_fixed_len = (n+7)/8;
@@ -4795,8 +4839,8 @@ ecc_writekey (app_t app, ctrl_t ctrl,
       goto leave;
     }
 
-  err = store_fpr (app, keyno, created_at, fprbuf, algo, oidbuf, oid_len,
-                   ecc_q, ecc_q_len, ecdh_params (curve), (size_t)4);
+  err = store_fpr (app, 1, keyno, created_at, fprbuf, algo, oidbuf, oid_len,
+                   ecc_q, ecc_q_len, ecdh_param, ecdh_param_len);
 
  leave:
   gcry_mpi_release (oid);
@@ -5024,7 +5068,7 @@ do_genkey (app_t app, ctrl_t ctrl,  const char *keyref, const char *keyalgo,
   send_status_info (ctrl, "KEY-CREATED-AT",
                     numbuf, (size_t)strlen(numbuf), NULL, 0);
 
-  err = read_public_key (app, ctrl, created_at, keyno, buffer, buflen);
+  err = read_public_key (app, ctrl, 1, created_at, keyno, buffer, buflen);
  leave:
   xfree (buffer);
   return err;

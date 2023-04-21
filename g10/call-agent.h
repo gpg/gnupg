@@ -135,7 +135,8 @@ int agent_keytotpm (ctrl_t ctrl, const char *hexgrip);
 
 /* Send the KEYTOCARD command. */
 int agent_keytocard (const char *hexgrip, int keyno, int force,
-                     const char *serialno, const char *timestamp);
+                     const char *serialno, const char *timestamp,
+                     const char *ecdh_param_str);
 
 /* Send a SETATTR command to the SCdaemon. */
 gpg_error_t agent_scd_setattr (const char *name,
