@@ -795,8 +795,11 @@ static int regatom(regex_t *preg, int *flagp)
 
 					for (cc = 0; cc < CC_NUM; cc++) {
 						n = strlen(character_class[cc]);
-						if (!strncmp(pattern, character_class[cc], n)
-                                                    && pattern[n] == ']') {
+						if (strncmp(pattern, character_class[cc], n) == 0) {
+							if (pattern[n] != ']') {
+								preg->err = REG_ERR_UNMATCHED_BRACKET;
+								return 0;
+							}
 							/* Found a character class */
 							pattern += n + 1;
 							break;
@@ -1508,7 +1511,7 @@ static int regmatch(regex_t *preg, int prog)
 			/* Can't match at BOL */
 			if (preg->reginput > preg->regbol) {
 				/* Current must be EOL or nonword */
-				if (reg_iseol(preg, c) || !isalnum(UCHAR(c)) || c != '_') {
+				if (reg_iseol(preg, c) || !(isalnum(UCHAR(c)) || c == '_')) {
 					c = preg->reginput[-1];
 					/* Previous must be word */
 					if (isalnum(UCHAR(c)) || c == '_') {
