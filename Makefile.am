@@ -51,6 +51,7 @@ EXTRA_DIST = build-aux/config.rpath build-aux/potomo autogen.sh autogen.rc \
              build-aux/speedo/w32/pango.modules		    \
              build-aux/speedo/w32/gdk-pixbuf-loaders.cache  \
              build-aux/speedo/w32/exdll.h		    \
+             build-aux/speedo/w32/exdll.c		    \
              build-aux/speedo/w32/README.txt		    \
              build-aux/speedo/w32/gnupg-logo-150x57.bmp	    \
              build-aux/speedo/w32/gnupg-logo-164x314.bmp    \

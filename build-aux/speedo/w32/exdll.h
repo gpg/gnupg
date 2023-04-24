@@ -1,90 +1,46 @@
-/* exdll.h for use with gpg4win
- * Copyright (C) 1999-2005 Nullsoft, Inc.
- *
- * This license applies to everything in the NSIS package, except
- * where otherwise noted.
- *
- * This software is provided 'as-is', without any express or implied
- * warranty. In no event will the authors be held liable for any
- * damages arising from the use of this software.
- *
- * Permission is granted to anyone to use this software for any
- * purpose, including commercial applications, and to alter it and
- * redistribute it freely, subject to the following restrictions:
- *
- * 1. The origin of this software must not be misrepresented; you must
- *    not claim that you wrote the original software. If you use this
- *    software in a product, an acknowledgment in the product
- *    documentation would be appreciated but is not required.
- *
- * 2. Altered source versions must be plainly marked as such, and must
- *    not be misrepresented as being the original software.
- *
- * 3. This notice may not be removed or altered from any source
- *    distribution.
- ************************************************************
- * 2005-11-14 wk  Applied license text to original exdll.h file from
- *                NSIS 2.0.4 and did some formatting changes.
- */
+#include <windows.h>
+#ifndef ___NSIS_PLUGIN__H___
+#define ___NSIS_PLUGIN__H___
 
-#ifndef _EXDLL_H_
-#define _EXDLL_H_
+#ifdef __cplusplus
+extern "C" {
+#endif
 
-/* only include this file from one place in your DLL.  (it is all
-   static, if you use it in two places it will fail) */
+#ifndef NSISCALL
+#  define NSISCALL __stdcall
+#endif
+#if !defined(_WIN32) && !defined(LPTSTR)
+#  define LPTSTR TCHAR*
+#endif
+
+
+
+#ifndef NSISCALL
+#  define NSISCALL WINAPI
+#endif
 
 #define EXDLL_INIT()           {  \
         g_stringsize=string_size; \
         g_stacktop=stacktop;      \
         g_variables=variables; }
 
-/* For page showing plug-ins */
-#define WM_NOTIFY_OUTER_NEXT (WM_USER+0x8)
-#define WM_NOTIFY_CUSTOM_READY (WM_USER+0xd)
-#define NOTIFY_BYE_BYE 'x'
+
+enum NSPIM
+{
+  NSPIM_UNLOAD,
+  NSPIM_GUIUNLOAD
+};
+
+typedef UINT_PTR (*NSISPLUGINCALLBACK)(enum NSPIM);
 
 typedef struct _stack_t {
   struct _stack_t *next;
-  char text[1];          /* This should be the length of string_size. */
+#ifdef UNICODE
+  WCHAR text[1]; // this should be the length of g_stringsize when allocating
+#else
+  char text[1];
+#endif
 } stack_t;
-
-
-static unsigned int g_stringsize;
-static stack_t **g_stacktop;
-static char *g_variables;
-
-static int __stdcall popstring(char *str, size_t maxlen); /* 0 on success, 1 on empty stack */
-static void __stdcall pushstring(const char *str);
-
-enum
-  {
-    INST_0,         // $0
-    INST_1,         // $1
-    INST_2,         // $2
-    INST_3,         // $3
-    INST_4,         // $4
-    INST_5,         // $5
-    INST_6,         // $6
-    INST_7,         // $7
-    INST_8,         // $8
-    INST_9,         // $9
-    INST_R0,        // $R0
-    INST_R1,        // $R1
-    INST_R2,        // $R2
-    INST_R3,        // $R3
-    INST_R4,        // $R4
-    INST_R5,        // $R5
-    INST_R6,        // $R6
-    INST_R7,        // $R7
-    INST_R8,        // $R8
-    INST_R9,        // $R9
-    INST_CMDLINE,   // $CMDLINE
-    INST_INSTDIR,   // $INSTDIR
-    INST_OUTDIR,    // $OUTDIR
-    INST_EXEDIR,    // $EXEDIR
-    INST_LANG,      // $LANGUAGE
-    __INST_LAST
-};
 
 typedef struct {
   int autoclose;
@@ -94,58 +50,127 @@ typedef struct {
   int exec_reboot;
   int reboot_called;
   int XXX_cur_insttype; /* deprecated */
-  int XXX_insttype_changed; /* deprecated */
+  int plugin_api_version;   /* Used to be insttype_changed */
   int silent;
   int instdir_error;
   int rtl;
   int errlvl;
+  int alter_reg_view;
+  int status_update;
 } exec_flags_t;
 
 typedef struct {
   exec_flags_t *exec_flags;
   int (__stdcall *ExecuteCodeSegment)(int, HWND);
+  void (__stdcall *validate_filename)(LPTSTR);
+  int (__stdcall  *RegisterPluginCallback)(HMODULE, NSISPLUGINCALLBACK);
 } extra_parameters_t;
 
 
-/* Utility functions (not required but often useful). */
-static int __stdcall
-popstring(char *str, size_t maxlen)
+enum
 {
-  stack_t *th;
-  if (!g_stacktop || !*g_stacktop)
-    return 1;
-  th=(*g_stacktop);
-  lstrcpyn (str, th->text, maxlen);
-  *g_stacktop = th->next;
-  GlobalFree((HGLOBAL)th);
-  return 0;
+INST_0,         // $0
+INST_1,         // $1
+INST_2,         // $2
+INST_3,         // $3
+INST_4,         // $4
+INST_5,         // $5
+INST_6,         // $6
+INST_7,         // $7
+INST_8,         // $8
+INST_9,         // $9
+INST_R0,        // $R0
+INST_R1,        // $R1
+INST_R2,        // $R2
+INST_R3,        // $R3
+INST_R4,        // $R4
+INST_R5,        // $R5
+INST_R6,        // $R6
+INST_R7,        // $R7
+INST_R8,        // $R8
+INST_R9,        // $R9
+INST_CMDLINE,   // $CMDLINE
+INST_INSTDIR,   // $INSTDIR
+INST_OUTDIR,    // $OUTDIR
+INST_EXEDIR,    // $EXEDIR
+INST_LANG,      // $LANGUAGE
+__INST_LAST
+};
+
+extern unsigned int g_stringsize;
+extern stack_t **g_stacktop;
+extern LPTSTR g_variables;
+
+void NSISCALL pushstring(LPCTSTR str);
+void NSISCALL pushintptr(INT_PTR value);
+#define pushint(v) pushintptr((INT_PTR)(v))
+int NSISCALL popstring(LPTSTR str); // 0 on success, 1 on empty stack
+int NSISCALL popstringn(LPTSTR str, int maxlen); // with length limit, pass 0 for g_stringsize
+INT_PTR NSISCALL popintptr();
+#define popint() ( (int) popintptr() )
+int NSISCALL popint_or(); // with support for or'ing (2|4|8)
+INT_PTR NSISCALL nsishelper_str_to_ptr(LPCTSTR s);
+#define myatoi(s) ( (int) nsishelper_str_to_ptr(s) ) // converts a string to an integer
+unsigned int NSISCALL myatou(LPCTSTR s); // converts a string to an unsigned integer, decimal only
+int NSISCALL myatoi_or(LPCTSTR s); // with support for or'ing (2|4|8)
+LPTSTR NSISCALL getuservariable(const int varnum);
+void NSISCALL setuservariable(const int varnum, LPCTSTR var);
+
+#ifdef UNICODE
+#define PopStringW(x) popstring(x)
+#define PushStringW(x) pushstring(x)
+#define SetUserVariableW(x,y) setuservariable(x,y)
+
+int  NSISCALL PopStringA(LPSTR ansiStr);
+int  NSISCALL PopStringNA(LPSTR ansiStr, int maxlen);
+void NSISCALL PushStringA(LPCSTR ansiStr);
+void NSISCALL GetUserVariableW(const int varnum, LPWSTR wideStr);
+void NSISCALL GetUserVariableA(const int varnum, LPSTR ansiStr);
+void NSISCALL SetUserVariableA(const int varnum, LPCSTR ansiStr);
+
+#else
+// ANSI defs
+
+#define PopStringA(x) popstring(x)
+#define PushStringA(x) pushstring(x)
+#define SetUserVariableA(x,y) setuservariable(x,y)
+
+int  NSISCALL PopStringW(LPWSTR wideStr);
+void NSISCALL PushStringW(LPWSTR wideStr);
+void NSISCALL GetUserVariableW(const int varnum, LPWSTR wideStr);
+void NSISCALL GetUserVariableA(const int varnum, LPSTR ansiStr);
+void NSISCALL SetUserVariableW(const int varnum, LPCWSTR wideStr);
+
+#endif
+
+#ifdef __cplusplus
 }
+#endif
 
-static void __stdcall
-pushstring(const char *str)
-{
-  stack_t *th;
-  if (!g_stacktop) return;
-  th=(stack_t*)GlobalAlloc(GPTR,sizeof(stack_t)+g_stringsize);
-  lstrcpyn(th->text,str,g_stringsize);
-  th->next=*g_stacktop;
-  *g_stacktop=th;
-}
+#endif//!___NSIS_PLUGIN__H___
 
-static char * __stdcall
-getuservariable(const int varnum)
-{
-  if (varnum < 0 || varnum >= __INST_LAST) return NULL;
-  return g_variables+varnum*g_stringsize;
-}
+#ifndef COUNTOF
+#define COUNTOF(a) (sizeof(a)/sizeof(a[0]))
+#endif
 
-static void __stdcall
-setuservariable(const int varnum, const char *var)
-{
-  if (var != NULL && varnum >= 0 && varnum < __INST_LAST)
-    lstrcpy(g_variables + varnum*g_stringsize, var);
-}
+// minimal tchar.h emulation
+#ifndef _T
+#  define _T TEXT
+#endif
+#if !defined(TCHAR) && !defined(_TCHAR_DEFINED)
+#  ifdef UNICODE
+#    define TCHAR WCHAR
+#  else
+#    define TCHAR char
+#  endif
+#endif
 
+#define isvalidnsisvarindex(varnum) ( ((unsigned int)(varnum)) < (__INST_LAST) )
 
-
-#endif/*_EXDLL_H_*/
+#define ERRORPRINTF(fmt, ...) \
+  { \
+    char buf[512]; \
+    snprintf(buf, 511, "ERROR: " fmt, ##__VA_ARGS__); \
+    buf[511] = '\0'; \
+    OutputDebugStringA(buf); \
+  }
