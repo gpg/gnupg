@@ -1,6 +1,7 @@
-/* g4wihelp.c - NSIS Helper DLL used with gpg4win. -*- coding: latin-1; -*-
- * Copyright (C) 2005 g10 Code GmbH
+/* g4wihelp.c - NSIS Helper DLL used with gpg4win.
+ * Copyright (C) 2005, 2023 g10 Code GmbH
  * Copyright (C) 2001 Justin Frankel
+ * Copyright (C) 2016, 2017 Intevation GmbH
  *
  * This software is provided 'as-is', without any express or implied
  * warranty. In no event will the authors be held liable for any
@@ -23,22 +24,41 @@
  ************************************************************
  * The code for the splash screen has been taken from the Splash
  * plugin of the NSIS 2.04 distribution.  That code comes without
- * explicit copyright notices in the source files or author names, it
+ * explicit copyright notices in tyhe source files or author names, it
  * seems that it has been written by Justin Frankel; not sure about
  * the year, though. [wk 2005-11-28]
  *
  * Fixed some compiler warnings. [wk 2014-02-24].
+ * Merged code from GnuPG version.  [wk 2023-04-24].
+ *
+ * Compile time macros:
+ *  ENABLE_SLIDE_SHOW :: Define for Gpg4win.
  */
 
-#include <stdio.h>
 #include <windows.h>
+#include <stdio.h>
+#include <tlhelp32.h>
+#include <psapi.h>
+#include <stdio.h>
+#include <string.h>
 #include "exdll.h"
+
+/* We keep some code here for documentation reasons.  That code has not
+ * yet been converted to the Unicode NSIS plugin API. */
+/* #define ENABLE_SOUND_GADGET 1   */
+/* #define ENABLE_SPLASH_GADGET 1   */
+/* #define ENABLE_SERVICE_MANAGEMENT 1   */
+
 
 static HINSTANCE g_hInstance; /* Our Instance. */
 static HWND g_hwndParent;     /* Handle of parent window or NULL. */
 static HBITMAP g_hbm;         /* Handle of the splash image. */
 static int sleepint;          /* Milliseconds to show the spals image. */
 
+#ifdef ENABLE_SLIDE_SHOW
+void
+slide_stop(HWND hwndParent, int string_size, TCHAR *variables, stack_t **stacktop);
+#endif
 
 /* Standard entry point for DLLs. */
 int WINAPI
@@ -46,6 +66,12 @@ DllMain (HANDLE hinst, DWORD reason, LPVOID reserved)
 {
    if (reason == DLL_PROCESS_ATTACH)
      g_hInstance = hinst;
+   else if (reason == DLL_PROCESS_DETACH)
+     {
+#ifdef ENABLE_SLIDE_SHOW
+       slide_stop (NULL, 0, NULL, NULL);
+#endif
+     }
    return TRUE;
 }
 
@@ -53,7 +79,7 @@ DllMain (HANDLE hinst, DWORD reason, LPVOID reserved)
 
 /* Dummy function for testing. */
 void __declspec(dllexport)
-dummy (HWND hwndParent, int string_size, char *variables,
+dummy (HWND hwndParent, int string_size, LPTSTR variables,
        stack_t **stacktop, extra_parameters_t *extra)
 {
   g_hwndParent = hwndParent;
@@ -67,21 +93,66 @@ dummy (HWND hwndParent, int string_size, char *variables,
   // you should empty the stack of your parameters, and ONLY your
   // parameters.
 
-  // do your stuff here
+  /* Let's dump the variables.  */
   {
-    char buf[1024];
-    snprintf (buf, sizeof buf, "$R0=%s\r\n$R1=%s\r\n",
-              getuservariable(INST_R0),
-              getuservariable(INST_R1));
-    MessageBox (g_hwndParent,buf,0,MB_OK);
+    char line[512];
+    char *p;
+    const unsigned char *s = (void*)g_variables;
+    int i,j;
 
-    snprintf (buf, sizeof buf,
-             "autoclose    =%d\r\n"
+    for (i=0; i < string_size* __INST_LAST; i+=32, s += 32)
+      {
+        for (j=0; j < 32; j++)
+          if (s[j])
+            break;
+        if (j != 32)
+          {
+            p = line;
+            *p = 0;
+            snprintf (p, 10, "%05x: ", i);
+            p += strlen (p);
+            for (j=0; j < 32; j++)
+              {
+                snprintf (p, 10, "%02x", s[j]);
+                p += strlen (p);
+              }
+            strcat (p, " |");
+            p += strlen (p);
+            for (j=0; j < 32; j++)
+              {
+                if (s[j] >= 32 && s[j] < 127)
+                  *p = s[j];
+                else
+                  *p = '.';
+                p++;
+              }
+            strcat (p, "|");
+            OutputDebugStringA (line);
+          }
+      }
+  }
+
+
+  {
+    wchar_t buf[1024];
+
+    swprintf(buf, 1024,
+             L"stringsize=%d\r\n$0=%s\r\n$1=%s\r\n$R0=%s\r\n$R1=%s\r\n",
+            string_size,
+            getuservariable(INST_0),
+            getuservariable(INST_1),
+            getuservariable(INST_R0),
+            getuservariable(INST_R1));
+    MessageBoxW(g_hwndParent,buf,0,MB_OK);
+
+    swprintf (buf, 1024,
+             L"autoclose    =%d\r\n"
              "all_user_var =%d\r\n"
              "exec_error   =%d\r\n"
              "abort        =%d\r\n"
              "exec_reboot  =%d\r\n"
              "reboot_called=%d\r\n"
+	     "api_version  =%d\r\n"
              "silent       =%d\r\n"
              "instdir_error=%d\r\n"
              "rtl          =%d\r\n"
@@ -92,30 +163,34 @@ dummy (HWND hwndParent, int string_size, char *variables,
              extra->exec_flags->abort,
              extra->exec_flags->exec_reboot,
              extra->exec_flags->reboot_called,
+             extra->exec_flags->plugin_api_version,
              extra->exec_flags->silent,
              extra->exec_flags->instdir_error,
              extra->exec_flags->rtl,
              extra->exec_flags->errlvl);
-    MessageBox(g_hwndParent,buf,0,MB_OK);
+    MessageBoxW(g_hwndParent,buf,0,MB_OK);
   }
 }
 
 
+
 void __declspec(dllexport)
-runonce (HWND hwndParent, int string_size, char *variables,
+runonce (HWND hwndParent, int string_size, LPTSTR variables,
          stack_t **stacktop, extra_parameters_t *extra)
 {
-  const char *result;
+  LPCWSTR result;
 
   g_hwndParent = hwndParent;
   EXDLL_INIT();
 
-  CreateMutexA (NULL, 0, getuservariable(INST_R0));
-  result = GetLastError ()? "1":"0";
+  CreateMutexW (NULL, 0, getuservariable(INST_R0));
+  result = GetLastError ()? L"1" : L"0";
   setuservariable (INST_R0, result);
 }
 
 
+
+#ifdef ENABLE_SOUND_GADGET
 void __declspec(dllexport)
 playsound (HWND hwndParent, int string_size, char *variables,
            stack_t **stacktop, extra_parameters_t *extra)
@@ -139,8 +214,10 @@ stopsound (HWND hwndParent, int string_size, char *variables,
   EXDLL_INIT();
   PlaySound (NULL, NULL, 0);
 }
+#endif /*ENABLE_SOUND_GADGET*/
 
 
+#ifdef ENABLE_SPLASH_GADGET
 /* Windows procedure to control the splashimage.  This one pauses the
    execution until the sleep time is over or the user closes this
    windows. */
@@ -268,10 +345,10 @@ showsplash (HWND hwndParent, int string_size, char *variables,
     }
   UnregisterClass (classname, g_hInstance);
 }
+#endif /*ENABLE_SPLASH_GADGET*/
 
-
-/* Service Management.  */
 
+#ifdef ENABLE_SERVICE_MANAGEMENT
 /* Use this to report unexpected errors.  FIXME: This is really not
    very descriptive.  */
 void
@@ -626,9 +703,8 @@ service_delete (HWND hwndParent, int string_size, char *variables,
   setuservariable (INST_R0, "0");
   return;
 }
+#endif /*ENABLE_SERVICE_MANAGEMENT*/
 
-
-#include <stdio.h>
 
 /* Extract config file parameters.  FIXME: Not particularly robust.
    We expect some reasonable formatting.  The parser below is very
@@ -644,6 +720,7 @@ void
 config_init (char **keys, char **values, int max)
 {
   /* First, parse the command line.  */
+  LPCWSTR wcmdline;
   char *cmdline;
   char *begin = NULL;
   char *end = NULL;
@@ -655,7 +732,15 @@ config_init (char **keys, char **values, int max)
   *keys = NULL;
   *values = NULL;
 
-  cmdline = getuservariable (INST_CMDLINE);
+  cmdline = malloc (4096);
+  if (!cmdline)
+    return;
+
+  wcmdline = getuservariable (INST_CMDLINE);
+  *cmdline = 0;
+  WideCharToMultiByte(CP_ACP, 0, wcmdline, -1, cmdline, 4095, NULL, NULL);
+  if (!*cmdline)
+    return;
 
   mark = (*cmdline == '"') ? (cmdline++, '"') : ' ';
   while (*cmdline && *cmdline != mark)
@@ -721,6 +806,7 @@ config_init (char **keys, char **values, int max)
 
   conf = fopen (fname, "r");
   free (fname);
+  free (cmdline);
   if (!conf)
     return;
 
@@ -843,7 +929,7 @@ config_lookup (char *key)
 
 
 void __declspec(dllexport)
-config_fetch (HWND hwndParent, int string_size, char *variables,
+config_fetch (HWND hwndParent, int string_size, LPTSTR variables,
 	      stack_t **stacktop, extra_parameters_t *extra)
 {
   char key[256];
@@ -854,23 +940,23 @@ config_fetch (HWND hwndParent, int string_size, char *variables,
   EXDLL_INIT();
 
   /* The expected stack layout: key.  */
-  if (popstring (key, sizeof (key)))
+  if (PopStringNA (key, sizeof (key)))
     err = 1;
   if (err)
     {
-      setuservariable (INST_R0, "");
+      setuservariable (INST_R0, L"");
       return;
     }
 
   value = config_lookup (key);
 
-  setuservariable (INST_R0, value == NULL ? "" : value);
+  SetUserVariableA (INST_R0, value == NULL ? "" : value);
   return;
 }
 
 
 void __declspec(dllexport)
-config_fetch_bool (HWND hwndParent, int string_size, char *variables,
+config_fetch_bool (HWND hwndParent, int string_size, LPTSTR variables,
 		   stack_t **stacktop, extra_parameters_t *extra)
 {
   char key[256];
@@ -882,18 +968,18 @@ config_fetch_bool (HWND hwndParent, int string_size, char *variables,
   EXDLL_INIT();
 
   /* The expected stack layout: key.  */
-  if (popstring (key, sizeof (key)))
+  if (PopStringNA (key, sizeof (key)))
     err = 1;
   if (err)
     {
-      setuservariable (INST_R0, "");
+      setuservariable (INST_R0, L"");
       return;
     }
 
   value = config_lookup (key);
   if (value == NULL || *value == '\0')
     {
-      setuservariable (INST_R0, "");
+      setuservariable (INST_R0, L"");
       return;
     }
 
@@ -903,7 +989,7 @@ config_fetch_bool (HWND hwndParent, int string_size, char *variables,
       || atoi (value) != 0)
     result = 1;
 
-  setuservariable (INST_R0, result == 0 ? "0" : "1");
+  SetUserVariableA (INST_R0, result == 0 ? "0" : "1");
   return;
 }
 
@@ -911,99 +997,107 @@ config_fetch_bool (HWND hwndParent, int string_size, char *variables,
 /* Return a string from the Win32 Registry or NULL in case of error.
    Caller must release the return value.  A NULL for root is an alias
    for HKEY_CURRENT_USER, HKEY_LOCAL_MACHINE in turn.  */
-char *
-read_w32_registry_string (HKEY root, const char *dir, const char *name)
+static wchar_t *
+read_w32_registry_string (HKEY root, const wchar_t *dir, const wchar_t *name)
 {
   HKEY root_key;
   HKEY key_handle;
   DWORD n1, nbytes, type;
-  char *result = NULL;
+  wchar_t *result = NULL;
 
   root_key = root;
-  if (! root_key)
+  if (!root_key)
     root_key = HKEY_CURRENT_USER;
 
-  if( RegOpenKeyEx( root_key, dir, 0, KEY_READ, &key_handle ) )
+  if (RegOpenKeyExW (root_key, dir, 0, KEY_READ, &key_handle))
     {
       if (root)
 	return NULL; /* no need for a RegClose, so return direct */
       /* It seems to be common practise to fall back to HKLM. */
-      if (RegOpenKeyEx (HKEY_LOCAL_MACHINE, dir, 0, KEY_READ, &key_handle) )
+      if (RegOpenKeyExW (HKEY_LOCAL_MACHINE, dir, 0, KEY_READ, &key_handle))
 	return NULL; /* still no need for a RegClose, so return direct */
     }
 
   nbytes = 1;
-  if( RegQueryValueEx( key_handle, name, 0, NULL, NULL, &nbytes ) ) {
-    if (root)
-      goto leave;
-    /* Try to fallback to HKLM also vor a missing value.  */
-    RegCloseKey (key_handle);
-    if (RegOpenKeyEx (HKEY_LOCAL_MACHINE, dir, 0, KEY_READ, &key_handle) )
-      return NULL; /* Nope.  */
-    if (RegQueryValueEx( key_handle, name, 0, NULL, NULL, &nbytes))
-      goto leave;
+  if (RegQueryValueExW (key_handle, name, 0, NULL, NULL, &nbytes))
+    {
+      if (root)
+        goto leave;
+      /* Try to fallback to HKLM also for a missing value.  */
+      RegCloseKey (key_handle);
+      if (RegOpenKeyExW (HKEY_LOCAL_MACHINE, dir, 0, KEY_READ, &key_handle))
+        return NULL; /* Nope.  */
+      if (RegQueryValueExW (key_handle, name, 0, NULL, NULL, &nbytes))
+        goto leave;
   }
 
-  result = malloc( (n1=nbytes+1) );
+  result = calloc ((n1=nbytes+1), sizeof *result);
+  if (!result)
+    goto leave;
 
-  if( !result )
-    goto leave;
-  if( RegQueryValueEx( key_handle, name, 0, &type, result, &n1 ) ) {
-    free(result); result = NULL;
-    goto leave;
-  }
-  result[nbytes] = 0; /* make sure it is really a string  */
+  if (RegQueryValueExW (key_handle, name, 0, &type,
+                        (unsigned char *)result, &n1))
+    {
+      free (result);
+      result = NULL;
+      goto leave;
+    }
+  result[nbytes] = 0; /* Make sure it is really a string  */
 
  leave:
-  RegCloseKey( key_handle );
+  RegCloseKey (key_handle);
   return result;
 }
 
 
+/* Registry keys for PATH for HKLM and HKCU.  */
 #define ENV_HK HKEY_LOCAL_MACHINE
-#define ENV_REG "SYSTEM\\CurrentControlSet\\Control\\" \
-    "Session Manager\\Environment"
-  /* The following setting can be used for a per-user setting.  */
+#define ENV_REG     L"SYSTEM\\CurrentControlSet\\Control\\" \
+                           "Session Manager\\Environment"
 #define ENV_HK_USER HKEY_CURRENT_USER
-#define ENV_REG_USER "Environment"
+#define ENV_REG_USER L"Environment"
+
 /* Due to a bug in Windows7 (kb 2685893) we better put a lower limit
-   than 8191 on the maximum length of the PATH variable.  Note, that
-   depending on the used toolchain we used to had a 259 byte limit in
-   the past.  */
+ * than 8191 on the maximum length of the PATH variable.  Note, that
+ * depending on the used toolchain we used to had a 259 byte limit in
+ * the past.
+ * [wk 2023-04-24]: Can this be lifted now that we use the wchar_t API?
+ */
 #define PATH_LENGTH_LIMIT 2047
 
 void __declspec(dllexport)
-path_add (HWND hwndParent, int string_size, char *variables,
+path_add (HWND hwndParent, int string_size, LPTSTR variables,
 	  stack_t **stacktop, extra_parameters_t *extra)
 {
-  char dir[PATH_LENGTH_LIMIT];
-  char is_user_install[2];
-  char *path;
-  char *path_new;
-  int path_new_size;
-  char *comp;
-  const char delims[] = ";";
+  wchar_t dir[PATH_LENGTH_LIMIT];
+  wchar_t is_user_install[2];
+  wchar_t *path;
+  wchar_t *path_new;
+  size_t path_new_size;
+  wchar_t *comp;
+  const wchar_t delims[] = L";";
   int is_user;
   HKEY key_handle = 0;
   HKEY root_key;
-  const char *env_reg;
+  const wchar_t *env_reg;
+  /* wchar_t *tokctx;     Context var for wcstok - not yet needed.  */
 
   g_hwndParent = hwndParent;
   EXDLL_INIT();
 
-  setuservariable (INST_R0, "0");
-
-/*   MessageBox (g_hwndParent, "XXX 1", 0, MB_OK); */
+  setuservariable (INST_R0, L"0");  /* Default return value.  */
 
   /* The expected stack layout: path component.  */
-  if (popstring (dir, sizeof (dir)))
+  if (popstringn (dir, COUNTOF (dir)))
     return;
+  dir[COUNTOF(dir)-1] = 0;
 
   /* The expected stack layout: HKEY component.  */
-  if (popstring (is_user_install, sizeof (is_user_install)))
+  if (popstringn (is_user_install, COUNTOF (is_user_install)))
     return;
+  is_user_install[COUNTOF(is_user_install)-1] = 0;
 
-  if (!strcmp(is_user_install, "1"))
+  if (!wcscmp (is_user_install, L"1"))
     {
       root_key = ENV_HK_USER;
       env_reg = ENV_REG_USER;
@@ -1014,107 +1108,100 @@ path_add (HWND hwndParent, int string_size, char *variables,
       env_reg = ENV_REG;
     }
 
-  path = read_w32_registry_string (root_key, env_reg, "Path");
-
-  if (! path)
+  path = read_w32_registry_string (root_key, env_reg, L"Path");
+  if (!path)
     {
-      path = strdup ("");
+      path = wcsdup (L"");
     }
 
-/*   MessageBox (g_hwndParent, "XXX 3", 0, MB_OK); */
-
   /* Old path plus semicolon plus dir plus terminating nul.  */
-  path_new_size = strlen (path) + 1 + strlen (dir) + 1;
+  path_new_size = wcslen (path) + 1 + wcslen (dir) + 1;
   if (path_new_size > PATH_LENGTH_LIMIT)
     {
-      MessageBox (g_hwndParent, "PATH env variable too big", 0, MB_OK);
+      MessageBox (g_hwndParent, L"PATH env variable too big", 0, MB_OK);
       free (path);
       return;
     }
 
-/*   MessageBox (g_hwndParent, "XXX 4", 0, MB_OK); */
-
-  path_new = malloc (path_new_size);
+  path_new = calloc (path_new_size, sizeof *path_new);
   if (!path_new)
     {
       free (path);
       return;
     }
 
-/*   MessageBox (g_hwndParent, "XXX 5", 0, MB_OK); */
-
-  strcpy (path_new, path);
-  strcat (path_new, ";");
-  strcat (path_new, dir);
-
-/*   MessageBox (g_hwndParent, "XXX 6", 0, MB_OK); */
-/*   MessageBox (g_hwndParent, dir, 0, MB_OK); */
-/*   MessageBox (g_hwndParent, "XXX 7", 0, MB_OK); */
+  wcscpy (path_new, path);
+  wcscat (path_new, L";");
+  wcscat (path_new, dir);
 
   /* Check if the directory already exists in the path.  */
-  comp = strtok (path, delims);
+  comp = wcstok (path, delims/*, &tokctx*/);
   do
     {
-/*       MessageBox (g_hwndParent, comp, 0, MB_OK); */
+      /*       MessageBox (g_hwndParent, comp, 0, MB_OK); */
       if (!comp)
         break;
 
-      if (!strcmp (comp, dir))
+      if (!wcscmp (comp, dir))
 	{
 	  free (path);
 	  free (path_new);
 	  return;
 	}
-      comp = strtok (NULL, delims);
+      comp = wcstok (NULL, delims/*, &tokctx*/);
     }
   while (comp);
   free (path);
 
   /* Update the path key.  */
-  RegCreateKey (root_key, env_reg, &key_handle);
-  RegSetValueEx (key_handle, "Path", 0, REG_EXPAND_SZ,
-		 path_new, path_new_size);
+  RegCreateKeyW (root_key, env_reg, &key_handle);
+  RegSetValueEx (key_handle, L"Path", 0, REG_EXPAND_SZ,
+		 (unsigned char*)path_new,
+                 wcslen (path_new) * sizeof *path_new);
   RegCloseKey (key_handle);
-  SetEnvironmentVariable("PATH", path_new);
+  SetEnvironmentVariableW(L"PATH", path_new);
   free (path_new);
 
 /*   MessageBox (g_hwndParent, "XXX 9", 0, MB_OK); */
 
-  setuservariable (INST_R0, "1");
+  setuservariable (INST_R0, L"1");  /* success.  */
 }
 
 
 void __declspec(dllexport)
-path_remove (HWND hwndParent, int string_size, char *variables,
+path_remove (HWND hwndParent, int string_size, LPTSTR variables,
 	     stack_t **stacktop, extra_parameters_t *extra)
 {
-  char dir[PATH_LENGTH_LIMIT];
-  char is_user_install[2];
-  char *path;
-  char *path_new;
-  int path_new_size;
-  char *comp;
-  const char delims[] = ";";
+  wchar_t dir[PATH_LENGTH_LIMIT];
+  wchar_t is_user_install[2];
+  wchar_t *path;
+  wchar_t *path_new;
+  size_t path_new_size;
+  wchar_t *comp;
+  const wchar_t delims[] = L";";
   HKEY key_handle = 0;
   int changed = 0;
   int count = 0;
   HKEY root_key;
-  const char *env_reg;
+  const wchar_t *env_reg;
+  /* wchar_t *tokctx;     Context var for wcstok - not yet needed.  */
 
   g_hwndParent = hwndParent;
   EXDLL_INIT();
 
-  setuservariable (INST_R0, "0");
+  setuservariable (INST_R0, L"0");
 
   /* The expected stack layout: path component.  */
-  if (popstring (dir, sizeof (dir)))
+  if (popstringn (dir, COUNTOF (dir)))
     return;
+  dir[COUNTOF(dir)-1] = 0;
 
   /* The expected stack layout: HKEY component.  */
-  if (popstring (is_user_install, sizeof (is_user_install)))
+  if (popstringn (is_user_install, COUNTOF (is_user_install)))
     return;
+  is_user_install[COUNTOF(is_user_install)-1] = 0;
 
-  if (!strcmp(is_user_install, "1"))
+  if (!wcscmp (is_user_install, L"1"))
     {
       root_key = ENV_HK_USER;
       env_reg = ENV_REG_USER;
@@ -1125,51 +1212,112 @@ path_remove (HWND hwndParent, int string_size, char *variables,
       env_reg = ENV_REG;
     }
 
-  path = read_w32_registry_string (root_key, env_reg, "Path");
-
+  path = read_w32_registry_string (root_key, env_reg, L"Path");
   if (!path)
     return;
+
   /* Old path plus semicolon plus dir plus terminating nul.  */
-  path_new_size = strlen (path) + 1;
-  path_new = malloc (path_new_size);
+  path_new_size = wcslen (path) + 1;
+  path_new = calloc (path_new_size, sizeof *path_new);
   if (!path_new)
     {
       free (path);
       return;
     }
-  path_new[0] = '\0';
 
   /* Compose the new path.  */
-  comp = strtok (path, delims);
+  comp = wcstok (path, delims/*, &tokctx*/);
   do
     {
-      if (strcmp (comp, dir))
+      if (wcscmp (comp, dir))
 	{
-	  if (count != 0)
-	    strcat (path_new, ";");
-	  strcat (path_new, comp);
+	  if (count)
+	    wcscat (path_new, L";");
+	  wcscat (path_new, comp);
 	  count++;
 	}
       else
 	changed = 1;
-
-      comp = strtok (NULL, delims);
     }
-  while (comp);
+  while ((comp = wcstok (NULL, delims/*, &tokctx*/)));
   free (path);
 
-  if (! changed)
+  if (!changed)
     {
       free (path_new);
       return;
     }
 
   /* Set a key for our CLSID.  */
-  RegCreateKey (root_key, env_reg, &key_handle);
-  RegSetValueEx (key_handle, "Path", 0, REG_EXPAND_SZ,
-		 path_new, path_new_size);
+  RegCreateKeyW (root_key, env_reg, &key_handle);
+  RegSetValueEx (key_handle, L"Path", 0, REG_EXPAND_SZ,
+		 (unsigned char*)path_new,
+                 wcslen (path_new) * sizeof *path_new);
   RegCloseKey (key_handle);
   free (path_new);
 
-  setuservariable (INST_R0, "1");
+  setuservariable (INST_R0, L"1");  /* success */
+}
+
+
+/** @brief Kill processes with the name name.
+ *
+ * This function tries to kill a process using ExitProcess.
+ *
+ * If it does not work it does not work. No return values.
+ * The intention is to make an effort to kill something during
+ * installation / uninstallation.
+ *
+ * The function signature is explained by NSIS.
+ */
+void __declspec(dllexport) __cdecl KillProc(HWND hwndParent,
+                                            int string_size,
+                                            char *variables,
+                                            stack_t **stacktop)
+{
+  HANDLE h;
+  PROCESSENTRY32 pe32;
+
+  if (!stacktop || !*stacktop || !(*stacktop)->text)
+    {
+      ERRORPRINTF ("Invalid call to KillProc.");
+      return;
+    }
+
+
+  h = CreateToolhelp32Snapshot (TH32CS_SNAPPROCESS, 0);
+  if (h == INVALID_HANDLE_VALUE)
+    {
+      ERRORPRINTF ("Failed to create Toolhelp snapshot");
+      return;
+    }
+  pe32.dwSize = sizeof (PROCESSENTRY32);
+
+  if (!Process32First (h, &pe32))
+    {
+      ERRORPRINTF ("Failed to get first process");
+      CloseHandle (h);
+      return;
+    }
+
+  do
+    {
+      if (!wcscmp ((*stacktop)->text, pe32.szExeFile))
+        {
+          HANDLE hProc = OpenProcess (PROCESS_ALL_ACCESS, FALSE,
+                                      pe32.th32ProcessID);
+          if (!hProc)
+            {
+              ERRORPRINTF ("Failed to open process handle.");
+              continue;
+            }
+          if (!TerminateProcess (hProc, 1))
+            {
+              ERRORPRINTF ("Failed to terminate process.");
+            }
+          CloseHandle (hProc);
+        }
+    }
+  while (Process32Next (h, &pe32));
+  CloseHandle (h);
 }

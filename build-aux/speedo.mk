@@ -1340,10 +1340,14 @@ $(bdir)/README.txt: $(bdir)/NEWS.tmp $(topsrc)/README $(w32src)/README.txt \
            | sed -e '/^#/d' \
            | awk '{printf "%s\r\n", $$0}' >$(bdir)/README.txt
 
-$(bdir)/g4wihelp.dll: $(w32src)/g4wihelp.c $(w32src)/exdll.h
+$(bdir)/g4wihelp.dll: $(w32src)/g4wihelp.c $(w32src)/exdll.h $(w32src)/exdll.c
 	(set -e; cd $(bdir); \
-	 $(W32CC) -I. -shared -O2 -o g4wihelp.dll $(w32src)/g4wihelp.c \
-	          -lwinmm -lgdi32; \
+         $(W32CC) -DUNICODE -static-libgcc -I . -O2 -c \
+                          -o exdll.o $(w32src)/exdll.c; \
+	 $(W32CC) -DUNICODE -static-libgcc -I. -shared -O2 \
+                          -o g4wihelp.dll $(w32src)/g4wihelp.c exdll.o \
+	                  -lwinmm -lgdi32 -luserenv \
+                          -lshell32 -loleaut32 -lshlwapi -lmsimg32; \
 	 $(STRIP) g4wihelp.dll)
 
 w32_insthelpers: $(bdir)/g4wihelp.dll
