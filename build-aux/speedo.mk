@@ -1366,8 +1366,7 @@ installer: all w32_insthelpers $(w32src)/inst-options.ini $(bdir)/README.txt
            done; \
          fi \
         )
-	$(MAKENSIS) -V2 $$($(MAKENSIS) -version \
-                           | grep -q ^v3 && echo "-INPUTCHARSET CP1252 ") \
+	$(MAKENSIS) -V2 \
                     -DINST_DIR=$(idir) \
                     -DINST6_DIR=$(idir6) \
                     -DBUILD_DIR=$(bdir) \
