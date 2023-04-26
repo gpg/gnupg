@@ -5,13 +5,13 @@
 # Yoshihiro Kajiki <kajiki@ylug.org>, 1999.
 # Takashi P.KATOH, 2002.
 # NIIBE Yutaka <gniibe@fsij.org>, 2013, 2014, 2015, 2016, 2017, 2018, 2019,
-# 2020, 2021, 2022.
+# 2020, 2021, 2022, 2023.
 #
 msgid ""
 msgstr ""
 "Project-Id-Version: gnupg 2.2.40\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"PO-Revision-Date: 2023-01-26 15:20+0900\n"
+"PO-Revision-Date: 2023-04-26 13:42+0900\n"
 "Last-Translator: NIIBE Yutaka <gniibe@fsij.org>\n"
 "Language-Team: none\n"
 "Language: ja\n"
@@ -56,6 +56,9 @@ msgstr "|pinentry-tt|パスフレーズを見えるようにする"
 
 msgid "|pinentry-tt|Hide passphrase"
 msgstr "|pinentry-tt|パスフレーズを隠す"
+
+msgid "Caps Lock is on"
+msgstr "キャプスロックがオンです"
 
 #. TRANSLATORS: This string is displayed by Pinentry as the label
 #. for generating a passphrase.
@@ -229,8 +232,8 @@ msgid ""
 "Please enter a passphrase to protect the received secret key%%0A   %s%%0A   "
 "%s%%0Awithin gpg-agent's key storage"
 msgstr ""
-"パスフレーズを入力してください。gpg-agentの鍵の保管で受信した秘密鍵%%0A   %s"
-"%%0A   %s%%0Aを保護します。"
+"パスフレーズを入力してください。gpg-agentの鍵の保管で受信した秘密鍵%%0A   "
+"%s%%0A   %s%%0Aを保護します。"
 
 #, c-format
 msgid "failed to create stream from socket: %s\n"
@@ -749,8 +752,8 @@ msgstr "後で変更する"
 
 #, c-format
 msgid ""
-"Do you really want to delete the key identified by keygrip%%0A  %s%%0A  %%C"
-"%%0A?"
+"Do you really want to delete the key identified by keygrip%%0A  %s%%0A  "
+"%%C%%0A?"
 msgstr "本当にこの鍵: keygrip%%0A  %s%%0A  %%C%%0Aを削除しますか?"
 
 msgid "Delete key"
@@ -3494,6 +3497,10 @@ msgstr "秘密鍵が利用できます。\n"
 msgid "Secret subkeys are available.\n"
 msgstr "秘密副鍵が利用できます。\n"
 
+msgid ""
+"Note: the local copy of the secret key will only be deleted with \"save\".\n"
+msgstr "注意: 秘密鍵のローカルなコピーは\"save\"だけで削除されます。\n"
+
 msgid "Need the secret key to do this.\n"
 msgstr "この実行には秘密鍵がいります。\n"
 
@@ -3600,6 +3607,10 @@ msgstr "変更を保存しますか? (y/N) "
 
 msgid "Quit without saving? (y/N) "
 msgstr "保存せずに終了しますか? (y/N) "
+
+#, c-format
+msgid "deleting copy of secret key failed: %s\n"
+msgstr "秘密鍵のコピーの削除に失敗しました: %s\n"
 
 #, c-format
 msgid "Key not changed so no update needed.\n"
@@ -5495,10 +5506,6 @@ msgstr ""
 #, c-format
 msgid "key %s may not be used for signing in %s mode\n"
 msgstr "鍵%sを署名のために%sモードで使うことはできません\n"
-
-#, c-format
-msgid "continuing verification anyway due to option %s\n"
-msgstr "オプション %s のため検証を続けます\n"
 
 #, c-format
 msgid "WARNING: signature digest conflict in message\n"
@@ -8581,6 +8588,10 @@ msgid ""
 msgstr ""
 "形式: gpg-check-pattern [オプション] パターンファイル\n"
 "パターンファイルに対して標準入力のパスフレーズを確認する\n"
+
+#, c-format
+#~ msgid "continuing verification anyway due to option %s\n"
+#~ msgstr "オプション %s のため検証を続けます\n"
 
 #~ msgid "%s/%s encrypted for: \"%s\"\n"
 #~ msgstr "%s/%s暗号化 受信者:\"%s\"\n"
