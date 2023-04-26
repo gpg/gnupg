@@ -1,4 +1,4 @@
-# inst.nsi - Installer for GnuPG on Windows.      -*- coding: latin-1; -*-
+# inst.nsi - Installer for GnuPG on Windows.
 # Copyright (C) 2005, 2014, 2019-2021 g10 Code GmbH
 #               2017 Intevation GmbH
 #
@@ -30,6 +30,9 @@
 #  PROD_VERSION
 #
 #  WITH_GUI        - Include the GPA GUI
+
+# This one must be done before addplugindir.
+Unicode true
 
 !cd "${INST_DIR}"
 !addincludedir "${W32_SRCDIR}"
@@ -64,7 +67,7 @@
   File version: ${PROD_VERSION}\r\n\
   Release date: ${BUILD_ISODATE}"
 !define ABOUT_GERMAN \
- "GnuPG is die häufigst verwendete Software zur Mail- und Datenverschlüsselung.\
+ "GnuPG is die hÃ¤ufigst verwendete Software zur Mail- und DatenverschlÃ¼sselung.\
    \r\n\r\n$_CLICK \
    \r\n\r\n\r\n\r\n\r\nDies ist GnuPG Version ${VERSION}.\r\n\
    Dateiversion: ${PROD_VERSION}\r\n\
@@ -256,14 +259,14 @@ LangString T_GPLShort ${LANG_ENGLISH} \
    You may distribute it as long as you give the recipients the same \
    rights you have received."
 LangString T_GPLShort ${LANG_GERMAN} \
-  "In aller Kürze: Sie haben das Recht, die Software zu jedem Zweck \
-   einzusetzen.  Sie können die Software weitergeben, sofern Sie dem \
-   Empfänger dieselben Rechte einräumen, die auch Sie erhalten haben."
+  "In aller KÃ¼rze: Sie haben das Recht, die Software zu jedem Zweck \
+   einzusetzen.  Sie kÃ¶nnen die Software weitergeben, sofern Sie dem \
+   EmpfÃ¤nger dieselben Rechte einrÃ¤umen, die auch Sie erhalten haben."
 
 LangString T_RunKeyManager ${LANG_ENGLISH} \
    "Run the key manager"
 LangString T_RunKeyManager ${LANG_GERMAN} \
-   "Die Schlüsselverwaltung aufrufen"
+   "Die SchlÃ¼sselverwaltung aufrufen"
 
 LangString T_MoreInfo ${LANG_ENGLISH} \
    "Click here to see how to help the GnuPG Project"
@@ -280,8 +283,8 @@ LangString T_ShowReadme ${LANG_GERMAN} \
 LangString T_NoKeyManager ${LANG_ENGLISH} \
    "No key manager has been installed, thus we can't run one now."
 LangString T_NoKeyManager ${LANG_GERMAN} \
-   "Es wurde keine Schlüsselverwaltung installiert. \
-    Deswegen kann sie jetzt auch nicht ausgeführt werden."
+   "Es wurde keine SchlÃ¼sselverwaltung installiert. \
+    Deswegen kann sie jetzt auch nicht ausgefÃ¼hrt werden."
 
 # Functions
 
@@ -289,7 +292,7 @@ LangString T_NoKeyManager ${LANG_GERMAN} \
 LangString T_AlreadyRunning ${LANG_ENGLISH} \
    "An instance of this installer is already running."
 LangString T_AlreadyRunning ${LANG_GERMAN} \
-   "Ein Exemplar dieses Installers läuft bereits."
+   "Ein Exemplar dieses Installers lÃ¤uft bereits."
 
 Function G4wRunOnce
   Push $R0
@@ -416,23 +419,23 @@ LangString T_InstallOptLinks ${LANG_GERMAN}  "Startlinks"
 LangString T_InstOptLabelA  ${LANG_ENGLISH} \
      "Please select where GnuPG shall install links:"
 LangString T_InstOptLabelA  ${LANG_GERMAN} \
-     "Bitte wählen Sie, welche Verknüpfungen angelegt werden sollen:"
+     "Bitte wÃ¤hlen Sie, welche VerknÃ¼pfungen angelegt werden sollen:"
 
 LangString T_InstOptLabelB  ${LANG_ENGLISH} \
      "(Only programs will be linked into the quick launch bar.)"
 LangString T_InstOptLabelB  ${LANG_GERMAN} \
-     "(In die Schnellstartleiste werden nur Verknüpfungen für \
+     "(In die Schnellstartleiste werden nur VerknÃ¼pfungen fÃ¼r \
       Programme angelegt.) "
 
 LangString T_InstOptFieldA  ${LANG_ENGLISH} \
      "Start Menu"
 LangString T_InstOptFieldA  ${LANG_GERMAN} \
-     "Startmenü"
+     "StartmenÃ¼"
 
 LangString T_InstOptFieldB  ${LANG_ENGLISH} \
      "Desktop"
 LangString T_InstOptFieldB  ${LANG_GERMAN} \
-     "Arbeitsfläche"
+     "ArbeitsflÃ¤che"
 
 LangString T_InstOptFieldC  ${LANG_ENGLISH} \
      "Quick Launch Bar"
@@ -447,9 +450,9 @@ LangString T_FoundExistingVersion ${LANG_ENGLISH} \
       Do you want to overwrite it with version ${VERSION}?"
 LangString T_FoundExistingVersion ${LANG_GERMAN} \
      "Version $R1 ist hier bereits installiert. $\r$\n\
-      Möchten Sie diese mit Version ${VERSION} überschreiben? $\r$\n\
+      MÃ¶chten Sie diese mit Version ${VERSION} Ã¼berschreiben? $\r$\n\
        $\r$\n\
-      (Sie können in jedem Fall mit JA antworten, falls es sich um \
+      (Sie kÃ¶nnen in jedem Fall mit JA antworten, falls es sich um \
        eine neuere oder dieselbe Version handelt.)"
 LangString T_FoundExistingVersionB ${LANG_ENGLISH} \
      "A version of GnuPG has already been installed on the system. \
@@ -460,7 +463,7 @@ LangString T_FoundExistingVersionB ${LANG_GERMAN} \
      "Eine Version von GnuPG ist hier bereits installiert. \
         $\r$\n\
         $\r$\n\
-      Möchten die die Installation von GnuPG fortführen?"
+      MÃ¶chten die die Installation von GnuPG fortfÃ¼hren?"
 
 
 
@@ -476,16 +479,16 @@ LangString T_AdminWanted ${LANG_GERMAN} \
     Administratorrechten zu installieren. \
       $\r$\n\
       $\r$\n\
-    Möchten die die Installation von GnuPG ohne Administratorrechte fortführen?"
+    MÃ¶chten die die Installation von GnuPG ohne Administratorrechte fortfÃ¼hren?"
 
 # From Function PrintCloseOtherApps
 LangString T_CloseOtherApps ${LANG_ENGLISH} \
    "Please make sure that other applications are not running. \
     GnuPG will try to install anyway but a reboot may be required."
 LangString T_CloseOtherApps ${LANG_GERMAN} \
-   "Bitte stellen Sie sicher, daß alle anderen Anwendugen geschlossen \
+   "Bitte stellen Sie sicher, daÃŸ alle anderen Anwendugen geschlossen \
     sind.  GnuPG wird auf jeden Fall versuchen, eine Installation \
-    durchzuführen; es ist dann aber u.U. notwendig, das System neu zu starten."
+    durchzufÃ¼hren; es ist dann aber u.U. notwendig, das System neu zu starten."
 
 
 # TrimNewlines  - taken from the NSIS reference
@@ -736,7 +739,7 @@ LangString DESC_SEC_gnupg ${LANG_ENGLISH} \
 LangString DESC_SEC_gnupg ${LANG_GERMAN} \
    "Der GnuPG Core ist, wie der Name schon sagt, der Kernbestandteil \
     dieser Software.  Der GnuPG Core stellt die eigentliche \
-    Verschlüsselung sowie die Verwaltung der Schlüssel bereit."
+    VerschlÃ¼sselung sowie die Verwaltung der SchlÃ¼ssel bereit."
 
 LangString DESC_Menu_gnupg_manual ${LANG_ENGLISH} \
    "Show the manual for the GnuPG Core"
@@ -989,7 +992,7 @@ SectionEnd
 LangString DESC_SEC_gpa ${LANG_ENGLISH} \
    "The GnuPG Assistant is the graphical interface of GnuPG"
 LangString DESC_SEC_gpa ${LANG_GERMAN} \
-   "Der GnuPG Assistent ist die graphische Oberfläche von GnuPG."
+   "Der GnuPG Assistent ist die graphische OberflÃ¤che von GnuPG."
 
 LangString DESC_Menu_gpa ${LANG_ENGLISH} \
    "Run the GnuGP Assistant."
