@@ -5,13 +5,13 @@
 # Yoshihiro Kajiki <kajiki@ylug.org>, 1999.
 # Takashi P.KATOH, 2002.
 # NIIBE Yutaka <gniibe@fsij.org>, 2013, 2014, 2015, 2016, 2017, 2018, 2019,
-# 2020, 2021, 2022.
+# 2020, 2021, 2022, 2023.
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: gnupg 2.4.0\n"
+"Project-Id-Version: gnupg 2.4.1\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"PO-Revision-Date: 2023-01-26 15:24+0900\n"
+"PO-Revision-Date: 2023-04-26 13:35+0900\n"
 "Last-Translator: NIIBE Yutaka <gniibe@fsij.org>\n"
 "Language-Team: none\n"
 "Language: ja\n"
@@ -124,6 +124,9 @@ msgstr "パスフレーズ:"
 msgid "does not match - try again"
 msgstr "一致しません - もう一度"
 
+msgid "Passphrases match."
+msgstr "パスフレーズが一致。"
+
 #. TRANSLATORS: The string is appended to an error message in
 #. the pinentry.  The %s is the actual error message, the
 #. two %d give the current and maximum number of tries.
@@ -223,8 +226,8 @@ msgid ""
 "Please enter a passphrase to protect the received secret key%%0A   %s%%0A   "
 "%s%%0Awithin gpg-agent's key storage"
 msgstr ""
-"パスフレーズを入力してください。gpg-agentの鍵の保管で受信した秘密鍵%%0A   %s"
-"%%0A   %s%%0Aを保護します。"
+"パスフレーズを入力してください。gpg-agentの鍵の保管で受信した秘密鍵%%0A   "
+"%s%%0A   %s%%0Aを保護します。"
 
 #, c-format
 msgid "failed to create stream from socket: %s\n"
@@ -756,8 +759,8 @@ msgstr ""
 
 #, c-format
 msgid ""
-"Do you really want to delete the key identified by keygrip%%0A  %s%%0A  %%C"
-"%%0A?"
+"Do you really want to delete the key identified by keygrip%%0A  %s%%0A  "
+"%%C%%0A?"
 msgstr "本当にこの鍵: keygrip%%0A  %s%%0A  %%C%%0Aを削除しますか?"
 
 msgid "Delete key"
@@ -1187,6 +1190,14 @@ msgid "%s is too old (need %s, have %s)\n"
 msgstr "%s が古すぎます (%s が必要、現在 %s)\n"
 
 #, c-format
+msgid "error creating '%s': %s\n"
+msgstr "'%s'の作成エラー: %s\n"
+
+#, c-format
+msgid "error closing '%s': %s\n"
+msgstr "'%s'でクローズのエラー: %s\n"
+
+#, c-format
 msgid "armor: %s\n"
 msgstr "外装: %s\n"
 
@@ -1387,6 +1398,10 @@ msgstr "強制なし"
 
 msgid "forced"
 msgstr "強制"
+
+#, c-format
+msgid "Please try command \"%s\" if the listing does not look correct\n"
+msgstr "一覧が正しくないように見える場合、コマンド \"%s\" を試してください\n"
 
 msgid "Error: Only plain ASCII is currently allowed.\n"
 msgstr "エラー： 普通のASCIIだけが今、許可されています。\n"
@@ -1648,6 +1663,9 @@ msgstr "鍵の属性の変更"
 msgid "change the User Interaction Flag"
 msgstr "ユーザインタラクションフラグの変更"
 
+msgid "switch to the OpenPGP app"
+msgstr "OpenPGP app にスイッチします"
+
 msgid "gpg/card> "
 msgstr "gpg/card> "
 
@@ -1855,7 +1873,7 @@ msgstr "'%s'への書き込み\n"
 
 #, c-format
 msgid "key %s: key material on-card - skipped\n"
-msgstr "鍵%s: 鍵はカード上にあります - スキップします\n"
+msgstr "鍵%s: 鍵マテリアルはカード上にあります - スキップします\n"
 
 #, c-format
 msgid "exporting secret keys not allowed\n"
@@ -1868,10 +1886,6 @@ msgstr "鍵%s: PGP 2.x形式の鍵です - スキップします\n"
 #, c-format
 msgid "WARNING: nothing exported\n"
 msgstr "*警告*: 何もエクスポートされていません\n"
-
-#, c-format
-msgid "error creating '%s': %s\n"
-msgstr "'%s'の作成エラー: %s\n"
 
 msgid "[User ID not found]"
 msgstr "[ユーザIDが見つかりません]"
@@ -2269,6 +2283,9 @@ msgstr "鍵の一覧に失効したユーザID、期限切れとなったユー�
 
 msgid "show revoked and expired subkeys in key listings"
 msgstr "鍵の一覧に失効した副鍵、期限切れとなった副鍵を表示する"
+
+msgid "show signatures with invalid algorithms during signature listings"
+msgstr "署名の一覧時に無効なアルゴリズムの署名を表示する"
 
 msgid "show the keyring name in key listings"
 msgstr "鍵の一覧に鍵リングの名前を表示する"
@@ -2878,6 +2895,10 @@ msgstr "鍵 %s: 秘密鍵はもうあります\n"
 msgid "key %s: error sending to agent: %s\n"
 msgstr "鍵 %s: エージェントへの送信エラー: %s\n"
 
+#, c-format
+msgid "key %s: card reference is overridden by key material\n"
+msgstr "鍵 %s: カード参照が鍵マテリアルで上書きされます\n"
+
 #. TRANSLATORS: For a smartcard, each private key on host has a
 #. * reference (stub) to a smartcard and actual private key data
 #. * is stored on the card.  A single smartcard can have up to
@@ -3374,6 +3395,9 @@ msgstr "選択した副鍵の削除"
 msgid "add a revocation key"
 msgstr "失効鍵の追加"
 
+msgid "add an additional decryption subkey"
+msgstr "追加の復号用の副鍵を足す"
+
 msgid "delete signatures from the selected user IDs"
 msgstr "選択したユーザIDから署名を削除する"
 
@@ -3433,6 +3457,10 @@ msgstr "秘密鍵が利用できます。\n"
 
 msgid "Secret subkeys are available.\n"
 msgstr "秘密副鍵が利用できます。\n"
+
+msgid ""
+"Note: the local copy of the secret key will only be deleted with \"save\".\n"
+msgstr "注意: 秘密鍵のローカルなコピーは\"save\"だけで削除されます。\n"
 
 msgid "Need the secret key to do this.\n"
 msgstr "この実行には秘密鍵がいります。\n"
@@ -3540,6 +3568,10 @@ msgstr "変更を保存しますか? (y/N) "
 
 msgid "Quit without saving? (y/N) "
 msgstr "保存せずに終了しますか? (y/N) "
+
+#, c-format
+msgid "deleting copy of secret key failed: %s\n"
+msgstr "秘密鍵のコピーの削除に失敗しました: %s\n"
 
 #, c-format
 msgid "Key not changed so no update needed.\n"
@@ -3769,6 +3801,17 @@ msgstr "*警告*: ある鍵を指名失効者に設定すると、元に戻せ�
 msgid ""
 "Are you sure you want to appoint this key as a designated revoker? (y/N) "
 msgstr "本当にこの鍵を指名失効者に任命しますか? (y/N) "
+
+msgid "Enter the fingerprint of the additional decryption subkey: "
+msgstr "追加の復号用の副鍵のフィンガー・プリントを入力してください:"
+
+#, c-format
+msgid "Did you specify the fingerprint of a subkey?\n"
+msgstr "副鍵のフィンガー・プリントを指定しましたか?\n"
+
+#, c-format
+msgid "key \"%s\" is already on this keyblock\n"
+msgstr "鍵 \"%s\" は、もうこの鍵ブロックにあります。\n"
 
 msgid ""
 "Are you sure you want to change the expiration time for multiple subkeys? (y/"
@@ -5494,10 +5537,6 @@ msgstr ""
 #, c-format
 msgid "key %s may not be used for signing in %s mode\n"
 msgstr "鍵%sを署名のために%sモードで使うことはできません\n"
-
-#, c-format
-msgid "continuing verification anyway due to option %s\n"
-msgstr "オプション %sのため、検証を続けます\n"
 
 #, c-format
 msgid "WARNING: signature digest conflict in message\n"
@@ -7546,10 +7585,6 @@ msgid "failed to create temporary cache dir file '%s': %s\n"
 msgstr "一時キャッシュ・ディレクトリ・ファイル'%s'が作成できません: %s\n"
 
 #, c-format
-msgid "error closing '%s': %s\n"
-msgstr "'%s'でクローズのエラー: %s\n"
-
-#, c-format
 msgid "can't hash '%s': %s\n"
 msgstr "'%s'をハッシュできません: %s\n"
 
@@ -8696,6 +8731,10 @@ msgstr "Yubikey管理コマンド"
 msgid "manage the command history"
 msgstr "コマンド履歴を管理する"
 
+#, c-format
+#~ msgid "continuing verification anyway due to option %s\n"
+#~ msgstr "オプション %sのため、検証を続けます\n"
+
 #~ msgid "selected AEAD algorithm is invalid\n"
 #~ msgstr "選択されたAEADアルゴリズムは無効です\n"
 
@@ -9498,9 +9537,6 @@ msgstr "コマンド履歴を管理する"
 
 #~ msgid "toggle between the secret and public key listings"
 #~ msgstr "秘密鍵と公開鍵の一覧の反転"
-
-#~ msgid "Passphrase"
-#~ msgstr "パスフレーズ"
 
 #~ msgid "use temporary files to pass data to keyserver helpers"
 #~ msgstr "キーサーバ・ヘルパーにデータを与える際、一時ファイルを使う"
