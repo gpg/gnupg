@@ -7,11 +7,11 @@
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: gnupg-2.3.0\n"
+"Project-Id-Version: gnupg-2.4.1\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
 "PO-Revision-Date: 2023-03-21 09:31+0100\n"
 "Last-Translator: Werner Koch <wk@gnupg.org>\n"
-"Language-Team: German <de@li.org>\n"
+"Language-Team: German\n"
 "Language: de\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -126,6 +126,9 @@ msgstr "Passwort:"
 
 msgid "does not match - try again"
 msgstr "Keine Übereinstimmung - bitte nochmal versuchen."
+
+msgid "Passphrases match."
+msgstr "Passwort stimmt."
 
 #. TRANSLATORS: The string is appended to an error message in
 #. the pinentry.  The %s is the actual error message, the
@@ -1211,6 +1214,14 @@ msgid "%s is too old (need %s, have %s)\n"
 msgstr "Die Bibliothek %s ist nicht aktuell (benötige %s, habe %s)\n"
 
 #, c-format
+msgid "error creating '%s': %s\n"
+msgstr "Fehler beim Erstellen von `%s': %s\n"
+
+#, c-format
+msgid "error closing '%s': %s\n"
+msgstr "Fehler beim Schließen von `%s': %s\n"
+
+#, c-format
 msgid "armor: %s\n"
 msgstr "ASCII-Hülle: %s\n"
 
@@ -1414,6 +1425,10 @@ msgstr "nicht zwingend"
 
 msgid "forced"
 msgstr "zwingend"
+
+#, c-format
+msgid "Please try command \"%s\" if the listing does not look correct\n"
+msgstr "Falls das Listing nicht korrekt erscheint, geben Sie bitte \"%s\" ein\n"
 
 msgid "Error: Only plain ASCII is currently allowed.\n"
 msgstr "Fehler: Nur reines ASCII ist derzeit erlaubt.\n"
@@ -1682,6 +1697,9 @@ msgstr "Das Schlüsselattribut ändern"
 msgid "change the User Interaction Flag"
 msgstr "Das User Interaction Flag (UIF) ändern"
 
+msgid "switch to the OpenPGP app"
+msgstr "Auf die OpenPGP Anwendung umschalten"
+
 msgid "gpg/card> "
 msgstr "gpg/card> "
 
@@ -1918,10 +1936,6 @@ msgstr "Schlüssel %s: PGP 2.x-artiger Schlüssel - übersprungen\n"
 #, c-format
 msgid "WARNING: nothing exported\n"
 msgstr "WARNUNG: Nichts exportiert\n"
-
-#, c-format
-msgid "error creating '%s': %s\n"
-msgstr "Fehler beim Erstellen von `%s': %s\n"
 
 msgid "[User ID not found]"
 msgstr "[User-ID nicht gefunden]"
@@ -2335,6 +2349,9 @@ msgstr "Zeige widerrufene und verfallene User-ID in den Schlüssellisten"
 
 msgid "show revoked and expired subkeys in key listings"
 msgstr "Zeige widerrufene und verfallene Unterschlüssel in den Schlüssellisten"
+
+msgid "show signatures with invalid algorithms during signature listings"
+msgstr "Auch Signaturen mit ungültigen Algorithmen anlisten"
 
 msgid "show the keyring name in key listings"
 msgstr "Anzeigen des Schlüsselbundes, in dem ein Schlüssel drin ist"
@@ -2957,6 +2974,10 @@ msgstr "Schlüssel %s: geheimer Schlüssel bereits vorhanden\n"
 msgid "key %s: error sending to agent: %s\n"
 msgstr "Schlüssel %s: Fehler beim Senden zum gpg-agent: %s\n"
 
+#, c-format
+msgid "key %s: card reference is overridden by key material\n"
+msgstr "Schlüssel %s: Der \"stub\" wurde durch einen realen Schlüssel ersetzt\n"
+
 #. TRANSLATORS: For a smartcard, each private key on host has a
 #. * reference (stub) to a smartcard and actual private key data
 #. * is stored on the card.  A single smartcard can have up to
@@ -3482,6 +3503,9 @@ msgstr "ausgewählte Unterschlüssel entfernen"
 msgid "add a revocation key"
 msgstr "Einen Widerrufschlüssel hinzufügen"
 
+msgid "add an additional decryption subkey"
+msgstr "Einen ADSK hinzufügen"
+
 msgid "delete signatures from the selected user IDs"
 msgstr "Beglaubigungen der ausgewählten User-IDs entfernen"
 
@@ -3546,6 +3570,10 @@ msgstr "Geheimer Schlüssel ist vorhanden.\n"
 
 msgid "Secret subkeys are available.\n"
 msgstr "Geheimer Unterschlüssel ist vorhanden.\n"
+
+msgid ""
+"Note: the local copy of the secret key will only be deleted with \"save\".\n"
+msgstr "Hinweis: Die lokale Kopie des geheimen Schlüssels wird nur nach \"save\" gelöscht.\n"
 
 msgid "Need the secret key to do this.\n"
 msgstr "Hierzu wird der geheime Schlüssel benötigt.\n"
@@ -3659,6 +3687,10 @@ msgstr "Änderungen speichern? (j/N) "
 
 msgid "Quit without saving? (y/N) "
 msgstr "Beenden ohne zu speichern? (j/N) "
+
+#, c-format
+msgid "deleting copy of secret key failed: %s\n"
+msgstr "Fehler beim Löschen der Kopie des geheimen Schlüssels: %s\n"
 
 #, c-format
 msgid "Key not changed so no update needed.\n"
@@ -3899,6 +3931,17 @@ msgid ""
 msgstr ""
 "Möchten Sie diesen Schlüssel wirklich als vorgesehenen Widerrufer festlegen? "
 "(j/N): "
+
+msgid "Enter the fingerprint of the additional decryption subkey: "
+msgstr "Geben Sie den Fingerprint des ADSK an: "
+
+#, c-format
+msgid "Did you specify the fingerprint of a subkey?\n"
+msgstr "Haben Sie den Fingerprint des Unterschlüssels angegeben?\n"
+
+#, c-format
+msgid "key \"%s\" is already on this keyblock\n"
+msgstr "Den Schlüssel \"%s\" gibt es bereits in diesem Schlüsselblock\n"
 
 msgid ""
 "Are you sure you want to change the expiration time for multiple subkeys? (y/"
@@ -5702,10 +5745,6 @@ msgstr ""
 msgid "key %s may not be used for signing in %s mode\n"
 msgstr ""
 "Schlüssel \"%s\" darf zum Signieren im %s Modus nicht verwendet werden.\n"
-
-#, c-format
-msgid "continuing verification anyway due to option %s\n"
-msgstr "Die Prüfung wird aufgrund der Option %s weiter durchgeführt\n"
 
 #, c-format
 msgid "WARNING: signature digest conflict in message\n"
@@ -7892,10 +7931,6 @@ msgstr ""
 "werden: %s\n"
 
 #, c-format
-msgid "error closing '%s': %s\n"
-msgstr "Fehler beim Schließen von `%s': %s\n"
-
-#, c-format
 msgid "can't hash '%s': %s\n"
 msgstr "Hashwert von `%s' kann nicht gebildet werden: %s\n"
 
@@ -9068,6 +9103,9 @@ msgstr "Verwaltungskommandos für Yubikeys"
 msgid "manage the command history"
 msgstr "Verwaltung der Kommandohistorie"
 
+#~ msgid "continuing verification anyway due to option %s\n"
+#~ msgstr "Die Prüfung wird aufgrund der Option %s weiter durchgeführt\n"
+
 #~ msgid "selected AEAD algorithm is invalid\n"
 #~ msgstr "Das ausgewählte AEAD-Verfahren ist ungültig\n"
 
@@ -10029,9 +10067,6 @@ msgstr "Verwaltung der Kommandohistorie"
 #~ msgid "toggle between the secret and public key listings"
 #~ msgstr ""
 #~ "Umschalten zwischen dem Auflisten geheimer und öffentlicher Schlüssel"
-
-#~ msgid "Passphrase"
-#~ msgstr "Passwort"
 
 #~ msgid "use temporary files to pass data to keyserver helpers"
 #~ msgstr ""
