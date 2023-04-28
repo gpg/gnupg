@@ -151,6 +151,11 @@ msgstr "Adgangsfrase:"
 msgid "does not match - try again"
 msgstr "matcher ikke - prøv igen"
 
+#, fuzzy
+#| msgid "Passphrase"
+msgid "Passphrases match."
+msgstr "Adgangsfrase"
+
 #. TRANSLATORS: The string is appended to an error message in
 #. the pinentry.  The %s is the actual error message, the
 #. two %d give the current and maximum number of tries.
@@ -1325,6 +1330,16 @@ msgstr "venter på lås %s ...\n"
 msgid "%s is too old (need %s, have %s)\n"
 msgstr "%s er for gammel (kræver %s, har %s)\n"
 
+#, fuzzy, c-format
+#| msgid "error creating `%s': %s\n"
+msgid "error creating '%s': %s\n"
+msgstr "fejl ved oprettelse af »%s«: %s\n"
+
+#, fuzzy, c-format
+#| msgid "error closing %s: %s\n"
+msgid "error closing '%s': %s\n"
+msgstr "fejl ved lukning af %s: %s\n"
+
 #, c-format
 msgid "armor: %s\n"
 msgstr "panser: %s\n"
@@ -1544,6 +1559,10 @@ msgstr "ikke tvunget"
 
 msgid "forced"
 msgstr "tvunget"
+
+#, c-format
+msgid "Please try command \"%s\" if the listing does not look correct\n"
+msgstr ""
 
 msgid "Error: Only plain ASCII is currently allowed.\n"
 msgstr "Fejl: Kun ren ASCII er tilladt i øjeblikket.\n"
@@ -1841,6 +1860,9 @@ msgstr "ændr ejertroværdigheden"
 msgid "change the User Interaction Flag"
 msgstr "ændr ejertroværdigheden"
 
+msgid "switch to the OpenPGP app"
+msgstr ""
+
 msgid "gpg/card> "
 msgstr "gpg/card> "
 
@@ -2089,11 +2111,6 @@ msgstr "nøgle %s: nøgle i PGP 2.x-stil - udeladt\n"
 #, c-format
 msgid "WARNING: nothing exported\n"
 msgstr "ADVARSEL: intet blev eksporteret\n"
-
-#, fuzzy, c-format
-#| msgid "error creating `%s': %s\n"
-msgid "error creating '%s': %s\n"
-msgstr "fejl ved oprettelse af »%s«: %s\n"
 
 msgid "[User ID not found]"
 msgstr "[Bruger-id blev ikke fundet]"
@@ -2563,6 +2580,11 @@ msgstr "vis tilbagekaldte og udløbne bruger-id'er i nøglevisninger"
 
 msgid "show revoked and expired subkeys in key listings"
 msgstr "vis tilbagekaldte og udløbne undernøgler i nøglevisninger"
+
+#, fuzzy
+#| msgid "show expiration dates during signature listings"
+msgid "show signatures with invalid algorithms during signature listings"
+msgstr "vis udløbsdatoer under underskriftvisninger"
 
 msgid "show the keyring name in key listings"
 msgstr "vis nøgleringsnavnet i nøglevisninger"
@@ -3210,6 +3232,10 @@ msgstr "udelod: hemmelig nøgle er allerede til stede\n"
 msgid "key %s: error sending to agent: %s\n"
 msgstr "fejl under afsendelse af %s-kommando: %s\n"
 
+#, c-format
+msgid "key %s: card reference is overridden by key material\n"
+msgstr ""
+
 #. TRANSLATORS: For a smartcard, each private key on host has a
 #. * reference (stub) to a smartcard and actual private key data
 #. * is stored on the card.  A single smartcard can have up to
@@ -3750,6 +3776,11 @@ msgstr "slet valgte undernøgler"
 msgid "add a revocation key"
 msgstr "tilføj en tilbagekaldsnøgle"
 
+#, fuzzy
+#| msgid "Data decryption succeeded"
+msgid "add an additional decryption subkey"
+msgstr "Datadekryptering lykkedes"
+
 msgid "delete signatures from the selected user IDs"
 msgstr "slet underskrifter fra de valgte bruger-id'er"
 
@@ -3813,6 +3844,10 @@ msgstr "Hemmelig nøgle er tilgængelig.\n"
 #| msgid "Secret key is available.\n"
 msgid "Secret subkeys are available.\n"
 msgstr "Hemmelig nøgle er tilgængelig.\n"
+
+msgid ""
+"Note: the local copy of the secret key will only be deleted with \"save\".\n"
+msgstr ""
 
 msgid "Need the secret key to do this.\n"
 msgstr "Har brug for den hemmelige nøgle for dette.\n"
@@ -3936,6 +3971,11 @@ msgstr "Gem ændringer? (j/N) "
 
 msgid "Quit without saving? (y/N) "
 msgstr "Afslut uden at gemme? (j/N) "
+
+#, fuzzy, c-format
+#| msgid "deleting certificate \"%s\" failed: %s\n"
+msgid "deleting copy of secret key failed: %s\n"
+msgstr "sletning af certifikat »%s« mislykkedes: %s\n"
 
 #, c-format
 msgid "Key not changed so no update needed.\n"
@@ -4191,6 +4231,19 @@ msgid ""
 msgstr ""
 "Er du sikker på, at du ønsker at udpege denne nøgle som en dedikeret "
 "tilbagekalder? (j/N) "
+
+msgid "Enter the fingerprint of the additional decryption subkey: "
+msgstr ""
+
+#, fuzzy, c-format
+#| msgid "(unless you specify the key by fingerprint)\n"
+msgid "Did you specify the fingerprint of a subkey?\n"
+msgstr "(med mindre du angiver nøglen med fingeraftryk)\n"
+
+#, fuzzy, c-format
+#| msgid "Subkey %s is already revoked.\n"
+msgid "key \"%s\" is already on this keyblock\n"
+msgstr "Undernøgle %s er allerede tilbagekaldt.\n"
 
 #, fuzzy
 #| msgid ""
@@ -6058,10 +6111,6 @@ msgstr "DSA-nøgle %s kræver en %u bit eller større hash\n"
 #| msgid "you may not use %s while in %s mode\n"
 msgid "key %s may not be used for signing in %s mode\n"
 msgstr "du kan ikke bruge %s i tilstanden %s\n"
-
-#, c-format
-msgid "continuing verification anyway due to option %s\n"
-msgstr ""
 
 #, c-format
 msgid "WARNING: signature digest conflict in message\n"
@@ -8324,11 +8373,6 @@ msgid "failed to create temporary cache dir file '%s': %s\n"
 msgstr "kunne ikke oprette midlertidig fil »%s«: %s\n"
 
 #, fuzzy, c-format
-#| msgid "error closing %s: %s\n"
-msgid "error closing '%s': %s\n"
-msgstr "fejl ved lukning af %s: %s\n"
-
-#, fuzzy, c-format
 #| msgid "can't access `%s': %s\n"
 msgid "can't hash '%s': %s\n"
 msgstr "kan ikke tilgå »%s«: %s\n"
@@ -10483,9 +10527,6 @@ msgstr ""
 
 #~ msgid "toggle between the secret and public key listings"
 #~ msgstr "skift mellem hemmelig og offentlig nøglevisning"
-
-#~ msgid "Passphrase"
-#~ msgstr "Adgangsfrase"
 
 #~ msgid "use temporary files to pass data to keyserver helpers"
 #~ msgstr "brug midlertidige filer til at sende data til nøgleserverhjælpere"

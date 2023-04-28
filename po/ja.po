@@ -226,8 +226,8 @@ msgid ""
 "Please enter a passphrase to protect the received secret key%%0A   %s%%0A   "
 "%s%%0Awithin gpg-agent's key storage"
 msgstr ""
-"パスフレーズを入力してください。gpg-agentの鍵の保管で受信した秘密鍵%%0A   "
-"%s%%0A   %s%%0Aを保護します。"
+"パスフレーズを入力してください。gpg-agentの鍵の保管で受信した秘密鍵%%0A   %s"
+"%%0A   %s%%0Aを保護します。"
 
 #, c-format
 msgid "failed to create stream from socket: %s\n"
@@ -759,8 +759,8 @@ msgstr ""
 
 #, c-format
 msgid ""
-"Do you really want to delete the key identified by keygrip%%0A  %s%%0A  "
-"%%C%%0A?"
+"Do you really want to delete the key identified by keygrip%%0A  %s%%0A  %%C"
+"%%0A?"
 msgstr "本当にこの鍵: keygrip%%0A  %s%%0A  %%C%%0Aを削除しますか?"
 
 msgid "Delete key"
@@ -8731,7 +8731,6 @@ msgstr "Yubikey管理コマンド"
 msgid "manage the command history"
 msgstr "コマンド履歴を管理する"
 
-#, c-format
 #~ msgid "continuing verification anyway due to option %s\n"
 #~ msgstr "オプション %sのため、検証を続けます\n"
 

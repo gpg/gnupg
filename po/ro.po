@@ -127,6 +127,10 @@ msgstr "frază-parolă incorectă"
 msgid "does not match - try again"
 msgstr ""
 
+#, fuzzy
+msgid "Passphrases match."
+msgstr "frază-parolă incorectă"
+
 #. TRANSLATORS: The string is appended to an error message in
 #. the pinentry.  The %s is the actual error message, the
 #. two %d give the current and maximum number of tries.
@@ -1259,6 +1263,15 @@ msgstr "scriu cheia secretă în `%s'\n"
 msgid "%s is too old (need %s, have %s)\n"
 msgstr ""
 
+#, fuzzy, c-format
+#| msgid "error creating `%s': %s\n"
+msgid "error creating '%s': %s\n"
+msgstr "eroare la creearea `%s': %s\n"
+
+#, fuzzy, c-format
+msgid "error closing '%s': %s\n"
+msgstr "eroare în `%s': %s\n"
+
 #, c-format
 msgid "armor: %s\n"
 msgstr "armură: %s\n"
@@ -1476,6 +1489,10 @@ msgstr "neforţat(ă)"
 
 msgid "forced"
 msgstr "forţat(ă)"
+
+#, c-format
+msgid "Please try command \"%s\" if the listing does not look correct\n"
+msgstr ""
 
 msgid "Error: Only plain ASCII is currently allowed.\n"
 msgstr "Eroare: Deocamdată sunt permise numai caractere ASCII.\n"
@@ -1756,6 +1773,9 @@ msgstr "schimbă încrederea pentru proprietar"
 msgid "change the User Interaction Flag"
 msgstr "schimbă încrederea pentru proprietar"
 
+msgid "switch to the OpenPGP app"
+msgstr ""
+
 msgid "gpg/card> "
 msgstr ""
 
@@ -2006,11 +2026,6 @@ msgstr "cheia %s: cheie stil PGP 2.x - sărită\n"
 #, c-format
 msgid "WARNING: nothing exported\n"
 msgstr "AVERTISMENT: nimic exportat\n"
-
-#, fuzzy, c-format
-#| msgid "error creating `%s': %s\n"
-msgid "error creating '%s': %s\n"
-msgstr "eroare la creearea `%s': %s\n"
 
 msgid "[User ID not found]"
 msgstr "[ID utilizator nu a fost găsit]"
@@ -2491,6 +2506,10 @@ msgstr ""
 
 msgid "show revoked and expired subkeys in key listings"
 msgstr ""
+
+#, fuzzy
+msgid "show signatures with invalid algorithms during signature listings"
+msgstr "Nici o semnătură corespunzătoare în inelul secret\n"
 
 #, fuzzy
 msgid "show the keyring name in key listings"
@@ -3142,6 +3161,10 @@ msgstr "sărită: cheia secretă deja prezentă\n"
 msgid "key %s: error sending to agent: %s\n"
 msgstr "eroare trimitere la `%s': %s\n"
 
+#, c-format
+msgid "key %s: card reference is overridden by key material\n"
+msgstr ""
+
 #. TRANSLATORS: For a smartcard, each private key on host has a
 #. * reference (stub) to a smartcard and actual private key data
 #. * is stored on the card.  A single smartcard can have up to
@@ -3668,6 +3691,9 @@ msgstr "şterge subcheile selectate"
 msgid "add a revocation key"
 msgstr "adaugă o cheie de revocare"
 
+msgid "add an additional decryption subkey"
+msgstr ""
+
 msgid "delete signatures from the selected user IDs"
 msgstr "şterge semnăturile de pe ID-urile utilizator selectate"
 
@@ -3733,6 +3759,10 @@ msgstr "Cheia secretă este disponibilă.\n"
 #| msgid "Secret key is available.\n"
 msgid "Secret subkeys are available.\n"
 msgstr "Cheia secretă este disponibilă.\n"
+
+msgid ""
+"Note: the local copy of the secret key will only be deleted with \"save\".\n"
+msgstr ""
 
 msgid "Need the secret key to do this.\n"
 msgstr "Aveţi nevoie de cheia secretă pentru a face aceasta.\n"
@@ -3857,6 +3887,10 @@ msgstr "Salvaţi schimbările?  (d/N) "
 
 msgid "Quit without saving? (y/N) "
 msgstr "Terminaţi fără a salva?  (d/N) "
+
+#, fuzzy, c-format
+msgid "deleting copy of secret key failed: %s\n"
+msgstr "stergere keyblock a eşuat: %s\n"
 
 #, c-format
 msgid "Key not changed so no update needed.\n"
@@ -4107,6 +4141,19 @@ msgid ""
 msgstr ""
 "Sunteţi sigur(ă) că doriţi să desemnaţi această cheie ca şi un revocator "
 "desemnat? (d/N) "
+
+msgid "Enter the fingerprint of the additional decryption subkey: "
+msgstr ""
+
+#, fuzzy, c-format
+#| msgid "(unless you specify the key by fingerprint)\n"
+msgid "Did you specify the fingerprint of a subkey?\n"
+msgstr "(dacă nu specificaţi cheia prin amprentă)\n"
+
+#, fuzzy, c-format
+#| msgid "Subkey %s is already revoked.\n"
+msgid "key \"%s\" is already on this keyblock\n"
+msgstr "Subcheia %s este deja revocată.\n"
 
 #, fuzzy
 #| msgid ""
@@ -5964,10 +6011,6 @@ msgstr ""
 #| msgid "you may not use %s while in %s mode\n"
 msgid "key %s may not be used for signing in %s mode\n"
 msgstr "nu puteţi folosi %s câtă vreme în modul %s\n"
-
-#, c-format
-msgid "continuing verification anyway due to option %s\n"
-msgstr ""
 
 #, c-format
 msgid "WARNING: signature digest conflict in message\n"
@@ -8151,10 +8194,6 @@ msgid "failed to create temporary cache dir file '%s': %s\n"
 msgstr "nu pot crea directorul `%s': %s\n"
 
 #, fuzzy, c-format
-msgid "error closing '%s': %s\n"
-msgstr "eroare în `%s': %s\n"
-
-#, fuzzy, c-format
 #| msgid "can't access `%s': %s\n"
 msgid "can't hash '%s': %s\n"
 msgstr "nu pot accesa `%s': %s\n"
@@ -10073,10 +10112,6 @@ msgstr ""
 
 #~ msgid "toggle between the secret and public key listings"
 #~ msgstr "comută între listele de chei secrete şi publice"
-
-#, fuzzy
-#~ msgid "Passphrase"
-#~ msgstr "frază-parolă incorectă"
 
 #, fuzzy
 #~| msgid "WARNING: keyserver option `%s' is not used on this platform\n"

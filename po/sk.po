@@ -123,6 +123,10 @@ msgstr "nesprávne heslo"
 msgid "does not match - try again"
 msgstr ""
 
+#, fuzzy
+msgid "Passphrases match."
+msgstr "nesprávne heslo"
+
 #. TRANSLATORS: The string is appended to an error message in
 #. the pinentry.  The %s is the actual error message, the
 #. two %d give the current and maximum number of tries.
@@ -1240,6 +1244,15 @@ msgstr "zapisujem tajný kľúč do `%s'\n"
 msgid "%s is too old (need %s, have %s)\n"
 msgstr ""
 
+#, fuzzy, c-format
+#| msgid "error creating `%s': %s\n"
+msgid "error creating '%s': %s\n"
+msgstr "chyba pri vytváraní `%s': %s\n"
+
+#, fuzzy, c-format
+msgid "error closing '%s': %s\n"
+msgstr "chyba pri čítaní `%s': %s\n"
+
 #, c-format
 msgid "armor: %s\n"
 msgstr "ASCII kódovanie: %s\n"
@@ -1455,6 +1468,10 @@ msgid "not forced"
 msgstr "nespracované"
 
 msgid "forced"
+msgstr ""
+
+#, c-format
+msgid "Please try command \"%s\" if the listing does not look correct\n"
 msgstr ""
 
 msgid "Error: Only plain ASCII is currently allowed.\n"
@@ -1736,6 +1753,9 @@ msgstr "zmeniť dôveryhodnosť vlastníka kľúča"
 msgid "change the User Interaction Flag"
 msgstr "zmeniť dôveryhodnosť vlastníka kľúča"
 
+msgid "switch to the OpenPGP app"
+msgstr ""
+
 msgid "gpg/card> "
 msgstr ""
 
@@ -1985,11 +2005,6 @@ msgstr "kľúč %08lX: PGP 2.x kľúč - preskočené\n"
 #, c-format
 msgid "WARNING: nothing exported\n"
 msgstr "VAROVANIE: nič nebolo vyexportované\n"
-
-#, fuzzy, c-format
-#| msgid "error creating `%s': %s\n"
-msgid "error creating '%s': %s\n"
-msgstr "chyba pri vytváraní `%s': %s\n"
 
 #, fuzzy
 msgid "[User ID not found]"
@@ -2448,6 +2463,10 @@ msgstr ""
 
 msgid "show revoked and expired subkeys in key listings"
 msgstr ""
+
+#, fuzzy
+msgid "show signatures with invalid algorithms during signature listings"
+msgstr "V súbore tajných kľúčov chýba zodpovedajúci podpis\n"
 
 #, fuzzy
 msgid "show the keyring name in key listings"
@@ -3087,6 +3106,10 @@ msgstr "preskočené: tajný kľúč je už v databáze\n"
 msgid "key %s: error sending to agent: %s\n"
 msgstr "chyba pri posielaní na `%s': %s\n"
 
+#, c-format
+msgid "key %s: card reference is overridden by key material\n"
+msgstr ""
+
 #. TRANSLATORS: For a smartcard, each private key on host has a
 #. * reference (stub) to a smartcard and actual private key data
 #. * is stored on the card.  A single smartcard can have up to
@@ -3635,6 +3658,9 @@ msgstr "zmazať sekundárny kľúč"
 msgid "add a revocation key"
 msgstr "pridať revokačný kľúč"
 
+msgid "add an additional decryption subkey"
+msgstr ""
+
 #, fuzzy
 msgid "delete signatures from the selected user IDs"
 msgstr "Skutočne aktualizovať predvoľby pre vybrané id užívateľa? "
@@ -3708,6 +3734,10 @@ msgstr "Tajný kľúč je dostupný.\n"
 #| msgid "Secret key is available.\n"
 msgid "Secret subkeys are available.\n"
 msgstr "Tajný kľúč je dostupný.\n"
+
+msgid ""
+"Note: the local copy of the secret key will only be deleted with \"save\".\n"
+msgstr ""
 
 msgid "Need the secret key to do this.\n"
 msgstr "Na vykonanie tejto operácie je potrebný tajný kľúč.\n"
@@ -3829,6 +3859,10 @@ msgstr "Uložiť zmeny? "
 #, fuzzy
 msgid "Quit without saving? (y/N) "
 msgstr "Ukončiť bez uloženia? "
+
+#, fuzzy, c-format
+msgid "deleting copy of secret key failed: %s\n"
+msgstr "zmazanie bloku kľúča sa nepodarilo:  %s\n"
 
 #, c-format
 msgid "Key not changed so no update needed.\n"
@@ -4072,6 +4106,18 @@ msgstr "VAROVANIE: označenie kľúča ako revokovací už nemôže byť zrušen
 msgid ""
 "Are you sure you want to appoint this key as a designated revoker? (y/N) "
 msgstr "Ste si istý, že chcete označiť tento kľúč ako revokovací? (a/N): "
+
+msgid "Enter the fingerprint of the additional decryption subkey: "
+msgstr ""
+
+#, fuzzy, c-format
+#| msgid "(unless you specify the key by fingerprint)\n"
+msgid "Did you specify the fingerprint of a subkey?\n"
+msgstr "(pokiaľ neurčíte kľúč jeho fingerprintom)\n"
+
+#, fuzzy, c-format
+msgid "key \"%s\" is already on this keyblock\n"
+msgstr "užívateľské ID \"%s\" je už revokované\n"
 
 #, fuzzy
 msgid ""
@@ -5898,10 +5944,6 @@ msgid "key %s may not be used for signing in %s mode\n"
 msgstr ""
 "použitie %s nie je v móde %s dovolené\n"
 "\n"
-
-#, c-format
-msgid "continuing verification anyway due to option %s\n"
-msgstr ""
 
 #, c-format
 msgid "WARNING: signature digest conflict in message\n"
@@ -8060,10 +8102,6 @@ msgid "failed to create temporary cache dir file '%s': %s\n"
 msgstr "nemôžem vytvoriť adresár `%s': %s\n"
 
 #, fuzzy, c-format
-msgid "error closing '%s': %s\n"
-msgstr "chyba pri čítaní `%s': %s\n"
-
-#, fuzzy, c-format
 msgid "can't hash '%s': %s\n"
 msgstr "nemôžem zavrieť `%s': %s\n"
 
@@ -9934,10 +9972,6 @@ msgstr ""
 #, fuzzy
 #~ msgid "toggle between the secret and public key listings"
 #~ msgstr "prepnúť medzi vypísaním zoznamu tajných a verejných kľúčov"
-
-#, fuzzy
-#~ msgid "Passphrase"
-#~ msgstr "nesprávne heslo"
 
 #, fuzzy
 #~ msgid "WARNING: keyserver option '%s' is not used on this platform\n"

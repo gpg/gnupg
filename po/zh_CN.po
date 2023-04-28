@@ -123,6 +123,11 @@ msgstr "密码："
 msgid "does not match - try again"
 msgstr "不匹配 - 请重试"
 
+#, fuzzy
+#| msgid "Passphrase Entry"
+msgid "Passphrases match."
+msgstr "密码条目"
+
 #. TRANSLATORS: The string is appended to an error message in
 #. the pinentry.  The %s is the actual error message, the
 #. two %d give the current and maximum number of tries.
@@ -1173,6 +1178,14 @@ msgid "%s is too old (need %s, have %s)\n"
 msgstr "%s 太旧 （需要 %s，拥有 %s）\n"
 
 #, c-format
+msgid "error creating '%s': %s\n"
+msgstr "创建‘%s’时出现错误：%s\n"
+
+#, c-format
+msgid "error closing '%s': %s\n"
+msgstr "关闭‘%s’时出现错误：%s\n"
+
+#, c-format
 msgid "armor: %s\n"
 msgstr "字符封装：%s\n"
 
@@ -1371,6 +1384,10 @@ msgstr "非强制"
 
 msgid "forced"
 msgstr "强制"
+
+#, c-format
+msgid "Please try command \"%s\" if the listing does not look correct\n"
+msgstr ""
 
 msgid "Error: Only plain ASCII is currently allowed.\n"
 msgstr "错误：目前只允许使用纯 ASCII 字符。\n"
@@ -1632,6 +1649,9 @@ msgstr "更改密钥属性"
 msgid "change the User Interaction Flag"
 msgstr "变更用户交互选项"
 
+msgid "switch to the OpenPGP app"
+msgstr ""
+
 msgid "gpg/card> "
 msgstr "gpg/card> "
 
@@ -1855,10 +1875,6 @@ msgstr "密钥 %s：PGP 2.x 样式的密钥 - 已跳过\n"
 #, c-format
 msgid "WARNING: nothing exported\n"
 msgstr "警告：没有导出任何东西\n"
-
-#, c-format
-msgid "error creating '%s': %s\n"
-msgstr "创建‘%s’时出现错误：%s\n"
 
 msgid "[User ID not found]"
 msgstr "[用户标识未找到]"
@@ -2254,6 +2270,11 @@ msgstr "列出密钥时显示已吊销或已过期的用户标识"
 
 msgid "show revoked and expired subkeys in key listings"
 msgstr "列出密钥时显示已吊销或已过期的子密钥"
+
+#, fuzzy
+#| msgid "show expiration dates during signature listings"
+msgid "show signatures with invalid algorithms during signature listings"
+msgstr "列出签名时显示过期日期"
 
 msgid "show the keyring name in key listings"
 msgstr "列出密钥时显示钥匙环的名称"
@@ -2863,6 +2884,10 @@ msgstr "密钥 %s：私钥已存在\n"
 msgid "key %s: error sending to agent: %s\n"
 msgstr "密钥 %s：发送至代理人程序时出现错误：%s\n"
 
+#, c-format
+msgid "key %s: card reference is overridden by key material\n"
+msgstr ""
+
 #. TRANSLATORS: For a smartcard, each private key on host has a
 #. * reference (stub) to a smartcard and actual private key data
 #. * is stored on the card.  A single smartcard can have up to
@@ -3350,6 +3375,11 @@ msgstr "删除选定的子密钥"
 msgid "add a revocation key"
 msgstr "增加一个吊销用密钥"
 
+#, fuzzy
+#| msgid "Data decryption succeeded"
+msgid "add an additional decryption subkey"
+msgstr "数据解密成功"
+
 msgid "delete signatures from the selected user IDs"
 msgstr "从所选用户标识上删除签名"
 
@@ -3409,6 +3439,12 @@ msgstr "私钥可用。\n"
 
 msgid "Secret subkeys are available.\n"
 msgstr "私密子密钥可用。\n"
+
+#, fuzzy
+#| msgid "Note: Only the secret part of the shown subkey will be deleted.\n"
+msgid ""
+"Note: the local copy of the secret key will only be deleted with \"save\".\n"
+msgstr "主要：只有显示的子钥的秘密部分会被删除。\n"
 
 msgid "Need the secret key to do this.\n"
 msgstr "要有私钥才能这么做。\n"
@@ -3515,6 +3551,11 @@ msgstr "要保存变更吗？(y/N) "
 
 msgid "Quit without saving? (y/N) "
 msgstr "要不保存而退出吗？(y/N) "
+
+#, fuzzy, c-format
+#| msgid "deleting secret %s failed: %s\n"
+msgid "deleting copy of secret key failed: %s\n"
+msgstr "删除私钥 %s 时失败： %s\n"
 
 #, c-format
 msgid "Key not changed so no update needed.\n"
@@ -3740,6 +3781,19 @@ msgstr "警告：将某把密钥设置为指定吊销者的操作无法撤销！
 msgid ""
 "Are you sure you want to appoint this key as a designated revoker? (y/N) "
 msgstr "您确定要将这个密钥设置为指定吊销者吗？(y/N)： "
+
+msgid "Enter the fingerprint of the additional decryption subkey: "
+msgstr ""
+
+#, fuzzy, c-format
+#| msgid "(unless you specify the key by fingerprint)\n"
+msgid "Did you specify the fingerprint of a subkey?\n"
+msgstr "（除非您用指纹指定密钥）\n"
+
+#, fuzzy, c-format
+#| msgid "Subkey %s is already revoked.\n"
+msgid "key \"%s\" is already on this keyblock\n"
+msgstr "子密钥 %s 已被吊销。\n"
 
 msgid ""
 "Are you sure you want to change the expiration time for multiple subkeys? (y/"
@@ -5446,10 +5500,6 @@ msgstr "%s 密钥 %s 要求一个 %zu 位或更长的散列（散列是 %s）\n"
 #, c-format
 msgid "key %s may not be used for signing in %s mode\n"
 msgstr "密钥 %s 在 %s 模式中不适用于签名\n"
-
-#, c-format
-msgid "continuing verification anyway due to option %s\n"
-msgstr "由于 %s 选项，验证仍在继续中\n"
 
 #, c-format
 msgid "WARNING: signature digest conflict in message\n"
@@ -7479,10 +7529,6 @@ msgid "failed to create temporary cache dir file '%s': %s\n"
 msgstr "创建临时缓存目录文件‘%s’时失败：%s\n"
 
 #, c-format
-msgid "error closing '%s': %s\n"
-msgstr "关闭‘%s’时出现错误：%s\n"
-
-#, c-format
 msgid "can't hash '%s': %s\n"
 msgstr "无法取‘%s’的散列：%s\n"
 
@@ -8620,6 +8666,9 @@ msgstr "Yubikey 管理命令"
 
 msgid "manage the command history"
 msgstr "管理命令历史记录"
+
+#~ msgid "continuing verification anyway due to option %s\n"
+#~ msgstr "由于 %s 选项，验证仍在继续中\n"
 
 #~ msgid "selected AEAD algorithm is invalid\n"
 #~ msgstr "所选择的 AEAD 算法无效\n"

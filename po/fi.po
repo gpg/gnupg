@@ -136,6 +136,10 @@ msgstr "väärä salasana"
 msgid "does not match - try again"
 msgstr ""
 
+#, fuzzy
+msgid "Passphrases match."
+msgstr "väärä salasana"
+
 #. TRANSLATORS: The string is appended to an error message in
 #. the pinentry.  The %s is the actual error message, the
 #. two %d give the current and maximum number of tries.
@@ -1252,6 +1256,15 @@ msgstr "kirjoitan salaisen avaimen kohteeseen \"%s\"\n"
 msgid "%s is too old (need %s, have %s)\n"
 msgstr ""
 
+#, fuzzy, c-format
+#| msgid "error creating `%s': %s\n"
+msgid "error creating '%s': %s\n"
+msgstr "virhe luotaessa \"%s\": %s\n"
+
+#, fuzzy, c-format
+msgid "error closing '%s': %s\n"
+msgstr "virhe luettaessa tiedostoa \"%s\": %s\n"
+
 #, c-format
 msgid "armor: %s\n"
 msgstr "ascii-koodaus: %s\n"
@@ -1466,6 +1479,10 @@ msgid "not forced"
 msgstr "ei käsitelty"
 
 msgid "forced"
+msgstr ""
+
+#, c-format
+msgid "Please try command \"%s\" if the listing does not look correct\n"
 msgstr ""
 
 msgid "Error: Only plain ASCII is currently allowed.\n"
@@ -1747,6 +1764,9 @@ msgstr "muuta luottamusastetta"
 msgid "change the User Interaction Flag"
 msgstr "muuta luottamusastetta"
 
+msgid "switch to the OpenPGP app"
+msgstr ""
+
 msgid "gpg/card> "
 msgstr ""
 
@@ -1994,11 +2014,6 @@ msgstr "avain %08lX: PGP 2.x -muodon avain - ohitetaan\n"
 #, c-format
 msgid "WARNING: nothing exported\n"
 msgstr "VAROITUS: mitään ei viety\n"
-
-#, fuzzy, c-format
-#| msgid "error creating `%s': %s\n"
-msgid "error creating '%s': %s\n"
-msgstr "virhe luotaessa \"%s\": %s\n"
 
 #, fuzzy
 msgid "[User ID not found]"
@@ -2449,6 +2464,10 @@ msgstr ""
 
 msgid "show revoked and expired subkeys in key listings"
 msgstr ""
+
+#, fuzzy
+msgid "show signatures with invalid algorithms during signature listings"
+msgstr "Salaisesta avainrenkaasta ei löydy vastaavaa allekirjoitusta\n"
 
 #, fuzzy
 msgid "show the keyring name in key listings"
@@ -3086,6 +3105,10 @@ msgstr "ohitetaan: salainen avain on jo paikalla\n"
 msgid "key %s: error sending to agent: %s\n"
 msgstr "virhe lähettäessä kohteeseen \"%s\": %s\n"
 
+#, c-format
+msgid "key %s: card reference is overridden by key material\n"
+msgstr ""
+
 #. TRANSLATORS: For a smartcard, each private key on host has a
 #. * reference (stub) to a smartcard and actual private key data
 #. * is stored on the card.  A single smartcard can have up to
@@ -3632,6 +3655,9 @@ msgstr "poista toissijainen avain"
 msgid "add a revocation key"
 msgstr "lisää mitätöintiavain"
 
+msgid "add an additional decryption subkey"
+msgstr ""
+
 #, fuzzy
 msgid "delete signatures from the selected user IDs"
 msgstr "Varmastiko päivitä valinnat näille käyttäjätunnuksille? "
@@ -3705,6 +3731,10 @@ msgstr "Salainen avain on saatavilla.\n"
 #| msgid "Secret key is available.\n"
 msgid "Secret subkeys are available.\n"
 msgstr "Salainen avain on saatavilla.\n"
+
+msgid ""
+"Note: the local copy of the secret key will only be deleted with \"save\".\n"
+msgstr ""
 
 msgid "Need the secret key to do this.\n"
 msgstr "Tähän tarvitaan salainen avain.\n"
@@ -3826,6 +3856,10 @@ msgstr "Tallenna muutokset? "
 #, fuzzy
 msgid "Quit without saving? (y/N) "
 msgstr "Lopeta tallentamatta muutoksia?"
+
+#, fuzzy, c-format
+msgid "deleting copy of secret key failed: %s\n"
+msgstr "avainlohkojen poisto epäonnistui: %s\n"
 
 #, c-format
 msgid "Key not changed so no update needed.\n"
@@ -4071,6 +4105,18 @@ msgid ""
 "Are you sure you want to appoint this key as a designated revoker? (y/N) "
 msgstr ""
 "Haluatko varmasti nimittää tämän avaimen määrätyksi mitätöijäksi? (k/E): "
+
+msgid "Enter the fingerprint of the additional decryption subkey: "
+msgstr ""
+
+#, fuzzy, c-format
+#| msgid "(unless you specify the key by fingerprint)\n"
+msgid "Did you specify the fingerprint of a subkey?\n"
+msgstr "(ellet määritä avainta sormenjäljen perusteella)\n"
+
+#, fuzzy, c-format
+msgid "key \"%s\" is already on this keyblock\n"
+msgstr "käyttäjätunnus \"%s\" on jo mitätöity\n"
 
 #, fuzzy
 msgid ""
@@ -5911,10 +5957,6 @@ msgstr ""
 #| msgid "you may not use %s while in %s mode\n"
 msgid "key %s may not be used for signing in %s mode\n"
 msgstr "valitsinta %s ei voi käyttää %s-tilassa\n"
-
-#, c-format
-msgid "continuing verification anyway due to option %s\n"
-msgstr ""
 
 #, c-format
 msgid "WARNING: signature digest conflict in message\n"
@@ -8069,10 +8111,6 @@ msgid "failed to create temporary cache dir file '%s': %s\n"
 msgstr "hakemiston \"%s\" luominen ei onnistu: %s\n"
 
 #, fuzzy, c-format
-msgid "error closing '%s': %s\n"
-msgstr "virhe luettaessa tiedostoa \"%s\": %s\n"
-
-#, fuzzy, c-format
 msgid "can't hash '%s': %s\n"
 msgstr "tiedostoa \"%s\" ei voi sulkea: %s\n"
 
@@ -9942,10 +9980,6 @@ msgstr ""
 #, fuzzy
 #~ msgid "toggle between the secret and public key listings"
 #~ msgstr "vaihda salaisten ja julkisten avainten luettelon välillä"
-
-#, fuzzy
-#~ msgid "Passphrase"
-#~ msgstr "väärä salasana"
 
 #, fuzzy
 #~ msgid "WARNING: keyserver option '%s' is not used on this platform\n"

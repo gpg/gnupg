@@ -123,6 +123,10 @@ msgstr "κακή φράση κλειδί"
 msgid "does not match - try again"
 msgstr ""
 
+#, fuzzy
+msgid "Passphrases match."
+msgstr "κακή φράση κλειδί"
+
 #. TRANSLATORS: The string is appended to an error message in
 #. the pinentry.  The %s is the actual error message, the
 #. two %d give the current and maximum number of tries.
@@ -1238,6 +1242,15 @@ msgstr "εγγραφή του μυστικού κλειδιού στο `%s'\n"
 msgid "%s is too old (need %s, have %s)\n"
 msgstr ""
 
+#, fuzzy, c-format
+#| msgid "error creating `%s': %s\n"
+msgid "error creating '%s': %s\n"
+msgstr "σφάλμα κατά τη δημιουργία του `%s': %s\n"
+
+#, fuzzy, c-format
+msgid "error closing '%s': %s\n"
+msgstr "σφάλμα κατά την ανάγνωση του `%s': %s\n"
+
 #, c-format
 msgid "armor: %s\n"
 msgstr "θωράκιση: %s\n"
@@ -1451,6 +1464,10 @@ msgid "not forced"
 msgstr "μη επεξεργασμένο"
 
 msgid "forced"
+msgstr ""
+
+#, c-format
+msgid "Please try command \"%s\" if the listing does not look correct\n"
 msgstr ""
 
 msgid "Error: Only plain ASCII is currently allowed.\n"
@@ -1732,6 +1749,9 @@ msgstr "αλλαγή της εμπιστοσύνης ιδιοκτήτη"
 msgid "change the User Interaction Flag"
 msgstr "αλλαγή της εμπιστοσύνης ιδιοκτήτη"
 
+msgid "switch to the OpenPGP app"
+msgstr ""
+
 msgid "gpg/card> "
 msgstr ""
 
@@ -1987,11 +2007,6 @@ msgstr "κλειδί %08lX:  κλειδί τύπου PGP 2.x - παραλείφ�
 #, c-format
 msgid "WARNING: nothing exported\n"
 msgstr "ΠΡΟΕΙΔΟΠΟΙΗΣΗ: δεν έγινε καμμία εξαγωγή\n"
-
-#, fuzzy, c-format
-#| msgid "error creating `%s': %s\n"
-msgid "error creating '%s': %s\n"
-msgstr "σφάλμα κατά τη δημιουργία του `%s': %s\n"
 
 #, fuzzy
 msgid "[User ID not found]"
@@ -2444,6 +2459,10 @@ msgstr ""
 
 msgid "show revoked and expired subkeys in key listings"
 msgstr ""
+
+#, fuzzy
+msgid "show signatures with invalid algorithms during signature listings"
+msgstr "Δεν βρέθηκε αντίστοιχη υπογραφή στη μυστική κλειδοθήκη\n"
 
 #, fuzzy
 msgid "show the keyring name in key listings"
@@ -3081,6 +3100,10 @@ msgstr "παραλείφθηκε: μυστικό κλειδί ήδη παρών\
 msgid "key %s: error sending to agent: %s\n"
 msgstr "σφάλμα στη αποστολή προς το `%s': %s\n"
 
+#, c-format
+msgid "key %s: card reference is overridden by key material\n"
+msgstr ""
+
 #. TRANSLATORS: For a smartcard, each private key on host has a
 #. * reference (stub) to a smartcard and actual private key data
 #. * is stored on the card.  A single smartcard can have up to
@@ -3632,6 +3655,9 @@ msgstr "διαγραφή ενός δευτερεύοντος κλειδιού"
 msgid "add a revocation key"
 msgstr "προσθήκη ενός κλειδιού ανάκλησης"
 
+msgid "add an additional decryption subkey"
+msgstr ""
+
 #, fuzzy
 msgid "delete signatures from the selected user IDs"
 msgstr ""
@@ -3708,6 +3734,10 @@ msgstr "Το μυστικό κλειδί είναι διαθέσιμο.\n"
 #| msgid "Secret key is available.\n"
 msgid "Secret subkeys are available.\n"
 msgstr "Το μυστικό κλειδί είναι διαθέσιμο.\n"
+
+msgid ""
+"Note: the local copy of the secret key will only be deleted with \"save\".\n"
+msgstr ""
 
 msgid "Need the secret key to do this.\n"
 msgstr "Απαιτείται το μυστικό κλειδί για να γίνει αυτό.\n"
@@ -3830,6 +3860,10 @@ msgstr "Αποθήκευση των αλλαγών; "
 #, fuzzy
 msgid "Quit without saving? (y/N) "
 msgstr "Τερματισμός χωρίς αποθήκευση; "
+
+#, fuzzy, c-format
+msgid "deleting copy of secret key failed: %s\n"
+msgstr "διαγραφή block κλειδιών απέτυχε: %s\n"
 
 #, c-format
 msgid "Key not changed so no update needed.\n"
@@ -4082,6 +4116,18 @@ msgid ""
 msgstr ""
 "Είστε σίγουροι ότι θέλετε να ορίσετε ένα κλειδί σαν διορισμένο ανακλητή; (y/"
 "N): "
+
+msgid "Enter the fingerprint of the additional decryption subkey: "
+msgstr ""
+
+#, fuzzy, c-format
+#| msgid "(unless you specify the key by fingerprint)\n"
+msgid "Did you specify the fingerprint of a subkey?\n"
+msgstr "(εκτός εάν προσδιορίσετε ένα κλειδί από αποτύπωμα)\n"
+
+#, fuzzy, c-format
+msgid "key \"%s\" is already on this keyblock\n"
+msgstr "το user ID \"%s\" έχει ήδη ανακληθεί\n"
 
 #, fuzzy
 msgid ""
@@ -5920,10 +5966,6 @@ msgstr ""
 #| msgid "you may not use %s while in %s mode\n"
 msgid "key %s may not be used for signing in %s mode\n"
 msgstr "απαγορεύετε η χρήση του %s στην κατάσταση %s.\n"
-
-#, c-format
-msgid "continuing verification anyway due to option %s\n"
-msgstr ""
 
 #, c-format
 msgid "WARNING: signature digest conflict in message\n"
@@ -8086,10 +8128,6 @@ msgid "failed to create temporary cache dir file '%s': %s\n"
 msgstr "αδυναμία δημιουργίας καταλόγου `%s': %s\n"
 
 #, fuzzy, c-format
-msgid "error closing '%s': %s\n"
-msgstr "σφάλμα κατά την ανάγνωση του `%s': %s\n"
-
-#, fuzzy, c-format
 msgid "can't hash '%s': %s\n"
 msgstr "αδυναμία κλεισίματος του `%s': %s\n"
 
@@ -9960,10 +9998,6 @@ msgstr ""
 #, fuzzy
 #~ msgid "toggle between the secret and public key listings"
 #~ msgstr "αλλαγή μεταξύ της απεικόνισης μυστικού και δημόσιου κλειδιού"
-
-#, fuzzy
-#~ msgid "Passphrase"
-#~ msgstr "κακή φράση κλειδί"
 
 #, fuzzy
 #~ msgid "WARNING: keyserver option '%s' is not used on this platform\n"

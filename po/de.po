@@ -1428,7 +1428,8 @@ msgstr "zwingend"
 
 #, c-format
 msgid "Please try command \"%s\" if the listing does not look correct\n"
-msgstr "Falls das Listing nicht korrekt erscheint, geben Sie bitte \"%s\" ein\n"
+msgstr ""
+"Falls das Listing nicht korrekt erscheint, geben Sie bitte \"%s\" ein\n"
 
 msgid "Error: Only plain ASCII is currently allowed.\n"
 msgstr "Fehler: Nur reines ASCII ist derzeit erlaubt.\n"
@@ -2976,7 +2977,8 @@ msgstr "Schlüssel %s: Fehler beim Senden zum gpg-agent: %s\n"
 
 #, c-format
 msgid "key %s: card reference is overridden by key material\n"
-msgstr "Schlüssel %s: Der \"stub\" wurde durch einen realen Schlüssel ersetzt\n"
+msgstr ""
+"Schlüssel %s: Der \"stub\" wurde durch einen realen Schlüssel ersetzt\n"
 
 #. TRANSLATORS: For a smartcard, each private key on host has a
 #. * reference (stub) to a smartcard and actual private key data
@@ -3573,7 +3575,9 @@ msgstr "Geheimer Unterschlüssel ist vorhanden.\n"
 
 msgid ""
 "Note: the local copy of the secret key will only be deleted with \"save\".\n"
-msgstr "Hinweis: Die lokale Kopie des geheimen Schlüssels wird nur nach \"save\" gelöscht.\n"
+msgstr ""
+"Hinweis: Die lokale Kopie des geheimen Schlüssels wird nur nach \"save\" "
+"gelöscht.\n"
 
 msgid "Need the secret key to do this.\n"
 msgstr "Hierzu wird der geheime Schlüssel benötigt.\n"

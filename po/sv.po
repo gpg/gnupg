@@ -160,6 +160,11 @@ msgstr "Lösenfras:"
 msgid "does not match - try again"
 msgstr "stämmer inte överens - försök igen"
 
+#, fuzzy
+#| msgid "Passphrase"
+msgid "Passphrases match."
+msgstr "Lösenfras"
+
 #. TRANSLATORS: The string is appended to an error message in
 #. the pinentry.  The %s is the actual error message, the
 #. two %d give the current and maximum number of tries.
@@ -1340,6 +1345,16 @@ msgstr "väntar på låset %s...\n"
 msgid "%s is too old (need %s, have %s)\n"
 msgstr "%s är för gammal (behöver %s, har %s)\n"
 
+#, fuzzy, c-format
+#| msgid "error creating `%s': %s\n"
+msgid "error creating '%s': %s\n"
+msgstr "Fel när \"%s\" skapades: %s\n"
+
+#, fuzzy, c-format
+#| msgid "error closing %s: %s\n"
+msgid "error closing '%s': %s\n"
+msgstr "fel vid stängning av %s: %s\n"
+
 #, c-format
 msgid "armor: %s\n"
 msgstr "ASCII-skal: %s\n"
@@ -1565,6 +1580,10 @@ msgstr "inte tvingad"
 
 msgid "forced"
 msgstr "tvingad"
+
+#, c-format
+msgid "Please try command \"%s\" if the listing does not look correct\n"
+msgstr ""
 
 msgid "Error: Only plain ASCII is currently allowed.\n"
 msgstr "Fel: Endast ren ASCII tillåts för närvarande.\n"
@@ -1871,6 +1890,9 @@ msgstr "ändra ägartillitsvärdet"
 msgid "change the User Interaction Flag"
 msgstr "ändra ägartillitsvärdet"
 
+msgid "switch to the OpenPGP app"
+msgstr ""
+
 msgid "gpg/card> "
 msgstr "gpg/kort> "
 
@@ -2122,11 +2144,6 @@ msgstr "nyckeln %s: nyckel av PGP 2.x-typ - hoppade över\n"
 #, c-format
 msgid "WARNING: nothing exported\n"
 msgstr "VARNING: ingenting exporterat\n"
-
-#, fuzzy, c-format
-#| msgid "error creating `%s': %s\n"
-msgid "error creating '%s': %s\n"
-msgstr "Fel när \"%s\" skapades: %s\n"
 
 msgid "[User ID not found]"
 msgstr "[Användaridentiteten hittades inte]"
@@ -2608,6 +2625,11 @@ msgstr "visa spärrade och utgångna användaridentiteter i nyckellistningar"
 
 msgid "show revoked and expired subkeys in key listings"
 msgstr "visa spärrade och utgångna undernycklar i nyckellistningar"
+
+#, fuzzy
+#| msgid "show expiration dates during signature listings"
+msgid "show signatures with invalid algorithms during signature listings"
+msgstr "visa utgångsdatum under signaturlistningar"
 
 msgid "show the keyring name in key listings"
 msgstr "visa nyckelringens namn i nyckellistningar"
@@ -3273,6 +3295,10 @@ msgstr "hoppade över: hemlig nyckel finns redan\n"
 msgid "key %s: error sending to agent: %s\n"
 msgstr "fel vid sändning av %s-kommando: %s\n"
 
+#, c-format
+msgid "key %s: card reference is overridden by key material\n"
+msgstr ""
+
 #. TRANSLATORS: For a smartcard, each private key on host has a
 #. * reference (stub) to a smartcard and actual private key data
 #. * is stored on the card.  A single smartcard can have up to
@@ -3807,6 +3833,11 @@ msgstr "ta bort valda undernycklar"
 msgid "add a revocation key"
 msgstr "lägg till en spärrnyckel"
 
+#, fuzzy
+#| msgid "Data decryption succeeded"
+msgid "add an additional decryption subkey"
+msgstr "Datadekryptering lyckades"
+
 msgid "delete signatures from the selected user IDs"
 msgstr "ta bort signaturer från valda användaridentiteter"
 
@@ -3874,6 +3905,10 @@ msgstr "Den hemliga nyckeln finns tillgänglig.\n"
 #| msgid "Secret key is available.\n"
 msgid "Secret subkeys are available.\n"
 msgstr "Den hemliga nyckeln finns tillgänglig.\n"
+
+msgid ""
+"Note: the local copy of the secret key will only be deleted with \"save\".\n"
+msgstr ""
 
 msgid "Need the secret key to do this.\n"
 msgstr "Den hemliga nyckeln behövs för att göra detta.\n"
@@ -3998,6 +4033,11 @@ msgstr "Spara ändringar? (j/N) "
 
 msgid "Quit without saving? (y/N) "
 msgstr "Avsluta utan att spara? (j/N) "
+
+#, fuzzy, c-format
+#| msgid "deleting certificate \"%s\" failed: %s\n"
+msgid "deleting copy of secret key failed: %s\n"
+msgstr "borttagning av certifikatet \"%s\" misslyckades: %s\n"
 
 #, c-format
 msgid "Key not changed so no update needed.\n"
@@ -4253,6 +4293,19 @@ msgid ""
 "Are you sure you want to appoint this key as a designated revoker? (y/N) "
 msgstr ""
 "Är du säker på att du vill använda den här nyckeln för spärrning? (j/N) "
+
+msgid "Enter the fingerprint of the additional decryption subkey: "
+msgstr ""
+
+#, fuzzy, c-format
+#| msgid "(unless you specify the key by fingerprint)\n"
+msgid "Did you specify the fingerprint of a subkey?\n"
+msgstr "(om du inte anger nyckeln med hjälp av fingeravtrycket)\n"
+
+#, fuzzy, c-format
+#| msgid "Subkey %s is already revoked.\n"
+msgid "key \"%s\" is already on this keyblock\n"
+msgstr "Undernyckeln %s är redan spärrad.\n"
 
 # designated = angiven (utnämnd, utpekad, bestämd, utsedd, avsedd, angiven, designerad)
 #, fuzzy
@@ -6150,10 +6203,6 @@ msgstr "DSA-nyckeln %s kräver en hash med %u bitar eller större\n"
 #| msgid "you may not use %s while in %s mode\n"
 msgid "key %s may not be used for signing in %s mode\n"
 msgstr "du kan inte använda %s när du är i %s-läget\n"
-
-#, c-format
-msgid "continuing verification anyway due to option %s\n"
-msgstr ""
 
 #, c-format
 msgid "WARNING: signature digest conflict in message\n"
@@ -8458,11 +8507,6 @@ msgid "failed to create temporary cache dir file '%s': %s\n"
 msgstr "misslyckades med att skapa temporärfilen \"%s\": %s\n"
 
 #, fuzzy, c-format
-#| msgid "error closing %s: %s\n"
-msgid "error closing '%s': %s\n"
-msgstr "fel vid stängning av %s: %s\n"
-
-#, fuzzy, c-format
 #| msgid "can't access `%s': %s\n"
 msgid "can't hash '%s': %s\n"
 msgstr "kan inte komma åt \"%s\": %s\n"
@@ -10629,9 +10673,6 @@ msgstr ""
 
 #~ msgid "toggle between the secret and public key listings"
 #~ msgstr "växla mellan att lista hemliga och publika nycklar"
-
-#~ msgid "Passphrase"
-#~ msgstr "Lösenfras"
 
 #~ msgid "use temporary files to pass data to keyserver helpers"
 #~ msgstr ""
