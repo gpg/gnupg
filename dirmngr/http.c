@@ -2555,7 +2555,7 @@ http_get_header_names (http_t hd)
  * Parse the response from a server.
  * Returns: Errorcode and sets some files in the handle
  */
-static gpg_err_code_t
+static gpg_error_t
 parse_response (http_t hd)
 {
   char *line, *p, *p2;
@@ -2579,11 +2579,11 @@ parse_response (http_t hd)
       len = es_read_line (hd->fp_read, &hd->buffer, &hd->buffer_size, &maxlen);
       line = hd->buffer;
       if (!line)
-	return gpg_err_code_from_syserror (); /* Out of core. */
+	return gpg_error_from_syserror (); /* Out of core. */
       if (!maxlen)
-	return GPG_ERR_TRUNCATED; /* Line has been truncated. */
+	return gpg_error (GPG_ERR_TRUNCATED); /* Line has been truncated. */
       if (!len)
-	return GPG_ERR_EOF;
+	return gpg_error (GPG_ERR_EOF);
 
       if (opt_debug || (hd->flags & HTTP_FLAG_LOG_RESP))
         log_debug_string (line, "http.c:response:\n");
@@ -2623,10 +2623,10 @@ parse_response (http_t hd)
       len = es_read_line (hd->fp_read, &hd->buffer, &hd->buffer_size, &maxlen);
       line = hd->buffer;
       if (!line)
-	return gpg_err_code_from_syserror (); /* Out of core. */
+	return gpg_error_from_syserror (); /* Out of core. */
       /* Note, that we can silently ignore truncated lines. */
       if (!len)
-	return GPG_ERR_EOF;
+	return gpg_error (GPG_ERR_EOF);
       /* Trim line endings of empty lines. */
       if ((*line == '\r' && line[1] == '\n') || *line == '\n')
 	*line = 0;
@@ -2637,7 +2637,7 @@ parse_response (http_t hd)
         {
           gpg_err_code_t ec = store_header (hd, line);
           if (ec)
-            return ec;
+            return gpg_error (ec);
         }
     }
   while (len && *line);
