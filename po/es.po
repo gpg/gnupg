@@ -136,6 +136,20 @@ msgstr "Frase contraseña:"
 msgid "does not match - try again"
 msgstr "no coincide - reinténtelo"
 
+# ¿Por qué no frase de paso?
+# Porque todo el mundo sabe lo que es una contraseña
+# y una "frase de paso" no. Soy consciente de que se
+# traduce igual password y passphrase pero el contexto
+# permite saber de lo que se está hablando.
+# No sé, no sé.
+# ¿Por qué los ingleses entonces sí que saben lo que es un "passphrase"?
+# ¿Es que son más listos? :-)
+#
+#, fuzzy
+#| msgid "Passphrase"
+msgid "Passphrases match."
+msgstr "Frase contraseña"
+
 #. TRANSLATORS: The string is appended to an error message in
 #. the pinentry.  The %s is the actual error message, the
 #. two %d give the current and maximum number of tries.
@@ -1249,6 +1263,14 @@ msgid "%s is too old (need %s, have %s)\n"
 msgstr "%s es demasiado antiguo (necesita %s, tiene %s)\n"
 
 #, c-format
+msgid "error creating '%s': %s\n"
+msgstr "error al crear '%s': %s\n"
+
+#, c-format
+msgid "error closing '%s': %s\n"
+msgstr "error al cerrar '%s': %s\n"
+
+#, c-format
 msgid "armor: %s\n"
 msgstr "armadura: %s\n"
 
@@ -1458,6 +1480,10 @@ msgstr "no forzado"
 
 msgid "forced"
 msgstr "forzado"
+
+#, c-format
+msgid "Please try command \"%s\" if the listing does not look correct\n"
+msgstr ""
 
 msgid "Error: Only plain ASCII is currently allowed.\n"
 msgstr "Error: sólo se permite ASCII sin formato actualmente.\n"
@@ -1732,6 +1758,9 @@ msgstr "cambia valores de la clave"
 msgid "change the User Interaction Flag"
 msgstr "cambia valores de confianza"
 
+msgid "switch to the OpenPGP app"
+msgstr ""
+
 msgid "gpg/card> "
 msgstr "gpg/tarjeta> "
 
@@ -1966,10 +1995,6 @@ msgstr "clave %s: clave estilo PGP 2.x - omitida\n"
 #, c-format
 msgid "WARNING: nothing exported\n"
 msgstr "ATENCIÓN: no se ha exportado nada\n"
-
-#, c-format
-msgid "error creating '%s': %s\n"
-msgstr "error al crear '%s': %s\n"
 
 msgid "[User ID not found]"
 msgstr "[ID de usuario no encontrado]"
@@ -2391,6 +2416,11 @@ msgstr "mostar IDs de usuario revocados y caducados al listar firmas"
 
 msgid "show revoked and expired subkeys in key listings"
 msgstr "mostrar subclaves revocadas y expiradas al listar claves"
+
+#, fuzzy
+#| msgid "show expiration dates during signature listings"
+msgid "show signatures with invalid algorithms during signature listings"
+msgstr "mostrar fechas de caducidad al listar firmas"
 
 msgid "show the keyring name in key listings"
 msgstr "mostrar nombre de los anillos de claves al listar claves"
@@ -3015,6 +3045,10 @@ msgstr "clave %s: clave secreta ya existe\n"
 msgid "key %s: error sending to agent: %s\n"
 msgstr "clave %s: error enviando al agente: %s\n"
 
+#, c-format
+msgid "key %s: card reference is overridden by key material\n"
+msgstr ""
+
 #. TRANSLATORS: For a smartcard, each private key on host has a
 #. * reference (stub) to a smartcard and actual private key data
 #. * is stored on the card.  A single smartcard can have up to
@@ -3527,6 +3561,11 @@ msgstr "borrar clave secundaria"
 msgid "add a revocation key"
 msgstr "añadir una clave de revocación"
 
+#, fuzzy
+#| msgid "Data decryption succeeded"
+msgid "add an additional decryption subkey"
+msgstr "Datos descifrados correctamente"
+
 msgid "delete signatures from the selected user IDs"
 msgstr "borrar firmas de los ID seleccionados"
 
@@ -3586,6 +3625,10 @@ msgstr "Clave secreta disponible.\n"
 
 msgid "Secret subkeys are available.\n"
 msgstr "Subclaves secretas disponibles.\n"
+
+msgid ""
+"Note: the local copy of the secret key will only be deleted with \"save\".\n"
+msgstr ""
 
 msgid "Need the secret key to do this.\n"
 msgstr "Se necesita la clave secreta para hacer esto.\n"
@@ -3697,6 +3740,11 @@ msgstr "¿Grabar cambios? (s/N) "
 
 msgid "Quit without saving? (y/N) "
 msgstr "¿Salir sin grabar? (s/N) "
+
+#, fuzzy, c-format
+#| msgid "deleting secret %s failed: %s\n"
+msgid "deleting copy of secret key failed: %s\n"
+msgstr "ha fallado el borrado del secreto %s: %s\n"
 
 #, c-format
 msgid "Key not changed so no update needed.\n"
@@ -3933,6 +3981,19 @@ msgid ""
 "Are you sure you want to appoint this key as a designated revoker? (y/N) "
 msgstr ""
 "¿Está seguro de querer elegir esta clave como revocador designado? (s/N) "
+
+msgid "Enter the fingerprint of the additional decryption subkey: "
+msgstr ""
+
+#, fuzzy, c-format
+#| msgid "(unless you specify the key by fingerprint)\n"
+msgid "Did you specify the fingerprint of a subkey?\n"
+msgstr "(excepto si especifica la clave dando su huella digital)\n"
+
+#, fuzzy, c-format
+#| msgid "Subkey %s is already revoked.\n"
+msgid "key \"%s\" is already on this keyblock\n"
+msgstr "La subclave %s ya ha sido revocada.\n"
 
 msgid ""
 "Are you sure you want to change the expiration time for multiple subkeys? (y/"
@@ -5742,10 +5803,6 @@ msgstr ""
 #, c-format
 msgid "key %s may not be used for signing in %s mode\n"
 msgstr "no puede usar la clave %s para firmar en modo %s\n"
-
-#, c-format
-msgid "continuing verification anyway due to option %s\n"
-msgstr ""
 
 #, c-format
 msgid "WARNING: signature digest conflict in message\n"
@@ -7898,10 +7955,6 @@ msgid "failed to create temporary cache dir file '%s': %s\n"
 msgstr "no se puede crear el fichero de cache '%s': %s\n"
 
 #, c-format
-msgid "error closing '%s': %s\n"
-msgstr "error al cerrar '%s': %s\n"
-
-#, c-format
 msgid "can't hash '%s': %s\n"
 msgstr "no se puede hacer el hash de '%s': %s\n"
 
@@ -9936,18 +9989,6 @@ msgstr ""
 
 #~ msgid "toggle between the secret and public key listings"
 #~ msgstr "cambiar entre lista de claves secretas y públicas"
-
-# ¿Por qué no frase de paso?
-# Porque todo el mundo sabe lo que es una contraseña
-# y una "frase de paso" no. Soy consciente de que se
-# traduce igual password y passphrase pero el contexto
-# permite saber de lo que se está hablando.
-# No sé, no sé.
-# ¿Por qué los ingleses entonces sí que saben lo que es un "passphrase"?
-# ¿Es que son más listos? :-)
-#
-#~ msgid "Passphrase"
-#~ msgstr "Frase contraseña"
 
 #~ msgid "use temporary files to pass data to keyserver helpers"
 #~ msgstr ""

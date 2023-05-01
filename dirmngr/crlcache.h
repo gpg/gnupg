@@ -70,9 +70,9 @@ gpg_error_t crl_cache_reload_crl (ctrl_t ctrl, ksba_cert_t cert);
 
 
 /*-- fakecrl.c --*/
-crl_cache_result_t fakecrl_isvalid (ctrl_t ctrl,
-                                    const char *issuer_hash,
-                                    const char *cert_id);
+gpg_error_t fakecrl_isvalid (ctrl_t ctrl,
+                             const char *issuer_hash,
+                             const char *cert_id);
 
 
 

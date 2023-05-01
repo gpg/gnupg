@@ -2955,9 +2955,19 @@ do_transfer (ctrl_t ctrl, kbnode_t keyblock, PKT_public_key *pk,
 {
   gpg_error_t err;
   struct import_stats_s subkey_stats = {0};
+  int force = 0;
+  int already_exist = agent_probe_secret_key (ctrl, pk);
+
+  if (already_exist == 2 || already_exist == 4)
+    {
+      if (!opt.quiet)
+        log_info (_("key %s: card reference is overridden by key material\n"),
+                  keystr_from_pk (pk));
+      force = 1;
+    }
 
   err = transfer_secret_keys (ctrl, &subkey_stats, keyblock,
-                              batch, 0, only_marked);
+                              batch, force, only_marked);
   if (gpg_err_code (err) == GPG_ERR_NOT_PROCESSED)
     {
       /* TRANSLATORS: For a smartcard, each private key on host has a

@@ -125,6 +125,10 @@ msgstr "passphrase yang buruk"
 msgid "does not match - try again"
 msgstr ""
 
+#, fuzzy
+msgid "Passphrases match."
+msgstr "passphrase yang buruk"
+
 #. TRANSLATORS: The string is appended to an error message in
 #. the pinentry.  The %s is the actual error message, the
 #. two %d give the current and maximum number of tries.
@@ -1240,6 +1244,15 @@ msgstr "menulis kunci rahasia ke `%s'\n"
 msgid "%s is too old (need %s, have %s)\n"
 msgstr ""
 
+#, fuzzy, c-format
+#| msgid "error creating `%s': %s\n"
+msgid "error creating '%s': %s\n"
+msgstr "kesalahan penciptaan : `%s': %s\n"
+
+#, fuzzy, c-format
+msgid "error closing '%s': %s\n"
+msgstr "kesalahan membaca `%s': %s\n"
+
 #, c-format
 msgid "armor: %s\n"
 msgstr "armor: %s\n"
@@ -1453,6 +1466,10 @@ msgid "not forced"
 msgstr "tidak diproses"
 
 msgid "forced"
+msgstr ""
+
+#, c-format
+msgid "Please try command \"%s\" if the listing does not look correct\n"
 msgstr ""
 
 msgid "Error: Only plain ASCII is currently allowed.\n"
@@ -1734,6 +1751,9 @@ msgstr "ubah ownertrust"
 msgid "change the User Interaction Flag"
 msgstr "ubah ownertrust"
 
+msgid "switch to the OpenPGP app"
+msgstr ""
+
 msgid "gpg/card> "
 msgstr ""
 
@@ -1983,11 +2003,6 @@ msgstr "kunci %08lX: kunci gaya PGP 2.x - dilewati\n"
 #, c-format
 msgid "WARNING: nothing exported\n"
 msgstr "PERINGATAN: tidak ada yang diekspor\n"
-
-#, fuzzy, c-format
-#| msgid "error creating `%s': %s\n"
-msgid "error creating '%s': %s\n"
-msgstr "kesalahan penciptaan : `%s': %s\n"
 
 #, fuzzy
 msgid "[User ID not found]"
@@ -2436,6 +2451,10 @@ msgstr ""
 
 msgid "show revoked and expired subkeys in key listings"
 msgstr ""
+
+#, fuzzy
+msgid "show signatures with invalid algorithms during signature listings"
+msgstr "Tidak ada signature koresponden di ring rahasia\n"
 
 #, fuzzy
 msgid "show the keyring name in key listings"
@@ -3071,6 +3090,10 @@ msgstr "dilewati: kunci pribadi telah ada\n"
 msgid "key %s: error sending to agent: %s\n"
 msgstr "kesalahan mengirim ke `%s': %s\n"
 
+#, c-format
+msgid "key %s: card reference is overridden by key material\n"
+msgstr ""
+
 #. TRANSLATORS: For a smartcard, each private key on host has a
 #. * reference (stub) to a smartcard and actual private key data
 #. * is stored on the card.  A single smartcard can have up to
@@ -3615,6 +3638,9 @@ msgstr "hapus kunci sekunder"
 msgid "add a revocation key"
 msgstr "tambah kunci pembatalan"
 
+msgid "add an additional decryption subkey"
+msgstr ""
+
 #, fuzzy
 msgid "delete signatures from the selected user IDs"
 msgstr "Perbarui preferensi untuk user ID terpilih?"
@@ -3688,6 +3714,10 @@ msgstr "Kunci rahasia tersedia.\n"
 #| msgid "Secret key is available.\n"
 msgid "Secret subkeys are available.\n"
 msgstr "Kunci rahasia tersedia.\n"
+
+msgid ""
+"Note: the local copy of the secret key will only be deleted with \"save\".\n"
+msgstr ""
 
 msgid "Need the secret key to do this.\n"
 msgstr "Perlu kunci rahasia untuk melakukan hal ini.\n"
@@ -3809,6 +3839,10 @@ msgstr "Simpan perubahan? "
 #, fuzzy
 msgid "Quit without saving? (y/N) "
 msgstr "Berhenti tanpa menyimpan? "
+
+#, fuzzy, c-format
+msgid "deleting copy of secret key failed: %s\n"
+msgstr "gagal menghapus keyblok: %s\n"
 
 #, c-format
 msgid "Key not changed so no update needed.\n"
@@ -4060,6 +4094,18 @@ msgid ""
 "Are you sure you want to appoint this key as a designated revoker? (y/N) "
 msgstr ""
 "Anda yakin ingin menunjuk kunci inin sebagai pihak yang dibatalkan? (y/N):"
+
+msgid "Enter the fingerprint of the additional decryption subkey: "
+msgstr ""
+
+#, fuzzy, c-format
+#| msgid "(unless you specify the key by fingerprint)\n"
+msgid "Did you specify the fingerprint of a subkey?\n"
+msgstr "(kecuali anda menspesifikasikan kunci dengan fingerprint)\n"
+
+#, fuzzy, c-format
+msgid "key \"%s\" is already on this keyblock\n"
+msgstr "User ID \"%s\" telah dibatalkan\n"
 
 #, fuzzy
 msgid ""
@@ -5878,10 +5924,6 @@ msgstr ""
 #| msgid "you may not use %s while in %s mode\n"
 msgid "key %s may not be used for signing in %s mode\n"
 msgstr "anda tidak boleh menggunakan %s saat dalam mode %s.\n"
-
-#, c-format
-msgid "continuing verification anyway due to option %s\n"
-msgstr ""
 
 #, c-format
 msgid "WARNING: signature digest conflict in message\n"
@@ -8029,10 +8071,6 @@ msgid "failed to create temporary cache dir file '%s': %s\n"
 msgstr "tidak dapat membuat direktori `%s': %s\n"
 
 #, fuzzy, c-format
-msgid "error closing '%s': %s\n"
-msgstr "kesalahan membaca `%s': %s\n"
-
-#, fuzzy, c-format
 msgid "can't hash '%s': %s\n"
 msgstr "tidak dapat menutup `%s': %s\n"
 
@@ -9897,10 +9935,6 @@ msgstr ""
 #, fuzzy
 #~ msgid "toggle between the secret and public key listings"
 #~ msgstr "ubah tampilan kunci rahasia dan publik"
-
-#, fuzzy
-#~ msgid "Passphrase"
-#~ msgstr "passphrase yang buruk"
 
 #, fuzzy
 #~ msgid "WARNING: keyserver option '%s' is not used on this platform\n"

@@ -108,6 +108,9 @@ gpg_error_t agent_scd_keypairinfo (ctrl_t ctrl, const char *keyref,
 /* Return list of cards.  */
 int agent_scd_cardlist (strlist_t *result);
 
+/* Switch/assure a certain application. */
+gpg_error_t agent_scd_switchapp (const char *appname);
+
 /* Free a keypair info list.  */
 void free_keypair_info (keypair_info_t l);
 
@@ -132,7 +135,8 @@ int agent_keytotpm (ctrl_t ctrl, const char *hexgrip);
 
 /* Send the KEYTOCARD command. */
 int agent_keytocard (const char *hexgrip, int keyno, int force,
-                     const char *serialno, const char *timestamp);
+                     const char *serialno, const char *timestamp,
+                     const char *ecdh_param_str);
 
 /* Send a SETATTR command to the SCdaemon. */
 gpg_error_t agent_scd_setattr (const char *name,

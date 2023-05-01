@@ -705,6 +705,14 @@ current_card_status (ctrl_t ctrl, estream_t fp,
         }
       else
         tty_fprintf (fp, "[none]\n");
+
+      if (!info.manufacturer_name)
+        {
+          tty_fprintf (fp, "\n");
+          tty_fprintf (fp, _("Please try command \"%s\""
+                             " if the listing does not look correct\n"),
+                       "openpgp");
+        }
     }
 
   release_kbnode (keyblock);
@@ -1289,6 +1297,7 @@ get_info_for_key_operation (struct agent_card_info_s *info)
   int rc;
 
   memset (info, 0, sizeof *info);
+  agent_scd_switchapp ("openpgp");
   rc = agent_scd_getattr ("SERIALNO", info);
   if (rc || !info->serialno || strncmp (info->serialno, "D27600012401", 12)
       || strlen (info->serialno) != 32 )
@@ -1796,8 +1805,9 @@ card_store_subkey (KBNODE node, int use, strlist_t *processed_keys)
   int  keyno;
   PKT_public_key *pk;
   gpg_error_t err;
-  char *hexgrip;
+  char *hexgrip = NULL;
   int rc;
+  char *ecdh_param_str = NULL;
   gnupg_isotime_t timebuf;
 
   log_assert (node->pkt->pkttype == PKT_PUBLIC_KEY
@@ -1871,8 +1881,19 @@ card_store_subkey (KBNODE node, int use, strlist_t *processed_keys)
     goto leave;
 
   epoch2isotime (timebuf, (time_t)pk->timestamp);
-  rc = agent_keytocard (hexgrip, keyno, rc, info.serialno, timebuf);
 
+  if (pk->pubkey_algo == PUBKEY_ALGO_ECDH)
+    {
+      ecdh_param_str = ecdh_param_str_from_pk (pk);
+      if (!ecdh_param_str)
+        {
+          err = gpg_error_from_syserror ();
+          goto leave;
+        }
+    }
+
+  rc = agent_keytocard (hexgrip, keyno, rc, info.serialno,
+                        timebuf, ecdh_param_str);
   if (rc)
     log_error (_("KEYTOCARD failed: %s\n"), gpg_strerror (rc));
   else
@@ -1881,9 +1902,10 @@ card_store_subkey (KBNODE node, int use, strlist_t *processed_keys)
       if (processed_keys)
         add_to_strlist (processed_keys, hexgrip);
     }
-  xfree (hexgrip);
 
  leave:
+  xfree (hexgrip);
+  xfree (ecdh_param_str);
   agent_release_card_info (&info);
   return okay;
 }
@@ -2242,7 +2264,7 @@ enum cmdids
     cmdNAME, cmdURL, cmdFETCH, cmdLOGIN, cmdLANG, cmdSEX, cmdCAFPR,
     cmdFORCESIG, cmdGENERATE, cmdPASSWD, cmdPRIVATEDO, cmdWRITECERT,
     cmdREADCERT, cmdUNBLOCK, cmdFACTORYRESET, cmdKDFSETUP,
-    cmdKEYATTR, cmdUIF,
+    cmdKEYATTR, cmdUIF, cmdOPENPGP,
     cmdINVCMD
   };
 
@@ -2280,6 +2302,7 @@ static struct
       N_("setup KDF for PIN authentication (on/single/off)")},
     { "key-attr", cmdKEYATTR, 1, N_("change the key attribute")},
     { "uif", cmdUIF, 1, N_("change the User Interaction Flag")},
+    { "openpgp", cmdOPENPGP, 0, N_("switch to the OpenPGP app")},
     /* Note, that we do not announce these command yet. */
     { "privatedo", cmdPRIVATEDO, 0, NULL },
     { "readcert", cmdREADCERT, 0, NULL },
@@ -2577,6 +2600,11 @@ card_edit (ctrl_t ctrl, strlist_t commands)
                         "       1 <= N <= 3\n");
           else
             uif (arg_number, arg_rest);
+          break;
+
+        case cmdOPENPGP:
+          agent_scd_switchapp ("openpgp");
+          redisplay = 1;
           break;
 
         case cmdQUIT:

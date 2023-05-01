@@ -154,6 +154,42 @@ w32_shgetfolderpath (HWND a, int b, HANDLE c, DWORD d)
 }
 #endif /*HAVE_W32_SYSTEM*/
 
+/* Given the directory name DNAME try to create a common.conf and
+ * enable the keyboxd.  This should only be called for the standard
+ * home directory and only if that directory has just been created.  */
+static void
+create_common_conf (const char *dname)
+{
+#ifdef BUILD_WITH_KEYBOXD
+  estream_t fp;
+  char *fcommon;
+
+  fcommon = make_filename (dname, "common.conf", NULL);
+  fp = es_fopen (fcommon, "wx,mode=-rw-r");
+  if (!fp)
+    {
+      log_info (_("error creating '%s': %s\n"), fcommon,
+                gpg_strerror (gpg_error_from_syserror ()));
+    }
+  else
+    {
+      if (es_fputs ("use-keyboxd\n", fp) == EOF)
+        {
+          log_info (_("error writing to '%s': %s\n"), fcommon,
+                    gpg_strerror (es_ferror (fp)
+                                  ? gpg_error_from_syserror ()
+                                  : gpg_error (GPG_ERR_EOF)));
+          es_fclose (fp);
+        }
+      else if (es_fclose (fp))
+        {
+          log_info (_("error closing '%s': %s\n"), fcommon,
+                    gpg_strerror (gpg_error_from_syserror ()));
+        }
+    }
+#endif /* BUILD_WITH_KEYBOXD */
+}
+
 
 /* Check whether DIR is the default homedir.  */
 static int
@@ -259,7 +295,9 @@ standard_homedir (void)
 
               /* Try to create the directory if it does not yet exists.  */
               if (gnupg_access (dir, F_OK))
-                gnupg_mkdir (dir, "-rwx");
+                if (!gnupg_mkdir (dir, "-rwx"))
+                  create_common_conf (dir);
+
             }
           else
             dir = GNUPG_DEFAULT_HOMEDIR;
@@ -791,39 +829,9 @@ gnupg_maybe_make_homedir (const char *fname, int quiet)
                     fname, strerror(errno) );
       else
         {
-          estream_t fp;
-          char *fcommon;
-
           if (!quiet )
             log_info ( _("directory '%s' created\n"), fname );
-
-#ifdef BUILD_WITH_KEYBOXD
-          /* A new default homedir has been created.  Now create a
-           * common.conf.  */
-          fcommon = make_filename (fname, "common.conf", NULL);
-          fp = es_fopen (fcommon, "wx,mode=-rw-r");
-          if (!fp)
-            {
-              log_info (_("error creating '%s': %s\n"), fcommon,
-                        gpg_strerror (gpg_error_from_syserror ()));
-            }
-          else
-            {
-              if (es_fputs ("use-keyboxd\n", fp) == EOF)
-                {
-                  log_info (_("error writing to '%s': %s\n"), fcommon,
-                            gpg_strerror (es_ferror (fp)
-                                          ? gpg_error_from_syserror ()
-                                          : gpg_error (GPG_ERR_EOF)));
-                  es_fclose (fp);
-                }
-              else if (es_fclose (fp))
-                {
-                  log_info (_("error closing '%s': %s\n"), fcommon,
-                            gpg_strerror (gpg_error_from_syserror ()));
-                }
-            }
-#endif /* BUILD_WITH_KEYBOXD */
+          create_common_conf (fname);
         }
     }
 }
@@ -1656,6 +1664,9 @@ gnupg_module_name (int which)
 
     case GNUPG_MODULE_NAME_CARD:
       X(bindir, "tools", "gpg-card");
+
+    case GNUPG_MODULE_NAME_GPGTAR:
+      X(bindir, "tools", "gpgtar");
 
     default:
       BUG ();

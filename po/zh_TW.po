@@ -138,6 +138,11 @@ msgstr "密語:"
 msgid "does not match - try again"
 msgstr "前後不一致 - 請再試一次"
 
+#, fuzzy
+#| msgid "Passphrase"
+msgid "Passphrases match."
+msgstr "密語"
+
 #. TRANSLATORS: The string is appended to an error message in
 #. the pinentry.  The %s is the actual error message, the
 #. two %d give the current and maximum number of tries.
@@ -1221,6 +1226,14 @@ msgid "%s is too old (need %s, have %s)\n"
 msgstr "%s 太舊了 (需要 %s, 但是祇有 %s)\n"
 
 #, c-format
+msgid "error creating '%s': %s\n"
+msgstr "建立 '%s' 時出錯: %s\n"
+
+#, c-format
+msgid "error closing '%s': %s\n"
+msgstr "關閉 '%s' 時出錯: %s\n"
+
+#, c-format
 msgid "armor: %s\n"
 msgstr "封裝: %s\n"
 
@@ -1432,6 +1445,10 @@ msgstr "不強迫使用"
 
 msgid "forced"
 msgstr "強迫使用"
+
+#, c-format
+msgid "Please try command \"%s\" if the listing does not look correct\n"
+msgstr ""
 
 msgid "Error: Only plain ASCII is currently allowed.\n"
 msgstr "錯誤: 目前祇允許使用單純的 ASCII 字符.\n"
@@ -1721,6 +1738,9 @@ msgstr "更改主觀信任"
 msgid "change the User Interaction Flag"
 msgstr "更改主觀信任"
 
+msgid "switch to the OpenPGP app"
+msgstr ""
+
 msgid "gpg/card> "
 msgstr "gpg/卡片> "
 
@@ -1953,10 +1973,6 @@ msgstr "金鑰 %s: PGP 2.x 型態的金鑰 - 已跳過\n"
 #, c-format
 msgid "WARNING: nothing exported\n"
 msgstr "警告: 沒有匯出任何東西\n"
-
-#, c-format
-msgid "error creating '%s': %s\n"
-msgstr "建立 '%s' 時出錯: %s\n"
 
 msgid "[User ID not found]"
 msgstr "[找不到使用者 ID]"
@@ -2388,6 +2404,11 @@ msgstr "列出金鑰時顯示已撤銷或過期的使用者 ID"
 
 msgid "show revoked and expired subkeys in key listings"
 msgstr "列出金鑰時顯示已撤銷或過期的子鑰"
+
+#, fuzzy
+#| msgid "show expiration dates during signature listings"
+msgid "show signatures with invalid algorithms during signature listings"
+msgstr "列出簽章時顯示有效期限"
 
 msgid "show the keyring name in key listings"
 msgstr "在金鑰清單中顯示鑰匙圈名稱"
@@ -3019,6 +3040,10 @@ msgstr "金鑰 %s: 私鑰已存在\n"
 msgid "key %s: error sending to agent: %s\n"
 msgstr "金鑰 %s: 送至代理程式時出錯: %s\n"
 
+#, c-format
+msgid "key %s: card reference is overridden by key material\n"
+msgstr ""
+
 #. TRANSLATORS: For a smartcard, each private key on host has a
 #. * reference (stub) to a smartcard and actual private key data
 #. * is stored on the card.  A single smartcard can have up to
@@ -3526,6 +3551,11 @@ msgstr "刪除所選的子鑰"
 msgid "add a revocation key"
 msgstr "增加撤銷金鑰"
 
+#, fuzzy
+#| msgid "Data decryption succeeded"
+msgid "add an additional decryption subkey"
+msgstr "資料已解密成功"
+
 msgid "delete signatures from the selected user IDs"
 msgstr "從所選的使用者 ID 中刪除簽章"
 
@@ -3587,6 +3617,10 @@ msgstr "私鑰可用.\n"
 #| msgid "Secret key is available.\n"
 msgid "Secret subkeys are available.\n"
 msgstr "私鑰可用.\n"
+
+msgid ""
+"Note: the local copy of the secret key will only be deleted with \"save\".\n"
+msgstr ""
 
 msgid "Need the secret key to do this.\n"
 msgstr "要有私鑰纔能這麼做.\n"
@@ -3695,6 +3729,11 @@ msgstr "要儲存變更嗎? (y/N) "
 
 msgid "Quit without saving? (y/N) "
 msgstr "要不儲存就離開嗎? (y/N) "
+
+#, fuzzy, c-format
+#| msgid "deleting secret %s failed: %s\n"
+msgid "deleting copy of secret key failed: %s\n"
+msgstr "刪除私鑰 %s 時失敗: %s\n"
 
 #, c-format
 msgid "Key not changed so no update needed.\n"
@@ -3939,6 +3978,19 @@ msgstr "警告: 一旦把某把金鑰指派為指定撤銷者後, 就無法反�
 msgid ""
 "Are you sure you want to appoint this key as a designated revoker? (y/N) "
 msgstr "你確定要指派這把金鑰為指定撤銷者嗎? (y/N) "
+
+msgid "Enter the fingerprint of the additional decryption subkey: "
+msgstr ""
+
+#, fuzzy, c-format
+#| msgid "(unless you specify the key by fingerprint)\n"
+msgid "Did you specify the fingerprint of a subkey?\n"
+msgstr "(除非你用指紋指定了金鑰)\n"
+
+#, fuzzy, c-format
+#| msgid "Subkey %s is already revoked.\n"
+msgid "key \"%s\" is already on this keyblock\n"
+msgstr "子鑰 %s 已撤銷.\n"
 
 #, fuzzy
 #| msgid ""
@@ -5728,10 +5780,6 @@ msgstr "%s 金鑰 %s 需要 %zu 位元以上的雜湊 (雜湊為 %s)\n"
 #| msgid "you may not use %s while in %s mode\n"
 msgid "key %s may not be used for signing in %s mode\n"
 msgstr "你不能夠將 %s 用於 %s 模式中\n"
-
-#, c-format
-msgid "continuing verification anyway due to option %s\n"
-msgstr ""
 
 #, c-format
 msgid "WARNING: signature digest conflict in message\n"
@@ -7824,10 +7872,6 @@ msgid "failed to create temporary cache dir file '%s': %s\n"
 msgstr "建立暫存快取目錄檔案 '%s' 失敗: %s\n"
 
 #, c-format
-msgid "error closing '%s': %s\n"
-msgstr "關閉 '%s' 時出錯: %s\n"
-
-#, c-format
 msgid "can't hash '%s': %s\n"
 msgstr "無法計算 '%s' 的雜湊: %s\n"
 
@@ -9806,9 +9850,6 @@ msgstr ""
 
 #~ msgid "toggle between the secret and public key listings"
 #~ msgstr "在私鑰清單和公鑰清單間切換"
-
-#~ msgid "Passphrase"
-#~ msgstr "密語"
 
 #~ msgid "use temporary files to pass data to keyserver helpers"
 #~ msgstr "用暫存檔來將資料遞送給金鑰伺服器協助程式"

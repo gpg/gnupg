@@ -121,6 +121,11 @@ msgstr "Passphrase:"
 msgid "does not match - try again"
 msgstr "non corrisponde - riprova"
 
+#, fuzzy
+#| msgid "Passphrase Entry"
+msgid "Passphrases match."
+msgstr "Voce passphrase"
+
 #. TRANSLATORS: The string is appended to an error message in
 #. the pinentry.  The %s is the actual error message, the
 #. two %d give the current and maximum number of tries.
@@ -1205,6 +1210,14 @@ msgid "%s is too old (need %s, have %s)\n"
 msgstr "%s è troppo vecchio (è necessario %s, con %s)\n"
 
 #, c-format
+msgid "error creating '%s': %s\n"
+msgstr "errore durante la creazione di '%s': %s\n"
+
+#, c-format
+msgid "error closing '%s': %s\n"
+msgstr "errore durante la chiusura di '%s': %s\n"
+
+#, c-format
 msgid "armor: %s\n"
 msgstr "armatura: %s\n"
 
@@ -1407,6 +1420,10 @@ msgstr "non forzato"
 
 msgid "forced"
 msgstr "costretto"
+
+#, c-format
+msgid "Please try command \"%s\" if the listing does not look correct\n"
+msgstr ""
 
 msgid "Error: Only plain ASCII is currently allowed.\n"
 msgstr "Errore: al momento è consentito solo ASCII semplice.\n"
@@ -1676,6 +1693,9 @@ msgstr "modificare l'attributo chiave"
 msgid "change the User Interaction Flag"
 msgstr "modificare il contrassegno interazione utente"
 
+msgid "switch to the OpenPGP app"
+msgstr ""
+
 msgid "gpg/card> "
 msgstr "gpg/card> "
 
@@ -1914,10 +1934,6 @@ msgstr "chiave %s: chiave di stile PGP 2.x - ignorata\n"
 #, c-format
 msgid "WARNING: nothing exported\n"
 msgstr "ATTENZIONE: non è stato esportato nulla\n"
-
-#, c-format
-msgid "error creating '%s': %s\n"
-msgstr "errore durante la creazione di '%s': %s\n"
 
 msgid "[User ID not found]"
 msgstr "[ID utente non trovato]"
@@ -2329,6 +2345,11 @@ msgstr "mostra ID utente revocati e scaduti negli elenchi di chiavi"
 
 msgid "show revoked and expired subkeys in key listings"
 msgstr "mostra sottochiavi revocate e scadute negli elenchi di chiavi"
+
+#, fuzzy
+#| msgid "show expiration dates during signature listings"
+msgid "show signatures with invalid algorithms during signature listings"
+msgstr "mostra date di scadenza durante le inserzioni delle firme"
 
 msgid "show the keyring name in key listings"
 msgstr "mostrare il nome del keyring negli elenchi delle chiavi"
@@ -2951,6 +2972,10 @@ msgstr "chiave %s: chiave segreta già esistente\n"
 msgid "key %s: error sending to agent: %s\n"
 msgstr "chiave %s: errore durante l'invio all'agente: %s\n"
 
+#, c-format
+msgid "key %s: card reference is overridden by key material\n"
+msgstr ""
+
 #. TRANSLATORS: For a smartcard, each private key on host has a
 #. * reference (stub) to a smartcard and actual private key data
 #. * is stored on the card.  A single smartcard can have up to
@@ -3468,6 +3493,11 @@ msgstr "eliminare le sottochiavi selezionate"
 msgid "add a revocation key"
 msgstr "aggiungi una chiave di revoca"
 
+#, fuzzy
+#| msgid "Data decryption succeeded"
+msgid "add an additional decryption subkey"
+msgstr "Decrittografia dei dati riuscita"
+
 msgid "delete signatures from the selected user IDs"
 msgstr "eliminare le firme dagli ID utente selezionati"
 
@@ -3534,6 +3564,13 @@ msgstr "È disponibile una chiave segreta.\n"
 
 msgid "Secret subkeys are available.\n"
 msgstr "Sono disponibili sottochiavi segrete.\n"
+
+#, fuzzy
+#| msgid "Note: Only the secret part of the shown subkey will be deleted.\n"
+msgid ""
+"Note: the local copy of the secret key will only be deleted with \"save\".\n"
+msgstr ""
+"Nota: verrà eliminata solo la parte segreta della sottochiave visualizzata.\n"
 
 msgid "Need the secret key to do this.\n"
 msgstr "Per fare questo serve la chiave segreta.\n"
@@ -3644,6 +3681,11 @@ msgstr "Salvare le modifiche? (y/N) "
 
 msgid "Quit without saving? (y/N) "
 msgstr "Uscire senza salvare? (y/N) "
+
+#, fuzzy, c-format
+#| msgid "deleting secret %s failed: %s\n"
+msgid "deleting copy of secret key failed: %s\n"
+msgstr "eliminazione del segreto %s non riuscita: %s\n"
 
 #, c-format
 msgid "Key not changed so no update needed.\n"
@@ -3886,6 +3928,19 @@ msgid ""
 "Are you sure you want to appoint this key as a designated revoker? (y/N) "
 msgstr ""
 "Sei sicuro di voler nominare questa chiave come revocatore designato? (y/N) "
+
+msgid "Enter the fingerprint of the additional decryption subkey: "
+msgstr ""
+
+#, fuzzy, c-format
+#| msgid "(unless you specify the key by fingerprint)\n"
+msgid "Did you specify the fingerprint of a subkey?\n"
+msgstr "(a meno che la chiave sia specificata con il fingerprint)\n"
+
+#, fuzzy, c-format
+#| msgid "Subkey %s is already revoked.\n"
+msgid "key \"%s\" is already on this keyblock\n"
+msgstr "La sottochiave %s è già stata revocata.\n"
 
 msgid ""
 "Are you sure you want to change the expiration time for multiple subkeys? (y/"
@@ -5675,10 +5730,6 @@ msgstr ""
 #, c-format
 msgid "key %s may not be used for signing in %s mode\n"
 msgstr "impossibile utilizzare la chiave %s per l'accesso in modalità %s\n"
-
-#, c-format
-msgid "continuing verification anyway due to option %s\n"
-msgstr ""
 
 #, c-format
 msgid "WARNING: signature digest conflict in message\n"
@@ -7831,10 +7882,6 @@ msgstr "si prega di controllare il motivo ed eliminare manualmente quel file\n"
 #, c-format
 msgid "failed to create temporary cache dir file '%s': %s\n"
 msgstr "impossibile creare il file dir della cache temporanea '%s': %s\n"
-
-#, c-format
-msgid "error closing '%s': %s\n"
-msgstr "errore durante la chiusura di '%s': %s\n"
 
 #, c-format
 msgid "can't hash '%s': %s\n"

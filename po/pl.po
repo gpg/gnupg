@@ -127,6 +127,11 @@ msgstr "Hasło:"
 msgid "does not match - try again"
 msgstr "nie pasują - proszę spróbować jeszcze raz"
 
+#, fuzzy
+#| msgid "Passphrase Entry"
+msgid "Passphrases match."
+msgstr "Wpisywanie hasła"
+
 #. TRANSLATORS: The string is appended to an error message in
 #. the pinentry.  The %s is the actual error message, the
 #. two %d give the current and maximum number of tries.
@@ -1211,6 +1216,14 @@ msgid "%s is too old (need %s, have %s)\n"
 msgstr "biblioteka %s jest zbyt stara (wymagana %s, zainstalowana %s)\n"
 
 #, c-format
+msgid "error creating '%s': %s\n"
+msgstr "błąd tworzenia ,,%s'': %s\n"
+
+#, c-format
+msgid "error closing '%s': %s\n"
+msgstr "błąd zamykania ,,%s'': %s\n"
+
+#, c-format
 msgid "armor: %s\n"
 msgstr "opakowanie: %s\n"
 
@@ -1412,6 +1425,10 @@ msgstr "nie wymuszono"
 
 msgid "forced"
 msgstr "wymuszono"
+
+#, c-format
+msgid "Please try command \"%s\" if the listing does not look correct\n"
+msgstr ""
 
 msgid "Error: Only plain ASCII is currently allowed.\n"
 msgstr "Błąd: aktualnie dopuszczalne jest tylko czyste ASCII.\n"
@@ -1682,6 +1699,9 @@ msgstr "zmiana atrybutu klucza"
 msgid "change the User Interaction Flag"
 msgstr "zmiana zaufania właściciela"
 
+msgid "switch to the OpenPGP app"
+msgstr ""
+
 msgid "gpg/card> "
 msgstr "gpg/karta> "
 
@@ -1917,10 +1937,6 @@ msgstr "klucz %s: klucz PGP 2.x - pominięty\n"
 #, c-format
 msgid "WARNING: nothing exported\n"
 msgstr "OSTRZEŻENIE: nic nie zostało wyeksportowane!\n"
-
-#, c-format
-msgid "error creating '%s': %s\n"
-msgstr "błąd tworzenia ,,%s'': %s\n"
 
 msgid "[User ID not found]"
 msgstr "[brak identyfikatora użytkownika]"
@@ -2351,6 +2367,11 @@ msgstr ""
 
 msgid "show revoked and expired subkeys in key listings"
 msgstr "pokazywanie unieważnionych i wygasłych podkluczy na listach kluczy"
+
+#, fuzzy
+#| msgid "show expiration dates during signature listings"
+msgid "show signatures with invalid algorithms during signature listings"
+msgstr "pokazywanie dat wygaśnięcia przy wypisywaniu podpisów"
 
 msgid "show the keyring name in key listings"
 msgstr "pokazywanie nazwy zbioru kluczy na listach kluczy"
@@ -2973,6 +2994,10 @@ msgstr "klucz %s: klucz prywatny już istnieje\n"
 msgid "key %s: error sending to agent: %s\n"
 msgstr "klucz %s: błąd wysyłania do agenta: %s\n"
 
+#, c-format
+msgid "key %s: card reference is overridden by key material\n"
+msgstr ""
+
 #. TRANSLATORS: For a smartcard, each private key on host has a
 #. * reference (stub) to a smartcard and actual private key data
 #. * is stored on the card.  A single smartcard can have up to
@@ -3503,6 +3528,11 @@ msgstr "usunięcie wybranych podkluczy"
 msgid "add a revocation key"
 msgstr "dodanie klucza unieważniającego"
 
+#, fuzzy
+#| msgid "Data decryption succeeded"
+msgid "add an additional decryption subkey"
+msgstr "Odszyfrowywanie danych zakończone"
+
 msgid "delete signatures from the selected user IDs"
 msgstr "usunięcie podpisów z wybranych identyfikatorów użytkownika"
 
@@ -3568,6 +3598,12 @@ msgstr "Dostępny jest klucz tajny.\n"
 
 msgid "Secret subkeys are available.\n"
 msgstr "Dostępne są podklucze tajne.\n"
+
+#, fuzzy
+#| msgid "Note: Only the secret part of the shown subkey will be deleted.\n"
+msgid ""
+"Note: the local copy of the secret key will only be deleted with \"save\".\n"
+msgstr "Uwaga: usunięta zostanie tylko tajna część pokazanego podklucza.\n"
 
 msgid "Need the secret key to do this.\n"
 msgstr "Do wykonania tej operacji potrzebny jest klucz tajny.\n"
@@ -3682,6 +3718,11 @@ msgstr "Zapisać zmiany? (t/N) "
 
 msgid "Quit without saving? (y/N) "
 msgstr "Wyjść bez zapisania zmian? (t/N) "
+
+#, fuzzy, c-format
+#| msgid "deleting secret %s failed: %s\n"
+msgid "deleting copy of secret key failed: %s\n"
+msgstr "usunięcie %s tajnego nie powiodło się: %s\n"
 
 #, c-format
 msgid "Key not changed so no update needed.\n"
@@ -3918,6 +3959,19 @@ msgstr ""
 msgid ""
 "Are you sure you want to appoint this key as a designated revoker? (y/N) "
 msgstr "Czy na pewno chcesz wyznaczyć ten klucz jako unieważniający? (t/N) "
+
+msgid "Enter the fingerprint of the additional decryption subkey: "
+msgstr ""
+
+#, fuzzy, c-format
+#| msgid "(unless you specify the key by fingerprint)\n"
+msgid "Did you specify the fingerprint of a subkey?\n"
+msgstr "(chyba, że klucz zostaje wybrany przez podanie odcisku)\n"
+
+#, fuzzy, c-format
+#| msgid "Subkey %s is already revoked.\n"
+msgid "key \"%s\" is already on this keyblock\n"
+msgstr "Podklucz %s jest już unieważniony.\n"
 
 msgid ""
 "Are you sure you want to change the expiration time for multiple subkeys? (y/"
@@ -5738,10 +5792,6 @@ msgstr "klucz %s %s wymaga skrótu %zu-bitowego lub większego (skrót to %s)\n"
 #, c-format
 msgid "key %s may not be used for signing in %s mode\n"
 msgstr "klucz %s nie może być używany do podpisów w trybie %s\n"
-
-#, c-format
-msgid "continuing verification anyway due to option %s\n"
-msgstr ""
 
 #, c-format
 msgid "WARNING: signature digest conflict in message\n"
@@ -7931,10 +7981,6 @@ msgid "failed to create temporary cache dir file '%s': %s\n"
 msgstr ""
 "nie udało się utworzyć pliku tymczasowego katalogu pamięci podręcznej ,,"
 "%s'': %s\n"
-
-#, c-format
-msgid "error closing '%s': %s\n"
-msgstr "błąd zamykania ,,%s'': %s\n"
 
 #, c-format
 msgid "can't hash '%s': %s\n"

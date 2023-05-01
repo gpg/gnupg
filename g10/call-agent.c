@@ -1096,7 +1096,8 @@ agent_keytotpm (ctrl_t ctrl, const char *hexgrip)
  */
 int
 agent_keytocard (const char *hexgrip, int keyno, int force,
-                 const char *serialno, const char *timestamp)
+                 const char *serialno, const char *timestamp,
+                 const char *ecdh_param_str)
 {
   int rc;
   char line[ASSUAN_LINELENGTH];
@@ -1104,8 +1105,9 @@ agent_keytocard (const char *hexgrip, int keyno, int force,
 
   memset (&parm, 0, sizeof parm);
 
-  snprintf (line, DIM(line), "KEYTOCARD %s%s %s OPENPGP.%d %s",
-            force?"--force ": "", hexgrip, serialno, keyno, timestamp);
+  snprintf (line, DIM(line), "KEYTOCARD %s%s %s OPENPGP.%d %s%s%s",
+            force?"--force ": "", hexgrip, serialno, keyno, timestamp,
+            ecdh_param_str? " ":"", ecdh_param_str? ecdh_param_str:"");
 
   rc = start_agent (NULL, 1);
   if (rc)
@@ -1697,6 +1699,30 @@ agent_scd_cardlist (strlist_t *result)
     free_strlist (parm.list);
 
   return 0;
+}
+
+
+/* Make the app APPNAME the one on the card.  This is sometimes
+ * required to make sure no other process has switched a card to
+ * another application.  The only useful APPNAME is "openpgp".  */
+gpg_error_t
+agent_scd_switchapp (const char *appname)
+{
+  int err;
+  char line[ASSUAN_LINELENGTH];
+
+  if (appname && !*appname)
+    appname = NULL;
+
+  err = start_agent (NULL, (1 | FLAG_FOR_CARD_SUPPRESS_ERRORS));
+  if (err)
+    return err;
+
+  snprintf (line, DIM(line), "SCD SWITCHAPP --%s%s",
+            appname? " ":"", appname? appname:"");
+  return assuan_transact (agent_ctx, line,
+                          NULL, NULL, NULL, NULL,
+                          NULL, NULL);
 }
 
 

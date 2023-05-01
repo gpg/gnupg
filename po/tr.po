@@ -124,6 +124,11 @@ msgstr "Anahtar Parolası:"
 msgid "does not match - try again"
 msgstr "eşleşmiyor - yeniden deneyin"
 
+#, fuzzy
+#| msgid "Passphrase Entry"
+msgid "Passphrases match."
+msgstr "Anahtar Parolası Girişi"
+
 #. TRANSLATORS: The string is appended to an error message in
 #. the pinentry.  The %s is the actual error message, the
 #. two %d give the current and maximum number of tries.
@@ -1200,6 +1205,14 @@ msgid "%s is too old (need %s, have %s)\n"
 msgstr "%s çok eski (gereken %s, sizinki %s)\n"
 
 #, c-format
+msgid "error creating '%s': %s\n"
+msgstr "'%s' oluşturulurken hata: %s\n"
+
+#, c-format
+msgid "error closing '%s': %s\n"
+msgstr "'%s' kapatılırken hata: %s\n"
+
+#, c-format
 msgid "armor: %s\n"
 msgstr "zırh: %s\n"
 
@@ -1403,6 +1416,10 @@ msgstr "zorlanmadı"
 
 msgid "forced"
 msgstr "zorlandı"
+
+#, c-format
+msgid "Please try command \"%s\" if the listing does not look correct\n"
+msgstr ""
 
 msgid "Error: Only plain ASCII is currently allowed.\n"
 msgstr "Hata: Şimdilik yalnızca US-ASCII mümkün.\n"
@@ -1666,6 +1683,9 @@ msgstr "anahtar özniteliğini değiştir"
 msgid "change the User Interaction Flag"
 msgstr "Kullanıcı etkileşim bayrağını değiştir"
 
+msgid "switch to the OpenPGP app"
+msgstr ""
+
 msgid "gpg/card> "
 msgstr "gpg/card> "
 
@@ -1892,10 +1912,6 @@ msgstr "%s anahtarı: PGP 2.x tarzı bir anahtar - atlandı\n"
 #, c-format
 msgid "WARNING: nothing exported\n"
 msgstr "UYARI: Hiçbir şey dışa aktarılmadı\n"
-
-#, c-format
-msgid "error creating '%s': %s\n"
-msgstr "'%s' oluşturulurken hata: %s\n"
 
 msgid "[User ID not found]"
 msgstr "[Kullanıcı kimliği bulunamadı]"
@@ -2302,6 +2318,11 @@ msgid "show revoked and expired subkeys in key listings"
 msgstr ""
 "anahtar listelerinde yürürlükten kaldırılmış ve zaman aşımına uğramış "
 "yardımcı anahtarlar göster"
+
+#, fuzzy
+#| msgid "show expiration dates during signature listings"
+msgid "show signatures with invalid algorithms during signature listings"
+msgstr "imza listelemesi sırasında zaman aşımı tarihleri göster"
 
 msgid "show the keyring name in key listings"
 msgstr "anahtar zinciri adını anahtar listelerinde göster"
@@ -2920,6 +2941,10 @@ msgstr "%s anahtarı: Gizli anahtar halihazırda var\n"
 msgid "key %s: error sending to agent: %s\n"
 msgstr "%s anahtarı: Aracıya gönderirken hata: %s\n"
 
+#, c-format
+msgid "key %s: card reference is overridden by key material\n"
+msgstr ""
+
 #. TRANSLATORS: For a smartcard, each private key on host has a
 #. * reference (stub) to a smartcard and actual private key data
 #. * is stored on the card.  A single smartcard can have up to
@@ -3441,6 +3466,11 @@ msgstr "seçili yardımcı anahtarları sil"
 msgid "add a revocation key"
 msgstr "bir yürürlükten kaldırma anahtarı ekle"
 
+#, fuzzy
+#| msgid "Data decryption succeeded"
+msgid "add an additional decryption subkey"
+msgstr "Veri şifresi çözülmesi başarılı"
+
 msgid "delete signatures from the selected user IDs"
 msgstr "seçili kullanıcı kimliklerinden imzaları sile"
 
@@ -3505,6 +3535,12 @@ msgstr "Gizli anahtar mevcut.\n"
 
 msgid "Secret subkeys are available.\n"
 msgstr "Gizli yardımcı anahtarlar mevcut.\n"
+
+#, fuzzy
+#| msgid "Note: Only the secret part of the shown subkey will be deleted.\n"
+msgid ""
+"Note: the local copy of the secret key will only be deleted with \"save\".\n"
+msgstr "Not: Yalnızca gösterilen yardımcı anahtarın gizli kısmı silinecek.\n"
 
 msgid "Need the secret key to do this.\n"
 msgstr "Bunu yapmak için gizli anahtar gerekli.\n"
@@ -3619,6 +3655,11 @@ msgstr "Değişiklikler kaydedilsin mi? (e/H) "
 
 msgid "Quit without saving? (y/N) "
 msgstr "Kaydetmeden çıkılsın mı? (e/H) "
+
+#, fuzzy, c-format
+#| msgid "deleting secret %s failed: %s\n"
+msgid "deleting copy of secret key failed: %s\n"
+msgstr "gizli %s silinmesi başarısız: %s\n"
 
 #, c-format
 msgid "Key not changed so no update needed.\n"
@@ -3863,6 +3904,19 @@ msgid ""
 msgstr ""
 "Bu anahtarın, yürürlükten kaldıran anahtar olmasını istediğinize emin "
 "misiniz? (e/H) "
+
+msgid "Enter the fingerprint of the additional decryption subkey: "
+msgstr ""
+
+#, fuzzy, c-format
+#| msgid "(unless you specify the key by fingerprint)\n"
+msgid "Did you specify the fingerprint of a subkey?\n"
+msgstr "(anahtar parmak izi ile belirtilmedikçe)\n"
+
+#, fuzzy, c-format
+#| msgid "Subkey %s is already revoked.\n"
+msgid "key \"%s\" is already on this keyblock\n"
+msgstr "%s yardımcı anahtarı zaten yürürlükten kaldırılmış.\n"
 
 msgid ""
 "Are you sure you want to change the expiration time for multiple subkeys? (y/"
@@ -5624,10 +5678,6 @@ msgstr ""
 #, c-format
 msgid "key %s may not be used for signing in %s mode\n"
 msgstr "%s anahtarı %s kipinde imzalama için kullanılamaz\n"
-
-#, c-format
-msgid "continuing verification anyway due to option %s\n"
-msgstr "%s seçeneğinden dolayı doğrulama yine de sürdürülüyor\n"
 
 #, c-format
 msgid "WARNING: signature digest conflict in message\n"
@@ -7733,10 +7783,6 @@ msgid "failed to create temporary cache dir file '%s': %s\n"
 msgstr "geçici önbellek dizin dosyası '%s' oluşturulamadı: %s\n"
 
 #, c-format
-msgid "error closing '%s': %s\n"
-msgstr "'%s' kapatılırken hata: %s\n"
-
-#, c-format
 msgid "can't hash '%s': %s\n"
 msgstr "'%s' sağlaması yapılamıyor: %s\n"
 
@@ -8887,6 +8933,9 @@ msgstr "Yubikey yönetim konsolu"
 
 msgid "manage the command history"
 msgstr "komut geçmişini yönet"
+
+#~ msgid "continuing verification anyway due to option %s\n"
+#~ msgstr "%s seçeneğinden dolayı doğrulama yine de sürdürülüyor\n"
 
 #~ msgid "selected AEAD algorithm is invalid\n"
 #~ msgstr "seçili AEAD algoritması geçersiz\n"

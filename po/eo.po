@@ -123,6 +123,10 @@ msgstr "malbona pasfrazo"
 msgid "does not match - try again"
 msgstr ""
 
+#, fuzzy
+msgid "Passphrases match."
+msgstr "malbona pasfrazo"
+
 #. TRANSLATORS: The string is appended to an error message in
 #. the pinentry.  The %s is the actual error message, the
 #. two %d give the current and maximum number of tries.
@@ -1242,6 +1246,15 @@ msgstr "skribas sekretan ŝlosilon al '%s'\n"
 msgid "%s is too old (need %s, have %s)\n"
 msgstr ""
 
+#, fuzzy, c-format
+#| msgid "error creating `%s': %s\n"
+msgid "error creating '%s': %s\n"
+msgstr "eraro dum kreado de '%s': %s\n"
+
+#, fuzzy, c-format
+msgid "error closing '%s': %s\n"
+msgstr "eraro dum legado de '%s': %s\n"
+
 #, c-format
 msgid "armor: %s\n"
 msgstr "kiraso: %s\n"
@@ -1450,6 +1463,10 @@ msgid "not forced"
 msgstr "ne traktita"
 
 msgid "forced"
+msgstr ""
+
+#, c-format
+msgid "Please try command \"%s\" if the listing does not look correct\n"
 msgstr ""
 
 msgid "Error: Only plain ASCII is currently allowed.\n"
@@ -1731,6 +1748,9 @@ msgstr "ŝanĝi la posedantofidon"
 msgid "change the User Interaction Flag"
 msgstr "ŝanĝi la posedantofidon"
 
+msgid "switch to the OpenPGP app"
+msgstr ""
+
 msgid "gpg/card> "
 msgstr ""
 
@@ -1971,11 +1991,6 @@ msgstr "ŝlosilo %08lX: PGP-2.x-stila ŝlosilo - ignorita\n"
 #, c-format
 msgid "WARNING: nothing exported\n"
 msgstr "AVERTO: nenio estis eksportita\n"
-
-#, fuzzy, c-format
-#| msgid "error creating `%s': %s\n"
-msgid "error creating '%s': %s\n"
-msgstr "eraro dum kreado de '%s': %s\n"
 
 #, fuzzy
 msgid "[User ID not found]"
@@ -2425,6 +2440,10 @@ msgstr ""
 
 msgid "show revoked and expired subkeys in key listings"
 msgstr ""
+
+#, fuzzy
+msgid "show signatures with invalid algorithms during signature listings"
+msgstr "Mankas responda subskribo en sekreta ŝlosilaro\n"
 
 #, fuzzy
 msgid "show the keyring name in key listings"
@@ -3055,6 +3074,10 @@ msgstr "ignorita: sekreta ŝlosilo jam ĉeestas\n"
 msgid "key %s: error sending to agent: %s\n"
 msgstr "eraro dum sendo al '%s': %s\n"
 
+#, c-format
+msgid "key %s: card reference is overridden by key material\n"
+msgstr ""
+
 #. TRANSLATORS: For a smartcard, each private key on host has a
 #. * reference (stub) to a smartcard and actual private key data
 #. * is stored on the card.  A single smartcard can have up to
@@ -3612,6 +3635,9 @@ msgstr "forviŝi flankan ŝlosilon"
 msgid "add a revocation key"
 msgstr "aldoni flankan ŝlosilon"
 
+msgid "add an additional decryption subkey"
+msgstr ""
+
 #, fuzzy
 msgid "delete signatures from the selected user IDs"
 msgstr "Ĉu vere aktualigi la preferojn por la elektitaj uzantidentigiloj? "
@@ -3685,6 +3711,10 @@ msgstr "Sekreta ŝlosilo estas havebla.\n"
 #| msgid "Secret key is available.\n"
 msgid "Secret subkeys are available.\n"
 msgstr "Sekreta ŝlosilo estas havebla.\n"
+
+msgid ""
+"Note: the local copy of the secret key will only be deleted with \"save\".\n"
+msgstr ""
 
 msgid "Need the secret key to do this.\n"
 msgstr "Bezonas la sekretan ŝlosilon por fari tion.\n"
@@ -3807,6 +3837,10 @@ msgstr "Ĉu skribi ŝanĝojn? "
 #, fuzzy
 msgid "Quit without saving? (y/N) "
 msgstr "Ĉu fini sen skribi ŝanĝojn? "
+
+#, fuzzy, c-format
+msgid "deleting copy of secret key failed: %s\n"
+msgstr "forviŝo de ŝlosilbloko malsukcesis: %s\n"
 
 #, c-format
 msgid "Key not changed so no update needed.\n"
@@ -4049,6 +4083,17 @@ msgstr ""
 msgid ""
 "Are you sure you want to appoint this key as a designated revoker? (y/N) "
 msgstr "Ĉu vi estas certa, ke vi ankoraŭ volas subskribi ĝin?\n"
+
+msgid "Enter the fingerprint of the additional decryption subkey: "
+msgstr ""
+
+#, fuzzy, c-format
+msgid "Did you specify the fingerprint of a subkey?\n"
+msgstr "malsukcesis doni komencajn valorojn al fido-datenaro: %s\n"
+
+#, fuzzy, c-format
+msgid "key \"%s\" is already on this keyblock\n"
+msgstr "Uzantidentigilo \"%s\" estas revokita.\n"
 
 #, fuzzy
 msgid ""
@@ -5852,10 +5897,6 @@ msgstr ""
 #, fuzzy, c-format
 msgid "key %s may not be used for signing in %s mode\n"
 msgstr "Tiu komando ne eblas en la reĝimo %s.\n"
-
-#, c-format
-msgid "continuing verification anyway due to option %s\n"
-msgstr ""
 
 #, c-format
 msgid "WARNING: signature digest conflict in message\n"
@@ -7998,10 +8039,6 @@ msgid "failed to create temporary cache dir file '%s': %s\n"
 msgstr "%s: ne povas krei dosierujon: %s\n"
 
 #, fuzzy, c-format
-msgid "error closing '%s': %s\n"
-msgstr "eraro dum legado de '%s': %s\n"
-
-#, fuzzy, c-format
 msgid "can't hash '%s': %s\n"
 msgstr "ne povas fermi '%s': %s\n"
 
@@ -9837,10 +9874,6 @@ msgstr ""
 #, fuzzy
 #~ msgid "toggle between the secret and public key listings"
 #~ msgstr "de sekreta aŭ publika listo iri al la alia"
-
-#, fuzzy
-#~ msgid "Passphrase"
-#~ msgstr "malbona pasfrazo"
 
 #~ msgid "gpg-agent is not available in this session\n"
 #~ msgstr "gpg-agent ne estas disponata en ĉi tiu sesio\n"

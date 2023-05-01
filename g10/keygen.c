@@ -5327,12 +5327,20 @@ card_store_key_with_backup (ctrl_t ctrl, PKT_public_key *sub_psk,
   char *cache_nonce = NULL;
   void *kek = NULL;
   size_t keklen;
+  char *ecdh_param_str = NULL;
 
   sk = copy_public_key (NULL, sub_psk);
   if (!sk)
     return gpg_error_from_syserror ();
 
   epoch2isotime (timestamp, (time_t)sk->timestamp);
+  if (sk->pubkey_algo == PUBKEY_ALGO_ECDH)
+    {
+      ecdh_param_str = ecdh_param_str_from_pk (sk);
+      if (!ecdh_param_str)
+        return gpg_error_from_syserror ();
+    }
+
   err = hexkeygrip_from_pk (sk, &hexgrip);
   if (err)
     goto leave;
@@ -5345,7 +5353,8 @@ card_store_key_with_backup (ctrl_t ctrl, PKT_public_key *sub_psk,
       goto leave;
     }
 
-  rc = agent_keytocard (hexgrip, 2, 1, info.serialno, timestamp);
+  rc = agent_keytocard (hexgrip, 2, 1, info.serialno,
+                        timestamp, ecdh_param_str);
   xfree (info.serialno);
   if (rc)
     {
@@ -5388,6 +5397,7 @@ card_store_key_with_backup (ctrl_t ctrl, PKT_public_key *sub_psk,
     agent_scd_learn (NULL, 1);
 
  leave:
+  xfree (ecdh_param_str);
   xfree (cache_nonce);
   gcry_cipher_close (cipherhd);
   xfree (kek);

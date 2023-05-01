@@ -133,6 +133,11 @@ msgstr "Passordfrase:"
 msgid "does not match - try again"
 msgstr "feil. Prøv igjen"
 
+#, fuzzy
+#| msgid "Passphrase Entry"
+msgid "Passphrases match."
+msgstr "Skriving av passordfrase"
+
 #. TRANSLATORS: The string is appended to an error message in
 #. the pinentry.  The %s is the actual error message, the
 #. two %d give the current and maximum number of tries.
@@ -1218,6 +1223,14 @@ msgid "%s is too old (need %s, have %s)\n"
 msgstr "%s er for gammel (krever %s, har %s)\n"
 
 #, c-format
+msgid "error creating '%s': %s\n"
+msgstr "feil under oppretting av «%s»: %s\n"
+
+#, c-format
+msgid "error closing '%s': %s\n"
+msgstr "feil under lukking av «%s»: %s\n"
+
+#, c-format
 msgid "armor: %s\n"
 msgstr "armor: %s\n"
 
@@ -1426,6 +1439,10 @@ msgstr "ikke tvunget"
 
 msgid "forced"
 msgstr "tvunget"
+
+#, c-format
+msgid "Please try command \"%s\" if the listing does not look correct\n"
+msgstr ""
 
 msgid "Error: Only plain ASCII is currently allowed.\n"
 msgstr "Feil: Bare ren ASCII er foreløpig tillatt.\n"
@@ -1711,6 +1728,9 @@ msgstr "endre eiertillit"
 msgid "change the User Interaction Flag"
 msgstr "endre eiertillit"
 
+msgid "switch to the OpenPGP app"
+msgstr ""
+
 msgid "gpg/card> "
 msgstr "gpg/kort> "
 
@@ -1945,10 +1965,6 @@ msgstr "nøkkel %s: PGP 2.x-aktig nøkkel - hoppet over\n"
 #, c-format
 msgid "WARNING: nothing exported\n"
 msgstr "ADVARSEL: ingenting eksportert\n"
-
-#, c-format
-msgid "error creating '%s': %s\n"
-msgstr "feil under oppretting av «%s»: %s\n"
 
 msgid "[User ID not found]"
 msgstr "[Fant ikke bruker-ID]"
@@ -2360,6 +2376,11 @@ msgstr "vis opphevede og utgåtte bruker-id-er i nøkkelvisning"
 
 msgid "show revoked and expired subkeys in key listings"
 msgstr "vis opphevede og utgåtte undernøkler i nøkkelvisning"
+
+#, fuzzy
+#| msgid "show expiration dates during signature listings"
+msgid "show signatures with invalid algorithms during signature listings"
+msgstr "vis utløpsdatoer i nøkkelvisning"
 
 msgid "show the keyring name in key listings"
 msgstr "vis nøkkelknippe-navn i nøkkelvisning"
@@ -2982,6 +3003,10 @@ msgstr "nøkkel %s: hemmelig nøkkel finnes allerede\n"
 msgid "key %s: error sending to agent: %s\n"
 msgstr "nøkkel %s: feil under sending til agent: %s\n"
 
+#, c-format
+msgid "key %s: card reference is overridden by key material\n"
+msgstr ""
+
 #. TRANSLATORS: For a smartcard, each private key on host has a
 #. * reference (stub) to a smartcard and actual private key data
 #. * is stored on the card.  A single smartcard can have up to
@@ -3496,6 +3521,11 @@ msgstr "slett valgte undernøkler"
 msgid "add a revocation key"
 msgstr "legg til opphevingsnøkkel"
 
+#, fuzzy
+#| msgid "Data decryption succeeded"
+msgid "add an additional decryption subkey"
+msgstr "Datadekryptering fullført"
+
 msgid "delete signatures from the selected user IDs"
 msgstr "slett signaturer fra valgte bruker-id-er"
 
@@ -3560,6 +3590,10 @@ msgstr "Hemmelig nøkkel er tilgjengelig.\n"
 #| msgid "Secret key is available.\n"
 msgid "Secret subkeys are available.\n"
 msgstr "Hemmelig nøkkel er tilgjengelig.\n"
+
+msgid ""
+"Note: the local copy of the secret key will only be deleted with \"save\".\n"
+msgstr ""
 
 msgid "Need the secret key to do this.\n"
 msgstr "Du trenger tilhørende hemmelig nøkkel for å gjøre dette.\n"
@@ -3671,6 +3705,11 @@ msgstr "Vil du lagre endringer? (j/N) "
 
 msgid "Quit without saving? (y/N) "
 msgstr "Vil du avslutte uten å lagre? (j/N) "
+
+#, fuzzy, c-format
+#| msgid "deleting secret %s failed: %s\n"
+msgid "deleting copy of secret key failed: %s\n"
+msgstr "sletting av hemmelig nøkkel %s mislyktes: %s\n"
 
 #, c-format
 msgid "Key not changed so no update needed.\n"
@@ -3906,6 +3945,19 @@ msgstr ""
 msgid ""
 "Are you sure you want to appoint this key as a designated revoker? (y/N) "
 msgstr "Er du sikker på at du vil gjøre denne nøkkelen til en opphever? (j/N) "
+
+msgid "Enter the fingerprint of the additional decryption subkey: "
+msgstr ""
+
+#, fuzzy, c-format
+#| msgid "(unless you specify the key by fingerprint)\n"
+msgid "Did you specify the fingerprint of a subkey?\n"
+msgstr "(med mindre du oppgir nøkkel ved hjelp av fingeravtrykk)\n"
+
+#, fuzzy, c-format
+#| msgid "Subkey %s is already revoked.\n"
+msgid "key \"%s\" is already on this keyblock\n"
+msgstr "Undernøkkel %s er allerede opphevet.\n"
 
 msgid ""
 "Are you sure you want to change the expiration time for multiple subkeys? (y/"
@@ -5702,10 +5754,6 @@ msgstr ""
 #, c-format
 msgid "key %s may not be used for signing in %s mode\n"
 msgstr "du kan ikke bruke nøkkel %s til signering i %s-modus\n"
-
-#, c-format
-msgid "continuing verification anyway due to option %s\n"
-msgstr ""
 
 #, c-format
 msgid "WARNING: signature digest conflict in message\n"
@@ -7824,10 +7872,6 @@ msgstr "kontroller årsaken og slett fila manuelt\n"
 #, c-format
 msgid "failed to create temporary cache dir file '%s': %s\n"
 msgstr "klarte ikke å lage midlertidig hurtiglagermappe-fil «%s»: %s\n"
-
-#, c-format
-msgid "error closing '%s': %s\n"
-msgstr "feil under lukking av «%s»: %s\n"
 
 #, c-format
 msgid "can't hash '%s': %s\n"

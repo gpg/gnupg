@@ -123,6 +123,10 @@ msgstr "frase secreta incorrecta"
 msgid "does not match - try again"
 msgstr ""
 
+#, fuzzy
+msgid "Passphrases match."
+msgstr "frase secreta incorrecta"
+
 #. TRANSLATORS: The string is appended to an error message in
 #. the pinentry.  The %s is the actual error message, the
 #. two %d give the current and maximum number of tries.
@@ -1240,6 +1244,15 @@ msgstr "a escrever chave privada para `%s'\n"
 msgid "%s is too old (need %s, have %s)\n"
 msgstr ""
 
+#, fuzzy, c-format
+#| msgid "error creating `%s': %s\n"
+msgid "error creating '%s': %s\n"
+msgstr "erro ao criar `%s': %s\n"
+
+#, fuzzy, c-format
+msgid "error closing '%s': %s\n"
+msgstr "erro na leitura de `%s': %s\n"
+
 #, c-format
 msgid "armor: %s\n"
 msgstr "armadura: %s\n"
@@ -1452,6 +1465,10 @@ msgid "not forced"
 msgstr "não processado"
 
 msgid "forced"
+msgstr ""
+
+#, c-format
+msgid "Please try command \"%s\" if the listing does not look correct\n"
 msgstr ""
 
 msgid "Error: Only plain ASCII is currently allowed.\n"
@@ -1733,6 +1750,9 @@ msgstr "muda os valores de confiança"
 msgid "change the User Interaction Flag"
 msgstr "muda os valores de confiança"
 
+msgid "switch to the OpenPGP app"
+msgstr ""
+
 msgid "gpg/card> "
 msgstr ""
 
@@ -1980,11 +2000,6 @@ msgstr "chave %08lX: tipo PGP 2.x - ignorada\n"
 #, c-format
 msgid "WARNING: nothing exported\n"
 msgstr "AVISO: nada exportado\n"
-
-#, fuzzy, c-format
-#| msgid "error creating `%s': %s\n"
-msgid "error creating '%s': %s\n"
-msgstr "erro ao criar `%s': %s\n"
 
 #, fuzzy
 msgid "[User ID not found]"
@@ -2437,6 +2452,10 @@ msgstr ""
 
 msgid "show revoked and expired subkeys in key listings"
 msgstr ""
+
+#, fuzzy
+msgid "show signatures with invalid algorithms during signature listings"
+msgstr "Nenhuma assinatura correspondente no porta-chaves secreto\n"
 
 #, fuzzy
 msgid "show the keyring name in key listings"
@@ -3070,6 +3089,10 @@ msgstr "ignorado: a chave secreta já está presente\n"
 msgid "key %s: error sending to agent: %s\n"
 msgstr "erro ao enviar para `%s': %s\n"
 
+#, c-format
+msgid "key %s: card reference is overridden by key material\n"
+msgstr ""
+
 #. TRANSLATORS: For a smartcard, each private key on host has a
 #. * reference (stub) to a smartcard and actual private key data
 #. * is stored on the card.  A single smartcard can have up to
@@ -3617,6 +3640,9 @@ msgstr "remove uma chave secundária"
 msgid "add a revocation key"
 msgstr "adiciona uma chave de revocação"
 
+msgid "add an additional decryption subkey"
+msgstr ""
+
 #, fuzzy
 msgid "delete signatures from the selected user IDs"
 msgstr ""
@@ -3693,6 +3719,10 @@ msgstr "Chave secreta disponível.\n"
 #| msgid "Secret key is available.\n"
 msgid "Secret subkeys are available.\n"
 msgstr "Chave secreta disponível.\n"
+
+msgid ""
+"Note: the local copy of the secret key will only be deleted with \"save\".\n"
+msgstr ""
 
 msgid "Need the secret key to do this.\n"
 msgstr "A chave secreta é necessária para fazer isto.\n"
@@ -3815,6 +3845,10 @@ msgstr "Gravar alterações? "
 #, fuzzy
 msgid "Quit without saving? (y/N) "
 msgstr "Sair sem gravar? "
+
+#, fuzzy, c-format
+msgid "deleting copy of secret key failed: %s\n"
+msgstr "remoção do bloco de chave falhou: %s\n"
 
 #, c-format
 msgid "Key not changed so no update needed.\n"
@@ -4058,6 +4092,18 @@ msgstr "não pode escolher uma chave como revogadora de si mesmo\n"
 msgid ""
 "Are you sure you want to appoint this key as a designated revoker? (y/N) "
 msgstr "não pode escolher uma chave como revogadora de si mesmo\n"
+
+msgid "Enter the fingerprint of the additional decryption subkey: "
+msgstr ""
+
+#, fuzzy, c-format
+#| msgid "(unless you specify the key by fingerprint)\n"
+msgid "Did you specify the fingerprint of a subkey?\n"
+msgstr "(a não ser que escolha a chave pela sua impressão digital)\n"
+
+#, fuzzy, c-format
+msgid "key \"%s\" is already on this keyblock\n"
+msgstr "o utilizador com o id \"%s\" já está revocado\n"
 
 #, fuzzy
 msgid ""
@@ -5870,10 +5916,6 @@ msgstr ""
 #| msgid "you may not use %s while in %s mode\n"
 msgid "key %s may not be used for signing in %s mode\n"
 msgstr "não pode utilizar %s enquanto estiver no modo %s\n"
-
-#, c-format
-msgid "continuing verification anyway due to option %s\n"
-msgstr ""
 
 #, c-format
 msgid "WARNING: signature digest conflict in message\n"
@@ -8026,10 +8068,6 @@ msgid "failed to create temporary cache dir file '%s': %s\n"
 msgstr "%s: impossível criar directoria: %s\n"
 
 #, fuzzy, c-format
-msgid "error closing '%s': %s\n"
-msgstr "erro na leitura de `%s': %s\n"
-
-#, fuzzy, c-format
 msgid "can't hash '%s': %s\n"
 msgstr "impossível fechar `%s': %s\n"
 
@@ -9886,10 +9924,6 @@ msgstr ""
 #, fuzzy
 #~ msgid "toggle between the secret and public key listings"
 #~ msgstr "alterna entre listagem de chave secreta e pública"
-
-#, fuzzy
-#~ msgid "Passphrase"
-#~ msgstr "frase secreta incorrecta"
 
 #, fuzzy
 #~ msgid "WARNING: keyserver option '%s' is not used on this platform\n"

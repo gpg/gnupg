@@ -5211,6 +5211,7 @@ verify_pin (app_t app,
   const char *errstr;
   const char *s;
   int remaining;
+  unsigned int min_length;
   int pin_reference;
   int verified = 0;
   int i;
@@ -5277,12 +5278,16 @@ verify_pin (app_t app,
     }
 
   /* We might need to cope with UTF8 things here.  Not sure how
-     min_length etc. are exactly defined, for now we take them as
-     a plain octet count. */
-  if (strlen (pinvalue) < aodf->min_length)
+     min_length etc. are exactly defined, for now we take them as a
+     plain octet count.  For RSCS we enforce 6 despite that some cards
+     give 4 has min. length.  */
+  min_length = aodf->min_length;
+  if (app->app_local->card_product == CARD_PRODUCT_RSCS && min_length < 6)
+    min_length = 6;
+
+  if (strlen (pinvalue) < min_length)
     {
-      log_error ("p15: PIN is too short; minimum length is %lu\n",
-                 aodf->min_length);
+      log_error ("p15: PIN is too short; minimum length is %u\n", min_length);
       err = gpg_error (GPG_ERR_BAD_PIN);
     }
   else if (aodf->stored_length && strlen (pinvalue) > aodf->stored_length)

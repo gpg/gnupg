@@ -399,10 +399,13 @@ this command may change with new releases.
 @opindex edit-card
 @itemx --card-edit
 @opindex card-edit
-Present a menu to work with a smartcard. The subcommand "help" provides
-an overview on available commands. For a detailed description, please
-see the Card HOWTO at
-https://gnupg.org/documentation/howtos.html#GnuPG-cardHOWTO .
+Present a menu to work with a smartcard. The subcommand "help"
+provides an overview on available commands. For a detailed
+description, please see the Card HOWTO at
+https://gnupg.org/documentation/howtos.html#GnuPG-cardHOWTO .  Please
+note that the command "openpgp" can be used to switch to the OpenPGP
+application of cards which by default are presenting another
+application (e.g. PIV).
 
 @item --card-status
 @opindex card-status

@@ -130,6 +130,11 @@ msgstr "Фраза-пароль:"
 msgid "does not match - try again"
 msgstr "не подходит - попробуйте еще раз"
 
+#, fuzzy
+#| msgid "Passphrase Entry"
+msgid "Passphrases match."
+msgstr "Ввод фраз-паролей"
+
 #. TRANSLATORS: The string is appended to an error message in
 #. the pinentry.  The %s is the actual error message, the
 #. two %d give the current and maximum number of tries.
@@ -1223,6 +1228,14 @@ msgid "%s is too old (need %s, have %s)\n"
 msgstr "слишком старая версия %s (нужно %s, есть %s)\n"
 
 #, c-format
+msgid "error creating '%s': %s\n"
+msgstr "ошибка создания '%s': %s\n"
+
+#, c-format
+msgid "error closing '%s': %s\n"
+msgstr "ошибка закрытия '%s': %s\n"
+
+#, c-format
 msgid "armor: %s\n"
 msgstr "текстовый формат: %s\n"
 
@@ -1424,6 +1437,10 @@ msgstr "не требуется"
 
 msgid "forced"
 msgstr "требуется"
+
+#, c-format
+msgid "Please try command \"%s\" if the listing does not look correct\n"
+msgstr ""
 
 msgid "Error: Only plain ASCII is currently allowed.\n"
 msgstr "Ошибка: Допустим только простой текст ASCII.\n"
@@ -1694,6 +1711,9 @@ msgstr "изменить атрибут ключа"
 msgid "change the User Interaction Flag"
 msgstr "изменить уровень доверия владельцу"
 
+msgid "switch to the OpenPGP app"
+msgstr ""
+
 msgid "gpg/card> "
 msgstr "gpg/card> "
 
@@ -1929,10 +1949,6 @@ msgstr "ключ %s: ключ типа PGP 2.x - пропущен\n"
 #, c-format
 msgid "WARNING: nothing exported\n"
 msgstr "Внимание: нечего экспортировать\n"
-
-#, c-format
-msgid "error creating '%s': %s\n"
-msgstr "ошибка создания '%s': %s\n"
 
 msgid "[User ID not found]"
 msgstr "[Идентификатор пользователя не найден]"
@@ -2358,6 +2374,11 @@ msgstr ""
 
 msgid "show revoked and expired subkeys in key listings"
 msgstr "показывать в списке ключей отозванные и просроченные подключи"
+
+#, fuzzy
+#| msgid "show expiration dates during signature listings"
+msgid "show signatures with invalid algorithms during signature listings"
+msgstr "показывать в списке подписей сроки действия"
 
 msgid "show the keyring name in key listings"
 msgstr "показывать в списке ключей название таблицы ключей"
@@ -2983,6 +3004,10 @@ msgstr "ключ %s: секретный ключ уже имеется\n"
 msgid "key %s: error sending to agent: %s\n"
 msgstr "ключ %s: ошибка отправки в агент: %s\n"
 
+#, c-format
+msgid "key %s: card reference is overridden by key material\n"
+msgstr ""
+
 #. TRANSLATORS: For a smartcard, each private key on host has a
 #. * reference (stub) to a smartcard and actual private key data
 #. * is stored on the card.  A single smartcard can have up to
@@ -3500,6 +3525,11 @@ msgstr "удалить выбранные подключи"
 msgid "add a revocation key"
 msgstr "добавить ключ отзыва"
 
+#, fuzzy
+#| msgid "Data decryption succeeded"
+msgid "add an additional decryption subkey"
+msgstr "Данные успешно расшифрованы"
+
 msgid "delete signatures from the selected user IDs"
 msgstr "удалить подписи с выбранных идентификаторов пользователя"
 
@@ -3565,6 +3595,13 @@ msgstr "Секретный ключ доступен.\n"
 
 msgid "Secret subkeys are available.\n"
 msgstr "Секретные подключи доступны.\n"
+
+#, fuzzy
+#| msgid "Note: Only the secret part of the shown subkey will be deleted.\n"
+msgid ""
+"Note: the local copy of the secret key will only be deleted with \"save\".\n"
+msgstr ""
+"Замечание: Будет удалена только секретная часть показанного подключа.\n"
 
 msgid "Need the secret key to do this.\n"
 msgstr "Для данного действия нужен секретный ключ.\n"
@@ -3679,6 +3716,11 @@ msgstr "Сохранить изменения? (y/N) "
 
 msgid "Quit without saving? (y/N) "
 msgstr "Выйти без сохранения? (y/N) "
+
+#, fuzzy, c-format
+#| msgid "deleting secret %s failed: %s\n"
+msgid "deleting copy of secret key failed: %s\n"
+msgstr "сбой при удалении секретного %s: %s\n"
 
 #, c-format
 msgid "Key not changed so no update needed.\n"
@@ -3919,6 +3961,19 @@ msgstr "Внимание: назначение ключа отзывающим �
 msgid ""
 "Are you sure you want to appoint this key as a designated revoker? (y/N) "
 msgstr "Вы уверены, что хотите назначить данный ключ отзывающим? (y/N) "
+
+msgid "Enter the fingerprint of the additional decryption subkey: "
+msgstr ""
+
+#, fuzzy, c-format
+#| msgid "(unless you specify the key by fingerprint)\n"
+msgid "Did you specify the fingerprint of a subkey?\n"
+msgstr "(если только ключ не задан отпечатком)\n"
+
+#, fuzzy, c-format
+#| msgid "Subkey %s is already revoked.\n"
+msgid "key \"%s\" is already on this keyblock\n"
+msgstr "Подключ %s уже отозван.\n"
 
 msgid ""
 "Are you sure you want to change the expiration time for multiple subkeys? (y/"
@@ -5709,10 +5764,6 @@ msgstr "Ключ %s %s требует %zu-битного или более дл�
 #, c-format
 msgid "key %s may not be used for signing in %s mode\n"
 msgstr "ключ %s нельзя использовать для подписи в режиме %s\n"
-
-#, c-format
-msgid "continuing verification anyway due to option %s\n"
-msgstr ""
 
 #, c-format
 msgid "WARNING: signature digest conflict in message\n"
@@ -7890,10 +7941,6 @@ msgstr "выясните причину и удалите этот файл вр
 #, c-format
 msgid "failed to create temporary cache dir file '%s': %s\n"
 msgstr "невозможно создание временного файла '%s': %s\n"
-
-#, c-format
-msgid "error closing '%s': %s\n"
-msgstr "ошибка закрытия '%s': %s\n"
 
 #, c-format
 msgid "can't hash '%s': %s\n"

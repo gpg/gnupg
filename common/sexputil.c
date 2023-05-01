@@ -614,7 +614,7 @@ get_ecc_q_from_canon_sexp (const unsigned char *keydata, size_t keydatalen,
   size_t buflen, toklen;
   int depth, last_depth1, last_depth2;
   const unsigned char *ecc_q = NULL;
-  size_t ecc_q_len;
+  size_t ecc_q_len = 0;
 
   *r_q = NULL;
   *r_qlen = 0;
