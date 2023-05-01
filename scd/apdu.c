@@ -3244,7 +3244,7 @@ apdu_send_simple (int slot, int extended_mode,
  * Out of historical reasons the function returns 0 on success and
  * outs the status word at the end of the result to be able to get the
  * status word in the case of a not provided RETBUF, R_SW can be used
- * to store the SW.  But note that R_SW qill only be set if the
+ * to store the SW.  But note that R_SW will only be set if the
  * function returns 0. */
 int
 apdu_send_direct (int slot, size_t extended_length,

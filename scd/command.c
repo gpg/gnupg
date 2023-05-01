@@ -1712,7 +1712,10 @@ cmd_apdu (assuan_context_t ctx, char *line)
                              apdu, apdulen, handle_more,
                              NULL, &result, &resultlen);
       if (rc)
-        log_error ("apdu_send_direct failed: %s\n", gpg_strerror (rc));
+        {
+          log_error ("apdu_send_direct failed: %s\n", apdu_strerror (rc));
+          rc = iso7816_map_sw (rc);
+        }
       else
         {
           rc = assuan_send_data (ctx, result, resultlen);
