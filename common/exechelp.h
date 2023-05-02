@@ -81,7 +81,6 @@ struct spawn_cb_arg;
 struct spawn_cb_arg {
   HANDLE hd[3];
   HANDLE *inherit_hds;
-  BOOL ask_inherit;
   BOOL allow_foreground_window;
   void *arg;
 };

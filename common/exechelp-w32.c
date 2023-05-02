@@ -465,6 +465,7 @@ spawn_detached (const char *pgmname, char *cmdline,
   gpg_err_code_t ec;
   int ret;
   struct spawn_cb_arg sca;
+  BOOL ask_inherit = FALSE;
 
   ec = gnupg_access (pgmname, X_OK);
   if (ec)
@@ -475,7 +476,6 @@ spawn_detached (const char *pgmname, char *cmdline,
 
   memset (&si, 0, sizeof si);
 
-  sca.ask_inherit = FALSE;
   sca.allow_foreground_window = FALSE;
   sca.hd[0] = INVALID_HANDLE_VALUE;
   sca.hd[1] = INVALID_HANDLE_VALUE;
@@ -484,6 +484,43 @@ spawn_detached (const char *pgmname, char *cmdline,
   sca.arg = spawn_cb_arg;
   if (spawn_cb)
     (*spawn_cb) (&sca);
+
+  if (sca.inherit_hds)
+    {
+      SIZE_T attr_list_size = 0;
+      HANDLE hd[16];
+      HANDLE *hd_p = sca.inherit_hds;
+      int j = 0;
+
+      if (hd_p)
+        {
+          while (*hd_p != INVALID_HANDLE_VALUE)
+            if (j < DIM (hd))
+              hd[j++] = *hd_p++;
+            else
+              {
+                log_error ("Too much handles\n");
+                break;
+              }
+        }
+
+      if (j)
+	{
+	  InitializeProcThreadAttributeList (NULL, 1, 0, &attr_list_size);
+	  si.lpAttributeList = xtrymalloc (attr_list_size);
+	  if (si.lpAttributeList == NULL)
+	    {
+	      xfree (cmdline);
+	      return gpg_err_code_from_syserror ();
+	    }
+	  InitializeProcThreadAttributeList (si.lpAttributeList, 1, 0,
+					     &attr_list_size);
+	  UpdateProcThreadAttribute (si.lpAttributeList, 0,
+				     PROC_THREAD_ATTRIBUTE_HANDLE_LIST,
+				     hd, sizeof (HANDLE) * j, NULL, NULL);
+	  ask_inherit = TRUE;
+	}
+    }
 
   /* Prepare security attributes.  */
   memset (&sec_attr, 0, sizeof sec_attr );
@@ -510,7 +547,7 @@ spawn_detached (const char *pgmname, char *cmdline,
                           wcmdline,      /* Command line arguments.  */
                           &sec_attr,     /* Process security attributes.  */
                           &sec_attr,     /* Thread security attributes.  */
-                          sca.ask_inherit,   /* Inherit handles.  */
+                          ask_inherit,   /* Inherit handles.  */
                           cr_flags,      /* Creation flags.  */
                           NULL,          /* Environment.  */
                           NULL,          /* Use current drive/directory.  */
@@ -553,12 +590,8 @@ spawn_detached (const char *pgmname, char *cmdline,
 void
 gnupg_spawn_helper (struct spawn_cb_arg *sca)
 {
-  int *user_except = sca->arg;
-
-  if (user_except[0] == -1)
-    sca->ask_inherit = 0;
-  else
-    sca->ask_inherit = 1;
+  HANDLE *user_except = sca->arg;
+  sca->inherit_hds = user_except;
 }
 
 gpg_err_code_t
@@ -583,6 +616,7 @@ gnupg_process_spawn (const char *pgmname, const char *argv[],
   HANDLE hd_err[2];
   struct spawn_cb_arg sca;
   int i;
+  BOOL ask_inherit = FALSE;
 
   check_syscall_func ();
 
@@ -706,7 +740,6 @@ gnupg_process_spawn (const char *pgmname, const char *argv[],
 
   memset (&si, 0, sizeof si);
 
-  sca.ask_inherit = FALSE;
   sca.allow_foreground_window = FALSE;
   sca.hd[0] = hd_in[0];
   sca.hd[1] = hd_out[1];
@@ -749,37 +782,38 @@ gnupg_process_spawn (const char *pgmname, const char *argv[],
               }
         }
 
-      InitializeProcThreadAttributeList (NULL, 1, 0, &attr_list_size);
-      si.lpAttributeList = xtrymalloc (attr_list_size);
-      if (si.lpAttributeList == NULL)
-        {
-          if ((flags & GNUPG_PROCESS_STDIN_PIPE)
-              || !(flags & GNUPG_PROCESS_STDIN_KEEP))
-            CloseHandle (hd_in[0]);
-          if ((flags & GNUPG_PROCESS_STDIN_PIPE))
-            CloseHandle (hd_in[1]);
-          if ((flags & GNUPG_PROCESS_STDOUT_PIPE))
-            CloseHandle (hd_out[0]);
-          if ((flags & GNUPG_PROCESS_STDOUT_PIPE)
-              || !(flags & GNUPG_PROCESS_STDOUT_KEEP))
-            CloseHandle (hd_out[1]);
-          if ((flags & GNUPG_PROCESS_STDERR_PIPE))
-            CloseHandle (hd_err[0]);
-          if ((flags & GNUPG_PROCESS_STDERR_PIPE)
-              || !(flags & GNUPG_PROCESS_STDERR_KEEP))
-            CloseHandle (hd_err[1]);
-          xfree (wpgmname);
-          xfree (wcmdline);
-          xfree (process);
-          xfree (cmdline);
-          return gpg_err_code_from_syserror ();
-        }
-      InitializeProcThreadAttributeList (si.lpAttributeList, 1, 0,
-                                         &attr_list_size);
-      UpdateProcThreadAttribute (si.lpAttributeList, 0,
-                                 PROC_THREAD_ATTRIBUTE_HANDLE_LIST,
-                                 hd, sizeof (HANDLE) * j, NULL, NULL);
-      sca.ask_inherit = TRUE;
+      if (j)
+	{
+	  InitializeProcThreadAttributeList (NULL, 1, 0, &attr_list_size);
+	  si.lpAttributeList = xtrymalloc (attr_list_size);
+	  if (si.lpAttributeList == NULL)
+	    {
+	      if ((flags & GNUPG_PROCESS_STDIN_PIPE)
+		  || !(flags & GNUPG_PROCESS_STDIN_KEEP))
+		CloseHandle (hd_in[0]);
+	      if ((flags & GNUPG_PROCESS_STDIN_PIPE))
+		CloseHandle (hd_in[1]);
+	      if ((flags & GNUPG_PROCESS_STDOUT_PIPE))
+		CloseHandle (hd_out[0]);
+	      if ((flags & GNUPG_PROCESS_STDOUT_PIPE)
+		  || !(flags & GNUPG_PROCESS_STDOUT_KEEP))
+		CloseHandle (hd_out[1]);
+	      if ((flags & GNUPG_PROCESS_STDERR_PIPE))
+		CloseHandle (hd_err[0]);
+	      if ((flags & GNUPG_PROCESS_STDERR_PIPE)
+		  || !(flags & GNUPG_PROCESS_STDERR_KEEP))
+		CloseHandle (hd_err[1]);
+	      xfree (process);
+	      xfree (cmdline);
+	      return gpg_err_code_from_syserror ();
+	    }
+	  InitializeProcThreadAttributeList (si.lpAttributeList, 1, 0,
+					     &attr_list_size);
+	  UpdateProcThreadAttribute (si.lpAttributeList, 0,
+				     PROC_THREAD_ATTRIBUTE_HANDLE_LIST,
+				     hd, sizeof (HANDLE) * j, NULL, NULL);
+	  ask_inherit = TRUE;
+	}
     }
 
   /* Prepare security attributes.  */
@@ -808,7 +842,7 @@ gnupg_process_spawn (const char *pgmname, const char *argv[],
                           wcmdline,      /* Command line arguments.  */
                           &sec_attr,     /* Process security attributes.  */
                           &sec_attr,     /* Thread security attributes.  */
-                          sca.ask_inherit,   /* Inherit handles.  */
+                          ask_inherit,   /* Inherit handles.  */
                           cr_flags,      /* Creation flags.  */
                           NULL,          /* Environment.  */
                           NULL,          /* Use current drive/directory.  */
