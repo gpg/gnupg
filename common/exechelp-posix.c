@@ -857,7 +857,7 @@ process_vctl (gnupg_process_t process, unsigned int request, va_list arg_ptr)
     case GNUPG_PROCESS_NOP:
       return 0;
 
-    case GNUPG_PROCESS_GET_ID:
+    case GNUPG_PROCESS_GET_PROC_ID:
       {
         int *r_id = va_arg (arg_ptr, int *);
 

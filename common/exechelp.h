@@ -140,7 +140,7 @@ enum gnupg_process_requests
   {
     /* Portable requests */
     GNUPG_PROCESS_NOP           = 0,
-    GNUPG_PROCESS_GET_ID        = 1,
+    GNUPG_PROCESS_GET_PROC_ID   = 1,
     GNUPG_PROCESS_GET_EXIT_ID   = 2,
 
     /* POSIX only */

@@ -445,8 +445,8 @@ ldap_reaper_thread (void *dummy)
                   {
                     int status;
 
-                    gnupg_process_ctl (ctx->proc,
-                                       GNUPG_PROCESS_GET_EXIT_ID, &status);
+                    gnupg_process_ctl (ctx->proc, GNUPG_PROCESS_GET_EXIT_ID,
+                                       &status);
                     if (DBG_EXTPROG)
                       log_info (_("ldap wrapper %d ready"), (int)ctx->printable_pid);
                     ctx->ready = 1;
@@ -861,7 +861,7 @@ ldap_wrapper (ctrl_t ctrl, ksba_reader_t *reader, const char *argv[])
     }
   gnupg_process_get_streams (process, GNUPG_PROCESS_STREAM_NONBLOCK,
                              NULL, &outfp, &errfp);
-  gnupg_process_ctl (process, GNUPG_PROCESS_GET_ID, &ctx->printable_pid);
+  gnupg_process_ctl (process, GNUPG_PROCESS_GET_PROC_ID, &ctx->printable_pid);
 
   ctx->proc = process;
   ctx->fp = outfp;
