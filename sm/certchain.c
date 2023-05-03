@@ -307,6 +307,7 @@ allowed_ca (ctrl_t ctrl,
 static int
 check_cert_policy (ksba_cert_t cert, int listmode, estream_t fplist)
 {
+  static int no_policy_file;
   gpg_error_t err;
   char *policies;
   estream_t fp;
@@ -341,12 +342,24 @@ check_cert_policy (ksba_cert_t cert, int listmode, estream_t fplist)
       return 0;
     }
 
-  fp = es_fopen (opt.policy_file, "r");
+  if (no_policy_file)
+    {
+      /* Avoid trying to open the policy file if we already know that
+       * it does not exist.  */
+      fp = NULL;
+      gpg_err_set_errno (ENOENT);
+    }
+  else
+    fp = es_fopen (opt.policy_file, "r");
   if (!fp)
     {
-      if (opt.verbose || errno != ENOENT)
+      if ((opt.verbose || errno != ENOENT) && !no_policy_file)
         log_info (_("failed to open '%s': %s\n"),
                   opt.policy_file, strerror (errno));
+
+      if (errno == ENOENT)
+        no_policy_file = 1;
+
       xfree (policies);
       /* With no critical policies this is only a warning */
       if (!any_critical)
@@ -360,6 +373,8 @@ check_cert_policy (ksba_cert_t cert, int listmode, estream_t fplist)
                _("certificate policy not allowed"));
       return gpg_error (GPG_ERR_NO_POLICY_MATCH);
     }
+
+  /* FIXME: Cache the policy file content.  */
 
   for (;;)
     {
