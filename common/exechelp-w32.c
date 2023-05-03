@@ -452,6 +452,30 @@ post_syscall (void)
 }
 
 
+/*
+ * Check if STARTUPINFOEXW supports PROC_THREAD_ATTRIBUTE_HANDLE_LIST.
+ */
+static int
+check_windows_version (void)
+{
+  static int is_vista_or_later = -1;
+
+  OSVERSIONINFO osvi;
+
+  if (is_vista_or_later == -1)
+    {
+      memset (&osvi,0,sizeof(osvi));
+      osvi.dwOSVersionInfoSize = sizeof(osvi);
+      GetVersionEx (&osvi);
+
+      /* The feature is available on Vista or later.  */
+      is_vista_or_later = (osvi.dwMajorVersion >= 6);
+    }
+
+  return is_vista_or_later;
+}
+
+
 static gpg_err_code_t
 spawn_detached (const char *pgmname, char *cmdline,
                 void (*spawn_cb) (struct spawn_cb_arg *), void *spawn_cb_arg)
@@ -506,18 +530,22 @@ spawn_detached (const char *pgmname, char *cmdline,
 
       if (j)
 	{
-	  InitializeProcThreadAttributeList (NULL, 1, 0, &attr_list_size);
-	  si.lpAttributeList = xtrymalloc (attr_list_size);
-	  if (si.lpAttributeList == NULL)
+	  if (check_windows_version ())
 	    {
-	      xfree (cmdline);
-	      return gpg_err_code_from_syserror ();
+	      InitializeProcThreadAttributeList (NULL, 1, 0, &attr_list_size);
+	      si.lpAttributeList = xtrymalloc (attr_list_size);
+	      if (si.lpAttributeList == NULL)
+		{
+		  xfree (cmdline);
+		  return gpg_err_code_from_syserror ();
+		}
+	      InitializeProcThreadAttributeList (si.lpAttributeList, 1, 0,
+						 &attr_list_size);
+	      UpdateProcThreadAttribute (si.lpAttributeList, 0,
+					 PROC_THREAD_ATTRIBUTE_HANDLE_LIST,
+					 hd, sizeof (HANDLE) * j, NULL, NULL);
 	    }
-	  InitializeProcThreadAttributeList (si.lpAttributeList, 1, 0,
-					     &attr_list_size);
-	  UpdateProcThreadAttribute (si.lpAttributeList, 0,
-				     PROC_THREAD_ATTRIBUTE_HANDLE_LIST,
-				     hd, sizeof (HANDLE) * j, NULL, NULL);
+
 	  ask_inherit = TRUE;
 	}
     }
@@ -784,34 +812,37 @@ gnupg_process_spawn (const char *pgmname, const char *argv[],
 
       if (j)
 	{
-	  InitializeProcThreadAttributeList (NULL, 1, 0, &attr_list_size);
-	  si.lpAttributeList = xtrymalloc (attr_list_size);
-	  if (si.lpAttributeList == NULL)
+	  if (check_windows_version ())
 	    {
-	      if ((flags & GNUPG_PROCESS_STDIN_PIPE)
-		  || !(flags & GNUPG_PROCESS_STDIN_KEEP))
-		CloseHandle (hd_in[0]);
-	      if ((flags & GNUPG_PROCESS_STDIN_PIPE))
-		CloseHandle (hd_in[1]);
-	      if ((flags & GNUPG_PROCESS_STDOUT_PIPE))
-		CloseHandle (hd_out[0]);
-	      if ((flags & GNUPG_PROCESS_STDOUT_PIPE)
-		  || !(flags & GNUPG_PROCESS_STDOUT_KEEP))
-		CloseHandle (hd_out[1]);
-	      if ((flags & GNUPG_PROCESS_STDERR_PIPE))
-		CloseHandle (hd_err[0]);
-	      if ((flags & GNUPG_PROCESS_STDERR_PIPE)
-		  || !(flags & GNUPG_PROCESS_STDERR_KEEP))
-		CloseHandle (hd_err[1]);
-	      xfree (process);
-	      xfree (cmdline);
-	      return gpg_err_code_from_syserror ();
+	      InitializeProcThreadAttributeList (NULL, 1, 0, &attr_list_size);
+	      si.lpAttributeList = xtrymalloc (attr_list_size);
+	      if (si.lpAttributeList == NULL)
+		{
+		  if ((flags & GNUPG_PROCESS_STDIN_PIPE)
+		      || !(flags & GNUPG_PROCESS_STDIN_KEEP))
+		    CloseHandle (hd_in[0]);
+		  if ((flags & GNUPG_PROCESS_STDIN_PIPE))
+		    CloseHandle (hd_in[1]);
+		  if ((flags & GNUPG_PROCESS_STDOUT_PIPE))
+		    CloseHandle (hd_out[0]);
+		  if ((flags & GNUPG_PROCESS_STDOUT_PIPE)
+		      || !(flags & GNUPG_PROCESS_STDOUT_KEEP))
+		    CloseHandle (hd_out[1]);
+		  if ((flags & GNUPG_PROCESS_STDERR_PIPE))
+		    CloseHandle (hd_err[0]);
+		  if ((flags & GNUPG_PROCESS_STDERR_PIPE)
+		      || !(flags & GNUPG_PROCESS_STDERR_KEEP))
+		    CloseHandle (hd_err[1]);
+		  xfree (process);
+		  xfree (cmdline);
+		  return gpg_err_code_from_syserror ();
+		}
+	      InitializeProcThreadAttributeList (si.lpAttributeList, 1, 0,
+						 &attr_list_size);
+	      UpdateProcThreadAttribute (si.lpAttributeList, 0,
+					 PROC_THREAD_ATTRIBUTE_HANDLE_LIST,
+					 hd, sizeof (HANDLE) * j, NULL, NULL);
 	    }
-	  InitializeProcThreadAttributeList (si.lpAttributeList, 1, 0,
-					     &attr_list_size);
-	  UpdateProcThreadAttribute (si.lpAttributeList, 0,
-				     PROC_THREAD_ATTRIBUTE_HANDLE_LIST,
-				     hd, sizeof (HANDLE) * j, NULL, NULL);
 	  ask_inherit = TRUE;
 	}
     }
