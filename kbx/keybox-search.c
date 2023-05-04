@@ -782,7 +782,7 @@ static gpg_error_t
 open_file (KEYBOX_HANDLE hd)
 {
 
-  hd->fp = es_fopen (hd->kb->fname, "rb");
+  hd->fp = es_fopen (hd->kb->fname, "rb,sysopen,sequential");
   if (!hd->fp)
     {
       hd->error = gpg_error_from_syserror ();

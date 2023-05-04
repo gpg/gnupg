@@ -78,7 +78,7 @@ create_tmp_file (const char *template,
   err = keybox_tmp_names (template, 0, r_bakfname, r_tmpfname);
   if (!err)
     {
-      *r_fp = es_fopen (*r_tmpfname, "wb");
+      *r_fp = es_fopen (*r_tmpfname, "wb,sysopen,sequential");
       if (!*r_fp)
         {
           err = gpg_error_from_syserror ();
@@ -174,12 +174,12 @@ blob_filecopy (int mode, const char *fname, KEYBOXBLOB blob,
   if ((ec = gnupg_access (fname, W_OK)))
     return gpg_error (ec);
 
-  fp = es_fopen (fname, "rb");
+  fp = es_fopen (fname, "rb,sysopen,sequential");
   if (mode == FILECOPY_INSERT && !fp && errno == ENOENT)
     {
       /* Insert mode but file does not exist:
          Create a new keybox file. */
-      newfp = es_fopen (fname, "wb");
+      newfp = es_fopen (fname, "wb,sysopen,sequential");
       if (!newfp )
         return gpg_error_from_syserror ();
 
@@ -525,7 +525,7 @@ keybox_set_flags (KEYBOX_HANDLE hd, int what, int idx, unsigned int value)
   off += flag_pos;
 
   _keybox_close_file (hd);
-  fp = es_fopen (hd->kb->fname, "r+b");
+  fp = es_fopen (hd->kb->fname, "r+b,sysopen,sequential");
   if (!fp)
     return gpg_error_from_syserror ();
 
@@ -590,7 +590,7 @@ keybox_delete (KEYBOX_HANDLE hd)
   off += 4;
 
   _keybox_close_file (hd);
-  fp = es_fopen (hd->kb->fname, "r+b");
+  fp = es_fopen (hd->kb->fname, "r+b,sysopen,sequential");
   if (!fp)
     return gpg_error_from_syserror ();
 
@@ -645,7 +645,7 @@ keybox_compress (KEYBOX_HANDLE hd)
   if ((ec = gnupg_access (fname, W_OK)))
     return gpg_error (ec);
 
-  fp = es_fopen (fname, "rb");
+  fp = es_fopen (fname, "rb,sysopen,sequential");
   if (!fp && errno == ENOENT)
     return 0; /* Ready. File has been deleted right after the access above. */
   if (!fp)
