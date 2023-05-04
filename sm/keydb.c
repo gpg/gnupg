@@ -693,7 +693,7 @@ keydb_release (KEYDB_HANDLE hd)
           switch (hd->active[i].type)
             {
             case KEYDB_RESOURCE_TYPE_NONE:
-          break;
+              break;
             case KEYDB_RESOURCE_TYPE_KEYBOX:
               keybox_release (hd->active[i].u.kr);
               break;
