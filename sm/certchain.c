@@ -1604,7 +1604,14 @@ do_validate_chain (ctrl_t ctrl, ksba_cert_t cert, ksba_isotime_t checktime_arg,
       return 0;
     }
 
-  kh = keydb_new (ctrl);
+  if (ctrl->cached_kh)
+    {
+      kh = ctrl->cached_kh;
+      ctrl->cached_kh = NULL;
+      keydb_search_reset (kh);
+    }
+  else
+    kh = keydb_new (ctrl);
   if (!kh)
     {
       log_error (_("failed to allocate keyDB handle\n"));
@@ -2147,7 +2154,12 @@ do_validate_chain (ctrl_t ctrl, ksba_cert_t cert, ksba_isotime_t checktime_arg,
     gnupg_copy_time (r_exptime, exptime);
   xfree (issuer);
   xfree (subject);
-  keydb_release (kh);
+
+  if (!ctrl->cached_kh)
+    ctrl->cached_kh = kh;
+  else
+    keydb_release (kh);
+
   while (chain)
     {
       chain_item_t ci_next = chain->next;

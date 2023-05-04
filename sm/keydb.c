@@ -701,6 +701,11 @@ keydb_release (KEYDB_HANDLE hd)
         }
     }
 
+  if (hd->ctrl->cached_kh == hd)
+    hd->ctrl->cached_kh = NULL;
+  if (hd->ctrl->cached_kh_for_set_cert_flags == hd)
+    hd->ctrl->cached_kh_for_set_cert_flags = NULL;
+
   xfree (hd);
   if (DBG_CLOCK)
     log_clock ("%s: leave\n", __func__);
@@ -2023,7 +2028,14 @@ keydb_set_cert_flags (ctrl_t ctrl, ksba_cert_t cert, int ephemeral,
       return gpg_error (GPG_ERR_GENERAL);
     }
 
-  kh = keydb_new (ctrl);
+  if (ctrl->cached_kh_for_set_cert_flags)
+    {
+      kh = ctrl->cached_kh_for_set_cert_flags;
+      ctrl->cached_kh_for_set_cert_flags = NULL;
+      keydb_search_reset (kh);
+    }
+  else
+    kh = keydb_new (ctrl);
   if (!kh)
     {
       log_error (_("failed to allocate keyDB handle\n"));
@@ -2039,8 +2051,7 @@ keydb_set_cert_flags (ctrl_t ctrl, ksba_cert_t cert, int ephemeral,
       if (err)
         {
           log_error (_("error locking keybox: %s\n"), gpg_strerror (err));
-          keydb_release (kh);
-          return err;
+          goto leave;
         }
     }
 
@@ -2050,16 +2061,14 @@ keydb_set_cert_flags (ctrl_t ctrl, ksba_cert_t cert, int ephemeral,
       if (gpg_err_code (err) != GPG_ERR_NOT_FOUND)
         log_error (_("problem re-searching certificate: %s\n"),
                    gpg_strerror (err));
-      keydb_release (kh);
-      return err;
+      goto leave;
     }
 
   err = keydb_get_flags (kh, which, idx, &old_value);
   if (err)
     {
       log_error (_("error getting stored flags: %s\n"), gpg_strerror (err));
-      keydb_release (kh);
-      return err;
+      goto leave;
     }
 
   value = ((old_value & ~mask) | (value & mask));
@@ -2070,13 +2079,17 @@ keydb_set_cert_flags (ctrl_t ctrl, ksba_cert_t cert, int ephemeral,
       if (err)
         {
           log_error (_("error storing flags: %s\n"), gpg_strerror (err));
-          keydb_release (kh);
-          return err;
+          goto leave;
         }
     }
+  err = 0;
 
-  keydb_release (kh);
-  return 0;
+ leave:
+  if (!err && !ctrl->cached_kh_for_set_cert_flags)
+    ctrl->cached_kh_for_set_cert_flags = kh;
+  else
+    keydb_release (kh);
+  return err;
 }
 
 

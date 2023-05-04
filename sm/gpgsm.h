@@ -270,6 +270,10 @@ struct server_control_s
   /* The revocation info.  Used as a helper inc ertchain.c */
   gnupg_isotime_t revoked_at;
   char *revocation_reason;
+
+  /* We cache the key data base handle.  */
+  void *cached_kh;
+  void *cached_kh_for_set_cert_flags;
 };
 
 
