@@ -255,6 +255,7 @@ _keybox_close_file (KEYBOX_HANDLE hd)
           {
             es_fclose (roverhd->fp);
             roverhd->fp = NULL;
+            roverhd->update_mode = 0;
           }
       }
   log_assert (!hd->fp);

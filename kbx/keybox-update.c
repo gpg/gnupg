@@ -509,6 +509,7 @@ keybox_set_flags (KEYBOX_HANDLE hd, int what, int idx, unsigned int value)
   size_t flag_pos, flag_size;
   const unsigned char *buffer;
   size_t length;
+  gpgrt_off_t save_off;
 
   (void)idx;  /* Not yet used.  */
 
@@ -535,11 +536,18 @@ keybox_set_flags (KEYBOX_HANDLE hd, int what, int idx, unsigned int value)
 
   off += flag_pos;
 
-  _keybox_close_file (hd);
-  fp = es_fopen (hd->kb->fname, "r+b");
-  if (!fp)
-    return gpg_error_from_syserror ();
+  if (!hd->fp || !hd->update_mode)
+    {
+      _keybox_close_file (hd);
+      fp = es_fopen (hd->kb->fname, "r+b");
+      if (!fp)
+        return gpg_error_from_syserror ();
+      hd->update_mode = 1;
+    }
+  else
+    fp = hd->fp;
 
+  save_off = es_ftello (fp);
   ec = 0;
   if (es_fseeko (fp, off, SEEK_SET))
     ec = gpg_err_code_from_syserror ();
@@ -566,10 +574,16 @@ keybox_set_flags (KEYBOX_HANDLE hd, int what, int idx, unsigned int value)
         }
     }
 
-  if (es_fclose (fp))
+  if (es_fflush (fp))
     {
       if (!ec)
         ec = gpg_err_code_from_syserror ();
+    }
+
+  /* Get back to the last offset or close the file on error.  */
+  if (save_off == (gpgrt_off_t)(-1) || es_fseeko (fp, save_off, SEEK_SET))
+    {
+      _keybox_close_file (hd);
     }
 
   return gpg_error (ec);

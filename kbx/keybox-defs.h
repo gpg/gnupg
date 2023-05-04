@@ -77,6 +77,7 @@ struct keybox_handle {
   KB_NAME kb;
   int secret;             /* this is for a secret keybox */
   estream_t fp;
+  int update_mode;        /* FP is in update mode ("r+b").  */
   int eof;
   int error;
   int ephemeral;
