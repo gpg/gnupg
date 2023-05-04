@@ -293,15 +293,46 @@ keybox_lock (KEYBOX_HANDLE hd, int yes, long timeout)
       if (!kb->is_locked)
         {
 #ifdef HAVE_W32_SYSTEM
-          /* Under Windows we need to close the file before we try
-           * to lock it.  This is because another process might have
-           * taken the lock and is using keybox_file_rename to
-           * rename the base file.  Now if our dotlock_take below is
-           * waiting for the lock but we have the base file still
-           * open, keybox_file_rename will never succeed as we are
-           * in a deadlock.  */
-          _keybox_close_file (hd);
-#endif /*HAVE_W32_SYSTEM*/
+          /* Under Windows we need to close the file before we try to
+           * lock it.  This is because another process might have
+           * taken the lock and is using keybox_file_rename to rename
+           * the base file.  Now if our dotlock_take below is waiting
+           * for the lock but we have the base file still open,
+           * keybox_file_rename will never succeed as we are in a
+           * deadlock.  Because closing a file should be avoided due
+           * to performance reasons we first try to take a lock and
+           * only if this fails we close the file and wait for the
+           * lock.  */
+          if (timeout)
+            {
+              if (dotlock_take (kb->lockhd, 0))
+                {
+                  /* Can't lock - close the file and wait for the lock.  */
+                  _keybox_close_file (hd);
+                  if (dotlock_take (kb->lockhd, timeout))
+                    {
+                      err = gpg_error_from_syserror ();
+                      log_info ("can't lock '%s'\n", kb->fname );
+                    }
+                  else
+                    kb->is_locked = 1;
+                }
+              else
+                kb->is_locked = 1;
+            }
+          else if (dotlock_take (kb->lockhd, 0))
+            {
+              err = gpg_error_from_syserror ();
+              if (gpg_err_code (err) == GPG_ERR_EACCES)
+                ; /* No diagnostic becuase we only tried to lock.  */
+              else
+                log_info ("can't lock '%s'\n", kb->fname );
+            }
+          else
+            kb->is_locked = 1;
+
+#else  /*!HAVE_W32_SYSTEM*/
+
           if (dotlock_take (kb->lockhd, timeout))
             {
               err = gpg_error_from_syserror ();
@@ -312,6 +343,8 @@ keybox_lock (KEYBOX_HANDLE hd, int yes, long timeout)
             }
           else
             kb->is_locked = 1;
+
+#endif /*!HAVE_W32_SYSTEM*/
         }
     }
   else /* Release the lock.  */
