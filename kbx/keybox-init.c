@@ -180,7 +180,7 @@ keybox_release (KEYBOX_HANDLE hd)
   _keybox_release_blob (hd->saved_found.blob);
   if (hd->fp)
     {
-      es_fclose (hd->fp);
+      _keybox_ll_close (hd->fp);
       hd->fp = NULL;
     }
   xfree (hd->word_match.name);
@@ -236,6 +236,47 @@ keybox_set_ephemeral (KEYBOX_HANDLE hd, int yes)
 }
 
 
+/* Low-level open function to be used for keybox files.  This function
+ * also manages custom buffering.  On success 0 is returned and a new
+ * file pointer stored at RFP; on error an error code is returned and
+ * NULL is stored at RFP.  MODE is one of
+ *   KEYBOX_LL_OPEN_READ(0) := fopen mode is "rb"
+ *   KEYBOX_LL_OPEN_UPDATE  := fopen mode is "r+b"
+ *   KEYBOX_LL_OPEN_CREATE  := fopen mode is "wb"
+ */
+gpg_error_t
+_keybox_ll_open (estream_t *rfp, const char *fname, unsigned int mode)
+{
+  estream_t fp;
+
+  *rfp = NULL;
+
+  fp = es_fopen (fname,
+                 mode == KEYBOX_LL_OPEN_CREATE
+                 ? "wb,sysopen,sequential" :
+                 mode == KEYBOX_LL_OPEN_UPDATE
+                 ? "r+b,sysopen,sequential" :
+                 "rb,sysopen,sequential");
+  if (!fp)
+    return gpg_error_from_syserror ();
+
+  *rfp = fp;
+  return 0;
+}
+
+
+/* Wrapper around es_fclose to be used for file opened with
+ * _keybox_ll_open.  */
+gpg_error_t
+_keybox_ll_close (estream_t fp)
+{
+  if (fp && es_fclose (fp))
+    return gpg_error_from_syserror ();
+  return 0;
+}
+
+
+
 /* Close the file of the resource identified by HD.  For consistent
    results this function closes the files of all handles pointing to
    the resource identified by HD.  */
@@ -253,7 +294,7 @@ _keybox_close_file (KEYBOX_HANDLE hd)
       {
         if (roverhd->fp)
           {
-            es_fclose (roverhd->fp);
+            _keybox_ll_close (roverhd->fp);
             roverhd->fp = NULL;
           }
       }
