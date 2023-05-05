@@ -139,6 +139,14 @@ typedef struct _keybox_openpgp_info *keybox_openpgp_info_t;
 /*  } keybox_opt; */
 
 /*-- keybox-init.c --*/
+
+#define KEYBOX_LL_OPEN_READ    0
+#define KEYBOX_LL_OPEN_UPDATE  1
+#define KEYBOX_LL_OPEN_CREATE  2
+gpg_error_t _keybox_ll_open (estream_t *rfp, const char *fname,
+                             unsigned int mode);
+gpg_error_t _keybox_ll_close (estream_t fp);
+
 void _keybox_close_file (KEYBOX_HANDLE hd);
 
 
