@@ -68,6 +68,7 @@
 #include "../common/shareddefs.h"
 #include "../common/compliance.h"
 #include "../common/comopt.h"
+#include "../kbx/keybox.h"
 
 #if defined(HAVE_DOSISH_SYSTEM) || defined(__CYGWIN__)
 #define MY_O_BINARY  O_BINARY
@@ -447,6 +448,7 @@ enum cmd_and_opt_values
     oCompatibilityFlags,
     oAddDesigRevoker,
     oAssertSigner,
+    oKbxBufferSize,
 
     oNoop
   };
@@ -926,6 +928,7 @@ static gpgrt_opt_t opts[] = {
   /* Esoteric compatibility options.  */
   ARGPARSE_s_n (oRFC2440Text,      "rfc2440-text", "@"),
   ARGPARSE_s_n (oNoRFC2440Text, "no-rfc2440-text", "@"),
+  ARGPARSE_p_u (oKbxBufferSize,  "kbx-buffer-size", "@"),
 
   ARGPARSE_header (NULL, ""),  /* Stop the header group.  */
 
@@ -3743,6 +3746,9 @@ main (int argc, char **argv)
             add_to_strlist (&opt.assert_signer_list, pargs.r.ret_str);
 	    break;
 
+          case oKbxBufferSize:
+            keybox_set_buffersize (pargs.r.ret_ulong, 0);
+            break;
 
 	  case oNoop: break;
 
