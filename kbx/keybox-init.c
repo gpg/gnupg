@@ -28,7 +28,13 @@
 #include "../common/sysutils.h"
 #include "../common/mischelp.h"
 
-static unsigned int ll_buffer_size = 128;
+#ifdef HAVE_W32_SYSTEM
+# define DEFAULT_LL_BUFFER_SIZE 128
+#else
+# define DEFAULT_LL_BUFFER_SIZE 64
+#endif
+
+static unsigned int ll_buffer_size = DEFAULT_LL_BUFFER_SIZE;
 
 static KB_NAME kb_names;
 
