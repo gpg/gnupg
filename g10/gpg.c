@@ -65,6 +65,8 @@
 #include "../common/zb32.h"
 #include "../common/shareddefs.h"
 #include "../common/compliance.h"
+#include "../kbx/keybox.h"
+
 
 #if defined(HAVE_DOSISH_SYSTEM) || defined(__CYGWIN__)
 #define MY_O_BINARY  O_BINARY
@@ -434,6 +436,7 @@ enum cmd_and_opt_values
     oForbidGenKey,
     oRequireCompliance,
     oCompatibilityFlags,
+    oKbxBufferSize,
 
     oNoop
   };
@@ -905,6 +908,7 @@ static ARGPARSE_OPTS opts[] = {
   /* Esoteric compatibility options.  */
   ARGPARSE_s_n (oRFC2440Text,      "rfc2440-text", "@"),
   ARGPARSE_s_n (oNoRFC2440Text, "no-rfc2440-text", "@"),
+  ARGPARSE_p_u (oKbxBufferSize,  "kbx-buffer-size", "@"),
 
   ARGPARSE_header (NULL, ""),  /* Stop the header group.  */
 
@@ -3636,6 +3640,10 @@ main (int argc, char **argv)
 
           case oRequireCompliance:
             opt.flags.require_compliance = 1;
+            break;
+
+          case oKbxBufferSize:
+            keybox_set_buffersize (pargs.r.ret_ulong, 0);
             break;
 
 	  case oNoop: break;
