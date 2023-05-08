@@ -63,5 +63,6 @@ int keyedit_print_one_sig (ctrl_t ctrl, estream_t fp,
 			   kbnode_t node, int *inv_sigs, int *no_key,
 			   int *oth_err, int is_selfsig,
 			   int print_without_key, int extended);
+void no_usable_encr_subkeys_warning (kbnode_t keyblock);
 
 #endif	/* GNUPG_G10_KEYEDIT_H */

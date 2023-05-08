@@ -1501,6 +1501,7 @@ keyedit_menu (ctrl_t ctrl, const char *username, strlist_t locusr,
           run_subkey_warnings = 0;
           if (!count_selected_keys (keyblock))
             subkey_expire_warning (keyblock);
+          no_usable_encr_subkeys_warning (keyblock);
         }
 
       if (delseckey_list_warn)
@@ -4255,6 +4256,40 @@ subkey_expire_warning (kbnode_t keyblock)
       log_info (_("WARNING: Your encryption subkey expires soon.\n"));
       log_info (_("You may want to change its expiration date too.\n"));
     }
+}
+
+
+/* Print a warning if all encryption (sub|primary)keys are expired.
+ * The warning is not printed if there is no encryption
+ * (sub|primary)key at all.  This function is called after the expire
+ * data of the primary key has been changed.  */
+void
+no_usable_encr_subkeys_warning (kbnode_t keyblock)
+{
+  kbnode_t node;
+  PKT_public_key *pk;
+  int any_encr_key = 0;
+
+  for (node = keyblock; node; node = node->next)
+    {
+      if (node->pkt->pkttype == PKT_PUBLIC_KEY
+          || node->pkt->pkttype == PKT_PUBLIC_SUBKEY)
+        {
+          pk = node->pkt->pkt.public_key;
+          if ((pk->pubkey_usage & PUBKEY_USAGE_ENC))
+            {
+              any_encr_key = 1;
+              if (pk->flags.valid && !pk->has_expired && !pk->flags.revoked
+                  && !pk->flags.disabled)
+                {
+                  return; /* Key is usable for encryption  */
+                }
+            }
+        }
+    }
+
+  if (any_encr_key && !opt.quiet)
+    log_info (_("WARNING: No valid encryption subkey left over.\n"));
 }
 
 
