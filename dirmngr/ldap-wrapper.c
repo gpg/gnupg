@@ -260,7 +260,7 @@ read_log_data (struct wrapper_context_s *ctx)
           if (gpg_err_code (err) == GPG_ERR_EAGAIN)
             return 0;
           log_error (_("error reading log from ldap wrapper %d: %s\n"),
-                     (int)ctx->printable_pid, gpg_strerror (err));
+                     ctx->printable_pid, gpg_strerror (err));
         }
       print_log_line (ctx, NULL);  /* Flush.  */
       SAFE_CLOSE (ctx->log_fp);
@@ -448,7 +448,7 @@ ldap_reaper_thread (void *dummy)
                     gnupg_process_ctl (ctx->proc, GNUPG_PROCESS_GET_EXIT_ID,
                                        &status);
                     if (DBG_EXTPROG)
-                      log_info (_("ldap wrapper %d ready"), (int)ctx->printable_pid);
+                      log_info (_("ldap wrapper %d ready"), ctx->printable_pid);
                     ctx->ready = 1;
                     gnupg_process_release (ctx->proc);
                     ctx->proc = NULL;
@@ -456,15 +456,15 @@ ldap_reaper_thread (void *dummy)
 
                     if (status == 10)
                       log_info (_("ldap wrapper %d ready: timeout\n"),
-                                (int)ctx->printable_pid);
+                                ctx->printable_pid);
                     else
                       log_info (_("ldap wrapper %d ready: exitcode=%d\n"),
-                                (int)ctx->printable_pid, status);
+                                ctx->printable_pid, status);
                   }
                 else if (gpg_err_code (err) != GPG_ERR_TIMEOUT)
                   {
                     log_error (_("waiting for ldap wrapper %d failed: %s\n"),
-                               (int)ctx->printable_pid, gpg_strerror (err));
+                               ctx->printable_pid, gpg_strerror (err));
                     any_action = 1;
                   }
               }
@@ -475,7 +475,7 @@ ldap_reaper_thread (void *dummy)
                 gnupg_process_terminate (ctx->proc);
                 ctx->stamp = (time_t)(-1);
                 log_info (_("ldap wrapper %d stalled - killing\n"),
-                          (int)ctx->printable_pid);
+                          ctx->printable_pid);
                 /* We need to close the log stream because the cleanup
                  * loop waits for it.  */
                 SAFE_CLOSE (ctx->log_fp);
@@ -493,7 +493,7 @@ ldap_reaper_thread (void *dummy)
               log_debug ("  c=%p pid=%d rdr=%p logfp=%p"
                          " ctrl=%p/%d la=%lu rdy=%d\n",
                          ctx,
-                         (int)ctx->printable_pid,
+                         ctx->printable_pid,
                          ctx->reader, ctx->log_fp,
                          ctx->ctrl, ctx->ctrl? ctx->ctrl->refcount:0,
                          (unsigned long)ctx->stamp, ctx->ready);
@@ -598,7 +598,7 @@ ldap_wrapper_release_context (ksba_reader_t reader)
           if (DBG_EXTPROG)
             log_debug ("releasing ldap worker c=%p pid=%d rdr=%p"
                        " ctrl=%p/%d\n", ctx,
-                       (int)ctx->printable_pid,
+                       ctx->printable_pid,
                        ctx->reader,
                        ctx->ctrl, ctx->ctrl? ctx->ctrl->refcount:0);
 
@@ -899,7 +899,7 @@ ldap_wrapper (ctrl_t ctrl, ksba_reader_t *reader, const char *argv[])
   if (DBG_EXTPROG)
     {
       log_debug ("ldap wrapper %d started (%p, %s)",
-                 (int)ctx->printable_pid, ctx->reader, pgmname);
+                 ctx->printable_pid, ctx->reader, pgmname);
       for (i=0; arg_list[i]; i++)
         log_printf (" [%s]", arg_list[i]);
       log_printf ("\n");
