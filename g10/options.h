@@ -208,6 +208,7 @@ struct
   int ignore_valid_from;
   int ignore_crc_error;
   int ignore_mdc_error;
+  int ignore_expiration;
   int command_fd;
   const char *override_session_key;
   int show_session_key;

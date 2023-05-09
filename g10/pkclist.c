@@ -417,7 +417,11 @@ do_we_trust( PKT_public_key *pk, unsigned int trustlevel )
   if(trustlevel & TRUST_FLAG_REVOKED
      || trustlevel & TRUST_FLAG_SUB_REVOKED
      || (trustlevel & TRUST_MASK) == TRUST_EXPIRED)
-    BUG();
+    {
+      if (opt.ignore_expiration)
+        return 0;
+      BUG ();
+    }
 
   if( opt.trust_model==TM_ALWAYS )
     {
