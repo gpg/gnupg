@@ -28,8 +28,8 @@ min_automake_version="1.16.3"
 # another commit and push so that the git magic is able to work.
 m4_define([mym4_package],[gnupg])
 m4_define([mym4_major], [2])
-m4_define([mym4_minor], [4])
-m4_define([mym4_micro], [2])
+m4_define([mym4_minor], [5])
+m4_define([mym4_micro], [0])
 
 # To start a new development series, i.e a new major or minor number
 # you need to mark an arbitrary commit before the first beta release
@@ -53,7 +53,7 @@ AC_INIT([mym4_package],[mym4_version],[https://bugs.gnupg.org])
 # When changing the SWDB tag please also adjust the hard coded tags in
 # build-aux/speedo.mk, build-aux/getswdb.sh, and Makefile.am
 # As well as the source info for the man pages.
-AC_DEFINE_UNQUOTED(GNUPG_SWDB_TAG, "gnupg24", [swdb tag for this branch])
+AC_DEFINE_UNQUOTED(GNUPG_SWDB_TAG, "gnupg26", [swdb tag for this branch])
 
 NEED_GPGRT_VERSION=1.46
 
