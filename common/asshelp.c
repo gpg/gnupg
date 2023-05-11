@@ -523,16 +523,12 @@ start_new_service (assuan_context_t *r_ctx,
           && assuan_socket_connect (ctx, sockname, 0, connect_flags))
         {
 #ifdef HAVE_W32_SYSTEM
-          err = gnupg_spawn_process_detached (program? program : program_name,
-                                              argv, NULL);
+          err = gnupg_process_spawn (program? program : program_name, argv,
+                                     GNUPG_PROCESS_DETACHED,
+                                     NULL, NULL, NULL);
 #else /*!W32*/
-          pid_t pid;
-
-          err = gnupg_spawn_process_fd (program? program : program_name,
-                                        argv, -1, -1, -1, &pid);
-          if (!err)
-            err = gnupg_wait_process (program? program : program_name,
-                                      pid, 1, NULL);
+          err = gnupg_process_spawn (program? program : program_name, argv,
+                                     0, NULL, NULL, NULL);
 #endif /*!W32*/
           if (err)
             log_error ("failed to start %s '%s': %s\n",

@@ -744,7 +744,7 @@ gpg_agent_runtime_change (int killflag)
   gpg_error_t err = 0;
   const char *pgmname;
   const char *argv[5];
-  pid_t pid = (pid_t)(-1);
+  gnupg_process_t proc = NULL;
   int i = 0;
   int cmdidx;
 
@@ -761,13 +761,13 @@ gpg_agent_runtime_change (int killflag)
   log_assert (i < DIM(argv));
 
   if (!err)
-    err = gnupg_spawn_process_fd (pgmname, argv, -1, -1, -1, &pid);
+    err = gnupg_process_spawn (pgmname, argv, 0, NULL, NULL, &proc);
   if (!err)
-    err = gnupg_wait_process (pgmname, pid, 1, NULL);
+    err = gnupg_process_wait (proc, 1);
   if (err)
     gc_error (0, 0, "error running '%s %s': %s",
               pgmname, argv[cmdidx], gpg_strerror (err));
-  gnupg_release_process (pid);
+  gnupg_process_release (proc);
 }
 
 
@@ -777,7 +777,7 @@ scdaemon_runtime_change (int killflag)
   gpg_error_t err = 0;
   const char *pgmname;
   const char *argv[9];
-  pid_t pid = (pid_t)(-1);
+  gnupg_process_t proc = NULL;
   int i = 0;
   int cmdidx;
 
@@ -805,13 +805,13 @@ scdaemon_runtime_change (int killflag)
   log_assert (i < DIM(argv));
 
   if (!err)
-    err = gnupg_spawn_process_fd (pgmname, argv, -1, -1, -1, &pid);
+    err = gnupg_process_spawn (pgmname, argv, 0, NULL, NULL, &proc);
   if (!err)
-    err = gnupg_wait_process (pgmname, pid, 1, NULL);
+    err = gnupg_process_wait (proc, 1);
   if (err)
     gc_error (0, 0, "error running '%s %s': %s",
               pgmname, argv[cmdidx], gpg_strerror (err));
-  gnupg_release_process (pid);
+  gnupg_process_release (proc);
 }
 
 
@@ -822,7 +822,7 @@ tpm2daemon_runtime_change (int killflag)
   gpg_error_t err = 0;
   const char *pgmname;
   const char *argv[9];
-  pid_t pid = (pid_t)(-1);
+  gnupg_process_t proc = NULL;
   int i = 0;
   int cmdidx;
 
@@ -850,13 +850,13 @@ tpm2daemon_runtime_change (int killflag)
   log_assert (i < DIM(argv));
 
   if (!err)
-    err = gnupg_spawn_process_fd (pgmname, argv, -1, -1, -1, &pid);
+    err = gnupg_process_spawn (pgmname, argv, 0, NULL, NULL, &proc);
   if (!err)
-    err = gnupg_wait_process (pgmname, pid, 1, NULL);
+    err = gnupg_process_wait (proc, 1);
   if (err)
     gc_error (0, 0, "error running '%s %s': %s",
               pgmname, argv[cmdidx], gpg_strerror (err));
-  gnupg_release_process (pid);
+  gnupg_process_release (proc);
 }
 #endif
 
@@ -867,7 +867,7 @@ dirmngr_runtime_change (int killflag)
   gpg_error_t err = 0;
   const char *pgmname;
   const char *argv[6];
-  pid_t pid = (pid_t)(-1);
+  gnupg_process_t proc = NULL;
   int i = 0;
   int cmdidx;
 
@@ -885,13 +885,13 @@ dirmngr_runtime_change (int killflag)
   log_assert (i < DIM(argv));
 
   if (!err)
-    err = gnupg_spawn_process_fd (pgmname, argv, -1, -1, -1, &pid);
+    err = gnupg_process_spawn (pgmname, argv, 0, NULL, NULL, &proc);
   if (!err)
-    err = gnupg_wait_process (pgmname, pid, 1, NULL);
+    err = gnupg_process_wait (proc, 1);
   if (err)
     gc_error (0, 0, "error running '%s %s': %s",
               pgmname, argv[cmdidx], gpg_strerror (err));
-  gnupg_release_process (pid);
+  gnupg_process_release (proc);
 }
 
 
@@ -901,7 +901,7 @@ keyboxd_runtime_change (int killflag)
   gpg_error_t err = 0;
   const char *pgmname;
   const char *argv[6];
-  pid_t pid = (pid_t)(-1);
+  gnupg_process_t proc = NULL;
   int i = 0;
   int cmdidx;
 
@@ -919,13 +919,13 @@ keyboxd_runtime_change (int killflag)
   log_assert (i < DIM(argv));
 
   if (!err)
-    err = gnupg_spawn_process_fd (pgmname, argv, -1, -1, -1, &pid);
+    err = gnupg_process_spawn (pgmname, argv, 0, NULL, NULL, &proc);
   if (!err)
-    err = gnupg_wait_process (pgmname, pid, 1, NULL);
+    err = gnupg_process_wait (proc, 1);
   if (err)
     gc_error (0, 0, "error running '%s %s': %s",
               pgmname, argv[cmdidx], gpg_strerror (err));
-  gnupg_release_process (pid);
+  gnupg_process_release (proc);
 }
 
 
@@ -937,7 +937,7 @@ gc_component_launch (int component)
   const char *pgmname;
   const char *argv[6];
   int i;
-  pid_t pid;
+  gnupg_process_t proc = NULL;
 
   if (component < 0)
     {
@@ -985,9 +985,9 @@ gc_component_launch (int component)
   argv[i] = NULL;
   log_assert (i < DIM(argv));
 
-  err = gnupg_spawn_process_fd (pgmname, argv, -1, -1, -1, &pid);
+  err = gnupg_process_spawn (pgmname, argv, 0, NULL, NULL, &proc);
   if (!err)
-    err = gnupg_wait_process (pgmname, pid, 1, NULL);
+    err = gnupg_process_wait (proc, 1);
   if (err)
     gc_error (0, 0, "error running '%s%s%s': %s",
               pgmname,
@@ -995,7 +995,7 @@ gc_component_launch (int component)
               : component == GC_COMPONENT_KEYBOXD? " --keyboxd":"",
               " NOP",
               gpg_strerror (err));
-  gnupg_release_process (pid);
+  gnupg_process_release (proc);
   return err;
 }
 
@@ -1336,8 +1336,7 @@ gc_component_check_options (int component, estream_t out, const char *conf_file)
   const char *pgmname;
   const char *argv[6];
   int i;
-  pid_t pid;
-  int exitcode;
+  gnupg_process_t proc;
   estream_t errfp;
   error_line_t errlines;
 
@@ -1370,22 +1369,28 @@ gc_component_check_options (int component, estream_t out, const char *conf_file)
 
   result = 0;
   errlines = NULL;
-  err = gnupg_spawn_process (pgmname, argv, NULL, 0,
-                             NULL, NULL, &errfp, &pid);
+  err = gnupg_process_spawn (pgmname, argv,
+                             GNUPG_PROCESS_STDERR_PIPE,
+                             NULL, NULL, &proc);
   if (err)
     result |= 1; /* Program could not be run.  */
   else
     {
+      gnupg_process_get_streams (proc, 0, NULL, NULL, &errfp);
       errlines = collect_error_output (errfp,
 				       gc_component[component].name);
-      if (gnupg_wait_process (pgmname, pid, 1, &exitcode))
+      if (!gnupg_process_wait (proc, 1))
 	{
+          int exitcode;
+
+          gnupg_process_ctl (proc, GNUPG_PROCESS_GET_EXIT_ID, &exitcode);
 	  if (exitcode == -1)
 	    result |= 1; /* Program could not be run or it
 			    terminated abnormally.  */
-	  result |= 2; /* Program returned an error.  */
+          else if (exitcode)
+            result |= 2; /* Program returned an error.  */
 	}
-      gnupg_release_process (pid);
+      gnupg_process_release (proc);
       es_fclose (errfp);
     }
 
@@ -1725,8 +1730,7 @@ retrieve_options_from_program (gc_component_id_t component, int only_installed)
   const char *pgmname;
   const char *argv[2];
   estream_t outfp;
-  int exitcode;
-  pid_t pid;
+  gnupg_process_t proc;
   known_option_t *known_option;
   gc_option_t *option;
   char *line = NULL;
@@ -1759,13 +1763,16 @@ retrieve_options_from_program (gc_component_id_t component, int only_installed)
   /* First we need to read the option table from the program.  */
   argv[0] = "--dump-option-table";
   argv[1] = NULL;
-  err = gnupg_spawn_process (pgmname, argv, NULL, 0,
-                             NULL, &outfp, NULL, &pid);
+  err = gnupg_process_spawn (pgmname, argv,
+                             GNUPG_PROCESS_STDOUT_PIPE,
+                             NULL, NULL, &proc);
   if (err)
     {
       gc_error (1, 0, "could not gather option table from '%s': %s",
                 pgmname, gpg_strerror (err));
     }
+
+  gnupg_process_get_streams (proc, 0, NULL, &outfp, NULL);
 
   read_line_parm.pgmname = pgmname;
   read_line_parm.fp = outfp;
@@ -1925,12 +1932,17 @@ retrieve_options_from_program (gc_component_id_t component, int only_installed)
   line_len = read_line_parm.line_len;
   log_assert (opt_table_used + pseudo_count == opt_info_used);
 
+  err = gnupg_process_wait (proc, 1);
+  if (!err)
+    {
+      int exitcode;
 
-  err = gnupg_wait_process (pgmname, pid, 1, &exitcode);
-  if (err)
-    gc_error (1, 0, "running %s failed (exitcode=%d): %s",
-              pgmname, exitcode, gpg_strerror (err));
-  gnupg_release_process (pid);
+      gnupg_process_ctl (proc, GNUPG_PROCESS_GET_EXIT_ID, &exitcode);
+      if (exitcode)
+        gc_error (1, 0, "running %s failed (exitcode=%d): %s",
+                  pgmname, exitcode, gpg_strerror (err));
+    }
+  gnupg_process_release (proc);
 
   /* Make the gpgrt option table and the internal option table available.  */
   gc_component[component].opt_table = opt_table;
@@ -1940,13 +1952,16 @@ retrieve_options_from_program (gc_component_id_t component, int only_installed)
   /* Now read the default options.  */
   argv[0] = "--gpgconf-list";
   argv[1] = NULL;
-  err = gnupg_spawn_process (pgmname, argv, NULL, 0,
-                             NULL, &outfp, NULL, &pid);
+  err = gnupg_process_spawn (pgmname, argv,
+                             GNUPG_PROCESS_STDOUT_PIPE,
+                             NULL, NULL, &proc);
   if (err)
     {
       gc_error (1, 0, "could not gather active options from '%s': %s",
                 pgmname, gpg_strerror (err));
     }
+
+  gnupg_process_get_streams (proc, 0, NULL, &outfp, NULL);
 
   while ((length = es_read_line (outfp, &line, &line_len, NULL)) > 0)
     {
@@ -2030,11 +2045,17 @@ retrieve_options_from_program (gc_component_id_t component, int only_installed)
   if (es_fclose (outfp))
     gc_error (1, errno, "error closing %s", pgmname);
 
-  err = gnupg_wait_process (pgmname, pid, 1, &exitcode);
-  if (err)
-    gc_error (1, 0, "running %s failed (exitcode=%d): %s",
-              pgmname, exitcode, gpg_strerror (err));
-  gnupg_release_process (pid);
+  err = gnupg_process_wait (proc, 1);
+  if (!err)
+    {
+      int exitcode;
+
+      gnupg_process_ctl (proc, GNUPG_PROCESS_GET_EXIT_ID, &exitcode);
+      if (exitcode)
+        gc_error (1, 0, "running %s failed (exitcode=%d): %s",
+                  pgmname, exitcode, gpg_strerror (err));
+    }
+  gnupg_process_release (proc);
 
 
   /* At this point, we can parse the configuration file.  */

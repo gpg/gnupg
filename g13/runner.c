@@ -29,8 +29,8 @@
 #include "g13.h"
 #include "../common/i18n.h"
 #include "keyblob.h"
-#include "runner.h"
 #include "../common/exechelp.h"
+#include "runner.h"
 #include "mountinfo.h"
 
 /* The runner object.  */
@@ -55,7 +55,7 @@ struct runner_s
      2 = Thread is running and someone is holding a reference.  */
   int refcount;
 
-  pid_t pid;  /* PID of the backend's process (the engine).  */
+  gnupg_process_t proc;  /* Process of the backend's process (the engine).  */
   int in_fd;  /* File descriptors to read from the engine.  */
   int out_fd; /* File descriptors to write to the engine.  */
   engine_handler_fnc_t handler;  /* The handler functions.  */
@@ -157,16 +157,16 @@ runner_release (runner_t runner)
   if (runner->handler_cleanup)
     runner->handler_cleanup (runner->handler_data);
 
-  if (runner->pid != (pid_t)(-1))
+  if (runner->proc)
     {
       /* The process has not been cleaned up - do it now.  */
-      gnupg_kill_process (runner->pid);
+      gnupg_process_terminate (runner->proc);
       /* (Actually we should use the program name and not the
           arbitrary NAME of the runner object.  However it does not
           matter because that information is only used for
           diagnostics.)  */
-      gnupg_wait_process (runner->name, runner->pid, 1, NULL);
-      gnupg_release_process (runner->pid);
+      gnupg_process_wait (runner->proc, 1);
+      gnupg_process_release (runner->proc);
     }
 
   xfree (runner->name);
@@ -212,7 +212,7 @@ runner_new (runner_t *r_runner, const char *name)
       return gpg_error_from_syserror ();
     }
   runner->refcount = 1;
-  runner->pid = (pid_t)(-1);
+  runner->proc = NULL;
   runner->in_fd = -1;
   runner->out_fd = -1;
 
@@ -266,15 +266,15 @@ runner_set_fds (runner_t runner, int in_fd, int out_fd)
 }
 
 
-/* Set the PID of the backend engine.  After this call the engine is
+/* Set the PROC of the backend engine.  After this call the engine is
    owned by the runner object.  */
 void
-runner_set_pid (runner_t runner, pid_t pid)
+runner_set_proc (runner_t runner, gnupg_process_t proc)
 {
-  if (check_already_spawned (runner, "runner_set_fds"))
+  if (check_already_spawned (runner, "runner_set_proc"))
     return;
 
-  runner->pid = pid;
+  runner->proc = proc;
 }
 
 
@@ -366,15 +366,17 @@ runner_thread (void *arg)
     }
 
   /* Now wait for the process to finish.  */
-  if (!err && runner->pid != (pid_t)(-1))
+  if (!err && runner->proc)
     {
       int exitcode;
 
       log_debug ("runner thread waiting ...\n");
-      err = gnupg_wait_process (runner->name, runner->pid, 1, &exitcode);
-      gnupg_release_process (runner->pid);
-      runner->pid = (pid_t)(-1);
-      if (err)
+      err = gnupg_process_wait (runner->proc, 1);
+      if (!err)
+        gnupg_process_ctl (runner->proc, GNUPG_PROCESS_GET_EXIT_ID, &exitcode);
+      gnupg_process_release (runner->proc);
+      runner->proc = NULL;
+      if (exitcode)
         log_error ("running '%s' failed (exitcode=%d): %s\n",
                    runner->name, exitcode, gpg_strerror (err));
       log_debug ("runner thread waiting finished\n");
@@ -473,7 +475,7 @@ runner_cancel (runner_t runner)
          need to change the thread to wait on an event.  */
       runner->cancel_flag = 1;
       /* For now we use the brutal way and kill the process. */
-      gnupg_kill_process (runner->pid);
+      gnupg_process_terminate (runner->proc);
     }
 }
 

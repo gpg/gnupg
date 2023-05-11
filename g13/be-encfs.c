@@ -28,10 +28,10 @@
 #include "g13.h"
 #include "../common/i18n.h"
 #include "keyblob.h"
-#include "be-encfs.h"
-#include "runner.h"
 #include "../common/sysutils.h"
 #include "../common/exechelp.h"
+#include "runner.h"
+#include "be-encfs.h"
 
 
 /* Command values used to run the encfs tool.  */
@@ -81,7 +81,9 @@ run_umount_helper (const char *mountpoint)
   args[1] = mountpoint;
   args[2] = NULL;
 
-  err = gnupg_spawn_process_detached (pgmname, args, NULL);
+  err = gnupg_process_spawn (pgmname, args,
+                             GNUPG_PROCESS_DETACHED,
+                             NULL, NULL, NULL);
   if (err)
     log_error ("failed to run '%s': %s\n",
                pgmname, gpg_strerror (err));
@@ -218,12 +220,11 @@ run_encfs_tool (ctrl_t ctrl, enum encfs_cmds cmd,
   gpg_error_t err;
   encfs_parm_t parm;
   runner_t runner = NULL;
-  int outbound[2] = { -1, -1 };
-  int inbound[2]  = { -1, -1 };
   const char *pgmname;
   const char *argv[10];
-  pid_t pid = (pid_t)(-1);
   int idx;
+  gnupg_process_t proc;
+  int inbound, outbound;
 
   (void)ctrl;
 
@@ -246,15 +247,6 @@ run_encfs_tool (ctrl_t ctrl, enum encfs_cmds cmd,
   if (err)
     goto leave;
 
-  err = gnupg_create_inbound_pipe (inbound, NULL, 0);
-  if (!err)
-    err = gnupg_create_outbound_pipe (outbound, NULL, 0);
-  if (err)
-    {
-      log_error (_("error creating a pipe: %s\n"), gpg_strerror (err));
-      goto leave;
-    }
-
   pgmname = ENCFS;
   idx = 0;
   argv[idx++] = "-f";
@@ -267,47 +259,42 @@ run_encfs_tool (ctrl_t ctrl, enum encfs_cmds cmd,
   argv[idx++] = NULL;
   assert (idx <= DIM (argv));
 
-  err = gnupg_spawn_process_fd (pgmname, argv,
-                                outbound[0], -1, inbound[1], &pid);
+  err = gnupg_process_spawn (pgmname, argv,
+                             (GNUPG_PROCESS_STDIN_PIPE
+                              | GNUPG_PROCESS_STDERR_PIPE),
+                             NULL, NULL, &proc);
   if (err)
     {
       log_error ("error spawning '%s': %s\n", pgmname, gpg_strerror (err));
       goto leave;
     }
-  close (outbound[0]); outbound[0] = -1;
-  close ( inbound[1]);  inbound[1] = -1;
 
-  runner_set_fds (runner, inbound[0], outbound[1]);
-  inbound[0] = -1;  /* Now owned by RUNNER.  */
-  outbound[1] = -1; /* Now owned by RUNNER.  */
+  err = gnupg_process_get_fds (proc, 0, &outbound, NULL, &inbound);
+  if (err)
+    {
+      log_error ("error get fds '%s': %s\n", pgmname, gpg_strerror (err));
+      gnupg_process_release (proc);
+      goto leave;
+    }
+
+  runner_set_fds (runner, inbound, outbound);
 
   runner_set_handler (runner, encfs_handler, encfs_handler_cleanup, parm);
   parm = NULL; /* Now owned by RUNNER.  */
 
-  runner_set_pid (runner, pid);
-  pid = (pid_t)(-1); /* The process is now owned by RUNNER.  */
+  runner_set_proc (runner, proc);
 
   err = runner_spawn (runner);
   if (err)
-    goto leave;
+    {
+      gnupg_process_release (proc);
+      goto leave;
+    }
 
   *r_id = runner_get_rid (runner);
   log_info ("running '%s' in the background\n", pgmname);
 
  leave:
-  if (inbound[0] != -1)
-    close (inbound[0]);
-  if (inbound[1] != -1)
-    close (inbound[1]);
-  if (outbound[0] != -1)
-    close (outbound[0]);
-  if (outbound[1] != -1)
-    close (outbound[1]);
-  if (pid != (pid_t)(-1))
-    {
-      gnupg_wait_process (pgmname, pid, 1, NULL);
-      gnupg_release_process (pid);
-    }
   runner_release (runner);
   encfs_handler_cleanup (parm);
   return err;

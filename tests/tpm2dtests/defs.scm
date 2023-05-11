@@ -217,13 +217,14 @@
 (define (gpg-pipe args0 args1 errfd)
   (lambda (source sink)
     (let* ((p (pipe))
-	   (task0 (spawn-process-fd `(,@GPG ,@args0)
+	   (task0 (process-spawn-fd `(,@GPG ,@args0)
 		   source (:write-end p) errfd))
 	   (_ (close (:write-end p)))
-	   (task1 (spawn-process-fd `(,@GPG ,@args1)
+	   (task1 (process-spawn-fd `(,@GPG ,@args1)
 		   (:read-end p) sink errfd)))
       (close (:read-end p))
-      (wait-processes (list GPG GPG) (list task0 task1) #t))))
+      (process-wait task0 #t)
+      (process-wait task1 #t))))
 
 ;;
 ;; Do we have a software tpm

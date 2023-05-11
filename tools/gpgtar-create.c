@@ -1069,7 +1069,7 @@ gpgtar_create (char **inpattern, const char *files_from, int null_names,
   estream_t files_from_stream = NULL;
   estream_t outstream = NULL;
   int eof_seen = 0;
-  pid_t pid = (pid_t)(-1);
+  gnupg_process_t proc = NULL;
   unsigned int skipped_open = 0;
 
   memset (scanctrl, 0, sizeof *scanctrl);
@@ -1284,14 +1284,15 @@ gpgtar_create (char **inpattern, const char *files_from, int null_names,
           goto leave;
         }
 
-      err = gnupg_spawn_process (opt.gpg_program, argv,
-                                 except[0] == -1? NULL : except,
-                                 (GNUPG_SPAWN_KEEP_STDOUT
-                                  | GNUPG_SPAWN_KEEP_STDERR),
-                                 &outstream, NULL, NULL, &pid);
+      err = gnupg_process_spawn (opt.gpg_program, argv,
+                                 (GNUPG_PROCESS_STDIN_PIPE
+                                  | GNUPG_PROCESS_STDOUT_KEEP
+                                  | GNUPG_PROCESS_STDERR_KEEP),
+                                 gnupg_spawn_helper, except, &proc);
       xfree (argv);
       if (err)
         goto leave;
+      gnupg_process_get_streams (proc, 0, &outstream, NULL, NULL);
       es_set_binary (outstream);
     }
   else if (opt.outfile) /* No crypto  */
@@ -1330,23 +1331,25 @@ gpgtar_create (char **inpattern, const char *files_from, int null_names,
   write_progress (1, global_written_files, global_total_files);
   write_progress (0, global_written_data, global_total_data);
 
-  if (pid != (pid_t)(-1))
+  if (proc)
     {
-      int exitcode;
-
       err = es_fclose (outstream);
       outstream = NULL;
       if (err)
         log_error ("error closing pipe: %s\n", gpg_strerror (err));
-      else
+
+      err = gnupg_process_wait (proc, 1);
+      if (!err)
         {
-          err = gnupg_wait_process (opt.gpg_program, pid, 1, &exitcode);
-          if (err)
+          int exitcode;
+
+          gnupg_process_ctl (proc, GNUPG_PROCESS_GET_EXIT_ID, &exitcode);
+          if (exitcode)
             log_error ("running %s failed (exitcode=%d): %s",
                        opt.gpg_program, exitcode, gpg_strerror (err));
-          gnupg_release_process (pid);
-          pid = (pid_t)(-1);
         }
+      gnupg_process_release (proc);
+      proc = NULL;
     }
 
   if (skipped_open)
@@ -1359,7 +1362,7 @@ gpgtar_create (char **inpattern, const char *files_from, int null_names,
   if (!err)
     {
       gpg_error_t first_err;
-      if (outstream != es_stdout || pid != (pid_t)(-1))
+      if (outstream != es_stdout)
         first_err = es_fclose (outstream);
       else
         first_err = es_fflush (outstream);

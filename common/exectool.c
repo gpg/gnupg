@@ -38,10 +38,14 @@
 #include <gpg-error.h>
 
 #include <assuan.h>
+
 #include "i18n.h"
 #include "logging.h"
 #include "membuf.h"
 #include "mischelp.h"
+#ifdef HAVE_W32_SYSTEM
+#define NEED_STRUCT_SPAWN_CB_ARG 1
+#endif
 #include "exechelp.h"
 #include "sysutils.h"
 #include "util.h"
@@ -301,7 +305,6 @@ copy_buffer_flush (struct copy_buffer *c, estream_t sink)
 }
 
 
-
 /* Run the program PGMNAME with the command line arguments given in
  * the NULL terminates array ARGV.  If INPUT is not NULL it will be
  * fed to stdin of the process.  stderr is logged using log_info and
@@ -321,7 +324,7 @@ gnupg_exec_tool_stream (const char *pgmname, const char *argv[],
                         void *status_cb_value)
 {
   gpg_error_t err;
-  pid_t pid = (pid_t) -1;
+  gnupg_process_t proc = NULL;
   estream_t infp = NULL;
   estream_t extrafp = NULL;
   estream_t outfp = NULL, errfp = NULL;
@@ -335,7 +338,6 @@ gnupg_exec_tool_stream (const char *pgmname, const char *argv[],
   read_and_log_buffer_t fderrstate;
   struct copy_buffer *cpbuf_in = NULL, *cpbuf_out = NULL, *cpbuf_extra = NULL;
   int quiet = 0;
-  int dummy_exitcode;
 
   memset (fds, 0, sizeof fds);
   memset (&fderrstate, 0, sizeof fderrstate);
@@ -411,10 +413,15 @@ gnupg_exec_tool_stream (const char *pgmname, const char *argv[],
   else
     exceptclose[0] = -1;
 
-  err = gnupg_spawn_process (pgmname, argv,
-                             exceptclose, GNUPG_SPAWN_NONBLOCK,
-                             input? &infp : NULL,
-                             &outfp, &errfp, &pid);
+  err = gnupg_process_spawn (pgmname, argv,
+                             ((input
+                               ? GNUPG_PROCESS_STDIN_PIPE
+                               : 0)
+                              | GNUPG_PROCESS_STDOUT_PIPE
+                              | GNUPG_PROCESS_STDERR_PIPE),
+                             gnupg_spawn_helper, exceptclose, &proc);
+  gnupg_process_get_streams (proc, GNUPG_PROCESS_STREAM_NONBLOCK,
+                             input? &infp : NULL, &outfp, &errfp);
   if (extrapipe[0] != -1)
     close (extrapipe[0]);
   if (argsave)
@@ -546,20 +553,25 @@ gnupg_exec_tool_stream (const char *pgmname, const char *argv[],
   es_fclose (outfp); outfp = NULL;
   es_fclose (errfp); errfp = NULL;
 
-  err = gnupg_wait_process (pgmname, pid, 1, quiet? &dummy_exitcode : NULL);
-  pid = (pid_t)(-1);
+  err = gnupg_process_wait (proc, 1);
+  if (!err)
+    {                      /* To be compatible to old wait_process. */
+      int status;
+
+      gnupg_process_ctl (proc, GNUPG_PROCESS_GET_EXIT_ID, &status);
+      if (status)
+        err = gpg_error (GPG_ERR_GENERAL);
+    }
 
  leave:
-  if (err && pid != (pid_t) -1)
-    gnupg_kill_process (pid);
+  if (err && proc)
+    gnupg_process_terminate (proc);
 
   es_fclose (infp);
   es_fclose (extrafp);
   es_fclose (outfp);
   es_fclose (errfp);
-  if (pid != (pid_t)(-1))
-    gnupg_wait_process (pgmname, pid, 1,  quiet? &dummy_exitcode : NULL);
-  gnupg_release_process (pid);
+  gnupg_process_release (proc);
 
   copy_buffer_shred (cpbuf_in);
   xfree (cpbuf_in);

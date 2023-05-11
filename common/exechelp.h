@@ -73,140 +73,103 @@ gpg_error_t gnupg_create_pipe (int filedes[2]);
 void gnupg_close_pipe (int fd);
 
 
-#define GNUPG_SPAWN_NONBLOCK   16
-#define GNUPG_SPAWN_RUN_ASFW   64
-#define GNUPG_SPAWN_DETACHED  128
-#define GNUPG_SPAWN_KEEP_STDIN   256
-#define GNUPG_SPAWN_KEEP_STDOUT  512
-#define GNUPG_SPAWN_KEEP_STDERR 1024
+/* The opaque type for a subprocess.  */
+typedef struct gnupg_process *gnupg_process_t;
+#ifdef HAVE_W32_SYSTEM
+struct spawn_cb_arg;
+#ifdef NEED_STRUCT_SPAWN_CB_ARG
+struct spawn_cb_arg {
+  HANDLE hd[3];
+  HANDLE *inherit_hds;
+  BOOL allow_foreground_window;
+  void *arg;
+};
+#endif
+#else
+struct spawn_cb_arg {
+  int fds[3];
+  int *except_fds;
+  void *arg;
+};
+#endif
 
-/* Fork and exec the program PGMNAME.
+#define GNUPG_PROCESS_DETACHED            (1 << 1)
 
-   If R_INFP is NULL connect stdin of the new process to /dev/null; if
-   it is not NULL store the address of a pointer to a new estream
-   there. If R_OUTFP is NULL connect stdout of the new process to
-   /dev/null; if it is not NULL store the address of a pointer to a
-   new estream there.  If R_ERRFP is NULL connect stderr of the new
-   process to /dev/null; if it is not NULL store the address of a
-   pointer to a new estream there.  On success the pid of the new
-   process is stored at PID.  On error -1 is stored at PID and if
-   R_OUTFP or R_ERRFP are not NULL, NULL is stored there.
+/* Specify how to keep/connect standard fds.  */
+#define GNUPG_PROCESS_STDIN_PIPE          (1 << 8)
+#define GNUPG_PROCESS_STDOUT_PIPE         (1 << 9)
+#define GNUPG_PROCESS_STDERR_PIPE         (1 << 10)
+#define GNUPG_PROCESS_STDINOUT_SOCKETPAIR (1 << 11)
+#define GNUPG_PROCESS_STDIN_KEEP          (1 << 12)
+#define GNUPG_PROCESS_STDOUT_KEEP         (1 << 13)
+#define GNUPG_PROCESS_STDERR_KEEP         (1 << 14)
+#define GNUPG_PROCESS_STDFDS_SETTING  ( GNUPG_PROCESS_STDIN_PIPE  \
+  | GNUPG_PROCESS_STDOUT_PIPE         | GNUPG_PROCESS_STDERR_PIPE \
+  | GNUPG_PROCESS_STDINOUT_SOCKETPAIR | GNUPG_PROCESS_STDIN_KEEP  \
+  | GNUPG_PROCESS_STDOUT_KEEP         | GNUPG_PROCESS_STDERR_KEEP)
 
-   The arguments for the process are expected in the NULL terminated
-   array ARGV.  The program name itself should not be included there.
-   If PREEXEC is not NULL, the given function will be called right
-   before the exec.
+#define GNUPG_PROCESS_STREAM_NONBLOCK     (1 << 16)
 
-   IF EXCEPT is not NULL, it is expected to be an ordered list of file
-   descriptors, terminated by an entry with the value (-1).  These
-   file descriptors won't be closed before spawning a new program.
+/* Spawn helper.  */
+void gnupg_spawn_helper (struct spawn_cb_arg *sca);
 
-   Returns 0 on success or an error code.  Calling gnupg_wait_process
-   and gnupg_release_process is required if the function succeeded.
+/* Spawn PGMNAME.  */
+gpg_err_code_t gnupg_process_spawn (const char *pgmname, const char *argv[],
+                                    unsigned int flags,
+                                    void (*spawn_cb) (struct spawn_cb_arg *),
+                                    void *spawn_cb_arg,
+                                    gnupg_process_t *r_process);
 
-   FLAGS is a bit vector:
+/* Get FDs for subprocess I/O.  It is the caller which should care
+   FDs (closing FDs).  */
+gpg_err_code_t gnupg_process_get_fds (gnupg_process_t process,
+                                      unsigned int flags,
+                                      int *r_fd_in, int *r_fd_out,
+                                      int *r_fd_err);
 
-   GNUPG_SPAWN_NONBLOCK
-          If set the two output streams are created in non-blocking
-          mode and the input stream is switched to non-blocking mode.
-          This is merely a convenience feature because the caller
-          could do the same with gpgrt_set_nonblock.  Does not yet
-          work for Windows.
+/* Get STREAMs for subprocess I/O.  It is the caller which should care
+   STREAMs (closing STREAMs).  */
+gpg_err_code_t gnupg_process_get_streams (gnupg_process_t process,
+                                          unsigned int flags,
+                                          gpgrt_stream_t *r_fp_in,
+                                          gpgrt_stream_t *r_fp_out,
+                                          gpgrt_stream_t *r_fp_err);
 
-   GNUPG_SPAWN_DETACHED
-          If set the process will be started as a background process.
-          This flag is only useful under W32 (but not W32CE) systems,
-          so that no new console is created and pops up a console
-          window when starting the server.  Does not work on W32CE.
+enum gnupg_process_requests
+  {
+    /* Portable requests */
+    GNUPG_PROCESS_NOP           = 0,
+    GNUPG_PROCESS_GET_PROC_ID   = 1,
+    GNUPG_PROCESS_GET_EXIT_ID   = 2,
 
-   GNUPG_SPAWN_RUN_ASFW
-          On W32 (but not on W32CE) run AllowSetForegroundWindow for
-          the child.  Note that due to unknown problems this actually
-          allows SetForegroundWindow for all children of this process.
+    /* POSIX only */
+    GNUPG_PROCESS_GET_PID       = 16,
+    GNUPG_PROCESS_GET_WSTATUS   = 17,
+    GNUPG_PROCESS_KILL          = 18,
 
-   GNUPG_SPAWN_KEEP_STDIN
-   GNUPG_SPAWN_KEEP_STDOUT
-   GNUPG_SPAWN_KEEP_STDERR
-          Do not assign /dev/null to a non-required standard file
-          descriptor.
+    /* Windows only */
+    GNUPG_PROCESS_GET_P_HANDLE  = 32,
+    GNUPG_PROCESS_GET_HANDLES   = 33,
+    GNUPG_PROCESS_GET_EXIT_CODE = 34,
+    GNUPG_PROCESS_KILL_WITH_EC  = 35
+  };
 
- */
-gpg_error_t
-gnupg_spawn_process (const char *pgmname, const char *argv[],
-                     int *execpt, unsigned int flags,
-                     estream_t *r_infp,
-                     estream_t *r_outfp,
-                     estream_t *r_errfp,
-                     pid_t *pid);
+/* Control of a process.  */
+gpg_err_code_t gnupg_process_ctl (gnupg_process_t process,
+                                  unsigned int request, ...);
 
+/* Wait for a single PROCESS.  */
+gpg_err_code_t gnupg_process_wait (gnupg_process_t process, int hang);
 
-/* Simplified version of gnupg_spawn_process.  This function forks and
-   then execs PGMNAME, while connecting INFD to stdin, OUTFD to stdout
-   and ERRFD to stderr (any of them may be -1 to connect them to
-   /dev/null).  The arguments for the process are expected in the NULL
-   terminated array ARGV.  The program name itself should not be
-   included there.  Calling gnupg_wait_process and
-   gnupg_release_process is required.  Returns 0 on success or an
-   error code. */
-gpg_error_t gnupg_spawn_process_fd (const char *pgmname,
-                                    const char *argv[],
-                                    int infd, int outfd, int errfd,
-                                    pid_t *pid);
+/* Terminate a PROCESS.  */
+gpg_err_code_t gnupg_process_terminate (gnupg_process_t process);
 
+/* Release PROCESS resources.  */
+void gnupg_process_release (gnupg_process_t process);
 
-/* If HANG is true, waits for the process identified by PID to exit;
-   if HANG is false, checks whether the process has terminated.
-   PGMNAME should be the same as supplied to the spawn function and is
-   only used for diagnostics.  Return values:
-
-   0
-       The process exited successful.  0 is stored at R_EXITCODE.
-
-   GPG_ERR_GENERAL
-       The process exited without success.  The exit code of process
-       is then stored at R_EXITCODE.  An exit code of -1 indicates
-       that the process terminated abnormally (e.g. due to a signal).
-
-   GPG_ERR_TIMEOUT
-       The process is still running (returned only if HANG is false).
-
-   GPG_ERR_INV_VALUE
-       An invalid PID has been specified.
-
-   Other error codes may be returned as well.  Unless otherwise noted,
-   -1 will be stored at R_EXITCODE.  R_EXITCODE may be passed as NULL
-   if the exit code is not required (in that case an error message will
-   be printed).  Note that under Windows PID is not the process id but
-   the handle of the process.  */
-gpg_error_t gnupg_wait_process (const char *pgmname, pid_t pid, int hang,
-                                int *r_exitcode);
-
-/* Like gnupg_wait_process, but for COUNT processes.  */
-gpg_error_t gnupg_wait_processes (const char **pgmnames, pid_t *pids,
-				  size_t count, int hang, int *r_exitcodes);
-
-
-/* Kill a process; that is send an appropriate signal to the process.
-   gnupg_wait_process must be called to actually remove the process
-   from the system.  An invalid PID is ignored.  */
-void gnupg_kill_process (pid_t pid);
-
-/* Release the process identified by PID.  This function is actually
-   only required for Windows but it does not harm to always call it.
-   It is a nop if PID is invalid.  */
-void gnupg_release_process (pid_t pid);
-
-
-/* Spawn a new process and immediately detach from it.  The name of
-   the program to exec is PGMNAME and its arguments are in ARGV (the
-   programname is automatically passed as first argument).
-   Environment strings in ENVP are set.  An error is returned if
-   pgmname is not executable; to make this work it is necessary to
-   provide an absolute file name.  */
-gpg_error_t gnupg_spawn_process_detached (const char *pgmname,
-                                          const char *argv[],
-                                          const char *envp[] );
-
+/* Wait for a multiple processes.  */
+gpg_err_code_t gnupg_process_wait_list (gnupg_process_t *process_list,
+                                        int count, int hang);
 
 
 #endif /*GNUPG_COMMON_EXECHELP_H*/
