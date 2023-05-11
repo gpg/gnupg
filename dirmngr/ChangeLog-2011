@@ -1373,7 +1373,7 @@
 	truncated search.
 	* ldap.c (add_server_to_servers): Reactivated.
 	(url_fetch_ldap): Call it here and try all configured servers in
-	case of a a failed lookup.
+	case of a failed lookup.
 	(fetch_next_cert_ldap): Detect the truncation error flag.
 	* misc.c (host_and_port_from_url, remove_percent_escapes): New.
 

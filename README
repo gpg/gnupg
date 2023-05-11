@@ -170,7 +170,7 @@
 * DOCUMENTATION
 
   The complete documentation is in the texinfo manual named
-  `gnupg.info'.  Run "info gnupg" to read it.  If you want a a
+  `gnupg.info'.  Run "info gnupg" to read it.  If you want a
   printable copy of the manual, change to the "doc" directory and
   enter "make pdf" For a HTML version enter "make html" and point your
   browser to gnupg.html/index.html.  Standard man pages for all
