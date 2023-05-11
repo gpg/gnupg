@@ -1,3 +1,36 @@
+/* t-iobuf.c - Simple module test for iobuf.c
+ * Copyright (C) 2015 g10 Code GmbH
+ *
+ * This file is part of GnuPG.
+ *
+ * This file is free software; you can redistribute it and/or modify
+ * it under the terms of either
+ *
+ *   - the GNU Lesser General Public License as published by the Free
+ *     Software Foundation; either version 3 of the License, or (at
+ *     your option) any later version.
+ *
+ * or
+ *
+ *   - the GNU General Public License as published by the Free
+ *     Software Foundation; either version 2 of the License, or (at
+ *     your option) any later version.
+ *
+ * or both in parallel, as here.
+ *
+ * This file is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, see <https://www.gnu.org/licenses/>.
+ * SPDX-License-Identifier: (LGPL-3.0-or-later OR GPL-2.0-or-later)
+ */
+
+/* The whole code here does not very fill into our general test frame
+ * work patter.  But let's keep it as it is.  */
+
 #include <config.h>
 #include <stdio.h>
 #include <string.h>
@@ -6,6 +39,20 @@
 
 #include "iobuf.h"
 #include "stringhelp.h"
+
+
+static void *
+xmalloc (size_t n)
+{
+  void *p = malloc (n);
+  if (!p)
+    {
+      fprintf (stderr, "t-iobuf: out of core\n");
+      abort ();
+    }
+  return p;
+}
+
 
 /* Return every other byte.  In particular, reads two bytes, returns
    the second one.  */
@@ -86,7 +133,7 @@ static struct content_filter_state *
 content_filter_new (const char *buffer)
 {
   struct content_filter_state *state
-    = malloc (sizeof (struct content_filter_state));
+    = xmalloc (sizeof (struct content_filter_state));
 
   state->pos = 0;
   state->len = strlen (buffer);
@@ -215,8 +262,7 @@ main (int argc, char *argv[])
        allocate a buffer that is 5 bytes long, then no reallocation
        should be required.  */
     size = 5;
-    buffer = malloc (size);
-    assert (buffer);
+    buffer = xmalloc (size);
     max_len = 100;
     n = iobuf_read_line (iobuf, &buffer, &size, &max_len);
     assert (n == 4);
@@ -229,7 +275,7 @@ main (int argc, char *argv[])
        requires 6 bytes of storage.  We pass a buffer that is 5 bytes
        large and we allow the buffer to be grown.  */
     size = 5;
-    buffer = malloc (size);
+    buffer = xmalloc (size);
     max_len = 100;
     n = iobuf_read_line (iobuf, &buffer, &size, &max_len);
     assert (n == 5);
@@ -243,7 +289,7 @@ main (int argc, char *argv[])
        requires 7 bytes of storage.  We pass a buffer that is 5 bytes
        large and we don't allow the buffer to be grown.  */
     size = 5;
-    buffer = malloc (size);
+    buffer = xmalloc (size);
     max_len = 5;
     n = iobuf_read_line (iobuf, &buffer, &size, &max_len);
     assert (n == 4);
