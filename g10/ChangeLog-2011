@@ -4798,7 +4798,7 @@
 
 	* g10.c (main): Try to create the trustdb even for non-colon-mode
 	list-key operations.  This is required because getkey needs to
-	know whether a a key is ultimately trusted.  From Werner on stable
+	know whether a key is ultimately trusted.  From Werner on stable
 	branch.
 
 	* exec.c [__CYGWIN32__]: Keep cygwin separate from Mingw32;

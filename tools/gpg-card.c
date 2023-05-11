@@ -2822,7 +2822,7 @@ cmd_passwd (card_info_t info, char *argstr)
 
       log_assert (DIM (info->chvinfo) >= 4);
 
-      /* If there is a qualified signature use a a menu to select
+      /* If there is a qualified signature use a menu to select
        * between standard PIN and QES PINs.  */
       if (info->chvinfo[2] != -2 || info->chvinfo[3] != -2)
         {
