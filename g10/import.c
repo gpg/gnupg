@@ -2136,6 +2136,7 @@ import_one_real (ctrl_t ctrl,
       list_keyblock_direct (ctrl, keyblock, from_sk, 0,
                             opt.fingerprint || opt.with_fingerprint, 1);
       es_fflush (es_stdout);
+      no_usable_encr_subkeys_warning (keyblock);
     }
 
   /* Write the keyblock to the output and do not actually import.  */

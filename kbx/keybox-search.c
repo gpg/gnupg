@@ -873,28 +873,12 @@ release_sn_array (struct sn_array_s *array, size_t size)
 }
 
 
-/* Helper to open the file.  */
-static gpg_error_t
-open_file (KEYBOX_HANDLE hd)
-{
-
-  hd->fp = es_fopen (hd->kb->fname, "rb");
-  if (!hd->fp)
-    {
-      hd->error = gpg_error_from_syserror ();
-      return hd->error;
-    }
-
-  return 0;
-}
-
-
 
 /*
-
-  The search API
-
-*/
+ *
+ * The search API
+ *
+ */
 
 gpg_error_t
 keybox_search_reset (KEYBOX_HANDLE hd)
@@ -914,7 +898,7 @@ keybox_search_reset (KEYBOX_HANDLE hd)
         {
           /* Ooops.  Seek did not work.  Close so that the search will
            * open the file again.  */
-          es_fclose (hd->fp);
+          _keybox_ll_close (hd->fp);
           hd->fp = NULL;
         }
     }
@@ -992,7 +976,7 @@ keybox_search (KEYBOX_HANDLE hd, KEYBOX_SEARCH_DESC *desc, size_t ndesc,
 
   if (!hd->fp)
     {
-      rc = open_file (hd);
+      rc = _keybox_ll_open (&hd->fp, hd->kb->fname, 0);
       if (rc)
         {
           xfree (sn_array);
@@ -1480,7 +1464,7 @@ keybox_seek (KEYBOX_HANDLE hd, off_t offset)
           return 0;
         }
 
-      err = open_file (hd);
+      err = _keybox_ll_open (&hd->fp, hd->kb->fname, 0);
       if (err)
         return err;
     }

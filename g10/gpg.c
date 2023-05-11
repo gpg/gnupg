@@ -68,6 +68,7 @@
 #include "../common/shareddefs.h"
 #include "../common/compliance.h"
 #include "../common/comopt.h"
+#include "../kbx/keybox.h"
 
 #if defined(HAVE_DOSISH_SYSTEM) || defined(__CYGWIN__)
 #define MY_O_BINARY  O_BINARY
@@ -233,6 +234,7 @@ enum cmd_and_opt_values
     oDebugIOLBF,
     oDebugSetIobufSize,
     oDebugAllowLargeChunks,
+    oDebugIgnoreExpiration,
     oStatusFD,
     oStatusFile,
     oAttributeFD,
@@ -447,6 +449,7 @@ enum cmd_and_opt_values
     oCompatibilityFlags,
     oAddDesigRevoker,
     oAssertSigner,
+    oKbxBufferSize,
 
     oNoop
   };
@@ -605,7 +608,6 @@ static gpgrt_opt_t opts[] = {
                 N_("|FILE|write server mode logs to FILE")),
   ARGPARSE_s_s (oLoggerFile, "logger-file", "@"),  /* 1.4 compatibility.  */
   ARGPARSE_s_n (oLogTime, "log-time", "@"),
-  ARGPARSE_s_n (oQuickRandom, "debug-quick-random", "@"),
 
 
   ARGPARSE_header ("Configuration",
@@ -926,6 +928,9 @@ static gpgrt_opt_t opts[] = {
   /* Esoteric compatibility options.  */
   ARGPARSE_s_n (oRFC2440Text,      "rfc2440-text", "@"),
   ARGPARSE_s_n (oNoRFC2440Text, "no-rfc2440-text", "@"),
+  ARGPARSE_p_u (oKbxBufferSize,  "kbx-buffer-size", "@"),
+  ARGPARSE_s_n (oQuickRandom, "debug-quick-random", "@"),
+  ARGPARSE_s_n (oDebugIgnoreExpiration,  "debug-ignore-expiration", "@"),
 
   ARGPARSE_header (NULL, ""),  /* Stop the header group.  */
 
@@ -2848,6 +2853,10 @@ main (int argc, char **argv)
             allow_large_chunks = 1;
             break;
 
+          case oDebugIgnoreExpiration:
+            opt.ignore_expiration = 1;
+            break;
+
           case oCompatibilityFlags:
             if (parse_compatibility_flags (pargs.r.ret_str, &opt.compat_flags,
                                            compatibility_flags))
@@ -3743,6 +3752,9 @@ main (int argc, char **argv)
             add_to_strlist (&opt.assert_signer_list, pargs.r.ret_str);
 	    break;
 
+          case oKbxBufferSize:
+            keybox_set_buffersize (pargs.r.ret_ulong, 0);
+            break;
 
 	  case oNoop: break;
 

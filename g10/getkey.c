@@ -685,7 +685,7 @@ skip_unusable (void *opaque, u32 * keyid, int uid_no)
   pk = keyblock->pkt->pkt.public_key;
 
   /* Is the key revoked or expired?  */
-  if (pk->flags.revoked || pk->has_expired)
+  if (pk->flags.revoked || (pk->has_expired && !opt.ignore_expiration))
     unusable = 1;
 
   /* Is the user ID in question revoked or expired? */
@@ -704,7 +704,8 @@ skip_unusable (void *opaque, u32 * keyid, int uid_no)
 	      if (uids_seen != uid_no)
 		continue;
 
-	      if (user_id->flags.revoked || user_id->flags.expired)
+	      if (user_id->flags.revoked
+                  || (user_id->flags.expired && !opt.ignore_expiration))
 		unusable = 1;
 
 	      break;
@@ -3736,7 +3737,7 @@ finish_lookup (kbnode_t keyblock, unsigned int req_usage, int want_exact,
               n_revoked_or_expired++;
 	      continue;
 	    }
-	  if (pk->has_expired)
+	  if (pk->has_expired && !opt.ignore_expiration)
 	    {
 	      if (DBG_LOOKUP)
 		log_debug ("\tsubkey has expired\n");

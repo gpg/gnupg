@@ -78,10 +78,9 @@ create_tmp_file (const char *template,
   err = keybox_tmp_names (template, 0, r_bakfname, r_tmpfname);
   if (!err)
     {
-      *r_fp = es_fopen (*r_tmpfname, "wb");
-      if (!*r_fp)
+      err = _keybox_ll_open (r_fp, *r_tmpfname, KEYBOX_LL_OPEN_CREATE);
+      if (err)
         {
-          err = gpg_error_from_syserror ();
           xfree (*r_tmpfname);
           *r_tmpfname = NULL;
           xfree (*r_bakfname);
@@ -174,31 +173,32 @@ blob_filecopy (int mode, const char *fname, KEYBOXBLOB blob,
   if ((ec = gnupg_access (fname, W_OK)))
     return gpg_error (ec);
 
-  fp = es_fopen (fname, "rb");
-  if (mode == FILECOPY_INSERT && !fp && errno == ENOENT)
+  rc = _keybox_ll_open (&fp, fname, 0);
+  if (mode == FILECOPY_INSERT && gpg_err_code (rc) == GPG_ERR_ENOENT)
     {
       /* Insert mode but file does not exist:
-         Create a new keybox file. */
-      newfp = es_fopen (fname, "wb");
-      if (!newfp )
-        return gpg_error_from_syserror ();
+       * Create a new keybox file. */
+      rc = _keybox_ll_open (&newfp, fname, KEYBOX_LL_OPEN_CREATE);
+      if (rc)
+        return rc;
 
       rc = _keybox_write_header_blob (newfp, for_openpgp);
       if (rc)
         {
-          es_fclose (newfp);
+          _keybox_ll_close (newfp);
           return rc;
         }
 
       rc = _keybox_write_blob (blob, newfp, NULL);
       if (rc)
         {
-          es_fclose (newfp);
+          _keybox_ll_close (newfp);
           return rc;
         }
 
-      if ( es_fclose (newfp) )
-        return gpg_error_from_syserror ();
+      rc = _keybox_ll_close (newfp);
+      if (rc)
+        return rc;
 
 /*        if (chmod( fname, S_IRUSR | S_IWUSR )) */
 /*          { */
@@ -218,7 +218,7 @@ blob_filecopy (int mode, const char *fname, KEYBOXBLOB blob,
   rc = create_tmp_file (fname, &bakfname, &tmpfname, &newfp);
   if (rc)
     {
-      es_fclose (fp);
+      _keybox_ll_close (fp);
       goto leave;
     }
 
@@ -242,16 +242,16 @@ blob_filecopy (int mode, const char *fname, KEYBOXBLOB blob,
           if (es_fwrite (buffer, nread, 1, newfp) != 1)
             {
               rc = gpg_error_from_syserror ();
-              es_fclose (fp);
-              es_fclose (newfp);
+              _keybox_ll_close (fp);
+              _keybox_ll_close (newfp);
               goto leave;
             }
         }
       if (es_ferror (fp))
         {
           rc = gpg_error_from_syserror ();
-          es_fclose (fp);
-          es_fclose (newfp);
+          _keybox_ll_close (fp);
+          _keybox_ll_close (newfp);
           goto leave;
         }
     }
@@ -275,16 +275,16 @@ blob_filecopy (int mode, const char *fname, KEYBOXBLOB blob,
           if (es_fwrite (buffer, nread, 1, newfp) != 1)
             {
               rc = gpg_error_from_syserror ();
-              es_fclose (fp);
-              es_fclose (newfp);
+              _keybox_ll_close (fp);
+              _keybox_ll_close (newfp);
               goto leave;
             }
         }
       if (es_ferror (fp))
         {
           rc = gpg_error_from_syserror ();
-          es_fclose (fp);
-          es_fclose (newfp);
+          _keybox_ll_close (fp);
+          _keybox_ll_close (newfp);
           goto leave;
         }
 
@@ -292,8 +292,8 @@ blob_filecopy (int mode, const char *fname, KEYBOXBLOB blob,
       rc = _keybox_read_blob (NULL, fp, NULL);
       if (rc)
         {
-          es_fclose (fp);
-          es_fclose (newfp);
+          _keybox_ll_close (fp);
+          _keybox_ll_close (newfp);
           goto leave;
         }
     }
@@ -304,8 +304,8 @@ blob_filecopy (int mode, const char *fname, KEYBOXBLOB blob,
       rc = _keybox_write_blob (blob, newfp, NULL);
       if (rc)
         {
-          es_fclose (fp);
-          es_fclose (newfp);
+          _keybox_ll_close (fp);
+          _keybox_ll_close (newfp);
           goto leave;
         }
     }
@@ -318,32 +318,30 @@ blob_filecopy (int mode, const char *fname, KEYBOXBLOB blob,
           if (es_fwrite (buffer, nread, 1, newfp) != 1)
             {
               rc = gpg_error_from_syserror ();
-              es_fclose (fp);
-              es_fclose (newfp);
+              _keybox_ll_close (fp);
+              _keybox_ll_close (newfp);
               goto leave;
             }
         }
       if (es_ferror (fp))
         {
           rc = gpg_error_from_syserror ();
-          es_fclose (fp);
-          es_fclose (newfp);
+          _keybox_ll_close (fp);
+          _keybox_ll_close (newfp);
           goto leave;
         }
     }
 
   /* Close both files. */
-  if (es_fclose(fp))
+  rc = _keybox_ll_close (fp);
+  if (rc)
     {
-      rc = gpg_error_from_syserror ();
-      es_fclose (newfp);
+      _keybox_ll_close (newfp);
       goto leave;
     }
-  if (es_fclose(newfp))
-    {
-      rc = gpg_error_from_syserror ();
-      goto leave;
-    }
+  rc = _keybox_ll_close (newfp);
+  if (rc)
+    goto leave;
 
   rc = rename_tmp_file (bakfname, tmpfname, fname, secret);
 
@@ -502,6 +500,7 @@ keybox_update_cert (KEYBOX_HANDLE hd, ksba_cert_t cert,
 int
 keybox_set_flags (KEYBOX_HANDLE hd, int what, int idx, unsigned int value)
 {
+  gpg_error_t err;
   off_t off;
   const char *fname;
   estream_t fp;
@@ -536,9 +535,10 @@ keybox_set_flags (KEYBOX_HANDLE hd, int what, int idx, unsigned int value)
   off += flag_pos;
 
   _keybox_close_file (hd);
-  fp = es_fopen (hd->kb->fname, "r+b");
-  if (!fp)
-    return gpg_error_from_syserror ();
+
+  err = _keybox_ll_open (&fp, fname, KEYBOX_LL_OPEN_UPDATE);
+  if (err)
+    return err;
 
   ec = 0;
   if (es_fseeko (fp, off, SEEK_SET))
@@ -566,10 +566,11 @@ keybox_set_flags (KEYBOX_HANDLE hd, int what, int idx, unsigned int value)
         }
     }
 
-  if (es_fclose (fp))
+  err = _keybox_ll_close (fp);
+  if (err)
     {
       if (!ec)
-        ec = gpg_err_code_from_syserror ();
+        ec = gpg_err_code (err);
     }
 
   return gpg_error (ec);
@@ -583,7 +584,7 @@ keybox_delete (KEYBOX_HANDLE hd)
   off_t off;
   const char *fname;
   estream_t fp;
-  int rc;
+  int rc, rc2;
 
   if (!hd)
     return gpg_error (GPG_ERR_INV_VALUE);
@@ -601,9 +602,9 @@ keybox_delete (KEYBOX_HANDLE hd)
   off += 4;
 
   _keybox_close_file (hd);
-  fp = es_fopen (hd->kb->fname, "r+b");
-  if (!fp)
-    return gpg_error_from_syserror ();
+  rc = _keybox_ll_open (&fp, hd->kb->fname, KEYBOX_LL_OPEN_UPDATE);
+  if (rc)
+    return rc;
 
   if (es_fseeko (fp, off, SEEK_SET))
     rc = gpg_error_from_syserror ();
@@ -612,10 +613,11 @@ keybox_delete (KEYBOX_HANDLE hd)
   else
     rc = 0;
 
-  if (es_fclose (fp))
+  rc2 = _keybox_ll_close (fp);
+  if (rc2)
     {
       if (!rc)
-        rc = gpg_error_from_syserror ();
+        rc = rc2;
     }
 
   return rc;
@@ -628,7 +630,7 @@ int
 keybox_compress (KEYBOX_HANDLE hd)
 {
   gpg_err_code_t ec;
-  int read_rc, rc;
+  int read_rc, rc, rc2;
   const char *fname;
   estream_t fp, newfp;
   char *bakfname = NULL;
@@ -656,14 +658,11 @@ keybox_compress (KEYBOX_HANDLE hd)
   if ((ec = gnupg_access (fname, W_OK)))
     return gpg_error (ec);
 
-  fp = es_fopen (fname, "rb");
-  if (!fp && errno == ENOENT)
+  rc = _keybox_ll_open (&fp, fname, 0);
+  if (gpg_err_code (rc) == GPG_ERR_ENOENT)
     return 0; /* Ready. File has been deleted right after the access above. */
-  if (!fp)
-    {
-      rc = gpg_error_from_syserror ();
-      return rc;
-    }
+  if (rc)
+    return rc;
 
   /* A quick test to see if we need to compress the file at all.  We
      schedule a compress run after 3 hours. */
@@ -679,7 +678,7 @@ keybox_compress (KEYBOX_HANDLE hd)
 
           if ( (last_maint + 3*3600) > make_timestamp () )
             {
-              es_fclose (fp);
+              _keybox_ll_close (fp);
               _keybox_release_blob (blob);
               return 0; /* Compress run not yet needed. */
             }
@@ -693,7 +692,7 @@ keybox_compress (KEYBOX_HANDLE hd)
   rc = create_tmp_file (fname, &bakfname, &tmpfname, &newfp);
   if (rc)
     {
-      es_fclose (fp);
+      _keybox_ll_close (fp);
       return rc;;
     }
 
@@ -782,10 +781,10 @@ keybox_compress (KEYBOX_HANDLE hd)
     rc = read_rc;
 
   /* Close both files. */
-  if (es_fclose(fp) && !rc)
-    rc = gpg_error_from_syserror ();
-  if (es_fclose(newfp) && !rc)
-    rc = gpg_error_from_syserror ();
+  if ((rc2 = _keybox_ll_close (fp)) && !rc)
+    rc = rc2;
+  if ((rc2 = _keybox_ll_close (newfp)) && !rc)
+    rc = rc2;
 
   /* Rename or remove the temporary file. */
   if (rc || !any_changes)

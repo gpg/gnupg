@@ -213,6 +213,7 @@ enum cmd_and_opt_values {
   oKeyboxdProgram,
   oRequireCompliance,
   oCompatibilityFlags,
+  oKbxBufferSize,
   oNoAutostart
  };
 
@@ -447,6 +448,7 @@ static gpgrt_opt_t opts[] = {
   ARGPARSE_s_s (oXauthority, "xauthority", "@"),
   ARGPARSE_s_s (oChUid, "chuid", "@"),
   ARGPARSE_s_s (oCompatibilityFlags, "compatibility-flags", "@"),
+  ARGPARSE_p_u (oKbxBufferSize,  "kbx-buffer-size", "@"),
 
   ARGPARSE_header (NULL, ""),  /* Stop the header group.  */
 
@@ -1491,6 +1493,10 @@ main ( int argc, char **argv)
         case oMinRSALength: opt.min_rsa_length = pargs.r.ret_ulong; break;
 
         case oRequireCompliance: opt.require_compliance = 1;  break;
+
+        case oKbxBufferSize:
+          keybox_set_buffersize (pargs.r.ret_ulong, 0);
+          break;
 
         default:
           if (configname)

@@ -3185,12 +3185,17 @@ and may thus be changed or removed at any time without notice.
 To facilitate software tests and experiments this option allows to
 specify a limit of up to 4 EiB (@code{--chunk-size 62}).
 
+@item --debug-ignore-expiration
+@opindex debug-ignore-expiration
+This option tries to override certain key expiration dates.  It is
+only useful for certain regression tests.
+
 @item --faked-system-time @var{epoch}
 @opindex faked-system-time
-This option is only useful for testing; it sets the system time back or
-forth to @var{epoch} which is the number of seconds elapsed since the year
-1970.  Alternatively @var{epoch} may be given as a full ISO time string
-(e.g. "20070924T154812").
+This option is only useful for testing; it sets the system time back
+or forth to @var{epoch} which is the number of seconds elapsed since
+the year 1970.  Alternatively @var{epoch} may be given as a full ISO
+time string (e.g. "20070924T154812").
 
 If you suffix @var{epoch} with an exclamation mark (!), the system time
 will appear to be frozen at the specified time.
