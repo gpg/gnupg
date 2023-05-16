@@ -27,9 +27,6 @@
 #  include <winsock2.h>
 # endif
 # include <windows.h>
-# ifndef VER_PLATFORM_WIN32_WINDOWS
-#  define VER_PLATFORM_WIN32_WINDOWS 1
-# endif
 #endif
 
 #include "gpg.h"
@@ -375,16 +372,7 @@ static const char *
 get_default_photo_command(void)
 {
 #if defined(_WIN32)
-  OSVERSIONINFO osvi;
-
-  memset(&osvi,0,sizeof(osvi));
-  osvi.dwOSVersionInfoSize=sizeof(osvi);
-  GetVersionEx(&osvi);
-
-  if(osvi.dwPlatformId==VER_PLATFORM_WIN32_WINDOWS)
-    return "start /w %i";
-  else
-    return "!ShellExecute 400 %i";
+  return "!ShellExecute 400 %i";
 #elif defined(__APPLE__)
   /* OS X.  This really needs more than just __APPLE__. */
   return "open %I";
