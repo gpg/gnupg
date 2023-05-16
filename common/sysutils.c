@@ -1148,6 +1148,19 @@ gnupg_setenv (const char *name, const char *value, int overwrite)
   return setenv (name, value, overwrite);
 #else /*!HAVE_SETENV*/
   if (! getenv (name) || overwrite)
+#ifdef HAVE_W32_SYSTEM
+    {
+      int e = _putenv_s (name, value);
+
+      if (e)
+        {
+          gpg_err_set_errno (e);
+          return -1;
+        }
+      else
+        return 0;
+    }
+#else
     {
       char *buf;
 
@@ -1165,6 +1178,7 @@ gnupg_setenv (const char *name, const char *value, int overwrite)
 # endif
       return putenv (buf);
     }
+#endif /*!HAVE_W32_SYSTEM*/
   return 0;
 #endif /*!HAVE_SETENV*/
 }
