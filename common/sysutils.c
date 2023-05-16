@@ -1148,7 +1148,7 @@ gnupg_setenv (const char *name, const char *value, int overwrite)
   return setenv (name, value, overwrite);
 #else /*!HAVE_SETENV*/
   if (! getenv (name) || overwrite)
-#ifdef HAVE_W32_SYSTEM
+#if defined(HAVE_W32_SYSTEM) && defined(_CRT_SECURE_CPP_OVERLOAD_STANDARD_NAMES)
     {
       int e = _putenv_s (name, value);
 
@@ -1203,6 +1203,18 @@ gnupg_unsetenv (const char *name)
 
 #ifdef HAVE_UNSETENV
   return unsetenv (name);
+#elif defined(HAVE_W32_SYSTEM) && defined(_CRT_SECURE_CPP_OVERLOAD_STANDARD_NAMES)
+  {
+    int e = _putenv_s (name, "");
+
+    if (e)
+      {
+	gpg_err_set_errno (e);
+	return -1;
+      }
+    else
+      return 0;
+  }
 #else /*!HAVE_UNSETENV*/
   {
     char *buf;
