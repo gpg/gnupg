@@ -2942,10 +2942,10 @@ void
 send_client_notifications (card_t card, int removal)
 {
   struct {
-    pid_t pid;
 #ifdef HAVE_W32_SYSTEM
     HANDLE handle;
 #else
+    pid_t pid;
     int signo;
 #endif
   } killed[50];
@@ -2965,10 +2965,10 @@ send_client_notifications (card_t card, int removal)
 
       if (sl->ctrl_backlink && sl->ctrl_backlink->card_ctx == card)
         {
-          pid_t pid;
 #ifdef HAVE_W32_SYSTEM
           HANDLE handle;
 #else
+          pid_t pid;
           int signo;
 #endif
 
@@ -2983,32 +2983,29 @@ send_client_notifications (card_t card, int removal)
           if (!sl->event_signal || !sl->assuan_ctx)
             continue;
 
-          pid = assuan_get_pid (sl->assuan_ctx);
-
 #ifdef HAVE_W32_SYSTEM
           handle = sl->event_signal;
           for (kidx=0; kidx < killidx; kidx++)
-            if (killed[kidx].pid == pid
-                && killed[kidx].handle == handle)
+            if (killed[kidx].handle == handle)
               break;
           if (kidx < killidx)
-            log_info ("event %p (%p) already triggered for client %d\n",
-                      sl->event_signal, handle, (int)pid);
+            log_info ("event %p already triggered for client\n",
+                      sl->event_signal);
           else
             {
-              log_info ("triggering event %p (%p) for client %d\n",
-                        sl->event_signal, handle, (int)pid);
+              log_info ("triggering event %p for client\n",
+                        sl->event_signal);
               if (!SetEvent (handle))
                 log_error ("SetEvent(%p) failed: %s\n",
                            sl->event_signal, w32_strerror (-1));
               if (killidx < DIM (killed))
                 {
-                  killed[killidx].pid = pid;
                   killed[killidx].handle = handle;
                   killidx++;
                 }
             }
 #else /*!HAVE_W32_SYSTEM*/
+          pid = assuan_get_pid (sl->assuan_ctx);
           signo = sl->event_signal;
 
           if (pid != (pid_t)(-1) && pid && signo > 0)
