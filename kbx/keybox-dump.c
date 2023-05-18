@@ -810,6 +810,8 @@ _keybox_dump_find_dups (const char *filename, int print_them, FILE *outfp)
       gpg_error_t tmperr = gpg_error_from_syserror ();
       fprintf (outfp, "error allocating array for '%s': %s\n",
                filename, strerror(errno));
+      if (fp != es_stdin)
+        es_fclose (fp);
       return tmperr;
     }
   dupitems_count = 0;
@@ -834,6 +836,8 @@ _keybox_dump_find_dups (const char *filename, int print_them, FILE *outfp)
                   fprintf (outfp, "error reallocating array for '%s': %s\n",
                            filename, strerror(errno));
                   free (dupitems);
+                  if (fp != es_stdin)
+                    es_fclose (fp);
                   return tmperr;
                 }
               dupitems = tmp;
