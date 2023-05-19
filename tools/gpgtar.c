@@ -588,7 +588,17 @@ main (int argc, char **argv)
 
     default:
       log_error (_("invalid command (there is no implicit command)\n"));
+      err = 0;
       break;
+    }
+
+  if (opt.status_stream)
+    {
+      if (err || log_get_errorcount (0))
+        es_fprintf (opt.status_stream, "[GNUPG:] FAILURE - %u\n",
+                    err? err : gpg_error (GPG_ERR_GENERAL));
+      else
+        es_fprintf (opt.status_stream, "[GNUPG:] SUCCESS\n");
     }
 
   return log_get_errorcount (0)? 1:0;
