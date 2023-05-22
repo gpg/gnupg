@@ -1837,11 +1837,17 @@ main ( int argc, char **argv)
       break;
 
     case aSignEncr: /* sign and encrypt the given file */
-      log_error ("this command has not yet been implemented\n");
+      log_error ("the command '%s' has not yet been implemented\n",
+                 "--sign --encrypt");
+      gpgsm_status_with_error (&ctrl, STATUS_FAILURE, "option-parser",
+                               gpg_error (GPG_ERR_NOT_IMPLEMENTED));
       break;
 
     case aClearsign: /* make a clearsig */
-      log_error ("this command has not yet been implemented\n");
+      log_error ("the command '%s' has not yet been implemented\n",
+                 "--clearsign");
+      gpgsm_status_with_error (&ctrl, STATUS_FAILURE, "option-parser",
+                               gpg_error (GPG_ERR_NOT_IMPLEMENTED));
       break;
 
     case aVerify:
@@ -2068,8 +2074,10 @@ main ( int argc, char **argv)
 
 
     default:
-        log_error (_("invalid command (there is no implicit command)\n"));
-	break;
+      log_error (_("invalid command (there is no implicit command)\n"));
+      gpgsm_status_with_error (&ctrl, STATUS_FAILURE, "option-parser",
+                               gpg_error (GPG_ERR_MISSING_ACTION));
+      break;
     }
 
   /* Print the audit result if needed.  */

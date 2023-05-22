@@ -1474,7 +1474,7 @@ gpgsm_status_with_err_code (ctrl_t ctrl, int no, const char *text,
 {
   char buf[30];
 
-  sprintf (buf, "%u", (unsigned int)ec);
+  snprintf (buf, sizeof buf, "%u", (unsigned int)ec);
   if (text)
     return gpgsm_status2 (ctrl, no, text, buf, NULL);
   else
