@@ -311,6 +311,13 @@ direct_open (const char *fname, const char *mode, int mode700)
         {
           hfile = CreateFileW (wfname, da, sm, NULL, cd,
                                FILE_ATTRIBUTE_NORMAL, NULL);
+          if (hfile == INVALID_HANDLE_VALUE)
+            {
+              gnupg_w32_set_errno (-1);
+              if (DBG_IOBUF)
+                log_debug ("iobuf:direct_open '%s' CreateFile failed: %s\n",
+                           fname, gpg_strerror (gpg_error_from_syserror()));
+            }
           xfree (wfname);
         }
       else
@@ -426,8 +433,9 @@ fd_cache_open (const char *fname, const char *mode)
 #ifdef HAVE_W32_SYSTEM
 	  if (SetFilePointer (fp, 0, NULL, FILE_BEGIN) == 0xffffffff)
 	    {
-	      log_error ("rewind file failed on handle %p: ec=%d\n",
-			 fp, (int) GetLastError ());
+              int ec = (int) GetLastError ();
+	      log_error ("rewind file failed on handle %p: ec=%d\n", fp, ec);
+              gnupg_w32_set_errno (ec);
 	      fp = GNUPG_INVALID_FD;
 	    }
 #else
