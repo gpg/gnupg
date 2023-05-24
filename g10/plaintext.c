@@ -137,8 +137,7 @@ get_output_file (const byte *embedded_name, int embedded_namelen,
 	  if (!tmp || !*tmp)
 	    {
 	      xfree (tmp);
-              /* FIXME: Below used to be GPG_ERR_CREATE_FILE */
-	      err = gpg_error (GPG_ERR_GENERAL);
+              err = gpg_error (GPG_ERR_EEXIST);
 	      goto leave;
 	    }
 	  xfree (fname);
