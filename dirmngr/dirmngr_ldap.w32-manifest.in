@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
 <assembly xmlns="urn:schemas-microsoft-com:asm.v1" manifestVersion="1.0">
-<description>GNU Privacy Guard (Private Key Daemon)</description>
+<description>GNU Privacy Guard (LDAP Helper)</description>
 <assemblyIdentity
     type="win32"
-    name="GnuPG.gpg-agent"
+    name="GnuPG.dirmngr.ldap"
     version="@BUILD_VERSION@"
     />
 <compatibility xmlns="urn:schemas-microsoft-com:compatibility.v1">

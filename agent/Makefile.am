@@ -1,3 +1,4 @@
+# Makefile.am - agent
 # Copyright (C) 2001, 2003, 2004, 2005 Free Software Foundation, Inc.
 #
 # This file is part of GnuPG.
@@ -35,10 +36,10 @@ AM_CPPFLAGS =
 include $(top_srcdir)/am/cmacros.am
 
 if HAVE_W32_SYSTEM
-gpg_agent_robjs = $(resource_objs) gpg-agent-w32info.o
-gpg-agent-w32info.o : gpg-agent.w32-manifest
+gpg_agent_rc_objs = $(resource_objs) gpg-agent-w32info.o
+gpg-agent-w32info.o : gpg-agent.w32-manifest ../common/w32info-rc.h
 else
-gpg_agent_robjs =
+gpg_agent_rc_objs =
 endif
 
 AM_CFLAGS = $(LIBGCRYPT_CFLAGS) $(GPG_ERROR_CFLAGS)
@@ -74,9 +75,9 @@ gpg_agent_CFLAGS = $(AM_CFLAGS) $(LIBASSUAN_CFLAGS) $(NPTH_CFLAGS) \
 gpg_agent_LDADD = $(commonpth_libs) \
                 $(LIBGCRYPT_LIBS) $(LIBASSUAN_LIBS) $(NPTH_LIBS) \
 	        $(GPG_ERROR_LIBS) $(LIBINTL) $(NETLIBS) $(LIBICONV) \
-		$(gpg_agent_robjs)
+		$(gpg_agent_rc_objs)
 gpg_agent_LDFLAGS = $(extra_bin_ldflags)
-gpg_agent_DEPENDENCIES = $(gpg_agent_robjs)
+gpg_agent_DEPENDENCIES = $(gpg_agent_rc_objs)
 
 gpg_protect_tool_SOURCES = \
 	protect-tool.c \

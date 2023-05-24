@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
 <assembly xmlns="urn:schemas-microsoft-com:asm.v1" manifestVersion="1.0">
-<description>GNU Privacy Guard (X409/CMS tool)</description>
+<description>GNU Privacy Guard (X.509/CMS Tool)</description>
 <assemblyIdentity
     type="win32"
     name="GnuPG.gpgsm"
@@ -15,4 +15,11 @@
     <supportedOS Id="{e2011457-1546-43c5-a5fe-008deee3d3f0}"/><!-- Vista -->
   </application>
 </compatibility>
+<trustInfo xmlns="urn:schemas-microsoft-com:asm.v2">
+  <security>
+    <requestedPrivileges>
+      <requestedExecutionLevel level="asInvoker"/>
+    </requestedPrivileges>
+  </security>
+</trustInfo>
 </assembly>

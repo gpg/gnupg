@@ -22,7 +22,9 @@
 ## Process this file with automake to produce Makefile.in
 
 EXTRA_DIST = OAUTHORS ONEWS ChangeLog-2011 tls-ca.pem \
-             dirmngr-w32info.rc dirmngr.w32-manifest.in
+             dirmngr-w32info.rc dirmngr.w32-manifest.in \
+             dirmngr_ldap-w32info.rc dirmngr_ldap.w32-manifest.in \
+             dirmngr-client-w32info.rc dirmngr-client.w32-manifest.in
 
 
 dist_pkgdata_DATA = sks-keyservers.netCA.pem
@@ -45,6 +47,16 @@ endif
 AM_CPPFLAGS =
 
 include $(top_srcdir)/am/cmacros.am
+
+if HAVE_W32_SYSTEM
+dirmngr_rc_objs        = dirmngr-w32info.o
+dirmngr_ldap_rc_objs   = dirmngr_ldap-w32info.o
+dirmngr_client_rc_objs = dirmngr-client-w32info.o
+
+dirmngr-w32info.o        : dirmngr.w32-manifest        ../common/w32info-rc.h
+dirmngr_ldap-w32info.o   : dirmngr_ldap.w32-manifest   ../common/w32info-rc.h
+dirmngr-client-w32info.o : dirmngr-client.w32-manifest ../common/w32info-rc.h
+endif
 
 AM_CFLAGS = $(USE_C99_CFLAGS) \
             $(LIBGCRYPT_CFLAGS) $(KSBA_CFLAGS) $(LIBASSUAN_CFLAGS)	\
@@ -86,23 +98,17 @@ else
 ldaplibs =
 endif
 
-if HAVE_W32_SYSTEM
-dirmngr_robjs = $(resource_objs) dirmngr-w32info.o
-dirmngr-w32info.o : dirmngr.w32-manifest
-else
-dirmngr_robjs =
-endif
-
 
 dirmngr_LDADD = $(libcommonpth) \
         $(DNSLIBS) $(LIBASSUAN_LIBS) \
 	$(KSBA_LIBS) $(NPTH_LIBS) $(NTBTLS_LIBS) $(LIBGNUTLS_LIBS) \
         $(LIBGCRYPT_LIBS) $(GPG_ERROR_LIBS) $(LIBINTL) $(LIBICONV) \
-        $(NETLIBS) $(dirmngr_robj)
+        $(NETLIBS) $(dirmngr_rc_obj)
 if USE_LDAP
 dirmngr_LDADD += $(ldaplibs) $(LBER_LIBS)
 endif
 dirmngr_LDFLAGS = $(extra_bin_ldflags)
+dirmngr_DEPENDENCIES = $(dirmngr_rc_objs)
 
 if USE_LDAP
 dirmngr_ldap_SOURCES = dirmngr_ldap.c ldap-misc.c ldap-misc.h $(ldap_url)
@@ -110,15 +116,18 @@ dirmngr_ldap_CFLAGS = $(GPG_ERROR_CFLAGS) $(LIBGCRYPT_CFLAGS)
 dirmngr_ldap_LDFLAGS =
 dirmngr_ldap_LDADD = $(libcommon) \
 		     $(GPG_ERROR_LIBS) $(LIBGCRYPT_LIBS) $(LDAPLIBS) \
-		     $(LBER_LIBS) $(LIBINTL) $(LIBICONV) $(NETLIBS)
+		     $(LBER_LIBS) $(LIBINTL) $(LIBICONV) $(NETLIBS)  \
+                     $(dirmngr_ldap_rc_objs)
+dirmngr_ldap_DEPENDENCIES = $(dirmngr_ldap_rc_objs)
 endif
 
 dirmngr_client_SOURCES = dirmngr-client.c
 dirmngr_client_LDADD = $(libcommon) \
                        $(LIBASSUAN_LIBS) $(GPG_ERROR_LIBS) \
-                       $(LIBGCRYPT_LIBS) $(NETLIBS) $(LIBINTL) $(LIBICONV)
-dirmngr_client_LDFLAGS = $(extra_bin_ldflags)
-
+                       $(LIBGCRYPT_LIBS) $(NETLIBS) $(LIBINTL) $(LIBICONV) \
+                       $(dirmngr_client_rc_objs)
+dirmngr_client_LDFLAGS =
+dirmngr_client_DEPENDENCIES = $(dirmngr_client_rc_objs)
 
 t_common_src = t-support.h t-support.c
 if USE_LIBDNS

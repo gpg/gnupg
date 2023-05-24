@@ -17,7 +17,8 @@
 
 ## Process this file with automake to produce Makefile.in
 
-EXTRA_DIST = ChangeLog-2011 gpgsm-w32info.rc gpgsm.w32-manifest.in
+EXTRA_DIST = ChangeLog-2011 \
+             gpgsm-w32info.rc gpgsm.w32-manifest.in
 
 bin_PROGRAMS = gpgsm
 
@@ -27,10 +28,8 @@ AM_CPPFLAGS = -DKEYBOX_WITH_X509=1
 include $(top_srcdir)/am/cmacros.am
 
 if HAVE_W32_SYSTEM
-gpgsm_robjs = $(resource_objs) gpgsm-w32info.o
-gpgsm-w32info.o : gpgsm.w32-manifest
-else
-gpgsm_robjs =
+gpgsm_rc_objs = $(resource_objs) gpgsm-w32info.o
+gpgsm-w32info.o : gpgsm.w32-manifest ../common/w32info-rc.h
 endif
 
 gpgsm_SOURCES = \
@@ -65,8 +64,10 @@ common_libs = ../kbx/libkeybox509.a $(libcommon)
 gpgsm_LDADD = $(common_libs) ../common/libgpgrl.a \
               $(LIBGCRYPT_LIBS) $(KSBA_LIBS) $(LIBASSUAN_LIBS) \
               $(GPG_ERROR_LIBS) $(LIBREADLINE) $(LIBINTL) \
-	      $(LIBICONV) $(gpgsm_robjs) $(extra_sys_libs) $(NETLIBS)
+	      $(LIBICONV) $(gpgsm_rc_objs) $(extra_sys_libs) $(NETLIBS)
 gpgsm_LDFLAGS = $(extra_bin_ldflags)
+gpgsm_DEPENDENCIES = $(gpgsm_rc_objs)
+
 
 # Make sure that all libs are build before we use them.  This is
 # important for things like make -j2.

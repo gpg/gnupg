@@ -15,4 +15,11 @@
     <supportedOS Id="{e2011457-1546-43c5-a5fe-008deee3d3f0}"/><!-- Vista -->
   </application>
 </compatibility>
+<trustInfo xmlns="urn:schemas-microsoft-com:asm.v2">
+  <security>
+    <requestedPrivileges>
+      <requestedExecutionLevel level="asInvoker"/>
+    </requestedPrivileges>
+  </security>
+</trustInfo>
 </assembly>
