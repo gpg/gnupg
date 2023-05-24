@@ -72,9 +72,6 @@ write_header (cipher_filter_context_t *cfx, iobuf_t a)
       log_info (_("Hint: Do not use option %s\n"), "--rfc2440");
     }
 
-  write_status_printf (STATUS_BEGIN_ENCRYPTION, "%d %d",
-                       ed.mdc_method, cfx->dek->algo);
-
   init_packet (&pkt);
   pkt.pkttype = cfx->dek->use_mdc? PKT_ENCRYPTED_MDC : PKT_ENCRYPTED;
   pkt.pkt.encrypted = &ed;
@@ -181,6 +178,12 @@ cipher_filter_cfb (void *opaque, int control,
   else if (control == IOBUFCTRL_DESC)
     {
       mem2str (buf, "cipher_filter_cfb", *ret_len);
+    }
+  else if (control == IOBUFCTRL_INIT)
+    {
+      write_status_printf (STATUS_BEGIN_ENCRYPTION, "%d %d",
+                           cfx->dek->use_mdc ? DIGEST_ALGO_SHA1 : 0,
+                           cfx->dek->algo);
     }
 
   return rc;

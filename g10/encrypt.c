@@ -410,8 +410,6 @@ encrypt_simple (const char *filename, int mode, int use_seskey)
   text_filter_context_t tfx;
   progress_filter_context_t *pfx;
   int do_compress = !!default_compress_algo();
-  char peekbuf[32];
-  int  peekbuflen;
 
   if (!gnupg_rng_is_compliant (opt.compliance))
     {
@@ -446,14 +444,6 @@ encrypt_simple (const char *filename, int mode, int use_seskey)
                 strerror(errno) );
       release_progress_context (pfx);
       return rc;
-    }
-
-  peekbuflen = iobuf_ioctl (inp, IOBUF_IOCTL_PEEK, sizeof peekbuf, peekbuf);
-  if (peekbuflen < 0)
-    {
-      peekbuflen = 0;
-      if (DBG_FILTER)
-        log_debug ("peeking at input failed\n");
     }
 
   handle_progress (pfx, inp, filename);
@@ -515,17 +505,6 @@ encrypt_simple (const char *filename, int mode, int use_seskey)
                  openpgp_cipher_algo_name (cfx.dek->algo),
                  cfx.dek->use_aead? openpgp_aead_algo_name (cfx.dek->use_aead)
                  /**/             : "CFB");
-    }
-
-  if (do_compress
-      && cfx.dek
-      && (cfx.dek->use_mdc || cfx.dek->use_aead)
-      && !opt.explicit_compress_option
-      && is_file_compressed (peekbuf, peekbuflen))
-    {
-      if (opt.verbose)
-        log_info(_("'%s' already compressed\n"), filename? filename: "[stdin]");
-      do_compress = 0;
     }
 
   if ( rc || (rc = open_outfile (-1, filename, opt.armor? 1:0, 0, &out )))
@@ -598,6 +577,24 @@ encrypt_simple (const char *filename, int mode, int use_seskey)
   else
     filesize = opt.set_filesize ? opt.set_filesize : 0; /* stdin */
 
+  /* Register the cipher filter. */
+  if (mode)
+    iobuf_push_filter (out,
+                       cfx.dek->use_aead? cipher_filter_aead
+                       /**/             : cipher_filter_cfb,
+                       &cfx );
+
+  if (do_compress
+      && cfx.dek
+      && (cfx.dek->use_mdc || cfx.dek->use_aead)
+      && !opt.explicit_compress_option
+      && is_file_compressed (inp))
+    {
+      if (opt.verbose)
+        log_info(_("'%s' already compressed\n"), filename? filename: "[stdin]");
+      do_compress = 0;
+    }
+
   if (!opt.no_literal)
     {
       /* Note that PT has been initialized above in !no_literal mode.  */
@@ -616,13 +613,6 @@ encrypt_simple (const char *filename, int mode, int use_seskey)
       pkt.pkttype = 0;
       pkt.pkt.generic = NULL;
     }
-
-  /* Register the cipher filter. */
-  if (mode)
-    iobuf_push_filter (out,
-                       cfx.dek->use_aead? cipher_filter_aead
-                       /**/             : cipher_filter_cfb,
-                       &cfx );
 
   /* Register the compress filter. */
   if ( do_compress )
@@ -783,7 +773,7 @@ encrypt_crypt (ctrl_t ctrl, int filefd, const char *filename,
   PKT_plaintext *pt = NULL;
   DEK *symkey_dek = NULL;
   STRING2KEY *symkey_s2k = NULL;
-  int rc = 0, rc2 = 0;
+  int rc = 0;
   u32 filesize;
   cipher_filter_context_t cfx;
   armor_filter_context_t *afx = NULL;
@@ -792,8 +782,6 @@ encrypt_crypt (ctrl_t ctrl, int filefd, const char *filename,
   progress_filter_context_t *pfx;
   PK_LIST pk_list;
   int do_compress;
-  char peekbuf[32];
-  int  peekbuflen;
 
   if (filefd != -1 && filename)
     return gpg_error (GPG_ERR_INV_ARG);  /* Both given.  */
@@ -866,14 +854,6 @@ encrypt_crypt (ctrl_t ctrl, int filefd, const char *filename,
   if (opt.verbose)
     log_info (_("reading from '%s'\n"), iobuf_get_fname_nonnull (inp));
 
-  peekbuflen = iobuf_ioctl (inp, IOBUF_IOCTL_PEEK, sizeof peekbuf, peekbuf);
-  if (peekbuflen < 0)
-    {
-      peekbuflen = 0;
-      if (DBG_FILTER)
-        log_debug ("peeking at input failed\n");
-    }
-
   handle_progress (pfx, inp, filename);
 
   if (opt.textmode)
@@ -899,25 +879,6 @@ encrypt_crypt (ctrl_t ctrl, int filefd, const char *filename,
   cfx.dek->use_aead = use_aead (pk_list, cfx.dek->algo);
   if (!cfx.dek->use_aead)
     cfx.dek->use_mdc = !!use_mdc (pk_list, cfx.dek->algo);
-
-  /* Only do the is-file-already-compressed check if we are using a
-   * MDC or AEAD.  This forces compressed files to be re-compressed if
-   * we do not have a MDC to give some protection against chosen
-   * ciphertext attacks. */
-  if (do_compress
-      && (cfx.dek->use_mdc || cfx.dek->use_aead)
-      && !opt.explicit_compress_option
-      && is_file_compressed (peekbuf, peekbuflen))
-    {
-      if (opt.verbose)
-        log_info(_("'%s' already compressed\n"), filename? filename: "[stdin]");
-      do_compress = 0;
-    }
-  if (rc2)
-    {
-      rc = rc2;
-      goto leave;
-    }
 
   make_session_key (cfx.dek);
   if (DBG_CRYPTO)
@@ -959,6 +920,26 @@ encrypt_crypt (ctrl_t ctrl, int filefd, const char *filename,
   else
     filesize = opt.set_filesize ? opt.set_filesize : 0; /* stdin */
 
+  /* Register the cipher filter. */
+  iobuf_push_filter (out,
+                     cfx.dek->use_aead? cipher_filter_aead
+                     /**/             : cipher_filter_cfb,
+                     &cfx);
+
+  /* Only do the is-file-already-compressed check if we are using a
+   * MDC or AEAD.  This forces compressed files to be re-compressed if
+   * we do not have a MDC to give some protection against chosen
+   * ciphertext attacks. */
+  if (do_compress
+      && (cfx.dek->use_mdc || cfx.dek->use_aead)
+      && !opt.explicit_compress_option
+      && is_file_compressed (inp))
+    {
+      if (opt.verbose)
+        log_info(_("'%s' already compressed\n"), filename? filename: "[stdin]");
+      do_compress = 0;
+    }
+
   if (!opt.no_literal)
     {
       pt->timestamp = make_timestamp();
@@ -972,12 +953,6 @@ encrypt_crypt (ctrl_t ctrl, int filefd, const char *filename,
     }
   else
     cfx.datalen = filesize && !do_compress ? filesize : 0;
-
-  /* Register the cipher filter. */
-  iobuf_push_filter (out,
-                     cfx.dek->use_aead? cipher_filter_aead
-                     /**/             : cipher_filter_cfb,
-                     &cfx);
 
   /* Register the compress filter. */
   if (do_compress)

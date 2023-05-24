@@ -625,6 +625,9 @@ void iobuf_set_partial_body_length_mode (iobuf_t a, size_t len);
    from the following filter (which may or may not return EOF).  */
 void iobuf_skip_rest (iobuf_t a, unsigned long n, int partial);
 
+/* Check if the file is compressed, by peeking the iobuf.  */
+int is_file_compressed (iobuf_t inp);
+
 #define iobuf_where(a)	"[don't know]"
 
 /* Each time a filter is allocated (via iobuf_alloc()), a
