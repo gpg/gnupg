@@ -1,3 +1,4 @@
+# Makefile.am - agent
 # Copyright (C) 2001, 2003, 2004, 2005 Free Software Foundation, Inc.
 #
 # This file is part of GnuPG.
@@ -23,8 +24,8 @@ libexec_PROGRAMS = gpg-protect-tool
 libexec_PROGRAMS += gpg-preset-passphrase
 noinst_PROGRAMS = $(TESTS)
 
-EXTRA_DIST = ChangeLog-2011 gpg-agent-w32info.rc all-tests.scm
-
+EXTRA_DIST = ChangeLog-2011 all-tests.scm \
+             gpg-agent-w32info.rc gpg-agent.w32-manifest.in
 
 AM_CPPFLAGS =
 
@@ -32,6 +33,8 @@ include $(top_srcdir)/am/cmacros.am
 
 if HAVE_W32_SYSTEM
 resource_objs += gpg-agent-w32info.o
+
+gpg-agent-w32info.o : gpg-agent.w32-manifest ../common/w32info-rc.h
 endif
 
 AM_CFLAGS = $(LIBGCRYPT_CFLAGS) $(GPG_ERROR_CFLAGS)

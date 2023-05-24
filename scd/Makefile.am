@@ -1,3 +1,4 @@
+# Makefile.am - scd
 # Copyright (C) 2002, 2003, 2005 Free Software Foundation, Inc.
 #
 # This file is part of GnuPG.
@@ -17,7 +18,8 @@
 
 ## Process this file with automake to produce Makefile.in
 
-EXTRA_DIST = ChangeLog-2011 scdaemon-w32info.rc
+EXTRA_DIST = ChangeLog-2011 \
+             scdaemon-w32info.rc scdaemon.w32-manifest.in
 
 libexec_PROGRAMS = scdaemon
 
@@ -27,6 +29,7 @@ include $(top_srcdir)/am/cmacros.am
 
 if HAVE_W32_SYSTEM
 resource_objs += scdaemon-w32info.o
+scdaemon-w32info.o : scdaemon.w32-manifest ../common/w32info-rc.h
 endif
 
 AM_CFLAGS =  $(LIBGCRYPT_CFLAGS) \
@@ -50,3 +53,5 @@ scdaemon_LDADD = $(libcommonpth) \
 	$(LIBGCRYPT_LIBS) $(KSBA_LIBS) $(LIBASSUAN_LIBS) $(NPTH_LIBS) \
 	$(LIBUSB_LIBS) $(GPG_ERROR_LIBS) \
         $(LIBINTL) $(DL_LIBS) $(NETLIBS) $(LIBICONV) $(resource_objs)
+
+scdaemon_DEPENDENCIES = $(resource_objs)
