@@ -360,8 +360,6 @@ char *try_make_printable_string (const void *p, size_t n, int delim);
 char *make_printable_string (const void *p, size_t n, int delim);
 char *decode_c_string (const char *src);
 
-int is_file_compressed (const byte *buf, unsigned int buflen);
-
 int match_multistr (const char *multistr,const char *match);
 
 int gnupg_compare_version (const char *a, const char *b);

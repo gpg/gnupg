@@ -3057,3 +3057,123 @@ iobuf_skip_rest (iobuf_t a, unsigned long n, int partial)
 	}
     }
 }
+
+
+/* Check whether (BUF,LEN) is valid header for an OpenPGP compressed
+ * packet.  LEN should be at least 6.  */
+static int
+is_openpgp_compressed_packet (const unsigned char *buf, size_t len)
+{
+  int c, ctb, pkttype;
+  int lenbytes;
+
+  ctb = *buf++; len--;
+  if (!(ctb & 0x80))
+    return 0; /* Invalid packet.  */
+
+  if ((ctb & 0x40)) /* New style (OpenPGP) CTB.  */
+    {
+      pkttype = (ctb & 0x3f);
+      if (!len)
+        return 0; /* Expected first length octet missing.  */
+      c = *buf++; len--;
+      if (c < 192)
+        ;
+      else if (c < 224)
+        {
+          if (!len)
+            return 0; /* Expected second length octet missing. */
+        }
+      else if (c == 255)
+        {
+          if (len < 4)
+            return 0; /* Expected length octets missing */
+        }
+    }
+  else /* Old style CTB.  */
+    {
+      pkttype = (ctb>>2)&0xf;
+      lenbytes = ((ctb&3)==3)? 0 : (1<<(ctb & 3));
+      if (len < lenbytes)
+        return 0; /* Not enough length bytes.  */
+    }
+
+  return (pkttype == 8);
+}
+
+
+/*
+ * Check if the file is compressed, by peeking the iobuf.  You need to
+ * pass the iobuf with INP.  Returns true if the buffer seems to be
+ * compressed.
+ */
+int
+is_file_compressed (iobuf_t inp)
+{
+  int i;
+  char buf[32];
+  int buflen;
+
+  struct magic_compress_s
+  {
+    byte len;
+    byte extchk;
+    byte magic[5];
+  } magic[] =
+      {
+       { 3, 0, { 0x42, 0x5a, 0x68, 0x00 } }, /* bzip2 */
+       { 3, 0, { 0x1f, 0x8b, 0x08, 0x00 } }, /* gzip */
+       { 4, 0, { 0x50, 0x4b, 0x03, 0x04 } }, /* (pk)zip */
+       { 5, 0, { '%', 'P', 'D', 'F', '-'} }, /* PDF */
+       { 4, 1, { 0xff, 0xd8, 0xff, 0xe0 } }, /* Maybe JFIF */
+       { 5, 2, { 0x89, 'P','N','G', 0x0d} }  /* Likely PNG */
+  };
+
+  if (!inp)
+    return 0;
+
+  for ( ; inp->chain; inp = inp->chain )
+    ;
+
+  buflen = iobuf_ioctl (inp, IOBUF_IOCTL_PEEK, sizeof buf, buf);
+  if (buflen < 0)
+    {
+      buflen = 0;
+      log_debug ("peeking at input failed\n");
+    }
+
+  if ( buflen < 6 )
+    {
+      return 0;  /* Too short to check - assume uncompressed.  */
+    }
+
+  for ( i = 0; i < DIM (magic); i++ )
+    {
+      if (!memcmp( buf, magic[i].magic, magic[i].len))
+        {
+          switch (magic[i].extchk)
+            {
+            case 0:
+              return 1; /* Is compressed.  */
+            case 1:
+              if (buflen > 11 && !memcmp (buf + 6, "JFIF", 5))
+                return 1; /* JFIF: this likely a compressed JPEG.  */
+              break;
+            case 2:
+              if (buflen > 8
+                  && buf[5] == 0x0a && buf[6] == 0x1a && buf[7] == 0x0a)
+                return 1; /* This is a PNG.  */
+              break;
+            default:
+              break;
+            }
+        }
+    }
+
+  if (buflen >= 6 && is_openpgp_compressed_packet (buf, buflen))
+    {
+      return 1; /* Already compressed.  */
+    }
+
+  return 0;  /* Not detected as compressed.  */
+}

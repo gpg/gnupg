@@ -174,8 +174,6 @@ write_header (cipher_filter_context_t *cfx, iobuf_t a)
     log_debug ("aead packet: len=%lu extralen=%d\n",
                (unsigned long)ed.len, ed.extralen);
 
-  write_status_printf (STATUS_BEGIN_ENCRYPTION, "0 %d %d",
-                       cfx->dek->algo, ed.aead_algo);
   print_cipher_algo_note (cfx->dek->algo);
 
   if (build_packet( a, &pkt))
@@ -487,6 +485,11 @@ cipher_filter_aead (void *opaque, int control,
   else if (control == IOBUFCTRL_DESC)
     {
       mem2str (buf, "cipher_filter_aead", *ret_len);
+    }
+  else if (control == IOBUFCTRL_INIT)
+    {
+      write_status_printf (STATUS_BEGIN_ENCRYPTION, "0 %d %d",
+                           cfx->dek->algo, cfx->dek->use_aead);
     }
 
   return rc;
