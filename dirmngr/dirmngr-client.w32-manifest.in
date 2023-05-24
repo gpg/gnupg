@@ -3,7 +3,7 @@
 <description>GNU Privacy Guard (Dirmngr Client)</description>
 <assemblyIdentity
     type="win32"
-    name="GnuPG.dirmngr.client"
+    name="GnuPG.dirmngr-client"
     version="@BUILD_VERSION@"
     />
 <compatibility xmlns="urn:schemas-microsoft-com:compatibility.v1">

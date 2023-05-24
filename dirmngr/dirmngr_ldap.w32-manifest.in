@@ -3,7 +3,7 @@
 <description>GNU Privacy Guard (LDAP Helper)</description>
 <assemblyIdentity
     type="win32"
-    name="GnuPG.dirmngr.ldap"
+    name="GnuPG.dirmngr-ldap"
     version="@BUILD_VERSION@"
     />
 <compatibility xmlns="urn:schemas-microsoft-com:compatibility.v1">
