@@ -2810,7 +2810,7 @@ void
 keyedit_quick_sign (ctrl_t ctrl, const char *fpr, strlist_t uids,
                     strlist_t locusr, int local)
 {
-  gpg_error_t err;
+  gpg_error_t err = 0;
   kbnode_t keyblock = NULL;
   KEYDB_HANDLE kdbhd = NULL;
   int modified = 0;
@@ -2848,6 +2848,7 @@ keyedit_quick_sign (ctrl_t ctrl, const char *fpr, strlist_t uids,
       if (!opt.verbose)
         show_key_with_all_names (ctrl, es_stdout, keyblock, 0, 0, 0, 0, 0, 1);
       log_error ("%s%s", _("Key is revoked."), _("  Unable to sign.\n"));
+      err = gpg_error (GPG_ERR_CERT_REVOKED);
       goto leave;
     }
 
@@ -2925,6 +2926,7 @@ keyedit_quick_sign (ctrl_t ctrl, const char *fpr, strlist_t uids,
                       sl->d, gpg_strerror (GPG_ERR_NOT_FOUND));
         }
       log_error ("%s  %s", _("No matching user IDs."), _("Nothing to sign.\n"));
+      err = gpg_error (GPG_ERR_NO_USER_ID);
       goto leave;
     }
 
@@ -2947,8 +2949,9 @@ keyedit_quick_sign (ctrl_t ctrl, const char *fpr, strlist_t uids,
   if (update_trust)
     revalidation_mark (ctrl);
 
-
  leave:
+  if (err)
+    write_status_error ("keyedit.sign-key", err);
   release_kbnode (keyblock);
   keydb_release (kdbhd);
 }
@@ -2964,7 +2967,7 @@ void
 keyedit_quick_revsig (ctrl_t ctrl, const char *username, const char *sigtorev,
                       strlist_t affected_uids)
 {
-  gpg_error_t err;
+  gpg_error_t err = 0;
   int no_signing_key = 0;
   KEYDB_HANDLE kdbhd = NULL;
   kbnode_t keyblock = NULL;
