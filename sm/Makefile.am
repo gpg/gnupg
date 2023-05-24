@@ -17,7 +17,8 @@
 
 ## Process this file with automake to produce Makefile.in
 
-EXTRA_DIST = ChangeLog-2011 gpgsm-w32info.rc
+EXTRA_DIST = ChangeLog-2011 \
+             gpgsm-w32info.rc gpgsm.w32-manifest.in
 
 bin_PROGRAMS = gpgsm
 noinst_PROGRAMS = $(module_tests) $(module_maint_tests)
@@ -36,6 +37,7 @@ include $(top_srcdir)/am/cmacros.am
 
 if HAVE_W32_SYSTEM
 resource_objs += gpgsm-w32info.o
+gpgsm-w32info.o : gpgsm.w32-manifest ../common/w32info-rc.h
 endif
 
 gpgsm_SOURCES = \
@@ -72,6 +74,7 @@ gpgsm_LDADD = $(common_libs) ../common/libgpgrl.a \
               $(NPTH_LIBS) $(GPG_ERROR_LIBS) $(LIBREADLINE) $(LIBINTL) \
 	      $(LIBICONV) $(resource_objs) $(NETLIBS)
 gpgsm_LDFLAGS =
+gpgsm_DEPENDENCIES = $(resource_objs)
 
 
 module_tests =

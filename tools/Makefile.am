@@ -38,12 +38,17 @@ gpg_card_rc_objs          = gpg-card-w32info.o
 gpgtar_rc_objs            = gpgtar-w32info.o
 gpg_check_pattern_rc_objs = gpg-check-pattern-w32info.o
 gpg_wks_client_rc_objs    = gpg-wks-client-w32info.o
-resource_objs += $(gpg_connect_agent_rc_objs)
-resource_objs += $(gpgconf_rc_objs)
-resource_objs += $(gpg_card_tool_rc_objs)
-resource_objs += $(gpgtar_rc_objs)
-resource_objs += $(gpg_check_pattern_rc_objs)
-resource_objs += $(gpg_wks_client_rc_objs)
+
+gpg-connect-agent-w32info.o  : gpg-connect-agent.w32-manifest \
+                                                     ../common/w32info-rc.h
+gpgconf-w32info.o            : gpgconf.w32-manifest  ../common/w32info-rc.h
+gpg-card-w32info.o           : gpg-card.w32-manifest ../common/w32info-rc.h
+gpgtar-w32info.o             : gpgtar.w32-manifest   ../common/w32info-rc.h
+gpg-check-pattern-w32info.o  : gpg-check-pattern.w32-manifest \
+                                                     ../common/w32info-rc.h
+gpg-wks-client-w32info.o     : gpg-wks-client.w32-manifest \
+                                                     ../common/w32info-rc.h
+
 endif
 
 AM_CFLAGS = $(LIBGCRYPT_CFLAGS) $(GPG_ERROR_CFLAGS) $(LIBASSUAN_CFLAGS)

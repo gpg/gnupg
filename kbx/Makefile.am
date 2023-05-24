@@ -18,13 +18,16 @@
 
 ## Process this file with automake to produce Makefile.in
 
-EXTRA_DIST = mkerrors keyboxd-w32info.rc
+EXTRA_DIST = mkerrors keyboxd-w32info.rc keyboxd.w32-manifest.in
 
 AM_CPPFLAGS =
 
 include $(top_srcdir)/am/cmacros.am
+
 if HAVE_W32_SYSTEM
 resource_objs += keyboxd-w32info.o
+
+keyboxd-w32info.o : keyboxd.w32-manifest ../common/w32info-rc.h
 endif
 
 AM_CFLAGS = $(LIBGCRYPT_CFLAGS) $(KSBA_CFLAGS)
