@@ -3655,6 +3655,9 @@ finish_lookup (kbnode_t keyblock, unsigned int req_usage, int want_exact,
 	      break;
 	    }
 	}
+      if (DBG_LOOKUP)
+        log_debug ("finish_lookup: exact search requested: %sfound\n",
+                   foundk? "":"not ");
     }
 
   /* Get the user id that matched that low-level search criteria.  */

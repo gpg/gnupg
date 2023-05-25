@@ -4844,6 +4844,15 @@ menu_addadsk (ctrl_t ctrl, kbnode_t pub_keyblock, const char *adskfpr)
           continue;
         }
 
+      /* Force searching for that exact fingerprint and for any key
+       * which has a key with that fingerprint.  */
+      if (!strchr (answer, '!'))
+        {
+          char *tmpstr = xstrconcat (answer, "!", NULL);
+          xfree (answer);
+          answer = tmpstr;
+        }
+
       free_public_key (adsk_pk);
       adsk_pk = xcalloc (1, sizeof *adsk_pk);
       adsk_pk->req_usage = PUBKEY_USAGE_ENC;
