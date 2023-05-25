@@ -1146,6 +1146,12 @@ write_pubkey_enc (ctrl_t ctrl,
       if ( opt.verbose )
         {
           char *ustr = get_user_id_string_native (ctrl, enc->keyid);
+          if ((pk->pubkey_usage & PUBKEY_USAGE_RENC))
+            {
+              char *tmpustr = xstrconcat (ustr, " [ADSK]", NULL);
+              xfree (ustr);
+              ustr = tmpustr;
+            }
           log_info (_("%s/%s.%s encrypted for: \"%s\"\n"),
                     openpgp_pk_algo_name (enc->pubkey_algo),
                     openpgp_cipher_algo_name (dek->algo),
