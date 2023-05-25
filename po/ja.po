@@ -11,7 +11,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnupg 2.4.1\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"PO-Revision-Date: 2023-04-26 13:35+0900\n"
+"PO-Revision-Date: 2023-05-25 11:12+0900\n"
 "Last-Translator: NIIBE Yutaka <gniibe@fsij.org>\n"
 "Language-Team: none\n"
 "Language: ja\n"
@@ -226,8 +226,8 @@ msgid ""
 "Please enter a passphrase to protect the received secret key%%0A   %s%%0A   "
 "%s%%0Awithin gpg-agent's key storage"
 msgstr ""
-"パスフレーズを入力してください。gpg-agentの鍵の保管で受信した秘密鍵%%0A   %s"
-"%%0A   %s%%0Aを保護します。"
+"パスフレーズを入力してください。gpg-agentの鍵の保管で受信した秘密鍵%%0A   "
+"%s%%0A   %s%%0Aを保護します。"
 
 #, c-format
 msgid "failed to create stream from socket: %s\n"
@@ -759,8 +759,8 @@ msgstr ""
 
 #, c-format
 msgid ""
-"Do you really want to delete the key identified by keygrip%%0A  %s%%0A  %%C"
-"%%0A?"
+"Do you really want to delete the key identified by keygrip%%0A  %s%%0A  "
+"%%C%%0A?"
 msgstr "本当にこの鍵: keygrip%%0A  %s%%0A  %%C%%0Aを削除しますか?"
 
 msgid "Delete key"
@@ -3709,6 +3709,10 @@ msgstr "*警告*: あなたの暗号副鍵はもうすぐ期限切れとなり�
 #, c-format
 msgid "You may want to change its expiration date too.\n"
 msgstr "その有効期限も変更したいでしょう\n"
+
+#, c-format
+msgid "WARNING: No valid encryption subkey left over.\n"
+msgstr "*警告*: 有効な暗号副鍵がひとつも残っていません。\n"
 
 msgid ""
 "WARNING: This is a PGP2-style key.  Adding a photo ID may cause some "
