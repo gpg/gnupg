@@ -3640,24 +3640,31 @@ finish_lookup (kbnode_t keyblock, unsigned int req_usage, int want_exact,
   log_assert (keyblock->pkt->pkttype == PKT_PUBLIC_KEY);
 
   /* For an exact match mark the primary or subkey that matched the
-     low-level search criteria.  */
-  if (want_exact)
+   * low-level search criteria.  Use this loop also to sort our keys
+   * found using an ADSK fingerprint.  */
+  for (k = keyblock; k; k = k->next)
     {
-      for (k = keyblock; k; k = k->next)
-	{
-	  if ((k->flag & 1))
-	    {
-	      log_assert (k->pkt->pkttype == PKT_PUBLIC_KEY
-                          || k->pkt->pkttype == PKT_PUBLIC_SUBKEY);
-	      foundk = k;
+      if ((k->flag & 1) && (k->pkt->pkttype == PKT_PUBLIC_KEY
+                            || k->pkt->pkttype == PKT_PUBLIC_SUBKEY))
+        {
+          if (want_exact)
+            {
+              if (DBG_LOOKUP)
+                log_debug ("finish_lookup: exact search requested and found\n");
+              foundk = k;
               pk = k->pkt->pkt.public_key;
               pk->flags.exact = 1;
-	      break;
-	    }
-	}
-      if (DBG_LOOKUP)
-        log_debug ("finish_lookup: exact search requested: %sfound\n",
-                   foundk? "":"not ");
+              break;
+            }
+          else if ((k->pkt->pkt.public_key->pubkey_usage == PUBKEY_USAGE_RENC))
+            {
+              if (DBG_LOOKUP)
+                log_debug ("finish_lookup: found via ADSK - not selected\n");
+              if (r_flags)
+                *r_flags |= LOOKUP_NOT_SELECTED;
+              return NULL; /* Not found.  */
+            }
+        }
     }
 
   /* Get the user id that matched that low-level search criteria.  */
