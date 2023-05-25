@@ -1213,6 +1213,7 @@ gnupg_process_release (gnupg_process_t process)
       gnupg_process_wait (process, 1);
     }
 
+  CloseHandle (process->hProcess);
   xfree (process);
 }
 
