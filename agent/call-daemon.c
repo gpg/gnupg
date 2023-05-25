@@ -153,6 +153,8 @@ wait_child_thread (void *arg)
                       name, WSTOPSIG (wstatus));
           goto again;
         }
+
+      assuan_set_flag (g->primary_ctx, ASSUAN_NO_WAITPID, 1);
     }
 #endif /*!HAVE_W32_SYSTEM*/
 
@@ -166,8 +168,6 @@ wait_child_thread (void *arg)
     }
   else
     {
-      assuan_set_flag (g->primary_ctx, ASSUAN_NO_WAITPID, 1);
-
       for (sl = g->local_list; sl; sl = sl->next_local)
         {
           sl->invalid = 1;
