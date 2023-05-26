@@ -237,13 +237,14 @@ agent_write_private_key (const unsigned char *grip,
   fp = fname ? es_fopen (fname, "wbx,mode=-rw") : NULL;
   if (!fp)
     {
+      err = gpg_error_from_syserror ();
       log_error ("can't create '%s': %s\n", fname, gpg_strerror (err));
       goto leave;
     }
 
   err = nvc_write (pk, fp);
-  if (!err)
-    err = es_fflush (fp);
+  if (!err && es_fflush (fp))
+    err = gpg_error_from_syserror ();
   if (err)
     {
       log_error ("error writing '%s': %s\n", fname, gpg_strerror (err));
