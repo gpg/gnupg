@@ -3115,7 +3115,7 @@ handle_connections (gnupg_fd_t listen_fd,
       /* Shutdown test.  */
       if (shutdown_pending)
         {
-          if (active_connections == 0)
+          if (active_connections == 0 || is_supervised)
             break; /* ready */
 
           /* Do not accept new connections but keep on running the

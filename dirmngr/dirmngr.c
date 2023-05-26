@@ -382,6 +382,9 @@ static enum
   } tor_mode;
 
 
+/* Flag indicating that we are in supervised mode.  */
+static int is_supervised;
+
 /* Counter for the active connections.  */
 static int active_connections;
 
@@ -1302,6 +1305,8 @@ main (int argc, char **argv)
 
       if (!opt.quiet)
         log_info(_("WARNING: \"%s\" is a deprecated option\n"), "--supervised");
+
+      is_supervised = 1;
 
       /* In supervised mode, we expect file descriptor 3 to be an
          already opened, listening socket.
@@ -2362,7 +2367,7 @@ handle_connections (assuan_fd_t listen_fd)
       /* Shutdown test.  */
       if (shutdown_pending)
         {
-          if (!active_connections)
+          if (!active_connections || is_supervised)
             break; /* ready */
 
           /* Do not accept new connections but keep on running the
