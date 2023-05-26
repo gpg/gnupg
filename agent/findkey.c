@@ -84,12 +84,13 @@ linefeed_to_percent0A (const char *string)
  * storage.  With FORCE passed as true an existing key with the given
  * GRIP will get overwritten.  If SERIALNO and KEYREF are given a
  * Token line is added to the key if the extended format is used.  If
- * TIMESTAMP is not zero and the key doies not yet exists it will be
+ * TIMESTAMP is not zero and the key does not yet exists it will be
  * recorded as creation date.  */
-int
+gpg_error_t
 agent_write_private_key (const unsigned char *grip,
                          const void *buffer, size_t length, int force,
                          const char *serialno, const char *keyref,
+                         const char *dispserialno,
                          time_t timestamp)
 {
   gpg_error_t err;
@@ -100,7 +101,10 @@ agent_write_private_key (const unsigned char *grip,
   nvc_t pk = NULL;
   gcry_sexp_t key = NULL;
   int remove = 0;
+  char *token0 = NULL;
   char *token = NULL;
+  char *dispserialno_buffer = NULL;
+  char **tokenfields = NULL;
 
   bin2hex (grip, 20, hexgrip);
   strcpy (hexgrip+40, ".key");
@@ -225,19 +229,34 @@ agent_write_private_key (const unsigned char *grip,
     {
       nve_t item;
       const char *s;
+      size_t token0len;
 
-      token = strconcat (serialno, " ", keyref, NULL);
-      if (!token)
+      if (dispserialno)
+        {
+          /* Escape the DISPSERIALNO.  */
+          dispserialno_buffer = percent_plus_escape (dispserialno);
+          if (!dispserialno_buffer)
+            {
+              err = gpg_error_from_syserror ();
+              goto leave;
+            }
+          dispserialno = dispserialno_buffer;
+        }
+
+      token0 = strconcat (serialno, " ", keyref, NULL);
+      if (token0)
+        token = strconcat (token0, " - ", dispserialno? dispserialno:"-", NULL);
+      if (!token0 || !token)
         {
           err = gpg_error_from_syserror ();
           goto leave;
         }
 
-      /* fixme: the strcmp should compare only the first two strings.  */
+      token0len = strlen (token0);
       for (item = nvc_lookup (pk, "Token:");
            item;
            item = nve_next_value (item, "Token:"))
-        if ((s = nve_value (item)) && !strcmp (s, token))
+        if ((s = nve_value (item)) && !strncmp (s, token0, token0len))
           break;
       if (!item)
         {
@@ -248,6 +267,23 @@ agent_write_private_key (const unsigned char *grip,
           if (err)
             goto leave;
         }
+      else
+        {
+          /* Token exists: Update the display s/n.  It may have
+           * changed due to changes in a newer software version.  */
+          if (s && (tokenfields = strtokenize (s, " \t\n"))
+              && tokenfields[0] && tokenfields[1] && tokenfields[2]
+              && tokenfields[3]
+              && !strcmp (tokenfields[3], dispserialno))
+            ; /* No need to update Token entry.  */
+          else
+            {
+              err = nve_set (item, token);
+              if (err)
+                goto leave;
+            }
+        }
+
     }
 
   /* If a timestamp has been supplied and the key is new, write a
@@ -300,12 +336,15 @@ agent_write_private_key (const unsigned char *grip,
 
  leave:
   es_fclose (fp);
-  if (remove)
+  if (remove && fname)
     gnupg_remove (fname);
   xfree (fname);
+  xfree (token);
+  xfree (token0);
+  xfree (dispserialno_buffer);
+  xfree (tokenfields);
   gcry_sexp_release (key);
   nvc_release (pk);
-  xfree (token);
   return err;
 }
 
@@ -1794,7 +1833,8 @@ agent_delete_key (ctrl_t ctrl, const char *desc_text,
 gpg_error_t
 agent_write_shadow_key (const unsigned char *grip,
                         const char *serialno, const char *keyid,
-                        const unsigned char *pkbuf, int force)
+                        const unsigned char *pkbuf, int force,
+                        const char *dispserialno)
 {
   gpg_error_t err;
   unsigned char *shadow_info;
@@ -1821,7 +1861,8 @@ agent_write_shadow_key (const unsigned char *grip,
     }
 
   len = gcry_sexp_canon_len (shdkey, 0, NULL, NULL);
-  err = agent_write_private_key (grip, shdkey, len, force, serialno, keyid, 0);
+  err = agent_write_private_key (grip, shdkey, len, force,
+                                 serialno, keyid, dispserialno, 0);
   xfree (shdkey);
   if (err)
     log_error ("error writing key: %s\n", gpg_strerror (err));

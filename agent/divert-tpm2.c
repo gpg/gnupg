@@ -50,7 +50,7 @@ agent_write_tpm2_shadow_key (ctrl_t ctrl, const unsigned char *grip,
 
   len = gcry_sexp_canon_len (shdkey, 0, NULL, NULL);
   err = agent_write_private_key (grip, shdkey, len, 1 /*force*/,
-                                 NULL, NULL, 0);
+                                 NULL, NULL, NULL, 0);
   xfree (shdkey);
   if (err)
     log_error ("error writing key: %s\n", gpg_strerror (err));
