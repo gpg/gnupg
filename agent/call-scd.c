@@ -501,7 +501,9 @@ agent_scd_check_aliveness (void)
              none of these context are actually in use. */
           struct scd_local_s *sl;
 
+#ifndef HAVE_W32_SYSTEM
           assuan_set_flag (primary_scd_ctx, ASSUAN_NO_WAITPID, 1);
+#endif
           assuan_release (primary_scd_ctx);
 
           for (sl=scd_local_list; sl; sl = sl->next_local)
