@@ -497,6 +497,30 @@ nvc_set (nvc_t pk, const char *name, const char *value)
 }
 
 
+/* Update entry E to VALUE.  */
+gpg_error_t
+nve_set (nve_t e, const char *value)
+{
+  char *v;
+
+  if (!e)
+    return GPG_ERR_INV_ARG;
+
+  v = xtrystrdup (value? value:"");
+  if (!v)
+    return my_error_from_syserror ();
+
+  free_strlist_wipe (e->raw_value);
+  e->raw_value = NULL;
+  if (e->value)
+    wipememory (e->value, strlen (e->value));
+  xfree (e->value);
+  e->value = v;
+
+  return 0;
+}
+
+
 /* Delete the given entry from PK.  */
 void
 nvc_delete (nvc_t pk, nve_t entry)

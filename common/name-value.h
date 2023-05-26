@@ -92,6 +92,9 @@ gpg_error_t nvc_add (nvc_t pk, const char *name, const char *value);
    first entry is updated.  */
 gpg_error_t nvc_set (nvc_t pk, const char *name, const char *value);
 
+/* Update entry E to VALUE.  */
+gpg_error_t nve_set (nve_t e, const char *value);
+
 /* Delete the given entry from PK.  */
 void nvc_delete (nvc_t pk, nve_t pke);
 
