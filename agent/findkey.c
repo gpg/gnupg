@@ -50,6 +50,22 @@ struct try_unprotect_arg_s
 };
 
 
+/* Return the file name for the 20 byte keygrip GRIP.  With FOR_NEW
+ * create a file name for later renaming to the actual name.  Return
+ * NULL on error. */
+static char *
+fname_from_keygrip (const unsigned char *grip, int for_new)
+{
+  char hexgrip[40+4+4+1];
+
+  bin2hex (grip, 20, hexgrip);
+  strcpy (hexgrip+40, for_new? ".key.tmp" : ".key");
+
+  return make_filename_try (gnupg_homedir (), GNUPG_PRIVATE_KEYS_DIR,
+                            hexgrip, NULL);
+}
+
+
 /* Replace all linefeeds in STRING by "%0A" and return a new malloced
  * string.  May return NULL on memory error.  */
 static char *
@@ -94,26 +110,22 @@ agent_write_private_key (const unsigned char *grip,
                          time_t timestamp)
 {
   gpg_error_t err;
-  char *fname;
+  char *fname = NULL;
+  char *tmpfname = NULL;
   estream_t fp;
-  char hexgrip[40+4+1];
   int update, newkey;
   nvc_t pk = NULL;
   gcry_sexp_t key = NULL;
-  int remove = 0;
+  int removetmp = 0;
   char *token0 = NULL;
   char *token = NULL;
   char *dispserialno_buffer = NULL;
   char **tokenfields = NULL;
+  int blocksigs = 0;
 
-  bin2hex (grip, 20, hexgrip);
-  strcpy (hexgrip+40, ".key");
-
-  fname = make_filename (gnupg_homedir (), GNUPG_PRIVATE_KEYS_DIR,
-                         hexgrip, NULL);
-
-  /* FIXME: Write to a temp file first so that write failures during
-     key updates won't lead to a key loss.  */
+  fname = fname_from_keygrip (grip, 0);
+  if (!fname)
+    return gpg_error_from_syserror ();
 
   if (!force && !gnupg_access (fname, F_OK))
     {
@@ -213,7 +225,8 @@ agent_write_private_key (const unsigned char *grip,
           goto leave;
         }
     }
-  es_clearerr (fp);
+  es_fclose (fp);
+  fp = NULL;
 
   /* Turn (BUFFER,LENGTH) into a gcrypt s-expression and set it into
    * our name value container.  */
@@ -299,46 +312,55 @@ agent_write_private_key (const unsigned char *grip,
         goto leave;
     }
 
-  /* Back to start and write.  */
-  err = es_fseek (fp, 0, SEEK_SET);
-  if (err)
-    goto leave;
-
-  err = nvc_write (pk, fp);
-  if (!err)
-    err = es_fflush (fp);
-  if (err)
+  /* Create a temporary file for writing.  */
+  tmpfname = fname_from_keygrip (grip, 1);
+  fp = tmpfname ? es_fopen (tmpfname, "wbx,mode=-rw") : NULL;
+  if (!fp)
     {
-      log_error ("error writing '%s': %s\n", fname, gpg_strerror (err));
-      remove = 1;
+      err = gpg_error_from_syserror ();
+      log_error ("can't create '%s': %s\n", tmpfname, gpg_strerror (err));
       goto leave;
     }
 
-  if (ftruncate (es_fileno (fp), es_ftello (fp)))
+  err = nvc_write (pk, fp);
+  if (!err && es_fflush (fp))
+    err = gpg_error_from_syserror ();
+  if (err)
     {
-      err = gpg_error_from_syserror ();
-      log_error ("error truncating '%s': %s\n", fname, gpg_strerror (err));
-      remove = 1;
+      log_error ("error writing '%s': %s\n", tmpfname, gpg_strerror (err));
+      removetmp = 1;
       goto leave;
     }
 
   if (es_fclose (fp))
     {
       err = gpg_error_from_syserror ();
-      log_error ("error closing '%s': %s\n", fname, gpg_strerror (err));
-      remove = 1;
+      log_error ("error closing '%s': %s\n", tmpfname, gpg_strerror (err));
+      removetmp = 1;
       goto leave;
     }
   else
     fp = NULL;
 
+  err = gnupg_rename_file (tmpfname, fname, &blocksigs);
+  if (err)
+    {
+      err = gpg_error_from_syserror ();
+      log_error ("error renaming '%s': %s\n", tmpfname, gpg_strerror (err));
+      removetmp = 1;
+      goto leave;
+    }
+
   bump_key_eventcounter ();
 
  leave:
+  if (blocksigs)
+    gnupg_unblock_all_signals ();
   es_fclose (fp);
-  if (remove && fname)
+  if (removetmp && fname)
     gnupg_remove (fname);
   xfree (fname);
+  xfree (tmpfname);
   xfree (token);
   xfree (token0);
   xfree (dispserialno_buffer);
@@ -352,53 +374,63 @@ agent_write_private_key (const unsigned char *grip,
 gpg_error_t
 agent_update_private_key (const unsigned char *grip, nvc_t pk)
 {
-  char *fname, *fname0;
-  estream_t fp;
-  char hexgrip[40+8+1];
   gpg_error_t err;
+  char *fname0 = NULL;   /* The existing file name.  */
+  char *fname = NULL;    /* The temporary new file name.  */
+  estream_t fp = NULL;
+  int removetmp = 0;
+  int blocksigs = 0;
 
-  bin2hex (grip, 20, hexgrip);
-  strcpy (hexgrip+40, ".key.tmp");
-
-  fname = make_filename (gnupg_homedir (), GNUPG_PRIVATE_KEYS_DIR,
-                         hexgrip, NULL);
-  fname0 = xstrdup (fname);
-  if (!fname0)
+  fname0 = fname_from_keygrip (grip, 0);
+  if (!fname)
     {
       err = gpg_error_from_syserror ();
-      xfree (fname);
-      return err;
+      goto leave;
     }
-  fname0[strlen (fname)-4] = 0;
+  fname = fname_from_keygrip (grip, 1);
+  if (!fname)
+    {
+      err = gpg_error_from_syserror ();
+      goto leave;
+    }
 
   fp = es_fopen (fname, "wbx,mode=-rw");
   if (!fp)
     {
       err = gpg_error_from_syserror ();
-
       log_error ("can't create '%s': %s\n", fname, gpg_strerror (err));
-      xfree (fname);
-      return err;
+      goto leave;
     }
 
   err = nvc_write (pk, fp);
   if (err)
-    log_error ("error writing '%s': %s\n", fname, gpg_strerror (err));
-
-  es_fclose (fp);
-
-#ifdef HAVE_W32_SYSTEM
-  /* No atomic mv on W32 systems.  */
-  gnupg_remove (fname0);
-#endif
-  if (rename (fname, fname0))
     {
-      err = gpg_error_from_errno (errno);
-      log_error (_("error renaming '%s' to '%s': %s\n"),
-                 fname, fname0, strerror (errno));
+      log_error ("error writing '%s': %s\n", fname, gpg_strerror (err));
+      removetmp = 1;
+      goto leave;
     }
 
+  es_fclose (fp);
+  fp = NULL;
+
+  err = gnupg_rename_file (fname, fname0, &blocksigs);
+  if (err)
+    {
+      err = gpg_error_from_syserror ();
+      log_error ("error renaming '%s': %s\n", fname, gpg_strerror (err));
+      removetmp = 1;
+      goto leave;
+    }
+
+
+ leave:
+  if (blocksigs)
+    gnupg_unblock_all_signals ();
+  es_fclose (fp);
+  if (removetmp && fname)
+    gnupg_remove (fname);
   xfree (fname);
+  xfree (fname0);
   return err;
 }
 
@@ -885,18 +917,17 @@ read_key_file (const unsigned char *grip, gcry_sexp_t *result, nvc_t *r_keymeta)
   unsigned char *buf;
   size_t buflen, erroff;
   gcry_sexp_t s_skey;
-  char hexgrip[40+4+1];
   char first;
 
   *result = NULL;
   if (r_keymeta)
     *r_keymeta = NULL;
 
-  bin2hex (grip, 20, hexgrip);
-  strcpy (hexgrip+40, ".key");
-
-  fname = make_filename (gnupg_homedir (), GNUPG_PRIVATE_KEYS_DIR,
-                         hexgrip, NULL);
+  fname = fname_from_keygrip (grip, 0);
+  if (!fname)
+    {
+      return gpg_error_from_syserror ();
+    }
   fp = es_fopen (fname, "rb");
   if (!fp)
     {
@@ -1012,12 +1043,12 @@ remove_key_file (const unsigned char *grip)
 {
   gpg_error_t err = 0;
   char *fname;
-  char hexgrip[40+4+1];
 
-  bin2hex (grip, 20, hexgrip);
-  strcpy (hexgrip+40, ".key");
-  fname = make_filename (gnupg_homedir (), GNUPG_PRIVATE_KEYS_DIR,
-                         hexgrip, NULL);
+  fname = fname_from_keygrip (grip, 0);
+  if (!fname)
+    {
+      return gpg_error_from_syserror ();
+    }
   if (gnupg_remove (fname))
     err = gpg_error_from_syserror ();
   xfree (fname);
