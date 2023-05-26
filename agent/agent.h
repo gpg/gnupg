@@ -452,10 +452,12 @@ void start_command_handler_ssh (ctrl_t, gnupg_fd_t);
 /*-- findkey.c --*/
 gpg_error_t agent_modify_description (const char *in, const char *comment,
                                       const gcry_sexp_t key, char **result);
-int agent_write_private_key (const unsigned char *grip,
-                             const void *buffer, size_t length, int force,
-                             const char *serialno, const char *keyref,
-                             time_t timestamp);
+gpg_error_t agent_write_private_key (const unsigned char *grip,
+                                     const void *buffer, size_t length,
+                                     int force,
+                                     const char *serialno, const char *keyref,
+                                     const char *dispserialno,
+                                     time_t timestamp);
 gpg_error_t agent_key_from_file (ctrl_t ctrl,
                                  const char *cache_nonce,
                                  const char *desc_text,
@@ -587,7 +589,8 @@ gpg_error_t s2k_hash_passphrase (const char *passphrase, int hashalgo,
                                  unsigned char *key, size_t keylen);
 gpg_error_t agent_write_shadow_key (const unsigned char *grip,
                                     const char *serialno, const char *keyid,
-                                    const unsigned char *pkbuf, int force);
+                                    const unsigned char *pkbuf, int force,
+                                    const char *dispserialno);
 
 
 /*-- trustlist.c --*/

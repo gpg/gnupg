@@ -1359,7 +1359,14 @@ cmd_readkey (assuan_context_t ctx, char *line)
       if (agent_key_available (grip))
         {
           /* (Shadow)-key is not available in our key storage.  */
-          rc = agent_write_shadow_key (grip, serialno, keyid, pkbuf, 0);
+          char *dispserialno;
+          char hexgrip[40+1];
+
+          bin2hex (grip, 20, hexgrip);
+          agent_card_getattr (ctrl, "$DISPSERIALNO", &dispserialno, hexgrip);
+          rc = agent_write_shadow_key (grip, serialno, keyid, pkbuf, 0,
+                                       dispserialno);
+          xfree (dispserialno);
           if (rc)
             goto leave;
         }
@@ -2916,11 +2923,11 @@ cmd_import_key (assuan_context_t ctx, char *line)
                            ctrl->s2k_count);
       if (!err)
         err = agent_write_private_key (grip, finalkey, finalkeylen, force,
-                                       NULL, NULL, opt_timestamp);
+                                       NULL, NULL, NULL, opt_timestamp);
     }
   else
-    err = agent_write_private_key (grip, key, realkeylen, force, NULL, NULL,
-                                   opt_timestamp);
+    err = agent_write_private_key (grip, key, realkeylen, force,
+                                   NULL, NULL, NULL, opt_timestamp);
 
  leave:
   gcry_sexp_release (openpgp_sexp);

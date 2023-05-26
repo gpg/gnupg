@@ -813,11 +813,11 @@ agent_askpin (ctrl_t ctrl,
 
 /* Replacement for the function in findkey.c.  Here we write the key
  * to stdout. */
-int
+gpg_error_t
 agent_write_private_key (const unsigned char *grip,
                          const void *buffer, size_t length, int force,
                          const char *serialno, const char *keyref,
-                         time_t timestamp)
+                         const char *dispserialno, time_t timestamp)
 {
   char hexgrip[40+4+1];
   char *p;
@@ -826,6 +826,7 @@ agent_write_private_key (const unsigned char *grip,
   (void)serialno;
   (void)keyref;
   (void)timestamp;
+  (void)dispserialno;
 
   bin2hex (grip, 20, hexgrip);
   strcpy (hexgrip+40, ".key");

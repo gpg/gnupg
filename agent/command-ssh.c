@@ -2432,9 +2432,14 @@ card_key_available (ctrl_t ctrl, const struct card_key_info_s *keyinfo,
   hex2bin (keyinfo->keygrip, grip, sizeof (grip));
   if ( agent_key_available (grip) )
     {
+      char *dispserialno;
+
       /* (Shadow)-key is not available in our key storage.  */
+      agent_card_getattr (ctrl, "$DISPSERIALNO", &dispserialno,
+                          keyinfo->keygrip);
       err = agent_write_shadow_key (grip, keyinfo->serialno,
-                                    keyinfo->idstr, pkbuf, 0);
+                                    keyinfo->idstr, pkbuf, 0, dispserialno);
+      xfree (dispserialno);
       if (err)
         {
           xfree (pkbuf);
@@ -3282,7 +3287,7 @@ ssh_identity_register (ctrl_t ctrl, ssh_key_type_spec_t *spec,
   /* Store this key to our key storage.  We do not store a creation
    * timestamp because we simply do not know.  */
   err = agent_write_private_key (key_grip_raw, buffer, buffer_n, 0,
-                                 NULL, NULL, 0);
+                                 NULL, NULL, NULL, 0);
   if (err)
     goto out;
 

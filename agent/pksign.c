@@ -372,8 +372,15 @@ agent_pksign_do (ctrl_t ctrl, const char *cache_nonce,
             }
 
           if (keyref)
-            agent_write_shadow_key (ctrl->keygrip, serialno, keyref, pkbuf, 0);
+            {
+              char *dispserialno;
 
+              agent_card_getattr (ctrl, "$DISPSERIALNO", &dispserialno,
+                                  hexgrip);
+              agent_write_shadow_key (ctrl->keygrip, serialno, keyref, pkbuf,
+                                      0, dispserialno);
+              xfree (dispserialno);
+            }
           algo = get_pk_algo_from_key (s_pkey);
 
           xfree (serialno);
