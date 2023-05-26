@@ -1,6 +1,28 @@
 Noteworthy changes in version 2.4.2 (unreleased)
 ------------------------------------------------
 
+  * gpg: Print a warning if no more encryption subkeys are left over
+    after chnaging the expiration date.  [rGef2c3d50fa]
+
+  * gpg: Fix searching for the ADSK key when adding an ADSK.  [T6504]
+
+  * gpgsm: Speed up key listings on Windows.  [rG08ff55bd44]
+
+  * gpgsm: Reduce the number of "failed to open policy file"
+    diagnostics.  [rG68613a6a9d]
+
+  * agent: Make updating of private key files more robust and track
+    display S/N.  [T6135]
+
+  * keyboxd: Avoid longish delays on Windows when listing keys.
+    [rG6944aefa3c]
+
+  * gpgtar: Emit extra status lines to help GPGME.  [T6497]
+
+  * w32: Avoid using the VirtualStore.  [T6403]
+
+  Release-info: https://dev.gnupg.org/T6506
+
 
 Noteworthy changes in version 2.4.1 (2023-04-28)
 ------------------------------------------------
