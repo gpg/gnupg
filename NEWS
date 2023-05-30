@@ -1,8 +1,8 @@
-Noteworthy changes in version 2.4.2 (unreleased)
+Noteworthy changes in version 2.4.2 (2023-05-30)
 ------------------------------------------------
 
   * gpg: Print a warning if no more encryption subkeys are left over
-    after chnaging the expiration date.  [rGef2c3d50fa]
+    after changing the expiration date.  [rGef2c3d50fa]
 
   * gpg: Fix searching for the ADSK key when adding an ADSK.  [T6504]
 
@@ -21,6 +21,7 @@ Noteworthy changes in version 2.4.2 (unreleased)
 
   * w32: Avoid using the VirtualStore.  [T6403]
 
+  See-also: gnupg-announce/2023q2/000479.html
   Release-info: https://dev.gnupg.org/T6506
 
 
