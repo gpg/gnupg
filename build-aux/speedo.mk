@@ -1543,10 +1543,8 @@ sign-installer:
 	 if [ -f "$${msifile}" ]; then \
 	   $(call MKSWDB_commands,$${msifile},$${reldate},"wixlib_"); \
 	 fi; \
-	 echo "speedo: /*" ;\
-	 echo "speedo:  * Verification result" ;\
-	 echo "speedo:  */" ;\
-         osslsigncode verify $${exefile} \
+	 echo "speedo: /* (osslsigncode verify disabled) */" ;\
+	 echo osslsigncode verify $${exefile} \
 	)
 
 
