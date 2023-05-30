@@ -851,11 +851,6 @@ msgstr "Korrekt"
 msgid "Wrong"
 msgstr "Fel"
 
-#, fuzzy, c-format
-#| msgid "error reading `%s': %s\n"
-msgid "error renaming '%s' to '%s': %s\n"
-msgstr "fel vid läsning av \"%s\": %s\n"
-
 #, c-format
 msgid "Note: This passphrase has never been changed.%0APlease change it now."
 msgstr ""
@@ -4193,6 +4188,10 @@ msgstr ""
 #| msgid "You can't change the expiration date of a v3 key\n"
 msgid "You may want to change its expiration date too.\n"
 msgstr "Du kan inte ändra giltighetsdatum för en v3-nyckel\n"
+
+#, c-format
+msgid "WARNING: No valid encryption subkey left over.\n"
+msgstr ""
 
 msgid ""
 "WARNING: This is a PGP2-style key.  Adding a photo ID may cause some "
@@ -8505,6 +8504,11 @@ msgstr ""
 #| msgid "failed to create temporary file `%s': %s\n"
 msgid "failed to create temporary cache dir file '%s': %s\n"
 msgstr "misslyckades med att skapa temporärfilen \"%s\": %s\n"
+
+#, fuzzy, c-format
+#| msgid "error reading `%s': %s\n"
+msgid "error renaming '%s' to '%s': %s\n"
+msgstr "fel vid läsning av \"%s\": %s\n"
 
 #, fuzzy, c-format
 #| msgid "can't access `%s': %s\n"

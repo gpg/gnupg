@@ -762,10 +762,6 @@ msgid "Wrong"
 msgstr "Špatně"
 
 #, c-format
-msgid "error renaming '%s' to '%s': %s\n"
-msgstr "chyba při přejmenování „%s“ na „%s“: %s\n"
-
-#, c-format
 msgid "Note: This passphrase has never been changed.%0APlease change it now."
 msgstr "Poznámka: Toto heslo nikdy nebylo změněno.%0AProsím, nyní jej změňte."
 
@@ -3808,6 +3804,11 @@ msgstr "POZOR: Vašemu šifrovacímu podklíči brzy vyprší platnost.\n"
 #, c-format
 msgid "You may want to change its expiration date too.\n"
 msgstr "Dobu platnosti také můžete změnit.\n"
+
+#, fuzzy, c-format
+#| msgid "WARNING: Your encryption subkey expires soon.\n"
+msgid "WARNING: No valid encryption subkey left over.\n"
+msgstr "POZOR: Vašemu šifrovacímu podklíči brzy vyprší platnost.\n"
 
 msgid ""
 "WARNING: This is a PGP2-style key.  Adding a photo ID may cause some "
@@ -7830,6 +7831,10 @@ msgstr "prosím, zjistěte příčinu a soubor ručně smažte\n"
 #, c-format
 msgid "failed to create temporary cache dir file '%s': %s\n"
 msgstr "vytvoření dočasného kešového dir souboru „%s“ selhalo: %s\n"
+
+#, c-format
+msgid "error renaming '%s' to '%s': %s\n"
+msgstr "chyba při přejmenování „%s“ na „%s“: %s\n"
 
 #, c-format
 msgid "can't hash '%s': %s\n"

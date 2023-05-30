@@ -784,11 +784,6 @@ msgstr ""
 msgid "Wrong"
 msgstr ""
 
-#, fuzzy, c-format
-#| msgid "error reading `%s': %s\n"
-msgid "error renaming '%s' to '%s': %s\n"
-msgstr "error en la lectura de «%s»: %s\n"
-
 #, c-format
 msgid "Note: This passphrase has never been changed.%0APlease change it now."
 msgstr ""
@@ -4115,6 +4110,10 @@ msgstr ""
 #| msgid "You can't change the expiration date of a v3 key\n"
 msgid "You may want to change its expiration date too.\n"
 msgstr "No podeu canviar la data de caducitat de les claus v3\n"
+
+#, c-format
+msgid "WARNING: No valid encryption subkey left over.\n"
+msgstr ""
 
 # Photo ID com abans.  ivb
 msgid ""
@@ -8288,6 +8287,11 @@ msgstr ""
 #, fuzzy, c-format
 msgid "failed to create temporary cache dir file '%s': %s\n"
 msgstr "no es pot crear el directori «%s»: %s\n"
+
+#, fuzzy, c-format
+#| msgid "error reading `%s': %s\n"
+msgid "error renaming '%s' to '%s': %s\n"
+msgstr "error en la lectura de «%s»: %s\n"
 
 # No em passe! ;)  ivb
 #, fuzzy, c-format

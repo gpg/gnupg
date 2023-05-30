@@ -789,10 +789,6 @@ msgid "Wrong"
 msgstr "Incorrecto"
 
 #, c-format
-msgid "error renaming '%s' to '%s': %s\n"
-msgstr "error al renombrar '%s' a '%s': %s\n"
-
-#, c-format
 msgid "Note: This passphrase has never been changed.%0APlease change it now."
 msgstr ""
 "Nota: Esta frase contraseña nunca ha sido cambiada.%0APor favor hágalo ahora."
@@ -3885,6 +3881,11 @@ msgstr "AVISO: Tu subclave de cifrado caduca pronto.\n"
 #, c-format
 msgid "You may want to change its expiration date too.\n"
 msgstr "Puede que también quieras cambiar su fecha de caducidad.\n"
+
+#, fuzzy, c-format
+#| msgid "WARNING: Your encryption subkey expires soon.\n"
+msgid "WARNING: No valid encryption subkey left over.\n"
+msgstr "AVISO: Tu subclave de cifrado caduca pronto.\n"
 
 msgid ""
 "WARNING: This is a PGP2-style key.  Adding a photo ID may cause some "
@@ -7953,6 +7954,10 @@ msgstr "chequea el problema y borra este archivo manualmente\n"
 #, c-format
 msgid "failed to create temporary cache dir file '%s': %s\n"
 msgstr "no se puede crear el fichero de cache '%s': %s\n"
+
+#, c-format
+msgid "error renaming '%s' to '%s': %s\n"
+msgstr "error al renombrar '%s' a '%s': %s\n"
 
 #, c-format
 msgid "can't hash '%s': %s\n"

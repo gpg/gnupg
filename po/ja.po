@@ -226,8 +226,8 @@ msgid ""
 "Please enter a passphrase to protect the received secret key%%0A   %s%%0A   "
 "%s%%0Awithin gpg-agent's key storage"
 msgstr ""
-"パスフレーズを入力してください。gpg-agentの鍵の保管で受信した秘密鍵%%0A   "
-"%s%%0A   %s%%0Aを保護します。"
+"パスフレーズを入力してください。gpg-agentの鍵の保管で受信した秘密鍵%%0A   %s"
+"%%0A   %s%%0Aを保護します。"
 
 #, c-format
 msgid "failed to create stream from socket: %s\n"
@@ -728,10 +728,6 @@ msgid "Wrong"
 msgstr "誤り"
 
 #, c-format
-msgid "error renaming '%s' to '%s': %s\n"
-msgstr "'%s'から'%s'へ名前変更のエラー: %s\n"
-
-#, c-format
 msgid "Note: This passphrase has never been changed.%0APlease change it now."
 msgstr "注意: パスフレーズは変更されていません。%0A今、変更してください。"
 
@@ -759,8 +755,8 @@ msgstr ""
 
 #, c-format
 msgid ""
-"Do you really want to delete the key identified by keygrip%%0A  %s%%0A  "
-"%%C%%0A?"
+"Do you really want to delete the key identified by keygrip%%0A  %s%%0A  %%C"
+"%%0A?"
 msgstr "本当にこの鍵: keygrip%%0A  %s%%0A  %%C%%0Aを削除しますか?"
 
 msgid "Delete key"
@@ -7587,6 +7583,10 @@ msgstr "理由を確認し、手動でそのファイルを削除してくださ
 #, c-format
 msgid "failed to create temporary cache dir file '%s': %s\n"
 msgstr "一時キャッシュ・ディレクトリ・ファイル'%s'が作成できません: %s\n"
+
+#, c-format
+msgid "error renaming '%s' to '%s': %s\n"
+msgstr "'%s'から'%s'へ名前変更のエラー: %s\n"
 
 #, c-format
 msgid "can't hash '%s': %s\n"

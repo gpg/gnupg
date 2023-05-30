@@ -755,10 +755,6 @@ msgid "Wrong"
 msgstr "Неверно"
 
 #, c-format
-msgid "error renaming '%s' to '%s': %s\n"
-msgstr "ошибка переименования '%s' в '%s': %s\n"
-
-#, c-format
 msgid "Note: This passphrase has never been changed.%0APlease change it now."
 msgstr ""
 "Замечание: Фразу-пароль никогда не меняли.%0AПожалуйста, смените ее сейчас."
@@ -3865,6 +3861,11 @@ msgstr "Внимание: Срок действия Вашего подключ�
 #, c-format
 msgid "You may want to change its expiration date too.\n"
 msgstr "Возможно, надо поменять также срок действия.\n"
+
+#, fuzzy, c-format
+#| msgid "WARNING: Your encryption subkey expires soon.\n"
+msgid "WARNING: No valid encryption subkey left over.\n"
+msgstr "Внимание: Срок действия Вашего подключа для шифрования истекает.\n"
 
 msgid ""
 "WARNING: This is a PGP2-style key.  Adding a photo ID may cause some "
@@ -7941,6 +7942,10 @@ msgstr "выясните причину и удалите этот файл вр
 #, c-format
 msgid "failed to create temporary cache dir file '%s': %s\n"
 msgstr "невозможно создание временного файла '%s': %s\n"
+
+#, c-format
+msgid "error renaming '%s' to '%s': %s\n"
+msgstr "ошибка переименования '%s' в '%s': %s\n"
 
 #, c-format
 msgid "can't hash '%s': %s\n"

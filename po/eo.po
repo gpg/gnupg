@@ -750,11 +750,6 @@ msgstr ""
 msgid "Wrong"
 msgstr ""
 
-#, fuzzy, c-format
-#| msgid "error reading `%s': %s\n"
-msgid "error renaming '%s' to '%s': %s\n"
-msgstr "eraro dum legado de '%s': %s\n"
-
 #, c-format
 msgid "Note: This passphrase has never been changed.%0APlease change it now."
 msgstr ""
@@ -3985,6 +3980,10 @@ msgstr ""
 #| msgid "You can't change the expiration date of a v3 key\n"
 msgid "You may want to change its expiration date too.\n"
 msgstr "Vi ne povas ŝanĝi la daton de eksvalidiĝo de v3-ŝlosilo\n"
+
+#, c-format
+msgid "WARNING: No valid encryption subkey left over.\n"
+msgstr ""
 
 msgid ""
 "WARNING: This is a PGP2-style key.  Adding a photo ID may cause some "
@@ -8037,6 +8036,11 @@ msgstr ""
 #, fuzzy, c-format
 msgid "failed to create temporary cache dir file '%s': %s\n"
 msgstr "%s: ne povas krei dosierujon: %s\n"
+
+#, fuzzy, c-format
+#| msgid "error reading `%s': %s\n"
+msgid "error renaming '%s' to '%s': %s\n"
+msgstr "eraro dum legado de '%s': %s\n"
 
 #, fuzzy, c-format
 msgid "can't hash '%s': %s\n"

@@ -754,10 +754,6 @@ msgid "Wrong"
 msgstr "錯了"
 
 #, c-format
-msgid "error renaming '%s' to '%s': %s\n"
-msgstr "把 '%s' 重新命名成 '%s' 時出錯: %s\n"
-
-#, c-format
 msgid "Note: This passphrase has never been changed.%0APlease change it now."
 msgstr "請注意: 密語從未變更過.%0A請現在就變更."
 
@@ -3881,6 +3877,11 @@ msgstr "警告: 你的加密子鑰很快將到期.\n"
 #, c-format
 msgid "You may want to change its expiration date too.\n"
 msgstr "你可能也會想變更其使用期限.\n"
+
+#, fuzzy, c-format
+#| msgid "WARNING: Your encryption subkey expires soon.\n"
+msgid "WARNING: No valid encryption subkey left over.\n"
+msgstr "警告: 你的加密子鑰很快將到期.\n"
 
 msgid ""
 "WARNING: This is a PGP2-style key.  Adding a photo ID may cause some "
@@ -7870,6 +7871,10 @@ msgstr "請檢查其原因並手動刪除該檔案\n"
 #, c-format
 msgid "failed to create temporary cache dir file '%s': %s\n"
 msgstr "建立暫存快取目錄檔案 '%s' 失敗: %s\n"
+
+#, c-format
+msgid "error renaming '%s' to '%s': %s\n"
+msgstr "把 '%s' 重新命名成 '%s' 時出錯: %s\n"
 
 #, c-format
 msgid "can't hash '%s': %s\n"

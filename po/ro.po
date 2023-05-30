@@ -762,11 +762,6 @@ msgstr ""
 msgid "Wrong"
 msgstr ""
 
-#, fuzzy, c-format
-#| msgid "error reading `%s': %s\n"
-msgid "error renaming '%s' to '%s': %s\n"
-msgstr "eroare la citire `%s': %s\n"
-
 #, c-format
 msgid "Note: This passphrase has never been changed.%0APlease change it now."
 msgstr ""
@@ -4043,6 +4038,10 @@ msgstr ""
 #| msgid "You can't change the expiration date of a v3 key\n"
 msgid "You may want to change its expiration date too.\n"
 msgstr "Nu puteţi schimba data de expirare a unei chei v3\n"
+
+#, c-format
+msgid "WARNING: No valid encryption subkey left over.\n"
+msgstr ""
 
 msgid ""
 "WARNING: This is a PGP2-style key.  Adding a photo ID may cause some "
@@ -8192,6 +8191,11 @@ msgstr ""
 #, fuzzy, c-format
 msgid "failed to create temporary cache dir file '%s': %s\n"
 msgstr "nu pot crea directorul `%s': %s\n"
+
+#, fuzzy, c-format
+#| msgid "error reading `%s': %s\n"
+msgid "error renaming '%s' to '%s': %s\n"
+msgstr "eroare la citire `%s': %s\n"
 
 #, fuzzy, c-format
 #| msgid "can't access `%s': %s\n"
