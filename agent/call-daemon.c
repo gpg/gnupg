@@ -98,7 +98,6 @@ static npth_mutex_t start_daemon_lock;
 struct wait_child_thread_parm_s
 {
   enum daemon_type type;
-  pid_t pid;
 };
 
 
@@ -109,54 +108,14 @@ wait_child_thread (void *arg)
   int err;
   struct wait_child_thread_parm_s *parm = arg;
   enum daemon_type type = parm->type;
-  pid_t pid =  parm->pid;
-#ifndef HAVE_W32_SYSTEM
-  int wstatus;
-#endif
   const char *name = opt.daemon_program[type];
   struct daemon_global_s *g = &daemon_global[type];
   struct daemon_local_s *sl;
 
   xfree (parm);  /* We have copied all data to the stack.  */
 
-#ifdef HAVE_W32_SYSTEM
-  npth_unprotect ();
-  /* Note that although we use a pid_t here, it is actually a HANDLE.  */
-  WaitForSingleObject ((HANDLE)pid, INFINITE);
-  npth_protect ();
+  assuan_pipe_wait_server_termination (g->primary_ctx, NULL, 0);
   log_info ("daemon %s finished\n", name);
-#else /* !HAVE_W32_SYSTEM*/
-
- again:
-  npth_unprotect ();
-  err = waitpid (pid, &wstatus, 0);
-  npth_protect ();
-
-  if (err < 0)
-    {
-      if (errno == EINTR)
-        goto again;
-      log_error ("waitpid for %s failed: %s\n", name, strerror (errno));
-      return NULL;
-    }
-  else
-    {
-      if (WIFEXITED (wstatus))
-        log_info ("daemon %s finished (status %d)\n",
-                  name, WEXITSTATUS (wstatus));
-      else if (WIFSIGNALED (wstatus))
-        log_info ("daemon %s killed by signal %d\n", name, WTERMSIG (wstatus));
-      else
-        {
-          if (WIFSTOPPED (wstatus))
-            log_info ("daemon %s stopped by signal %d\n",
-                      name, WSTOPSIG (wstatus));
-          goto again;
-        }
-
-      assuan_set_flag (g->primary_ctx, ASSUAN_NO_WAITPID, 1);
-    }
-#endif /*!HAVE_W32_SYSTEM*/
 
   agent_flush_cache (1);  /* Flush the PIN cache.  */
 
@@ -496,7 +455,6 @@ daemon_start (enum daemon_type type, ctrl_t ctrl)
       }
 
     wctp->type = type;
-    wctp->pid = assuan_get_pid (g->primary_ctx);
     err = npth_attr_init (&tattr);
     if (!err)
       {
@@ -561,10 +519,9 @@ agent_daemon_dump_state (void)
   for (i = 0; i < DAEMON_MAX_TYPE; i++) {
     struct daemon_global_s *g = &daemon_global[i];
 
-    log_info ("%s: name %s primary_ctx=%p pid=%ld reusable=%d\n", __func__,
+    log_info ("%s: name %s primary_ctx=%p reusable=%d\n", __func__,
 	      gnupg_module_name (daemon_modules[i]),
 	      g->primary_ctx,
-	      (long)assuan_get_pid (g->primary_ctx),
 	      g->primary_ctx_reusable);
     if (g->socket_name)
       log_info ("%s: socket='%s'\n", __func__, g->socket_name);
