@@ -2,6 +2,14 @@ Noteworthy changes in version 2.5.0 (unreleased)
 ------------------------------------------------
 
 
+Release dates of 2.4 versions
+-----------------------------
+
+Version 2.4.2 (2023-05-30) https://dev.gnupg.org/T6506
+Version 2.4.1 (2023-04-28) https://dev.gnupg.org/T6454
+Version 2.4.0 (2022-12-16) https://dev.gnupg.org/T6302
+
+
 Noteworthy changes in version 2.4.1 (2023-04-28)
 ------------------------------------------------
 
@@ -1595,6 +1603,7 @@ Noteworthy changes in version 2.3.0 (2021-04-07)
 Release dates of 2.2 versions
 -----------------------------
 
+Version 2.2.41 (2022-12-09) https://dev.gnupg.org/T6280
 Version 2.2.40 (2022-10-10) https://dev.gnupg.org/T6181
 Version 2.2.39 (2022-09-02) https://dev.gnupg.org/T6175
 Version 2.2.38 (2022-09-01) https://dev.gnupg.org/T6159
