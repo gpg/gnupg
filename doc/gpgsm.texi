@@ -1725,7 +1725,7 @@ option @option{--disable-dirmngr}.
 
 @mansect see also
 @ifset isman
-@command{gpg2}(1),
+@command{gpg}(1),
 @command{gpg-agent}(1)
 @end ifset
 @include see-also-note.texi

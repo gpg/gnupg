@@ -757,6 +757,6 @@ length up to N bytes.  If N is not given a default value is used
 @ifset isman
 @command{gpg-agent}(1),
 @command{gpgsm}(1),
-@command{gpg2}(1)
+@command{gpg}(1)
 @end ifset
 @include see-also-note.texi
