@@ -2542,8 +2542,6 @@ check_sig_and_print (CTX c, kbnode_t node)
       release_kbnode( keyblock );
       if (rc)
         g10_errors_seen = 1;
-      if (opt.batch && rc)
-        g10_exit (1);
     }
   else  /* Error checking the signature. (neither Good nor Bad).  */
     {
@@ -2660,7 +2658,8 @@ proc_tree (CTX c, kbnode_t node)
         }
 
       for (n1 = node; (n1 = find_next_kbnode (n1, PKT_SIGNATURE));)
-        check_sig_and_print (c, n1);
+        if (check_sig_and_print (c, n1) && opt.batch)
+          break;
 
     }
   else if (node->pkt->pkttype == PKT_GPG_CONTROL
@@ -2679,8 +2678,8 @@ proc_tree (CTX c, kbnode_t node)
         }
 
       for (n1 = node; (n1 = find_next_kbnode (n1, PKT_SIGNATURE));)
-        check_sig_and_print (c, n1);
-
+        if (check_sig_and_print (c, n1) && opt.batch)
+          break;
     }
   else if (node->pkt->pkttype == PKT_SIGNATURE)
     {
@@ -2807,7 +2806,8 @@ proc_tree (CTX c, kbnode_t node)
       if (multiple_ok)
         {
           for (n1 = node; n1; (n1 = find_next_kbnode(n1, PKT_SIGNATURE)))
-	    check_sig_and_print (c, n1);
+	    if (check_sig_and_print (c, n1) && opt.batch)
+              break;
         }
       else
         check_sig_and_print (c, node);
