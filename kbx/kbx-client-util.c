@@ -118,10 +118,14 @@ prepare_data_pipe (kbx_client_data_t kcd)
       return err;  /* That should not happen.  */
     }
 
-  err = assuan_sendfd (kcd->ctx, INT2FD (inpipe[1]));
+#ifdef HAVE_W32_SYSTEM
+  err = assuan_sendfd (kcd->ctx, INT2FD (_get_osfhandle (inpipe[1])));
+#else
+  err = assuan_sendfd (kcd->ctx, inpipe[1]);
+#endif
   if (err)
     {
-      log_error ("sending sending fd %d to keyboxd: %s <%s>\n",
+      log_error ("sending fd %d to keyboxd: %s <%s>\n",
                  inpipe[1], gpg_strerror (err), gpg_strsource (err));
       es_fclose (infp);
       gnupg_close_pipe (inpipe[1]);
@@ -193,6 +197,13 @@ datastream_thread (void *arg)
           gnupg_sleep (1);
           continue;
         }
+#ifdef HAVE_W32_SYSTEM
+      if (nread == 0)
+        {
+          gnupg_sleep (1);
+          continue;
+        }
+#endif
       if (nread != 4)
         {
           err = gpg_error (GPG_ERR_EIO);

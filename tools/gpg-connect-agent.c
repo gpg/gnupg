@@ -898,8 +898,10 @@ static void
 do_sendfd (assuan_context_t ctx, char *line)
 {
   estream_t fp;
-  char *name, *mode, *p;
-  int rc, fd;
+  char *name, *p;
+  int rc;
+  char mode[32];
+  es_syshd_t hd;
 
   /* Get file name. */
   name = line;
@@ -911,16 +913,24 @@ do_sendfd (assuan_context_t ctx, char *line)
     p++;
 
   /* Get mode.  */
-  mode = p;
-  if (!*mode)
-    mode = "r";
+  if (!*p)
+    {
+      mode[0] = 'r';
+      mode[1] = 0;
+      p = &mode[1];
+    }
   else
     {
-      for (p=mode; *p && !spacep (p); p++)
-        ;
-      if (*p)
-        *p++ = 0;
+      int i;
+      for (i = 0; *p && !spacep (p); p++)
+        mode[i++] = *p;
+      mode[i] = 0;
+      p = &mode[i];
     }
+
+#ifdef HAVE_W32_SYSTEM
+  strcpy (p, ",sysopen");
+#endif
 
   /* Open and send. */
   fp = es_fopen (name, mode);
@@ -930,15 +940,30 @@ do_sendfd (assuan_context_t ctx, char *line)
                  name, mode, strerror (errno));
       return;
     }
-  fd = es_fileno (fp);
 
+  es_syshd (fp, &hd);
+
+#ifdef HAVE_W32_SYSTEM
+  if (opt.verbose)
+    log_error ("file '%s' opened in \"%s\" mode, fd=%p\n",
+               name, mode, hd.u.handle);
+#else
   if (opt.verbose)
     log_error ("file '%s' opened in \"%s\" mode, fd=%d\n",
-               name, mode, fd);
+               name, mode, hd.u.fd);
+#endif
 
-  rc = assuan_sendfd (ctx, INT2FD (fd) );
+#ifdef HAVE_W32_SYSTEM
+  rc = assuan_sendfd (ctx, hd.u.handle);
   if (rc)
-    log_error ("sending descriptor %d failed: %s\n", fd, gpg_strerror (rc));
+    log_error ("sending descriptor %p failed: %s\n", hd.u.handle,
+               gpg_strerror (rc));
+#else
+  rc = assuan_sendfd (ctx, hd.u.fd);
+  if (rc)
+    log_error ("sending descriptor %d failed: %s\n", hd.u.fd,
+               gpg_strerror (rc));
+#endif
   es_fclose (fp);
 }
 
@@ -1037,8 +1062,8 @@ do_open (char *line)
         open_fd_table[fd].handle = newhandle;
       }
       if (opt.verbose)
-        log_info ("file '%s' opened in \"%s\" mode, fd=%d  (libc=%d)\n",
-                   name, mode, (int)open_fd_table[fd].handle, fd);
+        log_info ("file '%s' opened in \"%s\" mode, fd=%p  (libc=%d)\n",
+                   name, mode, open_fd_table[fd].handle, fd);
       set_int_var (varname, (int)open_fd_table[fd].handle);
 #else /* Unix */
       if (opt.verbose)
