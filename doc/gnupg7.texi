@@ -11,19 +11,18 @@
 @ifset isman
 GnuPG is a set of programs for public key encryption and digital
 signatures.  The program most users will want to use is the OpenPGP
-command line tool, named @command{gpg2}.  @command{gpgv}is a stripped
-down version of @command{gpg2} with no encryption functionality, used
+command line tool, named @command{gpg}.  @command{gpgv}is a stripped
+down version of @command{gpg} with no encryption functionality, used
 only to verify signatures against a trusted keyring.  @command{gpgsm} is
 the X.509/CMS (for S/MIME) counterpart of
-@command{gpg2}. @command{gpg-agent} is a passphrase and private key
+@command{gpg}. @command{gpg-agent} is a passphrase and private key
 daemon which may also emulate the @command{ssh-agent}.
 @mansect see also
-@command{gpg}(1), 
-@command{gpg2}(1), 
-@command{gpgv}(1), 
-@command{gpgsm}(1), 
-@command{gpg-agent}(1), 
-@command{dirmngr}(8), 
+@command{gpg}(1),
+@command{gpgv}(1),
+@command{gpgsm}(1),
+@command{gpg-agent}(1),
+@command{dirmngr}(8),
 @command{scdaemon}(1)
 @include see-also-note.texi
 @end ifset
