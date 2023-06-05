@@ -54,7 +54,7 @@
 
 /* When generating keys using the streamlined key generation dialog,
    use this as a default expiration interval.  */
-const char *default_expiration_interval = "2y";
+const char *default_expiration_interval = "3y";
 
 /* Flag bits used during key generation.  */
 #define KEYGEN_FLAG_NO_PROTECTION 1

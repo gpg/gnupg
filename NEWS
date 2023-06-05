@@ -1,6 +1,8 @@
 Noteworthy changes in version 2.2.42 (unreleased)
 -------------------------------------------------
 
+  * gpg: Set default expiration date to 3 years.  [T2701]
+
   * gpg: Support OCB encryption.  [T6263]
 
   * gpg: New command --quick-update-pref.  [rGf16c946be7]
