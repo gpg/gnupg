@@ -1067,9 +1067,7 @@ Section "-un.gnupglast"
     nsExec::ExecToLog '"$INSTDIR\bin\launch-gpa" "--stop-server"'
   no_uiserver:
   ifFileExists "$INSTDIR\bin\gpgconf.exe"  0 no_gpgconf
-    nsExec::ExecToLog '"$INSTDIR\bin\gpgconf" "--kill" "gpg-agent"'
-    nsExec::ExecToLog '"$INSTDIR\bin\gpgconf" "--kill" "dirmngr"'
-    nsExec::ExecToLog '"$INSTDIR\bin\gpgconf" "--kill" "keyboxd"'
+    nsExec::ExecToLog '"$INSTDIR\bin\gpgconf" "--kill" "all"'
   no_gpgconf:
 SectionEnd
 
