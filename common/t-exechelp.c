@@ -29,7 +29,7 @@
 
 static int verbose;
 
-
+#ifndef HAVE_W32_SYSTEM
 static void
 print_open_fds (int *array)
 {
@@ -169,20 +169,119 @@ test_close_all_fds (void)
     }
 
 }
+#endif
+
+static char buff12k[1024*12];
+
+static void
+run_server (void)
+{
+  estream_t fp;
+  int i;
+  char *p;
+  unsigned int len;
+  int ret;
+
+  fp = es_fdopen_nc (1, "w");
+  if (fp == NULL)
+    {
+      fprintf (stderr, "es_fdopen failed\n");
+      exit (1);
+    }
+
+  /* Fill the buffer by ASCII chars.  */
+  p = buff12k;
+  for (i = 0; i < sizeof (buff12k); i++)
+    if ((i % 64) == 63)
+      *p++ = '\n';
+    else
+      *p++ = (i % 64) + '@';
+
+  len = sizeof (buff12k);
+
+  ret = es_write (fp, (void *)&len, sizeof (len), NULL);
+  if (ret)
+    {
+      fprintf (stderr, "es_write (1) failed\n");
+      exit (1);
+    }
+
+  ret = es_write (fp, buff12k, sizeof (buff12k), NULL);
+  if (ret)
+    {
+      fprintf (stderr, "es_write (2) failed\n");
+      exit (1);
+    }
+  es_fclose (fp);
+  exit (0);
+}
+
+
+static void
+test_pipe_stream (const char *pgmname)
+{
+  gpg_error_t err;
+  gnupg_process_t proc;
+  estream_t outfp;
+  const char *argv[2];
+  unsigned int len;
+  size_t n;
+  int ret;
+
+  argv[0] = "--server";
+  argv[1] = NULL;
+
+  err = gnupg_process_spawn (pgmname, argv,
+                             (GNUPG_PROCESS_STDOUT_PIPE
+                              |GNUPG_PROCESS_STDERR_KEEP),
+                             NULL, NULL, &proc);
+  if (err)
+    {
+      fprintf (stderr, "gnupg_process_spawn failed\n");
+      exit (1);
+    }
+
+  gnupg_process_get_streams (proc, 0, NULL, &outfp, NULL);
+
+  ret = es_read (outfp, (void *)&len, sizeof (len), NULL);
+  if (ret)
+    {
+      fprintf (stderr, "es_read (1) failed\n");
+      exit (1);
+    }
+  ret = es_read (outfp, buff12k, sizeof (buff12k), &n);
+  if (ret || n != sizeof (buff12k))
+    {
+      fprintf (stderr, "es_read (2) failed\n");
+      exit (1);
+    }
+  es_fclose (outfp);
+  gnupg_process_release (proc);
+}
 
 
 int
 main (int argc, char **argv)
 {
+  const char *myname = "no-pgm";
+
   if (argc)
-    { argc--; argv++; }
+    {
+      myname = argv[0];
+      argc--; argv++;
+    }
   if (argc && !strcmp (argv[0], "--verbose"))
     {
       verbose = 1;
       argc--; argv++;
     }
+  if (argc && !strcmp (argv[0], "--server"))
+    run_server ();
 
+#ifndef HAVE_W32_SYSTEM
   test_close_all_fds ();
+#endif
+  test_pipe_stream (myname);
 
   return 0;
 }
