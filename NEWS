@@ -30,6 +30,8 @@ Noteworthy changes in version 2.2.42 (unreleased)
 
   * dirmngr: New option --ignore-crl-extensions.  [T6545]
 
+  * dirmngr: Backport of the AD_QUERY command.  [rG2a3bad5985]
+
   * wkd: Use export-clean for gpg-wks-client's --mirror and --create
     commands.  [rG505e770b4c]
 

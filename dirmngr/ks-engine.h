@@ -29,6 +29,7 @@
 #define KS_GET_FLAG_NEXT      4
 #define KS_GET_FLAG_ONLY_AD   8  /* Do this only if we have an AD.  */
 #define KS_GET_FLAG_ROOTDSE  16  /* Get the rootDSE.  */
+#define KS_GET_FLAG_SUBST    32  /* Substiture variables.  */
 
 
 /*-- ks-action.c --*/
@@ -70,6 +71,7 @@ gpg_error_t ks_kdns_help (ctrl_t ctrl, parsed_uri_t uri);
 gpg_error_t ks_kdns_fetch (ctrl_t ctrl, parsed_uri_t uri, estream_t *r_fp);
 
 /*-- ks-engine-ldap.c --*/
+void ks_ldap_help_variables (ctrl_t ctrl);
 gpg_error_t ks_ldap_help (ctrl_t ctrl, parsed_uri_t uri);
 void ks_ldap_free_state (struct ks_engine_ldap_local_s *state);
 gpg_error_t ks_ldap_search (ctrl_t ctrl, parsed_uri_t uri, const char *pattern,
