@@ -26,6 +26,13 @@
 #include <unistd.h>
 #include <stdlib.h>
 #include <npth.h>
+#ifdef HAVE_W32_SYSTEM
+# ifndef WINVER
+#  define WINVER 0x0500  /* Same as in common/sysutils.c */
+# endif
+# include <winsock2.h>
+# include <sddl.h>
+#endif
 
 
 #include "dirmngr.h"
@@ -73,6 +80,9 @@ struct ks_engine_ldap_local_s
   int more_pages;       /* More pages announced by server.      */
 };
 
+/*-- prototypes --*/
+static char *map_rid_to_dn (ctrl_t ctrl, const char *rid);
+static char *basedn_from_rootdse (ctrl_t ctrl, parsed_uri_t uri);
 
 
 
@@ -147,6 +157,114 @@ my_ldap_value_free (char **vals)
 {
   if (vals)
     ldap_value_free (vals);
+}
+
+
+/* Print a description of supported variables.  */
+void
+ks_ldap_help_variables (ctrl_t ctrl)
+{
+  const char data[] =
+    "Supported variables in LDAP filter expressions:\n"
+    "\n"
+    "domain           - The defaultNamingContext.\n"
+    "domain_admins    - Group of domain admins.\n"
+    "domain_users     - Group with all user accounts.\n"
+    "domain_guests    - Group with the builtin gues account.\n"
+    "domain_computers - Group with all clients and servers.\n"
+    "cert_publishers  - Group with all cert issuing computers.\n"
+    "protected_users  - Group of users with extra protection.\n"
+    "key_admins       - Group for delegated access to msdsKeyCredentialLink.\n"
+    "enterprise_key_admins     - Similar to key_admins.\n"
+    "domain_domain_controllers - Group with all domain controllers.\n"
+    "sid_domain       - SubAuthority numbers.\n";
+
+  ks_print_help (ctrl, data);
+}
+
+
+/* Helper function for substitute_vars.  */
+static const char *
+getval_for_filter (void *cookie, const char *name)
+{
+  ctrl_t ctrl = cookie;
+  const char *result = NULL;
+
+  if (!strcmp (name, "sid_domain"))
+    {
+#ifdef HAVE_W32_SYSTEM
+      PSID mysid;
+      static char *sidstr;
+      char *s, *s0;
+      int i;
+
+      if (!sidstr)
+        {
+          mysid = w32_get_user_sid ();
+          if (!mysid)
+            {
+              gpg_err_set_errno (ENOENT);
+              goto leave;
+            }
+
+          if (!ConvertSidToStringSid (mysid, &sidstr))
+            {
+              gpg_err_set_errno (EINVAL);
+              goto leave;
+            }
+          /* Example for SIDSTR:
+           * S-1-5-21-3636969917-2569447256-918939550-1127 */
+          for (s0=NULL,s=sidstr,i=0; (s=strchr (s, '-')); i++)
+            {
+              s++;
+              if (i == 3)
+                s0 = s;
+              else if (i==6)
+                {
+                  s[-1] = 0;
+                  break;
+                }
+            }
+          if (!s0)
+            {
+              log_error ("oops: invalid SID received from OS");
+              gpg_err_set_errno (EINVAL);
+              LocalFree (sidstr);
+              goto leave;
+            }
+          sidstr = s0;  /* (We never release SIDSTR thus no memmove.)  */
+        }
+      result = sidstr;
+#else
+      gpg_err_set_errno (ENOSYS);
+      goto leave;
+#endif
+    }
+  else if (!strcmp (name, "domain"))
+    result = basedn_from_rootdse (ctrl, NULL);
+  else if (!strcmp (name, "domain_admins"))
+    result = map_rid_to_dn (ctrl, "512");
+  else if (!strcmp (name, "domain_users"))
+    result = map_rid_to_dn (ctrl, "513");
+  else if (!strcmp (name, "domain_guests"))
+    result = map_rid_to_dn (ctrl, "514");
+  else if (!strcmp (name, "domain_computers"))
+    result = map_rid_to_dn (ctrl, "515");
+  else if (!strcmp (name, "domain_domain_controllers"))
+    result = map_rid_to_dn (ctrl, "516");
+  else if (!strcmp (name, "cert_publishers"))
+    result = map_rid_to_dn (ctrl, "517");
+  else if (!strcmp (name, "protected_users"))
+    result = map_rid_to_dn (ctrl, "525");
+  else if (!strcmp (name, "key_admins"))
+    result = map_rid_to_dn (ctrl, "526");
+  else if (!strcmp (name, "enterprise_key_admins"))
+    result = map_rid_to_dn (ctrl, "527");
+  else
+    result = "";  /* Unknown variables are empty.  */
+
+ leave:
+  return result;
 }
 
 
@@ -1393,6 +1511,63 @@ fetch_rootdse (ctrl_t ctrl, parsed_uri_t uri)
       nvc = NULL;
     }
   return nvc;
+}
+
+
+/* Return the DN for the given RID.  This is used with the Active
+ * Directory.  */
+static char *
+map_rid_to_dn (ctrl_t ctrl, const char *rid)
+{
+  gpg_error_t err;
+  char *result = NULL;
+  estream_t infp = NULL;
+  uri_item_t puri;  /* The broken down URI.  */
+  nvc_t nvc = NULL;
+  char *filter = NULL;
+  const char *s;
+  char *attr[2] = {"dn", NULL};
+
+  err = ks_action_parse_uri ("ldap:///", &puri);
+  if (err)
+    return NULL;
+
+  filter = strconcat ("(objectSid=S-1-5-21-$sid_domain-", rid, ")", NULL);
+  if (!filter)
+    goto leave;
+
+  err = ks_ldap_query (ctrl, puri->parsed_uri, KS_GET_FLAG_SUBST,
+                       filter, attr, NULL, &infp);
+  if (err)
+    {
+      log_error ("ldap: AD query '%s' failed: %s\n", filter,gpg_strerror (err));
+      goto leave;
+    }
+  if ((err = nvc_parse (&nvc, NULL, infp)))
+    {
+      log_error ("ldap: parsing the result failed: %s\n",gpg_strerror (err));
+      goto leave;
+    }
+  if (!(s = nvc_get_string (nvc, "Dn:")))
+    {
+      err = gpg_error (GPG_ERR_NOT_FOUND);
+      log_error ("ldap: mapping rid '%s'failed: %s\n", rid, gpg_strerror (err));
+      goto leave;
+    }
+  result = xtrystrdup (s);
+  if (!result)
+    {
+      err = gpg_error_from_syserror ();
+      log_error ("ldap: strdup failed: %s\n", gpg_strerror (err));
+      goto leave;
+    }
+
+ leave:
+  es_fclose (infp);
+  release_uri_item_list (puri);
+  xfree (filter);
+  nvc_release (nvc);
+  return result;
 }
 
 
@@ -2824,6 +2999,7 @@ ks_ldap_query (ctrl_t ctrl, parsed_uri_t uri, unsigned int ks_get_flags,
   LDAP *ldap_conn = NULL;
   char *basedn = NULL;
   estream_t fp = NULL;
+  char *filter_arg_buffer = NULL;
   char *filter = NULL;
   int scope = LDAP_SCOPE_SUBTREE;
   LDAPMessage *message = NULL;
@@ -2838,6 +3014,20 @@ ks_ldap_query (ctrl_t ctrl, parsed_uri_t uri, unsigned int ks_get_flags,
 
   if ((!filter_arg || !*filter_arg) && (ks_get_flags & KS_GET_FLAG_ROOTDSE))
     filter_arg = "^&base&(objectclass=*)";
+
+  if ((ks_get_flags & KS_GET_FLAG_SUBST)
+      && filter_arg && strchr (filter_arg, '$'))
+    {
+      filter_arg_buffer = substitute_vars (filter_arg, getval_for_filter, ctrl);
+      if (!filter_arg_buffer)
+        {
+          err = gpg_error_from_syserror ();
+          log_error ("substituting filter variables failed: %s\n",
+                     gpg_strerror (err));
+          goto leave;
+        }
+      filter_arg = filter_arg_buffer;
+    }
 
   err = ks_ldap_prepare_my_state (ctrl, ks_get_flags, &first_mode, &next_mode);
   if (err)
@@ -3048,6 +3238,7 @@ ks_ldap_query (ctrl_t ctrl, parsed_uri_t uri, unsigned int ks_get_flags,
     ldap_unbind (ldap_conn);
 
   xfree (filter);
+  xfree (filter_arg_buffer);
 
   return err;
 }

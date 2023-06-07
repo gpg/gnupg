@@ -616,7 +616,7 @@ nve_next_value (nve_t entry, const char *name)
 
 /* Return the string for the first entry in NVC with NAME.  If an
  * entry with NAME is missing in NVC or its value is the empty string
- * NULL is returned.  Note that the The returned string is a pointer
+ * NULL is returned.  Note that the the returned string is a pointer
  * into NVC.  */
 const char *
 nvc_get_string (nvc_t nvc, const char *name)
