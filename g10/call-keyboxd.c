@@ -94,8 +94,6 @@ gpg_keyboxd_deinit_session_data (ctrl_t ctrl)
         log_error ("oops: trying to cleanup an active keyboxd context\n");
       else
         {
-          kbx_client_data_release (kbl->kcd);
-          kbl->kcd = NULL;
           if (kbl->ctx && in_transaction)
             {
               /* This is our hack to commit the changes done during a
@@ -112,6 +110,15 @@ gpg_keyboxd_deinit_session_data (ctrl_t ctrl)
             }
           assuan_release (kbl->ctx);
           kbl->ctx = NULL;
+          /*
+           * Since there may be pipe output FD sent to the server (so
+           * that it can receive data through the pipe), we should
+           * release the assuan connection before releasing KBL->KCD.
+           * This way, the data receiving thread can finish cleanly,
+           * and we can join the thread.
+           */
+          kbx_client_data_release (kbl->kcd);
+          kbl->kcd = NULL;
         }
       xfree (kbl);
     }
@@ -223,7 +230,7 @@ open_context (ctrl_t ctrl, keyboxd_local_t *r_kbl)
           return err;
         }
 
-      err = kbx_client_data_new (&kbl->kcd, kbl->ctx, 1);
+      err = kbx_client_data_new (&kbl->kcd, kbl->ctx, 0);
       if (err)
         {
           assuan_release (kbl->ctx);

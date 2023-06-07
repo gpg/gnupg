@@ -53,6 +53,7 @@ struct kbx_client_data_s
   /* Condition variable to sync the datastream with the command.  */
   npth_mutex_t mutex;
   npth_cond_t  cond;
+  npth_t thd;
 
   /* The data received from the keyboxd and an error code if there was
    * a problem (in which case DATA is also set to NULL.  This is only
@@ -103,7 +104,6 @@ prepare_data_pipe (kbx_client_data_t kcd)
   int rc;
   int inpipe[2];
   estream_t infp;
-  npth_t thread;
   npth_attr_t tattr;
 
   kcd->fp = NULL;
@@ -142,6 +142,7 @@ prepare_data_pipe (kbx_client_data_t kcd)
       return 0;
     }
 
+  close (inpipe[1]);
   kcd->fp = infp;
 
 
@@ -154,8 +155,8 @@ prepare_data_pipe (kbx_client_data_t kcd)
       kcd->fp = NULL;
       return err;
     }
-  npth_attr_setdetachstate (&tattr, NPTH_CREATE_DETACHED);
-  rc = npth_create (&thread, &tattr, datastream_thread, kcd);
+  npth_attr_setdetachstate (&tattr, NPTH_CREATE_JOINABLE);
+  rc = npth_create (&kcd->thd, &tattr, datastream_thread, kcd);
   if (rc)
     {
       err = gpg_error_from_errno (rc);
@@ -197,20 +198,8 @@ datastream_thread (void *arg)
           gnupg_sleep (1);
           continue;
         }
-#ifdef HAVE_W32_SYSTEM
-      if (nread == 0)
-        {
-          gnupg_sleep (1);
-          continue;
-        }
-#endif
-      if (nread != 4)
-        {
-          err = gpg_error (GPG_ERR_EIO);
-          log_error ("error reading data length from keyboxd: %s\n",
-                     "short read");
-          continue;
-        }
+      if (nread < 4)
+        break;
 
       datalen = buf32_to_size_t (lenbuf);
       /* log_debug ("keyboxd announced %zu bytes\n", datalen); */
@@ -340,11 +329,14 @@ kbx_client_data_release (kbx_client_data_t kcd)
 
   if (!kcd)
     return;
+
+  if (npth_join (kcd->thd, NULL))
+    log_error ("kbx_client_data_release failed on npth_join");
+
   fp = kcd->fp;
   kcd->fp = NULL;
-  es_fclose (fp);  /* That close should let the thread run into an error.  */
-  /* FIXME: Make thread killing explicit.  Otherwise we run in a
-   * log_fatal due to the destroyed mutex. */
+  es_fclose (fp);
+
   npth_cond_destroy (&kcd->cond);
   npth_mutex_destroy (&kcd->mutex);
   xfree (kcd);
