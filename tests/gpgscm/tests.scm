@@ -92,24 +92,16 @@
 (define :stdin car)
 (define :stdout cadr)
 (define :stderr caddr)
-(define :proc cadddr)
 
 (define (call-with-io what in)
-  (let ((h (process-spawn what 0)))
-    (es-write (:stdin h) in)
-    (es-fclose (:stdin h))
-    (let* ((out (es-read-all (:stdout h)))
-	   (err (es-read-all (:stderr h)))
-	   (result (process-wait (:proc h) #t)))
-      (es-fclose (:stdout h))
-      (es-fclose (:stderr h))
-      (if (> (*verbose*) 2)
-	  (info "Child" (:proc h) "returned:"
-		`((command ,(stringify what))
-		  (status ,result)
-		  (stdout ,out)
-		  (stderr ,err))))
-      (list result out err))))
+  (let ((proc-result (process-spawn-io what in)))
+    (if (> (*verbose*) 2)
+	(info "Child #proc returned:"
+	      `((command ,(stringify what))
+		(status ,(car proc-result))
+		(stdout ,(cadr proc-result))
+		(stderr ,(caddr proc-result)))))
+    proc-result))
 
 ;; Accessor function for the results of 'call-with-io'.  ':stdout' and
 ;; ':stderr' can also be used.
@@ -127,17 +119,6 @@
     (if (= 0 (:retcode result))
 	(:stdout result)
 	(throw (:stderr result)))))
-
-;;
-;; estream helpers.
-;;
-
-(define (es-read-all stream)
-  (let loop
-      ((acc ""))
-    (if (es-feof stream)
-	acc
-	(loop (string-append acc (es-read stream 4096))))))
 
 ;;
 ;; File management.
