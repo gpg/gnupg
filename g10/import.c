@@ -1564,6 +1564,20 @@ impex_filter_getval (void *cookie, const char *propname)
         {
           result = dateonlystr_from_pk (pk);
         }
+      else if (!strcmp (propname, "key_expires"))
+        {
+          snprintf (numbuf, sizeof numbuf, "%lu", (ulong)pk->expiredate);
+          result = numbuf;
+        }
+      else if (!strcmp (propname, "key_expires_d"))
+        {
+          static char exdatestr[MK_DATESTR_SIZE];
+
+          if (pk->expiredate)
+            result = mk_datestr (exdatestr, sizeof exdatestr, pk->expiredate);
+          else
+            result = "";
+        }
       else if (!strcmp (propname, "expired"))
         {
           result = pk->has_expired? "1":"0";
