@@ -12,6 +12,9 @@ Noteworthy changes in version 2.2.42 (unreleased)
 
   * gpg: Add modes 16 and 30 to --gen-random.
 
+  * gpg: Emit status line and proper diagnostics for write errors.
+    [T6528]
+
   * gpgsm: Support ECC certificates.  [T6253]
 
   * gpgsm: Also announce AES256-CBC in signatures.  [rGaa397fdcdb21]
