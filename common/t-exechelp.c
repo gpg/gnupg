@@ -172,6 +172,7 @@ test_close_all_fds (void)
 #endif
 
 static char buff12k[1024*12];
+static char buff4k[1024*4];
 
 static void
 run_server (void)
@@ -181,8 +182,19 @@ run_server (void)
   char *p;
   unsigned int len;
   int ret;
+  es_syshd_t syshd;
+  size_t n;
+  off_t o;
 
-  fp = es_fdopen_nc (1, "w");
+#ifdef HAVE_W32_SYSTEM
+  syshd.type = ES_SYSHD_HANDLE;
+  syshd.u.handle = (HANDLE)_get_osfhandle (1);
+#else
+  syshd.type = ES_SYSHD_FD;
+  syshd.u.fd = 1;
+#endif
+
+  fp = es_sysopen_nc (&syshd, "w");
   if (fp == NULL)
     {
       fprintf (stderr, "es_fdopen failed\n");
@@ -206,12 +218,31 @@ run_server (void)
       exit (1);
     }
 
-  ret = es_write (fp, buff12k, sizeof (buff12k), NULL);
-  if (ret)
+  es_fflush (fp);
+
+  o = 0;
+  n = len;
+
+  while (1)
     {
-      fprintf (stderr, "es_write (2) failed\n");
-      exit (1);
+      size_t n0, n1;
+
+      n0 = n > 4096 ? 4096 : n;
+      memcpy (buff4k, buff12k + o, n0);
+
+      ret = es_write (fp, buff4k, n0, &n1);
+      if (ret || n0 != n1)
+        {
+          fprintf (stderr, "es_write (2) failed\n");
+          exit (1);
+        }
+
+      o += n0;
+      n -= n0;
+      if (n == 0)
+        break;
     }
+
   es_fclose (fp);
   exit (0);
 }
@@ -226,6 +257,7 @@ test_pipe_stream (const char *pgmname)
   const char *argv[2];
   unsigned int len;
   size_t n;
+  off_t o;
   int ret;
 
   argv[0] = "--server";
@@ -249,10 +281,27 @@ test_pipe_stream (const char *pgmname)
       fprintf (stderr, "es_read (1) failed\n");
       exit (1);
     }
-  ret = es_read (outfp, buff12k, sizeof (buff12k), &n);
-  if (ret || n != sizeof (buff12k))
+
+  o = 0;
+  while (1)
     {
-      fprintf (stderr, "es_read (2) failed\n");
+      if (es_feof (outfp))
+        break;
+
+      ret = es_read (outfp, buff4k, sizeof (buff4k), &n);
+      if (ret)
+        {
+          fprintf (stderr, "es_read (2) failed\n");
+          exit (1);
+        }
+
+      memcpy (buff12k + o, buff4k, n);
+      o += n;
+    }
+
+  if (o != sizeof (buff12k))
+    {
+      fprintf (stderr, "received data with wrong length %d\n", (int)o);
       exit (1);
     }
   es_fclose (outfp);
