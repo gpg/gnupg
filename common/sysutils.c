@@ -252,6 +252,9 @@ map_w32_to_errno (DWORD w32_err)
     case ERROR_ALREADY_EXISTS:
       return EEXIST;
 
+    case ERROR_FILE_INVALID:
+      return EIO;
+
       /* This mapping has been taken from reactOS.  */
     case ERROR_TOO_MANY_OPEN_FILES: return EMFILE;
     case ERROR_ARENA_TRASHED: return ENOMEM;
