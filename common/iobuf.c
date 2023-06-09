@@ -503,7 +503,8 @@ file_filter (void *opaque, int control, iobuf_t chain, byte * buf,
 	      if (ec != ERROR_BROKEN_PIPE)
 		{
 		  rc = gpg_error_from_errno (ec);
-		  log_error ("%s: read error: ec=%d\n", a->fname, ec);
+		  log_error ("%s: read error: %s (ec=%d)\n",
+                             a->fname, gpg_strerror (rc), ec);
 		}
 	    }
 	  else if (!nread)
@@ -573,7 +574,8 @@ file_filter (void *opaque, int control, iobuf_t chain, byte * buf,
 		{
 		  int ec = (int) GetLastError ();
 		  rc = gpg_error_from_errno (ec);
-		  log_error ("%s: write error: ec=%d\n", a->fname, ec);
+		  log_error ("%s: write error: %s (ec=%d)\n",
+                             a->fname, gpg_strerror (rc), ec);
 		  break;
 		}
 	      p += n;
@@ -632,7 +634,8 @@ file_filter (void *opaque, int control, iobuf_t chain, byte * buf,
           if (ec != ERROR_BROKEN_PIPE)
             {
               rc = gpg_error_from_errno (ec);
-              log_error ("%s: read error: ec=%d\n", a->fname, ec);
+              log_error ("%s: read error: %s (ec=%d)\n",
+                         a->fname, gpg_strerror (rc), ec);
             }
           a->npeeked = 0;
         }
