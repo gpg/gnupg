@@ -584,12 +584,8 @@ size_t iobuf_temp_to_buffer (iobuf_t a, byte * buffer, size_t buflen);
 size_t iobuf_copy (iobuf_t dest, iobuf_t source);
 
 /* Return the size of any underlying file.  This only works with
-   file_filter based pipelines.
-
-   On Win32, it is sometimes not possible to determine the size of
-   files larger than 4GB.  In this case, *OVERFLOW (if not NULL) is
-   set to 1.  Otherwise, *OVERFLOW is set to 0.  */
-off_t iobuf_get_filelength (iobuf_t a, int *overflow);
+   file_filter based pipelines.  */
+uint64_t iobuf_get_filelength (iobuf_t a);
 #define IOBUF_FILELENGTH_LIMIT 0xffffffff
 
 /* Return the file descriptor designating the underlying file.  This

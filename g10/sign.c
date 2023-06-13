@@ -823,11 +823,10 @@ write_plaintext_packet (iobuf_t out, iobuf_t inp,
   /* Try to calculate the length of the data. */
   if ( !iobuf_is_pipe_filename (fname) && *fname)
     {
-      off_t tmpsize;
-      int overflow;
+      uint64_t tmpsize;
 
-      if (!(tmpsize = iobuf_get_filelength (inp, &overflow))
-          && !overflow && opt.verbose)
+      tmpsize = iobuf_get_filelength (inp);
+      if (!tmpsize && opt.verbose)
         log_info (_("WARNING: '%s' is an empty file\n"), fname);
 
       /* We can't encode the length of very large files because
