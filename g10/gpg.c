@@ -3399,7 +3399,13 @@ main (int argc, char **argv)
 	  case oAllowFreeformUID: opt.allow_freeform_uid = 1; break;
 	  case oNoAllowFreeformUID: opt.allow_freeform_uid = 0; break;
 	  case oNoLiteral: opt.no_literal = 1; break;
-	  case oSetFilesize: opt.set_filesize = pargs.r.ret_ulong; break;
+
+	  case oSetFilesize:
+            /* There are restricts on the value (e.g. < 2^32); you
+             * need to check the entire code to understand this.  */
+            opt.set_filesize = pargs.r.ret_ulong;
+            break;
+
 	  case oFastListMode: opt.fast_list_mode = 1; break;
 	  case oFixedListMode: /* Dummy */ break;
           case oLegacyListMode: opt.legacy_list_mode = 1; break;

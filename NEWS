@@ -15,6 +15,8 @@ Noteworthy changes in version 2.2.42 (unreleased)
   * gpg: Emit status line and proper diagnostics for write errors.
     [T6528]
 
+  * gpg: Make progress work for large files on Windows.  [T6534]
+
   * gpgsm: Support ECC certificates.  [T6253]
 
   * gpgsm: Also announce AES256-CBC in signatures.  [rGaa397fdcdb21]

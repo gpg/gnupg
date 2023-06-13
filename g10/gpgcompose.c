@@ -2869,8 +2869,7 @@ literal (const char *option, int argc, char *argv[], void *cookie)
           if (data->file)
             {
               iobuf_t in;
-              int overflow;
-              off_t off;
+              uint64_t off;
 
               in = iobuf_open (data->filename);
               if (! in)
@@ -2881,10 +2880,10 @@ literal (const char *option, int argc, char *argv[], void *cookie)
                   break;
                 }
 
-              off = iobuf_get_filelength (in, &overflow);
+              off = iobuf_get_filelength (in);
               iobuf_close (in);
 
-              if (overflow || off == 0)
+              if (off == 0)
                 /* Length is unknown or there was an error
                    (unfortunately, iobuf_get_filelength doesn't
                    distinguish between 0 length files and an error!).

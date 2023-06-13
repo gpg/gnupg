@@ -52,12 +52,11 @@ generate_photo_id (ctrl_t ctrl, PKT_public_key *pk,const char *photo_name)
 {
   PKT_user_id *uid;
   int error=1,i;
-  unsigned int len;
+  uint64_t len;
   char *filename;
   byte *photo=NULL;
   byte header[16];
   IOBUF file;
-  int overflow;
 
   header[0]=0x10; /* little side of photo header length */
   header[1]=0;    /* big side of photo header length */
@@ -125,11 +124,18 @@ generate_photo_id (ctrl_t ctrl, PKT_public_key *pk,const char *photo_name)
 	}
 
 
-      len=iobuf_get_filelength(file, &overflow);
-      if(len>6144 || overflow)
+      len = iobuf_get_filelength(file);
+      if(len>6144)
 	{
-	  tty_printf( _("This JPEG is really large (%d bytes) !\n"),len);
-	  if(!cpr_get_answer_is_yes("photoid.jpeg.size",
+          /* We silently skip JPEGs larger than 1MiB because we have a
+           * 2MiB limit on the user ID packets and we need some limit
+           * anyway because the returned u64 is larger than the u32 or
+           * OpenPGP.  Note that the diagnostic may print a wrong
+           * value if the value is really large; we don't fix this to
+           * avoid a string change.  */
+	  tty_printf( _("This JPEG is really large (%d bytes) !\n"), (int)len);
+	  if(len > 1024*1024
+             || !cpr_get_answer_is_yes("photoid.jpeg.size",
 			    _("Are you sure you want to use it? (y/N) ")))
 	  {
 	    iobuf_close(file);

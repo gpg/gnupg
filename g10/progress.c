@@ -72,13 +72,11 @@ release_progress_context (progress_filter_context_t *pfx)
 
 
 static void
-write_status_progress (const char *what,
-                       unsigned long current, unsigned long total_arg)
+write_status_progress (const char *what, uint64_t current, uint64_t total)
 {
   char buffer[60];
   char units[] = "BKMGTPEZY?";
   int unitidx = 0;
-  uint64_t total = total_arg;
 
   /* Although we use an unsigned long for the values, 32 bit
    * applications using GPGME will use an "int" and thus are limited
@@ -91,7 +89,10 @@ write_status_progress (const char *what,
    * to display how many percent of the operation has been done and
    * thus scaling CURRENT and TOTAL down before they get to large,
    * should not have a noticeable effect except for rounding
-   * imprecision. */
+   * imprecision.
+   * Update 2023-06-13: We now use uint64_t but to keep the API stable
+   * we still do the scaling.
+   */
 
   if (!total && opt.input_size_hint)
     total = opt.input_size_hint;
@@ -121,7 +122,7 @@ write_status_progress (const char *what,
     unitidx = 9;
 
   snprintf (buffer, sizeof buffer, "%.20s ? %lu %lu %c%s",
-            what? what : "?", current, (unsigned long)total,
+            what? what : "?", (unsigned long)current, (unsigned long)total,
             units[unitidx],
             unitidx? "iB" : "");
   write_status_text (STATUS_PROGRESS, buffer);
@@ -181,7 +182,7 @@ progress_filter (void *opaque, int control,
 void
 handle_progress (progress_filter_context_t *pfx, IOBUF inp, const char *name)
 {
-  off_t filesize = 0;
+  uint64_t filesize = 0;
 
   if (!pfx)
     return;
@@ -190,7 +191,7 @@ handle_progress (progress_filter_context_t *pfx, IOBUF inp, const char *name)
   log_assert (is_status_enabled ());
 
   if ( !iobuf_is_pipe_filename (name) && *name )
-    filesize = iobuf_get_filelength (inp, NULL);
+    filesize = iobuf_get_filelength (inp);
   else if (opt.set_filesize)
     filesize = opt.set_filesize;
 
