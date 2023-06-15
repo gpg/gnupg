@@ -134,6 +134,7 @@ enum cmd_and_opt_values {
   oAssumeArmor,
   oAssumeBase64,
   oAssumeBinary,
+  oInputSizeHint,
 
   oBase64,
   oNoArmor,
@@ -310,6 +311,7 @@ static ARGPARSE_OPTS opts[] = {
                 N_("assume input is in base-64 format")),
   ARGPARSE_s_n (oAssumeBinary, "assume-binary",
                 N_("assume input is in binary format")),
+  ARGPARSE_s_s (oInputSizeHint, "input-size-hint", "@"),
 
 
   ARGPARSE_header ("Output", N_("Options controlling the output")),
@@ -1146,6 +1148,10 @@ main ( int argc, char **argv)
           ctrl.autodetect_encoding = 0;
           ctrl.is_pem = 0;
           ctrl.is_base64 = 0;
+          break;
+
+        case oInputSizeHint:
+          ctrl.input_size_hint = string_to_u64 (pargs.r.ret_str);
           break;
 
         case oDisableCRLChecks:

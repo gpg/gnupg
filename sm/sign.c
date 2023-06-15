@@ -362,6 +362,8 @@ gpgsm_sign (ctrl_t ctrl, certlist_t signerlist,
     }
 
   gnupg_ksba_set_progress_cb (b64writer, gpgsm_progress_cb, ctrl);
+  if (ctrl->input_size_hint)
+    gnupg_ksba_set_total (b64writer, ctrl->input_size_hint);
 
   err = ksba_cms_new (&cms);
   if (err)

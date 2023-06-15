@@ -301,6 +301,10 @@ option_handler (assuan_context_t ctx, const char *key, const char *value)
             opt.request_origin = i;
         }
     }
+  else if (!strcmp (key, "input-size-hint"))
+    {
+      ctrl->input_size_hint = string_to_u64 (value);
+    }
   else
     err = gpg_error (GPG_ERR_UNKNOWN_OPTION);
 
