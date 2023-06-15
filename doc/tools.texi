@@ -2049,6 +2049,12 @@ default is to take the directory name from the input filename.  If no
 input filename is known a directory named @file{GPGARCH} is used.
 This option is deprecated in favor of option @option{--directory}.
 
+@item --no-compress
+@opindex no-compress
+This option tells gpg to disable compression (i.e. using option -z0).
+It is useful for archiving only large files which are are already
+compressed (e.g. a set of videos).
+
 @item --gpg @var{gpgcmd}
 @opindex gpg
 Use the specified command @var{gpgcmd} instead of @command{gpg}.
