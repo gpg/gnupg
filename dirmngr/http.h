@@ -117,6 +117,7 @@ struct http_redir_info_s
   unsigned int silent:1;         /* No diagnostics.                        */
   unsigned int allow_downgrade:1;/* Allow a downgrade from https to http.  */
   unsigned int trust_location:1; /* Trust the received Location header.    */
+  unsigned int restrict_redir:1; /* Use legacy restricted redirection.     */
 };
 typedef struct http_redir_info_s http_redir_info_t;
 

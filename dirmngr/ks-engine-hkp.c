@@ -1242,8 +1242,9 @@ send_request (ctrl_t ctrl, const char *request, const char *hostportstr,
   redirinfo.orig_url   = request;
   redirinfo.orig_onion = uri->onion;
   redirinfo.allow_downgrade = 1;
-  /* FIXME: I am not sure whey we allow a downgrade for hkp requests.
-   * Needs at least an explanation here..  */
+  /* FIXME: I am not sure why we allow a downgrade for hkp requests.
+   * Needs at least an explanation here.  */
+  redirinfo.restrict_redir = !!(opt.compat_flags & COMPAT_RESTRICT_HTTP_REDIR);
 
  once_more:
   err = http_session_new (&session, httphost,
