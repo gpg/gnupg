@@ -250,6 +250,11 @@ struct server_control_s
   int is_pem;         /* Is in PEM format */
   int is_base64;      /* is in plain base-64 format */
 
+  /* If > 0 a hint with the expected number of input data bytes.  This
+   * is not necessary an exact number but intended to be used for
+   * progress info and to decide on how to allocate buffers.  */
+  uint64_t input_size_hint;
+
   int create_base64;  /* Create base64 encoded output */
   int create_pem;     /* create PEM output */
   const char *pem_name; /* PEM name to use */
