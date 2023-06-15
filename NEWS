@@ -17,6 +17,8 @@ Noteworthy changes in version 2.2.42 (unreleased)
 
   * gpg: Make progress work for large files on Windows.  [T6534]
 
+  * gpg: New option --no-compress as alias for -z0.
+
   * gpgsm: Support ECC certificates.  [T6253]
 
   * gpgsm: Print PROGRESS status lines.  Add new --input-size-hint.
