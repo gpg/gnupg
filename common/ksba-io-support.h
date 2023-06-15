@@ -25,6 +25,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, see <https://www.gnu.org/licenses/>.
+ * SPDX-License-Identifier: (LGPL-3.0-or-later OR GPL-2.0-or-later)
  */
 
 #ifndef GNUPG_KSBA_IO_SUPPORT_H
@@ -42,6 +43,10 @@
 /* Context object.  */
 typedef struct gnupg_ksba_io_s *gnupg_ksba_io_t;
 
+/* Progress callback type.  */
+typedef gpg_error_t (*gnupg_ksba_progress_cb_t)(ctrl_t ctrl,
+                                                uint64_t current,
+                                                uint64_t total);
 
 
 gpg_error_t gnupg_ksba_create_reader (gnupg_ksba_io_t *ctx,
@@ -57,9 +62,12 @@ gpg_error_t gnupg_ksba_create_writer (gnupg_ksba_io_t *ctx,
                                       const char *pem_name,
                                       estream_t stream,
                                       ksba_writer_t *r_writer);
-
 gpg_error_t gnupg_ksba_finish_writer (gnupg_ksba_io_t ctx);
 void gnupg_ksba_destroy_writer (gnupg_ksba_io_t ctx);
+
+void gnupg_ksba_set_progress_cb (gnupg_ksba_io_t ctx,
+                                 gnupg_ksba_progress_cb_t cb, ctrl_t ctrl);
+void gnupg_ksba_set_total (gnupg_ksba_io_t ctx, uint64_t total);
 
 
 
