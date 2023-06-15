@@ -259,6 +259,7 @@ enum cmd_and_opt_values
     oCipherAlgo,
     oDigestAlgo,
     oCertDigestAlgo,
+    oNoCompress,
     oCompressAlgo,
     oCompressLevel,
     oBZ2CompressLevel,
@@ -697,6 +698,7 @@ static gpgrt_opt_t opts[] = {
   ARGPARSE_s_n (oLockOnce,     "lock-once", "@"),
   ARGPARSE_s_n (oLockMultiple, "lock-multiple", "@"),
   ARGPARSE_s_n (oLockNever,    "lock-never", "@"),
+  ARGPARSE_s_n (oNoCompress,   "no-compress", "@"),
   ARGPARSE_s_s (oCompressAlgo,"compress-algo", "@"),
   ARGPARSE_s_s (oCompressAlgo, "compression-algo", "@"), /* Alias */
   ARGPARSE_s_n (oBZ2DecompressLowmem, "bzip2-decompress-lowmem", "@"),
@@ -3236,6 +3238,11 @@ main (int argc, char **argv)
 	  case oCompress:
 	    /* this is the -z command line option */
 	    opt.compress_level = opt.bz2_compress_level = pargs.r.ret_int;
+            opt.explicit_compress_option = 1;
+	    break;
+	  case oNoCompress:
+	    /* --no-compress is the same as  -z0 */
+	    opt.compress_level = opt.bz2_compress_level = 0;
             opt.explicit_compress_option = 1;
 	    break;
 	  case oCompressLevel: opt.compress_level = pargs.r.ret_int; break;
