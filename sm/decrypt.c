@@ -1116,6 +1116,8 @@ gpgsm_decrypt (ctrl_t ctrl, int in_fd, estream_t out_fp)
       goto leave;
     }
 
+  gnupg_ksba_set_progress_cb (b64writer, gpgsm_progress_cb, ctrl);
+
   rc = ksba_cms_new (&cms);
   if (rc)
     goto leave;
