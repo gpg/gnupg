@@ -1566,17 +1566,9 @@ gpgsm_progress_cb (ctrl_t ctrl, uint64_t current, uint64_t total)
   char units[] = "BKMGTPEZY?";
   int unitidx = 0;
 
-  if (current > 1024*1024*20)
-    {
-      static int closed;
-      if (closed)
-        close (5);
-      closed = 1;
-    }
-
   if (total)
     {
-      if (total > current)
+      if (current > total)
         current = total;
 
       while (total > 1024*1024)
