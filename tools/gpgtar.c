@@ -75,6 +75,7 @@ enum cmd_and_opt_values
     oSetFilename,
     oNull,
     oUtf8Strings,
+    oNoCompress,
 
     oBatch,
     oAnswerYes,
@@ -118,6 +119,7 @@ static ARGPARSE_OPTS opts[] = {
   ARGPARSE_s_s (oSetFilename, "set-filename", "@"),
   ARGPARSE_s_n (oOpenPGP, "openpgp", "@"),
   ARGPARSE_s_n (oCMS, "cms", "@"),
+  ARGPARSE_s_n (oNoCompress,   "no-compress", "@"),
 
   ARGPARSE_s_n (oBatch, "batch", "@"),
   ARGPARSE_s_n (oAnswerYes, "yes", "@"),
@@ -344,6 +346,7 @@ parse_arguments (ARGPARSE_ARGS *pargs, ARGPARSE_OPTS *popts)
         case oFilesFrom: files_from = pargs->r.ret_str; break;
         case oNull: null_names = 1; break;
         case oUtf8Strings: opt.utf8strings = 1; break;
+        case oNoCompress:  opt.no_compress = 1; break;
 
 	case aList:
         case aDecrypt:

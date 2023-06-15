@@ -1283,6 +1283,8 @@ gpgtar_create (char **inpattern, const char *files_from, int null_names,
           ccparray_put (&ccp, "--recipient");
           ccparray_put (&ccp, arg->d);
         }
+      if (opt.no_compress)
+        ccparray_put (&ccp, "-z0");
       for (arg = opt.gpg_arguments; arg; arg = arg->next)
         ccparray_put (&ccp, arg->d);
 

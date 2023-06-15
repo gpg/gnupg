@@ -33,6 +33,7 @@ struct
   int quiet;
   int dry_run;
   int utf8strings;
+  int no_compress;
   const char *gpg_program;
   strlist_t gpg_arguments;
   const char *outfile;
