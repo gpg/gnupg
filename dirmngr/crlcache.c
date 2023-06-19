@@ -2361,6 +2361,7 @@ crl_cache_insert (ctrl_t ctrl, const char *url, ksba_reader_t reader)
           || !strcmp (oid, oidstr_crlNumber) )
         continue;
       log_error (_("unknown critical CRL extension %s\n"), oid);
+      log_info ("(CRL='%s')\n", url);
       if (!err2)
         err2 = gpg_error (GPG_ERR_INV_CRL);
       invalidate_crl |= INVCRL_UNKNOWN_EXTN;
