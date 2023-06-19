@@ -2356,10 +2356,19 @@ crl_cache_insert (ctrl_t ctrl, const char *url, ksba_reader_t reader)
   for (idx=0; !(err=ksba_crl_get_extension (crl, idx, &oid, &critical,
                                               NULL, NULL)); idx++)
     {
+      strlist_t sl;
+
       if (!critical
           || !strcmp (oid, oidstr_authorityKeyIdentifier)
           || !strcmp (oid, oidstr_crlNumber) )
         continue;
+
+      for (sl=opt.ignored_crl_extensions;
+           sl && strcmp (sl->d, oid); sl = sl->next)
+        ;
+      if (sl)
+        continue;  /* Is in ignored list.  */
+
       log_error (_("unknown critical CRL extension %s\n"), oid);
       log_info ("(CRL='%s')\n", url);
       if (!err2)

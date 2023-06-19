@@ -131,6 +131,11 @@ struct
      OID per string.  */
   strlist_t ignored_cert_extensions;
 
+  /* A list of CRL extension OIDs which are ignored so that one can
+   * claim that a critical extension has been handled.  One OID per
+   * string.  */
+  strlist_t ignored_crl_extensions;
+
   /* Allow expired certificates in the cache.  */
   int debug_cache_expired_certs;
 
