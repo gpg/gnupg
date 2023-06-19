@@ -147,6 +147,7 @@ enum cmd_and_opt_values {
   oHTTPWrapperProgram,
   oIgnoreCert,
   oIgnoreCertExtension,
+  oIgnoreCRLExtension,
   oUseTor,
   oNoUseTor,
   oKeyServer,
@@ -224,6 +225,7 @@ static gpgrt_opt_t opts[] = {
   ARGPARSE_s_n (oDisableCheckOwnSocket, "disable-check-own-socket", "@"),
   ARGPARSE_s_s (oIgnoreCert,"ignore-cert", "@"),
   ARGPARSE_s_s (oIgnoreCertExtension,"ignore-cert-extension", "@"),
+  ARGPARSE_s_s (oIgnoreCRLExtension,"ignore-crl-extension", "@"),
 
 
   ARGPARSE_header ("Network", N_("Network related options")),
@@ -706,6 +708,7 @@ parse_rereadable_options (gpgrt_argparse_t *pargs, int reread)
           opt.ignored_certs = tmp;
         }
       FREE_STRLIST (opt.ignored_cert_extensions);
+      FREE_STRLIST (opt.ignored_crl_extensions);
       http_register_tls_ca (NULL);
       FREE_STRLIST (hkp_cacert_filenames);
       FREE_STRLIST (opt.keyserver);
@@ -817,6 +820,10 @@ parse_rereadable_options (gpgrt_argparse_t *pargs, int reread)
 
     case oIgnoreCertExtension:
       add_to_strlist (&opt.ignored_cert_extensions, pargs->r.ret_str);
+      break;
+
+    case oIgnoreCRLExtension:
+      add_to_strlist (&opt.ignored_crl_extensions, pargs->r.ret_str);
       break;
 
     case oUseTor:

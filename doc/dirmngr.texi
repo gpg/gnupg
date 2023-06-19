@@ -598,6 +598,15 @@ won't be rejected due to an unknown critical extension.  Use this
 option with care because extensions are usually flagged as critical
 for a reason.
 
+@item --ignore-crl-extension @var{oid}
+@opindex ignore-crl-extension
+Add @var{oid} to the list of ignored CRL extensions.  The @var{oid} is
+expected to be in dotted decimal form.  Critical flagged CRL
+extensions matching one of the OIDs in the list are treated as if they
+are actually handled and thus the certificate won't be rejected due to
+an unknown critical extension.  Use this option with care because
+extensions are usually flagged as critical for a reason.
+
 @item --ignore-cert @var{fpr}|@var{file}
 @opindex ignore-cert
 Entirely ignore certificates with the fingerprint @var{fpr}.  As an
