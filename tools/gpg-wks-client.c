@@ -75,6 +75,7 @@ enum cmd_and_opt_values
     oBlacklist,
     oNoAutostart,
     oAddRevocs,
+    oNoAddRevocs,
 
     oDummy
   };
@@ -119,6 +120,7 @@ static ARGPARSE_OPTS opts[] = {
   ARGPARSE_s_s (oBlacklist, "blacklist", "@"),
   ARGPARSE_s_s (oDirectory, "directory", "@"),
   ARGPARSE_s_n (oAddRevocs, "add-revocs", "add revocation certificates"),
+  ARGPARSE_s_n (oNoAddRevocs, "no-add-revocs", "do not add revocation certificates"),
 
   ARGPARSE_s_s (oFakeSubmissionAddr, "fake-submission-addr", "@"),
 
@@ -156,7 +158,7 @@ static gpg_error_t proc_userid_from_stdin (gpg_error_t (*func)(const char *),
                                            const char *text);
 static gpg_error_t command_supported (char *userid);
 static gpg_error_t command_check (char *userid);
-static gpg_error_t command_send (const char *fingerprint, const char *userid);
+static gpg_error_t command_create (const char *fingerprint, const char *userid);
 static gpg_error_t encrypt_response (estream_t *r_output, estream_t input,
                                      const char *addrspec,
                                      const char *fingerprint);
@@ -259,6 +261,9 @@ parse_arguments (ARGPARSE_ARGS *pargs, ARGPARSE_OPTS *popts)
         case oAddRevocs:
           opt.add_revocs = 1;
           break;
+        case oNoAddRevocs:
+          opt.add_revocs = 0;
+          break;
 
 	case aSupported:
 	case aCreate:
@@ -300,6 +305,8 @@ main (int argc, char **argv)
 
   assuan_set_gpg_err_source (GPG_ERR_SOURCE_DEFAULT);
   setup_libassuan_logging (&opt.debug, NULL);
+
+  opt.add_revocs = 1;  /* Default add revocation certs.  */
 
   /* Parse the command line. */
   pargs.argc  = &argc;
@@ -377,7 +384,7 @@ main (int argc, char **argv)
     case aCreate:
       if (argc != 2)
         wrong_args ("--create FINGERPRINT USER-ID");
-      err = command_send (argv[0], argv[1]);
+      err = command_create (argv[0], argv[1]);
       if (err)
         log_error ("creating request failed: %s\n", gpg_strerror (err));
       break;
@@ -1120,7 +1127,7 @@ command_check (char *userid)
 /* Locate the key by fingerprint and userid and send a publication
  * request.  */
 static gpg_error_t
-command_send (const char *fingerprint, const char *userid)
+command_create (const char *fingerprint, const char *userid)
 {
   gpg_error_t err;
   KEYDB_SEARCH_DESC desc;
