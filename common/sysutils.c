@@ -575,6 +575,56 @@ translate_sys2libc_fd_int (int fd, int for_write)
 }
 
 
+/* This is the same as translate_sys2libc_fd but takes a string
+   which may represent a system handle.
+
+   (1) 0, 1, or 2 which means stdin, stdout, and stderr, respectively.
+   (2) Integer representation (by %d of printf).
+   (3) Hex representation which starts as "0x".
+ */
+int
+translate_sys2libc_fdstr (const char *fdstr, int for_write)
+{
+#ifdef HAVE_W32_SYSTEM
+  gnupg_fd_t fd;
+  char *endptr;
+  int base;
+
+  if (!strcmp (fdstr, "0"))
+    return 0;
+  else if (!strcmp (fdstr, "1"))
+    return 1;
+  else if (!strcmp (fdstr, "2"))
+    return 2;
+
+  if (!strncmp (fdstr, "0x", 2))
+    {
+      base = 16;
+      fdstr += 2;
+    }
+  else
+    base = 10;
+
+  gpg_err_set_errno (0);
+#ifdef _WIN64
+  fd = (gnupg_fd_t)strtoll (fdstr, &endptr, base);
+#else
+  fd = (gnupg_fd_t)strtol (fdstr, &endptr, base);
+#endif
+  if (errno != 0 || endptr == fdstr || *endptr != '\0')
+    {
+      log_error ("FDSTR error: %s\n", fdstr);
+      return -1;
+    }
+
+  return translate_sys2libc_fd (fd, for_write);
+#else
+  (void)for_write;
+  return atoi (fdstr);
+#endif
+}
+
+
 /* Check whether FNAME has the form "-&nnnn", where N is a non-zero
  * number.  Returns this number or -1 if it is not the case.  If the
  * caller wants to use the file descriptor for writing FOR_WRITE shall
