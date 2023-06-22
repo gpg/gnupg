@@ -138,8 +138,8 @@ struct tag_info
   int class;
   int is_constructed;
   unsigned long tag;
-  unsigned long length;  /* length part of the TLV */
-  int nhdr;
+  size_t length;         /* length part of the TLV */
+  size_t nhdr;
   int ndef;              /* It is an indefinite length */
 };
 
@@ -174,14 +174,17 @@ p12_set_verbosity (int verbose)
 }
 
 
-/* static void */
-/* dump_tag_info (struct tag_info *ti) */
-/* { */
-/*   log_debug ("p12_parse: ti.class=%d tag=%lu len=%lu nhdr=%d %s%s\n", */
-/*              ti->class, ti->tag, ti->length, ti->nhdr, */
-/*              ti->is_constructed?" cons":"", */
-/*              ti->ndef?" ndef":""); */
-/* } */
+#if 0
+static void
+dump_tag_info (const char *text, struct tag_info *ti)
+{
+  log_debug ("p12_parse(%s): ti.class=%d tag=%lu len=%zu nhdr=%zu %s%s\n",
+             text,
+             ti->class, ti->tag, ti->length, ti->nhdr,
+             ti->is_constructed?" cons":"",
+             ti->ndef?" ndef":"");
+}
+#endif
 
 
 /* Wrapper around tlv_builder_add_ptr to add an OID.  When we
@@ -277,84 +280,28 @@ builder_add_mpi (tlv_builder_t tb, int class, int tag, gcry_mpi_t mpi,
 
 
 /* Parse the buffer at the address BUFFER which is of SIZE and return
-   the tag and the length part from the TLV triplet.  Update BUFFER
-   and SIZE on success.  Checks that the encoded length does not
-   exhaust the length of the provided buffer. */
+ * the tag and the length part from the TLV triplet.  Update BUFFER
+ * and SIZE on success.  Checks that the encoded length does not
+ * exhaust the length of the provided buffer.  */
 static int
 parse_tag (unsigned char const **buffer, size_t *size, struct tag_info *ti)
 {
-  int c;
-  unsigned long tag;
-  const unsigned char *buf = *buffer;
-  size_t length = *size;
+  gpg_error_t err;
+  int tag;
 
-  ti->length = 0;
-  ti->ndef = 0;
-  ti->nhdr = 0;
-
-  /* Get the tag */
-  if (!length)
-    return -1; /* premature eof */
-  c = *buf++; length--;
-  ti->nhdr++;
-
-  ti->class = (c & 0xc0) >> 6;
-  ti->is_constructed = !!(c & 0x20);
-  tag = c & 0x1f;
-
-  if (tag == 0x1f)
-    {
-      tag = 0;
-      do
-        {
-          tag <<= 7;
-          if (!length)
-            return -1; /* premature eof */
-          c = *buf++; length--;
-          ti->nhdr++;
-          tag |= c & 0x7f;
-        }
-      while (c & 0x80);
-    }
+  err = parse_ber_header (buffer, size,
+                          &ti->class, &tag,
+                          &ti->is_constructed, &ti->ndef,
+                          &ti->length, &ti->nhdr);
+  if (err)
+    return err;
+  if (tag < 0)
+    return gpg_error (GPG_ERR_EOVERFLOW);
   ti->tag = tag;
 
-  /* Get the length */
-  if (!length)
-    return -1; /* prematureeof */
-  c = *buf++; length--;
-  ti->nhdr++;
+  if (ti->length > *size)
+    return gpg_error (GPG_ERR_BUFFER_TOO_SHORT); /* data larger than buffer. */
 
-  if ( !(c & 0x80) )
-    ti->length = c;
-  else if (c == 0x80)
-    ti->ndef = 1;
-  else if (c == 0xff)
-    return -1; /* forbidden length value */
-  else
-    {
-      unsigned long len = 0;
-      int count = c & 0x7f;
-
-      for (; count; count--)
-        {
-          len <<= 8;
-          if (!length)
-            return -1; /* premature_eof */
-          c = *buf++; length--;
-          ti->nhdr++;
-          len |= c & 0xff;
-        }
-      ti->length = len;
-    }
-
-  if (ti->class == CLASS_UNIVERSAL && !ti->tag)
-    ti->length = 0;
-
-  if (ti->length > length)
-    return -1; /* data larger than buffer. */
-
-  *buffer = buf;
-  *size = length;
   return 0;
 }
 
