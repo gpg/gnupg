@@ -575,27 +575,51 @@ translate_sys2libc_fd_int (int fd, int for_write)
 }
 
 
-/* This is the same as translate_sys2libc_fd but takes a string
-   which may represent a system handle.
+/*
+ * Parse the string representation of a file reference (file handle on
+ * Windows or file descriptor on POSIX) in FDSTR.  The string
+ * representation may be either of folllowing:
 
-   (1) 0, 1, or 2 which means stdin, stdout, and stderr, respectively.
-   (2) Integer representation (by %d of printf).
-   (3) Hex representation which starts as "0x".
+ *  (1) 0, 1, or 2 which means stdin, stdout, and stderr, respectively.
+ *  (2) Integer representation (by %d of printf).
+ *  (3) Hex representation which starts as "0x".
+ *
+ * FOR_WRITE is 1 for a file for writing, 0 otherwise.
+ *
+ * There are two use cases for the function:
+ *
+ * - R_HD != NULL, R_FD == NULL:
+ *   Return the value in *R_HD.
+ *
+ * - R_HD == NULL, R_FD != NULL:
+ *   Return the value in *R_FD, after translating to a file descriptor.
+ *
  */
-int
-translate_sys2libc_fdstr (const char *fdstr, int for_write)
+gpg_error_t
+gnupg_sys2libc_fdstr (const char *fdstr, int for_write,
+                      gnupg_fd_t *r_hd, int *r_fd)
 {
+  int fd = -1;
 #ifdef HAVE_W32_SYSTEM
-  gnupg_fd_t fd;
+  gnupg_fd_t hd;
   char *endptr;
   int base;
 
   if (!strcmp (fdstr, "0"))
-    return 0;
+    fd = 0;
   else if (!strcmp (fdstr, "1"))
-    return 1;
+    fd = 1;
   else if (!strcmp (fdstr, "2"))
-    return 2;
+    fd = 2;
+
+  if (fd >= 0)
+    {
+      if (r_hd)
+        *r_hd = (gnupg_fd_t)(uintptr_t)fd;
+      else if (r_fd)
+        *r_fd = fd;
+      return 0;
+    }
 
   if (!strncmp (fdstr, "0x", 2))
     {
@@ -607,21 +631,51 @@ translate_sys2libc_fdstr (const char *fdstr, int for_write)
 
   gpg_err_set_errno (0);
 #ifdef _WIN64
-  fd = (gnupg_fd_t)strtoll (fdstr, &endptr, base);
+  hd = (gnupg_fd_t)strtoll (fdstr, &endptr, base);
 #else
-  fd = (gnupg_fd_t)strtol (fdstr, &endptr, base);
+  hd = (gnupg_fd_t)strtol (fdstr, &endptr, base);
 #endif
   if (errno != 0 || endptr == fdstr || *endptr != '\0')
+    return gpg_error (GPG_ERR_INV_ARG);
+
+  if (r_hd)
+    *r_hd = hd;
+  else if (r_fd)
+    *r_fd = translate_sys2libc_fd (hd, for_write);
+  return 0;
+#else
+  (void)for_write;
+  fd = atoi (fdstr);
+  if (r_hd)
+    *r_hd = fd;
+  else if (r_fd)
+    *r_fd = fd;
+  return 0;
+#endif
+}
+
+/* This is the same as translate_sys2libc_fd but takes a string
+   which represents a system handle on Windows a file descriptor
+   on POSIX.
+
+   (1) 0, 1, or 2 which means stdin, stdout, and stderr, respectively.
+   (2) Integer representation (by %d of printf).
+   (3) Hex representation which starts as "0x".
+*/
+int
+translate_sys2libc_fdstr (const char *fdstr, int for_write)
+{
+  gpg_error_t err;
+  gnupg_fd_t fd;
+
+  err = gnupg_sys2libc_fdstr (fdstr, for_write, NULL, &fd);
+  if (err)
     {
       log_error ("FDSTR error: %s\n", fdstr);
       return -1;
     }
 
-  return translate_sys2libc_fd (fd, for_write);
-#else
-  (void)for_write;
-  return atoi (fdstr);
-#endif
+  return fd;
 }
 
 
