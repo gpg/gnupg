@@ -392,13 +392,19 @@ gpgtar_extract (const char *filename, int decrypt)
         ccparray_put (&ccp, "--batch");
       if (opt.require_compliance)
         ccparray_put (&ccp, "--require-compliance");
-      if (opt.status_fd != -1)
+      if (opt.status_fd)
         {
           static char tmpbuf[40];
+          es_syshd_t hd;
 
-          snprintf (tmpbuf, sizeof tmpbuf, "--status-fd=%d", opt.status_fd);
+          snprintf (tmpbuf, sizeof tmpbuf, "--status-fd=%s", opt.status_fd);
           ccparray_put (&ccp, tmpbuf);
-          except[0] = opt.status_fd;
+          es_syshd (opt.status_stream, &hd);
+#ifdef HAVE_W32_SYSTEM
+          except[0] = hd.u.handle;
+#else
+          except[0] = hd.u.fd;
+#endif
         }
       if (opt.with_log)
         {

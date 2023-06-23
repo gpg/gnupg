@@ -125,7 +125,7 @@ static gpgrt_opt_t opts[] = {
   ARGPARSE_s_n (oBatch, "batch", "@"),
   ARGPARSE_s_n (oAnswerYes, "yes", "@"),
   ARGPARSE_s_n (oAnswerNo, "no", "@"),
-  ARGPARSE_s_i (oStatusFD, "status-fd", "@"),
+  ARGPARSE_s_s (oStatusFD, "status-fd", "@"),
   ARGPARSE_s_n (oRequireCompliance, "require-compliance", "@"),
   ARGPARSE_s_n (oWithLog, "with-log", "@"),
 
@@ -395,7 +395,7 @@ parse_arguments (gpgrt_argparse_t *pargs, gpgrt_opt_t *popts)
         case oBatch: opt.batch = 1; break;
         case oAnswerYes: opt.answer_yes = 1; break;
         case oAnswerNo: opt.answer_no = 1; break;
-        case oStatusFD: opt.status_fd = pargs->r.ret_int; break;
+        case oStatusFD: opt.status_fd = pargs->r.ret_str; break;
         case oRequireCompliance: opt.require_compliance = 1; break;
         case oWithLog: opt.with_log = 1; break;
 
@@ -477,7 +477,7 @@ main (int argc, char **argv)
   log_assert (sizeof (struct ustar_raw_header) == 512);
 
   /* Set default options */
-  opt.status_fd = -1;
+  opt.status_fd = NULL;
 
   /* The configuraton directories for use by gpgrt_argparser.  */
   gpgrt_set_confdir (GPGRT_CONFDIR_SYS, gnupg_sysconfdir ());
@@ -509,12 +509,23 @@ main (int argc, char **argv)
 
   /* Set status stream for our own use of --status-fd.  The original
    * status fd is passed verbatim to gpg.  */
-  if (opt.status_fd != -1)
+  if (opt.status_fd)
     {
-      int fd = translate_sys2libc_fd_int (opt.status_fd, 1);
+      int fd = -1;
 
-      if (!gnupg_fd_valid (fd))
-        log_fatal ("status-fd is invalid: %s\n", strerror (errno));
+#ifdef HAVE_W32_SYSTEM
+      gnupg_fd_t hd;
+
+      err = gnupg_sys2libc_fdstr (opt.status_fd, 1, &hd, NULL);
+      if ((uintptr_t)hd == 1)
+        fd = 1;
+      else if ((uintptr_t)hd == 2)
+        fd = 2;
+#else
+      err = gnupg_sys2libc_fdstr (opt.status_fd, 1, NULL, &fd);
+#endif
+      if (err)
+        log_fatal ("status-fd is invalid: %s\n", gpg_strerror (err));
 
       if (fd == 1)
         {
@@ -526,7 +537,16 @@ main (int argc, char **argv)
         opt.status_stream = es_stderr;
       else
         {
-          opt.status_stream = es_fdopen (fd, "w");
+          es_syshd_t syshd;
+
+#ifdef HAVE_W32_SYSTEM
+          syshd.type = ES_SYSHD_HANDLE;
+          syshd.u.handle = hd;
+#else
+          syshd.type = ES_SYSHD_FD;
+          syshd.u.handle = fd;
+#endif
+          opt.status_stream = es_sysopen (&syshd, "w");
           if (opt.status_stream)
             es_setvbuf (opt.status_stream, NULL, _IOLBF, 0);
         }

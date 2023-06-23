@@ -94,7 +94,7 @@ static gpgrt_opt_t opts[] = {
   ARGPARSE_s_s (oDebug, "debug", "@"),
   ARGPARSE_s_s (oGpgProgram, "gpg", "@"),
   ARGPARSE_s_s (oGpgsmProgram, "gpgsm", "@"),
-  ARGPARSE_s_i (oStatusFD, "status-fd", N_("|FD|write status info to this FD")),
+  ARGPARSE_s_s (oStatusFD, "status-fd", N_("|FD|write status info to this FD")),
   ARGPARSE_s_n (oWithColons, "with-colons", "@"),
   ARGPARSE_s_n (oNoAutostart, "no-autostart", "@"),
   ARGPARSE_s_s (oAgentProgram, "agent-program", "@"),
@@ -225,7 +225,7 @@ parse_arguments (gpgrt_argparse_t *pargs, gpgrt_opt_t *popts)
         case oAgentProgram: opt.agent_program = pargs->r.ret_str; break;
 
         case oStatusFD:
-          gnupg_set_status_fd (translate_sys2libc_fd_int (pargs->r.ret_int, 1));
+          gnupg_set_status_fd (translate_sys2libc_fdstr (pargs->r.ret_str, 1));
           break;
 
         case oWithColons:  opt.with_colons = 1; break;

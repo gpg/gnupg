@@ -290,7 +290,7 @@ static gpgrt_opt_t opts[] = {
   ARGPARSE_s_s (oLogFile, "log-file",
                 N_("|FILE|write server mode logs to FILE")),
   ARGPARSE_s_n (oNoLogFile, "no-log-file", "@"),
-  ARGPARSE_s_i (oLoggerFD, "logger-fd", "@"),
+  ARGPARSE_s_s (oLoggerFD, "logger-fd", "@"),
   ARGPARSE_s_n (oLogTime, "log-time", "@"),
   ARGPARSE_s_n (oNoSecmemWarn, "no-secmem-warning", "@"),
 
@@ -422,9 +422,9 @@ static gpgrt_opt_t opts[] = {
   ARGPARSE_s_n (oNoBatch, "no-batch", "@"),
   ARGPARSE_s_n (oAnswerYes, "yes", N_("assume yes on most questions")),
   ARGPARSE_s_n (oAnswerNo,  "no",  N_("assume no on most questions")),
-  ARGPARSE_s_i (oStatusFD, "status-fd", N_("|FD|write status info to this FD")),
+  ARGPARSE_s_s (oStatusFD, "status-fd", N_("|FD|write status info to this FD")),
   ARGPARSE_s_n (oEnableSpecialFilenames, "enable-special-filenames", "@"),
-  ARGPARSE_s_i (oPassphraseFD,    "passphrase-fd", "@"),
+  ARGPARSE_s_s (oPassphraseFD,    "passphrase-fd", "@"),
   ARGPARSE_s_s (oPinentryMode,    "pinentry-mode", "@"),
 
 
@@ -1156,7 +1156,7 @@ main ( int argc, char **argv)
           break;
 
         case oPassphraseFD:
-	  pwfd = translate_sys2libc_fd_int (pargs.r.ret_int, 0);
+	  pwfd = translate_sys2libc_fdstr (pargs.r.ret_str, 0);
 	  break;
 
         case oPinentryMode:
@@ -1300,10 +1300,10 @@ main ( int argc, char **argv)
           break;
 
         case oStatusFD:
-            ctrl.status_fd = translate_sys2libc_fd_int (pargs.r.ret_int, 1);
+            ctrl.status_fd = translate_sys2libc_fdstr (pargs.r.ret_str, 1);
             break;
         case oLoggerFD:
-            log_set_fd (translate_sys2libc_fd_int (pargs.r.ret_int, 1));
+            log_set_fd (translate_sys2libc_fdstr (pargs.r.ret_str, 1));
             break;
         case oWithMD5Fingerprint:
           opt.with_md5_fingerprint=1; /*fall through*/

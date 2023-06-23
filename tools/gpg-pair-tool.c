@@ -179,7 +179,7 @@ static gpgrt_opt_t opts[] = {
   ARGPARSE_s_s (oSAS, "sas", N_("|SAS|the SAS as shown by the peer")),
   ARGPARSE_s_s (oDebug, "debug", "@"),
   ARGPARSE_s_s (oOutput, "output", N_("|FILE|write the request to FILE")),
-  ARGPARSE_s_i (oStatusFD, "status-fd", N_("|FD|write status info to this FD")),
+  ARGPARSE_s_s (oStatusFD, "status-fd", N_("|FD|write status info to this FD")),
 
   ARGPARSE_s_s (oHomedir, "homedir", "@"),
 
@@ -390,7 +390,7 @@ main (int argc, char **argv)
           break;
 
         case oStatusFD:
-          set_status_fd (translate_sys2libc_fd_int (pargs.r.ret_int, 1));
+          set_status_fd (translate_sys2libc_fdstr (pargs.r.ret_str, 1));
           break;
 
         case oHomedir:

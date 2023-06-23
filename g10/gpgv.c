@@ -82,9 +82,9 @@ static gpgrt_opt_t opts[] = {
   ARGPARSE_s_s (oOutput, "output", N_("|FILE|write output to FILE")),
   ARGPARSE_s_n (oIgnoreTimeConflict, "ignore-time-conflict",
                 N_("make timestamp conflicts only a warning")),
-  ARGPARSE_s_i (oStatusFD, "status-fd",
+  ARGPARSE_s_s (oStatusFD, "status-fd",
                 N_("|FD|write status info to this FD")),
-  ARGPARSE_s_i (oLoggerFD, "logger-fd", "@"),
+  ARGPARSE_s_s (oLoggerFD, "logger-fd", "@"),
   ARGPARSE_s_s (oLoggerFile, "log-file", "@"),
   ARGPARSE_s_s (oHomedir, "homedir", "@"),
   ARGPARSE_s_s (oWeakDigest, "weak-digest",
@@ -232,10 +232,10 @@ main( int argc, char **argv )
         case oKeyring: append_to_strlist( &nrings, pargs.r.ret_str); break;
         case oOutput: opt.outfile = pargs.r.ret_str; break;
         case oStatusFD:
-          set_status_fd (translate_sys2libc_fd_int (pargs.r.ret_int, 1));
+          set_status_fd (translate_sys2libc_fdstr (pargs.r.ret_str, 1));
           break;
         case oLoggerFD:
-          log_set_fd (translate_sys2libc_fd_int (pargs.r.ret_int, 1));
+          log_set_fd (translate_sys2libc_fdstr (pargs.r.ret_str, 1));
           break;
         case oLoggerFile:
           log_set_file (pargs.r.ret_str);
