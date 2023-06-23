@@ -73,7 +73,6 @@ unsigned int get_uint_nonce (void);
 void gnupg_sleep (unsigned int seconds);
 void gnupg_usleep (unsigned int usecs);
 int translate_sys2libc_fd (gnupg_fd_t fd, int for_write);
-int translate_sys2libc_fd_int (int fd, int for_write);
 gpg_error_t gnupg_sys2libc_fdstr (const char *fdstr, int for_write,
                                   gnupg_fd_t *r_hd, int *r_fd);
 int translate_sys2libc_fdstr (const char *fdstr, int for_write);
