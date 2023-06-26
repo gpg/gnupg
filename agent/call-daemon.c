@@ -471,8 +471,8 @@ daemon_start (enum daemon_type type, ctrl_t ctrl)
       char buf[100];
 
 #ifdef HAVE_W32_SYSTEM
-      snprintf (buf, sizeof buf, "OPTION event-signal=%lx",
-                (unsigned long)get_agent_daemon_notify_event ());
+      snprintf (buf, sizeof buf, "OPTION event-signal=%p",
+                get_agent_daemon_notify_event ());
 #else
       snprintf (buf, sizeof buf, "OPTION event-signal=%d", SIGUSR2);
 #endif
