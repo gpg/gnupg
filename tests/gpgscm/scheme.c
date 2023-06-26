@@ -169,7 +169,11 @@ type_to_string (enum scheme_types typ)
      case T_SINK: return "sink";
      case T_FRAME: return "frame";
      }
+#ifdef __GNUC__
+     __builtin_unreachable ();
+#else
      assert (! "not reached");
+#endif
 }
 
 /* ADJ is enough slack to align cells in a TYPE_BITS-bit boundary */
