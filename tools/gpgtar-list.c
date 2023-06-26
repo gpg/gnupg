@@ -468,7 +468,11 @@ gpgtar_list (const char *filename, int decrypt)
     {
       strlist_t arg;
       ccparray_t ccp;
+#ifdef HAVE_W32_SYSTEM
+      HANDLE except[2] = { INVALID_HANDLE_VALUE, INVALID_HANDLE_VALUE };
+#else
       int except[2] = { -1, -1 };
+#endif
       const char **argv;
 
       ccparray_init (&ccp, 0);

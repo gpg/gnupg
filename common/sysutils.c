@@ -648,7 +648,7 @@ int
 translate_sys2libc_fdstr (const char *fdstr, int for_write)
 {
   gpg_error_t err;
-  gnupg_fd_t fd;
+  int fd;
 
   err = gnupg_sys2libc_fdstr (fdstr, for_write, NULL, &fd);
   if (err)
