@@ -92,8 +92,15 @@ w32_system (const char *command)
           return -1;
         }
       if (DBG_EXTPROG)
-        log_debug ("ShellExecuteEx succeeded (hProcess=%p,hInstApp=%d)\n",
-                   see.hProcess, (int)see.hInstApp);
+        {
+          /* hInstApp has HINSTANCE type.  The documentations says
+             that it's not a true HINSTANCE and it can be cast only to
+             an int.  */
+          int hinstance = (intptr_t)see.hInstApp;
+
+          log_debug ("ShellExecuteEx succeeded (hProcess=%p,hInstApp=%d)\n",
+                     see.hProcess, hinstance);
+        }
 
       if (!see.hProcess)
         {
