@@ -115,7 +115,7 @@ static gpgrt_opt_t opts[] = {
   ARGPARSE_s_s (oGpgProgram, "gpg", "@"),
   ARGPARSE_s_n (oSend, "send", "send the mail using sendmail"),
   ARGPARSE_s_s (oOutput, "output", "|FILE|write the mail to FILE"),
-  ARGPARSE_s_s (oStatusFD, "status-fd", N_("|FD|write status info to this FD")),
+  ARGPARSE_s_i (oStatusFD, "status-fd", N_("|FD|write status info to this FD")),
   ARGPARSE_s_n (oNoAutostart, "no-autostart", "@"),
   ARGPARSE_s_n (oWithColons, "with-colons", "@"),
   ARGPARSE_s_s (oBlacklist, "blacklist", "@"),
@@ -248,7 +248,7 @@ parse_arguments (gpgrt_argparse_t *pargs, gpgrt_opt_t *popts)
           fake_submission_addr = pargs->r.ret_str;
           break;
         case oStatusFD:
-          wks_set_status_fd (translate_sys2libc_fdstr (pargs->r.ret_str, 1));
+          wks_set_status_fd (translate_sys2libc_fd_int (pargs->r.ret_int, 1));
           break;
         case oWithColons:
           opt.with_colons = 1;

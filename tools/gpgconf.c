@@ -118,7 +118,7 @@ static gpgrt_opt_t opts[] =
     { oQuiet, "quiet",      0, N_("quiet") },
     { oDryRun, "dry-run",   0, N_("do not make any changes") },
     { oRuntime, "runtime",  0, N_("activate changes at runtime, if possible") },
-    ARGPARSE_s_s (oStatusFD, "status-fd",
+    ARGPARSE_s_i (oStatusFD, "status-fd",
                   N_("|FD|write status info to this FD")),
     /* hidden options */
     { oHomedir, "homedir", 2, "@" },
@@ -645,7 +645,7 @@ main (int argc, char **argv)
         case oBuilddir:  gnupg_set_builddir (pargs.r.ret_str); break;
         case oNull:      opt.null = 1; break;
         case oStatusFD:
-          set_status_fd (translate_sys2libc_fdstr (pargs.r.ret_str, 1));
+          set_status_fd (translate_sys2libc_fd_int (pargs.r.ret_int, 1));
           break;
         case oShowSocket: show_socket = 1; break;
         case oChUid:      changeuser = pargs.r.ret_str; break;

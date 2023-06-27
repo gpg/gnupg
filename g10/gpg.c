@@ -603,7 +603,7 @@ static gpgrt_opt_t opts[] = {
   ARGPARSE_s_s (oDisplayCharset, "charset", "@"),
   ARGPARSE_conffile (oOptions, "options", N_("|FILE|read options from FILE")),
   ARGPARSE_noconffile (oNoOptions, "no-options", "@"),
-  ARGPARSE_s_s (oLoggerFD,   "logger-fd", "@"),
+  ARGPARSE_s_i (oLoggerFD,   "logger-fd", "@"),
   ARGPARSE_s_s (oLoggerFile, "log-file",
                 N_("|FILE|write server mode logs to FILE")),
   ARGPARSE_s_s (oLoggerFile, "logger-file", "@"),  /* 1.4 compatibility.  */
@@ -854,7 +854,7 @@ static gpgrt_opt_t opts[] = {
   ARGPARSE_s_n (oSkipHiddenRecipients, "skip-hidden-recipients", "@"),
   ARGPARSE_s_n (oNoSkipHiddenRecipients, "no-skip-hidden-recipients", "@"),
   ARGPARSE_s_s (oOverrideSessionKey, "override-session-key", "@"),
-  ARGPARSE_s_s (oOverrideSessionKeyFD, "override-session-key-fd", "@"),
+  ARGPARSE_s_i (oOverrideSessionKeyFD, "override-session-key-fd", "@"),
 
   ARGPARSE_header ("Security", N_("Options controlling the security")),
 
@@ -894,14 +894,14 @@ static gpgrt_opt_t opts[] = {
   ARGPARSE_s_n (oNoBatch, "no-batch", "@"),
   ARGPARSE_s_n (oAnswerYes, "yes", "@"),
   ARGPARSE_s_n (oAnswerNo, "no", "@"),
-  ARGPARSE_s_s (oStatusFD, "status-fd", "@"),
+  ARGPARSE_s_i (oStatusFD, "status-fd", "@"),
   ARGPARSE_s_s (oStatusFile, "status-file", "@"),
-  ARGPARSE_s_s (oAttributeFD, "attribute-fd", "@"),
+  ARGPARSE_s_i (oAttributeFD, "attribute-fd", "@"),
   ARGPARSE_s_s (oAttributeFile, "attribute-file", "@"),
-  ARGPARSE_s_s (oCommandFD, "command-fd", "@"),
+  ARGPARSE_s_i (oCommandFD, "command-fd", "@"),
   ARGPARSE_s_s (oCommandFile, "command-file", "@"),
   ARGPARSE_o_s (oPassphrase,      "passphrase", "@"),
-  ARGPARSE_s_s (oPassphraseFD,    "passphrase-fd", "@"),
+  ARGPARSE_s_i (oPassphraseFD,    "passphrase-fd", "@"),
   ARGPARSE_s_s (oPassphraseFile,  "passphrase-file", "@"),
   ARGPARSE_s_i (oPassphraseRepeat,"passphrase-repeat", "@"),
   ARGPARSE_s_s (oPinentryMode,    "pinentry-mode", "@"),
@@ -2867,19 +2867,19 @@ main (int argc, char **argv)
             break;
 
 	  case oStatusFD:
-            set_status_fd ( translate_sys2libc_fdstr (pargs.r.ret_str, 1) );
+            set_status_fd ( translate_sys2libc_fd_int (pargs.r.ret_int, 1) );
             break;
 	  case oStatusFile:
             set_status_fd ( open_info_file (pargs.r.ret_str, 1, 0) );
             break;
 	  case oAttributeFD:
-            set_attrib_fd ( translate_sys2libc_fdstr (pargs.r.ret_str, 1) );
+            set_attrib_fd ( translate_sys2libc_fd_int (pargs.r.ret_int, 1) );
             break;
 	  case oAttributeFile:
             set_attrib_fd ( open_info_file (pargs.r.ret_str, 1, 1) );
             break;
 	  case oLoggerFD:
-            log_set_fd (translate_sys2libc_fdstr (pargs.r.ret_str, 1));
+            log_set_fd (translate_sys2libc_fd_int (pargs.r.ret_int, 1));
             break;
           case oLoggerFile:
             logfile = pargs.r.ret_str;
@@ -3245,7 +3245,7 @@ main (int argc, char **argv)
             set_passphrase_from_string (pargs.r_type ? pargs.r.ret_str : "");
 	    break;
 	  case oPassphraseFD:
-            pwfd = translate_sys2libc_fdstr (pargs.r.ret_str, 0);
+            pwfd = translate_sys2libc_fd_int (pargs.r.ret_int, 0);
             break;
 	  case oPassphraseFile:
             pwfd = open_info_file (pargs.r.ret_str, 0, 1);
@@ -3267,7 +3267,7 @@ main (int argc, char **argv)
 	    break;
 
 	  case oCommandFD:
-            opt.command_fd = translate_sys2libc_fdstr (pargs.r.ret_str, 0);
+            opt.command_fd = translate_sys2libc_fd_int (pargs.r.ret_int, 0);
 	    if (! gnupg_fd_valid (opt.command_fd))
 	      log_error ("command-fd is invalid: %s\n", strerror (errno));
             break;
@@ -3526,7 +3526,7 @@ main (int argc, char **argv)
 		opt.override_session_key = pargs.r.ret_str;
 		break;
 	  case oOverrideSessionKeyFD:
-                ovrseskeyfd = translate_sys2libc_fdstr (pargs.r.ret_str, 0);
+                ovrseskeyfd = translate_sys2libc_fd_int (pargs.r.ret_int, 0);
 		break;
 	  case oMergeOnly:
 	        deprecated_warning(configname,pargs.lineno,"--merge-only",

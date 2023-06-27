@@ -556,6 +556,24 @@ translate_sys2libc_fd (gnupg_fd_t fd, int for_write)
 #endif
 }
 
+/* This is the same as translate_sys2libc_fd but takes an integer
+   which is assumed to be such an system handle.  On WindowsCE the
+   passed FD is a rendezvous ID and the function finishes the pipe
+   creation. */
+int
+translate_sys2libc_fd_int (int fd, int for_write)
+{
+#ifdef HAVE_W32_SYSTEM
+  if (fd <= 2)
+    return fd;	/* Do not do this for error, stdin, stdout, stderr. */
+
+  return translate_sys2libc_fd ((void*)fd, for_write);
+#else
+  (void)for_write;
+  return fd;
+#endif
+}
+
 
 /*
  * Parse the string representation of a file reference (file handle on
@@ -636,30 +654,6 @@ gnupg_sys2libc_fdstr (const char *fdstr, int for_write,
 #endif
 }
 
-/* This is the same as translate_sys2libc_fd but takes a string
-   which represents a system handle on Windows a file descriptor
-   on POSIX.
-
-   (1) 0, 1, or 2 which means stdin, stdout, and stderr, respectively.
-   (2) Integer representation (by %d of printf).
-   (3) Hex representation which starts as "0x".
-*/
-int
-translate_sys2libc_fdstr (const char *fdstr, int for_write)
-{
-  gpg_error_t err;
-  int fd;
-
-  err = gnupg_sys2libc_fdstr (fdstr, for_write, NULL, &fd);
-  if (err)
-    {
-      log_error ("FDSTR error: %s\n", fdstr);
-      return -1;
-    }
-
-  return fd;
-}
-
 
 /* Check whether FNAME has the form "-&nnnn", where N is a non-zero
  * number.  Returns this number or -1 if it is not the case.  If the
@@ -679,7 +673,7 @@ check_special_filename (const char *fname, int for_write, int notranslate)
         ;
       if (!fname[i])
         return notranslate? atoi (fname)
-          /**/            : translate_sys2libc_fdstr (fname, for_write);
+          /**/            : translate_sys2libc_fd_int (atoi (fname), for_write);
     }
   return -1;
 }
