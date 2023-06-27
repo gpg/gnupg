@@ -928,7 +928,7 @@ auth_adm_key (app_t app, const unsigned char *value, size_t valuelen)
   tmpl[12] = 0x81;
   tmpl[13] = 8;
   gcry_create_nonce (tmpl+14, 8);
-  tmpl[22] = 0x80;
+  tmpl[22] = 0x82;
   tmpl[23] = 0;
   tmpllen = 24;
   xfree (outdata);
@@ -1039,7 +1039,7 @@ do_setattr (app_t app, ctrl_t ctrl, const char *name,
     int special;               /* Special mode to use for thus NAME.  */
   } table[] = {
     /* Authenticate using the PIV Card Application Administration Key
-     * (0x0B).  Note that Yubico calls this key the "management key"
+     * (0x9B).  Note that Yubico calls this key the "management key"
      * which we don't do because that term is too similar to "Cert
      * Management Key" (0x9D).  */
     { "AUTH-ADM-KEY", 0x0000, 0x0000, 1 },
