@@ -544,7 +544,7 @@ main (int argc, char **argv)
           syshd.u.handle = hd;
 #else
           syshd.type = ES_SYSHD_FD;
-          syshd.u.handle = fd;
+          syshd.u.fd = fd;
 #endif
           opt.status_stream = es_sysopen (&syshd, "w");
           if (opt.status_stream)
