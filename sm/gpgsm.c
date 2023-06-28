@@ -804,7 +804,7 @@ set_debug (void)
 
   /* minip12.c may be used outside of GnuPG, thus we don't have the
    * opt structure over there.  */
-  p12_set_verbosity (opt.verbose);
+  p12_set_verbosity (opt.verbose, opt.debug);
 }
 
 
