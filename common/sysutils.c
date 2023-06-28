@@ -584,20 +584,11 @@ translate_sys2libc_fd_int (int fd, int for_write)
  *  (2) Integer representation (by %d of printf).
  *  (3) Hex representation which starts as "0x".
  *
- * FOR_WRITE is 1 for a file for writing, 0 otherwise.
- *
- * There are two use cases for the function:
- *
- * - R_HD != NULL, R_FD == NULL:
- *   Return the value in *R_HD.
- *
- * - R_HD == NULL, R_FD != NULL:
- *   Return the value in *R_FD, after translating to a file descriptor.
+ * Then, fill R_SYSHD, according to the value of a file reference.
  *
  */
 gpg_error_t
-gnupg_sys2libc_fdstr (const char *fdstr, int for_write,
-                      gnupg_fd_t *r_hd, int *r_fd)
+gnupg_parse_fdstr (const char *fdstr, es_syshd_t *r_syshd)
 {
   int fd = -1;
 #ifdef HAVE_W32_SYSTEM
@@ -614,10 +605,8 @@ gnupg_sys2libc_fdstr (const char *fdstr, int for_write,
 
   if (fd >= 0)
     {
-      if (r_hd)
-        *r_hd = (gnupg_fd_t)(uintptr_t)fd;
-      else if (r_fd)
-        *r_fd = fd;
+      r_syshd->type = ES_SYSHD_FD;
+      r_syshd->u.fd = fd;
       return 0;
     }
 
@@ -638,18 +627,13 @@ gnupg_sys2libc_fdstr (const char *fdstr, int for_write,
   if (errno != 0 || endptr == fdstr || *endptr != '\0')
     return gpg_error (GPG_ERR_INV_ARG);
 
-  if (r_hd)
-    *r_hd = hd;
-  else if (r_fd)
-    *r_fd = translate_sys2libc_fd (hd, for_write);
+  r_syshd->type = ES_SYSHD_HANDLE;
+  r_syshd->u.handle = hd;
   return 0;
 #else
-  (void)for_write;
   fd = atoi (fdstr);
-  if (r_hd)
-    *r_hd = fd;
-  else if (r_fd)
-    *r_fd = fd;
+  r_syshd->type = ES_SYSHD_FD;
+  r_syshd->u.fd = fd;
   return 0;
 #endif
 }
