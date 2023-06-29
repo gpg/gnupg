@@ -148,6 +148,14 @@ struct tag_info
 
 #define TLV_MAX_DEPTH 20
 
+
+struct bufferlist_s
+{
+  struct bufferlist_s *next;
+  char *buffer;
+};
+
+
 /* An object to control the ASN.1 parsing.  */
 struct tlv_ctx_s
 {
@@ -162,6 +170,8 @@ struct tlv_ctx_s
   struct tag_info ti;  /* The current tag.  */
   gpg_error_t lasterr; /* Last error from tlv function.  */
   const char *lastfunc;/* Name of last called function.  */
+
+  struct bufferlist_s *bufferlist;  /* To keep track of amlloced buffers. */
 
   unsigned int pop_count;/* Number of pops by tlv_next.  */
   unsigned int stacklen; /* Used size of the stack.  */
@@ -198,6 +208,12 @@ struct p12_parse_ctx_s
 static int opt_verbose;
 
 
+static unsigned char *cram_octet_string (const unsigned char *input,
+                                         size_t length, size_t *r_newlength);
+
+
+
+
 void
 p12_set_verbosity (int verbose, int debug)
 {
@@ -354,9 +370,36 @@ tlv_new (const unsigned char *buffer, size_t bufsize)
 }
 
 
+/* This function can be used to store a malloced buffer into the TLV
+ * object.  Ownership of BUFFER is thus transferred to TLV.  This
+ * buffer will then only be released by tlv_release. */
+static gpg_error_t
+tlv_register_buffer (struct tlv_ctx_s *tlv, char *buffer)
+{
+  struct bufferlist_s *item;
+
+  item = xtrycalloc (1, sizeof *item);
+  if (!item)
+    return gpg_error_from_syserror ();
+  item->buffer = buffer;
+  item->next = tlv->bufferlist;
+  tlv->bufferlist = item;
+  return 0;
+}
+
+
 static void
 tlv_release (struct tlv_ctx_s *tlv)
 {
+  if (!tlv)
+    return;
+  while (tlv->bufferlist)
+    {
+      struct bufferlist_s *save = tlv->bufferlist->next;
+      xfree (tlv->bufferlist->buffer);
+      xfree (tlv->bufferlist);
+      tlv->bufferlist = save;
+    }
   xfree (tlv);
 }
 
@@ -457,7 +500,8 @@ tlv_next (struct tlv_ctx_s *tlv)
       /* End tag while in ndef container.  Skip the tag, and pop.  */
       tlv->offset += n - (tlv->bufsize - tlv->offset);
       err = _tlv_pop (tlv);
-      // FIXME see above and run peek again.
+      /* FIXME: We need to peek whether there is another end tag and
+       *        pop again.  We can't modify the TLV object, though.  */
       if (err)
         return (tlv->lasterr = err);
     }
@@ -558,24 +602,42 @@ tlv_expect_set (struct tlv_ctx_s *tlv)
 
 /* Expect an object of CLASS with TAG and store its value at
  * (R_DATA,R_DATALEN).  Then skip over its value to the next tag.
- * Note that the stored value are not allocated but point into
+ * Note that the stored value is not allocated but points into
  * TLV.  */
 static gpg_error_t
 tlv_expect_object (struct tlv_ctx_s *tlv, int class, int tag,
                    unsigned char const **r_data, size_t *r_datalen)
 {
+  gpg_error_t err;
   const unsigned char *p;
 
   tlv->lastfunc = __func__;
-  if (!(tlv->ti.class == class && tlv->ti.tag == tag
-        && !tlv->ti.is_constructed))
+  if (!(tlv->ti.class == class && tlv->ti.tag == tag))
     return (tlv->lasterr = gpg_error (GPG_ERR_INV_OBJ));
   p = tlv->buffer + tlv->offset;
   if (!tlv->ti.length)
     return (tlv->lasterr = gpg_error (GPG_ERR_TOO_SHORT));
 
-  *r_data = p;
-  *r_datalen = tlv->ti.length;
+  if (class == CLASS_CONTEXT && tag == 0 && tlv->ti.is_constructed)
+    {
+      char *newbuffer;
+
+      newbuffer = cram_octet_string (p, tlv->ti.length, r_datalen);
+      if (!newbuffer)
+        return (tlv->lasterr = gpg_error (GPG_ERR_BAD_BER));
+      err = tlv_register_buffer (tlv, newbuffer);
+      if (err)
+        {
+          xfree (newbuffer);
+          return (tlv->lasterr = err);
+        }
+      *r_data = newbuffer;
+    }
+  else
+    {
+      *r_data = p;
+      *r_datalen = tlv->ti.length;
+    }
 
   tlv->offset += tlv->ti.length;
   return 0;
@@ -591,21 +653,40 @@ static gpg_error_t
 tlv_expect_octet_string (struct tlv_ctx_s *tlv, int encapsulates,
                          unsigned char const **r_data, size_t *r_datalen)
 {
+  gpg_error_t err;
   const unsigned char *p;
   size_t n;
 
   tlv->lastfunc = __func__;
   if (!(tlv->ti.class == CLASS_UNIVERSAL && tlv->ti.tag == TAG_OCTET_STRING
-        && !tlv->ti.is_constructed))
+        && (!tlv->ti.is_constructed || encapsulates)))
     return (tlv->lasterr = gpg_error (GPG_ERR_INV_OBJ));
   p = tlv->buffer + tlv->offset;
   if (!(n=tlv->ti.length))
     return (tlv->lasterr = gpg_error (GPG_ERR_TOO_SHORT));
 
-  if (r_data)
-    *r_data = p;
-  if (r_datalen)
-    *r_datalen = tlv->ti.length;
+  if (encapsulates && tlv->ti.is_constructed)
+    {
+      char *newbuffer;
+
+      newbuffer = cram_octet_string (p, n, r_datalen);
+      if (!newbuffer)
+        return (tlv->lasterr = gpg_error (GPG_ERR_BAD_BER));
+      err = tlv_register_buffer (tlv, newbuffer);
+      if (err)
+        {
+          xfree (newbuffer);
+          return (tlv->lasterr = err);
+        }
+      *r_data = newbuffer;
+    }
+  else
+    {
+      if (r_data)
+        *r_data = p;
+      if (r_datalen)
+        *r_datalen = tlv->ti.length;
+    }
   if (encapsulates)
     return _tlv_push (tlv);
 
@@ -716,37 +797,37 @@ tlv_expect_object_id (struct tlv_ctx_s *tlv,
 
 
 /* Given an ASN.1 chunk of a structure like:
-
-     24 NDEF:       OCTET STRING  -- This is not passed to us
-     04    1:         OCTET STRING  -- INPUT point s to here
-            :           30
-     04    1:         OCTET STRING
-            :           80
-          [...]
-     04    2:         OCTET STRING
-            :           00 00
-            :         } -- This denotes a Null tag and are the last
-                        -- two bytes in INPUT.
-
-   Create a new buffer with the content of that octet string.  INPUT
-   is the original buffer with a length as stored at LENGTH.  Returns
-   NULL on error or a new malloced buffer with the length of this new
-   buffer stored at LENGTH and the number of bytes parsed from input
-   are added to the value stored at INPUT_CONSUMED.  INPUT_CONSUMED is
-   allowed to be passed as NULL if the caller is not interested in
-   this value. */
+ *
+ *   24 NDEF:       OCTET STRING  -- This is not passed to us
+ *   04    1:         OCTET STRING  -- INPUT point s to here
+ *          :           30
+ *   04    1:         OCTET STRING
+ *          :           80
+ *        [...]
+ *   04    2:         OCTET STRING
+ *          :           00 00
+ *          :         } -- This denotes a Null tag and are the last
+ *                      -- two bytes in INPUT.
+ *
+ * The example is from Mozilla Firefox 1.0.4 which actually exports
+ * certs as single byte chunks of octet strings.
+ *
+ * Create a new buffer with the content of that octet string.  INPUT
+ * is the original buffer with a LENGTH.  Returns
+ * NULL on error or a new malloced buffer with its actual used length
+ * stored at R_NEWLENGTH.    */
 static unsigned char *
-cram_octet_string (const unsigned char *input, size_t *length,
-                   size_t *input_consumed)
+cram_octet_string (const unsigned char *input, size_t length,
+                   size_t *r_newlength)
 {
   const unsigned char *s = input;
-  size_t n = *length;
+  size_t n = length;
   unsigned char *output, *d;
   struct tag_info ti;
 
   /* Allocate output buf.  We know that it won't be longer than the
      input buffer. */
-  d = output = gcry_malloc (n);
+  d = output = gcry_malloc (length);
   if (!output)
     goto bailout;
 
@@ -769,18 +850,13 @@ cram_octet_string (const unsigned char *input, size_t *length,
     }
 
 
-  *length = d - output;
-  if (input_consumed)
-    *input_consumed += s - input;
+  *r_newlength = d - output;
   return output;
 
  bailout:
-  if (input_consumed)
-    *input_consumed += s - input;
   gcry_free (output);
   return NULL;
 }
-
 
 
 static int
@@ -1331,38 +1407,6 @@ parse_bag_encrypted_data (struct p12_parse_ctx_s *ctx, struct tlv_ctx_s *tlv)
   if (tlv_next (tlv))
     goto bailout;
 
-  /* consumed = p - p_start; */
-  /* if (ti.class == CLASS_CONTEXT && ti.tag == 0 && ti.is_constructed && ti.ndef) */
-  /*   { */
-  /*     /\* Mozilla exported certs now come with single byte chunks of */
-  /*        octet strings.  (Mozilla Firefox 1.0.4).  Arghh. *\/ */
-  /*     where = "cram-rc2or3des-ciphertext"; */
-  /*     cram_buffer = cram_octet_string ( p, &n, &consumed); */
-  /*     if (!cram_buffer) */
-  /*       goto bailout; */
-  /*     p = p_start = cram_buffer; */
-  /*     if (r_consumed) */
-  /*       *r_consumed = consumed; */
-  /*     r_consumed = NULL; /\* Donot update that value on return. *\/ */
-  /*     ti.length = n; */
-  /*   } */
-  /* else if (ti.class == CLASS_CONTEXT && ti.tag == 0 && ti.is_constructed) */
-  /*   { */
-  /*     where = "octets-rc2or3des-ciphertext"; */
-  /*     n = ti.length; */
-  /*     cram_buffer = cram_octet_string ( p, &n, &consumed); */
-  /*     if (!cram_buffer) */
-  /*       goto bailout; */
-  /*     p = p_start = cram_buffer; */
-  /*     if (r_consumed) */
-  /*       *r_consumed = consumed; */
-  /*     r_consumed = NULL; /\* Do not update that value on return. *\/ */
-  /*     ti.length = n; */
-  /*   } */
-  /* else if (ti.class == CLASS_CONTEXT && ti.tag == 0 && ti.length ) */
-  /*   ; */
-  /* else */
-  /*   goto bailout; */
   if (tlv_expect_object (tlv, CLASS_CONTEXT, 0, &data, &datalen))
     goto bailout;
 
@@ -1538,7 +1582,8 @@ parse_bag_encrypted_data (struct p12_parse_ctx_s *ctx, struct tlv_ctx_s *tlv)
                              keyelem_count, gpg_strerror (err));
                   goto bailout;
                 }
-              log_debug ("RSA key parameter %d found\n", keyelem_count);
+              if (opt_verbose > 1)
+                log_debug ("RSA key parameter %d found\n", keyelem_count);
               keyelem_count++;
             }
           if (err && gpg_err_code (err) != GPG_ERR_EOF)
@@ -1683,6 +1728,7 @@ parse_shrouded_key_bag (struct p12_parse_ctx_s *ctx, struct tlv_ctx_s *tlv)
   size_t saltlen;
   char iv[16];
   unsigned int iter;
+  struct tlv_ctx_s *saved_tlv = NULL;
   int renewed_tlv = 0;  /* True if the TLV must be released.  */
   unsigned char *plain = NULL;
   int is_pbes2 = 0;
@@ -1865,8 +1911,10 @@ parse_shrouded_key_bag (struct p12_parse_ctx_s *ctx, struct tlv_ctx_s *tlv)
                           : GCRY_CIPHER_3DES,
                  bag_data_p);
 
+
   /* We do not need the TLV anymore and allocated a new one.  */
   where = "shrouded_key_bag.decrypted-text";
+  saved_tlv = tlv;
   tlv = tlv_new (plain, datalen);
   if (!tlv)
     {
@@ -1874,6 +1922,8 @@ parse_shrouded_key_bag (struct p12_parse_ctx_s *ctx, struct tlv_ctx_s *tlv)
       goto bailout;
     }
   renewed_tlv = 1;
+  if (opt_verbose > 1)
+    log_debug ("new parser context\n");
 
   if (tlv_next (tlv))
     {
@@ -2037,10 +2087,39 @@ parse_shrouded_key_bag (struct p12_parse_ctx_s *ctx, struct tlv_ctx_s *tlv)
       err = 0;
     }
 
+  if (opt_verbose > 1)
+    log_debug ("restoring parser context\n");
+  tlv_release (tlv);
+  renewed_tlv = 0;
+  tlv = saved_tlv;
+
+  where = "shrouded_key_bag.attribute_set";
+  err = tlv_next (tlv);
+  if (gpg_err_code (err) == GPG_ERR_EOF)
+    goto leave;
+  if (err)
+    goto bailout;
+  err = tlv_expect_set (tlv);
+  if (!err)
+    { /* This is the optional set of attributes.  Skip it. */
+      tlv_skip (tlv);
+      if (opt_verbose)
+        log_info ("skipping %s\n", where);
+    }
+  else if (gpg_err_code (err) == GPG_ERR_INV_OBJ)
+    tlv_set_pending (tlv); /* The next tlv_next will be skipped.  */
+  else /* Other error.  */
+    goto bailout;
+
+
  leave:
   gcry_free (plain);
   if (renewed_tlv)
-   tlv_release (tlv);
+    {
+      tlv_release (tlv);
+      if (opt_verbose > 1)
+        log_debug ("parser context released\n");
+    }
   return err;
 
  bailout:
@@ -2322,17 +2401,6 @@ p12_parse (const unsigned char *buffer, size_t length, const char *pw,
 
   if (tlv_next (tlv))
     goto bailout;
-  if (tlv->ti.is_constructed && tlv->ti.ndef)
-    {
-      log_debug ("FIXME Put this into our TLV machinery.\n");
-      /* /\* Mozilla exported certs now come with single byte chunks of */
-      /*    octet strings.  (Mozilla Firefox 1.0.4).  Arghh. *\/ */
-      /* where = "cram-bags"; */
-      /* cram_buffer = cram_octet_string ( p, &n, NULL); */
-      /* if (!cram_buffer) */
-      /*   goto bailout; */
-      /* p = p_start = cram_buffer; */
-    }
   if (tlv_expect_octet_string (tlv, 1, NULL, NULL))
     goto bailout;
 

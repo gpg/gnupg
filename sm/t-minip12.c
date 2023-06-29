@@ -444,12 +444,14 @@ static void
 cert_collect_cb (void *opaque, const unsigned char *cert, size_t certlen)
 {
   char **certstr = opaque;
-  char *hash;
+  char *hash, *save;
 
   hash = hash_buffer (cert, certlen);
   if (*certstr)
     {
-      *certstr = xstrconcat (*certstr, ",", hash, NULL);
+      save = *certstr;
+      *certstr = xstrconcat (save, ",", hash, NULL);
+      xfree (save);
       xfree (hash);
     }
   else
@@ -645,7 +647,12 @@ run_tests_from_file (const char *descfname)
           copy_data (&p, line, lineno);
           hexdowncase (p);
           if (p && cert)
-            cert = xstrconcat (cert, ",", p, NULL);
+            {
+              char *save = cert;
+              cert = xstrconcat (save, ",", p, NULL);
+              xfree (save);
+              xfree (p);
+            }
           else
             cert = p;
         }
@@ -681,6 +688,7 @@ main (int argc, char **argv)
   char const *name = NULL;
   char const *pass = NULL;
   int ret;
+  int no_extra = 0;
 
   if (argc)
     { argc--; argv++; }
@@ -697,11 +705,17 @@ main (int argc, char **argv)
           fputs ("usage: " PGM " <pkcs12file> [<passphrase>]\n"
                  "Without <pkcs12file> a regression test is run\n"
                  "Options:\n"
+                 "  --no-extra          do not run extra tests\n"
                  "  --verbose           print timings etc.\n"
                  "                      given twice shows more\n"
                  "  --debug             flyswatter\n"
                  , stdout);
           exit (0);
+        }
+      else if (!strcmp (*argv, "--no-extra"))
+        {
+          no_extra = 1;
+          argc--; argv++;
         }
       else if (!strcmp (*argv, "--verbose"))
         {
@@ -761,7 +775,7 @@ main (int argc, char **argv)
       xfree (descfname);
 
       /* Check whether we have non-public regression test cases. */
-      p = value_from_gnupg_autogen_rc ("GNUPG_EXTRA_TESTS_DIR");
+      p = no_extra? NULL:value_from_gnupg_autogen_rc ("GNUPG_EXTRA_TESTS_DIR");
       if (p)
         {
           descfname = xstrconcat  (p, "/pkcs12/Description", NULL);
