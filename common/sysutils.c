@@ -656,8 +656,27 @@ check_special_filename (const char *fname, int for_write, int notranslate)
       for (i=0; digitp (fname+i); i++ )
         ;
       if (!fname[i])
-        return notranslate? atoi (fname)
-          /**/            : translate_sys2libc_fd_int (atoi (fname), for_write);
+        {
+          if (notranslate)
+            return atoi (fname);
+          else
+            {
+              es_syshd_t syshd;
+
+              if (gnupg_parse_fdstr (fname,  &syshd))
+                return -1;
+
+#ifdef HAVE_W32_SYSTEM
+              if (syshd.type == ES_SYSHD_FD)
+                return syshd.u.fd;
+              else
+                return translate_sys2libc_fd ((gnupg_fd_t)syshd.u.handle, for_write);
+#else
+              (void)for_write;
+              return syshd.u.fd;
+#endif
+            }
+        }
     }
   return -1;
 }
