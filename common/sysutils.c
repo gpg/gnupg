@@ -557,17 +557,15 @@ translate_sys2libc_fd (gnupg_fd_t fd, int for_write)
 }
 
 /* This is the same as translate_sys2libc_fd but takes an integer
-   which is assumed to be such an system handle.  On WindowsCE the
-   passed FD is a rendezvous ID and the function finishes the pipe
-   creation. */
+   which is assumed to be such an system handle.   */
 int
 translate_sys2libc_fd_int (int fd, int for_write)
 {
 #ifdef HAVE_W32_SYSTEM
   if (fd <= 2)
-    return fd;	/* Do not do this for error, stdin, stdout, stderr. */
+    return fd;	/* Do not do this for stdin, stdout, and stderr.  */
 
-  return translate_sys2libc_fd ((void*)fd, for_write);
+  return translate_sys2libc_fd ((void*)(intptr_t)fd, for_write);
 #else
   (void)for_write;
   return fd;
