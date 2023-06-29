@@ -1,10 +1,5 @@
 This is a collection of keys we use with the regression tests.
-
-opensc-tests.p12   PKCS#12 key and certificates taken from OpenSC.
-		   Passphrase is "password"
-
-ov-user.p12        Private tests keys from www.openvalidation.org.
-ov-server.p12      Passphrase for both is "start"
+For the *.p12 files see Description-p12
 
 ossl-rentec-user.pem  An OpenSSL generated user certificate using a
                       bunch of attributes and DC RDNs.
@@ -21,4 +16,3 @@ steed-self-signing-nonthority.pem
                    The STEED Self-Signing Nonthority.
 68A638998DFABAC510EA645CE34F9686B2EDF7EA.key
                    The private Key of The STEED Self-Signing Nonthority.
-

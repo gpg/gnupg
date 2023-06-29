@@ -39,12 +39,18 @@ EXTRA_DIST = runtest inittests $(testscripts) ChangeLog-2011 \
              fake-pinentries/fake-pinentry.pl  \
              fake-pinentries/fake-pinentry.py  \
              fake-pinentries/fake-pinentry.sh  \
+	     samplekeys/Description-p12 \
 	     samplekeys/steed-self-signing-nonthority.pem \
 	     samplekeys/68A638998DFABAC510EA645CE34F9686B2EDF7EA.key \
              samplekeys/32100C27173EF6E9C4E9A25D3D69F86D37A4F939.key \
              samplekeys/cert_g10code_pete1.pem \
              samplekeys/cert_g10code_test1.pem \
              samplekeys/cert_g10code_theo1.pem \
+             samplekeys/ov-user.p12 \
+             samplekeys/ov-server.p12 \
+             samplekeys/opensc-test.p12 \
+             samplekeys/t5793-openssl.pfx \
+             samplekeys/t5793-test.pfx \
 	     run-tests.scm
 
 # We used to run $(testscripts) here but these asschk scripts are not

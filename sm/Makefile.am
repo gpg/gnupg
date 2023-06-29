@@ -21,6 +21,13 @@ EXTRA_DIST = ChangeLog-2011 \
              gpgsm-w32info.rc gpgsm.w32-manifest.in
 
 bin_PROGRAMS = gpgsm
+noinst_PROGRAMS = $(module_tests) $(module_maint_tests)
+
+if DISABLE_TESTS
+TESTS =
+else
+TESTS = $(module_tests)
+endif
 
 AM_CFLAGS = $(LIBGCRYPT_CFLAGS) $(KSBA_CFLAGS) $(LIBASSUAN_CFLAGS)
 
@@ -67,6 +74,19 @@ gpgsm_LDADD = $(common_libs) ../common/libgpgrl.a \
 	      $(LIBICONV) $(gpgsm_rc_objs) $(extra_sys_libs) $(NETLIBS)
 gpgsm_LDFLAGS = $(extra_bin_ldflags)
 gpgsm_DEPENDENCIES = $(gpgsm_rc_objs)
+
+module_tests = t-minip12
+module_maint_tests =
+
+t_common_src =
+t_common_ldadd = $(libcommon) $(LIBGCRYPT_LIBS) $(KSBA_LIBS) \
+                 $(GPG_ERROR_LIBS) $(LIBINTL) $(LIBICONV)
+
+
+t_minip12_CFLAGS = -DWITHOUT_NPTH=1 \
+	           $(LIBGCRYPT_CFLAGS) $(KSBA_CFLAGS) $(GPG_ERROR_CFLAGS)
+t_minip12_SOURCES = $(t_common_src) t-minip12.c minip12.c
+t_minip12_LDADD   = $(t_common_ldadd) $(NETLIBS)
 
 
 # Make sure that all libs are build before we use them.  This is

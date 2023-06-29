@@ -26,7 +26,16 @@ Noteworthy changes in version 2.2.42 (unreleased)
 
   * gpgsm: Also announce AES256-CBC in signatures.  [rGaa397fdcdb21]
 
+  * gpgsm: Major rewrite of the PKCS#12 parser.  [T6536]
+
   * dirmngr: New option --ignore-crl-extensions.  [T6545]
+
+  * wkd: Use export-clean for gpg-wks-client's --mirror and --create
+    commands.  [rG505e770b4c]
+
+  * wkd: Make --add-revocs the default in gpg-wks-client.  New option
+    --no-add-revocs.  [rG67d57fae3f]
+
 
   Release-info: https://dev.gnupg.org/T6307
 

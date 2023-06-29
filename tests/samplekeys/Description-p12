@@ -1,0 +1,32 @@
+# Description-p12  - Machine readable description of our P12 test vectors
+
+Name: ov-user.p12
+Desc: Private test key from www.openvalidation.org
+Pass: start
+Cert: 4753a910e0c8b4caa8663ca0e4273a884eb5397d
+Key:  93be89edd11214ab74280d988a665b6beef876c5
+
+Name: ov-server.p12
+Desc: Private test key from www.openvalidation.org
+Pass: start
+Cert: 1997fadf6cc1af03e4845c4cba38fb2397315143
+Key:  63b1d7233e75c3a462cb4b8ea3ad285e8ecba91c
+
+Name: opensc-test.p12
+Desc: PKCS#12 key and certificates taken from OpenSC (RC2+3DES,PKCS#8)
+Pass: password
+Cert: 115abfc3ae554092a57ade74177fedf9459af5d2
+Cert: a0d6d318952c313ff8c33cd3f629647ff1de76b3
+Key:  5a36c61706367ecdb52e8779e3a32bbac1069fa1
+
+Name: t5793-openssl.pfx
+Desc: self-signed key issued keys
+Pass: test
+Cert: 80348a438e4b803b99e708da0b7fdd0659dedd15
+Key:  c271e44ab4fb19ca1aae71102ea4d7292ccc981d
+
+Name: t5793-test.pfx
+Desc: QuaVadis format of t5793-openssl
+Pass: test
+Cert: 80348a438e4b803b99e708da0b7fdd0659dedd15
+Key:  c271e44ab4fb19ca1aae71102ea4d7292ccc981d
