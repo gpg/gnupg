@@ -1,7 +1,45 @@
 Noteworthy changes in version 2.4.3 (unreleased)
 ------------------------------------------------
 
-  Release-info: https://dev.gnupg.org/T6506
+  * gpg: Set default expiration date to 3 years.  [T2701]
+
+  * gpg: Add --list-filter properties "key_expires" and
+     "key_expires_d".  [T6529]
+
+  * gpg: Emit status line and proper diagnostics for write errors.
+    [T6528]
+
+  * gpg: Make progress work for large files on Windows.  [T6534]
+
+  * gpg: New option --no-compress as alias for -z0.
+
+  * gpgsm: Print PROGRESS status lines.  Add new --input-size-hint.
+    [T6534]
+
+  * gpgsm: Support SENDCERT_SKI for --call-dirmngr.  [rG701a8b30f0]
+
+  * gpgsm: Major rewrite of the PKCS#12 parser.  [T6536]
+
+  * gpgtar: New option --no-compress.
+
+  * dirmngr: Extend the AD_QUERY command.  [rG207c99567c]
+
+  * dirmngr: Disable the HTTP redirect rewriting.  [T6477]
+
+  * dirmngr: New option --compatibility-flags.  [rGbf04b07327]
+
+  * dirmngr: New option --ignore-crl-extensions.  [T6545]
+
+  * wkd: Use export-clean for gpg-wks-client's --mirror and --create
+    commands.  [rG2c7f7a5a27]
+
+  * wkd: Make --add-revocs the default in gpg-wks-client.  New option
+  --no-add-revocs.  [rG10c937ee68]
+
+  * scd: Fix authentication with Administration Key for PIV.
+    [rG25b59cf6ce]
+
+  Release-info: https://dev.gnupg.org/T6509
 
 
 Noteworthy changes in version 2.4.2 (2023-05-30)
