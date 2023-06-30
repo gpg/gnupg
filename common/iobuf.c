@@ -166,7 +166,9 @@ block_filter_ctx_t;
 /* Local prototypes.  */
 static int underflow (iobuf_t a, int clear_pending_eof);
 static int underflow_target (iobuf_t a, int clear_pending_eof, size_t target);
-static int translate_file_handle (int fd, int for_write);
+static gnupg_fd_t translate_file_handle (int fd, int for_write);
+static iobuf_t do_iobuf_fdopen (gnupg_fd_t fp, const char *mode, int keep_open);
+
 
 /* Sends any pending data to the filter's FILTER function.  Note: this
    works on the filter and not on the whole pipeline.  That is,
@@ -1444,8 +1446,8 @@ do_open (const char *fname, int special_filenames,
     return NULL;
   else if (special_filenames
            && (fd = check_special_filename (fname, 0, 1)) != -1)
-    return iobuf_fdopen (translate_file_handle (fd, use == IOBUF_INPUT ? 0 : 1),
-			 opentype);
+    return do_iobuf_fdopen (translate_file_handle (fd, use == IOBUF_INPUT
+                                                   ? 0 : 1), opentype, 0);
   else
     {
       if (use == IOBUF_INPUT)
@@ -1493,14 +1495,11 @@ iobuf_openrw (const char *fname)
 
 
 static iobuf_t
-do_iobuf_fdopen (int fd, const char *mode, int keep_open)
+do_iobuf_fdopen (gnupg_fd_t fp, const char *mode, int keep_open)
 {
   iobuf_t a;
-  gnupg_fd_t fp;
   file_filter_ctx_t *fcx;
   size_t len = 0;
-
-  fp = INT2FD (fd);
 
   a = iobuf_alloc (strchr (mode, 'w') ? IOBUF_OUTPUT : IOBUF_INPUT,
 		   iobuf_buffer_size);
@@ -1508,7 +1507,7 @@ do_iobuf_fdopen (int fd, const char *mode, int keep_open)
   fcx->fp = fp;
   fcx->print_only_name = 1;
   fcx->keep_open = keep_open;
-  sprintf (fcx->fname, "[fd %d]", fd);
+  sprintf (fcx->fname, "[fd %d]", (int)(intptr_t)fp);
   a->filter = file_filter;
   a->filter_ov = fcx;
   file_filter (fcx, IOBUFCTRL_INIT, NULL, NULL, &len);
@@ -1523,13 +1522,15 @@ do_iobuf_fdopen (int fd, const char *mode, int keep_open)
 iobuf_t
 iobuf_fdopen (int fd, const char *mode)
 {
-  return do_iobuf_fdopen (fd, mode, 0);
+  gnupg_fd_t fp = INT2FD (fd);
+  return do_iobuf_fdopen (fp, mode, 0);
 }
 
 iobuf_t
 iobuf_fdopen_nc (int fd, const char *mode)
 {
-  return do_iobuf_fdopen (fd, mode, 1);
+  gnupg_fd_t fp = INT2FD (fd);
+  return do_iobuf_fdopen (fp, mode, 1);
 }
 
 
@@ -2985,34 +2986,34 @@ iobuf_read_line (iobuf_t a, byte ** addr_of_buffer,
   return nbytes;
 }
 
-static int
+static gnupg_fd_t
 translate_file_handle (int fd, int for_write)
 {
 #if defined(HAVE_W32_SYSTEM)
   {
-    int x;
+    gnupg_fd_t x;
 
     (void)for_write;
 
     if (fd == 0)
-      x = (int) GetStdHandle (STD_INPUT_HANDLE);
+      x = GetStdHandle (STD_INPUT_HANDLE);
     else if (fd == 1)
-      x = (int) GetStdHandle (STD_OUTPUT_HANDLE);
+      x = GetStdHandle (STD_OUTPUT_HANDLE);
     else if (fd == 2)
-      x = (int) GetStdHandle (STD_ERROR_HANDLE);
+      x = GetStdHandle (STD_ERROR_HANDLE);
     else
-      x = fd;
+      x = (gnupg_fd_t)(intptr_t)fd;
 
-    if (x == -1)
+    if (x == INVALID_HANDLE_VALUE)
       log_debug ("GetStdHandle(%d) failed: ec=%d\n",
 		 fd, (int) GetLastError ());
 
-    fd = x;
+    return x;
   }
 #else
   (void)for_write;
-#endif
   return fd;
+#endif
 }
 
 
