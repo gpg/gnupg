@@ -128,8 +128,9 @@ initialize_module_call_pinentry (void)
 void
 agent_query_dump_state (void)
 {
-  log_info ("agent_query_dump_state: entry_ctx=%p pid=%ld popup_tid=%p\n",
-            entry_ctx, (long)assuan_get_pid (entry_ctx), (void*)popup_tid);
+  log_info ("agent_query_dump_state: entry_ctx=%p pid=%ld popup_tid=%lx\n",
+            entry_ctx, (long)assuan_get_pid (entry_ctx),
+            (unsigned long)popup_tid);
 }
 
 /* Called to make sure that a popup window owned by the current
