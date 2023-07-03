@@ -1038,6 +1038,7 @@ do_open (char *line)
 #if defined(HAVE_W32_SYSTEM)
       {
         HANDLE prochandle, handle, newhandle;
+        char numbuf[35];
 
         handle = (void*)_get_osfhandle (fd);
 
@@ -1060,11 +1061,13 @@ do_open (char *line)
           }
         CloseHandle (prochandle);
         open_fd_table[fd].handle = newhandle;
+
+        snprintf (numbuf, sizeof numbuf, "%p", open_fd_table[fd].handle);
+        set_var (varname, numbuf);
       }
       if (opt.verbose)
         log_info ("file '%s' opened in \"%s\" mode, fd=%p  (libc=%d)\n",
                    name, mode, open_fd_table[fd].handle, fd);
-      set_int_var (varname, (int)open_fd_table[fd].handle);
 #else /* Unix */
       if (opt.verbose)
         log_info ("file '%s' opened in \"%s\" mode, fd=%d\n",
@@ -1085,13 +1088,28 @@ do_open (char *line)
 static void
 do_close (char *line)
 {
-  int fd = atoi (line);
+  int fd;
 
 #ifdef HAVE_W32_SYSTEM
   int i;
+  gpg_error_t err;
+  es_syshd_t syshd;
+
+  err = gnupg_parse_fdstr (line, &syshd);
+  if (err)
+    {
+      log_error ("given fd (system handle) is not valid\n");
+      return;
+    }
+
+  if (syshd.type == ES_SYSHD_FD)
+    {
+      log_error ("given fd is stdin/out/err\n");
+      return;
+    }
 
   for (i=0; i < DIM (open_fd_table); i++)
-    if ( open_fd_table[i].inuse && open_fd_table[i].handle == (void*)fd)
+    if (open_fd_table[i].inuse && open_fd_table[i].handle == syshd.u.handle)
       break;
   if (i < DIM (open_fd_table))
     fd = i;
@@ -1100,6 +1118,8 @@ do_close (char *line)
       log_error ("given fd (system handle) has not been opened\n");
       return;
     }
+#else
+  fd = atoi (line);
 #endif
 
   if (fd < 0 || fd >= DIM (open_fd_table))
@@ -1130,7 +1150,7 @@ do_showopen (void)
     if (open_fd_table[i].inuse)
       {
 #ifdef HAVE_W32_SYSTEM
-        printf ("%-15d (libc=%d)\n", (int)open_fd_table[i].handle, i);
+        printf ("%p (libc=%d)\n", open_fd_table[i].handle, i);
 #else
         printf ("%-15d\n", i);
 #endif
