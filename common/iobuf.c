@@ -542,8 +542,8 @@ file_filter (void *opaque, int control, iobuf_t chain, byte * buf,
 	    {
 	      if (size && !WriteFile (f, p, nbytes, &n, NULL))
 		{
-		  int ec = (int) GetLastError ();
-		  rc = gpg_error_from_errno (ec);
+		  int ec = gnupg_w32_set_errno (-1);
+		  rc = gpg_error_from_syserror ();
 		  log_error ("%s: write error: %s (ec=%d)\n",
                              a->fname, gpg_strerror (rc), ec);
 		  break;
@@ -820,7 +820,8 @@ sock_filter (void *opaque, int control, iobuf_t chain, byte * buf,
 	      if (n == SOCKET_ERROR)
 		{
 		  int ec = (int) WSAGetLastError ();
-		  rc = gpg_error_from_errno (ec);
+		  gnupg_w32_set_errno (ec);
+		  rc = gpg_error_from_syserror ();
 		  log_error ("socket write error: ec=%d\n", ec);
 		  break;
 		}

@@ -319,15 +319,17 @@ map_w32_to_errno (DWORD w32_err)
 #endif /*HAVE_W32_SYSTEM*/
 
 
-/* Set ERRNO from the Windows error.  EC may be -1 to use the last error.  */
+/* Set ERRNO from the Windows error.  EC may be -1 to use the last
+ * error.  Returns the Windows error code.  */
 #ifdef HAVE_W32_SYSTEM
-void
+int
 gnupg_w32_set_errno (int ec)
 {
   /* FIXME: Replace by gpgrt_w32_set_errno.  */
   if (ec == -1)
     ec = GetLastError ();
   _set_errno (map_w32_to_errno (ec));
+  return ec;
 }
 #endif /*HAVE_W32_SYSTEM*/
 

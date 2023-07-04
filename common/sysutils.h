@@ -107,7 +107,7 @@ int gnupg_inotify_has_name (int fd, const char *name);
 
 
 #ifdef HAVE_W32_SYSTEM
-void gnupg_w32_set_errno (int ec);
+int gnupg_w32_set_errno (int ec);
 void *w32_get_user_sid (void);
 
 #include "../common/w32help.h"
