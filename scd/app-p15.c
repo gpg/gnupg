@@ -87,7 +87,8 @@ typedef enum
     CARD_PRODUCT_UNKNOWN,
     CARD_PRODUCT_RSCS,     /* Rohde&Schwarz Cybersecurity       */
     CARD_PRODUCT_DTRUST,   /* D-Trust GmbH (bundesdruckerei.de) */
-    CARD_PRODUCT_GENUA     /* GeNUA mbH                         */
+    CARD_PRODUCT_GENUA,    /* GeNUA mbH                         */
+    CARD_PRODUCT_NEXUS     /* Technology Nexus                  */
   }
 card_product_t;
 
@@ -550,6 +551,7 @@ cardproduct2str (card_product_t cardproduct)
     case CARD_PRODUCT_RSCS:    return "R&S";
     case CARD_PRODUCT_DTRUST:  return "D-Trust";
     case CARD_PRODUCT_GENUA:   return "GeNUA";
+    case CARD_PRODUCT_NEXUS:   return "Nexus";
     }
   return "";
 }
@@ -3614,13 +3616,19 @@ read_p15_info (app_t app)
 
   release_lists (app);
 
-  if (IS_CARDOS_5 (app)
-      && app->app_local->manufacturer_id
-      && !ascii_strcasecmp (app->app_local->manufacturer_id, "GeNUA mbH"))
+  /* Set a product type from the manufacturer_id.  */
+  if (IS_CARDOS_5 (app) && app->app_local->manufacturer_id)
     {
-      if (!app->app_local->card_product)
+      const char *manu = app->app_local->manufacturer_id;
+
+      if (app->app_local->card_product)
+        ; /* Already set.  */
+      else if (!ascii_strcasecmp (manu, "GeNUA mbH"))
         app->app_local->card_product = CARD_PRODUCT_GENUA;
+      else if (!ascii_strcasecmp (manu, "Technology Nexus"))
+        app->app_local->card_product = CARD_PRODUCT_NEXUS;
     }
+
 
   /* Read the ODF so that we know the location of all directory
      files. */
@@ -5080,9 +5088,7 @@ get_dispserialno (app_t app, prkdf_object_t prkdf)
       if (serial && (n=strlen (serial)) > 8)
         memmove (serial, serial + n - 8, 9);
     }
-  else if (IS_CARDOS_5 (app) && app->app_local->manufacturer_id
-           && !ascii_strcasecmp (app->app_local->manufacturer_id,
-                                 "Technology Nexus")
+  else if (app->app_local->card_product == CARD_PRODUCT_NEXUS
            && APP_CARD(app)->serialno && APP_CARD(app)->serialnolen == 4+9
            && !memcmp (APP_CARD(app)->serialno, "\xff\x00\x00\xff", 4)
            && !any_control_or_space_mem (APP_CARD(app)->serialno + 4, 9))
@@ -5616,11 +5622,12 @@ do_sign (app_t app, ctrl_t ctrl, const char *keyidstr, int hashalgo,
           err = gpg_error_from_syserror ();
           goto leave;
         }
-      if (app->app_local->card_type == CARD_TYPE_BELPIC)
+      if (app->app_local->card_type == CARD_TYPE_BELPIC
+          || app->app_local->card_product == CARD_PRODUCT_NEXUS)
         {
-          /* This card wants only the plain hash w/o any prefix.  */
-          /* FIXME: We may want to remove this code because it is unlikely
-           * that such cards are still in use.  */
+          /* The default for these cards is to use a plain hash.  We
+           * assume that due to the used certificate the correct hash
+           * algo is used.  */
           memcpy (frame, indata, indatalen);
           framelen = indatalen;
         }
