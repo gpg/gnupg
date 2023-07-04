@@ -1,4 +1,4 @@
-Noteworthy changes in version 2.4.3 (unreleased)
+Noteworthy changes in version 2.4.3 (2023-07-04)
 ------------------------------------------------
 
   * gpg: Set default expiration date to 3 years.  [T2701]
@@ -34,11 +34,14 @@ Noteworthy changes in version 2.4.3 (unreleased)
     commands.  [rG2c7f7a5a27]
 
   * wkd: Make --add-revocs the default in gpg-wks-client.  New option
-  --no-add-revocs.  [rG10c937ee68]
+    --no-add-revocs.  [rG10c937ee68]
+
+  * scd: Make signing work for Nexus cards.  [rGb83d86b988]
 
   * scd: Fix authentication with Administration Key for PIV.
     [rG25b59cf6ce]
 
+  See-also: gnupg-announce/2023q3/000480.html
   Release-info: https://dev.gnupg.org/T6509
 
 
