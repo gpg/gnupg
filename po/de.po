@@ -3832,7 +3832,8 @@ msgstr "Bitte erwägen Sie, dessen Verfallsdatum auch zu ändern.\n"
 
 #, c-format
 msgid "WARNING: No valid encryption subkey left over.\n"
-msgstr "WARNUNG: Es sind keine Unterschlüssel zum Verschlüsseln mehr vorhanden.\n"
+msgstr ""
+"WARNUNG: Es sind keine Unterschlüssel zum Verschlüsseln mehr vorhanden.\n"
 
 msgid ""
 "WARNING: This is a PGP2-style key.  Adding a photo ID may cause some "

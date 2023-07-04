@@ -732,10 +732,6 @@ msgid "Wrong"
 msgstr "Yanlış"
 
 #, c-format
-msgid "error renaming '%s' to '%s': %s\n"
-msgstr "'%s > '%s' olarak yeniden adlandırırken hata: %s\n"
-
-#, c-format
 msgid "Note: This passphrase has never been changed.%0APlease change it now."
 msgstr ""
 "Not: Bu anahtar parolası hiç değiştirilmedi.%0ALütfen şimdi değiştirin."
@@ -3520,8 +3516,7 @@ msgstr "Gizli yardımcı anahtarlar mevcut.\n"
 
 msgid ""
 "Note: the local copy of the secret key will only be deleted with \"save\".\n"
-msgstr ""
-"Not: Gizli anahtarın yerel kopyası yalnızca \"save\" ile silinir.\n"
+msgstr "Not: Gizli anahtarın yerel kopyası yalnızca \"save\" ile silinir.\n"
 
 msgid "Need the secret key to do this.\n"
 msgstr "Bunu yapmak için gizli anahtar gerekli.\n"
@@ -3779,6 +3774,11 @@ msgstr "UYARI: Şifreleme yardımcı anahtarının yakın zamanda süresi dolaca
 #, c-format
 msgid "You may want to change its expiration date too.\n"
 msgstr "Son kullanma tarihini de değiştirmek isteyebilirsiniz.\n"
+
+#, fuzzy, c-format
+#| msgid "WARNING: Your encryption subkey expires soon.\n"
+msgid "WARNING: No valid encryption subkey left over.\n"
+msgstr "UYARI: Şifreleme yardımcı anahtarının yakın zamanda süresi dolacak.\n"
 
 msgid ""
 "WARNING: This is a PGP2-style key.  Adding a photo ID may cause some "
@@ -7759,6 +7759,10 @@ msgstr "lütfen nedenini denetleyin ve o dosyayı el ile silin\n"
 #, c-format
 msgid "failed to create temporary cache dir file '%s': %s\n"
 msgstr "geçici önbellek dizin dosyası '%s' oluşturulamadı: %s\n"
+
+#, c-format
+msgid "error renaming '%s' to '%s': %s\n"
+msgstr "'%s > '%s' olarak yeniden adlandırırken hata: %s\n"
 
 #, c-format
 msgid "can't hash '%s': %s\n"
