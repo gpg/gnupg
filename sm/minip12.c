@@ -2348,7 +2348,7 @@ p12_parse (const unsigned char *buffer, size_t length, const char *pw,
            void *certcbarg, int *r_badpass, char **r_curve)
 {
   gpg_error_t err;
-  const char *where;
+  const char *where = "";
   struct tlv_ctx_s *tlv;
   struct p12_parse_ctx_s ctx = { NULL };
   const unsigned char *oid;
