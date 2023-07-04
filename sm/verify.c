@@ -158,6 +158,10 @@ gpgsm_verify (ctrl_t ctrl, int in_fd, int data_fd, estream_t out_fp)
         }
     }
 
+  gnupg_ksba_set_progress_cb (b64writer, gpgsm_progress_cb, ctrl);
+  if (ctrl->input_size_hint)
+    gnupg_ksba_set_total (b64writer, ctrl->input_size_hint);
+
   rc = ksba_cms_new (&cms);
   if (rc)
     goto leave;

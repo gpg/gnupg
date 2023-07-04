@@ -559,12 +559,12 @@ encrypt_simple (const char *filename, int mode, int use_seskey)
 
   if ( !iobuf_is_pipe_filename (filename) && *filename && !opt.textmode )
     {
-      off_t tmpsize;
-      int overflow;
+      uint64_t tmpsize;
 
-      if ( !(tmpsize = iobuf_get_filelength(inp, &overflow))
-           && !overflow && opt.verbose)
+      tmpsize = iobuf_get_filelength(inp);
+      if (!tmpsize && opt.verbose)
         log_info(_("WARNING: '%s' is an empty file\n"), filename );
+
       /* We can't encode the length of very large files because
          OpenPGP uses only 32 bit for file sizes.  So if the
          size of a file is larger than 2^32 minus some bytes for
@@ -903,11 +903,10 @@ encrypt_crypt (ctrl_t ctrl, int filefd, const char *filename,
   if (filename && *filename
       && !iobuf_is_pipe_filename (filename) && !opt.textmode )
     {
-      off_t tmpsize;
-      int overflow;
+      uint64_t tmpsize;
 
-      if ( !(tmpsize = iobuf_get_filelength(inp, &overflow))
-           && !overflow && opt.verbose)
+      tmpsize = iobuf_get_filelength (inp);
+      if (!tmpsize && opt.verbose)
         log_info(_("WARNING: '%s' is an empty file\n"), filename );
       /* We can't encode the length of very large files because
          OpenPGP uses only 32 bit for file sizes.  So if the size

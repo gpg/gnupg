@@ -132,6 +132,11 @@ struct
      OID per string.  */
   strlist_t ignored_cert_extensions;
 
+  /* A list of CRL extension OIDs which are ignored so that one can
+   * claim that a critical extension has been handled.  One OID per
+   * string.  */
+  strlist_t ignored_crl_extensions;
+
   /* Allow expired certificates in the cache.  */
   int debug_cache_expired_certs;
 
@@ -154,6 +159,9 @@ struct
                                        current after nextUpdate. */
 
   strlist_t keyserver;              /* List of default keyservers.  */
+
+  /* Compatibility flags (COMPAT_FLAG_xxxx).  */
+  unsigned int compat_flags;
 } opt;
 
 
@@ -181,6 +189,18 @@ struct
 #define DBG_LOOKUP  (opt.debug & DBG_LOOKUP_VALUE)
 #define DBG_EXTPROG (opt.debug & DBG_EXTPROG_VALUE)
 #define DBG_KEEPTMP (opt.debug & DBG_KEEPTMP_VALUE)
+
+/* Compatibility flags */
+
+/* Since version 2.2.12 dirmngr restricted HTTP redirection in an
+ * attempt to mitigate certain CSRF attacks.  It turned out that this
+ * breaks too many WKD deployments and that the attack scenario is not
+ * due to gnupg's redirecting but due to insecure configured systems.
+ * Thus from 2.4.3 on we disable this restriction but allow to use the
+ * old behaviour by using this compatibility flag.  For details see
+ * https://dev.gnupg.org/T6477.  */
+#define COMPAT_RESTRICT_HTTP_REDIR   1
+
 
 /* A simple list of certificate references.  FIXME: Better use
    certlist_t also for references (Store NULL at .cert) */

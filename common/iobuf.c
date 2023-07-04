@@ -505,7 +505,8 @@ file_filter (void *opaque, int control, iobuf_t chain, byte * buf,
 	      if (ec != ERROR_BROKEN_PIPE)
 		{
 		  rc = gpg_error_from_errno (ec);
-		  log_error ("%s: read error: ec=%d\n", a->fname, ec);
+		  log_error ("%s: read error: %s (ec=%d)\n",
+                             a->fname, gpg_strerror (rc), ec);
 		}
 	    }
 	  else if (!nread)
@@ -573,9 +574,10 @@ file_filter (void *opaque, int control, iobuf_t chain, byte * buf,
 	    {
 	      if (size && !WriteFile (f, p, nbytes, &n, NULL))
 		{
-		  int ec = (int) GetLastError ();
-		  rc = gpg_error_from_errno (ec);
-		  log_error ("%s: write error: ec=%d\n", a->fname, ec);
+		  int ec = gnupg_w32_set_errno (-1);
+		  rc = gpg_error_from_syserror ();
+		  log_error ("%s: write error: %s (ec=%d)\n",
+                             a->fname, gpg_strerror (rc), ec);
 		  break;
 		}
 	      p += n;
@@ -634,7 +636,8 @@ file_filter (void *opaque, int control, iobuf_t chain, byte * buf,
           if (ec != ERROR_BROKEN_PIPE)
             {
               rc = gpg_error_from_errno (ec);
-              log_error ("%s: read error: ec=%d\n", a->fname, ec);
+              log_error ("%s: read error: %s (ec=%d)\n",
+                         a->fname, gpg_strerror (rc), ec);
             }
           a->npeeked = 0;
         }
@@ -883,7 +886,8 @@ sock_filter (void *opaque, int control, iobuf_t chain, byte * buf,
 	      if (n == SOCKET_ERROR)
 		{
 		  int ec = (int) WSAGetLastError ();
-		  rc = gpg_error_from_errno (ec);
+		  gnupg_w32_set_errno (ec);
+		  rc = gpg_error_from_syserror ();
 		  log_error ("socket write error: ec=%d\n", ec);
 		  break;
 		}
@@ -2606,13 +2610,10 @@ iobuf_set_limit (iobuf_t a, off_t nlimit)
 }
 
 
-
-off_t
-iobuf_get_filelength (iobuf_t a, int *overflow)
+/* Return the length of the file behind A.  If there is no file, return 0. */
+uint64_t
+iobuf_get_filelength (iobuf_t a)
 {
-  if (overflow)
-    *overflow = 0;
-
   /* Hmmm: file_filter may have already been removed */
   for ( ; a->chain; a = a->chain )
     ;
@@ -2625,56 +2626,18 @@ iobuf_get_filelength (iobuf_t a, int *overflow)
     gnupg_fd_t fp = b->fp;
 
 #if defined(HAVE_W32_SYSTEM)
-    ulong size;
-    static int (* __stdcall get_file_size_ex) (void *handle,
-					       LARGE_INTEGER *r_size);
-    static int get_file_size_ex_initialized;
+    LARGE_INTEGER exsize;
 
-    if (!get_file_size_ex_initialized)
-      {
-	void *handle;
-
-	handle = dlopen ("kernel32.dll", RTLD_LAZY);
-	if (handle)
-	  {
-	    get_file_size_ex = dlsym (handle, "GetFileSizeEx");
-	    if (!get_file_size_ex)
-	      dlclose (handle);
-	  }
-	get_file_size_ex_initialized = 1;
-      }
-
-    if (get_file_size_ex)
-      {
-	/* This is a newer system with GetFileSizeEx; we use this
-	   then because it seem that GetFileSize won't return a
-	   proper error in case a file is larger than 4GB. */
-	LARGE_INTEGER exsize;
-
-	if (get_file_size_ex (fp, &exsize))
-	  {
-	    if (!exsize.u.HighPart)
-	      return exsize.u.LowPart;
-	    if (overflow)
-	      *overflow = 1;
-	    return 0;
-	  }
-      }
-    else
-      {
-	if ((size=GetFileSize (fp, NULL)) != 0xffffffff)
-	  return size;
-      }
+    if (GetFileSizeEx (fp, &exsize))
+      return exsize.QuadPart;
     log_error ("GetFileSize for handle %p failed: %s\n",
 	       fp, w32_strerror (-1));
 #else /*!HAVE_W32_SYSTEM*/
-    {
-      struct stat st;
+    struct stat st;
 
-      if ( !fstat (fp, &st) )
-        return st.st_size;
-      log_error("fstat() failed: %s\n", strerror(errno) );
-    }
+    if ( !fstat (fp, &st) )
+      return st.st_size;
+    log_error("fstat() failed: %s\n", strerror(errno) );
 #endif /*!HAVE_W32_SYSTEM*/
   }
 

@@ -554,6 +554,13 @@ Assume the input data is plain base-64 encoded.
 @opindex assume-binary
 Assume the input data is binary encoded.
 
+@item --input-size-hint @var{n}
+@opindex input-size-hint
+This option can be used to tell GPGSM the size of the input data in
+bytes.  @var{n} must be a positive base-10 number.  It is used by the
+@option{--status-fd} line ``PROGRESS'' to provide a value for
+``total'' if that is not available by other means.
+
 @anchor{option --p12-charset}
 @item --p12-charset @var{name}
 @opindex p12-charset
@@ -1720,6 +1727,9 @@ If this option is used all keys set by the command line option
 If @var{value} is true or @var{value} is not given all network access
 is disabled for this session.  This is the same as the command line
 option @option{--disable-dirmngr}.
+
+@item input-size-hint
+This is the same as the @option{--input-size-hint} command line option.
 
 @end table
 

@@ -1,6 +1,6 @@
 /* kska-io-support.c - Supporting functions for ksba reader and writer
  * Copyright (C) 2001-2005, 2007, 2010-2011, 2017  Werner Koch
- * Copyright (C) 2006  g10 Code GmbH
+ * Copyright (C) 2006, 2023  g10 Code GmbH
  *
  * This file is part of GnuPG.
  *
@@ -26,6 +26,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, see <https://www.gnu.org/licenses/>.
+ * SPDX-License-Identifier: (LGPL-3.0-or-later OR GPL-2.0-or-later)
  */
 
 #include <config.h>
@@ -96,6 +97,15 @@ struct writer_cb_parm_s
 
   char *pem_name;      /* Malloced.  */
 
+  struct {
+    gnupg_ksba_progress_cb_t cb;
+    ctrl_t ctrl;
+    u32 last_time;		/* last time reported */
+    uint64_t last;		/* last amount reported */
+    uint64_t current;	        /* current amount */
+    uint64_t total;	        /* total amount */
+  } progress;
+
   int wrote_begin;
   int did_finish;
 
@@ -110,6 +120,7 @@ struct writer_cb_parm_s
 
 /* Context for this module's functions.  */
 struct gnupg_ksba_io_s {
+  int is_writer;  /* True if this context refers a writer object.  */
   union {
     struct reader_cb_parm_s rparm;
     struct writer_cb_parm_s wparm;
@@ -527,6 +538,33 @@ simple_reader_cb (void *cb_value, char *buffer, size_t count, size_t *nread)
 
 
 
+/* Call the progress callback if its time.  We do this very 2 seconds
+ * or if FORCE is set.  However, we also require that at least 64KiB
+ * have been written to avoid unnecessary progress lines for small
+ * files.  */
+static gpg_error_t
+update_write_progress (struct writer_cb_parm_s *parm, size_t count, int force)
+{
+  gpg_error_t err = 0;
+  u32 timestamp;
+
+  parm->progress.current += count;
+  if (parm->progress.current >= (64*1024))
+    {
+      timestamp = make_timestamp ();
+      if (force || (timestamp - parm->progress.last_time > 1))
+        {
+          parm->progress.last = parm->progress.current;
+          parm->progress.last_time = timestamp;
+          err = parm->progress.cb (parm->progress.ctrl,
+                                   parm->progress.current,
+                                   parm->progress.total);
+        }
+    }
+  return err;
+}
+
+
 static int
 base64_writer_cb (void *cb_value, const void *buffer, size_t count)
 {
@@ -535,6 +573,8 @@ base64_writer_cb (void *cb_value, const void *buffer, size_t count)
   int i, c, idx, quad_count;
   const unsigned char *p;
   estream_t stream = parm->stream;
+  int rc;
+  size_t nleft;
 
   if (!count)
     return 0;
@@ -557,7 +597,7 @@ base64_writer_cb (void *cb_value, const void *buffer, size_t count)
   for (i=0; i < idx; i++)
     radbuf[i] = parm->base64.radbuf[i];
 
-  for (p=buffer; count; p++, count--)
+  for (p=buffer, nleft = count; nleft; p++, nleft--)
     {
       radbuf[idx++] = *p;
       if (idx > 2)
@@ -583,7 +623,11 @@ base64_writer_cb (void *cb_value, const void *buffer, size_t count)
   parm->base64.idx = idx;
   parm->base64.quad_count = quad_count;
 
-  return es_ferror (stream)? gpg_error_from_syserror () : 0;
+  rc = es_ferror (stream)? gpg_error_from_syserror () : 0;
+  /* Note that we use the unencoded count for the progress.  */
+  if (!rc && parm->progress.cb)
+    rc = update_write_progress (parm, count, 0);
+  return rc;
 }
 
 
@@ -594,13 +638,16 @@ plain_writer_cb (void *cb_value, const void *buffer, size_t count)
 {
   struct writer_cb_parm_s *parm = cb_value;
   estream_t stream = parm->stream;
+  int rc;
 
   if (!count)
     return 0;
 
   es_write (stream, buffer, count, NULL);
-
-  return es_ferror (stream)? gpg_error_from_syserror () : 0;
+  rc = es_ferror (stream)? gpg_error_from_syserror () : 0;
+  if (!rc && parm->progress.cb)
+    rc = update_write_progress (parm, count, 0);
+  return rc;
 }
 
 
@@ -610,6 +657,7 @@ base64_finish_write (struct writer_cb_parm_s *parm)
   unsigned char *radbuf;
   int c, idx, quad_count;
   estream_t stream = parm->stream;
+  int rc;
 
   if (!parm->wrote_begin)
     return 0; /* Nothing written or we are not called in base-64 mode. */
@@ -656,7 +704,10 @@ base64_finish_write (struct writer_cb_parm_s *parm)
       es_fputs ("-----\n", stream);
     }
 
-  return es_ferror (stream)? gpg_error_from_syserror () : 0;
+  rc = es_ferror (stream)? gpg_error_from_syserror () : 0;
+  if (!rc && parm->progress.cb)
+    rc = update_write_progress (parm, 0, 1);
+  return rc;
 }
 
 
@@ -788,6 +839,7 @@ gnupg_ksba_create_writer (gnupg_ksba_io_t *ctx, unsigned int flags,
   *ctx = xtrycalloc (1, sizeof **ctx);
   if (!*ctx)
     return gpg_error_from_syserror ();
+  (*ctx)->is_writer = 1;
 
   rc = ksba_writer_new (&w);
   if (rc)
@@ -864,4 +916,38 @@ gnupg_ksba_destroy_writer (gnupg_ksba_io_t ctx)
   ksba_writer_release (ctx->u2.writer);
   xfree (ctx->u.wparm.pem_name);
   xfree (ctx);
+}
+
+
+/* Set a callback to the writer object.  CTRL will be bassed to the
+ * callback.  */
+void
+gnupg_ksba_set_progress_cb (gnupg_ksba_io_t ctx,
+                            gnupg_ksba_progress_cb_t cb, ctrl_t ctrl)
+{
+  struct writer_cb_parm_s *parm;
+
+  if (!ctx || !ctx->is_writer)
+    return; /* Currently only supported for writer objects.  */
+  parm = &ctx->u.wparm;
+
+  parm->progress.cb = cb;
+  parm->progress.ctrl = ctrl;
+  parm->progress.last_time = 0;
+  parm->progress.last = 0;
+  parm->progress.current = 0;
+  parm->progress.total = 0;
+}
+
+
+/* Update the total count for the progress thingy.  */
+void
+gnupg_ksba_set_total (gnupg_ksba_io_t ctx, uint64_t total)
+{
+  struct writer_cb_parm_s *parm;
+
+  if (!ctx || !ctx->is_writer)
+    return; /* Currently only supported for writer objects.  */
+  parm = &ctx->u.wparm;
+  parm->progress.total = total;
 }

@@ -165,6 +165,7 @@ test_http_prepare_redirect (void)
       ri.silent = 1;
       ri.redirects_left = 1;
       ri.orig_url = tests[tidx].url;
+      ri.restrict_redir = 1; /* This is what we used to test here.  */
 
       err = http_prepare_redirect (&ri, 301, tests[tidx].location, &newurl);
       if (err && newurl)

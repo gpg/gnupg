@@ -728,10 +728,6 @@ msgid "Wrong"
 msgstr "誤り"
 
 #, c-format
-msgid "error renaming '%s' to '%s': %s\n"
-msgstr "'%s'から'%s'へ名前変更のエラー: %s\n"
-
-#, c-format
 msgid "Note: This passphrase has never been changed.%0APlease change it now."
 msgstr "注意: パスフレーズは変更されていません。%0A今、変更してください。"
 
@@ -7587,6 +7583,10 @@ msgstr "理由を確認し、手動でそのファイルを削除してくださ
 #, c-format
 msgid "failed to create temporary cache dir file '%s': %s\n"
 msgstr "一時キャッシュ・ディレクトリ・ファイル'%s'が作成できません: %s\n"
+
+#, c-format
+msgid "error renaming '%s' to '%s': %s\n"
+msgstr "'%s'から'%s'へ名前変更のエラー: %s\n"
 
 #, c-format
 msgid "can't hash '%s': %s\n"

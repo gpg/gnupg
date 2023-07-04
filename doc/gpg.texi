@@ -1675,24 +1675,29 @@ prevent the creation of a @file{~/.gnupg} homedir.
 @item -z @var{n}
 @itemx --compress-level @var{n}
 @itemx --bzip2-compress-level @var{n}
+@itemx --no-compress
 @opindex compress-level
 @opindex bzip2-compress-level
+@opindex no-compress
 Set compression level to @var{n} for the ZIP and ZLIB compression
 algorithms. The default is to use the default compression level of zlib
 (normally 6). @option{--bzip2-compress-level} sets the compression level
 for the BZIP2 compression algorithm (defaulting to 6 as well). This is a
 different option from @option{--compress-level} since BZIP2 uses a
 significant amount of memory for each additional compression level.
-@option{-z} sets both. A value of 0 for @var{n} disables compression.
-A value of -1 forces compression using the default level.
+
+Option @option{-z} sets both. A value of 0 for @var{n} disables
+compression.  A value of -1 forces compression using the default
+level.  Option @option{--no-compress} is identical to @option{-z0}.
 
 Except for the @option{--store} command compression is always used
 unless @command{gpg} detects that the input is already compressed.  To
-inhibit the use of compression use @option{-z0}; to force compression
-use @option{-z-1} or option @option{z} with another compression level
-than the default as indicated by -1.  Note that this overriding of the
-default deection works only with @option{z} and not with the long
-variant of this option.
+inhibit the use of compression use @option{-z0} or
+@option{--no-compress}; to force compression use @option{-z-1} or
+option @option{z} with another compression level than the default as
+indicated by -1.  Note that this overriding of the default deection
+works only with @option{z} and not with the long variant of this
+option.
 
 
 @item --bzip2-decompress-lowmem
@@ -2670,6 +2675,12 @@ The available properties are:
   The first is the timestamp a public key or subkey packet was
   created.  The second is the same but given as an ISO string,
   e.g. "2016-08-17". (drop-subkey)
+
+  @item key_expires
+  @itemx key_expires_d
+  The expiration time of a public key or subkey or 0 if it does not
+  expire.  The second is the same but given as an ISO date string or
+  an empty string e.g. "2038-01-19".
 
   @item fpr
   The hexified fingerprint of the current subkey or primary key.

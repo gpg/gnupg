@@ -298,6 +298,10 @@ option_handler (assuan_context_t ctx, const char *key, const char *value)
             opt.request_origin = i;
         }
     }
+  else if (!strcmp (key, "input-size-hint"))
+    {
+      ctrl->input_size_hint = string_to_u64 (value);
+    }
   else
     err = gpg_error (GPG_ERR_UNKNOWN_OPTION);
 
@@ -1506,7 +1510,14 @@ gpgsm_status2 (ctrl_t ctrl, int no, ...)
             }
         }
       putc ('\n', statusfp);
-      fflush (statusfp);
+      if (ferror (statusfp))
+        err = gpg_error_from_syserror ();
+      else
+        {
+          fflush (statusfp);
+          if (ferror (statusfp))
+            err = gpg_error_from_syserror ();
+        }
     }
   else
     {
@@ -1548,6 +1559,45 @@ gpgsm_status_with_error (ctrl_t ctrl, int no, const char *text,
     return gpgsm_status2 (ctrl, no, text, buf, NULL);
   else
     return gpgsm_status2 (ctrl, no, buf, NULL);
+}
+
+
+/* This callback is used to emit progress status lines.  */
+gpg_error_t
+gpgsm_progress_cb (ctrl_t ctrl, uint64_t current, uint64_t total)
+{
+  char buffer[60];
+  char units[] = "BKMGTPEZY?";
+  int unitidx = 0;
+
+  if (total)
+    {
+      if (current > total)
+        current = total;
+
+      while (total > 1024*1024)
+        {
+          total /= 1024;
+          current /= 1024;
+          unitidx++;
+        }
+    }
+  else
+    {
+      while (current > 1024*1024)
+        {
+          current /= 1024;
+          unitidx++;
+        }
+    }
+
+  if (unitidx > 9)
+    unitidx = 9;
+
+  snprintf (buffer, sizeof buffer, "? %lu %lu %c%s",
+            (unsigned long)current, (unsigned long)total,
+            units[unitidx], unitidx? "iB" : "");
+  return gpgsm_status2 (ctrl, STATUS_PROGRESS, "?", buffer, NULL);
 }
 
 

@@ -3741,10 +3741,11 @@ http_prepare_redirect (http_redir_info_t *info, unsigned int status_code,
       http_release_parsed_uri (locuri);
       return err;
     }
-  else if (same_host_p (origuri, locuri))
+  else if (!info->restrict_redir || same_host_p (origuri, locuri))
     {
-      /* The host is the same or on an exception list and thus we can
-       * take the location verbatim.  */
+      /* Take the syntactically correct location or if restrict_redir
+       * is set the host is the same or on an exception list and thus
+       * we can take the location verbatim.  */
       http_release_parsed_uri (origuri);
       http_release_parsed_uri (locuri);
       newurl = xtrystrdup (location);
@@ -3754,7 +3755,7 @@ http_prepare_redirect (http_redir_info_t *info, unsigned int status_code,
           return err;
         }
     }
-  else
+  else /* Strictly rectricted redirection which we used in the past.  */
     {
       /* We take only the host and port from the URL given in the
        * Location.  This limits the effects of redirection attacks by

@@ -653,6 +653,10 @@ gpgsm_encrypt (ctrl_t ctrl, certlist_t recplist, int data_fd, estream_t out_fp)
       goto leave;
     }
 
+  gnupg_ksba_set_progress_cb (b64writer, gpgsm_progress_cb, ctrl);
+  if (ctrl->input_size_hint)
+    gnupg_ksba_set_total (b64writer, ctrl->input_size_hint);
+
   err = ksba_cms_new (&cms);
   if (err)
     {
@@ -828,7 +832,7 @@ gpgsm_encrypt (ctrl_t ctrl, certlist_t recplist, int data_fd, estream_t out_fp)
       err = ksba_cms_build (cms, &stopreason);
       if (err)
         {
-          log_debug ("ksba_cms_build failed: %s\n", gpg_strerror (err));
+          log_error ("creating CMS object failed: %s\n", gpg_strerror (err));
           rc = err;
           goto leave;
         }

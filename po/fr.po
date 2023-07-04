@@ -790,10 +790,6 @@ msgid "Wrong"
 msgstr "Faux"
 
 #, c-format
-msgid "error renaming '%s' to '%s': %s\n"
-msgstr "erreur en renommant « %s » en « %s » : %s\n"
-
-#, c-format
 msgid "Note: This passphrase has never been changed.%0APlease change it now."
 msgstr ""
 "Remarque : cette phrase secrète n'a jamais été modifiée.%0AVeuillez la "
@@ -4014,6 +4010,11 @@ msgstr "Attention : votre sous-clef de chiffrement expire bientôt.\n"
 #, c-format
 msgid "You may want to change its expiration date too.\n"
 msgstr "Vous pourriez modifier aussi sa date d’expiration.\n"
+
+#, fuzzy, c-format
+#| msgid "WARNING: Your encryption subkey expires soon.\n"
+msgid "WARNING: No valid encryption subkey left over.\n"
+msgstr "Attention : votre sous-clef de chiffrement expire bientôt.\n"
 
 msgid ""
 "WARNING: This is a PGP2-style key.  Adding a photo ID may cause some "
@@ -8257,6 +8258,10 @@ msgstr "veuillez vérifier la raison et effacer vous-même ce fichier\n"
 #, c-format
 msgid "failed to create temporary cache dir file '%s': %s\n"
 msgstr "impossible de créer le répertoire de cache temporaire « %s » : %s\n"
+
+#, c-format
+msgid "error renaming '%s' to '%s': %s\n"
+msgstr "erreur en renommant « %s » en « %s » : %s\n"
 
 #, c-format
 msgid "can't hash '%s': %s\n"

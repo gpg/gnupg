@@ -169,7 +169,10 @@ int compare_version_strings (const char *my_version, const char *req_version);
 /* Format a string so that it fits within about TARGET_COLS columns.  */
 char *format_text (const char *text, int target_cols, int max_cols);
 
-/* Substitute environmen variabales in STRING.  */
+/* Substitute variables in STRING.  */
+char *substitute_vars (const char *string,
+                       const char *(*getval)(void *cookie, const char *name),
+                       void *cookie);
 char *substitute_envvars (const char *string);
 
 

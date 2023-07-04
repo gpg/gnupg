@@ -246,7 +246,7 @@ wks_get_key (estream_t *r_key, const char *fingerprint, const char *addrspec,
   ccparray_put (&ccp, "--always-trust");
   if (!binary)
     ccparray_put (&ccp, "--armor");
-  ccparray_put (&ccp, "--export-options=export-minimal");
+  ccparray_put (&ccp, "--export-options=export-clean");
   ccparray_put (&ccp, "--export-filter");
   ccparray_put (&ccp, filterexp);
   ccparray_put (&ccp, "--export");

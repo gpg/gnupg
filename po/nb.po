@@ -750,10 +750,6 @@ msgid "Wrong"
 msgstr "Feil"
 
 #, c-format
-msgid "error renaming '%s' to '%s': %s\n"
-msgstr "klarte ikke å gi «%s» det nye navnet «%s»: %s\n"
-
-#, c-format
 msgid "Note: This passphrase has never been changed.%0APlease change it now."
 msgstr ""
 "Merk: denne passordfrasen har aldri blitt endret.%0AEndre den umiddelbart."
@@ -3848,6 +3844,11 @@ msgstr "ADVARSEL: Undernøkkel for kryptering utløper snart.\n"
 #, c-format
 msgid "You may want to change its expiration date too.\n"
 msgstr "Du bør vurdere å endre utløpsdato samtidig.\n"
+
+#, fuzzy, c-format
+#| msgid "WARNING: Your encryption subkey expires soon.\n"
+msgid "WARNING: No valid encryption subkey left over.\n"
+msgstr "ADVARSEL: Undernøkkel for kryptering utløper snart.\n"
 
 msgid ""
 "WARNING: This is a PGP2-style key.  Adding a photo ID may cause some "
@@ -7872,6 +7873,10 @@ msgstr "kontroller årsaken og slett fila manuelt\n"
 #, c-format
 msgid "failed to create temporary cache dir file '%s': %s\n"
 msgstr "klarte ikke å lage midlertidig hurtiglagermappe-fil «%s»: %s\n"
+
+#, c-format
+msgid "error renaming '%s' to '%s': %s\n"
+msgstr "klarte ikke å gi «%s» det nye navnet «%s»: %s\n"
 
 #, c-format
 msgid "can't hash '%s': %s\n"

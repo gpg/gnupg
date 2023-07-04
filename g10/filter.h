@@ -155,9 +155,9 @@ typedef struct {
 typedef struct {
     char *what;		        /* description */
     u32 last_time;		/* last time reported */
-    unsigned long last;		/* last amount reported */
-    unsigned long offset;	/* current amount */
-    unsigned long total;	/* total amount */
+    uint64_t last;		/* last amount reported */
+    uint64_t offset;	        /* current amount */
+    uint64_t total;	        /* total amount */
     int  refcount;
 } progress_filter_context_t;
 

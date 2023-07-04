@@ -77,8 +77,8 @@ gpgsm_LDFLAGS =
 gpgsm_DEPENDENCIES = $(resource_objs)
 
 
-module_tests =
-module_maint_tests = t-minip12
+module_tests = t-minip12
+module_maint_tests =
 
 t_common_src =
 t_common_ldadd = $(libcommon) $(LIBGCRYPT_LIBS) $(KSBA_LIBS) \

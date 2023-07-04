@@ -991,12 +991,20 @@ do_plaintext( IOBUF out, int ctb, PKT_plaintext *pt )
         if (nbytes == (size_t)(-1)
             && (iobuf_error (out) || iobuf_error (pt->buf)))
             return iobuf_error (out)? iobuf_error (out):iobuf_error (pt->buf);
+        /* Always get the error to catch write errors because
+         * iobuf_copy does not reliable return (-1) in that case.  */
+        rc = iobuf_error (out);
         if(ctb_new_format_p (ctb) && !pt->len)
           /* Turn off partial body length mode.  */
           iobuf_set_partial_body_length_mode (out, 0);
-        if( pt->len && nbytes != pt->len )
-          log_error("do_plaintext(): wrote %lu bytes but expected %lu bytes\n",
-                    (ulong)nbytes, (ulong)pt->len );
+        if (pt->len && nbytes != pt->len)
+          {
+            log_error ("do_plaintext(): wrote %lu bytes"
+                       " but expected %lu bytes\n",
+                       (ulong)nbytes, (ulong)pt->len );
+            if (!rc) /* Just in case no error was set  */
+              rc = gpg_error (GPG_ERR_EIO);
+          }
       }
 
     return rc;

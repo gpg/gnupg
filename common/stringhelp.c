@@ -1689,10 +1689,16 @@ format_text (const char *text_in, int target_cols, int max_cols)
 }
 
 
-/* Substitute environment variables in STRING and return a new string.
- * On error the function returns NULL.  */
+/* Substitute variables in STRING and return a new string.  GETVAL is
+ * a function which maps NAME to its value; that value is a string
+ * which may not change during the execution time of this function.
+ * If GETVAL returns NULL substitute_vars returns NULL and the caller
+ * may inspect ERRNO for the reason.  In all other error cases this
+ * function also returns NULL.  Caller must free the returned string.  */
 char *
-substitute_envvars (const char *string)
+substitute_vars (const char *string,
+                 const char *(*getval)(void *cookie, const char *name),
+                 void *cookie)
 {
   char *line, *p, *pend;
   const char *value;
@@ -1743,19 +1749,22 @@ substitute_envvars (const char *string)
         {
           int save = *pend;
           *pend = 0;
-          value = getenv (p+2);
+          value = getval (cookie, p+2);
           *pend++ = save;
         }
       else
         {
           int save = *pend;
           *pend = 0;
-          value = getenv (p+1);
+          value = getval (cookie, p+1);
           *pend = save;
         }
 
       if (!value)
-        value = "";
+        {
+          xfree (result);
+          return NULL;
+        }
       valuelen = strlen (value);
       if (valuelen <= pend - p)
         {
@@ -1790,4 +1799,27 @@ substitute_envvars (const char *string)
 
  leave:
   return result;
+}
+
+
+/* Helper for substitute_envvars.  */
+static const char *
+subst_getenv (void *cookie, const char *name)
+{
+  const char *s;
+
+  (void)cookie;
+
+  s = getenv (name);
+  return s? s : "";
+}
+
+
+/* Substitute environment variables in STRING and return a new string.
+ * On error the function returns NULL.  */
+char *
+substitute_envvars (const char *string)
+{
+  return substitute_vars (string, subst_getenv, NULL);
+
 }

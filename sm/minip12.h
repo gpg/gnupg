@@ -23,7 +23,7 @@
 #include <gcrypt.h>
 
 
-void p12_set_verbosity (int verbose);
+void p12_set_verbosity (int verbose, int debug);
 
 gcry_mpi_t *p12_parse (const unsigned char *buffer, size_t length,
                        const char *pw,

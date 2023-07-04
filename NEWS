@@ -2,9 +2,75 @@ Noteworthy changes in version 2.5.0 (unreleased)
 ------------------------------------------------
 
 
+  Changes also found in 2.4.3:
+
+  * gpg: Set default expiration date to 3 years.  [T2701]
+
+  * gpg: Add --list-filter properties "key_expires" and
+     "key_expires_d".  [T6529]
+
+  * gpg: Emit status line and proper diagnostics for write errors.
+    [T6528]
+
+  * gpg: Make progress work for large files on Windows.  [T6534]
+
+  * gpg: New option --no-compress as alias for -z0.
+
+  * gpgsm: Print PROGRESS status lines.  Add new --input-size-hint.
+    [T6534]
+
+  * gpgsm: Support SENDCERT_SKI for --call-dirmngr.  [rG701a8b30f0]
+
+  * gpgsm: Major rewrite of the PKCS#12 parser.  [T6536]
+
+  * gpgtar: New option --no-compress.
+
+  * dirmngr: Extend the AD_QUERY command.  [rG207c99567c]
+
+  * dirmngr: Disable the HTTP redirect rewriting.  [T6477]
+
+  * dirmngr: New option --compatibility-flags.  [rGbf04b07327]
+
+  * dirmngr: New option --ignore-crl-extensions.  [T6545]
+
+  * wkd: Use export-clean for gpg-wks-client's --mirror and --create
+    commands.  [rG2c7f7a5a27]
+
+  * wkd: Make --add-revocs the default in gpg-wks-client.  New option
+    --no-add-revocs.  [rG10c937ee68]
+
+  * scd: Make signing work for Nexus cards.  [rGb83d86b988]
+
+  * scd: Fix authentication with Administration Key for PIV.
+    [rG25b59cf6ce]
+
+  Changes also found in 2.4.2:
+
+  * gpg: Print a warning if no more encryption subkeys are left over
+    after changing the expiration date.  [rGef2c3d50fa]
+
+  * gpg: Fix searching for the ADSK key when adding an ADSK.  [T6504]
+
+  * gpgsm: Speed up key listings on Windows.  [rG08ff55bd44]
+
+  * gpgsm: Reduce the number of "failed to open policy file"
+    diagnostics.  [rG68613a6a9d]
+
+  * agent: Make updating of private key files more robust and track
+    display S/N.  [T6135]
+
+  * keyboxd: Avoid longish delays on Windows when listing keys.
+    [rG6944aefa3c]
+
+  * gpgtar: Emit extra status lines to help GPGME.  [T6497]
+
+  * w32: Avoid using the VirtualStore.  [T6403]
+
+
 Release dates of 2.4 versions
 -----------------------------
 
+Version 2.4.3 (2023-07-04) https://dev.gnupg.org/T6509
 Version 2.4.2 (2023-05-30) https://dev.gnupg.org/T6506
 Version 2.4.1 (2023-04-28) https://dev.gnupg.org/T6454
 Version 2.4.0 (2022-12-16) https://dev.gnupg.org/T6302

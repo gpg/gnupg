@@ -755,10 +755,6 @@ msgid "Wrong"
 msgstr "Не підтверджую"
 
 #, c-format
-msgid "error renaming '%s' to '%s': %s\n"
-msgstr "помилка під час спроби перейменування «%s» на «%s»: %s\n"
-
-#, c-format
 msgid "Note: This passphrase has never been changed.%0APlease change it now."
 msgstr ""
 "Зауваження: цей пароль ще не змінювався.%0AБудь ласка, змініть його зараз."
@@ -3904,6 +3900,11 @@ msgstr "УВАГА: строк дії вашого підключа імпорт
 #, c-format
 msgid "You may want to change its expiration date too.\n"
 msgstr "Ймовірно, вам варто змінити також і його строк дії.\n"
+
+#, fuzzy, c-format
+#| msgid "WARNING: Your encryption subkey expires soon.\n"
+msgid "WARNING: No valid encryption subkey left over.\n"
+msgstr "УВАГА: строк дії вашого підключа імпортування невдовзі завершиться.\n"
 
 msgid ""
 "WARNING: This is a PGP2-style key.  Adding a photo ID may cause some "
@@ -8051,6 +8052,10 @@ msgstr "будь ласка, перевірте причину і вилучіт
 #, c-format
 msgid "failed to create temporary cache dir file '%s': %s\n"
 msgstr "не вдалося створити тимчасовий файл каталогу кешу «%s»: %s\n"
+
+#, c-format
+msgid "error renaming '%s' to '%s': %s\n"
+msgstr "помилка під час спроби перейменування «%s» на «%s»: %s\n"
 
 #, c-format
 msgid "can't hash '%s': %s\n"

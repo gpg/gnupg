@@ -4,7 +4,7 @@
 # Magda Procházková <magda@math.muni.cz> 2001,
 # Roman Pavlik <rp@tns.cz> 2001, 2002, 2003, 2004, 2005.
 # Petr Pisar <petr.pisar@atlas.cz>, 2009, 2010, 2011, 2013, 2014, 2015, 2016.
-# Petr Pisar <petr.pisar@atlas.cz>, 2017, 2018, 2019, 2020, 2021, 2022.
+# Petr Pisar <petr.pisar@atlas.cz>, 2017, 2018, 2019, 2020, 2021, 2022, 2023.
 #
 # A "%%0A" is used by Pinentry to insert a line break. The double percent
 # sign is actually needed because it is also a printf format string. If you
@@ -26,6 +26,7 @@
 # kvalifikovaný certifikát/podpis
 #
 # action → způsob užití (klíče)
+# additional decryption subkey → dodatečný dešifrovací klíč
 # administrator → správce
 # cache → keš
 # compliance rules → pravidla normy
@@ -38,9 +39,9 @@
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: gnupg2 2.3.8\n"
+"Project-Id-Version: gnupg2 2.4.2\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"PO-Revision-Date: 2022-11-13 14:21+01:00\n"
+"PO-Revision-Date: 2023-06-03 15:45+02:00\n"
 "Last-Translator: Petr Pisar <petr.pisar@atlas.cz>\n"
 "Language-Team: Czech <gnupg-i18n@gnupg.org>\n"
 "Language: cs\n"
@@ -153,11 +154,10 @@ msgstr "Heslo:"
 msgid "does not match - try again"
 msgstr "neshodují se – zkuste to znovu"
 
-#, fuzzy
-#| msgid "Passphrase"
 msgid "Passphrases match."
-msgstr "Heslo"
+msgstr "Heslo se shoduje."
 
+# TODO: Pluralize
 #. TRANSLATORS: The string is appended to an error message in
 #. the pinentry.  The %s is the actual error message, the
 #. two %d give the current and maximum number of tries.
@@ -423,7 +423,7 @@ msgid "enable putty support"
 msgstr "zapnout podporu pro PuTTY"
 
 msgid "enable Win32-OpenSSH support"
-msgstr "zapnout podporu pro Win32-OpenSSH"
+msgstr "zapnout podporu Win32-OpenSSH"
 
 msgid "Options controlling the security"
 msgstr "Volby ovlivňující bezpečnost"
@@ -760,10 +760,6 @@ msgstr "V pořádku"
 
 msgid "Wrong"
 msgstr "Špatně"
-
-#, c-format
-msgid "error renaming '%s' to '%s': %s\n"
-msgstr "chyba při přejmenování „%s“ na „%s“: %s\n"
 
 #, c-format
 msgid "Note: This passphrase has never been changed.%0APlease change it now."
@@ -1435,7 +1431,7 @@ msgstr "vyžadováno"
 
 #, c-format
 msgid "Please try command \"%s\" if the listing does not look correct\n"
-msgstr ""
+msgstr "Pokud výpis nevypadá v pořádku, zkuste příkaz „%s“\n"
 
 msgid "Error: Only plain ASCII is currently allowed.\n"
 msgstr "Chyba: V současné verzi je povolenou pouze plain ASCII.\n"
@@ -1701,7 +1697,7 @@ msgid "change the User Interaction Flag"
 msgstr "změní příznak interakce uživatele (UIF)"
 
 msgid "switch to the OpenPGP app"
-msgstr ""
+msgstr "přepne do aplikace OpenPGP"
 
 msgid "gpg/card> "
 msgstr "gpg/karta> "
@@ -1829,7 +1825,7 @@ msgstr "chyba při vytváření hesla: %s\n"
 
 #, c-format
 msgid "can't use a SKESK packet due to the S2K mode\n"
-msgstr "v režimu S2K nelze použít symetrický ESK paket\n"
+msgstr "v režimu S2K nelze použít SKESK paket\n"
 
 #, c-format
 msgid "using cipher %s.%s\n"
@@ -1899,18 +1895,14 @@ msgstr "odstranit nepoužitelné části z klíče při exportu"
 msgid "remove as much as possible from key during export"
 msgstr "odstranit při exportu z klíče vše, co lze"
 
-#, fuzzy
-#| msgid "generate a revocation certificate"
 msgid "export only revocation certificates"
-msgstr "vytvořit revokační certifikát"
+msgstr "exportovat pouze revokační certifikáty"
 
 msgid "use the GnuPG key backup format"
 msgstr "použít záložní formát klíče GnuPG"
 
-#, fuzzy
-#| msgid "exporting secret keys not allowed\n"
 msgid "export secret keys using the GnuPG format"
-msgstr "exportování tajného klíče není povoleno\n"
+msgstr "exportovat tajné klíče do formátu GnuPG"
 
 msgid " - skipped"
 msgstr " – přeskočeno"
@@ -2346,10 +2338,8 @@ msgstr "ukazovat odvolané a prošlé ID uživatelů při výpisu klíčů"
 msgid "show revoked and expired subkeys in key listings"
 msgstr "ukazovat odvolané a prošlé podklíče při výpisu klíčů"
 
-#, fuzzy
-#| msgid "show expiration dates during signature listings"
 msgid "show signatures with invalid algorithms during signature listings"
-msgstr "ukazovat data expirace během výpisu podpisů"
+msgstr "ukazovat podpisy s neplatnými algoritmy během výpisu podpisů"
 
 msgid "show the keyring name in key listings"
 msgstr "ukazovat název souboru s klíči při výpisu klíčů"
@@ -2357,10 +2347,8 @@ msgstr "ukazovat název souboru s klíči při výpisu klíčů"
 msgid "show expiration dates during signature listings"
 msgstr "ukazovat data expirace během výpisu podpisů"
 
-#, fuzzy
-#| msgid "list preferences (expert)"
 msgid "show preferences"
-msgstr "vypsat seznam předvoleb (pro experty)"
+msgstr "vypsat předvolby"
 
 #, c-format
 msgid "unknown TOFU policy '%s'\n"
@@ -2968,7 +2956,7 @@ msgstr "klíč %s: chyba při odesílání dat agentovi: %s\n"
 
 #, c-format
 msgid "key %s: card reference is overridden by key material\n"
-msgstr ""
+msgstr "klíč %s: odkaz na kartu je přebit hodnotou klíče\n"
 
 #. TRANSLATORS: For a smartcard, each private key on host has a
 #. * reference (stub) to a smartcard and actual private key data
@@ -3485,10 +3473,8 @@ msgstr "smazat vybrané podklíče"
 msgid "add a revocation key"
 msgstr "přidat revokační klíč"
 
-#, fuzzy
-#| msgid "Data decryption succeeded"
 msgid "add an additional decryption subkey"
-msgstr "Dešifrování dat uspělo"
+msgstr "přidat dodatečný dešifrovací podklíč"
 
 msgid "delete signatures from the selected user IDs"
 msgstr "smazat podpisy z vybraných uživatelských ID"
@@ -3551,11 +3537,10 @@ msgstr "Tajný klíč je dostupný.\n"
 msgid "Secret subkeys are available.\n"
 msgstr "Tajné podklíče jsou dostupné.\n"
 
-#, fuzzy
-#| msgid "Note: Only the secret part of the shown subkey will be deleted.\n"
 msgid ""
 "Note: the local copy of the secret key will only be deleted with \"save\".\n"
-msgstr "Poznámka: Smazána bude pouze tajná část zobrazeného podklíče.\n"
+msgstr ""
+"Poznámka: Místní kopie tajného klíče bude smazána až s příkazem „save“.\n"
 
 msgid "Need the secret key to do this.\n"
 msgstr "Pro provedení této operace je potřeba tajný klíč.\n"
@@ -3665,11 +3650,9 @@ msgstr "Uložit změny? (a/N) "
 msgid "Quit without saving? (y/N) "
 msgstr "Ukončit bez uložení? (a/N) "
 
-# The first argument is a "key" or "subkey"
-#, fuzzy, c-format
-#| msgid "deleting secret %s failed: %s\n"
+#, c-format
 msgid "deleting copy of secret key failed: %s\n"
-msgstr "smazání tajného %s se nezdařilo: %s\n"
+msgstr "smazání kopie tajného klíče se nezdařilo: %s\n"
 
 #, c-format
 msgid "Key not changed so no update needed.\n"
@@ -3809,6 +3792,10 @@ msgstr "POZOR: Vašemu šifrovacímu podklíči brzy vyprší platnost.\n"
 msgid "You may want to change its expiration date too.\n"
 msgstr "Dobu platnosti také můžete změnit.\n"
 
+#, c-format
+msgid "WARNING: No valid encryption subkey left over.\n"
+msgstr "POZOR: Nezbyl žádný platný šifrovací podklíč.\n"
+
 msgid ""
 "WARNING: This is a PGP2-style key.  Adding a photo ID may cause some "
 "versions\n"
@@ -3904,17 +3891,15 @@ msgid ""
 msgstr "Jste si jistí, že tento klíč chcete pověřit odvoláním? (a/N) "
 
 msgid "Enter the fingerprint of the additional decryption subkey: "
-msgstr ""
+msgstr "Zadejte otisk dodatečného dešifrovacího podklíče: "
 
-#, fuzzy, c-format
-#| msgid "(unless you specify the key by fingerprint)\n"
+#, c-format
 msgid "Did you specify the fingerprint of a subkey?\n"
-msgstr "(dokud neurčíte klíč jeho otiskem)\n"
+msgstr "Zadali jste otisk podklíče?\n"
 
-#, fuzzy, c-format
-#| msgid "Subkey %s is already revoked.\n"
+#, c-format
 msgid "key \"%s\" is already on this keyblock\n"
-msgstr "Podklíč %s je již odvolán.\n"
+msgstr "klíč „%s“ je již v tomto bloku klíče.\n"
 
 msgid ""
 "Are you sure you want to change the expiration time for multiple subkeys? (y/"
@@ -7832,6 +7817,10 @@ msgid "failed to create temporary cache dir file '%s': %s\n"
 msgstr "vytvoření dočasného kešového dir souboru „%s“ selhalo: %s\n"
 
 #, c-format
+msgid "error renaming '%s' to '%s': %s\n"
+msgstr "chyba při přejmenování „%s“ na „%s“: %s\n"
+
+#, c-format
 msgid "can't hash '%s': %s\n"
 msgstr "nelze vypočítat haš „%s“: %s\n"
 
@@ -8991,9 +8980,6 @@ msgstr "Příkazy pro správu Yubikey"
 msgid "manage the command history"
 msgstr "spravuje historii příkazů"
 
-#~ msgid "continuing verification anyway due to option %s\n"
-#~ msgstr "přesto se pokračuje v ověřování kvůli volbě %s\n"
-
 #~ msgid "selected AEAD algorithm is invalid\n"
 #~ msgstr "vybraný algoritmus AEAD je neplatný\n"
 
@@ -9002,6 +8988,9 @@ msgstr "spravuje historii příkazů"
 
 #~ msgid "AEAD algorithm '%s' may not be used in %s mode\n"
 #~ msgstr "AEAD algoritmus „%s“ se nesmí používat v režimu %s\n"
+
+#~ msgid "continuing verification anyway due to option %s\n"
+#~ msgstr "přesto se pokračuje v ověřování kvůli volbě %s\n"
 
 #~ msgid "error writing to temporary file: %s\n"
 #~ msgstr "chyba při zápisu do dočasného souboru: %s\n"

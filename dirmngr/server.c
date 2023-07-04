@@ -32,6 +32,13 @@
 #include <sys/stat.h>
 #include <unistd.h>
 #include <errno.h>
+#ifdef HAVE_W32_SYSTEM
+# ifndef WINVER
+#  define WINVER 0x0500  /* Same as in common/sysutils.c */
+# endif
+# include <winsock2.h>
+# include <sddl.h>
+#endif
 
 #include "dirmngr.h"
 #include <assuan.h>
@@ -2701,15 +2708,21 @@ cmd_ks_put (assuan_context_t ctx, char *line)
 
 
 static const char hlp_ad_query[] =
-  "AD_QUERY [--first|--next] [--] <filter_expression> \n"
+  "AD_QUERY [--first|--next] [--] <filter> \n"
   "\n"
   "Query properties from a Windows Active Directory.\n"
-  "Our extended filter syntax may be used for the filter\n"
-  "expression; see gnupg/dirmngr/ldap-misc.c.  There are\n"
-  "a couple of other options available:\n\n"
-  "  --rootdse - Query the root using serverless binding,\n"
+  "Options:\n"
+  "\n"
+  "  --rootdse        - Query the root using serverless binding,\n"
+  "  --subst          - Substitute variables in the filter\n"
   "  --attr=<attribs> - Comma delimited list of attributes\n"
   "                     to return.\n"
+  "  --help           - List supported variables\n"
+  "\n"
+  "Extended filter syntax is allowed:\n"
+  "   ^[<base>][&<scope>]&[<filter>]\n"
+  "Usual escaping rules apply.  An ampersand in <base> must\n"
+  "doubled.  <scope> may be \"base\", \"one\", or \"sub\"."
   ;
 static gpg_error_t
 cmd_ad_query (assuan_context_t ctx, char *line)
@@ -2723,6 +2736,7 @@ cmd_ad_query (assuan_context_t ctx, char *line)
   char **opt_attr = NULL;
   const char *s;
   gnupg_isotime_t opt_newer;
+  int opt_help = 0;
 
   *opt_newer = 0;
 
@@ -2733,6 +2747,10 @@ cmd_ad_query (assuan_context_t ctx, char *line)
     flags |= KS_GET_FLAG_NEXT;
   if (has_option (line, "--rootdse"))
     flags |= KS_GET_FLAG_ROOTDSE;
+  if (has_option (line, "--subst"))
+    flags |= KS_GET_FLAG_SUBST;
+  if (has_option (line, "--help"))
+    opt_help = 1;
   if ((s = option_value (line, "--newer"))
       && !string2isotime (opt_newer, s))
     {
@@ -2755,6 +2773,13 @@ cmd_ad_query (assuan_context_t ctx, char *line)
     }
   line = skip_options (line);
   filter = line;
+
+  if (opt_help)
+    {
+      ks_ldap_help_variables (ctrl);
+      err = 0;
+      goto leave;
+    }
 
   if ((flags & KS_GET_FLAG_NEXT))
     {
@@ -2907,14 +2932,39 @@ cmd_getinfo (assuan_context_t ctx, char *line)
         {
           const char *s = getenv (line);
           if (!s)
-            err = set_error (GPG_ERR_NOT_FOUND, "No such envvar");
-          else
-            err = assuan_send_data (ctx, s, strlen (s));
+            {
+              err = set_error (GPG_ERR_NOT_FOUND, "No such envvar");
+              goto leave;
+            }
+          err = assuan_send_data (ctx, s, strlen (s));
         }
     }
+#ifdef HAVE_W32_SYSTEM
+  else if (!strcmp (line, "sid"))
+    {
+      PSID mysid;
+      char *sidstr;
+
+      mysid = w32_get_user_sid ();
+      if (!mysid)
+        {
+          err = set_error (GPG_ERR_NOT_FOUND, "Error getting my SID");
+          goto leave;
+        }
+
+      if (!ConvertSidToStringSid (mysid, &sidstr))
+        {
+          err = set_error (GPG_ERR_BUG, "Error converting SID to a string");
+          goto leave;
+        }
+      err = assuan_send_data (ctx, sidstr, strlen (sidstr));
+      LocalFree (sidstr);
+    }
+#endif /*HAVE_W32_SYSTEM*/
   else
     err = set_error (GPG_ERR_ASS_PARAMETER, "unknown value for WHAT");
 
+ leave:
   return leave_cmd (ctx, err);
 }
 

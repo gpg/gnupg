@@ -167,6 +167,14 @@ Append all logging output to @var{file}.  This is very helpful in
 seeing what the agent actually does.  Use @file{socket://} to log to
 socket.
 
+@item --compatibility-flags @var{flags}
+@opindex compatibility-flags
+Set compatibility flags to work around certain problems or to emulate
+bugs.  The @var{flags} are given as a comma separated list of flag
+names and are OR-ed together.  The special flag "none" clears the list
+and allows to start over with an empty list.  To get a list of
+available flags the sole word "help" can be used.
+
 @item --debug-level @var{level}
 @opindex debug-level
 Select the debug level for investigating problems.  @var{level} may be a
@@ -589,6 +597,15 @@ are treated as if they are actually handled and thus the certificate
 won't be rejected due to an unknown critical extension.  Use this
 option with care because extensions are usually flagged as critical
 for a reason.
+
+@item --ignore-crl-extension @var{oid}
+@opindex ignore-crl-extension
+Add @var{oid} to the list of ignored CRL extensions.  The @var{oid} is
+expected to be in dotted decimal form.  Critical flagged CRL
+extensions matching one of the OIDs in the list are treated as if they
+are actually handled and thus the certificate won't be rejected due to
+an unknown critical extension.  Use this option with care because
+extensions are usually flagged as critical for a reason.
 
 @item --ignore-cert @var{fpr}|@var{file}
 @opindex ignore-cert

@@ -216,12 +216,14 @@ addrspec, e.g. "postel@@isi.edu") per line.  Empty lines and lines
 starting with a '#' are ignored.
 
 @item --add-revocs
+@itemx --no-add-revocs
 @opindex add-revocs
+@opindex no-add-revocs
 If enabled append revocation certificates for the same addrspec as
 used in the WKD to the key.  Modern gpg version are able to import and
 apply them for existing keys.  Note that when used with the
 @option{--mirror} command the revocation are searched in the local
-keyring and not in an LDAP directory.
+keyring and not in an LDAP directory.  The default is @option{--add-revocs}.
 
 @item --verbose
 @opindex verbose

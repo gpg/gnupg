@@ -259,6 +259,7 @@ enum cmd_and_opt_values
     oCipherAlgo,
     oDigestAlgo,
     oCertDigestAlgo,
+    oNoCompress,
     oCompressAlgo,
     oCompressLevel,
     oBZ2CompressLevel,
@@ -697,6 +698,7 @@ static gpgrt_opt_t opts[] = {
   ARGPARSE_s_n (oLockOnce,     "lock-once", "@"),
   ARGPARSE_s_n (oLockMultiple, "lock-multiple", "@"),
   ARGPARSE_s_n (oLockNever,    "lock-never", "@"),
+  ARGPARSE_s_n (oNoCompress,   "no-compress", "@"),
   ARGPARSE_s_s (oCompressAlgo,"compress-algo", "@"),
   ARGPARSE_s_s (oCompressAlgo, "compression-algo", "@"), /* Alias */
   ARGPARSE_s_n (oBZ2DecompressLowmem, "bzip2-decompress-lowmem", "@"),
@@ -3238,6 +3240,11 @@ main (int argc, char **argv)
 	    opt.compress_level = opt.bz2_compress_level = pargs.r.ret_int;
             opt.explicit_compress_option = 1;
 	    break;
+	  case oNoCompress:
+	    /* --no-compress is the same as  -z0 */
+	    opt.compress_level = opt.bz2_compress_level = 0;
+            opt.explicit_compress_option = 1;
+	    break;
 	  case oCompressLevel: opt.compress_level = pargs.r.ret_int; break;
 	  case oBZ2CompressLevel: opt.bz2_compress_level = pargs.r.ret_int; break;
 	  case oBZ2DecompressLowmem: opt.bz2_decompress_lowmem=1; break;
@@ -3499,7 +3506,13 @@ main (int argc, char **argv)
 	  case oAllowFreeformUID: opt.allow_freeform_uid = 1; break;
 	  case oNoAllowFreeformUID: opt.allow_freeform_uid = 0; break;
 	  case oNoLiteral: opt.no_literal = 1; break;
-	  case oSetFilesize: opt.set_filesize = pargs.r.ret_ulong; break;
+
+	  case oSetFilesize:
+            /* There are restricts on the value (e.g. < 2^32); you
+             * need to check the entire code to understand this.  */
+            opt.set_filesize = pargs.r.ret_ulong;
+            break;
+
 	  case oFastListMode: opt.fast_list_mode = 1; break;
 	  case oFixedListMode: /* Dummy */ break;
           case oLegacyListMode: opt.legacy_list_mode = 1; break;

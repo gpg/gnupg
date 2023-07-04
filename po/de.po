@@ -9,7 +9,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnupg-2.4.1\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"PO-Revision-Date: 2023-03-21 09:31+0100\n"
+"PO-Revision-Date: 2023-05-30 13:46+0200\n"
 "Last-Translator: Werner Koch <wk@gnupg.org>\n"
 "Language-Team: German\n"
 "Language: de\n"
@@ -744,10 +744,6 @@ msgstr "Korrekt"
 
 msgid "Wrong"
 msgstr "Falsch"
-
-#, c-format
-msgid "error renaming '%s' to '%s': %s\n"
-msgstr "Fehler beim Umbenennen von `%s` nach `%s': %s\n"
 
 #, c-format
 msgid "Note: This passphrase has never been changed.%0APlease change it now."
@@ -3833,6 +3829,11 @@ msgstr "WARNUNG: Ihr Unterschlüssel zum Verschlüsseln wird bald verfallen.\n"
 #, c-format
 msgid "You may want to change its expiration date too.\n"
 msgstr "Bitte erwägen Sie, dessen Verfallsdatum auch zu ändern.\n"
+
+#, c-format
+msgid "WARNING: No valid encryption subkey left over.\n"
+msgstr ""
+"WARNUNG: Es sind keine Unterschlüssel zum Verschlüsseln mehr vorhanden.\n"
 
 msgid ""
 "WARNING: This is a PGP2-style key.  Adding a photo ID may cause some "
@@ -7933,6 +7934,10 @@ msgid "failed to create temporary cache dir file '%s': %s\n"
 msgstr ""
 "Die temporäre Zwischenspeicherverzeichnisdatei `%s' konnte nicht erzeugt "
 "werden: %s\n"
+
+#, c-format
+msgid "error renaming '%s' to '%s': %s\n"
+msgstr "Fehler beim Umbenennen von `%s` nach `%s': %s\n"
 
 #, c-format
 msgid "can't hash '%s': %s\n"
