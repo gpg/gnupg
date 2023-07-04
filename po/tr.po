@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnupg 2.4.0\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"PO-Revision-Date: 2023-02-05 18:00+0300\n"
+"PO-Revision-Date: 2023-05-30 23:45+0300\n"
 "Last-Translator: Emir SARI <emir_sari@icloud.com>\n"
 "Language-Team: Turkish\n"
 "Language: tr\n"
@@ -123,10 +123,8 @@ msgstr "Anahtar Parolası:"
 msgid "does not match - try again"
 msgstr "eşleşmiyor - yeniden deneyin"
 
-#, fuzzy
-#| msgid "Passphrase Entry"
 msgid "Passphrases match."
-msgstr "Anahtar Parolası Girişi"
+msgstr "Anahtar parolaları eşleşiyor."
 
 #. TRANSLATORS: The string is appended to an error message in
 #. the pinentry.  The %s is the actual error message, the
@@ -732,6 +730,10 @@ msgstr "Doğru"
 
 msgid "Wrong"
 msgstr "Yanlış"
+
+#, c-format
+msgid "error renaming '%s' to '%s': %s\n"
+msgstr "'%s > '%s' olarak yeniden adlandırırken hata: %s\n"
 
 #, c-format
 msgid "Note: This passphrase has never been changed.%0APlease change it now."
@@ -1409,7 +1411,7 @@ msgstr "zorlandı"
 
 #, c-format
 msgid "Please try command \"%s\" if the listing does not look correct\n"
-msgstr ""
+msgstr "Listeleme doğru görünmüyorsa lütfen \"%s\" komutunu deneyin\n"
 
 msgid "Error: Only plain ASCII is currently allowed.\n"
 msgstr "Hata: Şimdilik yalnızca US-ASCII mümkün.\n"
@@ -1674,7 +1676,7 @@ msgid "change the User Interaction Flag"
 msgstr "Kullanıcı etkileşim bayrağını değiştir"
 
 msgid "switch to the OpenPGP app"
-msgstr ""
+msgstr "OpenPGP uygulamasına geç"
 
 msgid "gpg/card> "
 msgstr "gpg/card> "
@@ -2304,10 +2306,8 @@ msgstr ""
 "anahtar listelerinde yürürlükten kaldırılmış ve zaman aşımına uğramış "
 "yardımcı anahtarlar göster"
 
-#, fuzzy
-#| msgid "show expiration dates during signature listings"
 msgid "show signatures with invalid algorithms during signature listings"
-msgstr "imza listelemesi sırasında zaman aşımı tarihleri göster"
+msgstr "imza listelemesi sırasında geçersiz algoritmalı imzaları göster"
 
 msgid "show the keyring name in key listings"
 msgstr "anahtar zinciri adını anahtar listelerinde göster"
@@ -2927,6 +2927,7 @@ msgstr "%s anahtarı: Aracıya gönderirken hata: %s\n"
 #, c-format
 msgid "key %s: card reference is overridden by key material\n"
 msgstr ""
+"%s anahtarı: Kart başvurusu, anahtar malzemesi tarafından geçersiz kılındı\n"
 
 #. TRANSLATORS: For a smartcard, each private key on host has a
 #. * reference (stub) to a smartcard and actual private key data
@@ -3449,10 +3450,8 @@ msgstr "seçili yardımcı anahtarları sil"
 msgid "add a revocation key"
 msgstr "bir yürürlükten kaldırma anahtarı ekle"
 
-#, fuzzy
-#| msgid "Data decryption succeeded"
 msgid "add an additional decryption subkey"
-msgstr "Veri şifresi çözülmesi başarılı"
+msgstr "ek bir şifre çözümü alt anahtarı ekle"
 
 msgid "delete signatures from the selected user IDs"
 msgstr "seçili kullanıcı kimliklerinden imzaları sile"
@@ -3519,11 +3518,10 @@ msgstr "Gizli anahtar mevcut.\n"
 msgid "Secret subkeys are available.\n"
 msgstr "Gizli yardımcı anahtarlar mevcut.\n"
 
-#, fuzzy
-#| msgid "Note: Only the secret part of the shown subkey will be deleted.\n"
 msgid ""
 "Note: the local copy of the secret key will only be deleted with \"save\".\n"
-msgstr "Not: Yalnızca gösterilen yardımcı anahtarın gizli kısmı silinecek.\n"
+msgstr ""
+"Not: Gizli anahtarın yerel kopyası yalnızca \"save\" ile silinir.\n"
 
 msgid "Need the secret key to do this.\n"
 msgstr "Bunu yapmak için gizli anahtar gerekli.\n"
@@ -3639,10 +3637,9 @@ msgstr "Değişiklikler kaydedilsin mi? (e/H) "
 msgid "Quit without saving? (y/N) "
 msgstr "Kaydetmeden çıkılsın mı? (e/H) "
 
-#, fuzzy, c-format
-#| msgid "deleting secret %s failed: %s\n"
+#, c-format
 msgid "deleting copy of secret key failed: %s\n"
-msgstr "gizli %s silinmesi başarısız: %s\n"
+msgstr "gizli anahtarın kopyasının silinmesi başarısız: %s\n"
 
 #, c-format
 msgid "Key not changed so no update needed.\n"
@@ -3783,11 +3780,6 @@ msgstr "UYARI: Şifreleme yardımcı anahtarının yakın zamanda süresi dolaca
 msgid "You may want to change its expiration date too.\n"
 msgstr "Son kullanma tarihini de değiştirmek isteyebilirsiniz.\n"
 
-#, fuzzy, c-format
-#| msgid "WARNING: Your encryption subkey expires soon.\n"
-msgid "WARNING: No valid encryption subkey left over.\n"
-msgstr "UYARI: Şifreleme yardımcı anahtarının yakın zamanda süresi dolacak.\n"
-
 msgid ""
 "WARNING: This is a PGP2-style key.  Adding a photo ID may cause some "
 "versions\n"
@@ -3894,17 +3886,15 @@ msgstr ""
 "misiniz? (e/H) "
 
 msgid "Enter the fingerprint of the additional decryption subkey: "
-msgstr ""
+msgstr "Ek şifre çözümü alt anahtarının parmak izini gir: "
 
-#, fuzzy, c-format
-#| msgid "(unless you specify the key by fingerprint)\n"
+#, c-format
 msgid "Did you specify the fingerprint of a subkey?\n"
-msgstr "(anahtar parmak izi ile belirtilmedikçe)\n"
+msgstr "Bir alt anahtarın parmak izini mi belirttiniz?\n"
 
-#, fuzzy, c-format
-#| msgid "Subkey %s is already revoked.\n"
+#, c-format
 msgid "key \"%s\" is already on this keyblock\n"
-msgstr "%s yardımcı anahtarı zaten yürürlükten kaldırılmış.\n"
+msgstr "\"%s\" anahtarı halihazırda bu anahtar blokunda\n"
 
 msgid ""
 "Are you sure you want to change the expiration time for multiple subkeys? (y/"
@@ -7771,10 +7761,6 @@ msgid "failed to create temporary cache dir file '%s': %s\n"
 msgstr "geçici önbellek dizin dosyası '%s' oluşturulamadı: %s\n"
 
 #, c-format
-msgid "error renaming '%s' to '%s': %s\n"
-msgstr "'%s > '%s' olarak yeniden adlandırırken hata: %s\n"
-
-#, c-format
 msgid "can't hash '%s': %s\n"
 msgstr "'%s' sağlaması yapılamıyor: %s\n"
 
@@ -8925,22 +8911,3 @@ msgstr "Yubikey yönetim konsolu"
 
 msgid "manage the command history"
 msgstr "komut geçmişini yönet"
-
-#~ msgid "continuing verification anyway due to option %s\n"
-#~ msgstr "%s seçeneğinden dolayı doğrulama yine de sürdürülüyor\n"
-
-#~ msgid "selected AEAD algorithm is invalid\n"
-#~ msgstr "seçili AEAD algoritması geçersiz\n"
-
-#~ msgid "invalid personal AEAD preferences\n"
-#~ msgstr "geçersiz kişisel AEAD tercihler\n"
-
-#~ msgid "AEAD algorithm '%s' may not be used in %s mode\n"
-#~ msgstr "'%s' AEAD algoritması, %s kipinde kullanılamayabilir\n"
-
-#~ msgid "run in supervised mode"
-#~ msgstr "yönetilen kipte çalıştır"
-
-#~ msgid "forcing symmetric cipher %s (%d) violates recipient preferences\n"
-#~ msgstr ""
-#~ "simetrik şifreleme %s (%d) zorlamak alıcı tercihlerine karşı geliyor\n"
