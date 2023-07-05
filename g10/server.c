@@ -265,7 +265,7 @@ cmd_encrypt (assuan_context_t ctx, char *line)
 {
   ctrl_t ctrl = assuan_get_pointer (ctx);
   gpg_error_t err;
-  int inp_fd, out_fd;
+  gnupg_fd_t inp_fd, out_fd;
 
   (void)line; /* LINE is not used.  */
 
@@ -276,14 +276,14 @@ cmd_encrypt (assuan_context_t ctx, char *line)
       goto leave;
     }
 
-  inp_fd = translate_sys2libc_fd (assuan_get_input_fd (ctx), 0);
-  if (inp_fd == -1)
+  inp_fd = assuan_get_input_fd (ctx);
+  if (inp_fd == GNUPG_INVALID_FD)
     {
       err = set_error (GPG_ERR_ASS_NO_INPUT, NULL);
       goto leave;
     }
-  out_fd = translate_sys2libc_fd (assuan_get_output_fd (ctx), 1);
-  if (out_fd == -1)
+  out_fd = assuan_get_output_fd (ctx);
+  if (out_fd == GNUPG_INVALID_FD)
     {
       err = set_error (GPG_ERR_ASS_NO_OUTPUT, NULL);
       goto leave;
@@ -327,15 +327,15 @@ cmd_decrypt (assuan_context_t ctx, char *line)
 {
   ctrl_t ctrl = assuan_get_pointer (ctx);
   gpg_error_t err;
-  int inp_fd, out_fd;
+  gnupg_fd_t inp_fd, out_fd;
 
   (void)line; /* LINE is not used.  */
 
-  inp_fd = translate_sys2libc_fd (assuan_get_input_fd (ctx), 0);
-  if (inp_fd == -1)
+  inp_fd = assuan_get_input_fd (ctx);
+  if (inp_fd == GNUPG_INVALID_FD)
     return set_error (GPG_ERR_ASS_NO_INPUT, NULL);
-  out_fd = translate_sys2libc_fd (assuan_get_output_fd (ctx), 1);
-  if (out_fd == -1)
+  out_fd = assuan_get_output_fd (ctx);
+  if (out_fd == GNUPG_INVALID_FD)
     return set_error (GPG_ERR_ASS_NO_OUTPUT, NULL);
 
   glo_ctrl.lasterr = 0;
