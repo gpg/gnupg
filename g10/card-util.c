@@ -28,9 +28,7 @@
 # include <readline/readline.h>
 #endif /*HAVE_LIBREADLINE*/
 
-#if GNUPG_MAJOR_VERSION != 1
 # include "gpg.h"
-#endif /*GNUPG_MAJOR_VERSION != 1*/
 #include "../common/util.h"
 #include "../common/i18n.h"
 #include "../common/ttyio.h"
@@ -39,11 +37,7 @@
 #include "main.h"
 #include "keyserver-internal.h"
 
-#if GNUPG_MAJOR_VERSION == 1
-# include "cardglue.h"
-#else /*GNUPG_MAJOR_VERSION!=1*/
-# include "call-agent.h"
-#endif /*GNUPG_MAJOR_VERSION!=1*/
+#include "call-agent.h"
 
 #define CONTROL_D ('D' - 'A' + 1)
 
@@ -942,14 +936,6 @@ get_data_from_file (const char *fname, char **r_buffer)
   *r_buffer = NULL;
 
   fp = es_fopen (fname, "rb");
-#if GNUPG_MAJOR_VERSION == 1
-  if (fp && is_secured_file (fileno (fp)))
-    {
-      fclose (fp);
-      fp = NULL;
-      errno = EPERM;
-    }
-#endif
   if (!fp)
     {
       tty_printf (_("can't open '%s': %s\n"), fname, strerror (errno));
@@ -985,14 +971,6 @@ put_data_to_file (const char *fname, const void *buffer, size_t length)
   estream_t fp;
 
   fp = es_fopen (fname, "wb");
-#if GNUPG_MAJOR_VERSION == 1
-  if (fp && is_secured_file (fileno (fp)))
-    {
-      fclose (fp);
-      fp = NULL;
-      errno = EPERM;
-    }
-#endif
   if (!fp)
     {
       tty_printf (_("can't create '%s': %s\n"), fname, strerror (errno));
