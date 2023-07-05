@@ -337,7 +337,7 @@ iobuf_t iobuf_fdopen (int fd, const char *mode);
 
 /* Like iobuf_fdopen, but doesn't close the file descriptor when the
    filter is destroyed.  */
-iobuf_t iobuf_fdopen_nc (int fd, const char *mode);
+iobuf_t iobuf_fdopen_nc (gnupg_fd_t fd, const char *mode);
 
 /* Create a filter using an existing estream.  If MODE contains the
    letter 'w', creates an output filter.  Otherwise, creates an input

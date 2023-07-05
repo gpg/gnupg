@@ -242,9 +242,9 @@ aead_algo_t use_aead (pk_list_t pk_list, int algo);
 int use_mdc (pk_list_t pk_list,int algo);
 int encrypt_symmetric (const char *filename );
 int encrypt_store (const char *filename );
-int encrypt_crypt (ctrl_t ctrl, int filefd, const char *filename,
+int encrypt_crypt (ctrl_t ctrl, gnupg_fd_t filefd, const char *filename,
                    strlist_t remusr, int use_symkey, pk_list_t provided_keys,
-                   int outputfd);
+                   gnupg_fd_t outputfd);
 void encrypt_crypt_files (ctrl_t ctrl,
                           int nfiles, char **files, strlist_t remusr);
 int encrypt_filter (void *opaque, int control,
@@ -492,7 +492,8 @@ void print_key_line (ctrl_t ctrl, estream_t fp, PKT_public_key *pk, int secret);
 void print_file_status( int status, const char *name, int what );
 int verify_signatures (ctrl_t ctrl, int nfiles, char **files );
 int verify_files (ctrl_t ctrl, int nfiles, char **files );
-int gpg_verify (ctrl_t ctrl, int sig_fd, int data_fd, estream_t out_fp);
+int gpg_verify (ctrl_t ctrl, gnupg_fd_t sig_fd, gnupg_fd_t data_fd,
+                estream_t out_fp);
 void check_assert_signer_list (const char *mainpkhex, const char *pkhex);
 
 /*-- decrypt.c --*/

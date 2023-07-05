@@ -1531,9 +1531,8 @@ iobuf_fdopen (int fd, const char *mode)
 }
 
 iobuf_t
-iobuf_fdopen_nc (int fd, const char *mode)
+iobuf_fdopen_nc (gnupg_fd_t fp, const char *mode)
 {
-  gnupg_fd_t fp = INT2FD (fd);
   return do_iobuf_fdopen (fp, mode, 1);
 }
 

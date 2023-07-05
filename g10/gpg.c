@@ -4408,7 +4408,8 @@ main (int argc, char **argv)
 	  {
 	    if( argc > 1 )
 	      wrong_args("--encrypt [filename]");
-	    if( (rc = encrypt_crypt (ctrl, -1, fname, remusr, 0, NULL, -1)) )
+	    if ((rc = encrypt_crypt (ctrl, GNUPG_INVALID_FD, fname, remusr,
+                                     0, NULL, GNUPG_INVALID_FD)))
               {
                 write_status_failure ("encrypt", rc);
                 log_error("%s: encryption failed: %s\n",
@@ -4433,7 +4434,8 @@ main (int argc, char **argv)
 		    gnupg_compliance_option_string (opt.compliance));
 	else
 	  {
-	    if( (rc = encrypt_crypt (ctrl, -1, fname, remusr, 1, NULL, -1)) )
+	    if ((rc = encrypt_crypt (ctrl, GNUPG_INVALID_FD, fname, remusr,
+                                     1, NULL, GNUPG_INVALID_FD)))
               {
                 write_status_failure ("encrypt", rc);
                 log_error ("%s: encryption failed: %s\n",
