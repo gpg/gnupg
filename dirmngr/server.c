@@ -2753,7 +2753,9 @@ cmd_ad_query (assuan_context_t ctx, char *line)
 
   if (opt_help)
     {
+#if USE_LDAP
       ks_ldap_help_variables (ctrl);
+#endif
       err = 0;
       goto leave;
     }
