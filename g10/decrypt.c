@@ -100,7 +100,8 @@ decrypt_message (ctrl_t ctrl, const char *filename)
 /* Same as decrypt_message but takes a file descriptor for input and
    output.  */
 gpg_error_t
-decrypt_message_fd (ctrl_t ctrl, int input_fd, int output_fd)
+decrypt_message_fd (ctrl_t ctrl, gnupg_fd_t input_fd,
+                    gnupg_fd_t output_fd)
 {
 #ifdef HAVE_W32_SYSTEM
   /* No server mode yet.  */
@@ -113,6 +114,7 @@ decrypt_message_fd (ctrl_t ctrl, int input_fd, int output_fd)
   IOBUF fp;
   armor_filter_context_t *afx = NULL;
   progress_filter_context_t *pfx;
+  es_syshd_t syshd;
 
   if (opt.outfp)
     return gpg_error (GPG_ERR_BUG);
@@ -138,13 +140,20 @@ decrypt_message_fd (ctrl_t ctrl, int input_fd, int output_fd)
       return err;
     }
 
-  opt.outfp = es_fdopen_nc (output_fd, "wb");
+#ifdef HAVE_W32_SYSTEM
+  syshd.type = ES_SYSHD_HANDLE;
+  syshd.u.handle = output_fd;
+#else
+  syshd.type = ES_SYSHD_FD;
+  syshd.u.fd = output_fd;
+#endif
+  opt.outfp = es_sysopen_nc (&syshd, "w");
   if (!opt.outfp)
     {
       char xname[64];
 
       err = gpg_error_from_syserror ();
-      snprintf (xname, sizeof xname, "[fd %d]", output_fd);
+      snprintf (xname, sizeof xname, "[fd %d]", (int)(intprt_t)output_fd);
       log_error (_("can't open '%s': %s\n"), xname, gpg_strerror (err));
       iobuf_close (fp);
       release_progress_context (pfx);

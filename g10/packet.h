@@ -634,8 +634,8 @@ void reset_literals_seen(void);
 int proc_packets (ctrl_t ctrl, void *ctx, iobuf_t a );
 int proc_signature_packets (ctrl_t ctrl, void *ctx, iobuf_t a,
 			    strlist_t signedfiles, const char *sigfile );
-int proc_signature_packets_by_fd (ctrl_t ctrl,
-                                  void *anchor, IOBUF a, int signed_data_fd );
+int proc_signature_packets_by_fd (ctrl_t ctrl, void *anchor, IOBUF a,
+                                  gnupg_fd_t signed_data_fd);
 int proc_encryption_packets (ctrl_t ctrl, void *ctx, iobuf_t a);
 int list_packets( iobuf_t a );
 

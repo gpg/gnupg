@@ -498,14 +498,15 @@ void check_assert_signer_list (const char *mainpkhex, const char *pkhex);
 
 /*-- decrypt.c --*/
 int decrypt_message (ctrl_t ctrl, const char *filename );
-gpg_error_t decrypt_message_fd (ctrl_t ctrl, int input_fd, int output_fd);
+gpg_error_t decrypt_message_fd (ctrl_t ctrl, gnupg_fd_t input_fd,
+                                gnupg_fd_t output_fd);
 void decrypt_messages (ctrl_t ctrl, int nfiles, char *files[]);
 
 /*-- plaintext.c --*/
 int hash_datafiles( gcry_md_hd_t md, gcry_md_hd_t md2,
 		    strlist_t files, const char *sigfilename, int textmode);
-int hash_datafile_by_fd ( gcry_md_hd_t md, gcry_md_hd_t md2, int data_fd,
-                          int textmode );
+int hash_datafile_by_fd (gcry_md_hd_t md, gcry_md_hd_t md2,
+                         gnupg_fd_t data_fd, int textmode);
 PKT_plaintext *setup_plaintext_name(const char *filename,IOBUF iobuf);
 
 /*-- server.c --*/

@@ -81,7 +81,7 @@ struct mainproc_context
   struct
   {
     /* A file descriptor of the signed data.  Only used if not -1. */
-    int data_fd;
+    gnupg_fd_t data_fd;
     /* A list of filenames with the data files or NULL. This is only
        used if DATA_FD is -1. */
     strlist_t data_names;
@@ -1093,7 +1093,7 @@ static int
 proc_compressed_cb (iobuf_t a, void *info)
 {
   if ( ((CTX)info)->signed_data.used
-       && ((CTX)info)->signed_data.data_fd != -1)
+       && ((CTX)info)->signed_data.data_fd != GNUPG_INVALID_FD)
     return proc_signature_packets_by_fd (((CTX)info)->ctrl, info, a,
                                          ((CTX)info)->signed_data.data_fd);
   else
@@ -1515,7 +1515,7 @@ proc_signature_packets (ctrl_t ctrl, void *anchor, iobuf_t a,
   c->anchor = anchor;
   c->sigs_only = 1;
 
-  c->signed_data.data_fd = -1;
+  c->signed_data.data_fd = GNUPG_INVALID_FD;
   c->signed_data.data_names = signedfiles;
   c->signed_data.used = !!signedfiles;
 
@@ -1545,8 +1545,8 @@ proc_signature_packets (ctrl_t ctrl, void *anchor, iobuf_t a,
 
 
 int
-proc_signature_packets_by_fd (ctrl_t ctrl,
-                              void *anchor, iobuf_t a, int signed_data_fd )
+proc_signature_packets_by_fd (ctrl_t ctrl, void *anchor, iobuf_t a,
+                              gnupg_fd_t signed_data_fd)
 {
   int rc;
   CTX c;
@@ -1561,7 +1561,7 @@ proc_signature_packets_by_fd (ctrl_t ctrl,
 
   c->signed_data.data_fd = signed_data_fd;
   c->signed_data.data_names = NULL;
-  c->signed_data.used = (signed_data_fd != -1);
+  c->signed_data.used = (signed_data_fd != GNUPG_INVALID_FD);
 
   rc = do_proc_packets (c, a);
 
@@ -2627,7 +2627,8 @@ proc_tree (CTX c, kbnode_t node)
           /* Ask for file and hash it. */
           if (c->sigs_only)
             {
-              if (c->signed_data.used && c->signed_data.data_fd != -1)
+              if (c->signed_data.used
+                  && c->signed_data.data_fd != GNUPG_INVALID_FD)
                 rc = hash_datafile_by_fd (c->mfx.md, NULL,
                                           c->signed_data.data_fd,
                                           use_textmode);
@@ -2771,7 +2772,8 @@ proc_tree (CTX c, kbnode_t node)
 
           if (c->sigs_only)
             {
-              if (c->signed_data.used && c->signed_data.data_fd != -1)
+              if (c->signed_data.used
+                  && c->signed_data.data_fd != GNUPG_INVALID_FD)
                 rc = hash_datafile_by_fd (c->mfx.md, c->mfx.md2,
                                           c->signed_data.data_fd,
                                           (sig->sig_class == 0x01));

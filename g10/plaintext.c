@@ -728,8 +728,8 @@ hash_datafiles (gcry_md_hd_t md, gcry_md_hd_t md2, strlist_t files,
 /* Hash the data from file descriptor DATA_FD and append the hash to hash
    contexts MD and MD2.  */
 int
-hash_datafile_by_fd (gcry_md_hd_t md, gcry_md_hd_t md2, int data_fd,
-		     int textmode)
+hash_datafile_by_fd (gcry_md_hd_t md, gcry_md_hd_t md2,
+                     gnupg_fd_t data_fd, int textmode)
 {
   progress_filter_context_t *pfx = new_progress_context ();
   iobuf_t fp;
