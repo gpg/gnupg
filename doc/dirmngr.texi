@@ -168,6 +168,14 @@ Append all logging output to @var{file}.  This is very helpful in
 seeing what the agent actually does.  Use @file{socket://} to log to
 socket.
 
+@item --compatibility-flags @var{flags}
+@opindex compatibility-flags
+Set compatibility flags to work around certain problems or to emulate
+bugs.  The @var{flags} are given as a comma separated list of flag
+names and are OR-ed together.  The special flag "none" clears the list
+and allows to start over with an empty list.  To get a list of
+available flags the sole word "help" can be used.
+
 @item --debug-level @var{level}
 @opindex debug-level
 Select the debug level for investigating problems.  @var{level} may be a

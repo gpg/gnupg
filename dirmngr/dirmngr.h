@@ -153,6 +153,9 @@ struct
                                        current after nextUpdate. */
 
   strlist_t keyserver;              /* List of default keyservers.  */
+
+  /* Compatibility flags (COMPAT_FLAG_xxxx).  */
+  unsigned int compat_flags;
 } opt;
 
 
@@ -178,6 +181,10 @@ struct
 #define DBG_NETWORK (opt.debug & DBG_NETWORK_VALUE)
 #define DBG_LOOKUP  (opt.debug & DBG_LOOKUP_VALUE)
 #define DBG_EXTPROG (opt.debug & DBG_EXTPROG_VALUE)
+
+/* Compatibility flags */
+/* None so far.  */
+
 
 /* A simple list of certificate references.  FIXME: Better use
    certlist_t also for references (Store NULL at .cert) */

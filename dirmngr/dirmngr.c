@@ -157,6 +157,7 @@ enum cmd_and_opt_values {
   oConnectTimeout,
   oConnectQuickTimeout,
   oListenBacklog,
+  oCompatibilityFlags,
   aTest
 };
 
@@ -297,6 +298,7 @@ static ARGPARSE_OPTS opts[] = {
 
   ARGPARSE_s_s (oSocketName, "socket-name", "@"),  /* Only for debugging.  */
   ARGPARSE_s_n (oDebugCacheExpiredCerts, "debug-cache-expired-certs", "@"),
+  ARGPARSE_s_s (oCompatibilityFlags, "compatibility-flags", "@"),
 
   ARGPARSE_header (NULL, ""),  /* Stop the header group.  */
 
@@ -327,6 +329,13 @@ static struct debug_flags_s debug_flags [] =
     { DBG_EXTPROG_VALUE, "extprog" },
     { 77, NULL } /* 77 := Do not exit on "help" or "?".  */
   };
+
+/* The list of compatibility flags.  */
+static struct compatibility_flags_s compatibility_flags [] =
+  {
+    { 0, NULL }
+  };
+
 
 #define DEFAULT_MAX_REPLIES 10
 #define DEFAULT_LDAP_TIMEOUT 15  /* seconds */
@@ -709,6 +718,7 @@ parse_rereadable_options (ARGPARSE_ARGS *pargs, int reread)
       opt.ldaptimeout = DEFAULT_LDAP_TIMEOUT;
       ldapserver_list_needs_reset = 1;
       opt.debug_cache_expired_certs = 0;
+      opt.compat_flags = 0;
       return 1;
     }
 
@@ -869,6 +879,15 @@ parse_rereadable_options (ARGPARSE_ARGS *pargs, int reread)
 
     case oDebugCacheExpiredCerts:
       opt.debug_cache_expired_certs = 0;
+      break;
+
+    case oCompatibilityFlags:
+      if (parse_compatibility_flags (pargs->r.ret_str, &opt.compat_flags,
+                                     compatibility_flags))
+        {
+          pargs->r_opt = ARGPARSE_INVALID_ARG;
+          pargs->err = ARGPARSE_PRINT_WARNING;
+        }
       break;
 
     default:
