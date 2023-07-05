@@ -179,13 +179,13 @@ ask_outfile_name( const char *name, size_t namelen )
  * be closed if the returned IOBUF is closed.  This is used for gpg's
  * --server mode.  */
 int
-open_outfile (int out_fd, const char *iname, int mode, int restrictedperm,
-              iobuf_t *a)
+open_outfile (gnupg_fd_t out_fd, const char *iname, int mode,
+              int restrictedperm, iobuf_t *a)
 {
   int rc = 0;
 
   *a = NULL;
-  if (out_fd != -1)
+  if (out_fd != GNUPG_INVALID_FD)
     {
       char xname[64];
 

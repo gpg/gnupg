@@ -507,7 +507,8 @@ encrypt_simple (const char *filename, int mode, int use_seskey)
                  /**/             : "CFB");
     }
 
-  if ( rc || (rc = open_outfile (-1, filename, opt.armor? 1:0, 0, &out )))
+  if (rc || (rc = open_outfile (GNUPG_INVALID_FD, filename, opt.armor? 1:0,
+                                0, &out )))
     {
       iobuf_cancel (inp);
       xfree (cfx.dek);

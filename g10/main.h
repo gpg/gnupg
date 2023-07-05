@@ -340,7 +340,7 @@ gpg_error_t generate_card_subkeypair (ctrl_t ctrl, kbnode_t pub_keyblock,
 int overwrite_filep( const char *fname );
 char *make_outfile_name( const char *iname );
 char *ask_outfile_name( const char *name, size_t namelen );
-int open_outfile (int out_fd, const char *iname, int mode,
+int open_outfile (gnupg_fd_t out_fd, const char *iname, int mode,
                   int restrictedperm, iobuf_t *a);
 char *get_matching_datafile (const char *sigfilename);
 iobuf_t open_sigfile (const char *sigfilename, progress_filter_context_t *pfx);
