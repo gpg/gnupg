@@ -167,6 +167,7 @@ prepare_data_pipe (kbx_client_data_t kcd)
       return err;
     }
 
+  npth_attr_destroy (&tattr);
   return 0;
 }
 
