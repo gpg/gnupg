@@ -131,21 +131,34 @@ get_assuan_ctx_from_ctrl (ctrl_t ctrl)
 static gpg_error_t
 prepare_outstream (ctrl_t ctrl)
 {
-  int fd;
+  gnupg_fd_t fd;
+  estream_t out_fp = NULL;
 
   log_assert (ctrl && ctrl->server_local);
 
   if (ctrl->server_local->outstream)
     return 0;  /* Already enabled.  */
 
-  fd = translate_sys2libc_fd
-    (assuan_get_output_fd (get_assuan_ctx_from_ctrl (ctrl)), 1);
-  if (fd == -1)
+  fd = assuan_get_output_fd (get_assuan_ctx_from_ctrl (ctrl));
+  if (fd == GNUPG_INVALID_FD)
     return 0;  /* No Output command active.  */
+  else
+    {
+      es_syshd_t syshd;
 
-  ctrl->server_local->outstream = es_fdopen_nc (fd, "w");
-  if (!ctrl->server_local->outstream)
-    return gpg_err_code_from_syserror ();
+#ifdef HAVE_W32_SYSTEM
+      syshd.type = ES_SYSHD_HANDLE;
+      syshd.u.handle = fd;
+#else
+      syshd.type = ES_SYSHD_FD;
+      syshd.u.fd = fd;
+#endif
+      out_fp = es_sysopen_nc (&syshd, "w");
+      if (!out_fp)
+        return gpg_err_code_from_syserror ();
+    }
+
+  ctrl->server_local->outstream = out_fp;
   return 0;
 }
 
