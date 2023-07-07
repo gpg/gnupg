@@ -115,6 +115,11 @@ pubkey_string (PKT_public_key *pk, char *buffer, size_t bufsize)
     case PUBKEY_ALGO_ECDH:
     case PUBKEY_ALGO_ECDSA:
     case PUBKEY_ALGO_EDDSA:     prefix = "";    break;
+    case PUBKEY_ALGO_KY768_25519: prefix = "ky768";       break;
+    case PUBKEY_ALGO_KY1024_448:  prefix = "ky1024";      break;
+    case PUBKEY_ALGO_DIL3_25519:  prefix = "dil3";        break;
+    case PUBKEY_ALGO_DIL5_448:    prefix = "dil5";        break;
+    case PUBKEY_ALGO_SPHINX_SHA2: prefix = "sphinx_sha2"; break;
     }
 
   if (prefix && *prefix)

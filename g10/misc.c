@@ -799,6 +799,19 @@ openpgp_pk_algo_usage ( int algo )
       case PUBKEY_ALGO_ECDSA:
       case PUBKEY_ALGO_EDDSA:
           use = PUBKEY_USAGE_CERT | PUBKEY_USAGE_SIG | PUBKEY_USAGE_AUTH;
+          break;
+
+      case PUBKEY_ALGO_KY768_25519:
+      case PUBKEY_ALGO_KY1024_448:
+          use = PUBKEY_USAGE_ENC | PUBKEY_USAGE_RENC;
+          break;
+
+      case PUBKEY_ALGO_DIL3_25519:
+      case PUBKEY_ALGO_DIL5_448:
+      case PUBKEY_ALGO_SPHINX_SHA2:
+          use = PUBKEY_USAGE_CERT | PUBKEY_USAGE_SIG;
+          break;
+
       default:
           break;
     }

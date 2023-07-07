@@ -3278,6 +3278,7 @@ parse_key_parameter_part (ctrl_t ctrl,
   char *keygrip = NULL;
   u32 keytime = 0;
   int is_448 = 0;
+  int is_pqc = 0;
 
   if (!string || !*string)
     return 0; /* Success.  */
@@ -3311,6 +3312,32 @@ parse_key_parameter_part (ctrl_t ctrl,
           if (size < 512 || size > 16384 || *endp)
             return gpg_error (GPG_ERR_INV_VALUE);
         }
+    }
+  else if (!ascii_strcasecmp (string, "ky768"))
+    {
+      algo = PUBKEY_ALGO_KY768_25519;
+      is_pqc = 1;
+    }
+  else if (!ascii_strcasecmp (string, "ky1024"))
+    {
+      algo = PUBKEY_ALGO_KY1024_448;
+      is_pqc = 1;
+    }
+  else if (!ascii_strcasecmp (string, "dil3"))
+    {
+      algo = PUBKEY_ALGO_DIL3_25519;
+      is_pqc = 1;
+    }
+  else if (!ascii_strcasecmp (string, "dil5"))
+    {
+      algo = PUBKEY_ALGO_DIL5_448;
+      is_pqc = 1;
+    }
+  else if (!ascii_strcasecmp (string, "sphinx")
+           || !ascii_strcasecmp (string, "sphinx_sha2"))
+    {
+      algo = PUBKEY_ALGO_SPHINX_SHA2;
+      is_pqc = 1;
     }
   else if ((curve = openpgp_is_curve_supported (string, &algo, &size)))
     {
@@ -3560,8 +3587,8 @@ parse_key_parameter_part (ctrl_t ctrl,
       return gpg_error (GPG_ERR_WRONG_KEY_USAGE);
     }
 
-  /* Ed448 and X448 must only be used as v5 keys.  */
-  if (is_448)
+  /* Ed448, X448 and the PQC algos must only be used as v5 keys.  */
+  if (is_448 || is_pqc)
     {
       if (keyversion == 4)
         log_info (_("WARNING: v4 is specified, but overridden by v5.\n"));
