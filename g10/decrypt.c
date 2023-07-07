@@ -114,7 +114,6 @@ decrypt_message_fd (ctrl_t ctrl, gnupg_fd_t input_fd,
   IOBUF fp;
   armor_filter_context_t *afx = NULL;
   progress_filter_context_t *pfx;
-  es_syshd_t syshd;
 
   if (opt.outfp)
     return gpg_error (GPG_ERR_BUG);
@@ -140,14 +139,7 @@ decrypt_message_fd (ctrl_t ctrl, gnupg_fd_t input_fd,
       return err;
     }
 
-#ifdef HAVE_W32_SYSTEM
-  syshd.type = ES_SYSHD_HANDLE;
-  syshd.u.handle = output_fd;
-#else
-  syshd.type = ES_SYSHD_FD;
-  syshd.u.fd = output_fd;
-#endif
-  opt.outfp = es_sysopen_nc (&syshd, "w");
+  opt.outfp = open_stream_nc (output_fd, "w");
   if (!opt.outfp)
     {
       char xname[64];

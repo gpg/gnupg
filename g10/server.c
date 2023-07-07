@@ -388,16 +388,7 @@ cmd_verify (assuan_context_t ctx, char *line)
 
   if (out_fd != GNUPG_INVALID_FD)
     {
-      es_syshd_t syshd;
-
-#ifdef HAVE_W32_SYSTEM
-      syshd.type = ES_SYSHD_HANDLE;
-      syshd.u.handle = out_fd;
-#else
-      syshd.type = ES_SYSHD_FD;
-      syshd.u.fd = out_fd;
-#endif
-      out_fp = es_sysopen_nc (&syshd, "w");
+      out_fp = open_stream_nc (fd, "w");
       if (!out_fp)
         return set_error (gpg_err_code_from_syserror (), "fdopen() failed");
     }

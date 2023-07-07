@@ -144,16 +144,7 @@ prepare_outstream (ctrl_t ctrl)
     return 0;  /* No Output command active.  */
   else
     {
-      es_syshd_t syshd;
-
-#ifdef HAVE_W32_SYSTEM
-      syshd.type = ES_SYSHD_HANDLE;
-      syshd.u.handle = fd;
-#else
-      syshd.type = ES_SYSHD_FD;
-      syshd.u.fd = fd;
-#endif
-      out_fp = es_sysopen_nc (&syshd, "w");
+      out_fp = open_stream_nc (fd, "w");
       if (!out_fp)
         return gpg_err_code_from_syserror ();
     }
