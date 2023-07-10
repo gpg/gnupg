@@ -337,6 +337,7 @@ gnupg_w32_set_errno (int ec)
   if (ec == -1)
     ec = GetLastError ();
   _set_errno (map_w32_to_errno (ec));
+  return ec;
 }
 #endif /*HAVE_W32_SYSTEM*/
 
