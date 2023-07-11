@@ -166,7 +166,6 @@ block_filter_ctx_t;
 /* Local prototypes.  */
 static int underflow (iobuf_t a, int clear_pending_eof);
 static int underflow_target (iobuf_t a, int clear_pending_eof, size_t target);
-static gnupg_fd_t translate_file_handle (int fd, int for_write);
 static iobuf_t do_iobuf_fdopen (gnupg_fd_t fp, const char *mode, int keep_open);
 
 
@@ -1412,7 +1411,7 @@ iobuf_is_pipe_filename (const char *fname)
 {
   if (!fname || (*fname=='-' && !fname[1]) )
     return 1;
-  return check_special_filename (fname, 0, 1) != -1;
+  return gnupg_check_special_filename (fname) != GNUPG_INVALID_FD;
 }
 
 
@@ -1425,7 +1424,7 @@ do_open (const char *fname, int special_filenames,
   file_filter_ctx_t *fcx;
   size_t len = 0;
   int print_only = 0;
-  int fd;
+  gnupg_fd_t fd;
   byte desc[MAX_IOBUF_DESC];
 
   log_assert (use == IOBUF_INPUT || use == IOBUF_OUTPUT);
@@ -1449,9 +1448,8 @@ do_open (const char *fname, int special_filenames,
   else if (!fname)
     return NULL;
   else if (special_filenames
-           && (fd = check_special_filename (fname, 0, 1)) != -1)
-    return do_iobuf_fdopen (translate_file_handle (fd, use == IOBUF_INPUT
-                                                   ? 0 : 1), opentype, 0);
+           && (fd = gnupg_check_special_filename (fname)) != GNUPG_INVALID_FD)
+    return do_iobuf_fdopen (fd, opentype, 0);
   else
     {
       if (use == IOBUF_INPUT)
@@ -2946,36 +2944,6 @@ iobuf_read_line (iobuf_t a, byte ** addr_of_buffer,
   /* Return the number of characters written to the buffer including
      the newline, but not including the terminating NUL.  */
   return nbytes;
-}
-
-static gnupg_fd_t
-translate_file_handle (int fd, int for_write)
-{
-#if defined(HAVE_W32_SYSTEM)
-  {
-    gnupg_fd_t x;
-
-    (void)for_write;
-
-    if (fd == 0)
-      x = GetStdHandle (STD_INPUT_HANDLE);
-    else if (fd == 1)
-      x = GetStdHandle (STD_OUTPUT_HANDLE);
-    else if (fd == 2)
-      x = GetStdHandle (STD_ERROR_HANDLE);
-    else
-      x = (gnupg_fd_t)(intptr_t)fd;
-
-    if (x == INVALID_HANDLE_VALUE)
-      log_debug ("GetStdHandle(%d) failed: ec=%d\n",
-		 fd, (int) GetLastError ());
-
-    return x;
-  }
-#else
-  (void)for_write;
-  return fd;
-#endif
 }
 
 
