@@ -1522,9 +1522,8 @@ do_iobuf_fdopen (gnupg_fd_t fp, const char *mode, int keep_open)
 
 
 iobuf_t
-iobuf_fdopen (int fd, const char *mode)
+iobuf_fdopen (gnupg_fd_t fp, const char *mode)
 {
-  gnupg_fd_t fp = INT2FD (fd);
   return do_iobuf_fdopen (fp, mode, 0);
 }
 
@@ -1583,7 +1582,7 @@ iobuf_sockopen (int fd, const char *mode)
     log_debug ("iobuf-%d.%d: sockopen '%s'\n", a->no, a->subno, scx->fname);
   iobuf_ioctl (a, IOBUF_IOCTL_NO_CACHE, 1, NULL);
 #else
-  a = iobuf_fdopen (fd, mode);
+  a = do_iobuf_fdopen (fd, mode, 0);
 #endif
   return a;
 }

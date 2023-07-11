@@ -333,7 +333,7 @@ iobuf_t iobuf_openrw (const char *fname);
    creates an input filter.  Note: MODE must reflect the file
    descriptors actual mode!  When the filter is destroyed, the file
    descriptor is closed.  */
-iobuf_t iobuf_fdopen (int fd, const char *mode);
+iobuf_t iobuf_fdopen (gnupg_fd_t fd, const char *mode);
 
 /* Like iobuf_fdopen, but doesn't close the file descriptor when the
    filter is destroyed.  */
