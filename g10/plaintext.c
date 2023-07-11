@@ -145,13 +145,7 @@ get_output_file (const byte *embedded_name, int embedded_namelen,
 	}
     }
 
-  if (opt.outfp && is_secured_file (es_fileno (opt.outfp)))
-    {
-      err = gpg_error (GPG_ERR_EPERM);
-      log_error (_("error creating '%s': %s\n"), fname, gpg_strerror (err));
-      goto leave;
-    }
-  else if (fp || nooutput)
+  if (fp || nooutput)
     ;
   else if (is_secured_filename (fname))
     {
