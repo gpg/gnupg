@@ -87,6 +87,7 @@ enum para_name {
   pEXPIREDATE,
   pKEYEXPIRE, /* in n seconds */
   pSUBKEYCREATIONDATE,
+  pSUBKEYEXPIREDATE,
   pSUBKEYEXPIRE, /* in n seconds */
   pAUTHKEYCREATIONDATE,  /* Not yet used.  */
   pPASSPHRASE,
@@ -4358,12 +4359,29 @@ proc_parameter_file (ctrl_t ctrl, struct para_data_s *para, const char *fname,
 	  return -1;
 	}
       r->u.expire = seconds;
-      r->key = pKEYEXPIRE;  /* change hat entry */
-      /* also set it for the subkey */
-      r = xmalloc_clear( sizeof *r + 20 );
-      r->key = pSUBKEYEXPIRE;
-      r->u.expire = seconds;
-      append_to_parameter (para, r);
+      r->key = pKEYEXPIRE;  /* change that entry */
+
+      /* Make SUBKEYEXPIRE from Subkey-Expire-Date, if any.  */
+      r = get_parameter( para, pSUBKEYEXPIREDATE );
+      if( r && *r->u.value )
+        {
+          seconds = parse_expire_string_with_ct (r->u.value, creation_time);
+          if( seconds == (u32)-1 )
+            {
+              log_error("%s:%d: invalid subkey expire date\n", fname, r->lnr );
+              return -1;
+            }
+          r->key = pSUBKEYEXPIRE;  /* change that entry */
+          r->u.expire = seconds;
+        }
+      else
+        {
+          /* Or else, set Expire-Date for the subkey */
+          r = xmalloc_clear( sizeof *r + 20 );
+          r->key = pSUBKEYEXPIRE;
+          r->u.expire = seconds;
+          append_to_parameter (para, r);
+        }
     }
 
   do_generate_keypair (ctrl, para, outctrl, card );
@@ -4394,6 +4412,7 @@ read_parameter_file (ctrl_t ctrl, const char *fname )
 	{ "Name-Email",     pNAMEEMAIL },
 	{ "Name-Comment",   pNAMECOMMENT },
 	{ "Expire-Date",    pEXPIREDATE },
+	{ "Subkey-Expire-Date", pSUBKEYEXPIREDATE },
 	{ "Creation-Date",  pCREATIONDATE },
 	{ "Passphrase",     pPASSPHRASE },
 	{ "Preferences",    pPREFERENCES },
