@@ -2740,14 +2740,19 @@ ask_curve (int *algo, int *subkey_algo, const char *current)
  * just cope for the next few years until we get a 64-bit time_t or
  * similar.
  */
-u32
-parse_expire_string( const char *string )
+static u32
+parse_expire_string_with_ct (const char *string, u32 creation_time)
 {
   int mult;
   u32 seconds;
   u32 abs_date = 0;
-  u32 curtime = make_timestamp ();
   time_t tt;
+  u32 curtime;
+
+  if (creation_time == (u32)-1)
+    curtime = make_timestamp ();
+  else
+    curtime = creation_time;
 
   if (!string || !*string || !strcmp (string, "none")
       || !strcmp (string, "never") || !strcmp (string, "-"))
@@ -2766,6 +2771,13 @@ parse_expire_string( const char *string )
 
   return seconds;
 }
+
+u32
+parse_expire_string ( const char *string )
+{
+  return parse_expire_string_with_ct (string, (u32)-1);
+}
+
 
 /* Parse a Creation-Date string which is either "1986-04-26" or
    "19860426T042640".  Returns 0 on error. */
@@ -4157,6 +4169,7 @@ proc_parameter_file (ctrl_t ctrl, struct para_data_s *para, const char *fname,
   int is_default = 0;
   int have_user_id = 0;
   int err, algo;
+  u32 creation_time = (u32)-1;
 
   /* Check that we have all required parameters. */
   r = get_parameter( para, pKEYTYPE );
@@ -4322,15 +4335,13 @@ proc_parameter_file (ctrl_t ctrl, struct para_data_s *para, const char *fname,
   if (r && *r->u.value && !(get_parameter_bool (para, pCARDKEY)
                             && get_parameter_u32 (para, pKEYCREATIONDATE)))
     {
-      u32 seconds;
-
-      seconds = parse_creation_string (r->u.value);
-      if (!seconds)
+      creation_time = parse_creation_string (r->u.value);
+      if (!creation_time)
 	{
 	  log_error ("%s:%d: invalid creation date\n", fname, r->lnr );
 	  return -1;
 	}
-      r->u.creation = seconds;
+      r->u.creation = creation_time;
       r->key = pKEYCREATIONDATE;  /* Change that entry. */
     }
 
@@ -4340,7 +4351,7 @@ proc_parameter_file (ctrl_t ctrl, struct para_data_s *para, const char *fname,
     {
       u32 seconds;
 
-      seconds = parse_expire_string( r->u.value );
+      seconds = parse_expire_string_with_ct (r->u.value, creation_time);
       if( seconds == (u32)-1 )
 	{
 	  log_error("%s:%d: invalid expire date\n", fname, r->lnr );
