@@ -451,7 +451,8 @@ cmd_encrypt (assuan_context_t ctx, char *line)
 {
   ctrl_t ctrl = assuan_get_pointer (ctx);
   certlist_t cl;
-  int inp_fd, out_fd;
+  int inp_fd;
+  gnupg_fd_t out_fd;
   estream_t out_fp;
   int rc;
 
@@ -460,11 +461,11 @@ cmd_encrypt (assuan_context_t ctx, char *line)
   inp_fd = translate_sys2libc_fd (assuan_get_input_fd (ctx), 0);
   if (inp_fd == -1)
     return set_error (GPG_ERR_ASS_NO_INPUT, NULL);
-  out_fd = translate_sys2libc_fd (assuan_get_output_fd (ctx), 1);
-  if (out_fd == -1)
+  out_fd = assuan_get_output_fd (ctx);
+  if (out_fd == GNUPG_INVALID_FD)
     return set_error (GPG_ERR_ASS_NO_OUTPUT, NULL);
 
-  out_fp = es_fdopen_nc (out_fd, "w");
+  out_fp = open_stream_nc (out_fd, "w");
   if (!out_fp)
     return set_error (gpg_err_code_from_syserror (), "fdopen() failed");
 
@@ -508,7 +509,8 @@ static gpg_error_t
 cmd_decrypt (assuan_context_t ctx, char *line)
 {
   ctrl_t ctrl = assuan_get_pointer (ctx);
-  int inp_fd, out_fd;
+  int inp_fd;
+  gnupg_fd_t out_fd;
   estream_t out_fp;
   int rc;
 
@@ -517,11 +519,11 @@ cmd_decrypt (assuan_context_t ctx, char *line)
   inp_fd = translate_sys2libc_fd (assuan_get_input_fd (ctx), 0);
   if (inp_fd == -1)
     return set_error (GPG_ERR_ASS_NO_INPUT, NULL);
-  out_fd = translate_sys2libc_fd (assuan_get_output_fd (ctx), 1);
-  if (out_fd == -1)
+  out_fd = assuan_get_output_fd (ctx);
+  if (out_fd == GNUPG_INVALID_FD)
     return set_error (GPG_ERR_ASS_NO_OUTPUT, NULL);
 
-  out_fp = es_fdopen_nc (out_fd, "w");
+  out_fp = open_stream_nc (out_fd, "w");
   if (!out_fp)
     return set_error (gpg_err_code_from_syserror (), "fdopen() failed");
 
@@ -554,7 +556,7 @@ cmd_verify (assuan_context_t ctx, char *line)
   int rc;
   ctrl_t ctrl = assuan_get_pointer (ctx);
   int fd = translate_sys2libc_fd (assuan_get_input_fd (ctx), 0);
-  int out_fd = translate_sys2libc_fd (assuan_get_output_fd (ctx), 1);
+  gnupg_fd_t out_fd = assuan_get_output_fd (ctx);
   estream_t out_fp = NULL;
 
   (void)line;
@@ -562,9 +564,9 @@ cmd_verify (assuan_context_t ctx, char *line)
   if (fd == -1)
     return set_error (GPG_ERR_ASS_NO_INPUT, NULL);
 
-  if (out_fd != -1)
+  if (out_fd != GNUPG_INVALID_FD)
     {
-      out_fp = es_fdopen_nc (out_fd, "w");
+      out_fp = open_stream_nc (out_fd, "w");
       if (!out_fp)
         return set_error (gpg_err_code_from_syserror (), "fdopen() failed");
     }
@@ -594,7 +596,8 @@ static gpg_error_t
 cmd_sign (assuan_context_t ctx, char *line)
 {
   ctrl_t ctrl = assuan_get_pointer (ctx);
-  int inp_fd, out_fd;
+  int inp_fd;
+  gnupg_fd_t out_fd;
   estream_t out_fp;
   int detached;
   int rc;
@@ -602,13 +605,13 @@ cmd_sign (assuan_context_t ctx, char *line)
   inp_fd = translate_sys2libc_fd (assuan_get_input_fd (ctx), 0);
   if (inp_fd == -1)
     return set_error (GPG_ERR_ASS_NO_INPUT, NULL);
-  out_fd = translate_sys2libc_fd (assuan_get_output_fd (ctx), 1);
-  if (out_fd == -1)
+  out_fd = assuan_get_output_fd (ctx);
+  if (out_fd == GNUPG_INVALID_FD)
     return set_error (GPG_ERR_ASS_NO_OUTPUT, NULL);
 
   detached = has_option (line, "--detached");
 
-  out_fp = es_fdopen_nc (out_fd, "w");
+  out_fp = open_stream_nc (out_fd, "w");
   if (!out_fp)
     return set_error (GPG_ERR_ASS_GENERAL, "fdopen() failed");
 
@@ -756,15 +759,15 @@ cmd_export (assuan_context_t ctx, char *line)
     }
   else
     {
-      int fd = translate_sys2libc_fd (assuan_get_output_fd (ctx), 1);
+      gnupg_fd_t fd = assuan_get_output_fd (ctx);
       estream_t out_fp;
 
-      if (fd == -1)
+      if (fd == GNUPG_INVALID_FD)
         {
           free_strlist (list);
           return set_error (GPG_ERR_ASS_NO_OUTPUT, NULL);
         }
-      out_fp = es_fdopen_nc (fd, "w");
+      out_fp = open_stream_nc (fd, "w");
       if (!out_fp)
         {
           free_strlist (list);
