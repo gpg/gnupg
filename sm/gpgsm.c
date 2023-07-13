@@ -1981,11 +1981,23 @@ main ( int argc, char **argv)
           fp = open_es_fwrite (opt.outfile);
 
         if (!argc)
-          gpgsm_verify (&ctrl, 0, -1, fp); /* normal signature from stdin */
+          gpgsm_verify (&ctrl, 0, NULL, fp); /* normal signature from stdin */
         else if (argc == 1)
-          gpgsm_verify (&ctrl, open_read (*argv), -1, fp); /* std signature */
+          gpgsm_verify (&ctrl, open_read (*argv), NULL, fp); /* std signature */
         else if (argc == 2) /* detached signature (sig, detached) */
-          gpgsm_verify (&ctrl, open_read (*argv), open_read (argv[1]), NULL);
+          {
+            estream_t data_fp = es_fopen (argv[1], "rb");
+
+            if (!data_fp)
+              {
+                log_error (_("can't open '%s': %s\n"), argv[1],
+                           strerror (errno));
+                gpgsm_exit (2);
+              }
+
+            gpgsm_verify (&ctrl, open_read (*argv), data_fp, NULL);
+            es_fclose (data_fp);
+          }
         else
           wrong_args ("--verify [signature [detached_data]]");
 

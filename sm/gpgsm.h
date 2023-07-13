@@ -439,7 +439,7 @@ void gpgsm_p12_export (ctrl_t ctrl, const char *name, estream_t stream,
 int gpgsm_delete (ctrl_t ctrl, strlist_t names);
 
 /*-- verify.c --*/
-int gpgsm_verify (ctrl_t ctrl, int in_fd, int data_fd, estream_t out_fp);
+int gpgsm_verify (ctrl_t ctrl, int in_fd, estream_t data_fp, estream_t out_fp);
 
 /*-- sign.c --*/
 int gpgsm_get_default_cert (ctrl_t ctrl, ksba_cert_t *r_cert);
