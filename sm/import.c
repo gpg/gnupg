@@ -37,6 +37,10 @@
 #include "../common/membuf.h"
 #include "minip12.h"
 
+#ifndef O_BINARY
+#define O_BINARY 0
+#endif
+
 /* The arbitrary limit of one PKCS#12 object.  */
 #define MAX_P12OBJ_SIZE 128 /*kb*/
 
