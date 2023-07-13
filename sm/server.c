@@ -1043,14 +1043,14 @@ do_listkeys (assuan_context_t ctx, char *line, int mode)
 
   if (ctrl->server_local->list_to_output)
     {
-      int outfd = translate_sys2libc_fd (assuan_get_output_fd (ctx), 1);
+      gnupg_fd_t outfd = assuan_get_output_fd (ctx);
 
-      if ( outfd == -1 )
+      if ( outfd == GNUPG_INVALID_FD )
         {
           free_strlist (list);
           return set_error (GPG_ERR_ASS_NO_OUTPUT, NULL);
         }
-      fp = es_fdopen_nc (outfd, "w");
+      fp = open_stream_nc (outfd, "w");
       if (!fp)
         {
           free_strlist (list);
