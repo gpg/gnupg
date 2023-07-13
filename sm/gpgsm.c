@@ -2327,7 +2327,7 @@ open_es_fread (const char *filename, const char *mode)
   estream_t fp;
 
   if (filename[0] == '-' && !filename[1])
-    fd = fileno (stdin);
+    return es_fpopen_nc (stdin, mode);
   else
     fd = check_special_filename (filename, 0, 0);
   if (fd != -1)
@@ -2335,7 +2335,8 @@ open_es_fread (const char *filename, const char *mode)
       fp = es_fdopen_nc (fd, mode);
       if (!fp)
         {
-          log_error ("es_fdopen(%d) failed: %s\n", fd, strerror (errno));
+          log_error ("es_fdopen(%d) failed: %s\n", (int)(intptr_t)fd,
+                     strerror (errno));
           gpgsm_exit (2);
         }
       return fp;
@@ -2357,23 +2358,24 @@ open_es_fread (const char *filename, const char *mode)
 static estream_t
 open_es_fwrite (const char *filename)
 {
-  int fd;
+  gnupg_fd_t fd;
   estream_t fp;
 
   if (filename[0] == '-' && !filename[1])
     {
       fflush (stdout);
-      fp = es_fdopen_nc (fileno(stdout), "wb");
+      fp = es_fpopen_nc (stdout, "wb");
       return fp;
     }
 
-  fd = check_special_filename (filename, 1, 0);
-  if (fd != -1)
+  fd = gnupg_check_special_filename (filename);
+  if (fd != GNUPG_INVALID_FD)
     {
-      fp = es_fdopen_nc (fd, "wb");
+      fp = open_stream_nc (fd, "wb");
       if (!fp)
         {
-          log_error ("es_fdopen(%d) failed: %s\n", fd, strerror (errno));
+          log_error ("es_fdopen(%d) failed: %s\n",
+                     (int)(intptr_t)fd, strerror (errno));
           gpgsm_exit (2);
         }
       return fp;
