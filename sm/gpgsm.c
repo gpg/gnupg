@@ -1947,7 +1947,7 @@ main ( int argc, char **argv)
            signing because that is what gpg does.*/
         set_binary (stdin);
         if (!argc) /* Create from stdin. */
-          err = gpgsm_sign (&ctrl, signerlist, 0, detached_sig, fp);
+          err = gpgsm_sign (&ctrl, signerlist, es_stdin, detached_sig, fp);
         else if (argc == 1) /* From file. */
           {
             estream_t data_fp = es_fopen (*argv, "rb");
@@ -2001,7 +2001,8 @@ main ( int argc, char **argv)
           fp = open_es_fwrite (opt.outfile);
 
         if (!argc)
-          gpgsm_verify (&ctrl, 0, NULL, fp); /* normal signature from stdin */
+          /* normal signature from stdin */
+          gpgsm_verify (&ctrl, es_stdin, NULL, fp);
         else if (argc == 1)
           {
             estream_t in_fp = es_fopen (*argv, "rb");
@@ -2050,7 +2051,7 @@ main ( int argc, char **argv)
 
         set_binary (stdin);
         if (!argc)
-          err = gpgsm_decrypt (&ctrl, 0, fp); /* from stdin */
+          err = gpgsm_decrypt (&ctrl, es_stdin, fp); /* from stdin */
         else if (argc == 1)
           {
             estream_t data_fp = es_fopen (*argv, "rb");

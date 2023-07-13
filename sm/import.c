@@ -524,7 +524,7 @@ gpgsm_import_files (ctrl_t ctrl, int nfiles, char **files,
   memset (&stats, 0, sizeof stats);
 
   if (!nfiles)
-    rc = import_one (ctrl, &stats, 0);
+    rc = import_one (ctrl, &stats, es_stdin);
   else
     {
       for (; nfiles && !rc ; nfiles--, files++)
