@@ -680,7 +680,7 @@ cmd_import (assuan_context_t ctx, char *line)
   if (fd == GNUPG_INVALID_FD)
     return set_error (GPG_ERR_ASS_NO_INPUT, NULL);
 
-  fp = open_stream_nc (fd, "rb");
+  fp = open_stream_nc (fd, "r");
   if (!fp)
     return set_error (GPG_ERR_ASS_NO_INPUT, NULL);
 
@@ -905,7 +905,7 @@ cmd_message (assuan_context_t ctx, char *line)
   if (rc)
     return rc;
 
-  fp = open_stream_nc (fd, "rb");
+  fp = open_stream_nc (fd, "r");
   if (!fp)
     return set_error (GPG_ERR_ASS_NO_INPUT, NULL);
   ctrl->server_local->message_fp = fp;
