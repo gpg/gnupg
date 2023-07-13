@@ -574,7 +574,8 @@ encrypt_cb (void *cb_value, char *buffer, size_t count, size_t *nread)
    recipients are take from the certificate given in recplist; if this
    is NULL it will be encrypted for a default recipient */
 int
-gpgsm_encrypt (ctrl_t ctrl, certlist_t recplist, int data_fd, estream_t out_fp)
+gpgsm_encrypt (ctrl_t ctrl, certlist_t recplist, estream_t data_fp,
+               estream_t out_fp)
 {
   int rc = 0;
   gnupg_ksba_io_t b64writer = NULL;
@@ -587,7 +588,6 @@ gpgsm_encrypt (ctrl_t ctrl, certlist_t recplist, int data_fd, estream_t out_fp)
   struct encrypt_cb_parm_s encparm;
   DEK dek = NULL;
   int recpno;
-  estream_t data_fp = NULL;
   certlist_t cl;
   int count;
   int compliant;
@@ -620,15 +620,6 @@ gpgsm_encrypt (ctrl_t ctrl, certlist_t recplist, int data_fd, estream_t out_fp)
     {
       log_error (_("failed to allocate keyDB handle\n"));
       rc = gpg_error (GPG_ERR_GENERAL);
-      goto leave;
-    }
-
-  /* Fixme:  We should use the unlocked version of the es functions.  */
-  data_fp = es_fdopen_nc (data_fd, "rb");
-  if (!data_fp)
-    {
-      rc = gpg_error_from_syserror ();
-      log_error ("fdopen() failed: %s\n", strerror (errno));
       goto leave;
     }
 
@@ -863,7 +854,6 @@ gpgsm_encrypt (ctrl_t ctrl, certlist_t recplist, int data_fd, estream_t out_fp)
   ksba_reader_release (reader);
   keydb_release (kh);
   xfree (dek);
-  es_fclose (data_fp);
   xfree (encparm.buffer);
   return rc;
 }

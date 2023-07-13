@@ -80,7 +80,8 @@ hash_data (estream_t fp, gcry_md_hd_t md)
    must be different than NULL.  With OUT_FP given and a non-detached
    signature, the signed material is written to that stream.  */
 int
-gpgsm_verify (ctrl_t ctrl, int in_fd, estream_t data_fp, estream_t out_fp)
+gpgsm_verify (ctrl_t ctrl, estream_t in_fp, estream_t data_fp,
+              estream_t out_fp)
 {
   int i, rc;
   gnupg_ksba_io_t b64reader = NULL;
@@ -96,7 +97,6 @@ gpgsm_verify (ctrl_t ctrl, int in_fd, estream_t data_fp, estream_t out_fp)
   const char *algoid;
   int algo;
   int is_detached, maybe_detached;
-  estream_t in_fp = NULL;
   char *p;
 
   audit_set_type (ctrl->audit, AUDIT_TYPE_VERIFY);
@@ -114,14 +114,6 @@ gpgsm_verify (ctrl_t ctrl, int in_fd, estream_t data_fp, estream_t out_fp)
       goto leave;
     }
 
-
-  in_fp = es_fdopen_nc (in_fd, "rb");
-  if (!in_fp)
-    {
-      rc = gpg_error_from_syserror ();
-      log_error ("fdopen() failed: %s\n", strerror (errno));
-      goto leave;
-    }
 
   rc = gnupg_ksba_create_reader
     (&b64reader, ((ctrl->is_pem? GNUPG_KSBA_IO_PEM : 0)
@@ -738,7 +730,6 @@ gpgsm_verify (ctrl_t ctrl, int in_fd, estream_t data_fp, estream_t out_fp)
   gnupg_ksba_destroy_writer (b64writer);
   keydb_release (kh);
   gcry_md_close (data_md);
-  es_fclose (in_fp);
 
   if (rc)
     {
