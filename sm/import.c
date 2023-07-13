@@ -524,12 +524,17 @@ gpgsm_import_files (ctrl_t ctrl, int nfiles, char **files,
   memset (&stats, 0, sizeof stats);
 
   if (!nfiles)
-    rc = import_one (ctrl, &stats, es_stdin);
+    {
+#ifdef HAVE_DOSISH_SYSTEM
+      setmode (0, O_BINARY);
+#endif
+      rc = import_one (ctrl, &stats, es_stdin);
+    }
   else
     {
       for (; nfiles && !rc ; nfiles--, files++)
         {
-          estream_t fp = of (*files, "r");
+          estream_t fp = of (*files, "rb");
           rc = import_one (ctrl, &stats, fp);
           es_fclose (fp);
           if (rc == -1/* legacy*/ || gpg_err_code (rc) == GPG_ERR_NOT_FOUND)
