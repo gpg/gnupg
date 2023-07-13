@@ -1090,24 +1090,24 @@ static gpg_error_t
 cmd_genkey (assuan_context_t ctx, char *line)
 {
   ctrl_t ctrl = assuan_get_pointer (ctx);
-  int inp_fd, out_fd;
+  gnupg_fd_t inp_fd, out_fd;
   estream_t in_stream, out_stream;
   int rc;
 
   (void)line;
 
-  inp_fd = translate_sys2libc_fd (assuan_get_input_fd (ctx), 0);
-  if (inp_fd == -1)
+  inp_fd = assuan_get_input_fd (ctx);
+  if (inp_fd == GNUPG_INVALID_FD)
     return set_error (GPG_ERR_ASS_NO_INPUT, NULL);
-  out_fd = translate_sys2libc_fd (assuan_get_output_fd (ctx), 1);
-  if (out_fd == -1)
+  out_fd = assuan_get_output_fd (ctx);
+  if (out_fd == GNUPG_INVALID_FD)
     return set_error (GPG_ERR_ASS_NO_OUTPUT, NULL);
 
-  in_stream = es_fdopen_nc (inp_fd, "r");
+  in_stream = open_stream_nc (inp_fd, "r");
   if (!in_stream)
     return set_error (GPG_ERR_ASS_GENERAL, "es_fdopen failed");
 
-  out_stream = es_fdopen_nc (out_fd, "w");
+  out_stream = open_stream_nc (out_fd, "w");
   if (!out_stream)
     {
       es_fclose (in_stream);
@@ -1138,7 +1138,7 @@ static gpg_error_t
 cmd_getauditlog (assuan_context_t ctx, char *line)
 {
   ctrl_t ctrl = assuan_get_pointer (ctx);
-  int  out_fd;
+  gnupg_fd_t out_fd;
   estream_t out_stream;
   int opt_data, opt_html;
   int rc;
@@ -1159,11 +1159,11 @@ cmd_getauditlog (assuan_context_t ctx, char *line)
     }
   else
     {
-      out_fd = translate_sys2libc_fd (assuan_get_output_fd (ctx), 1);
-      if (out_fd == -1)
+      out_fd = assuan_get_output_fd (ctx);
+      if (out_fd == GNUPG_INVALID_FD)
         return set_error (GPG_ERR_ASS_NO_OUTPUT, NULL);
 
-      out_stream = es_fdopen_nc (out_fd, "w");
+      out_stream = open_stream_nc (out_fd, "w");
       if (!out_stream)
         {
           return set_error (GPG_ERR_ASS_GENERAL, "es_fdopen() failed");
