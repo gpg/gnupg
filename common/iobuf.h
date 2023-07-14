@@ -590,7 +590,7 @@ uint64_t iobuf_get_filelength (iobuf_t a);
 
 /* Return the file descriptor designating the underlying file.  This
    only works with file_filter based pipelines.  */
-int  iobuf_get_fd (iobuf_t a);
+gnupg_fd_t iobuf_get_fd (iobuf_t a);
 
 /* Return the real filename, if available.  This only supports
    pipelines that end in file filters.  Returns NULL if not

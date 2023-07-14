@@ -107,7 +107,7 @@ char *make_radix64_string( const byte *data, size_t len );
 void trap_unaligned(void);
 void register_secured_file (const char *fname);
 void unregister_secured_file (const char *fname);
-int  is_secured_file (int fd);
+int  is_secured_file (gnupg_fd_t fd);
 int  is_secured_filename (const char *fname);
 u16 checksum_u16( unsigned n );
 u16 checksum( const byte *p, unsigned n );

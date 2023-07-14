@@ -160,7 +160,7 @@ unregister_secured_file (const char *fname)
 /* Return true if FD is corresponds to a secured file.  Using -1 for
    FS is allowed and will return false. */
 int
-is_secured_file (int fd)
+is_secured_file (gnupg_fd_t fd)
 {
 #ifdef ENABLE_SELINUX_HACKS
   struct stat buf;
