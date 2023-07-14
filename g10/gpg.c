@@ -5622,13 +5622,13 @@ print_mds( const char *fname, int algo )
     }
   else
     {
-      fp = es_fopen (fname, "rb" );
-      if (fp && is_secured_file (es_fileno (fp)))
+      if (is_secured_filename (fname))
         {
-          es_fclose (fp);
           fp = NULL;
           gpg_err_set_errno (EPERM);
         }
+      else
+        fp = es_fopen (fname, "rb" );
     }
   if (!fp)
     {

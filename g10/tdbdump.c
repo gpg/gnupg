@@ -141,18 +141,15 @@ import_ownertrust (ctrl_t ctrl, const char *fname )
 	fname = "[stdin]";
 	is_stdin = 1;
     }
+    else if (is_secured_filename (fname)) {
+        gpg_err_set_errno (EPERM);
+	log_error (_("can't open '%s': %s\n"), fname, strerror(errno) );
+	return;
+    }
     else if( !(fp = es_fopen( fname, "r" )) ) {
 	log_error ( _("can't open '%s': %s\n"), fname, strerror(errno) );
 	return;
     }
-
-    if (is_secured_file (es_fileno (fp)))
-      {
-        es_fclose (fp);
-        gpg_err_set_errno (EPERM);
-	log_error (_("can't open '%s': %s\n"), fname, strerror(errno) );
-	return;
-      }
 
     while (es_fgets (line, DIM(line)-1, fp)) {
 	TRUSTREC rec;
