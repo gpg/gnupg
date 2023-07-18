@@ -1154,7 +1154,7 @@ handle_connections (gnupg_fd_t listen_fd)
   if (listen_fd != GNUPG_INVALID_FD)
     {
       FD_SET (FD2INT (listen_fd), &fdset);
-      nfd = FD2INT (listen_fd);
+      nfd = FD2NUM (listen_fd);
     }
 
   for (;;)

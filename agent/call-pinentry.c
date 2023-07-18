@@ -1302,7 +1302,7 @@ watch_sock (void *arg)
 
       FD_ZERO (&fdset);
       FD_SET (FD2INT (sock), &fdset);
-      err = npth_select (FD2INT (sock)+1, &fdset, NULL, NULL, &timeout);
+      err = npth_select (FD2NUM (sock)+1, &fdset, NULL, NULL, &timeout);
 
       if (err < 0)
         {

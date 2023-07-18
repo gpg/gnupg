@@ -2377,7 +2377,7 @@ handle_connections (assuan_fd_t listen_fd)
      to full second.  */
   FD_ZERO (&fdset);
   FD_SET (FD2INT (listen_fd), &fdset);
-  nfd = FD2INT (listen_fd);
+  nfd = FD2NUM (listen_fd);
   if (my_inotify_fd != -1)
     {
       FD_SET (my_inotify_fd, &fdset);

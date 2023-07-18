@@ -3070,24 +3070,24 @@ handle_connections (gnupg_fd_t listen_fd,
 
   FD_ZERO (&fdset);
   FD_SET (FD2INT (listen_fd), &fdset);
-  nfd = FD2INT (listen_fd);
+  nfd = FD2NUM (listen_fd);
   if (listen_fd_extra != GNUPG_INVALID_FD)
     {
       FD_SET ( FD2INT(listen_fd_extra), &fdset);
       if (FD2INT (listen_fd_extra) > nfd)
-        nfd = FD2INT (listen_fd_extra);
+        nfd = FD2NUM (listen_fd_extra);
     }
   if (listen_fd_browser != GNUPG_INVALID_FD)
     {
       FD_SET ( FD2INT(listen_fd_browser), &fdset);
       if (FD2INT (listen_fd_browser) > nfd)
-        nfd = FD2INT (listen_fd_browser);
+        nfd = FD2NUM (listen_fd_browser);
     }
   if (listen_fd_ssh != GNUPG_INVALID_FD)
     {
       FD_SET ( FD2INT(listen_fd_ssh), &fdset);
       if (FD2INT (listen_fd_ssh) > nfd)
-        nfd = FD2INT (listen_fd_ssh);
+        nfd = FD2NUM (listen_fd_ssh);
     }
   if (sock_inotify_fd != -1)
     {

@@ -2906,7 +2906,7 @@ connect_with_timeout (assuan_fd_t sock,
   tval.tv_sec = timeout / 1000;
   tval.tv_usec = (timeout % 1000) * 1000;
 
-  n = my_select (FD2INT(sock)+1, &rset, &wset, NULL, &tval);
+  n = my_select (FD2NUM(sock)+1, &rset, &wset, NULL, &tval);
   if (n < 0)
     {
       err = gpg_err_make (default_errsource, gpg_err_code_from_syserror ());
