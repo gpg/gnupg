@@ -1385,6 +1385,8 @@ AC_CHECK_SIZEOF(time_t,,[[
 ]])
 GNUPG_TIME_T_UNSIGNED
 
+# Check SOCKET type for Windows.
+AC_CHECK_TYPES([SOCKET], [], [], [[#include "winsock2.h"]])
 
 if test "$ac_cv_sizeof_unsigned_short" = "0" \
    || test "$ac_cv_sizeof_unsigned_int" = "0" \

@@ -3952,7 +3952,11 @@ start_command_handler_ssh (ctrl_t ctrl, gnupg_fd_t sock_client)
   es_syshd_t syshd;
 
   syshd.type = ES_SYSHD_SOCK;
+#ifdef HAVE_SOCKET
+  syshd.u.sock = (SOCKET)sock_client;
+#else
   syshd.u.sock = sock_client;
+#endif
 
   get_client_info (sock_client, &peer_info);
   ctrl->client_pid = peer_info.pid;
