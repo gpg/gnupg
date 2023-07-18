@@ -39,11 +39,13 @@ typedef void *gnupg_fd_t;
 #define GNUPG_INVALID_FD ((void*)(-1))
 #define INT2FD(s) ((void *)(s))
 #define FD2INT(h) ((unsigned int)(h))
+#define FD_DBG(h) ((int)(intptr_t)(h))
 #else
 typedef int gnupg_fd_t;
 #define GNUPG_INVALID_FD (-1)
 #define INT2FD(s) (s)
 #define FD2INT(h) (h)
+#define FD_DBG(h) (h)
 #endif
 
 #ifdef HAVE_STAT

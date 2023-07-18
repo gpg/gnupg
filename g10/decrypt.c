@@ -144,7 +144,7 @@ decrypt_message_fd (ctrl_t ctrl, gnupg_fd_t input_fd,
       char xname[64];
 
       err = gpg_error (GPG_ERR_EPERM);
-      snprintf (xname, sizeof xname, "[fd %d]", (int)(intptr_t)output_fd);
+      snprintf (xname, sizeof xname, "[fd %d]", FD_DBG (output_fd));
       log_error (_("can't open '%s': %s\n"), xname, gpg_strerror (err));
       iobuf_close (fp);
       release_progress_context (pfx);
@@ -157,7 +157,7 @@ decrypt_message_fd (ctrl_t ctrl, gnupg_fd_t input_fd,
       char xname[64];
 
       err = gpg_error_from_syserror ();
-      snprintf (xname, sizeof xname, "[fd %d]", (int)(intptr_t)output_fd);
+      snprintf (xname, sizeof xname, "[fd %d]", FD_DBG (output_fd));
       log_error (_("can't open '%s': %s\n"), xname, gpg_strerror (err));
       iobuf_close (fp);
       release_progress_context (pfx);

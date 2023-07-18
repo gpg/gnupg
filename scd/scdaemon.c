@@ -1183,7 +1183,7 @@ start_connection_thread (void *arg)
       && assuan_sock_check_nonce (ctrl->thread_startup.fd, &socket_nonce))
     {
       log_info (_("error reading nonce on fd %d: %s\n"),
-                FD2INT(ctrl->thread_startup.fd), strerror (errno));
+                FD_DBG (ctrl->thread_startup.fd), strerror (errno));
       assuan_sock_close (ctrl->thread_startup.fd);
       xfree (ctrl);
       return NULL;
@@ -1194,7 +1194,7 @@ start_connection_thread (void *arg)
   scd_init_default_ctrl (ctrl);
   if (opt.verbose)
     log_info (_("handler for fd %d started\n"),
-              FD2INT(ctrl->thread_startup.fd));
+              FD_DBG (ctrl->thread_startup.fd));
 
   /* If this is a pipe server, we request a shutdown if the command
      handler asked for it.  With the next ticker event and given that
@@ -1206,7 +1206,7 @@ start_connection_thread (void *arg)
 
   if (opt.verbose)
     log_info (_("handler for fd %d terminated\n"),
-              FD2INT (ctrl->thread_startup.fd));
+              FD_DBG (ctrl->thread_startup.fd));
 
   scd_deinit_default_ctrl (ctrl);
   xfree (ctrl);
@@ -1417,7 +1417,7 @@ handle_connections (gnupg_fd_t listen_fd)
               npth_t thread;
 
               snprintf (threadname, sizeof threadname, "conn fd=%d",
-                        FD2INT (fd));
+                        FD_DBG (fd));
               ctrl->thread_startup.fd = fd;
               ret = npth_create (&thread, &tattr, start_connection_thread, ctrl);
               if (ret)

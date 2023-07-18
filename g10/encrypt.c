@@ -842,7 +842,7 @@ encrypt_crypt (ctrl_t ctrl, gnupg_fd_t filefd, const char *filename,
 
       rc = gpg_error_from_syserror ();
       if (filefd != GNUPG_INVALID_FD)
-        snprintf (xname, sizeof xname, "[fd %d]", (int)(intptr_t)filefd);
+        snprintf (xname, sizeof xname, "[fd %d]", FD_DBG (filefd));
       else if (!filename)
         strcpy (xname, "[stdin]");
       else

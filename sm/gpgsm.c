@@ -2335,7 +2335,7 @@ open_es_fread (const char *filename, const char *mode)
       fp = es_fdopen_nc (fd, mode);
       if (!fp)
         {
-          log_error ("es_fdopen(%d) failed: %s\n", (int)(intptr_t)fd,
+          log_error ("es_fdopen(%d) failed: %s\n", FD_DBG (fd),
                      strerror (errno));
           gpgsm_exit (2);
         }
@@ -2375,7 +2375,7 @@ open_es_fwrite (const char *filename)
       if (!fp)
         {
           log_error ("es_fdopen(%d) failed: %s\n",
-                     (int)(intptr_t)fd, strerror (errno));
+                     FD_DBG (fd), strerror (errno));
           gpgsm_exit (2);
         }
       return fp;

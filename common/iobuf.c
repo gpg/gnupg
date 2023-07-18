@@ -390,7 +390,7 @@ fd_cache_close (const char *fname, gnupg_fd_t fp)
       close (fp);
 #endif
       if (DBG_IOBUF)
-	log_debug ("fd_cache_close (%d) real\n", (int)fp);
+	log_debug ("fd_cache_close (%d) real\n", FD_DBG (fp));
       return;
     }
   /* try to reuse a slot */
@@ -697,7 +697,7 @@ file_filter (void *opaque, int control, iobuf_t chain, byte * buf,
       if (f != FD_FOR_STDIN && f != FD_FOR_STDOUT)
 	{
 	  if (DBG_IOBUF)
-	    log_debug ("%s: close fd/handle %d\n", a->fname, FD2INT (f));
+	    log_debug ("%s: close fd/handle %d\n", a->fname, FD_DBG (f));
 	  if (!a->keep_open)
 	    fd_cache_close (a->no_cache ? NULL : a->fname, f);
 	}
@@ -1472,7 +1472,8 @@ do_open (const char *fname, int special_filenames,
   file_filter (fcx, IOBUFCTRL_INIT, NULL, NULL, &len);
   if (DBG_IOBUF)
     log_debug ("iobuf-%d.%d: open '%s' desc=%s fd=%d\n",
-	       a->no, a->subno, fname, iobuf_desc (a, desc), FD2INT (fcx->fp));
+	       a->no, a->subno, fname, iobuf_desc (a, desc),
+               FD_DBG (fcx->fp));
 
   return a;
 }
@@ -1509,7 +1510,7 @@ do_iobuf_fdopen (gnupg_fd_t fp, const char *mode, int keep_open)
   fcx->fp = fp;
   fcx->print_only_name = 1;
   fcx->keep_open = keep_open;
-  sprintf (fcx->fname, "[fd %d]", (int)(intptr_t)fp);
+  sprintf (fcx->fname, "[fd %d]", FD_DBG (fp));
   a->filter = file_filter;
   a->filter_ov = fcx;
   file_filter (fcx, IOBUFCTRL_INIT, NULL, NULL, &len);

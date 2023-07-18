@@ -261,7 +261,8 @@ gpg_verify (ctrl_t ctrl, gnupg_fd_t sig_fd, gnupg_fd_t data_fd,
   if (!fp)
     {
       rc = gpg_error_from_syserror ();
-      log_error (_("can't open fd %d: %s\n"), sig_fd, strerror (errno));
+      log_error (_("can't open fd %d: %s\n"), FD_DBG (sig_fd),
+                 strerror (errno));
       goto leave;
     }
 

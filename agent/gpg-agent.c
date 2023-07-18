@@ -2569,7 +2569,7 @@ check_nonce (ctrl_t ctrl, assuan_sock_nonce_t *nonce)
   if (assuan_sock_check_nonce (ctrl->thread_startup.fd, nonce))
     {
       log_info (_("error reading nonce on fd %d: %s\n"),
-                FD2INT(ctrl->thread_startup.fd), strerror (errno));
+                FD_DBG (ctrl->thread_startup.fd), strerror (errno));
       assuan_sock_close (ctrl->thread_startup.fd);
       xfree (ctrl);
       return -1;
@@ -2869,12 +2869,12 @@ do_start_connection_thread (ctrl_t ctrl)
   agent_init_default_ctrl (ctrl);
   if (opt.verbose > 1 && !DBG_IPC)
     log_info (_("handler 0x%lx for fd %d started\n"),
-              (unsigned long) npth_self(), FD2INT(ctrl->thread_startup.fd));
+              (unsigned long) npth_self(), FD_DBG (ctrl->thread_startup.fd));
 
   start_command_handler (ctrl, GNUPG_INVALID_FD, ctrl->thread_startup.fd);
   if (opt.verbose > 1 && !DBG_IPC)
     log_info (_("handler 0x%lx for fd %d terminated\n"),
-              (unsigned long) npth_self(), FD2INT(ctrl->thread_startup.fd));
+              (unsigned long) npth_self(), FD_DBG (ctrl->thread_startup.fd));
 
   agent_deinit_default_ctrl (ctrl);
   xfree (ctrl);
@@ -2949,12 +2949,12 @@ start_connection_thread_ssh (void *arg)
   agent_init_default_ctrl (ctrl);
   if (opt.verbose)
     log_info (_("ssh handler 0x%lx for fd %d started\n"),
-              (unsigned long) npth_self(), FD2INT(ctrl->thread_startup.fd));
+              (unsigned long) npth_self(), FD_DBG (ctrl->thread_startup.fd));
 
   start_command_handler_ssh (ctrl, ctrl->thread_startup.fd);
   if (opt.verbose)
     log_info (_("ssh handler 0x%lx for fd %d terminated\n"),
-              (unsigned long) npth_self(), FD2INT(ctrl->thread_startup.fd));
+              (unsigned long) npth_self(), FD_DBG (ctrl->thread_startup.fd));
 
   agent_deinit_default_ctrl (ctrl);
   xfree (ctrl);

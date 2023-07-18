@@ -193,12 +193,12 @@ open_outfile (gnupg_fd_t out_fd, const char *iname, int mode,
       if (!*a)
         {
           rc = gpg_error_from_syserror ();
-          snprintf (xname, sizeof xname, "[fd %d]", (int)(intptr_t)out_fd);
+          snprintf (xname, sizeof xname, "[fd %d]", FD_DBG (out_fd));
           log_error (_("can't open '%s': %s\n"), xname, gpg_strerror (rc));
         }
       else if (opt.verbose)
         {
-          snprintf (xname, sizeof xname, "[fd %d]", (int)(intptr_t)out_fd);
+          snprintf (xname, sizeof xname, "[fd %d]", FD_DBG (out_fd));
           log_info (_("writing to '%s'\n"), xname);
         }
     }

@@ -124,7 +124,7 @@ get_output_file (const byte *embedded_name, int embedded_namelen,
       else if (!(fp = open_stream_nc (fd, "wb")))
         {
           err = gpg_error_from_syserror ();
-          snprintf (xname, sizeof xname, "[fd %d]", (int)(intptr_t)fd);
+          snprintf (xname, sizeof xname, "[fd %d]", FD_DBG (fd));
           log_error (_("can't open '%s': %s\n"), xname, gpg_strerror (err));
           goto leave;
         }
@@ -740,7 +740,7 @@ hash_datafile_by_fd (gcry_md_hd_t md, gcry_md_hd_t md2,
     {
       int rc = gpg_error_from_syserror ();
       log_error (_("can't open signed data fd=%d: %s\n"),
-		 data_fd, strerror (errno));
+		 FD_DBG (data_fd), strerror (errno));
       release_progress_context (pfx);
       return rc;
     }

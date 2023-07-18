@@ -2232,7 +2232,7 @@ check_nonce (assuan_fd_t fd, assuan_sock_nonce_t *nonce)
   if (assuan_sock_check_nonce (fd, nonce))
     {
       log_info (_("error reading nonce on fd %d: %s\n"),
-                FD2INT (fd), strerror (errno));
+                FD_DBG (fd), strerror (errno));
       assuan_sock_close (fd);
       return -1;
     }
@@ -2266,7 +2266,7 @@ start_connection_thread (void *arg)
 
   active_connections++;
   if (opt.verbose)
-    log_info (_("handler for fd %d started\n"), FD2INT (fd));
+    log_info (_("handler for fd %d started\n"), FD_DBG (fd));
 
   session_id = ++last_session_id;
   if (!session_id)
@@ -2274,7 +2274,7 @@ start_connection_thread (void *arg)
   start_command_handler (fd, session_id);
 
   if (opt.verbose)
-    log_info (_("handler for fd %d terminated\n"), FD2INT (fd));
+    log_info (_("handler for fd %d terminated\n"), FD_DBG (fd));
   active_connections--;
 
   workqueue_run_post_session_tasks (session_id);
@@ -2493,7 +2493,7 @@ handle_connections (assuan_fd_t listen_fd)
               memset (&argval, 0, sizeof argval);
               argval.afd = fd;
               snprintf (threadname, sizeof threadname,
-                        "conn fd=%d", FD2INT(fd));
+                        "conn fd=%d", FD_DBG (fd));
 
               ret = npth_create (&thread, &tattr,
                                  start_connection_thread, argval.aptr);
