@@ -38,7 +38,11 @@
 typedef void *gnupg_fd_t;
 #define GNUPG_INVALID_FD ((void*)(-1))
 #define INT2FD(s) ((void *)(s))
-#define FD2INT(h) ((unsigned int)(h))
+# ifdef _WIN64
+# define FD2INT(h) ((intptr_t)(h))
+# else
+# define FD2INT(h) ((unsigned int)(h))
+# endif
 #define FD_DBG(h) ((int)(intptr_t)(h))
 #else
 typedef int gnupg_fd_t;
