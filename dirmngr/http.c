@@ -2052,7 +2052,7 @@ send_request (ctrl_t ctrl, http_t hd, const char *httphost, const char *auth,
       /* Until we support send/recv in estream under Windows we need
        * to use es_fopencookie.  */
 # ifdef HAVE_W32_SYSTEM
-      in = es_fopencookie ((void*)(unsigned int)hd->sock->fd, "rb",
+      in = es_fopencookie (hd->sock->fd, "rb",
                            simple_cookie_functions);
 # else
       in = es_fdopen_nc (hd->sock->fd, "rb");
@@ -2065,7 +2065,7 @@ send_request (ctrl_t ctrl, http_t hd, const char *httphost, const char *auth,
         }
 
 # ifdef HAVE_W32_SYSTEM
-      out = es_fopencookie ((void*)(unsigned int)hd->sock->fd, "wb",
+      out = es_fopencookie (hd->sock->fd, "wb",
                             simple_cookie_functions);
 # else
       out = es_fdopen_nc (hd->sock->fd, "wb");

@@ -119,7 +119,7 @@ prepare_data_pipe (kbx_client_data_t kcd)
     }
 
 #ifdef HAVE_W32_SYSTEM
-  err = assuan_sendfd (kcd->ctx, INT2FD (_get_osfhandle (inpipe[1])));
+  err = assuan_sendfd (kcd->ctx, (HANDLE)_get_osfhandle (inpipe[1]));
 #else
   err = assuan_sendfd (kcd->ctx, inpipe[1]);
 #endif

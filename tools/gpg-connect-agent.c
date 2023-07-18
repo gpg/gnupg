@@ -1040,7 +1040,7 @@ do_open (char *line)
         HANDLE prochandle, handle, newhandle;
         char numbuf[35];
 
-        handle = (void*)_get_osfhandle (fd);
+        handle = (HANDLE)_get_osfhandle (fd);
 
         prochandle = OpenProcess (PROCESS_DUP_HANDLE, FALSE, server_pid);
         if (!prochandle)
