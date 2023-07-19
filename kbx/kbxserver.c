@@ -950,15 +950,9 @@ kbxd_start_command_handler (ctrl_t ctrl, gnupg_fd_t fd, unsigned int session_id)
     }
   else
     {
-      /* The fd-passing does not work reliable on Windows, and even it
-       * it is not used by gpg and gpgsm the current libassuan slows
-       * down things if it is allowed for the server.*/
       rc = assuan_init_socket_server (ctx, fd,
                                       (ASSUAN_SOCKET_SERVER_ACCEPTED
-#ifndef HAVE_W32_SYSTEM
-                                       |ASSUAN_SOCKET_SERVER_FDPASSING
-#endif
-                                       ));
+                                       |ASSUAN_SOCKET_SERVER_FDPASSING));
     }
 
   if (rc)
