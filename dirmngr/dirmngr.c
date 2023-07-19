@@ -221,7 +221,7 @@ static gpgrt_opt_t opts[] = {
   ARGPARSE_s_i (oListenBacklog, "listen-backlog", "@"),
   ARGPARSE_s_i (oMaxReplies, "max-replies",
                 N_("|N|do not return more than N items in one query")),
-  ARGPARSE_s_u (oFakedSystemTime, "faked-system-time", "@"), /*(epoch time)*/
+  ARGPARSE_s_s (oFakedSystemTime, "faked-system-time", "@"),
   ARGPARSE_s_n (oDisableCheckOwnSocket, "disable-check-own-socket", "@"),
   ARGPARSE_s_s (oIgnoreCert,"ignore-cert", "@"),
   ARGPARSE_s_s (oIgnoreCertExtension,"ignore-cert-extension", "@"),
@@ -1179,7 +1179,12 @@ main (int argc, char **argv)
 	case oLDAPAddServers: opt.add_new_ldapservers = 1; break;
 
         case oFakedSystemTime:
-          gnupg_set_time ((time_t)pargs.r.ret_ulong, 0);
+          {
+            time_t faked_time = isotime2epoch (pargs.r.ret_str);
+            if (faked_time == (time_t)(-1))
+              faked_time = (time_t)strtoul (pargs.r.ret_str, NULL, 10);
+            gnupg_set_time (faked_time, 0);
+          }
           break;
 
         case oForce: opt.force = 1; break;
