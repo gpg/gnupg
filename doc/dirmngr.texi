@@ -175,6 +175,13 @@ names and are OR-ed together.  The special flag "none" clears the list
 and allows to start over with an empty list.  To get a list of
 available flags the sole word "help" can be used.
 
+@item --faked-system-time @var{epoch}
+@opindex faked-system-time
+This option is only useful for testing; it sets the system time back or
+forth to @var{epoch} which is the number of seconds elapsed since the year
+1970.  Alternatively @var{epoch} may be given as a full ISO time string
+(e.g. "20070924T154812").
+
 @item --debug-level @var{level}
 @opindex debug-level
 Select the debug level for investigating problems.  @var{level} may be a
