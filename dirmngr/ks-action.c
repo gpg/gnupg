@@ -373,6 +373,8 @@ ks_action_get (ctrl_t ctrl, uri_item_t keyservers,
 		 || !strcmp (uri->parsed_uri->scheme, "ldaps")
 		 || !strcmp (uri->parsed_uri->scheme, "ldapi")
                  || uri->parsed_uri->opaque);
+#else
+      (void)newer;
 #endif
 
       if (is_hkp_s || is_http_s || is_ldap)
@@ -590,6 +592,13 @@ ks_action_query (ctrl_t ctrl, const char *url, unsigned int ks_get_flags,
   return err;
 
 #else /* !USE_LDAP */
+  (void)ctrl;
+  (void)url;
+  (void)ks_get_flags;
+  (void)filter;
+  (void)attrs;
+  (void)newer;
+  (void)outfp;
   return gpg_error (GPG_ERR_NOT_IMPLEMENTED);
 #endif
 }
