@@ -129,7 +129,7 @@ prepare_data_pipe (kbx_client_data_t kcd)
                  inpipe[1], gpg_strerror (err), gpg_strsource (err));
       es_fclose (infp);
       gnupg_close_pipe (inpipe[1]);
-      return 0; /* Server may not support fd-passing.  */
+      return err;
     }
 
   err = assuan_transact (kcd->ctx, "OUTPUT FD",
@@ -139,12 +139,11 @@ prepare_data_pipe (kbx_client_data_t kcd)
       log_info ("keyboxd does not accept our fd: %s <%s>\n",
                 gpg_strerror (err), gpg_strsource (err));
       es_fclose (infp);
-      return 0;
+      return err;
     }
 
   close (inpipe[1]);
   kcd->fp = infp;
-
 
   rc = npth_attr_init (&tattr);
   if (rc)
@@ -295,8 +294,7 @@ kbx_client_data_new (kbx_client_data_t *r_kcd, assuan_context_t ctx,
     {
       err = gpg_error_from_errno (rc);
       log_error ("error initializing mutex: %s\n", gpg_strerror (err));
-      xfree (kcd);
-      return err;
+      goto leave; /* Use D-lines.  */
     }
   rc = npth_cond_init (&kcd->cond, NULL);
   if (rc)
@@ -304,8 +302,7 @@ kbx_client_data_new (kbx_client_data_t *r_kcd, assuan_context_t ctx,
       err = gpg_error_from_errno (rc);
       log_error ("error initializing condition: %s\n", gpg_strerror (err));
       npth_mutex_destroy (&kcd->mutex);
-      xfree (kcd);
-      return err;
+      goto leave; /* Use D-lines.  */
     }
 
   err = prepare_data_pipe (kcd);
@@ -313,8 +310,7 @@ kbx_client_data_new (kbx_client_data_t *r_kcd, assuan_context_t ctx,
     {
       npth_cond_destroy (&kcd->cond);
       npth_mutex_destroy (&kcd->mutex);
-      xfree (kcd);
-      return err;
+      /* Use D-lines.  */
     }
 
  leave:
@@ -331,10 +327,16 @@ kbx_client_data_release (kbx_client_data_t kcd)
   if (!kcd)
     return;
 
+  fp = kcd->fp;
+  if (!fp)
+    {
+      xfree (kcd);
+      return;
+    }
+
   if (npth_join (kcd->thd, NULL))
     log_error ("kbx_client_data_release failed on npth_join");
 
-  fp = kcd->fp;
   kcd->fp = NULL;
   es_fclose (fp);
 
