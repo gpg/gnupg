@@ -1078,10 +1078,6 @@ static void read_sessionkey_from_fd (int fd);
 
 
 
-/* NPth wrapper function definitions. */
-ASSUAN_SYSTEM_NPTH_IMPL;
-
-
 static char *
 make_libversion (const char *libname, const char *(*getfnc)(const char*))
 {
@@ -3863,7 +3859,6 @@ main (int argc, char **argv)
 
     /* Init threading which is used by some helper functions.  */
     npth_init ();
-    assuan_set_system_hooks (ASSUAN_SYSTEM_NPTH);
     gpgrt_set_syscall_clamp (npth_unprotect, npth_protect);
 
     if (logfile)

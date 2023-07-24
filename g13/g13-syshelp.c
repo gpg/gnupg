@@ -306,7 +306,6 @@ main (int argc, char **argv)
 
   /* Prepare libassuan.  */
   assuan_set_gpg_err_source (GPG_ERR_SOURCE_DEFAULT);
-  /*assuan_set_system_hooks (ASSUAN_SYSTEM_NPTH);*/
   setup_libassuan_logging (&opt.debug, NULL);
 
   /* Setup a default control structure for command line mode.  */
