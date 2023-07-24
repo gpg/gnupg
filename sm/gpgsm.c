@@ -596,10 +596,6 @@ our_md_test_algo (int algo)
 }
 
 
-/* nPth wrapper function definitions. */
-ASSUAN_SYSTEM_NPTH_IMPL;
-
-
 static char *
 make_libversion (const char *libname, const char *(*getfnc)(const char*))
 {
@@ -1588,7 +1584,6 @@ main ( int argc, char **argv)
     log_info (_("WARNING: program may create a core file!\n"));
 
   npth_init ();
-  assuan_set_system_hooks (ASSUAN_SYSTEM_NPTH);
   gpgrt_set_syscall_clamp (npth_unprotect, npth_protect);
 
 /*   if (opt.qualsig_approval && !opt.quiet) */
