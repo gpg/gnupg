@@ -1652,8 +1652,8 @@ handle_connections (gnupg_fd_t listen_fd)
                 continue;
 
               plen = sizeof paddr;
-              fd = INT2FD (npth_accept (FD2INT(listentbl[idx].l_fd),
-                                        (struct sockaddr *)&paddr, &plen));
+              fd = assuan_sock_accept (listentbl[idx].l_fd,
+                                       (struct sockaddr *)&paddr, &plen);
               if (fd == GNUPG_INVALID_FD)
                 {
                   log_error ("accept failed for %s: %s\n",

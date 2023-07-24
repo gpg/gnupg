@@ -1238,8 +1238,8 @@ handle_connections (gnupg_fd_t listen_fd)
           gnupg_fd_t fd;
 
           plen = sizeof paddr;
-          fd = INT2FD (npth_accept (FD2INT (listen_fd),
-                                    (struct sockaddr *)&paddr, &plen));
+          fd = assuan_sock_accept (listen_fd,
+                                   (struct sockaddr *)&paddr, &plen);
           if (fd == GNUPG_INVALID_FD)
             {
               log_error ("accept failed: %s\n", strerror (errno));
