@@ -29,6 +29,9 @@ typedef struct {
     size_t maxbuf_size;
 } md_filter_context_t;
 
+typedef struct md_thd_filter_context *md_thd_filter_context_t;
+void md_thd_filter_set_md (md_thd_filter_context_t mfx, gcry_md_hd_t md);
+
 typedef struct {
     int  refcount;          /* Initialized to 1.  */
 
@@ -165,6 +168,7 @@ typedef struct {
 
 /*-- mdfilter.c --*/
 int md_filter( void *opaque, int control, iobuf_t a, byte *buf, size_t *ret_len);
+int md_thd_filter( void *opaque, int control, iobuf_t a, byte *buf, size_t *ret_len);
 void free_md_filter_context( md_filter_context_t *mfx );
 
 /*-- armor.c --*/

@@ -1027,6 +1027,7 @@ static struct debug_flags_s debug_flags [] =
 /* The list of compatibility flags.  */
 static struct compatibility_flags_s compatibility_flags [] =
   {
+    { COMPAT_PARALLELIZED, "parallelized" },
     { 0, NULL }
   };
 
