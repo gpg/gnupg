@@ -40,19 +40,11 @@
 
 /* Hash the data and return if something was hashed.  Return -1 on error.  */
 static int
-hash_data (int fd, gcry_md_hd_t md)
+hash_data (estream_t fp, gcry_md_hd_t md)
 {
-  estream_t fp;
   char buffer[4096];
   int nread;
   int rc = 0;
-
-  fp = es_fdopen_nc (fd, "rb");
-  if (!fp)
-    {
-      log_error ("fdopen(%d) failed: %s\n", fd, strerror (errno));
-      return -1;
-    }
 
   do
     {
@@ -62,31 +54,21 @@ hash_data (int fd, gcry_md_hd_t md)
   while (nread);
   if (es_ferror (fp))
     {
-      log_error ("read error on fd %d: %s\n", fd, strerror (errno));
+      log_error ("read error on fd %p: %s\n", fp, strerror (errno));
       rc = -1;
     }
-  es_fclose (fp);
   return rc;
 }
 
 
 static int
-hash_and_copy_data (int fd, gcry_md_hd_t md, ksba_writer_t writer)
+hash_and_copy_data (estream_t fp, gcry_md_hd_t md, ksba_writer_t writer)
 {
   gpg_error_t err;
-  estream_t fp;
   char buffer[4096];
   int nread;
   int rc = 0;
   int any = 0;
-
-  fp = es_fdopen_nc (fd, "rb");
-  if (!fp)
-    {
-      gpg_error_t tmperr = gpg_error_from_syserror ();
-      log_error ("fdopen(%d) failed: %s\n", fd, strerror (errno));
-      return tmperr;
-    }
 
   do
     {
@@ -107,9 +89,9 @@ hash_and_copy_data (int fd, gcry_md_hd_t md, ksba_writer_t writer)
   if (es_ferror (fp))
     {
       rc = gpg_error_from_syserror ();
-      log_error ("read error on fd %d: %s\n", fd, strerror (errno));
+      log_error ("read error on fp %p: %s\n", fp, strerror (errno));
     }
-  es_fclose (fp);
+
   if (!any)
     {
       /* We can't allow signing an empty message because it does not
@@ -622,7 +604,7 @@ write_detached_signature (ctrl_t ctrl, const void *blob, size_t bloblen,
    be used if the value of this argument is NULL. */
 int
 gpgsm_sign (ctrl_t ctrl, certlist_t signerlist,
-            int data_fd, int detached, estream_t out_fp)
+            estream_t data_fp, int detached, estream_t out_fp)
 {
   int i, rc;
   gpg_error_t err;
@@ -959,7 +941,7 @@ gpgsm_sign (ctrl_t ctrl, certlist_t signerlist,
       unsigned char *digest;
       size_t digest_len;
 
-      if (!hash_data (data_fd, data_md))
+      if (!hash_data (data_fp, data_md))
         audit_log (ctrl->audit, AUDIT_GOT_DATA);
       for (cl=signerlist,signer=0; cl; cl = cl->next, signer++)
         {
@@ -1044,7 +1026,7 @@ gpgsm_sign (ctrl_t ctrl, certlist_t signerlist,
 
           log_assert (!detached);
 
-          rc = hash_and_copy_data (data_fd, data_md, writer);
+          rc = hash_and_copy_data (data_fp, data_md, writer);
           if (rc)
             goto leave;
           audit_log (ctrl->audit, AUDIT_GOT_DATA);

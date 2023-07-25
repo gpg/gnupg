@@ -426,9 +426,9 @@ gpg_error_t gpgsm_show_certs (ctrl_t ctrl, int nfiles, char **files,
                               estream_t fp);
 
 /*-- import.c --*/
-int gpgsm_import (ctrl_t ctrl, int in_fd, int reimport_mode);
+int gpgsm_import (ctrl_t ctrl, estream_t in_fp, int reimport_mode);
 int gpgsm_import_files (ctrl_t ctrl, int nfiles, char **files,
-                        int (*of)(const char *fname));
+                        estream_t (*of)(const char *fname, const char *mode));
 
 /*-- export.c --*/
 void gpgsm_export (ctrl_t ctrl, strlist_t names, estream_t stream);
@@ -439,23 +439,24 @@ void gpgsm_p12_export (ctrl_t ctrl, const char *name, estream_t stream,
 int gpgsm_delete (ctrl_t ctrl, strlist_t names);
 
 /*-- verify.c --*/
-int gpgsm_verify (ctrl_t ctrl, int in_fd, int data_fd, estream_t out_fp);
+int gpgsm_verify (ctrl_t ctrl, estream_t in_fp, estream_t data_fp,
+                  estream_t out_fp);
 
 /*-- sign.c --*/
 int gpgsm_get_default_cert (ctrl_t ctrl, ksba_cert_t *r_cert);
 int gpgsm_sign (ctrl_t ctrl, certlist_t signerlist,
-                int data_fd, int detached, estream_t out_fp);
+                estream_t data_fp, int detached, estream_t out_fp);
 
 /*-- encrypt.c --*/
 int gpgsm_encrypt (ctrl_t ctrl, certlist_t recplist,
-                   int in_fd, estream_t out_fp);
+                   estream_t in_fp, estream_t out_fp);
 
 /*-- decrypt.c --*/
 gpg_error_t ecdh_derive_kek (unsigned char *key, unsigned int keylen,
                              int hash_algo, const char *wrap_algo_str,
                              const void *secret, unsigned int secretlen,
                              const void *ukm, unsigned int ukmlen);
-int gpgsm_decrypt (ctrl_t ctrl, int in_fd, estream_t out_fp);
+int gpgsm_decrypt (ctrl_t ctrl, estream_t in_fp, estream_t out_fp);
 
 /*-- certreqgen.c --*/
 int gpgsm_genkey (ctrl_t ctrl, estream_t in_stream, estream_t out_stream);

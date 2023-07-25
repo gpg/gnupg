@@ -37,6 +37,10 @@
 #include "../common/membuf.h"
 #include "minip12.h"
 
+#ifndef O_BINARY
+#define O_BINARY 0
+#endif
+
 /* The arbitrary limit of one PKCS#12 object.  */
 #define MAX_P12OBJ_SIZE 128 /*kb*/
 
@@ -269,24 +273,15 @@ check_and_store (ctrl_t ctrl, struct stats_s *stats,
 
 
 static int
-import_one (ctrl_t ctrl, struct stats_s *stats, int in_fd)
+import_one (ctrl_t ctrl, struct stats_s *stats, estream_t fp)
 {
   int rc;
   gnupg_ksba_io_t b64reader = NULL;
   ksba_reader_t reader;
   ksba_cert_t cert = NULL;
   ksba_cms_t cms = NULL;
-  estream_t fp = NULL;
   ksba_content_type_t ct;
   int any = 0;
-
-  fp = es_fdopen_nc (in_fd, "rb");
-  if (!fp)
-    {
-      rc = gpg_error_from_syserror ();
-      log_error ("fdopen() failed: %s\n", strerror (errno));
-      goto leave;
-    }
 
   rc = gnupg_ksba_create_reader
     (&b64reader, ((ctrl->is_pem? GNUPG_KSBA_IO_PEM : 0)
@@ -388,7 +383,6 @@ import_one (ctrl_t ctrl, struct stats_s *stats, int in_fd)
   ksba_cms_release (cms);
   ksba_cert_release (cert);
   gnupg_ksba_destroy_reader (b64reader);
-  es_fclose (fp);
   return rc;
 }
 
@@ -398,10 +392,9 @@ import_one (ctrl_t ctrl, struct stats_s *stats, int in_fd)
    fingerprints t re-import.  The actual re-import is done by clearing
    the ephemeral flag.  */
 static int
-reimport_one (ctrl_t ctrl, struct stats_s *stats, int in_fd)
+reimport_one (ctrl_t ctrl, struct stats_s *stats, estream_t fp)
 {
   gpg_error_t err = 0;
-  estream_t fp = NULL;
   char line[100];  /* Sufficient for a fingerprint.  */
   KEYDB_HANDLE kh;
   KEYDB_SEARCH_DESC desc;
@@ -416,14 +409,6 @@ reimport_one (ctrl_t ctrl, struct stats_s *stats, int in_fd)
       goto leave;
     }
   keydb_set_ephemeral (kh, 1);
-
-  fp = es_fdopen_nc (in_fd, "r");
-  if (!fp)
-    {
-      err = gpg_error_from_syserror ();
-      log_error ("es_fdopen(%d) failed: %s\n", in_fd, gpg_strerror (err));
-      goto leave;
-    }
 
   while (es_fgets (line, DIM(line)-1, fp) )
     {
@@ -500,30 +485,29 @@ reimport_one (ctrl_t ctrl, struct stats_s *stats, int in_fd)
   if (es_ferror (fp))
     {
       err = gpg_error_from_syserror ();
-      log_error ("error reading fd %d: %s\n", in_fd, gpg_strerror (err));
+      log_error ("error reading fp %p: %s\n", fp, gpg_strerror (err));
       goto leave;
     }
 
  leave:
   ksba_cert_release (cert);
   keydb_release (kh);
-  es_fclose (fp);
   return err;
 }
 
 
 
 int
-gpgsm_import (ctrl_t ctrl, int in_fd, int reimport_mode)
+gpgsm_import (ctrl_t ctrl, estream_t in_fp, int reimport_mode)
 {
   int rc;
   struct stats_s stats;
 
   memset (&stats, 0, sizeof stats);
   if (reimport_mode)
-    rc = reimport_one (ctrl, &stats, in_fd);
+    rc = reimport_one (ctrl, &stats, in_fp);
   else
-    rc = import_one (ctrl, &stats, in_fd);
+    rc = import_one (ctrl, &stats, in_fp);
   print_imported_summary (ctrl, &stats);
   /* If we never printed an error message do it now so that a command
      line invocation will return with an error (log_error keeps a
@@ -536,7 +520,7 @@ gpgsm_import (ctrl_t ctrl, int in_fd, int reimport_mode)
 
 int
 gpgsm_import_files (ctrl_t ctrl, int nfiles, char **files,
-                    int (*of)(const char *fname))
+                    estream_t (*of)(const char *fname, const char *mode))
 {
   int rc = 0;
   struct stats_s stats;
@@ -544,14 +528,19 @@ gpgsm_import_files (ctrl_t ctrl, int nfiles, char **files,
   memset (&stats, 0, sizeof stats);
 
   if (!nfiles)
-    rc = import_one (ctrl, &stats, 0);
+    {
+#ifdef HAVE_DOSISH_SYSTEM
+      setmode (0, O_BINARY);
+#endif
+      rc = import_one (ctrl, &stats, es_stdin);
+    }
   else
     {
       for (; nfiles && !rc ; nfiles--, files++)
         {
-          int fd = of (*files);
-          rc = import_one (ctrl, &stats, fd);
-          close (fd);
+          estream_t fp = of (*files, "rb");
+          rc = import_one (ctrl, &stats, fp);
+          es_fclose (fp);
           if (rc == -1/* legacy*/ || gpg_err_code (rc) == GPG_ERR_NOT_FOUND)
             rc = 0;
         }

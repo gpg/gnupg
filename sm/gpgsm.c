@@ -535,7 +535,6 @@ static void set_cmd (enum cmd_and_opt_values *ret_cmd,
                      enum cmd_and_opt_values new_cmd );
 
 static void emergency_cleanup (void);
-static int open_read (const char *filename);
 static estream_t open_es_fread (const char *filename, const char *mode);
 static estream_t open_es_fwrite (const char *filename);
 static void run_protect_tool (int argc, char **argv);
@@ -1778,7 +1777,7 @@ main ( int argc, char **argv)
             {
               log_info (_("importing common certificates '%s'\n"),
                         filelist[0]);
-              gpgsm_import_files (&ctrl, 1, filelist, open_read);
+              gpgsm_import_files (&ctrl, 1, filelist, open_es_fread);
             }
           xfree (filelist[0]);
         }
@@ -1916,9 +1915,20 @@ main ( int argc, char **argv)
         set_binary (stdin);
 
         if (!argc) /* Source is stdin. */
-          err = gpgsm_encrypt (&ctrl, recplist, 0, fp);
+          err = gpgsm_encrypt (&ctrl, recplist, es_stdin, fp);
         else if (argc == 1)  /* Source is the given file. */
-          err = gpgsm_encrypt (&ctrl, recplist, open_read (*argv), fp);
+          {
+            estream_t data_fp = es_fopen (*argv, "rb");
+
+            if (!data_fp)
+              {
+                log_error (_("can't open '%s': %s\n"), *argv,
+                           strerror (errno));
+                gpgsm_exit (2);
+              }
+            err = gpgsm_encrypt (&ctrl, recplist, data_fp, fp);
+            es_fclose (data_fp);
+          }
         else
           wrong_args ("--encrypt [datafile]");
 
@@ -1937,10 +1947,20 @@ main ( int argc, char **argv)
            signing because that is what gpg does.*/
         set_binary (stdin);
         if (!argc) /* Create from stdin. */
-          err = gpgsm_sign (&ctrl, signerlist, 0, detached_sig, fp);
+          err = gpgsm_sign (&ctrl, signerlist, es_stdin, detached_sig, fp);
         else if (argc == 1) /* From file. */
-          err = gpgsm_sign (&ctrl, signerlist,
-                      open_read (*argv), detached_sig, fp);
+          {
+            estream_t data_fp = es_fopen (*argv, "rb");
+
+            if (!data_fp)
+              {
+                log_error (_("can't open '%s': %s\n"), *argv,
+                           strerror (errno));
+                gpgsm_exit (2);
+              }
+            err = gpgsm_sign (&ctrl, signerlist, data_fp, detached_sig, fp);
+            es_fclose (data_fp);
+          }
         else
           wrong_args ("--sign [datafile]");
 
@@ -1981,11 +2001,43 @@ main ( int argc, char **argv)
           fp = open_es_fwrite (opt.outfile);
 
         if (!argc)
-          gpgsm_verify (&ctrl, 0, -1, fp); /* normal signature from stdin */
+          /* normal signature from stdin */
+          gpgsm_verify (&ctrl, es_stdin, NULL, fp);
         else if (argc == 1)
-          gpgsm_verify (&ctrl, open_read (*argv), -1, fp); /* std signature */
+          {
+            estream_t in_fp = es_fopen (*argv, "rb");
+
+            if (!in_fp)
+              {
+                log_error (_("can't open '%s': %s\n"), *argv,
+                           strerror (errno));
+                gpgsm_exit (2);
+              }
+            gpgsm_verify (&ctrl, in_fp, NULL, fp); /* std signature */
+            es_fclose (in_fp);
+          }
         else if (argc == 2) /* detached signature (sig, detached) */
-          gpgsm_verify (&ctrl, open_read (*argv), open_read (argv[1]), NULL);
+          {
+            estream_t in_fp = es_fopen (*argv, "rb");
+            estream_t data_fp = es_fopen (argv[1], "rb");
+
+            if (!in_fp)
+              {
+                log_error (_("can't open '%s': %s\n"), *argv,
+                           strerror (errno));
+                gpgsm_exit (2);
+              }
+            if (!data_fp)
+              {
+                log_error (_("can't open '%s': %s\n"), argv[1],
+                           strerror (errno));
+                gpgsm_exit (2);
+              }
+
+            gpgsm_verify (&ctrl, in_fp, data_fp, NULL);
+            es_fclose (in_fp);
+            es_fclose (data_fp);
+          }
         else
           wrong_args ("--verify [signature [detached_data]]");
 
@@ -1999,9 +2051,19 @@ main ( int argc, char **argv)
 
         set_binary (stdin);
         if (!argc)
-          err = gpgsm_decrypt (&ctrl, 0, fp); /* from stdin */
+          err = gpgsm_decrypt (&ctrl, es_stdin, fp); /* from stdin */
         else if (argc == 1)
-          err = gpgsm_decrypt (&ctrl, open_read (*argv), fp); /* from file */
+          {
+            estream_t data_fp = es_fopen (*argv, "rb");
+            if (!data_fp)
+              {
+                log_error (_("can't open '%s': %s\n"), *argv,
+                           strerror (errno));
+                gpgsm_exit (2);
+              }
+            err = gpgsm_decrypt (&ctrl, data_fp, fp); /* from file */
+            es_fclose (data_fp);
+          }
         else
           wrong_args ("--decrypt [filename]");
 
@@ -2092,7 +2154,7 @@ main ( int argc, char **argv)
 
 
     case aImport:
-      gpgsm_import_files (&ctrl, argc, argv, open_read);
+      gpgsm_import_files (&ctrl, argc, argv, open_es_fread);
       break;
 
     case aExport:
@@ -2293,46 +2355,20 @@ gpgsm_parse_validation_model (const char *model)
 }
 
 
-
-/* Open the FILENAME for read and return the file descriptor.  Stop
-   with an error message in case of problems.  "-" denotes stdin and
-   if special filenames are allowed the given fd is opened instead.  */
-static int
-open_read (const char *filename)
-{
-  int fd;
-
-  if (filename[0] == '-' && !filename[1])
-    {
-      set_binary (stdin);
-      return 0; /* stdin */
-    }
-  fd = check_special_filename (filename, 0, 0);
-  if (fd != -1)
-    return fd;
-  fd = gnupg_open (filename, O_RDONLY | O_BINARY, 0);
-  if (fd == -1)
-    {
-      log_error (_("can't open '%s': %s\n"), filename, strerror (errno));
-      gpgsm_exit (2);
-    }
-  return fd;
-}
-
 /* Same as open_read but return an estream_t.  */
 static estream_t
 open_es_fread (const char *filename, const char *mode)
 {
-  int fd;
+  gnupg_fd_t fd;
   estream_t fp;
 
   if (filename[0] == '-' && !filename[1])
     return es_fpopen_nc (stdin, mode);
   else
-    fd = check_special_filename (filename, 0, 0);
-  if (fd != -1)
+    fd = gnupg_check_special_filename (filename);
+  if (fd != GNUPG_INVALID_FD)
     {
-      fp = es_fdopen_nc (fd, mode);
+      fp = open_stream_nc (fd, mode);
       if (!fp)
         {
           log_error ("es_fdopen(%d) failed: %s\n", FD_DBG (fd),

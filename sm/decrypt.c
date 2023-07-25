@@ -1052,7 +1052,7 @@ decrypt_gcm_filter (void *arg,
 
 /* Perform a decrypt operation.  */
 int
-gpgsm_decrypt (ctrl_t ctrl, int in_fd, estream_t out_fp)
+gpgsm_decrypt (ctrl_t ctrl, estream_t in_fp, estream_t out_fp)
 {
   int rc;
   gnupg_ksba_io_t b64reader = NULL;
@@ -1063,7 +1063,6 @@ gpgsm_decrypt (ctrl_t ctrl, int in_fd, estream_t out_fp)
   ksba_stop_reason_t stopreason;
   KEYDB_HANDLE kh;
   int recp;
-  estream_t in_fp = NULL;
   struct decrypt_filter_parm_s dfparm;
 
   memset (&dfparm, 0, sizeof dfparm);
@@ -1075,14 +1074,6 @@ gpgsm_decrypt (ctrl_t ctrl, int in_fd, estream_t out_fp)
     {
       log_error (_("failed to allocate keyDB handle\n"));
       rc = gpg_error (GPG_ERR_GENERAL);
-      goto leave;
-    }
-
-  in_fp = es_fdopen_nc (in_fd, "rb");
-  if (!in_fp)
-    {
-      rc = gpg_error_from_syserror ();
-      log_error ("fdopen() failed: %s\n", strerror (errno));
       goto leave;
     }
 
@@ -1516,7 +1507,6 @@ gpgsm_decrypt (ctrl_t ctrl, int in_fd, estream_t out_fp)
   gnupg_ksba_destroy_reader (b64reader);
   gnupg_ksba_destroy_writer (b64writer);
   keydb_release (kh);
-  es_fclose (in_fp);
   if (dfparm.hd)
     gcry_cipher_close (dfparm.hd);
   return rc;
