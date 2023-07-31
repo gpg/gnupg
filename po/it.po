@@ -4228,7 +4228,7 @@ msgstr " *predefinito*"
 
 #, c-format
 msgid "  (%d) ECC (sign only)\n"
-msgstr "   (%d) DSA (firma solo)\n"
+msgstr "   (%d) ECC (firma solo)\n"
 
 #, c-format
 msgid "  (%d) ECC (set your own capabilities)%s\n"
