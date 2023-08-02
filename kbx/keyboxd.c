@@ -436,6 +436,7 @@ thread_init_once (void)
    * initialized and thus Libgcrypt could not set its system call
    * clamp.  */
   gcry_control (GCRYCTL_REINIT_SYSCALL_CLAMP, 0, 0);
+  assuan_control (ASSUAN_CONTROL_REINIT_SYSCALL_CLAMP, NULL);
 }
 
 

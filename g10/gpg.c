@@ -3860,6 +3860,7 @@ main (int argc, char **argv)
     /* Init threading which is used by some helper functions.  */
     npth_init ();
     gpgrt_set_syscall_clamp (npth_unprotect, npth_protect);
+    assuan_control (ASSUAN_CONTROL_REINIT_SYSCALL_CLAMP, NULL);
 
     if (logfile)
       {
