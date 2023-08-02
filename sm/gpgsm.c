@@ -1585,6 +1585,7 @@ main ( int argc, char **argv)
 
   npth_init ();
   gpgrt_set_syscall_clamp (npth_unprotect, npth_protect);
+  assuan_control (ASSUAN_CONTROL_REINIT_SYSCALL_CLAMP, NULL);
 
 /*   if (opt.qualsig_approval && !opt.quiet) */
 /*     log_info (_("This software has officially been approved to " */
