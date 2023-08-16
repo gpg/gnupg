@@ -595,7 +595,7 @@ main (int argc, char **argv )
 
       npth_init ();
       gpgrt_set_syscall_clamp (npth_unprotect, npth_protect);
-      assuan_control (ASSUAN_REINIT_SYSCALL_CLAMP, NULL);
+      assuan_control (ASSUAN_CONTROL_REINIT_SYSCALL_CLAMP, NULL);
 
       /* If --debug-allow-core-dump has been given we also need to
          switch the working directory to a place where we can actually
