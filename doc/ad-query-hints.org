@@ -1,0 +1,65 @@
+
+
+* Examples
+
+** List the DNs of all users in our QAUsers group
+
+: ad_query --subst  --attr=dn
+:      ^OU=QAUsers,$domain&sub&(&(objectcategory=person)(objectclass=user))
+
+** List the DN using the user's mail address
+
+: ad_query --subst --attr=dn,userAccountControl
+:                   (&(objectcategory=person)(objectclass=user)
+:                     (|(userPrincipalName=dd9jn@w32demo.g10code.de)
+:                       (mail=dd9jn@w32demo.g10code.de)))
+
+After that the userControlFlags should be checked - see below for
+the bit flags. For a non-disabled user use:
+
+: if ((userControlFlags & 0x0212) == 0x200))
+:   use_this_user()
+
+
+* Useful attributes
+
+** userAccountControl
+
+These are bit flags.  For details see
+https://learn.microsoft.com/en-us/windows/win32/api/iads/ne-iads-ads_user_flag_enum
+
+- 0x00000002 :: ADS_UF_ACCOUNTDISABLE, the account is disabled.
+- 0x00000010 :: ADS_UF_LOCKOUT, the account is temporarily locked out.
+- 0x00000100 :: ADS_UF_TEMP_DUPLICATE_ACCOUNT, this is an account for
+                a user whose primary account is in another domain.
+- 0x00000200 :: ADS_UF_NORMAL_ACCOUNT, the default account type that
+                represents a typical user.
+- 0x00000800 :: ADS_UF_INTERDOMAIN_TRUST_ACCOUNT, the account for a
+                domain-to-domain trust.
+- 0x00001000 :: ADS_UF_WORKSTATION_ACCOUNT, the computer account for a
+                computer that is a member of this domain.
+- 0x00002000 :: ADS_UF_SERVER_TRUST_ACCOUNT, the computer account for
+                a DC.
+- 0x00010000 :: ADS_UF_DONT_EXPIRE_PASSWD, the password will not expire.
+- 0x04000000 :: ADS_UF_PARTIAL_SECRETS_ACCOUNT, the computer account
+                for an RODC.
+
+For example to select only user accounts which are not disabled or
+are locked out could naivly be used:
+
+:  (userAccountControl:1.2.840.113556.1.4.803:=512)
+
+1.2.840.113556.1.4.803 is bit wise AND, 1.2.840.113556.1.4.804 is bit
+wise OR.  However, because a mask can't be specified, this is not really
+useful.  Thus the above needs to be replaced by explicit checks; i.e.
+
+:  (&(userAccountControl:1.2.840.113556.1.4.804:=512)
+:    (!(userAccountControl:1.2.840.113556.1.4.804:=2))
+:    (!(userAccountControl:1.2.840.113556.1.4.804:=16)))
+
+I'd suggest to also add explict checks on the returned data.
+
+
+* Resources
+
+- https://qa.social.technet.microsoft.com/wiki/contents/articles/5392.active-directory-ldap-syntax-filters.aspx
