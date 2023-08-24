@@ -432,6 +432,17 @@ static assuan_sock_nonce_t socket_nonce_ssh;
  * Let's try this as default.  Change at runtime with --listen-backlog.  */
 static int listen_backlog = 64;
 
+#ifdef HAVE_W32_SYSTEM
+/* The event to break the select call.  */
+static HANDLE the_event2;
+#elif defined(HAVE_PSELECT_NO_EINTR)
+/* An FD to break the select call.  */
+static int event_pipe_fd;
+#else
+/* PID of the main thread.  */
+static pid_t main_thread_pid;
+#endif
+
 /* Default values for options passed to the pinentry. */
 static char *default_display;
 static char *default_ttyname;
@@ -2130,39 +2141,45 @@ get_agent_active_connection_count (void)
    notification event.  Calling it the first time creates that
    event.  */
 #if defined(HAVE_W32_SYSTEM)
+static void *
+create_an_event (void)
+{
+  HANDLE h, h2;
+  SECURITY_ATTRIBUTES sa = { sizeof (SECURITY_ATTRIBUTES), NULL, TRUE};
+
+  /* We need to use a manual reset event object due to the way our
+     w32-pth wait function works: If we would use an automatic
+     reset event we are not able to figure out which handle has
+     been signaled because at the time we single out the signaled
+     handles using WFSO the event has already been reset due to
+     the WFMO.  */
+  h = CreateEvent (&sa, TRUE, FALSE, NULL);
+  if (!h)
+    log_error ("can't create an event: %s\n", w32_strerror (-1) );
+  else if (!DuplicateHandle (GetCurrentProcess(), h,
+                             GetCurrentProcess(), &h2,
+                             EVENT_MODIFY_STATE|SYNCHRONIZE, TRUE, 0))
+    {
+      log_error ("setting synchronize for an event failed: %s\n",
+                 w32_strerror (-1) );
+      CloseHandle (h);
+    }
+  else
+    {
+      CloseHandle (h);
+      return h2;
+    }
+
+  return INVALID_HANDLE_VALUE;
+}
+
 void *
 get_agent_daemon_notify_event (void)
 {
   static HANDLE the_event = INVALID_HANDLE_VALUE;
 
   if (the_event == INVALID_HANDLE_VALUE)
-    {
-      HANDLE h, h2;
-      SECURITY_ATTRIBUTES sa = { sizeof (SECURITY_ATTRIBUTES), NULL, TRUE};
-
-      /* We need to use a manual reset event object due to the way our
-         w32-pth wait function works: If we would use an automatic
-         reset event we are not able to figure out which handle has
-         been signaled because at the time we single out the signaled
-         handles using WFSO the event has already been reset due to
-         the WFMO.  */
-      h = CreateEvent (&sa, TRUE, FALSE, NULL);
-      if (!h)
-        log_error ("can't create scd notify event: %s\n", w32_strerror (-1) );
-      else if (!DuplicateHandle (GetCurrentProcess(), h,
-                                 GetCurrentProcess(), &h2,
-                                 EVENT_MODIFY_STATE|SYNCHRONIZE, TRUE, 0))
-        {
-          log_error ("setting synchronize for scd notify event failed: %s\n",
-                     w32_strerror (-1) );
-          CloseHandle (h);
-        }
-      else
-        {
-          CloseHandle (h);
-          the_event = h2;
-        }
-    }
+    the_event = create_an_event ();
 
   return the_event;
 }
@@ -2526,6 +2543,11 @@ handle_signal (int signo)
 
     case SIGUSR2:
       agent_sigusr2_action ();
+      break;
+
+    case SIGCONT:
+      /* Do nothing, but break the syscall.  */
+      log_debug ("SIGCONT received - breaking select\n");
       break;
 
     case SIGTERM:
@@ -2959,6 +2981,28 @@ start_connection_thread_ssh (void *arg)
 }
 
 
+void
+agent_kick_the_loop (void)
+{
+  /* Kick the select loop.  */
+#ifdef HAVE_W32_SYSTEM
+  int ret = SetEvent (the_event2);
+  if (ret == 0)
+    log_error ("SetEvent for agent_kick_the_loop failed: %s\n",
+               w32_strerror (-1));
+#else
+# ifdef HAVE_PSELECT_NO_EINTR
+  write (event_pipe_fd, "", 1);
+# else
+  int ret = kill (main_thread_pid, SIGCONT);
+  if (ret < 0)
+    log_error ("sending signal for agent_kick_the_loop failed: %s\n",
+               gpg_strerror (gpg_error_from_syserror ()));
+# endif
+#endif
+}
+
+
 /* Connection handler loop.  Wait for connection requests and spawn a
    thread after accepting a connection.  */
 static void
@@ -2980,8 +3024,13 @@ handle_connections (gnupg_fd_t listen_fd,
   struct timespec curtime;
   struct timespec timeout;
 #ifdef HAVE_W32_SYSTEM
-  HANDLE events[2];
+  HANDLE events[3];
   unsigned int events_set;
+#else
+  int signo;
+# ifdef HAVE_PSELECT_NO_EINTR
+  int pipe_fd[2];
+# endif
 #endif
   int sock_inotify_fd = -1;
   int home_inotify_fd = -1;
@@ -3009,11 +3058,24 @@ handle_connections (gnupg_fd_t listen_fd,
   npth_sigev_add (SIGUSR1);
   npth_sigev_add (SIGUSR2);
   npth_sigev_add (SIGINT);
+  npth_sigev_add (SIGCONT);
   npth_sigev_add (SIGTERM);
   npth_sigev_fini ();
+# ifdef HAVE_PSELECT_NO_EINTR
+  ret = gnupg_create_pipe (pipe_fd);
+  if (ret)
+    {
+      log_error ("pipe creation failed: %s\n", gpg_strerror (ret));
+      return;
+    }
+  event_pipe_fd = pipe_fd[1];
+# else
+  main_thread_pid = getpid ();
+# endif
 #else
   events[0] = get_agent_daemon_notify_event ();
-  events[1] = INVALID_HANDLE_VALUE;
+  events[1] = the_event2 = create_an_event ();
+  events[2] = INVALID_HANDLE_VALUE;
 #endif
 
   if (disable_check_own_socket)
@@ -3140,6 +3202,12 @@ handle_connections (gnupg_fd_t listen_fd,
          thus a simple assignment is fine to copy the entire set.  */
       read_fdset = fdset;
 
+#ifdef HAVE_PSELECT_NO_EINTR
+      FD_SET (pipe_fd[0], &read_fdset);
+      if (nfd < pipe_fd[0])
+        nfd = pipe_fd[0];
+#endif
+
       npth_clock_gettime (&curtime);
       if (!(npth_timercmp (&curtime, &abstime, <)))
 	{
@@ -3155,11 +3223,8 @@ handle_connections (gnupg_fd_t listen_fd,
                           npth_sigev_sigmask ());
       saved_errno = errno;
 
-      {
-        int signo;
-        while (npth_sigev_get_pending (&signo))
-          handle_signal (signo);
-      }
+      while (npth_sigev_get_pending (&signo))
+        handle_signal (signo);
 #else
       ret = npth_eselect (nfd+1, &read_fdset, NULL, NULL, &timeout,
                           events, &events_set);
@@ -3181,6 +3246,15 @@ handle_connections (gnupg_fd_t listen_fd,
 	/* Interrupt or timeout.  Will be handled when calculating the
 	   next timeout.  */
 	continue;
+
+#ifdef HAVE_PSELECT_NO_EINTR
+      if (FD_ISSET (pipe_fd[0], &read_fdset))
+        {
+          char buf[256];
+
+          read (pipe_fd[0], buf, sizeof buf);
+        }
+#endif
 
       /* The inotify fds are set even when a shutdown is pending (see
        * above).  So we must handle them in any case.  To avoid that
@@ -3259,6 +3333,14 @@ handle_connections (gnupg_fd_t listen_fd,
     close (sock_inotify_fd);
   if (home_inotify_fd != -1)
     close (home_inotify_fd);
+#ifdef HAVE_W32_SYSTEM
+  if (the_event2 != INVALID_HANDLE_VALUE)
+    CloseHandle (the_event2);
+#endif
+#ifdef HAVE_PSELECT_NO_EINTR
+  close (pipe_fd[0]);
+  close (pipe_fd[1]);
+#endif
   cleanup ();
   log_info (_("%s %s stopped\n"), gpgrt_strusage(11), gpgrt_strusage(13));
   npth_attr_destroy (&tattr);
