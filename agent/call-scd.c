@@ -828,25 +828,34 @@ agent_card_pksign (ctrl_t ctrl,
                    const unsigned char *indata, size_t indatalen,
                    unsigned char **r_buf, size_t *r_buflen)
 {
-  int rc;
-  char line[ASSUAN_LINELENGTH];
-  membuf_t data;
-  struct inq_needpin_parm_s inqparm;
+    int rc, i;
+    char *p, line[ASSUAN_LINELENGTH];
+    membuf_t data;
+    struct inq_needpin_parm_s inqparm;
+    size_t len;
 
-  *r_buf = NULL;
-  rc = start_scd (ctrl);
-  if (rc)
-    return rc;
+    *r_buf = NULL;
+    rc = start_scd (ctrl);
+    if (rc)
+        return rc;
 
-  if (indatalen*2 + 50 > DIM(line))
-    return unlock_scd (ctrl, gpg_error (GPG_ERR_GENERAL));
+    /* FIXME: use secure memory where appropriate */
 
-  bin2hex (indata, indatalen, stpcpy (line, "SETDATA "));
-
-  rc = assuan_transact (ctrl->scd_local->ctx, line,
-                        NULL, NULL, NULL, NULL, NULL, NULL);
-  if (rc)
-    return unlock_scd (ctrl, rc);
+    for (len = 0; len < indatalen;)
+    {
+        p = stpcpy (line, "SETDATA ");
+        if (len)
+            p = stpcpy (p, "--append ");
+        for (i=0; len < indatalen && (i*2 < DIM(line)-50); i++, len++)
+        {
+            sprintf (p, "%02X", indata[len]);
+            p += 2;
+        }
+        rc = assuan_transact (ctrl->scd_local->ctx, line,
+                              NULL, NULL, NULL, NULL, NULL, NULL);
+        if (rc)
+            return unlock_scd (ctrl, rc);
+    }
 
   init_membuf (&data, 1024);
   inqparm.ctx = ctrl->scd_local->ctx;
