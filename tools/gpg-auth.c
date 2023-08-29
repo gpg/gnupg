@@ -396,7 +396,7 @@ start_agent (assuan_context_t *ctx_p)
                              opt.agent_program,
                              NULL, NULL,
                              session_env,
-                             opt.autostart,
+                             opt.autostart?ASSHELP_FLAG_AUTOSTART:0,
                              !opt.quiet, 0,
                              NULL, NULL);
 

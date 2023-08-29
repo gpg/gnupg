@@ -308,7 +308,7 @@ main (int argc, char **argv )
                            opt.dirmngr_program
                              ? opt.dirmngr_program
                              : gnupg_module_name (GNUPG_MODULE_NAME_DIRMNGR),
-                           ! cmd_ping,
+                           cmd_ping? 0 : ASSHELP_FLAG_AUTOSTART,
                            opt.verbose,
                            0,
                            NULL, NULL);

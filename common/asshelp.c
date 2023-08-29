@@ -386,7 +386,8 @@ start_new_service (assuan_context_t *r_ctx,
                    const char *opt_lc_ctype,
                    const char *opt_lc_messages,
                    session_env_t session_env,
-                   int autostart, int verbose, int debug,
+                   unsigned int flags,
+                   int verbose, int debug,
                    gpg_error_t (*status_cb)(ctrl_t, int, ...),
                    ctrl_t status_cb_arg)
 {
@@ -445,7 +446,7 @@ start_new_service (assuan_context_t *r_ctx,
     }
 
   err = assuan_socket_connect (ctx, sockname, 0, connect_flags);
-  if (err && autostart)
+  if (err && (flags & ASSHELP_FLAG_AUTOSTART))
     {
       char *abs_homedir;
       lock_spawn_t lock;
@@ -547,7 +548,8 @@ start_new_service (assuan_context_t *r_ctx,
   xfree (sockname);
   if (err)
     {
-      if (autostart || gpg_err_code (err) != GPG_ERR_ASS_CONNECT_FAILED)
+      if ((flags & ASSHELP_FLAG_AUTOSTART)
+          || gpg_err_code (err) != GPG_ERR_ASS_CONNECT_FAILED)
         log_error ("can't connect to the %s: %s\n",
                    printed_name, gpg_strerror (err));
       assuan_release (ctx);
@@ -599,55 +601,58 @@ start_new_gpg_agent (assuan_context_t *r_ctx,
                      const char *opt_lc_ctype,
                      const char *opt_lc_messages,
                      session_env_t session_env,
-                     int autostart, int verbose, int debug,
+                     unsigned int flags,
+                     int verbose, int debug,
                      gpg_error_t (*status_cb)(ctrl_t, int, ...),
                      ctrl_t status_cb_arg)
 {
   return start_new_service (r_ctx, GNUPG_MODULE_NAME_AGENT,
                             errsource, agent_program,
                             opt_lc_ctype, opt_lc_messages, session_env,
-                            autostart, verbose, debug,
+                            flags, verbose, debug,
                             status_cb, status_cb_arg);
 }
 
 
 /* Try to connect to the dirmngr via a socket.  On platforms
-   supporting it, start it up if needed and if AUTOSTART is true.
+   supporting it, start it up if needed and if ASSHELP_FLAG_AUTOSTART is set.
    Returns a new assuan context at R_CTX or an error code. */
 gpg_error_t
 start_new_keyboxd (assuan_context_t *r_ctx,
                    gpg_err_source_t errsource,
                    const char *keyboxd_program,
-                   int autostart, int verbose, int debug,
+                   unsigned int flags,
+                   int verbose, int debug,
                    gpg_error_t (*status_cb)(ctrl_t, int, ...),
                    ctrl_t status_cb_arg)
 {
   return start_new_service (r_ctx, GNUPG_MODULE_NAME_KEYBOXD,
                             errsource, keyboxd_program,
                             NULL, NULL, NULL,
-                            autostart, verbose, debug,
+                            flags, verbose, debug,
                             status_cb, status_cb_arg);
 }
 
 
 /* Try to connect to the dirmngr via a socket.  On platforms
-   supporting it, start it up if needed and if AUTOSTART is true.
+   supporting it, start it up if needed and if ASSHELP_FLAG_AUTOSTART is set.
    Returns a new assuan context at R_CTX or an error code. */
 gpg_error_t
 start_new_dirmngr (assuan_context_t *r_ctx,
                    gpg_err_source_t errsource,
                    const char *dirmngr_program,
-                   int autostart, int verbose, int debug,
+                   unsigned int flags,
+                   int verbose, int debug,
                    gpg_error_t (*status_cb)(ctrl_t, int, ...),
                    ctrl_t status_cb_arg)
 {
 #ifndef USE_DIRMNGR_AUTO_START
-  autostart = 0;
+  flags &= ~ASSHELP_FLAG_AUTOSTART;  /* Clear flag.  */
 #endif
   return start_new_service (r_ctx, GNUPG_MODULE_NAME_DIRMNGR,
                             errsource, dirmngr_program,
                             NULL, NULL, NULL,
-                            autostart, verbose, debug,
+                            flags, verbose, debug,
                             status_cb, status_cb_arg);
 }
 

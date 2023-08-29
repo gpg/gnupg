@@ -94,7 +94,8 @@ start_agent (void)
                              agentargs.lc_ctype,
                              agentargs.lc_messages,
                              agentargs.session_env,
-                             1, agentargs.verbosity, 0, NULL, NULL);
+                             ASSHELP_FLAG_AUTOSTART,
+                             agentargs.verbosity, 0, NULL, NULL);
   if (!err)
     {
       /* Tell the agent that we support Pinentry notifications.  No

@@ -166,7 +166,8 @@ create_context (ctrl_t ctrl, assuan_context_t *r_ctx)
   err = start_new_dirmngr (&ctx,
                            GPG_ERR_SOURCE_DEFAULT,
                            opt.dirmngr_program,
-                           opt.autostart, opt.verbose, DBG_IPC,
+                           opt.autostart?ASSHELP_FLAG_AUTOSTART:0,
+                           opt.verbose, DBG_IPC,
                            NULL /*gpg_status2*/, ctrl);
   if (!opt.autostart && gpg_err_code (err) == GPG_ERR_NO_DIRMNGR)
     {

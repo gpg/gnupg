@@ -37,6 +37,8 @@
 #include "util.h"
 
 /*-- asshelp.c --*/
+#define ASSHELP_FLAG_AUTOSTART 1  /* Autostart the new service.  */
+
 
 void setup_libassuan_logging (unsigned int *debug_var_address,
                               int (*log_monitor)(assuan_context_t ctx,
@@ -61,7 +63,8 @@ start_new_gpg_agent (assuan_context_t *r_ctx,
                      const char *opt_lc_ctype,
                      const char *opt_lc_messages,
                      session_env_t session_env,
-                     int autostart, int verbose, int debug,
+                     unsigned int flags,
+                     int verbose, int debug,
                      gpg_error_t (*status_cb)(ctrl_t, int, ...),
                      ctrl_t status_cb_arg);
 
@@ -71,7 +74,8 @@ gpg_error_t
 start_new_keyboxd (assuan_context_t *r_ctx,
                    gpg_err_source_t errsource,
                    const char *keyboxd_program,
-                   int autostart, int verbose, int debug,
+                   unsigned int flags,
+                   int verbose, int debug,
                    gpg_error_t (*status_cb)(ctrl_t, int, ...),
                    ctrl_t status_cb_arg);
 
@@ -81,7 +85,8 @@ gpg_error_t
 start_new_dirmngr (assuan_context_t *r_ctx,
                    gpg_err_source_t errsource,
                    const char *dirmngr_program,
-                   int autostart, int verbose, int debug,
+                   unsigned int flags,
+                   int verbose, int debug,
                    gpg_error_t (*status_cb)(ctrl_t, int, ...),
                    ctrl_t status_cb_arg);
 

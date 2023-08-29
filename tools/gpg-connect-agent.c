@@ -2341,14 +2341,14 @@ start_agent (void)
     err = start_new_dirmngr (&ctx,
                              GPG_ERR_SOURCE_DEFAULT,
                              opt.dirmngr_program,
-                             opt.autostart,
+                             opt.autostart?ASSHELP_FLAG_AUTOSTART:0,
                              !opt.quiet, 0,
                              NULL, NULL);
   else if (opt.use_keyboxd)
     err = start_new_keyboxd (&ctx,
                              GPG_ERR_SOURCE_DEFAULT,
                              opt.keyboxd_program,
-                             opt.autostart,
+                             opt.autostart?ASSHELP_FLAG_AUTOSTART:0,
                              !opt.quiet, 0,
                              NULL, NULL);
   else
@@ -2357,7 +2357,7 @@ start_agent (void)
                                opt.agent_program,
                                NULL, NULL,
                                session_env,
-                               opt.autostart,
+                               opt.autostart?ASSHELP_FLAG_AUTOSTART:0,
                                !opt.quiet, 0,
                                NULL, NULL);
 

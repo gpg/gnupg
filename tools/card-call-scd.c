@@ -299,7 +299,8 @@ start_agent (unsigned int flags)
                                  opt.agent_program,
                                  opt.lc_ctype, opt.lc_messages,
                                  opt.session_env,
-                                 opt.autostart, opt.verbose, DBG_IPC,
+                                 opt.autostart?ASSHELP_FLAG_AUTOSTART:0,
+                                 opt.verbose, DBG_IPC,
                                  NULL, NULL);
       if (!opt.autostart && gpg_err_code (err) == GPG_ERR_NO_AGENT)
         {
