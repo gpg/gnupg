@@ -29,6 +29,8 @@ include $(top_srcdir)/am/cmacros.am
 if HAVE_W32_SYSTEM
 scdaemon_rc_objs = $(resource_objs) scdaemon-w32info.o
 scdaemon-w32info.o : scdaemon.w32-manifest ../common/w32info-rc.h
+else
+scdaemon_rc_objs = $(resource_objs)
 endif
 
 AM_CFLAGS =  $(LIBGCRYPT_CFLAGS) \
@@ -51,4 +53,4 @@ scdaemon_LDADD = $(libcommonpth) \
 	$(LIBGCRYPT_LIBS) $(KSBA_LIBS) $(LIBASSUAN_LIBS) $(NPTH_LIBS) \
 	$(LIBUSB_LIBS) $(GPG_ERROR_LIBS) \
         $(LIBINTL) $(DL_LIBS) $(NETLIBS) $(LIBICONV) $(scdaemon_rc_objs)
-scdaemon_DEPENDENCIES = $(resource_objs)
+scdaemon_DEPENDENCIES = $(scdaemon_rc_objs)
