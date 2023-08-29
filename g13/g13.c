@@ -433,7 +433,7 @@ main (int argc, char **argv)
   /* Prepare libassuan.  */
   assuan_set_gpg_err_source (GPG_ERR_SOURCE_DEFAULT);
   setup_libassuan_logging (&opt.debug, NULL);
-  assuan_control (ASSUAN_REINIT_SYSCALL_CLAMP, NULL);
+  assuan_control (ASSUAN_CONTROL_REINIT_SYSCALL_CLAMP, NULL);
 
   /* Setup a default control structure for command line mode.  */
   memset (&ctrl, 0, sizeof ctrl);
