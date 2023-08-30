@@ -529,8 +529,9 @@ static void handle_connections (gnupg_fd_t listen_fd,
                                 gnupg_fd_t listen_fd_browser,
                                 gnupg_fd_t listen_fd_ssh);
 static int check_for_running_agent (int silent);
+#if CHECK_OWN_SOCKET_INTERVAL > 0
 static void *check_own_socket_thread (void *arg);
-
+#endif
 
 /*
    Functions.
@@ -3086,6 +3087,7 @@ handle_connections (gnupg_fd_t listen_fd,
   else
     have_homedir_inotify = 1;
 
+#if CHECK_OWN_SOCKET_INTERVAL > 0
   if (!disable_check_own_socket)
     {
       npth_t thread;
@@ -3094,6 +3096,7 @@ handle_connections (gnupg_fd_t listen_fd,
       if (err)
         log_error ("error spawning check_own_socket_thread: %s\n", strerror (err));
     }
+#endif
 
   /* On Windows we need to fire up a separate thread to listen for
      requests from Putty (an SSH client), so we can replace Putty's
@@ -3353,7 +3356,7 @@ handle_connections (gnupg_fd_t listen_fd,
 }
 
 
-
+#if CHECK_OWN_SOCKET_INTERVAL > 0
 /* Helper for check_own_socket.  */
 static gpg_error_t
 check_own_socket_pid_cb (void *opaque, const void *buffer, size_t length)
@@ -3445,7 +3448,7 @@ check_own_socket_thread (void *arg)
 
   return NULL;
 }
-
+#endif
 
 /* Figure out whether an agent is available and running. Prints an
    error if not.  If SILENT is true, no messages are printed.
