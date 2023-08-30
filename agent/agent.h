@@ -515,7 +515,7 @@ int agent_clear_passphrase (ctrl_t ctrl,
 /*-- cache.c --*/
 void initialize_module_cache (void);
 void deinitialize_module_cache (void);
-void agent_cache_housekeeping (void);
+struct timespec *agent_cache_expiration (void);
 void agent_flush_cache (int pincache_only);
 int agent_put_cache (ctrl_t ctrl, const char *key, cache_mode_t cache_mode,
                      const char *data, int ttl);

@@ -270,23 +270,46 @@ housekeeping (void)
 }
 
 
-void
-agent_cache_housekeeping (void)
+#define TIMERTICK_INTERVAL          (4)
+struct timespec *
+agent_cache_expiration (void)
 {
+  static struct timespec abstime;
+  static struct timespec timeout;
+  static int initialized = 0;
+  struct timespec curtime;
   int res;
 
-  if (DBG_CACHE)
-    log_debug ("agent_cache_housekeeping\n");
+  if (!initialized)
+    {
+      initialized = 1;
+      npth_clock_gettime (&abstime);
+      abstime.tv_sec += TIMERTICK_INTERVAL;
+    }
 
-  res = npth_mutex_lock (&cache_lock);
-  if (res)
-    log_fatal ("failed to acquire cache mutex: %s\n", strerror (res));
+  npth_clock_gettime (&curtime);
+  if (!(npth_timercmp (&curtime, &abstime, <)))
+    {
+      /* Timeout.  */
+      npth_clock_gettime (&abstime);
+      abstime.tv_sec += TIMERTICK_INTERVAL;
 
-  housekeeping ();
+      if (DBG_CACHE)
+        log_debug ("agent_cache_housekeeping\n");
 
-  res = npth_mutex_unlock (&cache_lock);
-  if (res)
-    log_fatal ("failed to release cache mutex: %s\n", strerror (res));
+      res = npth_mutex_lock (&cache_lock);
+      if (res)
+        log_fatal ("failed to acquire cache mutex: %s\n", strerror (res));
+
+      housekeeping ();
+
+      res = npth_mutex_unlock (&cache_lock);
+      if (res)
+        log_fatal ("failed to release cache mutex: %s\n", strerror (res));
+    }
+
+  npth_timersub (&abstime, &curtime, &timeout);
+  return &timeout;
 }
 
 

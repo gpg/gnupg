@@ -341,14 +341,12 @@ static struct debug_flags_s debug_flags [] =
 #define MIN_PASSPHRASE_NONALPHA (1)
 #define MAX_PASSPHRASE_DAYS   (0)
 
-/* The timer tick used for housekeeping stuff.  Note that on Windows
- * we use a SetWaitableTimer seems to signal earlier than about 2
- * seconds.  Thus we use 4 seconds on all platforms.
- * CHECK_OWN_SOCKET_INTERVAL defines how often we check
- * our own socket in standard socket mode.  If that value is 0 we
- * don't check at all.  All values are in seconds. */
-#define TIMERTICK_INTERVAL          (4)
+/* CHECK_OWN_SOCKET_INTERVAL defines how often we check our own socket
+ * in standard socket mode.  If that value is 0 we don't check at all.
+ * Values is in seconds. */
 #define CHECK_OWN_SOCKET_INTERVAL  (60)
+/* CHECK_PROBLEMS_INTERFAL defines how often we check the existence of
+ * parent process and homedir.  Value is in seconds.  */
 #define CHECK_PROBLEMS_INTERVAL     (4)
 
 /* Flag indicating that the ssh-agent subsystem has been enabled.  */
@@ -2446,17 +2444,6 @@ create_directories (void)
 }
 
 
-
-/* This is the worker for the ticker.  It is called every few seconds
-   and may only do fast operations. */
-static void
-handle_tick (void)
-{
-  /* Need to check for expired cache entries.  */
-  agent_cache_housekeeping ();
-}
-
-
 /* A global function which allows us to call the reload stuff from
    other places too.  This is only used when build for W32.  */
 void
@@ -2990,9 +2977,7 @@ handle_connections (gnupg_fd_t listen_fd,
   gnupg_fd_t fd;
   int nfd;
   int saved_errno;
-  struct timespec abstime;
-  struct timespec curtime;
-  struct timespec timeout;
+  struct timespec *tp;
 #ifdef HAVE_W32_SYSTEM
   HANDLE events[3];
   unsigned int events_set;
@@ -3156,9 +3141,6 @@ handle_connections (gnupg_fd_t listen_fd,
   listentbl[2].l_fd = listen_fd_browser;
   listentbl[3].l_fd = listen_fd_ssh;
 
-  npth_clock_gettime (&abstime);
-  abstime.tv_sec += TIMERTICK_INTERVAL;
-
   for (;;)
     {
       /* Shutdown test.  */
@@ -3199,25 +3181,17 @@ handle_connections (gnupg_fd_t listen_fd,
         nfd = pipe_fd[0];
 #endif
 
-      npth_clock_gettime (&curtime);
-      if (!(npth_timercmp (&curtime, &abstime, <)))
-	{
-	  /* Timeout.  */
-	  handle_tick ();
-	  npth_clock_gettime (&abstime);
-	  abstime.tv_sec += TIMERTICK_INTERVAL;
-	}
-      npth_timersub (&abstime, &curtime, &timeout);
+      tp = agent_cache_expiration ();
 
 #ifndef HAVE_W32_SYSTEM
-      ret = npth_pselect (nfd+1, &read_fdset, NULL, NULL, &timeout,
+      ret = npth_pselect (nfd+1, &read_fdset, NULL, NULL, tp,
                           npth_sigev_sigmask ());
       saved_errno = errno;
 
       while (npth_sigev_get_pending (&signo))
         handle_signal (signo);
 #else
-      ret = npth_eselect (nfd+1, &read_fdset, NULL, NULL, &timeout,
+      ret = npth_eselect (nfd+1, &read_fdset, NULL, NULL, tp,
                           events, &events_set);
       saved_errno = errno;
 
