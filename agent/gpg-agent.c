@@ -3238,6 +3238,16 @@ handle_connections (gnupg_fd_t listen_fd,
           gnupg_sleep (1);
           continue;
 	}
+
+      if (socket_takeover_detected)
+        {
+          /* We may not remove the socket as it is now in use by another
+             server. */
+          inhibit_socket_removal = 1;
+          shutdown_pending = 2;
+          log_info ("this process is useless - shutting down\n");
+        }
+
       if (ret <= 0)
 	/* Interrupt or timeout.  Will be handled when calculating the
 	   next timeout.  */
@@ -3272,15 +3282,6 @@ handle_connections (gnupg_fd_t listen_fd,
           close (home_inotify_fd);
           home_inotify_fd = -1;
           log_info ("homedir has been removed - shutting down\n");
-        }
-
-      if (socket_takeover_detected)
-        {
-          /* We may not remove the socket as it is now in use by another
-             server. */
-          inhibit_socket_removal = 1;
-          shutdown_pending = 2;
-          log_info ("this process is useless - shutting down\n");
         }
 
       if (!shutdown_pending)
@@ -3440,6 +3441,7 @@ check_own_socket_thread (void *arg)
 
   xfree (sockname);
   socket_takeover_detected = 1;
+  agent_kick_the_loop ();
 
   return NULL;
 }
