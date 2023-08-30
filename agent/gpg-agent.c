@@ -349,7 +349,7 @@ static struct debug_flags_s debug_flags [] =
  * don't check at all.  All values are in seconds. */
 #define TIMERTICK_INTERVAL          (4)
 #define CHECK_OWN_SOCKET_INTERVAL  (60)
-
+#define CHECK_PROBLEMS_INTERVAL     (4)
 
 /* Flag indicating that the ssh-agent subsystem has been enabled.  */
 static int ssh_support;
@@ -393,8 +393,11 @@ static int is_supervised;
 /* Flag indicating to start the daemon even if one already runs.  */
 static int steal_socket;
 
-/* Flag to monitor socket takeover.  */
-static int socket_takeover_detected;
+/* Flag to monitor problems.  */
+static int problem_detected;
+#define AGENT_PROBLEM_SOCKET_TAKEOVER (1 << 0)
+#define AGENT_PROBLEM_PARENT_HAS_GONE (1 << 1)
+#define AGENT_PROBLEM_HOMEDIR_REMOVED (1 << 2)
 
 /* Flag to inhibit socket removal in cleanup.  */
 static int inhibit_socket_removal;
@@ -463,9 +466,14 @@ static const char *debug_level;
    the log file after a SIGHUP if it didn't changed. Malloced. */
 static char *current_logfile;
 
-/* The handle_tick() function may test whether a parent is still
- * running.  We record the PID of the parent here or -1 if it should
- * be watched.  */
+#ifdef HAVE_W32_SYSTEM
+#define HAVE_PARENT_PID_SUPPORT 0
+#else
+#define HAVE_PARENT_PID_SUPPORT 1
+#endif
+/* The check_others_thread() function may test whether a parent is
+ * still running.  We record the PID of the parent here or -1 if it
+ * should be watched.  */
 static pid_t parent_pid = (pid_t)(-1);
 
 /* This flag is true if the inotify mechanism for detecting the
@@ -532,6 +540,7 @@ static int check_for_running_agent (int silent);
 #if CHECK_OWN_SOCKET_INTERVAL > 0
 static void *check_own_socket_thread (void *arg);
 #endif
+static void *check_others_thread (void *arg);
 
 /*
    Functions.
@@ -2443,35 +2452,8 @@ create_directories (void)
 static void
 handle_tick (void)
 {
-  struct stat statbuf;
-
-  /* If we are running as a child of another process, check whether
-     the parent is still alive and shutdown if not. */
-#ifndef HAVE_W32_SYSTEM
-  if (parent_pid != (pid_t)(-1))
-    {
-      if (kill (parent_pid, 0))
-        {
-          shutdown_pending = 2;
-          log_info ("parent process died - shutting down\n");
-          log_info ("%s %s stopped\n", gpgrt_strusage(11), gpgrt_strusage(13));
-          cleanup ();
-          agent_exit (0);
-        }
-    }
-#endif /*HAVE_W32_SYSTEM*/
-
   /* Need to check for expired cache entries.  */
   agent_cache_housekeeping ();
-
-  /* Check whether the homedir is still available.  */
-  if (!shutdown_pending
-      && (!have_homedir_inotify || !reliable_homedir_inotify)
-      && gnupg_stat (gnupg_homedir (), &statbuf) && errno == ENOENT)
-    {
-      shutdown_pending = 1;
-      log_info ("homedir has been removed - shutting down\n");
-    }
 }
 
 
@@ -3098,6 +3080,16 @@ handle_connections (gnupg_fd_t listen_fd,
     }
 #endif
 
+  if ((HAVE_PARENT_PID_SUPPORT && parent_pid != (pid_t)(-1))
+      || (!have_homedir_inotify || !reliable_homedir_inotify))
+    {
+      npth_t thread;
+
+      err = npth_create (&thread, &tattr, check_others_thread, NULL);
+      if (err)
+        log_error ("error spawning check_others_thread: %s\n", strerror (err));
+    }
+
   /* On Windows we need to fire up a separate thread to listen for
      requests from Putty (an SSH client), so we can replace Putty's
      Pageant (its ssh-agent implementation). */
@@ -3242,13 +3234,30 @@ handle_connections (gnupg_fd_t listen_fd,
           continue;
 	}
 
-      if (socket_takeover_detected)
+#ifndef HAVE_W32_SYSTEM
+      if ((problem_detected & AGENT_PROBLEM_PARENT_HAS_GONE))
+        {
+          shutdown_pending = 2;
+          log_info ("parent process died - shutting down\n");
+          log_info ("%s %s stopped\n", gpgrt_strusage(11), gpgrt_strusage(13));
+          cleanup ();
+          agent_exit (0);
+        }
+#endif
+
+      if ((problem_detected & AGENT_PROBLEM_SOCKET_TAKEOVER))
         {
           /* We may not remove the socket as it is now in use by another
              server. */
           inhibit_socket_removal = 1;
           shutdown_pending = 2;
           log_info ("this process is useless - shutting down\n");
+        }
+
+      if ((problem_detected & AGENT_PROBLEM_HOMEDIR_REMOVED))
+        {
+          shutdown_pending = 1;
+          log_info ("homedir has been removed - shutting down\n");
         }
 
       if (ret <= 0)
@@ -3434,21 +3443,60 @@ check_own_socket_thread (void *arg)
   if (!sockname)
     return NULL; /* Out of memory.  */
 
-  while (1)
+  while (!problem_detected)
     {
-      if (do_check_own_socket (sockname))
-        break;
+      if (shutdown_pending)
+        goto leave;
 
       gnupg_sleep (CHECK_OWN_SOCKET_INTERVAL);
+
+      if (do_check_own_socket (sockname))
+        problem_detected |= AGENT_PROBLEM_SOCKET_TAKEOVER;
     }
 
-  xfree (sockname);
-  socket_takeover_detected = 1;
   agent_kick_the_loop ();
 
+ leave:
+  xfree (sockname);
   return NULL;
 }
 #endif
+
+/* The thread running other checks.  */
+static void *
+check_others_thread (void *arg)
+{
+  const char *homedir = gnupg_homedir ();
+
+  (void)arg;
+
+  while (!problem_detected)
+    {
+      struct stat statbuf;
+
+      if (shutdown_pending)
+        goto leave;
+
+      gnupg_sleep (CHECK_PROBLEMS_INTERVAL);
+
+      /* If we are running as a child of another process, check whether
+         the parent is still alive and shutdown if not. */
+#ifndef HAVE_W32_SYSTEM
+      if (parent_pid != (pid_t)(-1) && kill (parent_pid, 0))
+        problem_detected |= AGENT_PROBLEM_PARENT_HAS_GONE;
+#endif /*HAVE_W32_SYSTEM*/
+
+      /* Check whether the homedir is still available.  */
+      if ((!have_homedir_inotify || !reliable_homedir_inotify)
+          && gnupg_stat (homedir, &statbuf) && errno == ENOENT)
+        problem_detected |= AGENT_PROBLEM_HOMEDIR_REMOVED;
+    }
+
+  agent_kick_the_loop ();
+
+ leave:
+  return NULL;
+}
 
 /* Figure out whether an agent is available and running. Prints an
    error if not.  If SILENT is true, no messages are printed.
