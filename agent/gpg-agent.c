@@ -384,9 +384,6 @@ static int startup_signal_mask_valid;
 /* Flag to indicate that a shutdown was requested.  */
 static int shutdown_pending;
 
-/* Counter for the currently running own socket checks.  */
-static int check_own_socket_running;
-
 /* Flags to indicate that check_own_socket shall not be called.  */
 static int disable_check_own_socket;
 
@@ -395,6 +392,9 @@ static int is_supervised;
 
 /* Flag indicating to start the daemon even if one already runs.  */
 static int steal_socket;
+
+/* Flag to monitor socket takeover.  */
+static int socket_takeover_detected;
 
 /* Flag to inhibit socket removal in cleanup.  */
 static int inhibit_socket_removal;
@@ -528,8 +528,8 @@ static void handle_connections (gnupg_fd_t listen_fd,
                                 gnupg_fd_t listen_fd_extra,
                                 gnupg_fd_t listen_fd_browser,
                                 gnupg_fd_t listen_fd_ssh);
-static void check_own_socket (void);
 static int check_for_running_agent (int silent);
+static void *check_own_socket_thread (void *arg);
 
 
 /*
@@ -2442,11 +2442,7 @@ create_directories (void)
 static void
 handle_tick (void)
 {
-  static time_t last_minute;
   struct stat statbuf;
-
-  if (!last_minute)
-    last_minute = time (NULL);
 
   /* If we are running as a child of another process, check whether
      the parent is still alive and shutdown if not. */
@@ -2463,15 +2459,6 @@ handle_tick (void)
         }
     }
 #endif /*HAVE_W32_SYSTEM*/
-
-  /* Code to be run from time to time.  */
-#if CHECK_OWN_SOCKET_INTERVAL > 0
-  if (last_minute + CHECK_OWN_SOCKET_INTERVAL <= time (NULL))
-    {
-      check_own_socket ();
-      last_minute = time (NULL);
-    }
-#endif
 
   /* Need to check for expired cache entries.  */
   agent_cache_housekeeping ();
@@ -3099,6 +3086,15 @@ handle_connections (gnupg_fd_t listen_fd,
   else
     have_homedir_inotify = 1;
 
+  if (!disable_check_own_socket)
+    {
+      npth_t thread;
+
+      err = npth_create (&thread, &tattr, check_own_socket_thread, NULL);
+      if (err)
+        log_error ("error spawning check_own_socket_thread: %s\n", strerror (err));
+    }
+
   /* On Windows we need to fire up a separate thread to listen for
      requests from Putty (an SSH client), so we can replace Putty's
      Pageant (its ssh-agent implementation). */
@@ -3278,6 +3274,15 @@ handle_connections (gnupg_fd_t listen_fd,
           log_info ("homedir has been removed - shutting down\n");
         }
 
+      if (socket_takeover_detected)
+        {
+          /* We may not remove the socket as it is now in use by another
+             server. */
+          inhibit_socket_removal = 1;
+          shutdown_pending = 2;
+          log_info ("this process is useless - shutting down\n");
+        }
+
       if (!shutdown_pending)
         {
           int idx;
@@ -3358,19 +3363,17 @@ check_own_socket_pid_cb (void *opaque, const void *buffer, size_t length)
 }
 
 
-/* The thread running the actual check.  We need to run this in a
-   separate thread so that check_own_thread can be called from the
-   timer tick.  */
-static void *
-check_own_socket_thread (void *arg)
+/* Check whether we are still listening on our own socket.  In case
+   another gpg-agent process started after us has taken ownership of
+   our socket, we would linger around without any real task.  Thus we
+   better check once in a while whether we are really needed.  */
+static int
+do_check_own_socket (const char *sockname)
 {
   int rc;
-  char *sockname = arg;
   assuan_context_t ctx = NULL;
   membuf_t mb;
   char *buffer;
-
-  check_own_socket_running++;
 
   rc = assuan_new (&ctx);
   if (rc)
@@ -3409,57 +3412,37 @@ check_own_socket_thread (void *arg)
   xfree (buffer);
 
  leave:
-  xfree (sockname);
   if (ctx)
     assuan_release (ctx);
-  if (rc)
-    {
-      /* We may not remove the socket as it is now in use by another
-         server. */
-      inhibit_socket_removal = 1;
-      shutdown_pending = 2;
-      log_info ("this process is useless - shutting down\n");
-    }
-  check_own_socket_running--;
-  return NULL;
+
+  return rc;
 }
 
-
-/* Check whether we are still listening on our own socket.  In case
-   another gpg-agent process started after us has taken ownership of
-   our socket, we would linger around without any real task.  Thus we
-   better check once in a while whether we are really needed.  */
-static void
-check_own_socket (void)
+/* The thread running the actual check.  */
+static void *
+check_own_socket_thread (void *arg)
 {
   char *sockname;
-  npth_t thread;
-  npth_attr_t tattr;
-  int err;
 
-  if (disable_check_own_socket)
-    return;
-
-  if (check_own_socket_running || shutdown_pending)
-    return;  /* Still running or already shutting down.  */
+  (void)arg;
 
   sockname = make_filename_try (gnupg_socketdir (), GPG_AGENT_SOCK_NAME, NULL);
   if (!sockname)
-    return; /* Out of memory.  */
+    return NULL; /* Out of memory.  */
 
-  err = npth_attr_init (&tattr);
-  if (err)
+  while (1)
     {
-      xfree (sockname);
-      return;
-    }
-  npth_attr_setdetachstate (&tattr, NPTH_CREATE_DETACHED);
-  err = npth_create (&thread, &tattr, check_own_socket_thread, sockname);
-  if (err)
-    log_error ("error spawning check_own_socket_thread: %s\n", strerror (err));
-  npth_attr_destroy (&tattr);
-}
+      if (do_check_own_socket (sockname))
+        break;
 
+      gnupg_sleep (CHECK_OWN_SOCKET_INTERVAL);
+    }
+
+  xfree (sockname);
+  socket_takeover_detected = 1;
+
+  return NULL;
+}
 
 
 /* Figure out whether an agent is available and running. Prints an
