@@ -448,6 +448,11 @@ gpgsm_add_to_certlist (ctrl_t ctrl, const char *name, int secret,
 
           if (!rc && !is_cert_in_certlist (cert, *listaddr))
             {
+              unsigned int valflags = 0;
+
+              if (!secret && (opt.always_trust || ctrl->always_trust))
+                valflags |= VALIDATE_FLAG_BYPASS;
+
               if (!rc && secret)
                 {
                   char *p;
@@ -461,9 +466,10 @@ gpgsm_add_to_certlist (ctrl_t ctrl, const char *name, int secret,
                       xfree (p);
                     }
                 }
+
               if (!rc)
                 rc = gpgsm_validate_chain (ctrl, cert, GNUPG_ISOTIME_NONE, NULL,
-                                           0, NULL, 0, NULL);
+                                           0, NULL, valflags, NULL);
               if (!rc)
                 {
                   certlist_t cl = xtrycalloc (1, sizeof *cl);

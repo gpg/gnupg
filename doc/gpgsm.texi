@@ -732,6 +732,13 @@ instead to make sure that the gpgsm process exits with a failure if
 the compliance rules are not fulfilled.  Note that this option has
 currently an effect only in "de-vs" mode.
 
+@item --always-trust
+@opindex always-trust
+Force encryption to the specified certificates without any validation
+of the certificate chain.  The only requirement is that the
+certificate is capable of encryption.  Note that this option is
+ineffective if @option{--require-compliance} is used.
+
 @item --ignore-cert-with-oid @var{oid}
 @opindex ignore-cert-with-oid
 Add @var{oid} to the list of OIDs to be checked while reading
@@ -1622,6 +1629,10 @@ The leading two dashes usually used with @var{opt} shall not be given.
 Return OK if the connection is in offline mode.  This may be either
 due to a @code{OPTION offline=1} or due to @command{gpgsm} being
 started with option @option{--disable-dirmngr}.
+@item always-trust
+Returns OK of the connection is in always-trust mode.  That is either
+@option{--always-trust} or @option{GPGSM OPTION always-trust} are
+active.
 @end table
 
 @node GPGSM OPTION
@@ -1727,6 +1738,15 @@ If this option is used all keys set by the command line option
 If @var{value} is true or @var{value} is not given all network access
 is disabled for this session.  This is the same as the command line
 option @option{--disable-dirmngr}.
+
+@item always-trust
+If @var{value} is true or @var{value} is not given encryption to the
+specified certificates is forced without any validation of the
+certificate chain.  The only requirement is that the certificates are
+capable of encryption.  If set to false the standard behaviour is
+re-established.  This option is cleared by a RESET and after each
+encrypt operation.  Note that this option is ignored if
+@option{--always-trust} or @option{--require-compliance} are used.
 
 @item input-size-hint
 This is the same as the @option{--input-size-hint} command line option.

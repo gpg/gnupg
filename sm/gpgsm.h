@@ -116,8 +116,6 @@ struct
   int extra_digest_algo;  /* A digest algorithm also used for
                              verification of signatures.  */
 
-  int always_trust;       /* Trust the given keys even if there is no
-                             valid certification chain */
   int skip_verify;        /* do not check signatures on data */
 
   int lock_once;          /* Keep lock once they are set */
@@ -163,6 +161,10 @@ struct
   /* Fail if an operation can't be done in the requested compliance
    * mode.  */
   int require_compliance;
+
+  /* Enable always-trust mode - note that there is also server option
+   * for this.  */
+  int always_trust;
 
   /* Enable creation of authenticode signatures.  */
   int authenticode;
@@ -268,6 +270,9 @@ struct server_control_s
                            1 := chain model,
                            2 := STEED model. */
   int offline;        /* If true gpgsm won't do any network access.  */
+
+  int always_trust;   /* True in always-trust mode; see also
+                       * opt.always-trust.  */
 
   /* The current time.  Used as a helper in certchain.c.  */
   ksba_isotime_t current_time;
@@ -388,6 +393,7 @@ int gpgsm_create_cms_signature (ctrl_t ctrl,
 #define VALIDATE_FLAG_NO_DIRMNGR  1
 #define VALIDATE_FLAG_CHAIN_MODEL 2
 #define VALIDATE_FLAG_STEED       4
+#define VALIDATE_FLAG_BYPASS      8  /* No actual validation.  */
 
 gpg_error_t gpgsm_walk_cert_chain (ctrl_t ctrl,
                                    ksba_cert_t start, ksba_cert_t *r_next);
