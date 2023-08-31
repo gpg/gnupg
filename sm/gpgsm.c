@@ -203,6 +203,7 @@ enum cmd_and_opt_values {
   oRequireCompliance,
   oCompatibilityFlags,
   oKbxBufferSize,
+  oAlwaysTrust,
   oNoAutostart
  };
 
@@ -394,6 +395,7 @@ static ARGPARSE_OPTS opts[] = {
   ARGPARSE_s_n (oIgnoreTimeConflict, "ignore-time-conflict", "@"),
   ARGPARSE_s_n (oNoRandomSeedFile,  "no-random-seed-file", "@"),
   ARGPARSE_s_n (oRequireCompliance, "require-compliance", "@"),
+  ARGPARSE_s_n (oAlwaysTrust,       "always-trust", "@"),
 
 
   ARGPARSE_header (NULL, N_("Options for unattended use")),
@@ -1441,6 +1443,7 @@ main ( int argc, char **argv)
         case oMinRSALength: opt.min_rsa_length = pargs.r.ret_ulong; break;
 
         case oRequireCompliance: opt.require_compliance = 1;  break;
+        case oAlwaysTrust: opt.always_trust = 1;  break;
 
         case oKbxBufferSize:
           keybox_set_buffersize (pargs.r.ret_ulong, 0);
@@ -1504,6 +1507,15 @@ main ( int argc, char **argv)
 
   if (may_coredump && !opt.quiet)
     log_info (_("WARNING: program may create a core file!\n"));
+
+  if (opt.require_compliance && opt.always_trust)
+    {
+      opt.always_trust = 0;
+      if (opt.quiet)
+        log_info (_("WARNING: %s overrides %s\n"),
+                  "--require-compliance","--always-trust");
+    }
+
 
 /*   if (opt.qualsig_approval && !opt.quiet) */
 /*     log_info (_("This software has officially been approved to " */
