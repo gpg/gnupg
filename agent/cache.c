@@ -53,8 +53,20 @@ struct secret_data_s {
   char data[1];  /* A string.  */
 };
 
-/* The cache object.  */
+/* The type of cache object.  */
 typedef struct cache_item_s *ITEM;
+
+/* The timer entry in a linked list.  */
+struct timer_s {
+  ITEM next;
+  int tv_sec;
+  int reason;
+};
+#define CACHE_EXPIRE_UNUSED      0
+#define CACHE_EXPIRE_LAST_ACCESS 1
+#define CACHE_EXPIRE_CREATION    2
+
+/* The cache object.  */
 struct cache_item_s {
   ITEM next;
   time_t created;
@@ -63,11 +75,17 @@ struct cache_item_s {
   struct secret_data_s *pw;
   cache_mode_t cache_mode;
   int restricted;  /* The value of ctrl->restricted is part of the key.  */
+  struct timer_s t;
   char key[1];
 };
 
 /* The cache himself.  */
 static ITEM thecache;
+
+/* The timer list of expiration, in active.  */
+static ITEM the_timer_list;
+/* Newly created entries, to be inserted into the timer list.  */
+static ITEM the_timer_list_new;
 
 /* NULL or the last cache key stored by agent_store_cache_hit.  */
 static char *last_stored_cache_key;
@@ -193,123 +211,301 @@ new_data (const char *string, struct secret_data_s **r_data)
 }
 
 
-
-/* Check whether there are items to expire.  */
 static void
-housekeeping (void)
+insert_to_timer_list_new (ITEM entry)
 {
-  ITEM r, rprev;
+  entry->t.next = the_timer_list_new;
+  the_timer_list_new = entry;
+}
+
+/* Insert to the active timer list.  */
+static void
+insert_to_timer_list (struct timespec *ts, ITEM entry)
+{
+  ITEM e, eprev;
+
+  if (!the_timer_list || ts->tv_sec >= entry->t.tv_sec)
+    {
+      if (the_timer_list && ts->tv_nsec)
+        the_timer_list->t.tv_sec++;
+
+      ts->tv_sec = entry->t.tv_sec;
+      ts->tv_nsec = 0;
+
+      entry->t.tv_sec = 0;
+      entry->t.next = the_timer_list;
+      the_timer_list = entry;
+      return;
+    }
+
+  entry->t.tv_sec -= ts->tv_sec;
+  eprev = NULL;
+  for (e = the_timer_list; e; e = e->t.next)
+    {
+      if (e->t.tv_sec > entry->t.tv_sec)
+        break;
+
+      eprev = e;
+      entry->t.tv_sec -= e->t.tv_sec;
+    }
+
+  entry->t.next = e;
+  if (e)
+    e->t.tv_sec -= entry->t.tv_sec;
+
+  if (eprev)
+    eprev->t.next = entry;
+  else
+    the_timer_list = entry;
+}
+
+static void
+remove_from_timer_list (ITEM entry)
+{
+  ITEM e, eprev;
+
+  eprev = NULL;
+  for (e = the_timer_list; e; e = e->t.next)
+    if (e != entry)
+      eprev = e;
+    else
+      {
+        if (e->t.next)
+          e->t.next->t.tv_sec += e->t.tv_sec;
+
+        if (eprev)
+          eprev->t.next = e->t.next;
+        else
+          the_timer_list = e->t.next;
+
+        break;
+      }
+
+  entry->t.next = NULL;
+  entry->t.tv_sec = 0;
+}
+
+static void
+remove_from_timer_list_new (ITEM entry)
+{
+  ITEM e, eprev;
+
+  eprev = NULL;
+  for (e = the_timer_list_new; e; e = e->t.next)
+    if (e != entry)
+      eprev = e;
+    else
+      {
+        if (e->t.next)
+          e->t.next->t.tv_sec += e->t.tv_sec;
+
+        if (eprev)
+          eprev->t.next = e->t.next;
+        else
+          the_timer_list_new = e->t.next;
+
+        break;
+      }
+
+  entry->t.next = NULL;
+  entry->t.tv_sec = 0;
+}
+
+static int
+compute_expiration (ITEM r)
+{
+  unsigned long maxttl;
   time_t current = gnupg_get_time ();
+  time_t next;
 
-  /* First expire the actual data */
-  for (r=thecache; r; r = r->next)
+  if (r->cache_mode == CACHE_MODE_PIN)
+    return 0; /* Don't let it expire - scdaemon explicitly flushes them.  */
+
+  if (!r->pw)
     {
-      if (r->cache_mode == CACHE_MODE_PIN)
-        ; /* Don't let it expire - scdaemon explicitly flushes them.  */
-      else if (r->pw && r->ttl >= 0 && r->accessed + r->ttl < current)
-        {
-          if (DBG_CACHE)
-            log_debug ("  expired '%s'.%d (%ds after last access)\n",
-                       r->key, r->restricted, r->ttl);
-          release_data (r->pw);
-          r->pw = NULL;
-          r->accessed = current;
-        }
+      /* Expire an old and unused entry after 30 minutes.  */
+      r->t.tv_sec = 60*30;
+      r->t.reason = CACHE_EXPIRE_UNUSED;
+      return 1;
     }
 
-  /* Second, make sure that we also remove them based on the created
-   * stamp so that the user has to enter it from time to time.  We
-   * don't do this for data items which are used to storage secrets in
-   * meory and are not user entered passphrases etc.  */
-  for (r=thecache; r; r = r->next)
+  switch (r->cache_mode)
     {
-      unsigned long maxttl;
-
-      switch (r->cache_mode)
-        {
-        case CACHE_MODE_DATA:
-        case CACHE_MODE_PIN:
-          continue;  /* No MAX TTL here.  */
-        case CACHE_MODE_SSH: maxttl = opt.max_cache_ttl_ssh; break;
-        default: maxttl = opt.max_cache_ttl; break;
-        }
-      if (r->pw && r->created + maxttl < current)
-        {
-          if (DBG_CACHE)
-            log_debug ("  expired '%s'.%d (%lus after creation)\n",
-                       r->key, r->restricted, opt.max_cache_ttl);
-          release_data (r->pw);
-          r->pw = NULL;
-          r->accessed = current;
-        }
+    case CACHE_MODE_DATA:
+    case CACHE_MODE_PIN:
+      maxttl = 0;  /* No MAX TTL here.  */
+      break;
+    case CACHE_MODE_SSH: maxttl = opt.max_cache_ttl_ssh; break;
+    default: maxttl = opt.max_cache_ttl; break;
     }
 
-  /* Third, make sure that we don't have too many items in the list.
-   * Expire old and unused entries after 30 minutes.  */
-  for (rprev=NULL, r=thecache; r; )
+  if (maxttl)
     {
-      if (!r->pw && r->ttl >= 0 && r->accessed + 60*30 < current)
+      if (r->created + maxttl < current)
         {
-          ITEM r2 = r->next;
-          if (DBG_CACHE)
-            log_debug ("  removed '%s'.%d (mode %d) (slot not used for 30m)\n",
-                       r->key, r->restricted, r->cache_mode);
-          xfree (r);
-          if (!rprev)
-            thecache = r2;
-          else
-            rprev->next = r2;
-          r = r2;
+          r->t.tv_sec = 0;
+          r->t.reason = CACHE_EXPIRE_CREATION;
+          return 1;
         }
-      else
-        {
-          rprev = r;
-          r = r->next;
-        }
+
+      next = r->created + maxttl - current;
+    }
+  else
+    next = 0;
+
+  if (r->ttl >= 0 && (next == 0 || r->ttl < next))
+    {
+      r->t.tv_sec = r->ttl;
+      r->t.reason = CACHE_EXPIRE_LAST_ACCESS;
+      return 1;
+    }
+
+  if (next)
+    {
+      r->t.tv_sec = next;
+      r->t.reason = CACHE_EXPIRE_CREATION;
+      return 1;
+    }
+
+  return 0;
+}
+
+static void
+update_expiration (ITEM entry, int is_new_entry)
+{
+  if (!is_new_entry)
+    {
+      remove_from_timer_list (entry);
+      remove_from_timer_list_new (entry);
+    }
+
+  if (compute_expiration (entry))
+    {
+      insert_to_timer_list_new (entry);
+      agent_kick_the_loop ();
     }
 }
 
 
-#define TIMERTICK_INTERVAL          (4)
+/* Expire the cache entry.  Returns 1 when the entry should be removed
+ * from the cache.  */
+static int
+do_expire (ITEM e)
+{
+  if (!e->pw)
+    /* Unused entry after 30 minutes.  */
+    return 1;
+
+  if (e->t.reason == CACHE_EXPIRE_LAST_ACCESS)
+    {
+      if (DBG_CACHE)
+        log_debug ("  expired '%s'.%d (%ds after last access)\n",
+                   e->key, e->restricted, e->ttl);
+    }
+  else
+    {
+      if (DBG_CACHE)
+        log_debug ("  expired '%s'.%d (%lus after creation)\n",
+                   e->key, e->restricted, opt.max_cache_ttl);
+    }
+
+  release_data (e->pw);
+  e->pw = NULL;
+  e->accessed = 0;
+
+  if (compute_expiration (e))
+    insert_to_timer_list_new (e);
+
+  return 0;
+}
+
+
 struct timespec *
 agent_cache_expiration (void)
 {
   static struct timespec abstime;
   static struct timespec timeout;
-  static int initialized = 0;
+  struct timespec *tp;
   struct timespec curtime;
   int res;
+  int expired = 0;
+  ITEM e, enext;
 
-  if (!initialized)
-    {
-      initialized = 1;
-      npth_clock_gettime (&abstime);
-      abstime.tv_sec += TIMERTICK_INTERVAL;
-    }
+  res = npth_mutex_lock (&cache_lock);
+  if (res)
+    log_fatal ("failed to acquire cache mutex: %s\n", strerror (res));
 
   npth_clock_gettime (&curtime);
-  if (!(npth_timercmp (&curtime, &abstime, <)))
+  if (the_timer_list)
     {
-      /* Timeout.  */
-      npth_clock_gettime (&abstime);
-      abstime.tv_sec += TIMERTICK_INTERVAL;
-
-      if (DBG_CACHE)
-        log_debug ("agent_cache_housekeeping\n");
-
-      res = npth_mutex_lock (&cache_lock);
-      if (res)
-        log_fatal ("failed to acquire cache mutex: %s\n", strerror (res));
-
-      housekeeping ();
-
-      res = npth_mutex_unlock (&cache_lock);
-      if (res)
-        log_fatal ("failed to release cache mutex: %s\n", strerror (res));
+      if (npth_timercmp (&abstime, &curtime, <))
+        expired = 1;
+      else
+        npth_timersub (&abstime, &curtime, &timeout);
     }
 
-  npth_timersub (&abstime, &curtime, &timeout);
-  return &timeout;
+  if (expired && (e = the_timer_list) && e->t.tv_sec == 0)
+    {
+      the_timer_list = e->t.next;
+      e->t.next = NULL;
+
+      if (do_expire (e))
+        {
+          ITEM r, rprev;
+
+          if (DBG_CACHE)
+            log_debug ("  removed '%s'.%d (mode %d) (slot not used for 30m)\n",
+                       e->key, e->restricted, e->cache_mode);
+
+          rprev = NULL;
+          for (r = thecache; r; r = r->next)
+            if (r == e)
+              {
+                if (!rprev)
+                  thecache = r->next;
+                else
+                  rprev->next = r->next;
+                break;
+              }
+            else
+              rprev = r;
+
+          remove_from_timer_list_new (e);
+
+          xfree (e);
+        }
+    }
+
+  if (expired || !the_timer_list)
+    timeout.tv_sec = timeout.tv_nsec = 0;
+
+  for (e = the_timer_list_new; e; e = enext)
+    {
+      enext = e->t.next;
+      e->t.next = NULL;
+      insert_to_timer_list (&timeout, e);
+    }
+  the_timer_list_new = NULL;
+
+  if (!the_timer_list)
+    tp = NULL;
+  else
+    {
+      if (the_timer_list->t.tv_sec != 0)
+        {
+          timeout.tv_sec += the_timer_list->t.tv_sec;
+          the_timer_list->t.tv_sec = 0;
+        }
+
+      npth_timeradd (&timeout, &curtime, &abstime);
+      tp = &timeout;
+    }
+
+  res = npth_mutex_unlock (&cache_lock);
+  if (res)
+    log_fatal ("failed to release cache mutex: %s\n", strerror (res));
+
+  return tp;
 }
 
 
@@ -337,6 +533,7 @@ agent_flush_cache (int pincache_only)
           release_data (r->pw);
           r->pw = NULL;
           r->accessed = 0;
+          update_expiration (r, 0);
         }
     }
 
@@ -381,7 +578,6 @@ agent_put_cache (ctrl_t ctrl, const char *key, cache_mode_t cache_mode,
   if (DBG_CACHE)
     log_debug ("agent_put_cache '%s'.%d (mode %d) requested ttl=%d\n",
                key, restricted, cache_mode, ttl);
-  housekeeping ();
 
   if (!ttl)
     {
@@ -433,6 +629,7 @@ agent_put_cache (ctrl_t ctrl, const char *key, cache_mode_t cache_mode,
           err = new_data (data, &r->pw);
           if (err)
             log_error ("error replacing cache item: %s\n", gpg_strerror (err));
+          update_expiration (r, 0);
         }
     }
   else if (data) /* Insert.  */
@@ -454,6 +651,7 @@ agent_put_cache (ctrl_t ctrl, const char *key, cache_mode_t cache_mode,
             {
               r->next = thecache;
               thecache = r;
+              update_expiration (r, 1);
             }
         }
       if (err)
@@ -501,7 +699,6 @@ agent_get_cache (ctrl_t ctrl, const char *key, cache_mode_t cache_mode)
     log_debug ("agent_get_cache '%s'.%d (mode %d)%s ...\n",
                key, restricted, cache_mode,
                last_stored? " (stored cache key)":"");
-  housekeeping ();
 
   for (r=thecache; r; r = r->next)
     {
@@ -523,7 +720,10 @@ agent_get_cache (ctrl_t ctrl, const char *key, cache_mode_t cache_mode)
            * below.  Note also that we don't update the accessed time
            * for data items.  */
           if (r->cache_mode != CACHE_MODE_DATA)
-            r->accessed = gnupg_get_time ();
+            {
+              r->accessed = gnupg_get_time ();
+              update_expiration (r, 0);
+            }
           if (DBG_CACHE)
             log_debug ("... hit\n");
           if (r->pw->totallen < 32)
