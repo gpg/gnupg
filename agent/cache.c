@@ -226,8 +226,12 @@ insert_to_timer_list (struct timespec *ts, ITEM entry)
 
   if (!the_timer_list || ts->tv_sec >= entry->t.tv_sec)
     {
-      if (the_timer_list && ts->tv_nsec)
-        the_timer_list->t.tv_sec++;
+      if (the_timer_list)
+        {
+          the_timer_list->t.tv_sec += ts->tv_sec - entry->t.tv_sec;
+          if (ts->tv_nsec)
+            the_timer_list->t.tv_sec++;
+        }
 
       ts->tv_sec = entry->t.tv_sec;
       ts->tv_nsec = 0;
