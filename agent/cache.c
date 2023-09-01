@@ -296,9 +296,6 @@ remove_from_timer_list_new (ITEM entry)
       eprev = e;
     else
       {
-        if (e->t.next)
-          e->t.next->t.tv_sec += e->t.tv_sec;
-
         if (eprev)
           eprev->t.next = e->t.next;
         else
