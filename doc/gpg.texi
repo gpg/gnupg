@@ -2715,6 +2715,12 @@ The available properties are:
   second is the same but given as an ISO date string,
   e.g. "2016-08-17". (drop-sig)
 
+  @item sig_expires
+  @itemx sig_expires_d
+  The expiration time of a signature packet or 0 if it does not
+  expire.  The second is the same but given as an ISO date string or
+  an empty string e.g. "2038-01-19".
+
   @item sig_algo
   A number with the public key algorithm of a signature packet. (drop-sig)
 
