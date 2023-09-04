@@ -2413,6 +2413,12 @@ print_fingerprint (ctrl_t ctrl, estream_t override_fp,
   if (with_colons && !mode)
     {
       es_fprintf (fp, "fpr:::::::::%s:", hexfpr);
+      if (opt.with_v5_fingerprint && pk->version == 4)
+        {
+          char *v5fpr = v5hexfingerprint (pk, NULL, 0);
+          es_fprintf (fp, "\nfp2:::::::::%s:", v5fpr);
+          xfree (v5fpr);
+        }
     }
   else if (compact && !opt.fingerprint && !opt.with_fingerprint)
     {

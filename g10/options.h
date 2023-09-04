@@ -79,6 +79,7 @@ struct
   int with_colons;
   int with_key_data;
   int with_icao_spelling; /* Print ICAO spelling with fingerprints.  */
+  int with_v5_fingerprint; /* Option --with-v5-fingerprint active.  */
   int with_fingerprint; /* Option --with-fingerprint active.  */
   int with_subkey_fingerprint; /* Option --with-subkey-fingerprint active.  */
   int with_keygrip;     /* Option --with-keygrip active.  */

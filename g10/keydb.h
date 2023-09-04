@@ -570,8 +570,10 @@ const char *colon_datestr_from_pk (PKT_public_key *pk);
 const char *colon_datestr_from_sig (PKT_signature *sig);
 const char *colon_expirestr_from_sig (PKT_signature *sig);
 byte *fingerprint_from_pk( PKT_public_key *pk, byte *buf, size_t *ret_len );
+byte *v5_fingerprint_from_pk (PKT_public_key *pk, byte *array, size_t *ret_len);
 void fpr20_from_pk (PKT_public_key *pk, byte array[20]);
 char *hexfingerprint (PKT_public_key *pk, char *buffer, size_t buflen);
+char *v5hexfingerprint (PKT_public_key *pk, char *buffer, size_t buflen);
 char *format_hexfingerprint (const char *fingerprint,
                              char *buffer, size_t buflen);
 gpg_error_t keygrip_from_pk (PKT_public_key *pk, unsigned char *array);

@@ -2849,6 +2849,11 @@ achieved by using the @option{--with-fingerprint} twice but by using
 this option along with keyid-format "none" a compact fingerprint is
 printed.
 
+@item --with-v5-fingerprint
+@opindex with-v5-fingerprint
+In a colon mode listing emit "fp2" lines for version 4 OpenPGP keys
+having a v5 style fingerprint of the key.
+
 @item --with-icao-spelling
 @opindex with-icao-spelling
 Print the ICAO spelling of the fingerprint in addition to the hex digits.
