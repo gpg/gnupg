@@ -3055,7 +3055,7 @@ handle_connections (gnupg_fd_t listen_fd,
     have_homedir_inotify = 1;
 
 #if CHECK_OWN_SOCKET_INTERVAL > 0
-  if (!disable_check_own_socket)
+  if (!disable_check_own_socket && sock_inotify_fd == -1)
     {
       npth_t thread;
 
@@ -3255,7 +3255,10 @@ handle_connections (gnupg_fd_t listen_fd,
           && FD_ISSET (sock_inotify_fd, &read_fdset)
           && gnupg_inotify_has_name (sock_inotify_fd, GPG_AGENT_SOCK_NAME))
         {
-          shutdown_pending = 1;
+          /* We may not remove the socket (if any), as it may be now
+             in use by another server.  */
+          inhibit_socket_removal = 1;
+          shutdown_pending = 2;
           close (sock_inotify_fd);
           sock_inotify_fd = -1;
           log_info ("socket file has been removed - shutting down\n");
