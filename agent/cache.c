@@ -229,7 +229,7 @@ insert_to_timer_list (struct timespec *ts, ITEM entry)
       if (the_timer_list)
         {
           the_timer_list->t.tv_sec += ts->tv_sec - entry->t.tv_sec;
-          if (ts->tv_nsec)
+          if (ts->tv_nsec >= 500000000)
             the_timer_list->t.tv_sec++;
         }
 
