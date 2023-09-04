@@ -2,7 +2,7 @@
  * Copyright (C) 1998, 1999, 2000, 2001, 2003,
  *               2004, 2006, 2010 Free Software Foundation, Inc.
  * Copyright (C) 2014 Werner Koch
- * Copyright (C) 2016 g10 Code GmbH
+ * Copyright (C) 2016, 2023 g10 Code GmbH
  *
  * This file is part of GnuPG.
  *
@@ -18,6 +18,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, see <https://www.gnu.org/licenses/>.
+ * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
 #include <config.h>
@@ -144,10 +145,11 @@ pubkey_string (PKT_public_key *pk, char *buffer, size_t bufsize)
 }
 
 
-/* Hash a public key.  This function is useful for v4 and v5
- * fingerprints and for v3 or v4 key signing. */
-void
-hash_public_key (gcry_md_hd_t md, PKT_public_key *pk)
+/* Hash a public key and allow to specify the to be used format.
+ * Note that if the v5 format is requested for a v4 key, a 0x04 as
+ * version is hashed instead of the 0x05. */
+static void
+do_hash_public_key (gcry_md_hd_t md, PKT_public_key *pk, int use_v5)
 {
   unsigned int n;
   unsigned int nn[PUBKEY_MAX_NPKEY];
@@ -156,9 +158,8 @@ hash_public_key (gcry_md_hd_t md, PKT_public_key *pk)
   unsigned int nbits;
   size_t nbytes;
   int npkey = pubkey_get_npkey (pk->pubkey_algo);
-  int is_v5 = pk->version == 5;
 
-  n = is_v5? 10 : 6;
+  n = use_v5? 10 : 6;
   /* FIXME: We can avoid the extra malloc by calling only the first
      mpi_print here which computes the required length and calling the
      real mpi_print only at the end.  The speed advantage would only be
@@ -235,13 +236,14 @@ hash_public_key (gcry_md_hd_t md, PKT_public_key *pk)
         }
     }
 
-  if (is_v5)
+  if (use_v5)
     {
       gcry_md_putc ( md, 0x9a );     /* ctb */
       gcry_md_putc ( md, n >> 24 );  /* 4 byte length header */
       gcry_md_putc ( md, n >> 16 );
       gcry_md_putc ( md, n >>  8 );
       gcry_md_putc ( md, n       );
+      /* Note that the next byte may either be 4 or 5.  */
       gcry_md_putc ( md, pk->version );
     }
   else
@@ -258,7 +260,7 @@ hash_public_key (gcry_md_hd_t md, PKT_public_key *pk)
 
   gcry_md_putc ( md, pk->pubkey_algo );
 
-  if (is_v5)
+  if (use_v5)
     {
       n -= 10;
       gcry_md_putc ( md, n >> 24 );
@@ -282,6 +284,15 @@ hash_public_key (gcry_md_hd_t md, PKT_public_key *pk)
           xfree(pp[i]);
         }
     }
+}
+
+
+/* Hash a public key.  This function is useful for v4 and v5
+ * fingerprints and for v3 or v4 key signing. */
+void
+hash_public_key (gcry_md_hd_t md, PKT_public_key *pk)
+{
+  do_hash_public_key (md, pk, pk->version);
 }
 
 
@@ -894,6 +905,37 @@ fingerprint_from_pk (PKT_public_key *pk, byte *array, size_t *ret_len)
 
 
 /*
+ * Return a byte array with the fingerprint for the given PK/SK The
+ * length of the array is returned in ret_len. Caller must free the
+ * array or provide an array of length MAX_FINGERPRINT_LEN.  This
+ * version creates a v5 fingerprint even vor v4 keys.
+ */
+byte *
+v5_fingerprint_from_pk (PKT_public_key *pk, byte *array, size_t *ret_len)
+{
+  const byte *dp;
+  gcry_md_hd_t md;
+
+  if (pk->version == 5)
+    return fingerprint_from_pk (pk, array, ret_len);
+
+  if (gcry_md_open (&md, GCRY_MD_SHA256, 0))
+    BUG ();
+  do_hash_public_key (md, pk, 1);
+  gcry_md_final (md);
+  dp = gcry_md_read (md, 0);
+  if (!array)
+    array = xmalloc (32);
+  memcpy (array, dp, 32);
+  gcry_md_close (md);
+
+  if (ret_len)
+    *ret_len = 32;
+  return array;
+}
+
+
+/*
  * Get FPR20 for the given PK/SK into ARRAY.
  *
  * FPR20 is special form of fingerprint of length 20 for the record of
@@ -949,6 +991,30 @@ hexfingerprint (PKT_public_key *pk, char *buffer, size_t buflen)
 
   bin2hex (pk->fpr, pk->fprlen, buffer);
   return buffer;
+}
+
+
+/* Same as hexfingerprint but returns a v5 fingerprint also for a v4
+ * key.  */
+char *
+v5hexfingerprint (PKT_public_key *pk, char *buffer, size_t buflen)
+{
+  char fprbuf[32];
+
+  if (pk->version == 5)
+    return hexfingerprint (pk, buffer, buflen);
+
+  if (!buffer)
+    {
+      buffer = xtrymalloc (2 * 32 + 1);
+      if (!buffer)
+        return NULL;
+    }
+  else if (buflen < 2 * 32 + 1)
+    log_fatal ("%s: buffer too short (%zu)\n", __func__, buflen);
+
+  v5_fingerprint_from_pk (pk, fprbuf, NULL);
+  return bin2hex (fprbuf, 32, buffer);
 }
 
 

@@ -203,6 +203,7 @@ enum cmd_and_opt_values
     oAskCertLevel,
     oNoAskCertLevel,
     oFingerprint,
+    oWithV5Fingerprint,
     oWithFingerprint,
     oWithSubkeyFingerprint,
     oWithICAOSpelling,
@@ -816,6 +817,7 @@ static gpgrt_opt_t opts[] = {
   ARGPARSE_s_n (oWithKeyData,"with-key-data", "@"),
   ARGPARSE_s_n (oWithSigList,"with-sig-list", "@"),
   ARGPARSE_s_n (oWithSigCheck,"with-sig-check", "@"),
+  ARGPARSE_s_n (oWithV5Fingerprint, "with-v5-fingerprint", "@"),
   ARGPARSE_s_n (oWithFingerprint, "with-fingerprint", "@"),
   ARGPARSE_s_n (oWithSubkeyFingerprint, "with-subkey-fingerprint", "@"),
   ARGPARSE_s_n (oWithSubkeyFingerprint, "with-subkey-fingerprints", "@"),
@@ -2887,6 +2889,9 @@ main (int argc, char **argv)
             opt_log_time = 1;
             break;
 
+	  case oWithV5Fingerprint:
+            opt.with_v5_fingerprint = 1;
+            break;
 	  case oWithFingerprint:
             opt.with_fingerprint = 1;
             opt.fingerprint++;
@@ -3789,6 +3794,14 @@ main (int argc, char **argv)
       {
         write_status_failure ("option-parser", gpg_error(GPG_ERR_GENERAL));
         g10_exit(2);
+      }
+
+    /* Set depended fingerprint options.  */
+    if (opt.with_v5_fingerprint && !opt.with_fingerprint)
+      {
+        opt.with_fingerprint = 1;
+        if (!opt.fingerprint)
+          opt.fingerprint = 1;
       }
 
     /* Process common component options.  */
