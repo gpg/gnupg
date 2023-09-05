@@ -287,7 +287,7 @@ do_hash_public_key (gcry_md_hd_t md, PKT_public_key *pk, int use_v5)
 void
 hash_public_key (gcry_md_hd_t md, PKT_public_key *pk)
 {
-  do_hash_public_key (md, pk, pk->version);
+  do_hash_public_key (md, pk, (pk->version == 5));
 }
 
 
