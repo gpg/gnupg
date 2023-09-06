@@ -1337,6 +1337,7 @@ AC_C_INLINE
 AC_C_VOLATILE
 AC_TYPE_SIZE_T
 AC_TYPE_MODE_T
+AC_CHECK_FUNCS([sigdescr_np])
 AC_CHECK_DECLS([sys_siglist],[],[],[#include <signal.h>
 /* NetBSD declares sys_siglist in unistd.h.  */
 #ifdef HAVE_UNISTD_H
