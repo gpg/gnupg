@@ -32,6 +32,9 @@ Noteworthy changes in version 2.2.42 (unreleased)
 
   * dirmngr: Backport of the AD_QUERY command.  [rG2a3bad5985]
 
+  * dirmngr: Support config value "none" to disable the default
+    keyserver.  [T6708]
+
   * wkd: Use export-clean for gpg-wks-client's --mirror and --create
     commands.  [rG505e770b4c]
 
