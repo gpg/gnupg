@@ -36,6 +36,9 @@ Noteworthy changes in version 2.4.3 (2023-07-04)
 
   * dirmngr: New option --ignore-crl-extensions.  [T6545]
 
+  * dirmngr: Support config value "none" to disable the default
+    keyserver.  [T6708]
+
   * wkd: Use export-clean for gpg-wks-client's --mirror and --create
     commands.  [rG2c7f7a5a27]
 
