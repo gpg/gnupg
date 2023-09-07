@@ -19,6 +19,9 @@ Noteworthy changes in version 2.2.42 (unreleased)
 
   * gpg: New option --no-compress as alias for -z0.
 
+  * gpg: Detect already compressed data also when using a pipe.  Also
+    detect JPEG and PNG file formats.  [T6332]
+
   * gpgsm: Support ECC certificates.  [T6253]
 
   * gpgsm: Print PROGRESS status lines.  Add new --input-size-hint.
