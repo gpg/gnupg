@@ -2215,7 +2215,11 @@ ensure_keyserver (ctrl_t ctrl)
 
   for (sl = opt.keyserver; sl; sl = sl->next)
     {
-      if (!strcmp (sl->d, "none"))
+      /* Frontends like Kleopatra may prefix option values without a
+       * scheme with "hkps://".  Thus we need to check that too.
+       * Nobody will be mad enough to call a machine "none".  */
+      if (!strcmp (sl->d, "none") || !strcmp (sl->d, "hkp://none")
+          || !strcmp (sl->d, "hkps://none"))
         {
           none_seen = 1;
           continue;
@@ -2377,7 +2381,8 @@ cmd_keyserver (assuan_context_t ctx, char *line)
 
   if (add_flag)
     {
-      if (!strcmp (line, "none") || !strcmp (line, "hkp://none"))
+      if (!strcmp (line, "none") || !strcmp (line, "hkp://none")
+          || !strcmp (line, "hkps://none"))
         err = 0;
       else
         err = make_keyserver_item (line, &item);
