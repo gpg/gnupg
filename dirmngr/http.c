@@ -64,6 +64,7 @@
 #  include <winsock2.h>
 # endif
 # include <windows.h>
+# include <winhttp.h>
 # ifndef EHOSTUNREACH
 #  define EHOSTUNREACH WSAEHOSTUNREACH
 # endif
@@ -1827,6 +1828,141 @@ release_proxy_info (proxy_info_t proxy)
 }
 
 
+/* Return an http session object.  If clear is set, the object is
+ * destroyed.  On error nULL is returned.  */
+#ifdef HAVE_W32_SYSTEM
+static HINTERNET
+w32_get_internet_session (int clear)
+{
+  static HINTERNET session;
+
+  if (clear)
+    {
+      if (session)
+        {
+          WinHttpCloseHandle (session);
+          session = NULL;
+        }
+      return NULL;
+    }
+
+  if (!session)
+    {
+      session = WinHttpOpen (L"GnuPG dirmngr",
+                             WINHTTP_ACCESS_TYPE_NO_PROXY,
+                             WINHTTP_NO_PROXY_NAME,
+                             WINHTTP_NO_PROXY_BYPASS,
+                             0);
+      if (!session)
+        {
+          log_error ("WinHttpOpen failed: %s\n", w32_strerror (-1));
+          return NULL;
+        }
+    }
+
+  return session;
+}
+#endif /*HAVE_W32_SYSTEM*/
+
+
+/* Return a proxy using a Windows API.  */
+#ifdef HAVE_W32_SYSTEM
+static char *
+w32_get_proxy (const char *url)
+{
+  WINHTTP_AUTOPROXY_OPTIONS options = {0};
+  WINHTTP_PROXY_INFO info;
+  char *result = NULL;
+  char *p;
+  wchar_t *wurl;
+  int defaultcfg = 0;
+
+  wurl = utf8_to_wchar (url);
+  if (!wurl)
+    {
+      log_error ("utf8_to_wchar failed: %s\n",
+                 gpg_strerror (gpg_error_from_syserror ()));
+      return NULL;
+    }
+
+  options.dwFlags = (WINHTTP_AUTOPROXY_ALLOW_AUTOCONFIG
+                     | WINHTTP_AUTOPROXY_ALLOW_CM
+                     | WINHTTP_AUTOPROXY_ALLOW_STATIC
+                     | WINHTTP_AUTOPROXY_AUTO_DETECT
+                     | WINHTTP_AUTOPROXY_SORT_RESULTS);
+  options.dwAutoDetectFlags = (WINHTTP_AUTO_DETECT_TYPE_DHCP
+                               | WINHTTP_AUTO_DETECT_TYPE_DNS_A);
+  options.fAutoLogonIfChallenged = TRUE;
+
+  if (opt_debug)
+    log_debug ("calling WinHttpGetProxyForUrl (%s)\n", url);
+  if (!WinHttpGetProxyForUrl (w32_get_internet_session (0),
+                              wurl, &options, &info))
+    {
+      int ec = (int)GetLastError ();
+      if (ec == ERROR_WINHTTP_AUTODETECTION_FAILED)
+        {
+          if (opt_debug)
+            log_debug ("calling WinHttpGetDefaultProxyConfiguration\n");
+          if (!WinHttpGetDefaultProxyConfiguration (&info))
+            {
+              if (opt_verbose)
+                log_info ("WinHttpGetDefaultProxyConfiguration failed: "
+                          "%s (%d)\n", w32_strerror (ec), ec);
+              xfree (wurl);
+              return NULL;
+            }
+          defaultcfg = 1;
+        }
+      else
+        {
+          if (opt_verbose)
+            log_info ("WinHttpGetProxyForUrl failed: %s (%d)\n",
+                      w32_strerror (ec), ec);
+          xfree (wurl);
+          return NULL;
+        }
+    }
+  xfree (wurl);
+
+  if (info.dwAccessType == WINHTTP_ACCESS_TYPE_NAMED_PROXY)
+    {
+      result = wchar_to_utf8 (info.lpszProxy);
+      if (!result)
+        log_error ("wchar_to_utf8 failed: %s\n",
+                   gpg_strerror (gpg_error_from_syserror ()));
+      else
+        {
+          if (opt_debug)
+            log_debug ("proxies to use: '%s'\n", result);
+          /* The returned proxies are delimited by whitespace or
+           * semicolons.  We return only the first proxy.  */
+          for (p=result; *p; p++)
+            if (spacep (p) || *p == ';')
+              {
+                *p = 0;
+                break;
+              }
+        }
+    }
+  else if (info.dwAccessType == WINHTTP_ACCESS_TYPE_NO_PROXY)
+    {
+      /* No proxy shall be used.  */
+    }
+  else
+    log_error ("%s returned unexpected code %lu\n",
+               defaultcfg? "WinHttpGetDefaultProxyConfiguration"
+               :"WinHttpGetProxyForUrl", info.dwAccessType);
+
+  if (info.lpszProxy)
+    GlobalFree (info.lpszProxy);
+  if (info.lpszProxyBypass)
+    GlobalFree (info.lpszProxyBypass);
+  return result;
+}
+#endif /*HAVE_W32_SYSTEM*/
+
+
 /* Return the proxy to be used for the URL or host specified in HD.
  * If OVERRIDE_PROXY is not NULL and not empty, this proxy will be
  * used instead of any configured or dynamically determined proxy.  If
@@ -1838,11 +1974,14 @@ release_proxy_info (proxy_info_t proxy)
 static gpg_error_t
 get_proxy_for_url (http_t hd, const char *override_proxy, proxy_info_t *r_proxy)
 {
-  gpg_error_t err;
+  gpg_error_t err = 0;
   const char *proxystr, *s;
   proxy_info_t proxy;
+#ifdef HAVE_W32_SYSTEM
+  char *proxystrbuf = NULL;
+#endif
 
-  r_proxy = NULL;
+  *r_proxy = NULL;
 
   if (override_proxy && *override_proxy)
     proxystr = override_proxy;
@@ -1851,6 +1990,9 @@ get_proxy_for_url (http_t hd, const char *override_proxy, proxy_info_t *r_proxy)
   else if ((s = getenv (HTTP_PROXY_ENV)) && *s)
     proxystr = s;
 #ifdef HAVE_W32_SYSTEM
+  else if (hd->uri && hd->uri->original
+           && (proxystrbuf = w32_get_proxy (hd->uri->original)))
+    proxystr = proxystrbuf;
 #endif
   else
     return 0;  /* No proxy known.  */
@@ -1860,7 +2002,7 @@ get_proxy_for_url (http_t hd, const char *override_proxy, proxy_info_t *r_proxy)
     {
       err = gpg_error_from_syserror ();
       log_error ("error allocating memory for proxy\n");
-      return err;
+      goto leave;
     }
 
   err = parse_uri (&proxy->uri, proxystr, 0, 0);
@@ -1901,6 +2043,10 @@ get_proxy_for_url (http_t hd, const char *override_proxy, proxy_info_t *r_proxy)
                   proxystr, hd->uri? hd->uri->original : NULL);
     }
 
+ leave:
+#ifdef HAVE_W32_SYSTEM
+  xfree (proxystrbuf);
+#endif
   if (err)
     xfree (proxy);
   else
@@ -3937,4 +4083,14 @@ http_status2string (unsigned int status)
     }
 
   return "";
+}
+
+
+/* Fucntion called on SIGHUP to flush internal variables.  */
+void
+http_reinitialize (void)
+{
+#ifdef HAVE_W32_SYSTEM
+  w32_get_internet_session (1);  /* Clear our session.  */
+#endif /*HAVE_W32_SYSTEM*/
 }
