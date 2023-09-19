@@ -717,6 +717,64 @@ http_session_release (http_session_t sess)
 }
 
 
+/* Create a write stream and store it in the fp_write member.  Also
+ * store the tls flag and the session.  */
+static gpg_error_t
+make_fp_write (http_t hd, int use_tls, http_session_t session)
+{
+  cookie_t cookie;
+
+  cookie = xtrycalloc (1, sizeof *cookie);
+  if (!cookie)
+    return gpg_error_from_syserror ();
+  cookie->sock = my_socket_ref (hd->sock);
+  cookie->use_tls = use_tls;
+  if (session)
+    cookie->session = http_session_ref (session);
+  hd->fp_write = es_fopencookie (cookie, "w", cookie_functions);
+  if (!hd->fp_write)
+    {
+      gpg_error_t err = gpg_error_from_syserror ();
+      my_socket_unref (cookie->sock, NULL, NULL);
+      if (session)
+        http_session_unref (cookie->session);
+      xfree (cookie);
+      return err;
+    }
+  hd->write_cookie = cookie;  /* Cookie now owned by FP_WRITE.  */
+  return 0;
+}
+
+
+/* Create a read stream and store it in the fp_read member.  Also
+ * store the tls flag and the session.  */
+static gpg_error_t
+make_fp_read (http_t hd, int use_tls, http_session_t session)
+{
+  cookie_t cookie;
+
+  cookie = xtrycalloc (1, sizeof *cookie);
+  if (!cookie)
+    return gpg_error_from_syserror ();
+  cookie->sock = my_socket_ref (hd->sock);
+  cookie->use_tls = use_tls;
+  if (session)
+    cookie->session = http_session_ref (session);
+  hd->fp_read = es_fopencookie (cookie, "r", cookie_functions);
+  if (!hd->fp_read)
+    {
+      gpg_error_t err = gpg_error_from_syserror ();
+      my_socket_unref (cookie->sock, NULL, NULL);
+      if (session)
+        http_session_unref (cookie->session);
+      xfree (cookie);
+      return err;
+    }
+  hd->read_cookie = cookie;  /* Cookie now owned by FP_READ.  */
+  return 0;
+}
+
+
 /* Create a new session object which is currently used to enable TLS
  * support.  It may eventually allow reusing existing connections.
  * Valid values for FLAGS are:
@@ -1010,7 +1068,6 @@ http_raw_connect (http_t *r_hd, const char *server, unsigned short port,
 {
   gpg_error_t err = 0;
   http_t hd;
-  cookie_t cookie;
 
   *r_hd = NULL;
 
@@ -1057,39 +1114,13 @@ http_raw_connect (http_t *r_hd, const char *server, unsigned short port,
   }
 
   /* Setup estreams for reading and writing.  */
-  cookie = xtrycalloc (1, sizeof *cookie);
-  if (!cookie)
-    {
-      err = gpg_err_make (default_errsource, gpg_err_code_from_syserror ());
-      goto leave;
-    }
-  cookie->sock = my_socket_ref (hd->sock);
-  hd->fp_write = es_fopencookie (cookie, "w", cookie_functions);
-  if (!hd->fp_write)
-    {
-      err = gpg_err_make (default_errsource, gpg_err_code_from_syserror ());
-      my_socket_unref (cookie->sock, NULL, NULL);
-      xfree (cookie);
-      goto leave;
-    }
-  hd->write_cookie = cookie; /* Cookie now owned by FP_WRITE.  */
+  err = make_fp_write (hd, 0, NULL);
+  if (err)
+    goto leave;
 
-  cookie = xtrycalloc (1, sizeof *cookie);
-  if (!cookie)
-    {
-      err = gpg_err_make (default_errsource, gpg_err_code_from_syserror ());
-      goto leave;
-    }
-  cookie->sock = my_socket_ref (hd->sock);
-  hd->fp_read = es_fopencookie (cookie, "r", cookie_functions);
-  if (!hd->fp_read)
-    {
-      err = gpg_err_make (default_errsource, gpg_err_code_from_syserror ());
-      my_socket_unref (cookie->sock, NULL, NULL);
-      xfree (cookie);
-      goto leave;
-    }
-  hd->read_cookie = cookie; /* Cookie now owned by FP_READ.  */
+  err = make_fp_read (hd, 0, NULL);
+  if (err)
+    goto leave;
 
   /* Register close notification to interlock the use of es_fclose in
      http_close and in user code.  */
@@ -1161,24 +1192,9 @@ http_wait_response (http_t hd)
   hd->in_data = 0;
 
   /* Create a new cookie and a stream for reading.  */
-  cookie = xtrycalloc (1, sizeof *cookie);
-  if (!cookie)
-    return gpg_err_make (default_errsource, gpg_err_code_from_syserror ());
-  cookie->sock = my_socket_ref (hd->sock);
-  cookie->session = http_session_ref (hd->session);
-  cookie->use_tls = use_tls;
-
-  hd->read_cookie = cookie;
-  hd->fp_read = es_fopencookie (cookie, "r", cookie_functions);
-  if (!hd->fp_read)
-    {
-      err = gpg_err_make (default_errsource, gpg_err_code_from_syserror ());
-      my_socket_unref (cookie->sock, NULL, NULL);
-      http_session_unref (cookie->session);
-      xfree (cookie);
-      hd->read_cookie = NULL;
-      return err;
-    }
+  err = make_fp_read (hd, use_tls, hd->session);
+  if (err)
+    return err;
 
   err = parse_response (hd);
 
@@ -2126,8 +2142,6 @@ send_request (http_t hd, const char *httphost, const char *auth,
   char *authstr = NULL;
   assuan_fd_t sock;
   proxy_info_t proxy = NULL;
-  cookie_t cookie = NULL;
-  cookie_t cookie2 = NULL;
 
   err = send_request_basic_checks (hd);
   if (err)
@@ -2205,21 +2219,9 @@ send_request (http_t hd, const char *httphost, const char *auth,
       if (opt_debug || (hd->flags & HTTP_FLAG_LOG_RESP))
         log_debug_with_string (request, "http.c:request:");
 
-      cookie = xtrycalloc (1, sizeof *cookie);
-      if (!cookie)
-        {
-          err = gpg_error_from_syserror ();
-          goto leave;
-        }
-      cookie->sock = my_socket_ref (hd->sock);
-      hd->write_cookie = cookie;
-
-      hd->fp_write = es_fopencookie (cookie, "w", cookie_functions);
-      if (! hd->fp_write)
-        {
-          err = gpg_error_from_syserror ();
-          goto leave;
-        }
+      err = make_fp_write (hd, 0, NULL);
+      if (err)
+        goto leave;
 
       if (es_fputs (request, hd->fp_write) || es_fflush (hd->fp_write))
         {
@@ -2248,16 +2250,13 @@ send_request (http_t hd, const char *httphost, const char *auth,
 
       if (hd->status_code != 200)
         {
-          xfree (request);
-          request = es_bsprintf
-            ("CONNECT %s:%hu",
-             httphost ? httphost : server,
-             port);
+          char *tmpstr;
 
+          tmpstr = es_bsprintf ("%s:%hu", httphost ? httphost : server, port);
           log_error (_("error accessing '%s': http status %u\n"),
-                     request ? request : "out of core",
+                     tmpstr ? tmpstr : "out of core",
                      http_get_status_code (hd));
-
+          xfree (tmpstr);
           err = gpg_error (GPG_ERR_NO_DATA);
           goto leave;
         }
@@ -2276,7 +2275,6 @@ send_request (http_t hd, const char *httphost, const char *auth,
 #else
   err = 0;
 #endif
-
   if (err)
     goto leave;
 
@@ -2381,59 +2379,29 @@ send_request (http_t hd, const char *httphost, const char *auth,
 
   /* First setup estream so that we can write even the first line
      using estream.  This is also required for the sake of gnutls. */
-  {
-    cookie2 = xtrycalloc (1, sizeof *cookie);
-    if (!cookie2)
-      {
-        err = gpg_error_from_syserror ();
-        goto leave;
-      }
-    cookie2->sock = my_socket_ref (hd->sock);
-    hd->write_cookie = cookie2;
-    cookie2->use_tls = hd->uri->use_tls;
-    cookie2->session = http_session_ref (hd->session);
+  err = make_fp_write (hd, hd->uri->use_tls, hd->session);
+  if (err)
+    goto leave;
 
-    hd->fp_write = es_fopencookie (cookie, "w", cookie_functions);
-    if (!hd->fp_write)
-      {
-        err = gpg_error_from_syserror ();
-        goto leave;
-      }
-    if (es_fputs (request, hd->fp_write) || es_fflush (hd->fp_write))
-      {
-        err = gpg_error_from_syserror ();
-        goto leave;
-      }
+  if (es_fputs (request, hd->fp_write) || es_fflush (hd->fp_write))
+    {
+      err = gpg_error_from_syserror ();
+      goto leave;
+    }
 
-    for (;headers; headers=headers->next)
-      {
-        if (opt_debug || (hd->flags & HTTP_FLAG_LOG_RESP))
-          log_debug_with_string (headers->d, "http.c:request-header:");
-        if ((es_fputs (headers->d, hd->fp_write) || es_fflush (hd->fp_write))
+  for (;headers; headers=headers->next)
+    {
+      if (opt_debug || (hd->flags & HTTP_FLAG_LOG_RESP))
+        log_debug_with_string (headers->d, "http.c:request-header:");
+      if ((es_fputs (headers->d, hd->fp_write) || es_fflush (hd->fp_write))
             || (es_fputs("\r\n",hd->fp_write) || es_fflush(hd->fp_write)))
-          {
-            err = gpg_error_from_syserror ();
-            goto leave;
-          }
-      }
-  }
+        {
+          err = gpg_error_from_syserror ();
+          goto leave;
+        }
+    }
 
  leave:
-  if (cookie2)
-    {
-      my_socket_unref (cookie2->sock, NULL, NULL);
-      if (hd)
-        hd->write_cookie = NULL;
-      xfree (cookie2);
-    }
-  if (cookie)
-    {
-      my_socket_unref (cookie->sock, NULL, NULL);
-      if (hd)
-        hd->write_cookie = NULL;
-      xfree (cookie);
-    }
-
   es_free (request);
   xfree (authstr);
   xfree (proxy_authstr);
@@ -3188,8 +3156,14 @@ connect_server (const char *server, unsigned short port,
   if (!connected)
     {
       if (!hostfound)
-        log_error ("can't connect to '%s': %s\n",
-                   server, "host not found");
+        {
+          log_error ("can't connect to '%s': %s\n",
+                     server, "host not found");
+          /* If the resolver told us "no name" translate this in this
+           * case to "unknown host".  */
+          if (gpg_err_code (last_err) == GPG_ERR_NO_NAME)
+            last_err = 0;
+        }
       else if (!anyhostaddr)
         log_error ("can't connect to '%s': %s\n",
                    server, "no IP address for host");
