@@ -288,6 +288,11 @@ main (int argc, char **argv)
           my_http_flags |= HTTP_FLAG_FORCE_TOR;
           argc--; argv++;
         }
+      else if (!strcmp (*argv, "--try-proxy"))
+        {
+          my_http_flags |= HTTP_FLAG_TRY_PROXY;
+          argc--; argv++;
+        }
       else if (!strcmp (*argv, "--no-out"))
         {
           no_out = 1;
