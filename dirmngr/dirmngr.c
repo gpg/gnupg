@@ -1999,6 +1999,7 @@ dirmngr_sighup_action (void)
   crl_cache_deinit ();
   cert_cache_init (hkp_cacert_filenames);
   crl_cache_init ();
+  http_reinitialize ();
   reload_dns_stuff (0);
   ks_hkp_reload ();
 }

@@ -66,6 +66,7 @@ AM_CFLAGS = $(USE_C99_CFLAGS) \
 
 if HAVE_W32_SYSTEM
 ldap_url = ldap-url.h ldap-url.c
+NETLIBS += -lwinhttp
 else
 ldap_url =
 endif

@@ -421,7 +421,9 @@ force the use of the default responder.
 @item --honor-http-proxy
 @opindex honor-http-proxy
 If the environment variable @env{http_proxy} has been set, use its
-value to access HTTP servers.
+value to access HTTP servers.  If on Windows the option is used but
+the environment variable is not set, the proxy settings are taken
+from the system.
 
 @item --http-proxy [http://]@var{host}[:@var{port}]
 @opindex http-proxy
