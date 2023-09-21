@@ -920,7 +920,6 @@ http_session_new (http_session_t *r_session,
     /* Add system certificates to the session.  */
     if (add_system_cas)
       {
-#if GNUTLS_VERSION_NUMBER >= 0x030014
         static int shown;
 
         rc = gnutls_certificate_set_x509_system_trust (sess->certcred);
@@ -931,7 +930,6 @@ http_session_new (http_session_t *r_session,
             shown = 1;
             log_info ("number of system provided CAs: %d\n", rc);
           }
-#endif /* gnutls >= 3.0.20 */
       }
 
     /* Add other configured certificates to the session.  */
@@ -2307,6 +2305,184 @@ run_gnutls_handshake (http_t hd, const char *server)
 #endif /*HTTP_USE_GNUTLS*/
 
 
+/* Use the CONNECT method to proxy our TLS stream.  */
+#ifdef USE_TLS
+static gpg_error_t
+run_proxy_connect (http_t hd, proxy_info_t proxy,
+                   const char *httphost, const char *server,
+                   unsigned short port)
+{
+  gpg_error_t err;
+  int saved_flags;
+  char *authhdr = NULL;
+  char *request = NULL;
+
+  if (proxy->uri->auth
+      && !(authhdr = make_header_line ("Proxy-Authorization: Basic ",
+                                       "\r\n",
+                                       proxy->uri->auth,
+                                       strlen (proxy->uri->auth))))
+    {
+      err = gpg_error_from_syserror ();
+      goto leave;
+    }
+
+  request = es_bsprintf ("CONNECT %s:%hu HTTP/1.0\r\nHost: %s:%hu\r\n%s",
+                         httphost ? httphost : server,
+                         port,
+                         httphost ? httphost : server,
+                         port,
+                         authhdr ? authhdr : "");
+  if (!request)
+    {
+      err = gpg_error_from_syserror ();
+      goto leave;
+    }
+
+  if (opt_debug || (hd->flags & HTTP_FLAG_LOG_RESP))
+    log_debug_with_string (request, "http.c:proxy:request:");
+
+  err = make_fp_write (hd, 0, NULL);
+  if (err)
+    goto leave;
+
+  if (es_fputs (request, hd->fp_write) || es_fflush (hd->fp_write))
+    {
+      err = gpg_error_from_syserror ();
+      goto leave;
+    }
+
+  /* Make sure http_wait_response doesn't close the stream.  */
+  saved_flags = hd->flags;
+  hd->flags &= ~HTTP_FLAG_SHUTDOWN;
+
+  /* Get the response and set hd->fp_read  */
+  err = http_wait_response (hd);
+
+  /* Restore flags, destroy stream.  */
+  hd->flags = saved_flags;
+  es_fclose (hd->fp_read);
+  hd->fp_read = NULL;
+  hd->read_cookie = NULL;
+
+  /* Reset state.  */
+  hd->in_data = 0;
+
+  if (err)
+    goto leave;
+
+  if (hd->status_code != 200)
+    {
+      char *tmpstr;
+
+      tmpstr = es_bsprintf ("%s:%hu", httphost ? httphost : server, port);
+      log_error (_("error accessing '%s': http status %u\n"),
+                 tmpstr ? tmpstr : "out of core",
+                 http_get_status_code (hd));
+      xfree (tmpstr);
+      err = gpg_error (GPG_ERR_NO_DATA);
+      goto leave;
+    }
+
+ leave:
+  xfree (request);
+  xfree (authhdr);
+  return err;
+}
+#endif /*USE_TLS*/
+
+
+/* Make a request string using a standard proxy.  On success the
+ * request is stored at R_REQUEST (and will never be NULL).  */
+static gpg_error_t
+mk_proxy_request (http_t hd, proxy_info_t proxy,
+                  const char *httphost, const char *server,
+                  unsigned short port, const char *relpath,
+                  const char *authstr,
+                  char **r_request)
+{
+  gpg_error_t err = 0;
+  char *authhdr = NULL;
+  char *request = NULL;
+
+  *r_request = NULL;
+
+  if (proxy->uri->auth
+      && !(authhdr = make_header_line ("Proxy-Authorization: Basic ",
+                                       "\r\n",
+                                       proxy->uri->auth,
+                                       strlen (proxy->uri->auth))))
+    {
+      err = gpg_error_from_syserror ();
+      goto leave;
+    }
+
+  request = es_bsprintf ("%s %s://%s:%hu%s%s HTTP/1.0\r\n%s%s",
+                         hd->req_type == HTTP_REQ_GET ? "GET" :
+                         hd->req_type == HTTP_REQ_HEAD ? "HEAD" :
+                         hd->req_type == HTTP_REQ_POST ? "POST" : "OOPS",
+                         hd->uri->use_tls? "https" : "http",
+                         httphost? httphost : server,
+                         port, *relpath == '/' ? "" : "/", relpath,
+                         authstr ? authstr : "",
+                         authhdr ? authhdr : "");
+  if (!request)
+    {
+      err = gpg_error_from_syserror ();
+      goto leave;
+    }
+  *r_request = request;
+  request = NULL;
+
+ leave:
+  xfree (request);
+  xfree (authhdr);
+  return err;
+}
+
+
+/* Make a request string using.  On success the request is stored at
+ * R_REQUEST (and will never be NULL).  */
+static gpg_error_t
+mk_std_request (http_t hd,
+                const char *httphost, const char *server,
+                unsigned short port, const char *relpath,
+                const char *authstr,
+                char **r_request)
+{
+  gpg_error_t err = 0;
+  char portstr[35];
+  char *request = NULL;
+
+  *r_request = NULL;
+
+  if (port == (hd->uri->use_tls? 443 : 80))
+    *portstr = 0;
+  else
+    snprintf (portstr, sizeof portstr, ":%u", port);
+
+  request = es_bsprintf ("%s %s%s HTTP/1.0\r\nHost: %s%s\r\n%s",
+                         hd->req_type == HTTP_REQ_GET ? "GET" :
+                         hd->req_type == HTTP_REQ_HEAD ? "HEAD" :
+                         hd->req_type == HTTP_REQ_POST ? "POST" : "OOPS",
+                         *relpath == '/' ? "" : "/", relpath,
+                         httphost? httphost : server,
+                         portstr,
+                         authstr? authstr:"");
+  if (!request)
+    {
+      err = gpg_error_from_syserror ();
+      goto leave;
+    }
+  *r_request = request;
+  request = NULL;
+
+ leave:
+  xfree (request);
+  return err;
+}
+
+
 /*
  * Send a HTTP request to the server
  * Returns 0 if the request was successful
@@ -2376,78 +2552,9 @@ send_request (ctrl_t ctrl,
 #if USE_TLS
   if (use_http_proxy && hd->uri->use_tls)
     {
-      int saved_flags;
-
-      log_assert (!proxy_authstr);
-      if (proxy->uri->auth
-          && !(proxy_authstr = make_header_line ("Proxy-Authorization: Basic ",
-                                                 "\r\n",
-                                                 proxy->uri->auth,
-                                                 strlen (proxy->uri->auth))))
-        {
-          err = gpg_error_from_syserror ();
-          goto leave;
-        }
-
-      /* Try to use the CONNECT method to proxy our TLS stream.  */
-      xfree (request);
-      request = es_bsprintf
-        ("CONNECT %s:%hu HTTP/1.0\r\nHost: %s:%hu\r\n%s",
-         httphost ? httphost : server,
-         port,
-         httphost ? httphost : server,
-         port,
-         proxy_authstr ? proxy_authstr : "");
-      if (!request)
-        {
-          err = gpg_error_from_syserror ();
-          goto leave;
-        }
-
-      if (opt_debug || (hd->flags & HTTP_FLAG_LOG_RESP))
-        log_debug_string (request, "http.c:request:");
-
-      err = make_fp_write (hd, 0, NULL);
+      err = run_proxy_connect (hd, proxy, httphost, server, port);
       if (err)
         goto leave;
-
-      if (es_fputs (request, hd->fp_write) || es_fflush (hd->fp_write))
-        {
-          err = gpg_error_from_syserror ();
-          goto leave;
-        }
-
-      /* Make sure http_wait_response doesn't close the stream.  */
-      saved_flags = hd->flags;
-      hd->flags &= ~HTTP_FLAG_SHUTDOWN;
-
-      /* Get the response and set hd->fp_read  */
-      err = http_wait_response (hd);
-
-      /* Restore flags, destroy stream.  */
-      hd->flags = saved_flags;
-      es_fclose (hd->fp_read);
-      hd->fp_read = NULL;
-      hd->read_cookie = NULL;
-
-      /* Reset state.  */
-      hd->in_data = 0;
-
-      if (err)
-        goto leave;
-
-      if (hd->status_code != 200)
-        {
-          char *tmpstr;
-
-          tmpstr = es_bsprintf ("%s:%hu", httphost ? httphost : server, port);
-          log_error (_("error accessing '%s': http status %u\n"),
-                     tmpstr ? tmpstr : "out of core",
-                     http_get_status_code (hd));
-          xfree (tmpstr);
-          err = gpg_error (GPG_ERR_NO_DATA);
-          goto leave;
-        }
 
       /* We are done with the proxy, the code below will establish a
        * TLS session and talk directly to the target server.  Thus we
@@ -2506,61 +2613,13 @@ send_request (ctrl_t ctrl,
     }
 
   if (use_http_proxy)
-    {
-      xfree (proxy_authstr);
-      proxy_authstr = NULL;
-      if (proxy->uri->auth
-          && !(proxy_authstr = make_header_line ("Proxy-Authorization: Basic ",
-                                                 "\r\n",
-                                                 proxy->uri->auth,
-                                                 strlen (proxy->uri->auth))))
-        {
-          err = gpg_error_from_syserror ();
-          goto leave;
-        }
-
-      xfree (request);
-      request = es_bsprintf
-        ("%s %s://%s:%hu%s%s HTTP/1.0\r\n%s%s",
-         hd->req_type == HTTP_REQ_GET ? "GET" :
-         hd->req_type == HTTP_REQ_HEAD ? "HEAD" :
-         hd->req_type == HTTP_REQ_POST ? "POST" : "OOPS",
-         hd->uri->use_tls? "https" : "http",
-         httphost? httphost : server,
-         port, *relpath == '/' ? "" : "/", relpath,
-         authstr ? authstr : "",
-         proxy_authstr ? proxy_authstr : "");
-      if (!request)
-        {
-          err = gpg_error_from_syserror ();
-          goto leave;
-        }
-    }
+    err = mk_proxy_request (hd, proxy, httphost, server, port,
+                            relpath, authstr, &request);
   else
-    {
-      char portstr[35];
-
-      if (port == (hd->uri->use_tls? 443 : 80))
-        *portstr = 0;
-      else
-        snprintf (portstr, sizeof portstr, ":%u", port);
-
-      xfree (request);
-      request = es_bsprintf
-        ("%s %s%s HTTP/1.0\r\nHost: %s%s\r\n%s",
-         hd->req_type == HTTP_REQ_GET ? "GET" :
-         hd->req_type == HTTP_REQ_HEAD ? "HEAD" :
-         hd->req_type == HTTP_REQ_POST ? "POST" : "OOPS",
-         *relpath == '/' ? "" : "/", relpath,
-         httphost? httphost : server,
-         portstr,
-         authstr? authstr:"");
-      if (!request)
-        {
-          err = gpg_error_from_syserror ();
-          goto leave;
-        }
-    }
+    err = mk_std_request (hd, httphost, server, port,
+                          relpath, authstr, &request);
+  if (err)
+    goto leave;
 
   if (opt_debug || (hd->flags & HTTP_FLAG_LOG_RESP))
     log_debug_string (request, "http.c:request:");
@@ -3731,19 +3790,15 @@ http_verify_server_credentials (http_session_t sess)
     }
   else if (status)
     {
-      log_error ("%s: status=0x%04x\n", errprefix, status);
-#if GNUTLS_VERSION_NUMBER >= 0x030104
-      {
-        gnutls_datum_t statusdat;
+      gnutls_datum_t statusdat;
 
-        if (!gnutls_certificate_verification_status_print
-            (status, GNUTLS_CRT_X509, &statusdat, 0))
-          {
-            log_info ("%s: %s\n", errprefix, statusdat.data);
-            gnutls_free (statusdat.data);
-          }
-      }
-#endif /*gnutls >= 3.1.4*/
+      log_error ("%s: status=0x%04x\n", errprefix, status);
+      if (!gnutls_certificate_verification_status_print
+          (status, GNUTLS_CRT_X509, &statusdat, 0))
+        {
+          log_info ("%s: %s\n", errprefix, statusdat.data);
+          gnutls_free (statusdat.data);
+        }
 
       sess->verify.status = status;
       if (!err)
