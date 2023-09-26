@@ -2839,7 +2839,7 @@ do_transfer (ctrl_t ctrl, kbnode_t keyblock, PKT_public_key *pk,
   int force = 0;
   int already_exist = agent_probe_secret_key (ctrl, pk);
 
-  if (already_exist == 2 || already_exist == 4)
+  if (already_exist == 2)
     {
       if (!opt.quiet)
         log_info (_("key %s: card reference is overridden by key material\n"),

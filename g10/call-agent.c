@@ -1788,7 +1788,6 @@ struct keyinfo_data_parm_s
   int is_smartcard;
   int passphrase_cached;
   int cleartext;
-  int card_available;
 };
 
 
@@ -1818,8 +1817,6 @@ keyinfo_status_cb (void *opaque, const char *line)
           data->passphrase_cached = (fields[4][0] == '1');
           /* 'P' for protected, 'C' for clear */
           data->cleartext = (fields[5][0] == 'C');
-          /* 'A' for card is available */
-          data->card_available = (fields[8][0] == 'A');
         }
     }
   return 0;
@@ -1855,9 +1852,6 @@ agent_probe_secret_key (ctrl_t ctrl, PKT_public_key *pk)
   xfree (keyinfo.serialno);
   if (err)
     return 0;
-
-  if (keyinfo.card_available)
-    return 4;
 
   if (keyinfo.passphrase_cached)
     return 3;
