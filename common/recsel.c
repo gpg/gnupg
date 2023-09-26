@@ -85,37 +85,6 @@ my_error (gpg_err_code_t ec)
 }
 
 
-/* This is a case-sensitive version of our memistr.  I wonder why no
- * standard function memstr exists but I better do not use the name
- * memstr to avoid future conflicts.
- *
- * FIXME: Move this to a stringhelp.c
- */
-static const char *
-my_memstr (const void *buffer, size_t buflen, const char *sub)
-{
-  const unsigned char *buf = buffer;
-  const unsigned char *t = (const unsigned char *)buf;
-  const unsigned char *s = (const unsigned char *)sub;
-  size_t n = buflen;
-
-  for ( ; n ; t++, n-- )
-    {
-      if (*t == *s)
-        {
-          for (buf = t++, buflen = n--, s++; n && *t ==*s; t++, s++, n--)
-            ;
-          if (!*s)
-            return (const char*)buf;
-          t = (const unsigned char *)buf;
-          s = (const unsigned char *)sub ;
-          n = buflen;
-	}
-    }
-  return NULL;
-}
-
-
 /* Return a pointer to the next logical connection operator or NULL if
  * none.  */
 static char *
@@ -553,7 +522,7 @@ recsel_select (recsel_expr_t selector,
               break;
             case SELECT_SUB:
               if (se->xcase)
-                result = !!my_memstr (value, valuelen, se->value);
+                result = !!gnupg_memstr (value, valuelen, se->value);
               else
                 result = !!memistr (value, valuelen, se->value);
               break;
