@@ -2,7 +2,7 @@
  * Copyright (C) 1999, 2001-2004, 2006, 2009, 2010,
  *               2011 Free Software Foundation, Inc.
  * Copyright (C) 1999, 2001-2004, 2006, 2009, 2010, 2011, 2014 Werner Koch
- * Copyright (C) 2015-2017, 2021 g10 Code GmbH
+ * Copyright (C) 2015-2017, 2021, 2023 g10 Code GmbH
  *
  * This file is part of GnuPG.
  *
@@ -211,10 +211,29 @@ struct cookie_s
   /* True if TLS is to be used.  */
   int use_tls;
 
+  /* Optional malloced buffer holding pending bytes for the read
+   * function.  LEN gives the used length, SIZE the allocated length.
+   * Used by the up_to_empty_line machinery. */
+  struct {
+    size_t size;
+    size_t len;
+    char *data;
+  } pending;
+
   /* The remaining content length and a flag telling whether to use
      the content length.  */
   uint64_t content_length;
   unsigned int content_length_valid:1;
+
+  /* If the next flag is set the read function will limit the returned
+   * buffer to an empty line.  That is the the pattern "\n\r\n" is
+   * detected and any further bytes are not returned to the caller.
+   * The flag is then reset.  For technical reason we might have
+   * already read more which will be then saved for the next call in
+   * the PENDING buffer.  */
+  unsigned int up_to_empty_line:1;
+  unsigned int last_was_lf:1;      /* Helper to detect empty line.  */
+  unsigned int last_was_lfcr:1;    /* Helper to detect empty line.  */
 };
 typedef struct cookie_s *cookie_t;
 
@@ -306,6 +325,7 @@ struct http_context_s
   my_socket_t sock;
   unsigned int in_data:1;
   unsigned int is_http_0_9:1;
+  unsigned int keep_alive:1;  /* Keep the connection alive.  */
   estream_t fp_read;
   estream_t fp_write;
   void *write_cookie;
@@ -1180,7 +1200,7 @@ http_start_data (http_t hd)
   if (!hd->in_data)
     {
       if (opt_debug || (hd->flags & HTTP_FLAG_LOG_RESP))
-        log_debug_string ("\r\n", "http.c:request-header:");
+        log_debug ("http.c:request-header:start_data:\n");
       es_fputs ("\r\n", hd->fp_write);
       es_fflush (hd->fp_write);
       hd->in_data = 1;
@@ -1196,6 +1216,7 @@ http_wait_response (http_t hd)
   gpg_error_t err;
   cookie_t cookie;
   int use_tls;
+  int newfpread;
 
   /* Make sure that we are in the data. */
   http_start_data (hd);
@@ -1207,26 +1228,36 @@ http_wait_response (http_t hd)
     return gpg_err_make (default_errsource, GPG_ERR_INTERNAL);
 
   use_tls = cookie->use_tls;
-  es_fclose (hd->fp_write);
-  hd->fp_write = NULL;
-  /* The close has released the cookie and thus we better set it to NULL.  */
-  hd->write_cookie = NULL;
+  if (!hd->keep_alive)
+    {
+      es_fclose (hd->fp_write);
+      hd->fp_write = NULL;
+      /* The close has released the cookie and thus we better set it
+       * to NULL.  */
+      hd->write_cookie = NULL;
+    }
 
   /* Shutdown one end of the socket is desired.  As per HTTP/1.0 this
      is not required but some very old servers (e.g. the original pksd
      keyserver didn't worked without it.  */
-  if ((hd->flags & HTTP_FLAG_SHUTDOWN))
+  if (!hd->keep_alive && (hd->flags & HTTP_FLAG_SHUTDOWN))
     shutdown (FD2INT (hd->sock->fd), 1);
   hd->in_data = 0;
 
   /* Create a new cookie and a stream for reading.  */
-  err = make_fp_read (hd, use_tls, hd->session);
-  if (err)
-    return err;
+  newfpread = 0;
+  if (!hd->keep_alive || !hd->fp_read)
+    {
+      err = make_fp_read (hd, use_tls, hd->session);
+      if (err)
+        return err;
+      newfpread = 1;
+      ((cookie_t)(hd->read_cookie))->up_to_empty_line = 1;
+    }
 
   err = parse_response (hd);
 
-  if (!err)
+  if (!err && newfpread)
     err = es_onclose (hd->fp_read, 1, fp_onclose_notification, hd);
 
   return err;
@@ -3532,31 +3563,48 @@ cookie_read (void *cookie, void *buffer, size_t size)
 {
   cookie_t c = cookie;
   int nread;
+  size_t offset = 0;
 
   if (c->content_length_valid)
     {
       if (!c->content_length)
-        return 0; /* EOF */
+        {
+          c->content_length_valid = 0;
+          return 0; /* EOF */
+        }
       if (c->content_length < size)
         size = c->content_length;
     }
 
+  if (c->pending.len)
+    {
+      offset = c->pending.len > size? size : c->pending.len;
+      memcpy (buffer, c->pending.data, offset);
+      c->pending.len -= offset;
+    }
+
+  if (offset >= size)
+    nread = offset;
+  else
 #if HTTP_USE_NTBTLS
   if (c->use_tls && c->session && c->session->tls_session)
     {
       estream_t in, out;
 
       ntbtls_get_stream (c->session->tls_session, &in, &out);
-      nread = es_fread (buffer, 1, size, in);
+      nread = es_fread ((char*)buffer+offset, 1, size-offset, in);
       if (opt_debug)
-        log_debug ("TLS network read: %d/%zu\n", nread, size);
+        log_debug ("TLS network read: %d/%zu\n", nread, size-offset);
+      if (nread >= 0)
+        nread += offset;
     }
   else
 #elif HTTP_USE_GNUTLS
   if (c->use_tls && c->session && c->session->tls_session)
     {
     again:
-      nread = gnutls_record_recv (c->session->tls_session, buffer, size);
+      nread = gnutls_record_recv (c->session->tls_session,
+                                  (char*)buffer+offset, size-offset);
       if (nread < 0)
         {
           if (nread == GNUTLS_E_INTERRUPTED)
@@ -3583,11 +3631,86 @@ cookie_read (void *cookie, void *buffer, size_t size)
           gpg_err_set_errno (EIO);
           return -1;
         }
+      if (nread >= 0)
+        nread += offset;
     }
   else
 #endif /*HTTP_USE_GNUTLS*/
     {
-      nread = read_server (c->sock->fd, buffer, size);
+      nread = read_server (c->sock->fd, (char*)buffer+offset, size-offset);
+      if (opt_debug)
+        log_debug ("network read: %d/%zu\n", nread, size);
+      if (nread >= 0)
+        nread += offset;
+    }
+
+  if (nread > 0 && c->up_to_empty_line)
+    {
+      gpg_error_t err;
+      const char *s;
+      size_t n;
+      int extra;
+      int lfcr_pending = 0;
+      char *bufp = buffer;
+
+      if (c->last_was_lf && nread > 1 && bufp[0] == '\r' && bufp[1] == '\n')
+        {
+          s = buffer;
+          extra = 2;
+        }
+      else if (c->last_was_lf && bufp[0] == '\r')
+        {
+          lfcr_pending = 1;
+          s = buffer;  /* Only to avoid the call to gnupg_memstr.  */
+        }
+      else if (c->last_was_lfcr && bufp[0] == '\n')
+        {
+          s = buffer;
+          extra = 1;
+        }
+      else
+        s = NULL;
+
+      c->last_was_lfcr = c->last_was_lf = 0;
+
+      if (!s)
+        {
+          s = gnupg_memstr (buffer, nread, "\n\r\n");
+          extra = 3;
+        }
+
+      if (lfcr_pending)
+        c->last_was_lfcr = 1;
+      else if (s)
+        {
+          /* Save away the rest and return up to the LF.  */
+          log_assert (!c->pending.len);
+          n = (s+extra) - bufp;
+          log_assert (n <= nread);
+          c->pending.len = nread - n;
+          if (!c->pending.data || c->pending.len >= c->pending.size)
+            {
+              xfree (c->pending.data);
+              c->pending.size = c->pending.len + 256;  /* Some extra space.  */
+              c->pending.data = xtrymalloc (c->pending.size);
+              if (!c->pending.data)
+                {
+                  err = gpg_error_from_syserror ();
+                  log_error ("error allocating network read buffer: %s\n",
+                             gpg_strerror (err));
+                  return -1;
+                }
+              memcpy (c->pending.data, bufp + n, c->pending.len);
+            }
+          else
+            memcpy (c->pending.data, bufp + n, c->pending.len);
+          nread = n;  /* Return everything up to the empty line.  */
+          c->up_to_empty_line = 0;
+        }
+      else if (bufp[nread-1] == '\n')
+        c->last_was_lf = 1;
+      else if (nread > 1 && bufp[nread-2] == '\n' && bufp[nread-1] == '\r')
+        c->last_was_lfcr = 1;
     }
 
   if (c->content_length_valid && nread > 0)
@@ -3748,6 +3871,7 @@ cookie_close (void *cookie)
 
   if (c->session)
     http_session_unref (c->session);
+  xfree (c->pending.data);
   xfree (c);
   return 0;
 }
