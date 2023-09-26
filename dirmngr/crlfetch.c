@@ -39,10 +39,10 @@
    2008) we need a context in the reader callback.  */
 struct reader_cb_context_s
 {
-  estream_t fp;             /* The stream used with the ksba reader.  */
-  int checked:1;            /* PEM/binary detection ahs been done.    */
-  int is_pem:1;             /* The file stream is PEM encoded.        */
-  struct b64state b64state; /* The state used for Base64 decoding.    */
+  estream_t fp;           /* The stream used with the ksba reader.   */
+  unsigned int checked:1; /* PEM/binary detection ahs been done.     */
+  unsigned int is_pem:1;  /* The file stream is PEM encoded.         */
+  gpgrt_b64state_t b64state; /* The state used for Base64 decoding.  */
 };
 
 
@@ -126,14 +126,16 @@ my_es_read (void *opaque, char *buffer, size_t nbytes, size_t *nread)
       else
         {
           cb_ctx->is_pem = 1;
-          b64dec_start (&cb_ctx->b64state, "");
+          cb_ctx->b64state = gpgrt_b64dec_start ("");
+          if (!cb_ctx->b64state)
+            return gpg_error_from_syserror ();
         }
     }
   if (cb_ctx->is_pem && *nread)
     {
       size_t nread2;
 
-      if (b64dec_proc (&cb_ctx->b64state, buffer, *nread, &nread2))
+      if (gpgrt_b64dec_proc (cb_ctx->b64state, buffer, *nread, &nread2))
         {
           /* EOF from decoder. */
           *nread = 0;
@@ -581,7 +583,7 @@ crl_close_reader (ksba_reader_t reader)
         es_fclose (cb_ctx->fp);
       /* Release the base64 decoder state.  */
       if (cb_ctx->is_pem)
-        b64dec_finish (&cb_ctx->b64state);
+        gpgrt_b64dec_finish (cb_ctx->b64state);
       /* Release the callback context.  */
       xfree (cb_ctx);
     }

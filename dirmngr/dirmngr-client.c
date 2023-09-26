@@ -441,11 +441,11 @@ static gpg_error_t
 data_cb (void *opaque, const void *buffer, size_t length)
 {
   gpg_error_t err;
-  struct b64state *state = opaque;
+  gpgrt_b64state_t state = opaque;
 
   if (buffer)
     {
-      err = b64enc_write (state, buffer, length);
+      err = gpgrt_b64enc_write (state, buffer, length);
       if (err)
         log_error (_("error writing base64 encoding: %s\n"),
                    gpg_strerror (err));
@@ -853,14 +853,14 @@ do_lookup (assuan_context_t ctx, const char *pattern)
   gpg_error_t err;
   const unsigned char *s;
   char *line, *p;
-  struct b64state state;
+  gpgrt_b64state_t state;
 
   if (opt.verbose)
     log_info (_("looking up '%s'\n"), pattern);
 
-  err = b64enc_start (&state, stdout, NULL);
-  if (err)
-    return err;
+  state = gpgrt_b64enc_start (es_stdout, NULL);
+  if (!state)
+    return gpg_error_from_syserror ();
 
   line = xmalloc (10 + 6 + 13 + strlen (pattern)*3 + 1);
 
@@ -885,13 +885,13 @@ do_lookup (assuan_context_t ctx, const char *pattern)
 
 
   err = assuan_transact (ctx, line,
-                         data_cb, &state,
+                         data_cb, state,
                          NULL, NULL,
                          status_cb, NULL);
   if (opt.verbose > 1)
     log_info ("response of dirmngr: %s\n", err? gpg_strerror (err): "okay");
 
-  err = b64enc_finish (&state);
+  err = gpgrt_b64enc_finish (state);
 
   xfree (line);
   return err;

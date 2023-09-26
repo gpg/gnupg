@@ -143,35 +143,6 @@ ssize_t read_line (FILE *fp,
                    char **addr_of_buffer, size_t *length_of_buffer,
                    size_t *max_length);
 
-
-/*-- b64enc.c and b64dec.c --*/
-struct b64state
-{
-  unsigned int flags;
-  int idx;
-  int quad_count;
-  FILE *fp;
-  estream_t stream;
-  char *title;
-  unsigned char radbuf[4];
-  u32 crc;
-  int stop_seen:1;
-  int invalid_encoding:1;
-  gpg_error_t lasterr;
-};
-
-gpg_error_t b64enc_start (struct b64state *state, FILE *fp, const char *title);
-gpg_error_t b64enc_start_es (struct b64state *state, estream_t fp,
-                             const char *title);
-gpg_error_t b64enc_write (struct b64state *state,
-                          const void *buffer, size_t nbytes);
-gpg_error_t b64enc_finish (struct b64state *state);
-
-gpg_error_t b64dec_start (struct b64state *state, const char *title);
-gpg_error_t b64dec_proc (struct b64state *state, void *buffer, size_t length,
-                         size_t *r_nbytes);
-gpg_error_t b64dec_finish (struct b64state *state);
-
 /*-- sexputil.c */
 char *canon_sexp_to_string (const unsigned char *canon, size_t canonlen);
 void log_printcanon (const char *text,

@@ -2706,18 +2706,18 @@ export_one_ssh_key (estream_t fp, PKT_public_key *pk)
   blob = get_membuf (&mb, &bloblen);
   if (blob)
     {
-      struct b64state b64_state;
+      gpgrt_b64state_t b64_state;
 
       es_fprintf (fp, "%s ", identifier);
-      err = b64enc_start_es (&b64_state, fp, "");
-      if (err)
+      b64_state = gpgrt_b64enc_start (fp, "");
+      if (!b64_state)
         {
           xfree (blob);
           goto leave;
         }
 
-      err = b64enc_write (&b64_state, blob, bloblen);
-      b64enc_finish (&b64_state);
+      err = gpgrt_b64enc_write (b64_state, blob, bloblen);
+      gpgrt_b64enc_finish (b64_state);
 
       es_fprintf (fp, " openpgp:0x%08lX\n", (ulong)keyid_from_pk (pk, NULL));
       xfree (blob);
@@ -2961,7 +2961,7 @@ export_secret_ssh_key (ctrl_t ctrl, const char *userid)
   int pkalgo;
   int i;
   gcry_mpi_t keyparam[10] = { NULL };
-  struct b64state b64_state;
+  gpgrt_b64state_t b64_state;
 
   init_membuf_secure (&mb, 1024);
   init_membuf_secure (&mb2, 1024);
@@ -3139,11 +3139,11 @@ export_secret_ssh_key (ctrl_t ctrl, const char *userid)
       goto leave;
     }
 
-  err = b64enc_start_es (&b64_state, fp, "OPENSSH PRIVATE_KEY");
-  if (err)
+  b64_state = gpgrt_b64enc_start (fp, "OPENSSH PRIVATE_KEY");
+  if (!b64_state)
     goto leave;
-  err = b64enc_write (&b64_state, blob, bloblen);
-  b64enc_finish (&b64_state);
+  err = gpgrt_b64enc_write (b64_state, blob, bloblen);
+  gpgrt_b64enc_finish (b64_state);
   if (err)
     goto leave;
 

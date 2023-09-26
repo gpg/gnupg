@@ -583,7 +583,7 @@ gpg_error_t
 armor_data (char **r_string, const void *data, size_t datalen)
 {
   gpg_error_t err;
-  struct b64state b64state;
+  gpgrt_b64state_t b64state;
   estream_t fp;
   long length;
   char *buffer;
@@ -595,9 +595,15 @@ armor_data (char **r_string, const void *data, size_t datalen)
   if (!fp)
     return gpg_error_from_syserror ();
 
-  if ((err=b64enc_start_es (&b64state, fp, "PGP PUBLIC KEY BLOCK"))
-      || (err=b64enc_write (&b64state, data, datalen))
-      || (err = b64enc_finish (&b64state)))
+  b64state = gpgrt_b64enc_start (fp, "PGP PUBLIC KEY BLOCK");
+  if (!b64state)
+    {
+      es_fclose (fp);
+      return gpg_error_from_syserror ();
+    }
+
+  if ((err = gpgrt_b64enc_write (b64state, data, datalen))
+      || (err = gpgrt_b64enc_finish (b64state)))
     {
       es_fclose (fp);
       return err;

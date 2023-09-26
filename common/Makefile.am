@@ -65,7 +65,7 @@ common_sources = \
 	homedir.c \
 	gettime.c gettime.h \
 	yesno.c \
-	b64enc.c b64dec.c zb32.c zb32.h \
+	zb32.c zb32.h \
 	convert.c \
 	percent.c \
 	mbox-util.c mbox-util.h \
@@ -169,7 +169,7 @@ module_tests += t-exectool
 endif
 
 if MAINTAINER_MODE
-module_maint_tests = t-helpfile t-b64
+module_maint_tests = t-helpfile
 else
 module_maint_tests =
 endif
@@ -196,7 +196,6 @@ t_gettime_LDADD = $(t_common_ldadd)
 t_sysutils_LDADD = $(t_common_ldadd)
 t_helpfile_LDADD = $(t_common_ldadd)
 t_sexputil_LDADD = $(t_common_ldadd)
-t_b64_LDADD = $(t_common_ldadd)
 t_exechelp_LDADD = $(t_common_ldadd)
 t_exectool_LDADD = $(t_common_ldadd)
 t_session_env_LDADD = $(t_common_ldadd)

@@ -598,7 +598,7 @@ wks_armor_key (estream_t *r_newkey, estream_t key, const char *prefix)
 {
   gpg_error_t err;
   estream_t newkey;
-  struct b64state b64state;
+  gpgrt_b64state_t b64state;
   char buffer[4096];
   size_t nread;
 
@@ -614,16 +614,19 @@ wks_armor_key (estream_t *r_newkey, estream_t key, const char *prefix)
   if (prefix)
     es_fputs (prefix, newkey);
 
-  err = b64enc_start_es (&b64state, newkey, "PGP PUBLIC KEY BLOCK");
-  if (err)
-    goto leave;
+  b64state = gpgrt_b64enc_start (newkey, "PGP PUBLIC KEY BLOCK");
+  if (!b64state)
+    {
+      err = gpg_error_from_syserror ();
+      goto leave;
+    }
 
   do
     {
       nread = es_fread (buffer, 1, sizeof buffer, key);
       if (!nread)
 	break;
-      err = b64enc_write (&b64state, buffer, nread);
+      err = gpgrt_b64enc_write (b64state, buffer, nread);
       if (err)
         goto leave;
     }
@@ -634,7 +637,7 @@ wks_armor_key (estream_t *r_newkey, estream_t key, const char *prefix)
       goto leave;
     }
 
-  err = b64enc_finish (&b64state);
+  err = gpgrt_b64enc_finish (b64state);
   if (err)
     goto leave;
 

@@ -259,7 +259,7 @@ get_fingerprint (gcry_sexp_t key, int algo,
         }
       else
         {
-          struct b64state b64s;
+          gpgrt_b64state_t b64s;
           estream_t stream;
           char *p;
           long int len;
@@ -273,15 +273,15 @@ get_fingerprint (gcry_sexp_t key, int algo,
               goto leave;
             }
 
-          err = b64enc_start_es (&b64s, stream, "");
-          if (err)
+          b64s = gpgrt_b64enc_start (stream, "");
+          if (!b64s)
             {
               es_fclose (stream);
               goto leave;
             }
 
-          err = b64enc_write (&b64s,
-                              gcry_md_read (md, algo), gcry_md_get_algo_dlen (algo));
+          err = gpgrt_b64enc_write (b64s, gcry_md_read (md, algo),
+                                    gcry_md_get_algo_dlen (algo));
           if (err)
             {
               es_fclose (stream);
@@ -289,7 +289,7 @@ get_fingerprint (gcry_sexp_t key, int algo,
             }
 
           /* Finish, get the length, and close the stream.  */
-          err = b64enc_finish (&b64s);
+          err = gpgrt_b64enc_finish (b64s);
           len = es_ftell (stream);
           es_fclose (stream);
           if (err)
@@ -566,7 +566,7 @@ ssh_public_key_in_base64 (gcry_sexp_t key, estream_t stream,
   const char *identifier = NULL;
   void *blob = NULL;
   size_t bloblen;
-  struct b64state b64_state;
+  gpgrt_b64state_t b64_state;
 
   algo = get_pk_algo_from_key (key);
   if (algo == 0)
@@ -624,15 +624,15 @@ ssh_public_key_in_base64 (gcry_sexp_t key, estream_t stream,
 
   es_fprintf (stream, "%s ", identifier);
 
-  err = b64enc_start_es (&b64_state, stream, "");
-  if (err)
+  b64_state = gpgrt_b64enc_start (stream, "");
+  if (!b64_state)
     {
       es_free (blob);
-      return err;
+      return gpg_error_from_syserror ();
     }
 
-  err = b64enc_write (&b64_state, blob, bloblen);
-  b64enc_finish (&b64_state);
+  err = gpgrt_b64enc_write (b64_state, blob, bloblen);
+  gpgrt_b64enc_finish (b64_state);
   es_free (blob);
   if (err)
     return err;

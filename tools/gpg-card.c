@@ -2080,13 +2080,15 @@ cmd_writecert (card_info_t info, char *argstr)
           && ascii_memistr (data, datalen, "-----END CERTIFICATE-----")
           && !memchr (data, 0, datalen) && !memchr (data, 1, datalen))
         {
-          struct b64state b64;
+          gpgrt_b64state_t b64;
 
-          err = b64dec_start (&b64, "");
+          b64 = gpgrt_b64dec_start ("");
+          if (!b64)
+            err = gpg_error_from_syserror ();
+          else
+            err = gpgrt_b64dec_proc (b64, data, datalen, &datalen);
           if (!err)
-            err = b64dec_proc (&b64, data, datalen, &datalen);
-          if (!err)
-            err = b64dec_finish (&b64);
+            err = gpgrt_b64dec_finish (b64);
           if (err)
             goto leave;
         }

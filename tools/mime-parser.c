@@ -93,7 +93,7 @@ struct mime_parser_context_s
     unsigned int boundary : 1;
   } show;
 
-  struct b64state *b64state;     /* NULL or malloced Base64 decoder state.  */
+  gpgrt_b64state_t b64state;     /* NULL or malloced Base64 decoder state.  */
 
   /* A buffer for reading a mail line,  */
   char line[5000];
@@ -410,15 +410,11 @@ parse_message_cb (void *opaque, rfc822parse_event_t event, rfc822parse_t msg)
                 {
                   ctx->decode_part = 2;
                   if (ctx->b64state)
-                    b64dec_finish (ctx->b64state); /* Reuse state.  */
-                  else
-                    {
-                      ctx->b64state = xtrymalloc (sizeof *ctx->b64state);
-                      if (!ctx->b64state)
-                        rc = gpg_error_from_syserror ();
-                    }
-                  if (!rc)
-                    rc = b64dec_start (ctx->b64state, NULL);
+                    gpgrt_b64dec_finish (ctx->b64state); /* Release.  */
+
+                  ctx->b64state = gpgrt_b64dec_start (NULL);
+                  if (!ctx->b64state)
+                    rc = gpg_error_from_syserror ();
                 }
               free (value); /* Right, we need a plain free.  */
             }
@@ -528,10 +524,7 @@ mime_parser_release (mime_parser_t ctx)
     return;
 
   if (ctx->b64state)
-    {
-      b64dec_finish (ctx->b64state);
-      xfree (ctx->b64state);
-    }
+    gpgrt_b64dec_finish (ctx->b64state);
   xfree (ctx);
 }
 
@@ -661,7 +654,7 @@ process_part_data (mime_parser_t ctx, char *line, size_t *length)
   else if (ctx->decode_part == 2)
     {
       log_assert (ctx->b64state);
-      err = b64dec_proc (ctx->b64state, line, *length, &nbytes);
+      err = gpgrt_b64dec_proc (ctx->b64state, line, *length, &nbytes);
       if (err)
         return err;
       *length = nbytes;
