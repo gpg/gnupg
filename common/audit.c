@@ -45,8 +45,8 @@ struct log_item_s
   int intvalue;        /* A logged integer value.  */
   char *string;        /* A malloced string or NULL.  */
   ksba_cert_t cert;    /* A certifciate or NULL. */
-  int have_err:1;
-  int have_intvalue:1;
+  unsigned int have_err:1;
+  unsigned int have_intvalue:1;
 };
 typedef struct log_item_s *log_item_t;
 

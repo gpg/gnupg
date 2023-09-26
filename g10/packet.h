@@ -342,11 +342,11 @@ struct revoke_info
 /* Information pertaining to secret keys. */
 struct seckey_info
 {
-  int is_protected:1;	/* The secret info is protected and must */
+  unsigned int is_protected:1; /* The secret info is protected and must */
 			/* be decrypted before use, the protected */
 			/* MPIs are simply (void*) pointers to memory */
 			/* and should never be passed to a mpi_xxx() */
-  int sha1chk:1;        /* SHA1 is used instead of a 16 bit checksum */
+  unsigned int sha1chk:1; /* SHA1 is used instead of a 16 bit checksum */
   u16 csum;		/* Checksum for old protection modes.  */
   byte algo;            /* Cipher used to protect the secret information. */
   STRING2KEY s2k;       /* S2K parameter.  */

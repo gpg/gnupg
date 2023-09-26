@@ -38,14 +38,14 @@ struct trustitem_s
 {
   struct
   {
-    int disabled:1;       /* This entry is disabled.  */
-    int for_pgp:1;        /* Set by '*' or 'P' as first flag. */
-    int for_smime:1;      /* Set by '*' or 'S' as first flag. */
-    int relax:1;          /* Relax checking of root certificate
+    unsigned int disabled:1;       /* This entry is disabled.  */
+    unsigned int for_pgp:1;        /* Set by '*' or 'P' as first flag. */
+    unsigned int for_smime:1;      /* Set by '*' or 'S' as first flag. */
+    unsigned int relax:1;          /* Relax checking of root certificate
                              constraints. */
-    int cm:1;             /* Use chain model for validation. */
-    int qual:1;           /* Root CA for qualified signatures.  */
-    int de_vs:1;          /* Root CA for de-vs compliant PKI.    */
+    unsigned int cm:1;             /* Use chain model for validation. */
+    unsigned int qual:1;           /* Root CA for qualified signatures.  */
+    unsigned int de_vs:1;          /* Root CA for de-vs compliant PKI.    */
   } flags;
   unsigned char fpr[20];  /* The binary fingerprint. */
 };
