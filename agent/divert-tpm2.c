@@ -26,9 +26,10 @@ divert_tpm2_pksign (ctrl_t ctrl,
 
 static gpg_error_t
 agent_write_tpm2_shadow_key (ctrl_t ctrl, const unsigned char *grip,
-			     unsigned char *shadow_info)
+			     unsigned char *shadow_info,
+			     gcry_sexp_t s_key)
 {
-  gpg_error_t err;
+  gpg_error_t err, err1;
   unsigned char *shdkey;
   unsigned char *pkbuf;
   size_t len;
@@ -44,7 +45,14 @@ agent_write_tpm2_shadow_key (ctrl_t ctrl, const unsigned char *grip,
   xfree (pkbuf);
   if (err)
     {
-      log_error ("shadowing the key failed: %s\n", gpg_strerror (err));
+      log_error ("shadowing the tpm key failed: %s\n", gpg_strerror (err));
+      return err;
+    }
+
+  err = agent_delete_key (ctrl, NULL, grip, 1, 0);
+  if (err)
+    {
+      log_error ("failed to delete unshadowed key: %s\n", gpg_strerror (err));
       return err;
     }
 
@@ -53,7 +61,22 @@ agent_write_tpm2_shadow_key (ctrl_t ctrl, const unsigned char *grip,
                                  NULL, NULL, NULL, 0);
   xfree (shdkey);
   if (err)
-    log_error ("error writing key: %s\n", gpg_strerror (err));
+    {
+      log_error ("error writing tpm key: %s\n", gpg_strerror (err));
+
+      len = gcry_sexp_sprint(s_key, GCRYSEXP_FMT_CANON, NULL, 0);
+      pkbuf = xtrymalloc(len);
+      if (!pkbuf)
+	return GPG_ERR_ENOMEM;
+
+      gcry_sexp_sprint(s_key, GCRYSEXP_FMT_CANON, pkbuf, len);
+      err1 = agent_write_private_key (grip, pkbuf, len, 1 /*force*/,
+				      NULL, NULL, NULL, 0);
+      xfree(pkbuf);
+      if (err1)
+	  log_error ("error trying to restore private key: %s\n",
+		     gpg_strerror (err1));
+    }
 
   return err;
 }
@@ -68,7 +91,7 @@ divert_tpm2_writekey (ctrl_t ctrl, const unsigned char *grip,
 
   ret = agent_tpm2d_writekey(ctrl, &shadow_info, s_skey);
   if (!ret) {
-    ret = agent_write_tpm2_shadow_key (ctrl, grip, shadow_info);
+    ret = agent_write_tpm2_shadow_key (ctrl, grip, shadow_info, s_skey);
     xfree (shadow_info);
   }
   return ret;
