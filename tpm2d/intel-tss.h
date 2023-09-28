@@ -285,9 +285,15 @@ TSS_Create(TSS_CONTEXT **tssContext)
    */
   if (intType)
     {
-      if (strcmp("socsim", intType) == 0) {
-	tctildr = "mssim";
-      }
+      if (strcmp("socsim", intType) == 0)
+	{
+	  char *swtpm = getenv("SWTPM");
+
+	  if (!swtpm || strlen(swtpm) == 0)
+	    tctildr = "mssim";
+	  else
+	    tctildr = "swtpm";
+	}
       else if (strcmp("dev", intType) == 0)
 	{
 	  tctildr = "device";
