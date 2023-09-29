@@ -168,7 +168,7 @@ module_tests = t-stringhelp t-timestuff \
                t-convert t-percent t-gettime t-sysutils t-sexputil \
 	       t-session-env t-openpgp-oid t-ssh-utils \
 	       t-mapstrings t-zb32 t-mbox-util t-iobuf t-strlist \
-	       t-name-value t-ccparray t-recsel t-w32-cmdline
+	       t-name-value t-ccparray t-recsel t-w32-cmdline t-b64
 if HAVE_W32_SYSTEM
 module_tests += t-w32-reg
 else
@@ -176,7 +176,7 @@ module_tests += t-exechelp t-exectool
 endif
 
 if MAINTAINER_MODE
-module_maint_tests = t-helpfile t-b64
+module_maint_tests = t-helpfile
 else
 module_maint_tests =
 endif
