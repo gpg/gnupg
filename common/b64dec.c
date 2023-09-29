@@ -16,6 +16,7 @@
  *
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program; if not, see <https://www.gnu.org/licenses/>.
+ * SPDX-License-Identifier: LGPL-2.1-or-later
  */
 
 #include <config.h>
@@ -251,4 +252,48 @@ b64dec_finish (struct b64state *state)
     return state->lasterr;
 
   return state->invalid_encoding? gpg_error(GPG_ERR_BAD_DATA): 0;
+}
+
+
+/* Convert STRING consisting of base64 characters into its binary
+ * representation and store the result in a newly allocated buffer at
+ * R_BUFFER with its length at R_BUFLEN.  If TITLE is NULL a plain
+ * base64 decoding is done.  If it is the empty string the decoder
+ * will skip everything until a "-----BEGIN " line has been seen,
+ * decoding then ends at a "----END " line.  On failure the function
+ * returns an error code and sets R_BUFFER to NULL.  If the decoded
+ * data has a length of 0 a dummy buffer will still be allocated and
+ * the length is set to 0. */
+gpg_error_t
+b64decode (const char *string, const char *title,
+           void **r_buffer, size_t *r_buflen)
+{
+  gpg_error_t err;
+  struct b64state state;
+  size_t nbytes;
+  char *buffer;
+
+  *r_buffer = NULL;
+  *r_buflen = 0;
+
+  buffer = xtrystrdup (string);
+  if (!buffer)
+    return gpg_error_from_syserror();
+
+  err = b64dec_start (&state, title);
+  if (err)
+    {
+      xfree (buffer);
+      return err;
+    }
+  b64dec_proc (&state, buffer, strlen (buffer), &nbytes);
+  err = b64dec_finish (&state);
+  if (err)
+    xfree (buffer);
+  else
+    {
+      *r_buffer = buffer;
+      *r_buflen = nbytes;
+    }
+  return err;
 }

@@ -171,6 +171,8 @@ gpg_error_t b64dec_start (struct b64state *state, const char *title);
 gpg_error_t b64dec_proc (struct b64state *state, void *buffer, size_t length,
                          size_t *r_nbytes);
 gpg_error_t b64dec_finish (struct b64state *state);
+gpg_error_t b64decode (const char *string, const char *title,
+                       void **r_buffer, size_t *r_buflen);
 
 /*-- sexputil.c */
 char *canon_sexp_to_string (const unsigned char *canon, size_t canonlen);
