@@ -65,12 +65,8 @@
 # endif
 # include <windows.h>
 # include <winhttp.h>
-# ifndef EHOSTUNREACH
-#  define EHOSTUNREACH WSAEHOSTUNREACH
-# endif
-# ifndef EAFNOSUPPORT
-#  define EAFNOSUPPORT WSAEAFNOSUPPORT
-# endif
+# define SECURITY_WIN32 1
+# include <security.h>
 #else /*!HAVE_W32_SYSTEM*/
 # include <sys/types.h>
 # include <sys/socket.h>
@@ -250,11 +246,30 @@ static es_cookie_io_functions_t simple_cookie_functions =
   };
 #endif
 
+enum auth_negotiate_states
+  {
+    AUTH_NGT_NONE = 0,
+    AUTH_NGT_RCVD = 1,
+    AUTH_NGT_SENT = 2
+  };
+
 /* An object to store information about a proxy.  */
 struct proxy_info_s
 {
   parsed_uri_t uri;   /* The parsed proxy URL.   */
   int is_http_proxy;  /* This is an http proxy.  */
+
+#ifdef HAVE_W32_SYSTEM
+  CredHandle cred_handle;   /* Credential handle.       */
+  wchar_t *spn;             /* Service principal name.  */
+  CtxtHandle ctxt_handle;   /* Security context.        */
+  unsigned long token_size; /* Max. length of a token.  */
+  unsigned int cred_handle_valid:1;
+  unsigned int ctxt_handle_valid:1;
+#endif  /*HAVE_W32_SYSTEM*/
+
+  unsigned char *outtoken;  /* The output token allocated with token_size. */
+  unsigned long outtoklen;  /* The current length of the token.            */
 };
 typedef struct proxy_info_s *proxy_info_t;
 
@@ -1853,6 +1868,13 @@ release_proxy_info (proxy_info_t proxy)
   if (!proxy)
     return;
   http_release_parsed_uri (proxy->uri);
+  xfree (proxy->outtoken);
+#ifdef HAVE_W32_SYSTEM
+  if (proxy->ctxt_handle_valid)
+    DeleteSecurityContext (&proxy->ctxt_handle);
+  if (proxy->cred_handle_valid)
+    FreeCredentialsHandle (&proxy->cred_handle);
+#endif
   xfree (proxy);
 }
 
@@ -2336,6 +2358,181 @@ run_gnutls_handshake (http_t hd, const char *server)
 #endif /*HTTP_USE_GNUTLS*/
 
 
+/* It INPUTSTRING is NULL get the intial token.  If INPUTSTRING is not
+ * NULL, decode the string and use this as input from teh server.  On
+ * success the final output token is stored at PROXY->OUTTOKEN and
+ * OUTTOKLEN.  IF the authentication succeeded OUTTOKLEN is zero. */
+#ifdef USE_TLS
+static gpg_error_t
+proxy_get_token (proxy_info_t proxy, const char *inputstring)
+{
+#ifdef HAVE_W32_SYSTEM
+  gpg_error_t err;
+  int rc;
+  SecBuffer chlg_buf;       /* challenge buffer     */
+  SecBufferDesc chlg_desc;  /* challenge descriptor */
+  SecBuffer resp_buf;       /* response buffer      */
+  SecBufferDesc resp_desc;  /* response descriptor  */
+  unsigned long attrs;
+  TimeStamp expiry;         /* (value not used)  */
+  void *intoken = NULL;
+  size_t intoklen;
+
+  if (inputstring)
+    {
+      /* The input is expected in the token parameter but the paremter
+       * name is often forgotten.  Thus we simply detect the parameter
+       * name and skip it, assuming no other parameters are given.  */
+      if (!strncmp (inputstring, "token=", 6))
+        inputstring += 6;
+
+      err = b64decode (inputstring, NULL, &intoken, &intoklen);
+      /* Just to be safe that we don't overflow an ulong we check the
+       * actual size against an arbitrary limit. */
+      if (!err && intoklen > 65535)
+        err = gpg_error (GPG_ERR_ERANGE);
+      if (err || !intoklen)
+        {
+          log_error ("error decoding received auth token: %s\n",
+                     err? gpg_strerror (err):"empty challenge token received");
+          if (!err)
+            err = gpg_error (GPG_ERR_BAD_AUTH);
+          goto leave;
+        }
+    }
+
+  if (!proxy->spn)
+    {
+      char *buffer = strconcat ("HTTP/", (*proxy->uri->host
+                                          ?proxy->uri->host:"localhost"), NULL);
+      if (!buffer)
+        {
+          err = gpg_error_from_syserror ();
+          goto leave;
+        }
+      if (opt_debug)
+        log_debug ("http.c:proxy_connect: using '%s' as SPN\n", buffer);
+      proxy->spn = utf8_to_wchar (buffer);
+      xfree (buffer);
+      if (!proxy->spn)
+        {
+          err = gpg_error_from_syserror ();
+          goto leave;
+        }
+    }
+
+  if (!proxy->token_size || !proxy->outtoken)  /* Not yet initialized.  */
+    {
+      PSecPkgInfoW pinfo;
+
+      rc = QuerySecurityPackageInfoW (NEGOSSP_NAME_W, &pinfo);
+      if (rc)
+        {
+          log_error ("QSPI(Negotiate) failed: %s (%d)\n",
+                     w32_strerror (rc), rc);
+          err = gpg_error (GPG_ERR_BAD_AUTH);
+          goto leave;
+        }
+      proxy->token_size = pinfo->cbMaxToken;
+      FreeContextBuffer (pinfo);
+
+      proxy->outtoken = xtrymalloc (proxy->token_size);
+      if (!proxy->outtoken)
+        {
+          err = gpg_error_from_syserror ();
+          goto leave;
+        }
+    }
+
+  if (!proxy->cred_handle_valid)
+    {
+      rc = AcquireCredentialsHandleW (NULL, NEGOSSP_NAME_W,
+                                      SECPKG_CRED_OUTBOUND, NULL,
+                                      NULL, /* Current user */
+                                      NULL, /* reserved */
+                                      NULL, /* reserved */
+                                      &proxy->cred_handle,
+                                      NULL  /* expiry */);
+      if (rc)
+        {
+          log_error ("ACH(Negotiate) failed: %s (%d)\n", w32_strerror (rc), rc);
+          err = gpg_error (GPG_ERR_NO_AUTH);
+          goto leave;
+        }
+      proxy->cred_handle_valid = 1;
+    }
+
+  /* Now generate our challenge-response message.  */
+  if (intoken)
+    {
+      chlg_buf.BufferType = SECBUFFER_TOKEN;
+      chlg_buf.pvBuffer   = intoken;
+      chlg_buf.cbBuffer   = intoklen;
+      chlg_desc.ulVersion = SECBUFFER_VERSION;
+      chlg_desc.cBuffers  = 1;
+      chlg_desc.pBuffers  = &chlg_buf;
+    }
+
+  resp_buf.BufferType = SECBUFFER_TOKEN;
+  resp_buf.pvBuffer   = proxy->outtoken;
+  resp_buf.cbBuffer   = proxy->token_size;
+  resp_desc.ulVersion = SECBUFFER_VERSION;
+  resp_desc.cBuffers  = 1;
+  resp_desc.pBuffers  = &resp_buf;
+  rc = InitializeSecurityContextW (&proxy->cred_handle,
+                                   (intoken && proxy->ctxt_handle_valid)
+                                   ? &proxy->ctxt_handle : NULL,
+                                   proxy->spn, /* service principal name */
+                                   ISC_REQ_CONFIDENTIALITY,
+                                   0,    /* reserved */
+                                   SECURITY_NATIVE_DREP,
+                                   intoken? &chlg_desc : NULL,
+                                   0,    /* reserved */
+                                   &proxy->ctxt_handle, /* new context */
+                                   &resp_desc,  /* the output.  */
+                                   &attrs,      /* attribs of the context. */
+                                   &expiry);
+  switch (rc)
+    {
+    case SEC_E_OK:  /* All done and no more ISC expected.  */
+      break;
+
+    case SEC_I_COMPLETE_AND_CONTINUE:  /* Need to call CompleteAuthToken.  */
+    case SEC_I_COMPLETE_NEEDED:
+      rc = CompleteAuthToken (&proxy->ctxt_handle, &resp_desc);
+      log_error ("CompleteAuthToken failed: %s (%d)\n", w32_strerror (rc), rc);
+      err = gpg_error (GPG_ERR_NO_AUTH);
+      goto leave;
+      break;
+
+    case SEC_I_CONTINUE_NEEDED: /* Send the new token to the client.  */
+      break;
+
+    default:
+      log_error ("ISC(Negotiate) failed: %s (%d)\n", w32_strerror (rc), rc);
+      err = gpg_error (GPG_ERR_NO_AUTH);
+      goto leave;
+    }
+
+  proxy->outtoklen = resp_buf.cbBuffer;
+  proxy->ctxt_handle_valid = 1;
+  err = 0;
+
+ leave:
+  xfree (intoken);
+  return err;
+
+#else /*!HAVE_W32_SYSTEM*/
+
+  (void)proxy;
+  (void)inputstring;
+  return gpg_error (GPG_ERR_NOT_IMPLEMENTED);
+
+#endif /*!HAVE_W32_SYSTEM*/
+}
+#endif /*USE_TLS*/
+
+
 /* Use the CONNECT method to proxy our TLS stream.  */
 #ifdef USE_TLS
 static gpg_error_t
@@ -2344,11 +2541,24 @@ run_proxy_connect (http_t hd, proxy_info_t proxy,
                    unsigned short port)
 {
   gpg_error_t err;
-  int saved_flags;
+  int saved_flags = hd->flags;
   char *authhdr = NULL;
   char *request = NULL;
+  char *tmpstr  = NULL;
+  const char *s, *parms;
+  unsigned int idx;
+  int auth_basic = 0;
+  enum auth_negotiate_states authstate = 0;
+  unsigned int authpasses = 0;
 
-  if (proxy->uri->auth
+  /* Authentication methods implemented here:
+   * RFC-2617 - HTTP Authentication: Basic and Digest Access Authentication
+   * RFC-4559 - SPNEGO-based Kerberos and NTLM HTTP Authentication
+   */
+  auth_basic = !!proxy->uri->auth;
+
+  /* For basic authentication we need to send just one request.  */
+  if (auth_basic
       && !(authhdr = make_header_line ("Proxy-Authorization: Basic ",
                                        "\r\n",
                                        proxy->uri->auth,
@@ -2358,24 +2568,32 @@ run_proxy_connect (http_t hd, proxy_info_t proxy,
       goto leave;
     }
 
-  request = es_bsprintf ("CONNECT %s:%hu HTTP/1.0\r\nHost: %s:%hu\r\n%s",
+ again:
+  xfree (request);
+  request = es_bsprintf ("CONNECT %s:%hu HTTP/1.%c\r\nHost: %s:%hu\r\n%s%s",
                          httphost ? httphost : server,
                          port,
+                         auth_basic? '0' : '1',
                          httphost ? httphost : server,
                          port,
-                         authhdr ? authhdr : "");
+                         authhdr ? authhdr : "",
+                         auth_basic? "" : "Connection: keep-alive\r\n");
   if (!request)
     {
       err = gpg_error_from_syserror ();
       goto leave;
     }
+  hd->keep_alive = !auth_basic; /* We may need to send more requests.  */
 
   if (opt_debug || (hd->flags & HTTP_FLAG_LOG_RESP))
     log_debug_with_string (request, "http.c:proxy:request:");
 
-  err = make_fp_write (hd, 0, NULL);
-  if (err)
-    goto leave;
+  if (!hd->fp_write)
+    {
+      err = make_fp_write (hd, 0, NULL);
+      if (err)
+        goto leave;
+    }
 
   if (es_fputs (request, hd->fp_write) || es_fflush (hd->fp_write))
     {
@@ -2389,35 +2607,140 @@ run_proxy_connect (http_t hd, proxy_info_t proxy,
 
   /* Get the response and set hd->fp_read  */
   err = http_wait_response (hd);
-
-  /* Restore flags, destroy stream.  */
-  hd->flags = saved_flags;
-  es_fclose (hd->fp_read);
-  hd->fp_read = NULL;
-  hd->read_cookie = NULL;
-
-  /* Reset state.  */
-  hd->in_data = 0;
-
   if (err)
     goto leave;
 
-  if (hd->status_code != 200)
-    {
-      char *tmpstr;
+  {
+    unsigned long count = 0;
 
+    while (es_getc (hd->fp_read) != EOF)
+      count++;
+    if (opt_debug)
+      log_debug ("http.c:proxy_connect: skipped %lu bytes of response-body\n",
+                 count);
+  }
+
+  /* Reset state.  */
+  es_clearerr (hd->fp_read);
+  ((cookie_t)(hd->read_cookie))->up_to_empty_line = 1;
+  hd->in_data = 0;
+
+  if (hd->status_code >= 200 && hd->status_code < 300 )
+    err = 0; /* Success.  */
+  else if (hd->status_code == 407)
+    {
+      if (opt_debug)
+        log_debug ("http.c:proxy_connect: 407 seen\n");
+      parms = NULL;
+      for (idx=0; (s = http_get_header (hd, "Proxy-Authenticate", idx)); idx++)
+        {
+          if (opt_debug)
+            log_debug ("http.c:proxy_connect: method=%s\n", s);
+          if (!parms)
+            parms = has_leading_keyword (s, "Negotiate");
+        }
+      if (!parms)
+        authstate = AUTH_NGT_NONE;
+      else if (authstate == AUTH_NGT_NONE)
+        authstate = AUTH_NGT_RCVD;
+
+      switch (authstate)
+        {
+        case AUTH_NGT_NONE:
+          if (opt_debug)
+            log_debug ("http.c:proxy_connect: no supported auth method\n");
+          err = gpg_error (GPG_ERR_NO_AUTH);
+          break;
+
+        case AUTH_NGT_RCVD:
+          if (opt_debug)
+            log_debug ("http.c:proxy_connect: using negotiate - init\n");
+          err = proxy_get_token (proxy, NULL);
+          if (err)
+            goto leave;
+          if (proxy->outtoklen)  /* Authentication needs to continue.  */
+            {
+              xfree (authhdr);
+              authhdr = make_header_line ("Proxy-Authorization: Negotiate ",
+                                          "\r\n",
+                                          proxy->outtoken, proxy->outtoklen);
+              if (!authhdr)
+                {
+                  err = gpg_error_from_syserror ();
+                  goto leave;
+                }
+              authstate = AUTH_NGT_SENT;
+              authpasses++;
+              goto again;
+            }
+          break;
+
+        case AUTH_NGT_SENT:
+          if (opt_debug)
+            log_debug ("http.c:proxy_connect: using negotiate - next\n");
+          if (!*parms)
+            {
+              log_debug ("proxy authentication failed"
+                         " due to server not accepting our challenge\n");
+              err = gpg_error (GPG_ERR_BAD_AUTH);
+              goto leave;
+            }
+          if (authpasses > 5)
+            {
+              log_error ("proxy authentication failed"
+                         " due to too many passes\n");
+              err = gpg_error (GPG_ERR_BAD_AUTH);
+              goto leave;
+
+            }
+          err = proxy_get_token (proxy, parms);
+          if (err)
+            goto leave;
+          if (proxy->outtoklen)  /* Authentication needs to continue.  */
+            {
+              xfree (authhdr);
+              authhdr = make_header_line ("Proxy-Authorization: Negotiate ",
+                                          "\r\n",
+                                          proxy->outtoken, proxy->outtoklen);
+              if (!authhdr)
+                {
+                  err = gpg_error_from_syserror ();
+                  goto leave;
+                }
+              authpasses++;
+              goto again;
+            }
+          break;
+
+        default:
+          BUG();
+        }
+    }
+  else
+    err = gpg_error (GPG_ERR_NO_DATA);
+
+  if (err)
+    {
+      xfree (tmpstr);
       tmpstr = es_bsprintf ("%s:%hu", httphost ? httphost : server, port);
       log_error (_("error accessing '%s': http status %u\n"),
                  tmpstr ? tmpstr : "out of core",
                  http_get_status_code (hd));
-      xfree (tmpstr);
-      err = gpg_error (GPG_ERR_NO_DATA);
       goto leave;
     }
 
  leave:
+  /* Restore flags, destroy stream, reset state.  */
+  hd->flags = saved_flags;
+  es_fclose (hd->fp_read);
+  hd->fp_read = NULL;
+  hd->read_cookie = NULL;
+  hd->keep_alive = 0;
+  hd->in_data = 0;
+
   xfree (request);
   xfree (authhdr);
+  xfree (tmpstr);
   return err;
 }
 #endif /*USE_TLS*/
@@ -2810,19 +3133,26 @@ store_header (http_t hd, char *line)
     p++;
   value = p;
 
-  for (h=hd->headers; h; h = h->next)
-    if ( !strcmp (h->name, line) )
-      break;
-  if (h)
+  /* Check whether we have already seen a line with that name.  In
+   * that case we assume it is a comma separated list and merge
+   * them.  Of course there are a few exceptions.  */
+  if (!strcmp (line, "Proxy-Authenticate")
+      || !strcmp (line, "Www-Authenticate"))
+    ; /* Better to have them separate.  */
+  else
     {
-      /* We have already seen a line with that name.  Thus we assume
-       * it is a comma separated list and merge them.  */
-      p = strconcat (h->value, ",", value, NULL);
-      if (!p)
-        return gpg_err_code_from_syserror ();
-      xfree (h->value);
-      h->value = p;
-      return 0;
+      for (h=hd->headers; h; h = h->next)
+        if ( !strcmp (h->name, line) )
+          break;
+      if (h)
+        {
+          p = strconcat (h->value, ",", value, NULL);
+          if (!p)
+            return gpg_err_code_from_syserror ();
+          xfree (h->value);
+          h->value = p;
+          return 0;
+        }
     }
 
   /* Append a new header. */
