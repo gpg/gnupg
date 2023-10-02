@@ -180,7 +180,7 @@ ks_http_fetch (ctrl_t ctrl, const char *url, unsigned int flags,
       {
         xfree (request_buffer);
         err = http_prepare_redirect (&redirinfo, http_get_status_code (http),
-                                     http_get_header (http, "Location"),
+                                     http_get_header (http, "Location", 0),
                                      &request_buffer);
         if (err)
           goto leave;

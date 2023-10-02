@@ -227,7 +227,7 @@ do_ocsp_request (ctrl_t ctrl, ksba_ocsp_t ocsp,
             case 301:
             case 302:
               {
-                const char *s = http_get_header (http, "Location");
+                const char *s = http_get_header (http, "Location", 0);
 
                 log_info (_("URL '%s' redirected to '%s' (%u)\n"),
                           url, s?s:"[none]", http_get_status_code (http));

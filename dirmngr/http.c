@@ -2845,18 +2845,27 @@ store_header (http_t hd, char *line)
 
 
 /* Return the header NAME from the last response.  The returned value
-   is valid as along as HD has not been closed and no other request
-   has been send. If the header was not found, NULL is returned.  NAME
-   must be canonicalized, that is the first letter of each dash
-   delimited part must be uppercase and all other letters lowercase.  */
+ * is valid as along as HD has not been closed and no other request
+ * has been send. If the header was not found, NULL is returned.  NAME
+ * must be canonicalized, that is the first letter of each dash
+ * delimited part must be uppercase and all other letters lowercase.
+ * SKIP gives the number of entries of the requested NAME to skip
+ * before returning; this can be used to enumerate headers with the
+ * same name (see store_header).
+*/
 const char *
-http_get_header (http_t hd, const char *name)
+http_get_header (http_t hd, const char *name, unsigned int skip)
 {
   header_t h;
 
   for (h=hd->headers; h; h = h->next)
-    if ( !strcmp (h->name, name) )
-      return h->value;
+    if (!strcmp (h->name, name))
+      {
+        if (skip)
+          skip--;
+        else
+          return h->value;
+      }
   return NULL;
 }
 
@@ -2979,7 +2988,7 @@ parse_response (http_t hd)
   cookie->content_length_valid = 0;
   if (!(hd->flags & HTTP_FLAG_IGNORE_CL))
     {
-      s = http_get_header (hd, "Content-Length");
+      s = http_get_header (hd, "Content-Length", 0);
       if (s)
         {
           cookie->content_length_valid = 1;

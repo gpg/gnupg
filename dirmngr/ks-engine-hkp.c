@@ -1327,7 +1327,7 @@ send_request (ctrl_t ctrl, const char *request, const char *hostportstr,
       {
         xfree (request_buffer);
         err = http_prepare_redirect (&redirinfo, http_get_status_code (http),
-                                     http_get_header (http, "Location"),
+                                     http_get_header (http, "Location", 0),
                                      &request_buffer);
         if (err)
           goto leave;
