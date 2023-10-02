@@ -1024,6 +1024,40 @@ dotlock_is_locked (dotlock_t h)
 }
 
 
+/* Return the next interval to wait.  WTIME and TIMEOUT are pointers
+ * to the current state and are updated by this function.  The
+ * returned value might be different from the value of WTIME.  */
+static int
+next_wait_interval (int *wtime, long *timeout)
+{
+  int result;
+
+  /* Wait until lock has been released.  We use retry intervals of 4,
+   * 8, 16, 32, 64, 128, 256, 512, 1024, 2048, 512, 1024, 2048ms, and
+   * so on.  If wait-forever was requested we add a small random value
+   * to have different timeouts per process. */
+  if (!*wtime)
+    *wtime = 4;
+  else if (*wtime < 2048)
+    *wtime *= 2;
+  else
+    *wtime = 512;
+
+  result = *wtime;
+  if (*wtime > 8 && *timeout < 0)
+    result += ((unsigned int)getpid() % 37);
+
+  if (*timeout > 0)
+    {
+      if (result > *timeout)
+        result = *timeout;
+      *timeout -= result;
+    }
+
+  return result;
+}
+
+
 
 #ifdef HAVE_POSIX_SYSTEM
 /* Unix specific code of make_dotlock.  Returns 0 on success and -1 on
@@ -1183,27 +1217,14 @@ dotlock_take_unix (dotlock_t h, long timeout)
   if (timeout)
     {
       struct timeval tv;
+      int wtimereal;
 
-      /* Wait until lock has been released.  We use increasing retry
-         intervals of 50ms, 100ms, 200ms, 400ms, 800ms, 2s, 4s and 8s
-         but reset it if the lock owner meanwhile changed.  */
-      if (!wtime || ownerchanged)
-        wtime = 50;
-      else if (wtime < 800)
-        wtime *= 2;
-      else if (wtime == 800)
-        wtime = 2000;
-      else if (wtime < 8000)
-        wtime *= 2;
+      if (ownerchanged)
+        wtime = 0;  /* Reset because owner chnaged.  */
 
-      if (timeout > 0)
-        {
-          if (wtime > timeout)
-            wtime = timeout;
-          timeout -= wtime;
-        }
+      wtimereal = next_wait_interval (&wtime, &timeout);
 
-      sumtime += wtime;
+      sumtime += wtimereal;
       if (sumtime >= 1500)
         {
           sumtime = 0;
@@ -1211,9 +1232,8 @@ dotlock_take_unix (dotlock_t h, long timeout)
                      pid, maybe_dead, maybe_deadlock(h)? _("(deadlock?) "):"");
         }
 
-
-      tv.tv_sec = wtime / 1000;
-      tv.tv_usec = (wtime % 1000) * 1000;
+      tv.tv_sec = wtimereal / 1000;
+      tv.tv_usec = (wtimereal % 1000) * 1000;
       select (0, NULL, NULL, NULL, &tv);
       goto again;
     }
@@ -1255,28 +1275,14 @@ dotlock_take_w32 (dotlock_t h, long timeout)
 
   if (timeout)
     {
-      /* Wait until lock has been released.  We use retry intervals of
-         50ms, 100ms, 200ms, 400ms, 800ms, 2s, 4s and 8s.  */
-      if (!wtime)
-        wtime = 50;
-      else if (wtime < 800)
-        wtime *= 2;
-      else if (wtime == 800)
-        wtime = 2000;
-      else if (wtime < 8000)
-        wtime *= 2;
+      int wtimereal;
 
-      if (timeout > 0)
-        {
-          if (wtime > timeout)
-            wtime = timeout;
-          timeout -= wtime;
-        }
+      wtimereal = next_wait_interval (&wtime, &timeout);
 
       if (wtime >= 800)
         my_info_1 (_("waiting for lock %s...\n"), h->lockname);
 
-      Sleep (wtime);
+      Sleep (wtimereal);
       goto again;
     }
 
