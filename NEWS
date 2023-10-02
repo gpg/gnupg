@@ -22,7 +22,9 @@ Noteworthy changes in version 2.2.42 (unreleased)
   * gpg: Detect already compressed data also when using a pipe.  Also
     detect JPEG and PNG file formats.  [T6332]
 
-  * gpg: New option --add-desig-revoker.
+  * gpg: New option --add-desig-revoker.  [rG6c9db01101]
+
+  * gpg: Fix subkey re-import if a stub key still exists.  [T3456]
 
   * gpgsm: Support ECC certificates.  [T6253]
 
@@ -47,6 +49,13 @@ Noteworthy changes in version 2.2.42 (unreleased)
   * dirmngr: Support config value "none" to disable the default
     keyserver.  [T6708]
 
+  * dirmngr: Implement automatic proxy detection on Windows.  [T5768]
+
+  * dirmngr: Fix handling of the HTTP Content-Length.  [rG9f1c11cd3f]
+
+  * dirmngr: Add code to support proxy authentication using the
+    Negotiation method on Windows.  [T6719]
+
   * wkd: Use export-clean for gpg-wks-client's --mirror and --create
     commands.  [rG505e770b4c]
 
@@ -54,6 +63,8 @@ Noteworthy changes in version 2.2.42 (unreleased)
     --no-add-revocs.  [rG67d57fae3f]
 
   * Ignore attempts to remove the /dev/null device.  [T6556]
+
+  * Improve advisory file lock retry strategy.  [rG45a1ab5017]
 
   Release-info: https://dev.gnupg.org/T6307
 
