@@ -30,8 +30,9 @@
    (make-environment-cache
     (test::scm
      #f
-     (path-join "tests" "openpgp" "setup.scm")
-     (in-srcdir "tests" "openpgp" "setup.scm"))))
+     #f
+     (path-join "tests" "tpm2dtests" "setup.scm")
+     (in-srcdir "tests" "tpm2dtests" "setup.scm"))))
 
  (define (qualify path variant)
    (string-append "<" variant ">" path))
@@ -40,8 +41,9 @@
    (make-environment-cache
     (test::scm
      #f
-     (qualify (path-join "tests" "openpgp" "setup.scm") variant)
-     (in-srcdir "tests" "openpgp" "setup.scm")
+     variant
+     (path-join "tests" "tpm2dtests" "setup.scm")
+     (in-srcdir "tests" "tpm2dtests" "setup.scm")
      (string-append "--" variant))))
 
  (define setup-use-keyring (setup* "use-keyring"))
@@ -55,7 +57,8 @@
  (define tests
    (map (lambda (name)
 	  (test::scm setup
-		     (qualify (path-join "tests" "tpm2dtests" name) "standard")
+                     "standards"
+		     (path-join "tests" "tpm2dtests" name)
 		     (in-srcdir "tests" "tpm2dtests" name))) all-tests))
 
  (when *run-all-tests*
@@ -65,15 +68,15 @@
               ;; The second pass uses the keyboxd
 	      (map (lambda (name)
 		     (test::scm setup-use-keyboxd
-				(qualify (path-join "tests" "tpm2dtests" name)
-					 "keyboxd")
+                                "keyboxd"
+				(path-join "tests" "tpm2dtests" name)
 				(in-srcdir "tests" "tpm2dtests" name)
 				"--use-keyboxd")) all-tests)
               ;; The third pass uses the legact pubring.gpg
 	      (map (lambda (name)
 		     (test::scm setup-use-keyring
-				(qualify (path-join "tests" "tpm2dtests" name)
-					 "keyring")
+                                "keyring"
+				(path-join "tests" "tpm2dtests" name)
 				(in-srcdir "tests" "tpm2dtests" name)
 				"--use-keyring")) all-tests)
               )))

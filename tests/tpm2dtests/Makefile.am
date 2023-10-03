@@ -34,10 +34,10 @@ TESTS_ENVIRONMENT = LC_ALL=C \
 	PATH="../gpgscm:$(PATH)" \
 	abs_top_srcdir="$(abs_top_srcdir)" \
 	objdir="$(abs_top_builddir)" \
-	TPMSERVER="$(TPMSERVER)" \
+	TPMSERVER="$(TPMSERVER)" TSSSTARTUP="$(TSSSTARTUP)" \
 	SWTPM="$(SWTPM)" \
 	SWTPM_IOCTL="$(SWTPM_IOCTL)" \
-        GNUPG_BUILD_ROOT="$(abs_top_builddir)/tests" \
+        GNUPG_BUILD_ROOT="$(abs_top_builddir)" \
 	GNUPG_IN_TEST_SUITE=fact \
 	GPGSCM_PATH="$(abs_top_srcdir)/tests/gpgscm"
 
