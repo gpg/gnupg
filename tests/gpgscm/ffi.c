@@ -1025,18 +1025,12 @@ do_process_spawn_io (scheme *sc, pointer args)
     fd_set read_fdset;
     ssize_t bytes_read;
 
-    if (out_fd < 0)
-      goto errout;
-
-    if (err_fd < 0)
-      goto errout;
-
-    FD_ZERO (&read_fdset);
-
     while (1)
       {
         int nfd;
         int ret;
+
+        FD_ZERO (&read_fdset);
 
         if (out_fd >= 0)
           FD_SET (out_fd, &read_fdset);
