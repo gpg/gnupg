@@ -963,7 +963,8 @@ main (int argc, char **argv)
                   GPG_AGENT_SSH_SOCK_NAME,
                   SCDAEMON_SOCK_NAME,
                   KEYBOXD_SOCK_NAME,
-                  DIRMNGR_SOCK_NAME
+                  DIRMNGR_SOCK_NAME,
+                  TPM2DAEMON_SOCK_NAME
                 };
                 int i;
                 char *p;
@@ -976,8 +977,11 @@ main (int argc, char **argv)
                     xfree (p);
                   }
                 if (gnupg_rmdir (socketdir))
-                  gc_error (1, 0, "error removing '%s': %s",
-                            socketdir, gpg_strerror (err));
+                  {
+                    err = gpg_error_from_syserror ();
+                    gc_error (1, 0, "error removing '%s': %s",
+                              socketdir, gpg_strerror (err));
+                  }
               }
             else if (gpg_err_code (err) == GPG_ERR_ENOENT)
               gc_error (0, 0, "warning: removing '%s' failed: %s",
