@@ -29,6 +29,7 @@
 (define setup
   (make-environment-cache (test::scm
 			   #f
+                           #f
 			   (path-join "tests" "tpm2dtests" "setup.scm")
 			   (in-srcdir "tests" "tpm2dtests" "setup.scm"))))
 
@@ -38,6 +39,7 @@
 	      (load-tests "tests" "tpm2dtests")
 	      (map (lambda (name)
 		      (test::scm setup
+			         #f
 				 (path-join "tests" "tpm2dtests" name)
 				 (in-srcdir "tests" "tpm2dtests" name)
 				 "--use-keyring")) tests)))
