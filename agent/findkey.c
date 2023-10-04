@@ -333,7 +333,7 @@ agent_update_private_key (const unsigned char *grip, nvc_t pk)
   int blocksigs = 0;
 
   fname0 = fname_from_keygrip (grip, 0);
-  if (!fname)
+  if (!fname0)
     {
       err = gpg_error_from_syserror ();
       goto leave;
