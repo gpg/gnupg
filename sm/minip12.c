@@ -50,6 +50,8 @@
 #define DIM(v)		     (sizeof(v)/sizeof((v)[0]))
 #endif
 
+/* Enable the next macro to dump stuff for debugging.  */
+#undef ENABLE_DER_STRUCT_DUMPING
 
 
 static unsigned char const oid_data[9] = {
@@ -111,6 +113,8 @@ static unsigned char const data_mactemplate[51] = {
 #define DATA_MACTEMPLATE_MAC_OFF 17
 #define DATA_MACTEMPLATE_SALT_OFF 39
 
+/* Note that the BMP String in this template reads:
+ * "GnuPG exported certificate ffffffff"  */
 static unsigned char const data_attrtemplate[106] = {
   0x31, 0x7c, 0x30, 0x55, 0x06, 0x09, 0x2a, 0x86,
   0x48, 0x86, 0xf7, 0x0d, 0x01, 0x09, 0x14, 0x31,
@@ -210,6 +214,8 @@ static int opt_verbose;
 
 static unsigned char *cram_octet_string (const unsigned char *input,
                                          size_t length, size_t *r_newlength);
+static int need_octet_string_cramming (const unsigned char *input,
+                                       size_t length);
 
 
 
@@ -560,7 +566,7 @@ tlv_expect_sequence (struct tlv_ctx_s *tlv)
   return _tlv_push (tlv);
 }
 
-/* Variant of tlv_expect_sequence to be used for the ouyter sequence
+/* Variant of tlv_expect_sequence to be used for the outer sequence
  * of an object which might have padding after the ASN.1 data.  */
 static gpg_error_t
 tlv_expect_top_sequence (struct tlv_ctx_s *tlv)
@@ -618,7 +624,8 @@ tlv_expect_object (struct tlv_ctx_s *tlv, int class, int tag,
   if (!tlv->ti.length)
     return (tlv->lasterr = gpg_error (GPG_ERR_TOO_SHORT));
 
-  if (class == CLASS_CONTEXT && tag == 0 && tlv->ti.is_constructed)
+  if (class == CLASS_CONTEXT && tag == 0 && tlv->ti.is_constructed
+      && need_octet_string_cramming (p, tlv->ti.length))
     {
       char *newbuffer;
 
@@ -665,7 +672,8 @@ tlv_expect_octet_string (struct tlv_ctx_s *tlv, int encapsulates,
   if (!(n=tlv->ti.length))
     return (tlv->lasterr = gpg_error (GPG_ERR_TOO_SHORT));
 
-  if (encapsulates && tlv->ti.is_constructed)
+  if (encapsulates && tlv->ti.is_constructed
+      && need_octet_string_cramming (p, n))
     {
       char *newbuffer;
 
@@ -856,6 +864,39 @@ cram_octet_string (const unsigned char *input, size_t length,
  bailout:
   gcry_free (output);
   return NULL;
+}
+
+
+/* Return true if (INPUT,LENGTH) is a structure which should be passed
+ * to cram_octet_string.  This is basically the same loop as in
+ * cram_octet_string but without any actual copying.  */
+static int
+need_octet_string_cramming (const unsigned char *input, size_t length)
+{
+  const unsigned char *s = input;
+  size_t n = length;
+  struct tag_info ti;
+
+  if (!length)
+    return 0;
+
+  while (n)
+    {
+      if (parse_tag (&s, &n, &ti))
+        return 0;
+      if (ti.class == CLASS_UNIVERSAL && ti.tag == TAG_OCTET_STRING
+          && !ti.ndef && !ti.is_constructed)
+        {
+          s += ti.length;
+          n -= ti.length;
+        }
+      else if (ti.class == CLASS_UNIVERSAL && !ti.tag && !ti.is_constructed)
+        break; /* Ready */
+      else
+        return 0;
+    }
+
+  return 1;
 }
 
 
@@ -1173,13 +1214,15 @@ bag_decrypted_data_p (const void *plaintext, size_t length)
   const unsigned char *p = plaintext;
   size_t n = length;
 
-  /*   { */
-  /* #  warning debug code is enabled */
-  /*     FILE *fp = fopen ("tmp-minip12-plain-data.der", "wb"); */
-  /*     if (!fp || fwrite (p, n, 1, fp) != 1) */
-  /*       exit (2); */
-  /*     fclose (fp); */
-  /*   } */
+#ifdef ENABLE_DER_STRUCT_DUMPING
+  {
+  #  warning debug code is enabled
+      FILE *fp = fopen ("tmp-minip12-plain-data.der", "wb");
+      if (!fp || fwrite (p, n, 1, fp) != 1)
+        exit (2);
+      fclose (fp);
+  }
+#endif /*ENABLE_DER_STRUCT_DUMPING*/
 
   if (parse_tag (&p, &n, &ti))
     return 0;
@@ -1696,13 +1739,15 @@ bag_data_p (const void *plaintext, size_t length)
   const unsigned char *p = plaintext;
   size_t n = length;
 
-/*   { */
-/* #  warning debug code is enabled */
-/*     FILE *fp = fopen ("tmp-minip12-plain-key.der", "wb"); */
-/*     if (!fp || fwrite (p, n, 1, fp) != 1) */
-/*       exit (2); */
-/*     fclose (fp); */
-/*   } */
+#ifdef ENABLE_DER_STRUCT_DUMPING
+  {
+#  warning debug code is enabled
+    FILE *fp = fopen ("tmp-minip12-plain-key.der", "wb");
+    if (!fp || fwrite (p, n, 1, fp) != 1)
+      exit (2);
+    fclose (fp);
+  }
+#endif /*ENABLE_DER_STRUCT_DUMPING*/
 
   if (parse_tag (&p, &n, &ti) || ti.class || ti.tag != TAG_SEQUENCE)
     return 0;
