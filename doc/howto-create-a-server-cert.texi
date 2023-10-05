@@ -80,7 +80,7 @@ would anyway ignore such a request. Thus just hit enter.
 
 If you want to create a client certificate for email encryption, this
 would be the place to enter your mail address
-(e.g. @email{joe@@example.org}). You may enter as many addresses as you like,
+(e.g., @email{joe@@example.org}). You may enter as many addresses as you like,
 however the CA may not accept them all or reject the entire request.
 
 @cartouche

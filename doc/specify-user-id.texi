@@ -39,7 +39,7 @@ using the option @option{--with-colons}.
 @item By fingerprint.
 This format is deduced from the length of the string and its content or
 the @code{0x} prefix.  Note, that only the 20 byte version fingerprint
-is available with @command{gpgsm} (i.e. the SHA-1 hash of the
+is available with @command{gpgsm} (i.e., the SHA-1 hash of the
 certificate).
 
 When using @command{gpg} an exclamation mark (!) may be appended to
@@ -88,7 +88,7 @@ with left and right angles.
 @item By partial match on an email address.
 This is indicated by prefixing the search string with an @code{@@}.
 This uses a substring search but considers only the mail address
-(i.e. inside the angle brackets).
+(i.e., inside the angle brackets).
 
 @cartouche
 @example

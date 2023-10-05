@@ -330,21 +330,21 @@ The status of the verification is indicated by a flag directly
 following the "sig" tag (and thus before the flags described below.  A
 "!" indicates that the signature has been successfully verified, a "-"
 denotes a bad signature and a "%" is used if an error occurred while
-checking the signature (e.g. a non supported algorithm).  Signatures
+checking the signature (e.g., a non supported algorithm).  Signatures
 where the public key is not available are not listed; to see their
 keyids the command @option{--list-sigs} can be used.
 
 For each signature listed, there are several flags in between the
 signature status flag and keyid.  These flags give additional
 information about each key signature.  From left to right, they are
-the numbers 1-3 for certificate check level (see
+the numbers 1--3 for certificate check level (see
 @option{--ask-cert-level}), "L" for a local or non-exportable
 signature (see @option{--lsign-key}), "R" for a nonRevocable signature
 (see the @option{--edit-key} command "nrsign"), "P" for a signature
 that contains a policy URL (see @option{--cert-policy-url}), "N" for a
 signature that contains a notation (see @option{--cert-notation}), "X"
 for an eXpired signature (see @option{--ask-cert-expire}), and the
-numbers 1-9 or "T" for 10 and above to indicate trust signature levels
+numbers 1--9 or "T" for 10 and above to indicate trust signature levels
 (see the @option{--edit-key} command "tsign").
 
 
@@ -405,7 +405,7 @@ description, please see the Card HOWTO at
 https://gnupg.org/documentation/howtos.html#GnuPG-cardHOWTO .  Please
 note that the command "openpgp" can be used to switch to the OpenPGP
 application of cards which by default are presenting another
-application (e.g. PIV).
+application (e.g., PIV).
 
 @item --card-status
 @opindex card-status
@@ -589,7 +589,7 @@ corrupted trustdb.  Example:
 Update the trustdb with the ownertrust values stored in @code{files} (or
 STDIN if not given); existing values will be overwritten.  In case of a
 severely damaged trustdb and if you have a recent backup of the
-ownertrust values (e.g. in the file @file{otrust.txt}), you may re-create
+ownertrust values (e.g., in the file @file{otrust.txt}), you may re-create
 the trustdb using these commands:
 @c man:.RS
 @example
@@ -893,7 +893,7 @@ signing.
   @item delsig
   @opindex keyedit:delsig
   Delete a signature. Note that it is not possible to retract a signature,
-  once it has been send to the public (i.e. to a keyserver).  In that case
+  once it has been send to the public (i.e., to a keyserver).  In that case
   you better use @code{revsig}.
 
   @item revsig
@@ -927,7 +927,7 @@ signing.
   @opindex keyedit:deluid
   Delete a user ID or photographic user ID.  Note that it is not
   possible to retract a user id, once it has been send to the public
-  (i.e. to a keyserver).  In that case you better use @code{revuid}.
+  (i.e., to a keyserver).  In that case you better use @code{revuid}.
 
   @item revuid
   @opindex keyedit:revuid
@@ -1047,7 +1047,7 @@ signing.
   @item delkey
   @opindex keyedit:delkey
   Remove a subkey (secondary key). Note that it is not possible to retract
-  a subkey, once it has been send to the public (i.e. to a keyserver).  In
+  a subkey, once it has been send to the public (i.e., to a keyserver).  In
   that case you better use @code{revkey}.  Also note that this only
   deletes the public part of a key.
 
@@ -1099,7 +1099,7 @@ signing.
   @item clean
   @opindex keyedit:clean
   Compact (by removing all signatures except the selfsig) any user ID
-  that is no longer usable (e.g. revoked, or expired). Then, remove any
+  that is no longer usable (e.g., revoked, or expired). Then, remove any
   signatures that are not usable by the trust calculations.
   Specifically, this removes any signature that does not validate, any
   signature that is superseded by a later signature, revoked signatures,
@@ -1113,7 +1113,7 @@ signing.
   @item change-usage
   @opindex keyedit:change-usage
   Change the usage flags (capabilities) of the primary key or of
-  subkeys.  These usage flags (e.g. Certify, Sign, Authenticate,
+  subkeys.  These usage flags (e.g., Certify, Sign, Authenticate,
   Encrypt) are set during key creation.  Sometimes it is useful to
   have the opportunity to change them (for example to add
   Authenticate) after they have been created.  Please take care when
@@ -1538,9 +1538,9 @@ will be expanded to a filename containing the photo. "%I" does the
 same, except the file will not be deleted once the viewer exits.
 Other flags are "%k" for the key ID, "%K" for the long key ID, "%f"
 for the key fingerprint, "%t" for the extension of the image type
-(e.g. "jpg"), "%T" for the MIME type of the image (e.g. "image/jpeg"),
+(e.g., "jpg"), "%T" for the MIME type of the image (e.g., "image/jpeg"),
 "%v" for the single-character calculated validity of the image being
-viewed (e.g. "f"), "%V" for the calculated validity as a string (e.g.
+viewed (e.g., "f"), "%V" for the calculated validity as a string (e.g.,
 "full"), "%U" for a base32 encoded hash of the user ID,
 and "%%" for an actual percent sign. If neither %i or %I are present,
 then the photo will be supplied to the viewer on standard input.
@@ -2019,7 +2019,7 @@ default), that keyserver is tried.  Note that the creator of the
 signature uses the option @option{--sig-keyserver-url} to specify the
 preferred keyserver for data signatures.
 
-3. If the signature has the Signer's UID set (e.g. using
+3. If the signature has the Signer's UID set (e.g., using
 @option{--sender} while creating the signature) a Web Key Directory
 (WKD) lookup is done.  This is the default configuration but can be
 disabled by removing WKD from the auto-key-locate list or by using the
@@ -2267,7 +2267,7 @@ suppressed on the command line.
 @itemx --no-require-secmem
 @opindex require-secmem
 Refuse to run if GnuPG cannot get secure memory. Defaults to no
-(i.e. run, but give a warning).
+(i.e., run, but give a warning).
 
 
 @item --require-cross-certification
@@ -2397,7 +2397,7 @@ id used to make the signature and embeds that user ID into the created
 signature (using OpenPGP's ``Signer's User ID'' subpacket).  If the
 option is given multiple times a suitable user ID is picked.  However,
 if the signing key was specified directly by using a mail address
-(i.e. not by using a fingerprint or key ID) this option is used and
+(i.e., not by using a fingerprint or key ID) this option is used and
 the mail address is embedded in the created signature.
 
 When verifying a signature @var{mbox} is used to restrict the
@@ -2506,7 +2506,7 @@ the @option{--status-fd} line ``PROGRESS'' to provide a value for
 @item --key-origin @var{string}[,@var{url}]
 @opindex key-origin
 gpg can track the origin of a key. Certain origins are implicitly
-known (e.g. keyserver, web key directory) and set.  For a standard
+known (e.g., keyserver, web key directory) and set.  For a standard
 import the origin of the keys imported can be set with this option.
 To list the possible values use "help" for @var{string}.  Some origins
 can store an optional @var{url} argument.  That URL can appended to
@@ -2674,13 +2674,13 @@ The available properties are:
   @itemx key_created_d
   The first is the timestamp a public key or subkey packet was
   created.  The second is the same but given as an ISO string,
-  e.g. "2016-08-17". (drop-subkey)
+  e.g., "2016-08-17". (drop-subkey)
 
   @item key_expires
   @itemx key_expires_d
   The expiration time of a public key or subkey or 0 if it does not
   expire.  The second is the same but given as an ISO date string or
-  an empty string e.g. "2038-01-19".
+  an empty string e.g., "2038-01-19".
 
   @item fpr
   The hexified fingerprint of the current subkey or primary key.
@@ -2713,7 +2713,7 @@ The available properties are:
   @itemx sig_created_d
   The first is the timestamp a signature packet was created.  The
   second is the same but given as an ISO date string,
-  e.g. "2016-08-17". (drop-sig)
+  e.g., "2016-08-17". (drop-sig)
 
   @item sig_algo
   A number with the public key algorithm of a signature packet. (drop-sig)
@@ -2833,7 +2833,7 @@ obsolete; it does not harm to use it though.
 @opindex legacy-list-mode
 Revert to the pre-2.1 public key list mode.  This only affects the
 human readable output and not the machine interface
-(i.e. @code{--with-colons}).  Note that the legacy format does not
+(i.e., @code{--with-colons}).  Note that the legacy format does not
 convey suitable information for elliptic curves.
 
 @item --with-fingerprint
@@ -2969,7 +2969,7 @@ to safely override the algorithm chosen by the recipient key
 preferences, as GPG will only select an algorithm that is usable by
 all recipients.  The most highly ranked digest algorithm in this list
 is also used when signing without encryption
-(e.g. @option{--clear-sign} or @option{--sign}).
+(e.g., @option{--clear-sign} or @option{--sign}).
 
 @item --personal-compress-preferences @var{string}
 @opindex personal-compress-preferences
@@ -2980,7 +2980,7 @@ allows the user to safely override the algorithm chosen by the
 recipient key preferences, as GPG will only select an algorithm that
 is usable by all recipients.  The most highly ranked compression
 algorithm in this list is also used when there are no recipient keys
-to consider (e.g. @option{--symmetric}).
+to consider (e.g., @option{--symmetric}).
 
 @item --s2k-cipher-algo @var{name}
 @opindex s2k-cipher-algo
@@ -3006,7 +3006,7 @@ of times (see @option{--s2k-count}).
 Specify how many times the passphrases mangling for symmetric
 encryption is repeated.  This value may range between 1024 and
 65011712 inclusive.  The default is inquired from gpg-agent.  Note
-that not all values in the 1024-65011712 range are legal and if an
+that not all values in the 1024--65011712 range are legal and if an
 illegal value is selected, GnuPG will round up to the nearest legal
 value.  This option is only meaningful if @option{--s2k-mode} is set
 to the default of 3.
@@ -3176,7 +3176,7 @@ however carefully selected to best aid in debugging.
 @item --debug @var{flags}
 @opindex debug
 Set debug flags.  All flags are or-ed and @var{flags} may be given
-in C syntax (e.g. 0x0042) or as a comma separated list of flag names.
+in C syntax (e.g., 0x0042) or as a comma separated list of flag names.
 To get a list of all supported flags the single word "help" can be
 used. This option is only useful for debugging and the behavior may
 change at any time without notice.
@@ -3211,7 +3211,7 @@ only useful for certain regression tests.
 This option is only useful for testing; it sets the system time back
 or forth to @var{epoch} which is the number of seconds elapsed since
 the year 1970.  Alternatively @var{epoch} may be given as a full ISO
-time string (e.g. "20070924T154812").
+time string (e.g., "20070924T154812").
 
 If you suffix @var{epoch} with an exclamation mark (!), the system time
 will appear to be frozen at the specified time.
@@ -3537,7 +3537,7 @@ are:
 @opindex no-symkey-cache
 Disable the passphrase cache used for symmetrical en- and decryption.
 This cache is based on the message specific salt value
-(cf. @option{--s2k-mode}).
+(cf.@: @option{--s2k-mode}).
 
 @item --request-origin @var{origin}
 @opindex request-origin
@@ -4606,7 +4606,7 @@ If you don't give any of them, no user ID is created.
 
 @item Expire-Date: @var{iso-date}|(@var{number}[d|w|m|y])
 Set the expiration date for the key (and the subkey).  It may either
-be entered in ISO date format (e.g. "20000815T145012") or as number of
+be entered in ISO date format (e.g., "20000815T145012") or as number of
 days, weeks, month or years after the creation date.  The special
 notation "seconds=N" is also allowed to specify a number of seconds
 since creation.  Without a letter days are assumed.  Note that there
@@ -4631,7 +4631,7 @@ in the @option{--edit-key} menu.
 
 @item  Revoker: @var{algo}:@var{fpr} [sensitive]
 Add a designated revoker to the generated key.  Algo is the public key
-algorithm of the designated revoker (i.e. RSA=1, DSA=17, etc.)
+algorithm of the designated revoker (i.e., RSA=1, DSA=17, etc.)
 @var{fpr} is the fingerprint of the designated revoker.  The optional
 @samp{sensitive} flag marks the designated revoker as sensitive
 information.  Only v4 keys may be designated revokers.

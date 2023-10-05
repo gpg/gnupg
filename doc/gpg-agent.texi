@@ -72,7 +72,7 @@ the included Secure Shell Agent you may start the agent using:
 @c   One way of enforcing this split is a per-key or per-session
 @c   passphrase, known only by the owner, which must be supplied to the
 @c   agent to permit the use of the secret key material.  Another way is
-@c   with an out-of-band permission mechanism (e.g. a button or GUI
+@c   with an out-of-band permission mechanism (e.g@:. a button or GUI
 @c   interface that the owner has access to, but the supplicant does not).
 @c
 @c   The rationale for this separation is that it allows access to the
@@ -111,8 +111,8 @@ Please make sure that a proper pinentry program has been installed
 under the default filename (which is system dependent) or use the
 option @option{pinentry-program} to specify the full name of that program.
 It is often useful to install a symbolic link from the actual used
-pinentry (e.g. @file{@value{BINDIR}/pinentry-gtk}) to the expected
-one (e.g. @file{@value{BINDIR}/pinentry}).
+pinentry (e.g., @file{@value{BINDIR}/pinentry-gtk}) to the expected
+one (e.g., @file{@value{BINDIR}/pinentry}).
 
 @manpause
 @noindent
@@ -178,7 +178,7 @@ If in @file{common.conf} the option @option{no-autostart} is set, any
 start attempts will be ignored.
 
 In --supervised mode, different file descriptors can be provided for
-use as different socket types (e.g. ssh, extra) as long as they are
+use as different socket types (e.g., ssh, extra) as long as they are
 identified in the environment variable @code{LISTEN_FDNAMES} (see
 sd_listen_fds(3) on some Linux distributions for more information on
 this convention).
@@ -259,7 +259,7 @@ however carefully selected to best aid in debugging.
 @item --debug @var{flags}
 @opindex debug
 Set debug flags.  All flags are or-ed and @var{flags} may be given
-in C syntax (e.g. 0x0042) or as a comma separated list of flag names.
+in C syntax (e.g., 0x0042) or as a comma separated list of flag names.
 To get a list of all supported flags the single word "help" can be
 used. This option is only useful for debugging and the behavior may
 change at any time without notice.
@@ -345,7 +345,7 @@ specify the logging output.
 @anchor{option --no-allow-mark-trusted}
 @item --no-allow-mark-trusted
 @opindex no-allow-mark-trusted
-Do not allow clients to mark keys as trusted, i.e. put them into the
+Do not allow clients to mark keys as trusted, i.e., put them into the
 @file{trustlist.txt} file.  This makes it harder for users to inadvertently
 accept Root-CA keys.
 
@@ -705,7 +705,7 @@ The order in which keys are presented to ssh are:
 
 Editing the "Use-for-ssh" values can be done with an editor or using
 @command{gpg-connect-agent} and "KEYATTR" (Remember to append a colon
-to the key; i.e. use "Use-for-ssh:").
+to the key; i.e., use "Use-for-ssh:").
 
 
 @anchor{option --ssh-fingerprint-digest}
@@ -713,7 +713,7 @@ to the key; i.e. use "Use-for-ssh:").
 @opindex ssh-fingerprint-digest
 
 Select the digest algorithm used to compute ssh fingerprints that are
-communicated to the user, e.g. in pinentry dialogs.  OpenSSH has
+communicated to the user, e.g., in pinentry dialogs.  OpenSSH has
 transitioned from using MD5 to the more secure SHA256.
 
 
@@ -819,7 +819,7 @@ It might even be advisable to change the permissions to read-only so
 that this file can't be changed inadvertently.
 
 As a special feature a line @code{include-default} will include a global
-list of trusted certificates (e.g. @file{@value{SYSCONFDIR}/trustlist.txt}).
+list of trusted certificates (e.g., @file{@value{SYSCONFDIR}/trustlist.txt}).
 This global list is also used if the local list is not available;
 the @ref{option --no-user-trustlist} enforces the use of only
 this global list.
@@ -881,7 +881,7 @@ The keygrip may be prefixed with a @code{!} to disable an entry.
 
 The following example lists exactly one key.  Note that keys available
 through a OpenPGP smartcard in the active smartcard reader are
-implicitly added to this list; i.e. there is no need to list them.
+implicitly added to this list; i.e., there is no need to list them.
 
 @cartouche
 @smallexample
@@ -914,7 +914,7 @@ a small helper script is provided to create these files (@pxref{addgnupghome}).
 @mansect signals
 @node Agent Signals
 @section Use of some signals
-A running @command{gpg-agent} may be controlled by signals, i.e. using
+A running @command{gpg-agent} may be controlled by signals, i.e., using
 the @command{kill} command to send a signal to the process.
 
 Here is a list of supported signals:
@@ -1396,7 +1396,7 @@ convention either the hexified fingerprint of the key shall be used for
 calling application and a colon: Like @code{gpg:somestring}.
 
 @var{error_message} is either a single @code{X} for no error message or
-a string to be shown as an error message like (e.g. "invalid
+a string to be shown as an error message like (e.g., "invalid
 passphrase").  Blanks must be percent escaped or replaced by @code{+}'.
 
 @var{prompt} is either a single @code{X} for a default prompt or the

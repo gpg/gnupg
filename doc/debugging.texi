@@ -91,7 +91,7 @@ should not occur but sometimes things go wrong), run it using
 @item How to find the IP address of a keyserver
 
 If a round robin URL of is used for a keyserver
-(e.g. subkeys.gnupg.org); it is not easy to see what server is actually
+(e.g., subkeys.gnupg.org); it is not easy to see what server is actually
 used.  Using the keyserver debug option as in
 
 @smallexample
@@ -130,7 +130,7 @@ but Dirmngr's OCSP feature has not been enabled using
 The far most common reason for this is that the environment variable
 @code{GPG_TTY} has not been set correctly.  Make sure that it has been
 set to a real tty device and not just to @samp{/dev/tty};
-i.e. @samp{GPG_TTY=tty} is plainly wrong; what you want is
+i.e., @samp{GPG_TTY=tty} is plainly wrong; what you want is
 @samp{GPG_TTY=`tty`} --- note the back ticks.  Also make sure that
 this environment variable gets exported, that is you should follow up
 the setting with an @samp{export GPG_TTY} (assuming a Bourne style

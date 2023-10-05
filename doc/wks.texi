@@ -212,7 +212,7 @@ The default is @file{openpgpkey}.
 @opindex blacklist
 This option is used to exclude certain mail addresses from a mirror
 operation.  The format of @var{file} is one mail address (just the
-addrspec, e.g. "postel@@isi.edu") per line.  Empty lines and lines
+addrspec, e.g., "postel@@isi.edu") per line.  Empty lines and lines
 starting with a '#' are ignored.
 
 @item --add-revocs

@@ -136,7 +136,7 @@ Run in server mode and wait for commands on the @code{stdin}.
 Behave as a Dirmngr client issuing the request @var{command} with the
 optional list of @var{args}.  The output of the Dirmngr is printed
 stdout.  Please note that file names given as arguments should have an
-absolute file name (i.e. commencing with @code{/}) because they are
+absolute file name (i.e., commencing with @code{/}) because they are
 passed verbatim to the Dirmngr and the working directory of the
 Dirmngr might not be the same as the one of this client.  Currently it
 is not possible to pass data via stdin to the Dirmngr.  @var{command}
@@ -259,7 +259,7 @@ optional @var{pattern}. Those pattern consist of a list of user ids
 @option{--armor} option a few informational lines are prepended before
 each block.  There is one limitation: As there is no commonly agreed
 upon way to pack more than one certificate into an ASN.1 structure,
-the binary export (i.e. without using @option{armor}) works only for
+the binary export (i.e., without using @option{armor}) works only for
 the export of one certificate.  Thus it is required to specify a
 @var{pattern} which yields exactly one certificate.  Ephemeral
 certificate are only exported if all @var{pattern} are given as
@@ -462,7 +462,7 @@ line of the @file{trustlist.txt}
 @opindex force-crl-refresh
 Tell the dirmngr to reload the CRL for each request.  For better
 performance, the dirmngr will actually optimize this by suppressing
-the loading for short time intervals (e.g. 30 minutes). This option
+the loading for short time intervals (e.g., 30 minutes). This option
 is useful to make sure that a fresh CRL is available for certificates
 hold in the keybox.  The suggested way of doing this is by using it
 along with the option @option{--with-validation} for a key listing
@@ -539,7 +539,7 @@ Create PEM encoded output.  Default is binary output.
 
 @item --base64
 @opindex base64
-Create Base-64 encoded output; i.e. PEM without the header lines.
+Create Base-64 encoded output; i.e., PEM without the header lines.
 
 @item --assume-armor
 @opindex assume-armor
@@ -639,7 +639,7 @@ done with @code{--with-colons}.
 @item --no-pretty-dn
 @opindex no-pretty-dn
 By default gpgsm prints distinguished names (DNs) like the Issuer or
-Subject in a more readable format (e.g. using a well defined order of
+Subject in a more readable format (e.g., using a well defined order of
 the parts).  However, this format can't be used as input strings.
 This option reverts printing to standard RFC-2253 format and thus
 avoids the need to use --dump-cert or --with-colons to get the
@@ -747,7 +747,7 @@ key database clear of unneeded certificates stored on smartcards.
 This option is only useful for testing; it sets the system time back or
 forth to @var{epoch} which is the number of seconds elapsed since the year
 1970.  Alternatively @var{epoch} may be given as a full ISO time string
-(e.g. "20070924T154812").
+(e.g., "20070924T154812").
 
 @item --with-ephemeral-keys
 @opindex with-ephemeral-keys
@@ -794,7 +794,7 @@ however carefully selected to best aid in debugging.
 @item --debug @var{flags}
 @opindex debug
 Set debug flags.  All flags are or-ed and @var{flags} may be given
-in C syntax (e.g. 0x0042) or as a comma separated list of flag names.
+in C syntax (e.g., 0x0042) or as a comma separated list of flag names.
 To get a list of all supported flags the single word "help" can be
 used. This option is only useful for debugging and the behavior may
 change at any time without notice.
@@ -967,9 +967,9 @@ This is plain text file with a few help entries used with
 @command{gpg} and @command{gpgsm}.  The standard file has English help
 texts; to install localized versions use filenames like @file{help.LL.txt}
 with LL denoting the locale.  GnuPG comes with a set of predefined help
-files in the data directory (e.g. @file{@value{DATADIR}/gnupg/help.de.txt})
+files in the data directory (e.g., @file{@value{DATADIR}/gnupg/help.de.txt})
 and allows overriding of any help item by help files stored in the
-system configuration directory (e.g. @file{@value{SYSCONFDIR}/help.de.txt}).
+system configuration directory (e.g., @file{@value{SYSCONFDIR}/help.de.txt}).
 For a reference of the help file's syntax, please see the installed
 @file{help.txt} file.
 
@@ -980,7 +980,7 @@ This file is a collection of common certificates used to populated a
 newly created @file{pubring.kbx}.  An administrator may replace this
 file with a custom one.  The format is a concatenation of PEM encoded
 X.509 certificates.  This global file is installed in the data directory
-(e.g. @file{@value{DATADIR}/com-certs.pem}).
+(e.g., @file{@value{DATADIR}/com-certs.pem}).
 
 @end table
 
@@ -1093,7 +1093,7 @@ of a transfer error, a program error or tampering with the message).
   @end table
 
 @item Error verifying a signature
-For some reason the signature could not be verified, i.e. it cannot be
+For some reason the signature could not be verified, i.e., it cannot be
 decided whether the signature is valid or invalid.  A common reason for
 this is a missing certificate.
 
@@ -1274,7 +1274,7 @@ provides a regular command line interface which exhibits a full client
 to this protocol (but uses internal linking).  To start
 @command{gpgsm} as a server the command line the option
 @code{--server} must be used.  Additional options are provided to
-select the communication method (i.e. the name of the socket).
+select the communication method (i.e., the name of the socket).
 
 We assume that the connection has already been established; see the
 Assuan manual for details.
@@ -1338,7 +1338,7 @@ correct.
   OUTPUT FD[=@var{n}] [--armor|--base64]
 @end example
 
-Set the file descriptor to be used for the output (i.e. the encrypted
+Set the file descriptor to be used for the output (i.e., the encrypted
 message). Obviously the pipe must be open at that point, the server
 establishes its own end.  If the server returns an error the client
 should consider this session failed.
@@ -1382,7 +1382,7 @@ The decryption is done by using the command
 @end example
 
 It performs the decrypt operation after doing some check on the internal
-state (e.g. that all needed data has been set).  Because it utilizes
+state (e.g., that all needed data has been set).  Because it utilizes
 the GPG-Agent for the session key decryption, there is no need to ask
 the client for a protecting passphrase - GpgAgent takes care of this by
 requesting this from the user.

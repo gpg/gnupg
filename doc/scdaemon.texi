@@ -161,7 +161,7 @@ helpers to debug problems.
 @item --debug @var{flags}
 @opindex debug
 Set debug flags.  All flags are or-ed and @var{flags} may be given
-in C syntax (e.g. 0x0042) or as a comma separated list of flag names.
+in C syntax (e.g., 0x0042) or as a comma separated list of flag names.
 To get a list of all supported flags the single word "help" can be
 used. This option is only useful for debugging and the behavior may
 change at any time without notice.
@@ -238,7 +238,7 @@ this option only if you know what you are doing.
 Use @var{library} to access the smartcard reader.  The current default
 on Unix is @file{libpcsclite.so} and on Windows @file{winscard.dll}.
 Instead of using this option you might also want to install a symbolic
-link to the default file name (e.g. from @file{libpcsclite.so.1}).
+link to the default file name (e.g., from @file{libpcsclite.so.1}).
 A Unicode file name may not be used on Windows.
 
 @item --ctapi-driver @var{library}
@@ -505,7 +505,7 @@ will return an error when a card change has been detected and the use of
 this function is therefore required.
 
 Background: We want to keep the client clear of handling card changes
-between operations; i.e. the client can assume that all operations are
+between operations; i.e., the client can assume that all operations are
 done on the same card unless he call this function.
 
 @example
@@ -719,7 +719,7 @@ reset the card.
 
 This is used by gpg-agent to reuse a primary pipe connection and
 may be used by clients to backup from a conflict in the serial
-command; i.e. to select another application.
+command; i.e., to select another application.
 
 
 

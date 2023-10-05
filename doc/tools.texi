@@ -124,7 +124,7 @@ $ watchgnupg --time-only
 @end example
 
 This waits for connections on the local socket
-(e.g. @file{/var/run/user/1234/gnupg/S.log}) and shows all log
+(e.g., @file{/var/run/user/1234/gnupg/S.log}) and shows all log
 entries.  To make this work the option @option{log-file} needs to be
 used with all modules which logs are to be shown.  The suggested entry
 for the configuration files is:
@@ -1247,7 +1247,7 @@ Alternatively an arbitrary string may be used to identify a
 passphrase; it is suggested that such a string is prefixed with the
 name of the application (e.g @code{foo:12346}).  Scripts should always
 use the option @option{--with-colons}, which provides the keygrip in a
-"grp" line (cf. @file{doc/DETAILS})/
+"grp" line (cf.@: @file{doc/DETAILS})/
 
 @noindent
 One of the following command options must be given:
@@ -1728,7 +1728,7 @@ The return value of this command is
 @table @code
 
 @item 0
-The certificate under question is valid; i.e. there is a valid CRL
+The certificate under question is valid; i.e., there is a valid CRL
 available and it is not listed there or the OCSP request returned that
 that certificate is valid.
 
@@ -2051,9 +2051,9 @@ This option is deprecated in favor of option @option{--directory}.
 
 @item --no-compress
 @opindex no-compress
-This option tells gpg to disable compression (i.e. using option -z0).
+This option tells gpg to disable compression (i.e., using option -z0).
 It is useful for archiving only large files which are are already
-compressed (e.g. a set of videos).
+compressed (e.g., a set of videos).
 
 @item --gpg @var{gpgcmd}
 @opindex gpg

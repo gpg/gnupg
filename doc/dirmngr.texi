@@ -180,7 +180,7 @@ available flags the sole word "help" can be used.
 This option is only useful for testing; it sets the system time back or
 forth to @var{epoch} which is the number of seconds elapsed since the year
 1970.  Alternatively @var{epoch} may be given as a full ISO time string
-(e.g. "20070924T154812").
+(e.g., "20070924T154812").
 
 @item --debug-level @var{level}
 @opindex debug-level
@@ -213,7 +213,7 @@ however carefully selected to best aid in debugging.
 @item --debug @var{flags}
 @opindex debug
 Set debug flags.  All flags are or-ed and @var{flags} may be given in
-C syntax (e.g. 0x0042) or as a comma separated list of flag names.  To
+C syntax (e.g., 0x0042) or as a comma separated list of flag names.  To
 get a list of all supported flags the single word "help" can be used.
 This option is only useful for debugging and the behavior may change
 at any time without notice.
@@ -374,7 +374,7 @@ there for details; here is an example:
        as given.  Replace USERNAME, PASSWORD, and the 'dc' parts
        according to the instructions received from your LDAP
        administrator.  Note that only simple authentication
-       (i.e. cleartext passwords) is supported and thus using ldaps is
+       (i.e., cleartext passwords) is supported and thus using ldaps is
        strongly suggested (since 2.2.28 "ldaps" defaults to port 389
        and uses STARTTLS).  On Windows authentication via AD can be
        requested by adding @code{gpgNtds=1} after the fourth question
@@ -465,7 +465,7 @@ Lines starting with a  @samp{#} are comments.
 Note that as usual all strings entered are expected to be UTF-8 encoded.
 Obviously this will lead to problems if the password has originally been
 encoded as Latin-1.  There is no other solution here than to put such a
-password in the binary encoding into the file (i.e. non-ascii characters
+password in the binary encoding into the file (i.e., non-ascii characters
 won't show up readable).@footnote{The @command{gpgconf} tool might be
 helpful for frontends as it enables editing this configuration file using
 percent-escaped strings.}
@@ -681,7 +681,7 @@ those certificates on startup and when given a SIGHUP.  Certificates
 which are not readable or do not make up a proper X.509 certificate
 are ignored; see the log file for details.
 
-Applications using dirmngr (e.g. gpgsm) can request these
+Applications using dirmngr (e.g., gpgsm) can request these
 certificates to complete a trust chain in the same way as with the
 extra-certs directory (see below).
 
@@ -690,7 +690,7 @@ Note that for OCSP responses the certificate specified using the option
 
 @item /etc/gnupg/extra-certs
 This directory may contain extra certificates which are preloaded
-into the internal cache on startup. Applications using dirmngr (e.g. gpgsm)
+into the internal cache on startup. Applications using dirmngr (e.g., gpgsm)
 can request cached certificates to complete a trust chain.
 This is convenient in cases you have a couple intermediate CA certificates
 or certificates usually used to sign OCSP responses.
@@ -799,7 +799,7 @@ Enter @code{HELP} at the prompt to see a list of commands and enter
 @node Dirmngr Signals
 @section Use of signals
 
-A running @command{dirmngr} may be controlled by signals, i.e. using
+A running @command{dirmngr} may be controlled by signals, i.e., using
 the @command{kill} command to send a signal to the process.
 
 Here is a list of supported signals:
@@ -1031,7 +1031,7 @@ includes a local certificate store as well as a list of trusted root
 certificates.
 
 @noindent
-The return code is 0 for success; i.e. the certificate has not been
+The return code is 0 for success; i.e., the certificate has not been
 revoked or one of the usual error codes from libgpg-error.
 
 @node Dirmngr CHECKOCSP
@@ -1066,7 +1066,7 @@ of the global option @option{--ignore-ocsp-service-url}.
 
 
 @noindent
-The return code is 0 for success; i.e. the certificate has not been
+The return code is 0 for success; i.e., the certificate has not been
 revoked or one of the usual error codes from libgpg-error.
 
 @node Dirmngr CACHECERT
@@ -1088,7 +1088,7 @@ Thus the caller is expected to return the certificate for the request
 as a binary blob.
 
 @noindent
-The return code is 0 for success; i.e. the certificate has not been
+The return code is 0 for success; i.e., the certificate has not been
 successfully cached or one of the usual error codes from libgpg-error.
 
 @node Dirmngr VALIDATE
@@ -1188,7 +1188,7 @@ as a binary blob.
 @c           does not yet end up in memory.
 @c         * @code{crl_cache_insert} is called with that descriptor to
 @c           actually read the CRL into the cache. See below for a
-@c           description of this function.  If there is any error (e.g. read
+@c           description of this function.  If there is any error (e.g., read
 @c           problem, CRL not correctly signed or verification of signature
 @c           not possible), this descriptor is rejected and we continue
 @c           with the next name.  If the CRL has been successfully loaded,
@@ -1214,7 +1214,7 @@ as a binary blob.
 @c  a) An authorityKeyIdentifier with an issuer and serialno exits: The
 @c     certificate is retrieved using @code{find_cert_bysn}.  If
 @c     the certificate is in the certificate cache, it is directly
-@c     returned. Then the requester (i.e. the client who requested the
+@c     returned. Then the requester (i.e., the client who requested the
 @c     CRL check) is asked via the Assuan inquiry ``SENDCERT'' whether
 @c     he can provide this certificate.  If this succeed the returned
 @c     certificate gets cached and returned.  Note, that dirmngr does not
@@ -1293,7 +1293,7 @@ as a binary blob.
 @c expiration time of all certificates in the chain.
 @c
 @c We first check that the certificate may be used for the requested
-@c purpose (i.e. OCSP or CRL signing).  If this is not the case
+@c purpose (i.e., OCSP or CRL signing).  If this is not the case
 @c GPG_ERR_WRONG_KEY_USAGE is returned.
 @c
 @c The next step is to find the trust anchor (root certificate) and to
@@ -1317,7 +1317,7 @@ as a binary blob.
 @c Now the issuer's certificate is looked up: If an
 @c authorityKeyIdentifier is available, this one is used to locate the
 @c certificate either using issuer and serialnumber or subject DN
-@c (i.e. the issuer's DN) and the keyID.  The functions
+@c (i.e., the issuer's DN) and the keyID.  The functions
 @c @code{find_cert_bysn) and @code{find_cert_bysubject} are used
 @c respectively. The have already been described above under the
 @c description of @code{crl_cache_insert}.  If no certificate was found
@@ -1331,13 +1331,13 @@ as a binary blob.
 @c actual certificate is checked and in case this fails the error
 @c #code{GPG_ERR_BAD_CERT_CHAIN} is returned.  If the signature checks out, the
 @c maximum chain length of the issuing certificate is checked as well as
-@c the capability of the certificate (i.e. whether he may be used for
+@c the capability of the certificate (i.e., whether he may be used for
 @c certificate signing).  Then the certificate is prepended to our list
 @c representing the certificate chain.  Finally the loop is continued now
 @c with the issuer's certificate as the current certificate.
 @c
 @c After the end of the loop and if no error as been encountered
-@c (i.e. the certificate chain has been assempled correctly), a check is
+@c (i.e., the certificate chain has been assempled correctly), a check is
 @c done whether any certificate expired or a critical policy has not been
 @c met.  In any of these cases the validation terminates with an
 @c appropriate error.
