@@ -332,6 +332,8 @@ yubikey_commands (card_info_t info, estream_t fp, int argc, const char *argv[])
     cmd = ykDISABLE;
   else
     {
+      log_info ("Please use \"%s\" to list the available sub-commands\n",
+                "help yubikey");
       err = gpg_error (GPG_ERR_UNKNOWN_COMMAND);
       goto leave;
     }
