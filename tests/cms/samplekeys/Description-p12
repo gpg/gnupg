@@ -39,4 +39,10 @@ Pass: abc,123456
 Cert: ff810b9281a43c394aa138e9c7fd4c0193216fa6
 Key:  94c6d0b067370a8f2a09ae43cfe8d700bbd61e75
 
+Name: nistp256-openssl-self-signed.p12
+Desc: OpenSSL generated self-signed nistp256 key+cert
+Pass: abc
+Cert: 5cea0c5bf09ccd92535267c662fc098f6c81c27e
+Key:  3cb2fba95d1976df69eb7aa8c65ac5354e15af32
+
 # eof #

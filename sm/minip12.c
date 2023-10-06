@@ -83,6 +83,17 @@ static unsigned char const oid_aes128_CBC[9] = {
 static unsigned char const oid_aes256_CBC[9] = {
   0x60, 0x86, 0x48, 0x01, 0x65, 0x03, 0x04, 0x01, 0x2A };
 
+static unsigned char const oid_hmacWithSHA1[8] = {
+  0x2A, 0x86, 0x48, 0x86, 0xF7, 0x0D, 0x02, 0x07 };
+static unsigned char const oid_hmacWithSHA224[8] = {
+  0x2A, 0x86, 0x48, 0x86, 0xF7, 0x0D, 0x02, 0x08 };
+static unsigned char const oid_hmacWithSHA256[8] = {
+  0x2A, 0x86, 0x48, 0x86, 0xF7, 0x0D, 0x02, 0x09 };
+static unsigned char const oid_hmacWithSHA384[8] = {
+  0x2A, 0x86, 0x48, 0x86, 0xF7, 0x0D, 0x02, 0x0A };
+static unsigned char const oid_hmacWithSHA512[8] = {
+  0x2A, 0x86, 0x48, 0x86, 0xF7, 0x0D, 0x02, 0x0B };
+
 static unsigned char const oid_rsaEncryption[9] = {
   0x2A, 0x86, 0x48, 0x86, 0xF7, 0x0D, 0x01, 0x01, 0x01 };
 static unsigned char const oid_pcPublicKey[7] = {
@@ -238,6 +249,32 @@ dump_tag_info (const char *text, struct tag_info *ti)
                ti->class, ti->tag, ti->length, ti->nhdr,
                ti->is_constructed?" cons":"",
                ti->ndef?" ndef":"");
+}
+
+
+static int
+digest_algo_from_oid (unsigned char const *oid, size_t oidlen)
+{
+  int algo;
+
+  if (oidlen == DIM(oid_hmacWithSHA1) &&
+      !memcmp (oid, oid_hmacWithSHA1, oidlen))
+    algo = GCRY_MD_SHA1;
+  else if (oidlen == DIM(oid_hmacWithSHA224) &&
+           !memcmp (oid, oid_hmacWithSHA224, oidlen))
+    algo = GCRY_MD_SHA224;
+  else if (oidlen == DIM(oid_hmacWithSHA256) &&
+           !memcmp (oid, oid_hmacWithSHA256, oidlen))
+    algo = GCRY_MD_SHA256;
+  else if (oidlen == DIM(oid_hmacWithSHA384) &&
+           !memcmp (oid, oid_hmacWithSHA384, oidlen))
+    algo = GCRY_MD_SHA384;
+  else if (oidlen == DIM(oid_hmacWithSHA512) &&
+           !memcmp (oid, oid_hmacWithSHA512, oidlen))
+    algo = GCRY_MD_SHA512;
+  else
+    algo = 0;
+  return algo;
 }
 
 
@@ -1029,13 +1066,14 @@ set_key_iv (gcry_cipher_hd_t chd, char *salt, size_t saltlen, int iter,
 
 static int
 set_key_iv_pbes2 (gcry_cipher_hd_t chd, char *salt, size_t saltlen, int iter,
-                  const void *iv, size_t ivlen, const char *pw, int algo)
+                  const void *iv, size_t ivlen, const char *pw,
+                  int cipher_algo, int digest_algo)
 {
   unsigned char *keybuf;
   size_t keylen;
   int rc;
 
-  keylen = gcry_cipher_get_algo_keylen (algo);
+  keylen = gcry_cipher_get_algo_keylen (cipher_algo);
   if (!keylen)
     return -1;
   keybuf = gcry_malloc_secure (keylen);
@@ -1043,7 +1081,7 @@ set_key_iv_pbes2 (gcry_cipher_hd_t chd, char *salt, size_t saltlen, int iter,
     return -1;
 
   rc = gcry_kdf_derive (pw, strlen (pw),
-                        GCRY_KDF_PBKDF2, GCRY_MD_SHA1,
+                        GCRY_KDF_PBKDF2, digest_algo,
                         salt, saltlen, iter, keylen, keybuf);
   if (rc)
     {
@@ -1074,7 +1112,7 @@ set_key_iv_pbes2 (gcry_cipher_hd_t chd, char *salt, size_t saltlen, int iter,
 static void
 crypt_block (unsigned char *buffer, size_t length, char *salt, size_t saltlen,
              int iter, const void *iv, size_t ivlen,
-             const char *pw, int cipher_algo, int encrypt)
+             const char *pw, int cipher_algo, int digest_algo, int encrypt)
 {
   gcry_cipher_hd_t chd;
   int rc;
@@ -1088,7 +1126,8 @@ crypt_block (unsigned char *buffer, size_t length, char *salt, size_t saltlen,
     }
 
   if ((cipher_algo == GCRY_CIPHER_AES128 || cipher_algo == GCRY_CIPHER_AES256)
-      ? set_key_iv_pbes2 (chd, salt, saltlen, iter, iv, ivlen, pw, cipher_algo)
+      ? set_key_iv_pbes2 (chd, salt, saltlen, iter, iv, ivlen, pw,
+                          cipher_algo, digest_algo)
       : set_key_iv (chd, salt, saltlen, iter, pw,
                     cipher_algo == GCRY_CIPHER_RFC2268_40? 5:24))
     {
@@ -1125,7 +1164,7 @@ static void
 decrypt_block (const void *ciphertext, unsigned char *plaintext, size_t length,
                char *salt, size_t saltlen,
                int iter, const void *iv, size_t ivlen,
-               const char *pw, int cipher_algo,
+               const char *pw, int cipher_algo, int digest_algo,
                int (*check_fnc) (const void *, size_t))
 {
   static const char * const charsets[] = {
@@ -1197,7 +1236,7 @@ decrypt_block (const void *ciphertext, unsigned char *plaintext, size_t length,
         }
       memcpy (plaintext, ciphertext, length);
       crypt_block (plaintext, length, salt, saltlen, iter, iv, ivlen,
-                   convertedpw? convertedpw:pw, cipher_algo, 0);
+                   convertedpw? convertedpw:pw, cipher_algo, digest_algo, 0);
       if (check_fnc (plaintext, length))
         break; /* Decryption succeeded. */
     }
@@ -1257,6 +1296,7 @@ parse_bag_encrypted_data (struct p12_parse_ctx_s *ctx, struct tlv_ctx_s *tlv)
   int renewed_tlv = 0;
   int loopcount;
   unsigned int startlevel;
+  int digest_algo = GCRY_MD_SHA1;
 
   where = "bag.encryptedData";
   if (opt_verbose)
@@ -1326,6 +1366,8 @@ parse_bag_encrypted_data (struct p12_parse_ctx_s *ctx, struct tlv_ctx_s *tlv)
   /*FIXME: This code is duplicated in parse_shrouded_key_bag.  */
   if (is_pbes2)
     {
+      size_t parmlen;  /* Remaining length of the parameter sequence.  */
+
       where = "pkcs5PBES2-params";
       if (tlv_next (tlv))
         goto bailout;
@@ -1352,11 +1394,13 @@ parse_bag_encrypted_data (struct p12_parse_ctx_s *ctx, struct tlv_ctx_s *tlv)
         goto bailout;
       if (tlv_expect_sequence (tlv))
         goto bailout;
+      parmlen = tlv->ti.length;
 
       if (tlv_next (tlv))
         goto bailout;
       if (tlv_expect_octet_string (tlv, 0, &data, &datalen))
         goto bailout;
+      parmlen -= tlv->ti.length + tlv->ti.nhdr;
       if (datalen < 8 || datalen > sizeof salt)
         {
           log_info ("bad length of salt (%zu)\n", datalen);
@@ -1370,6 +1414,7 @@ parse_bag_encrypted_data (struct p12_parse_ctx_s *ctx, struct tlv_ctx_s *tlv)
         goto bailout;
       if ((err = tlv_expect_integer (tlv, &intval)))
         goto bailout;
+      parmlen -= tlv->ti.length + tlv->ti.nhdr;
       if (!intval) /* Not a valid iteration count.  */
         {
           err = gpg_error (GPG_ERR_INV_VALUE);
@@ -1377,8 +1422,34 @@ parse_bag_encrypted_data (struct p12_parse_ctx_s *ctx, struct tlv_ctx_s *tlv)
         }
       iter = intval;
 
-      /* Note: We don't support the optional parameters but assume
-         that the algorithmIdentifier follows. */
+      if (parmlen > 2)  /* There is the optional prf.  */
+        {
+          if (tlv_next (tlv))
+            goto bailout;
+          if (tlv_expect_sequence (tlv))
+            goto bailout;
+          if (tlv_next (tlv))
+            goto bailout;
+          if (tlv_expect_object_id (tlv, &oid, &oidlen))
+            goto bailout;
+          digest_algo = digest_algo_from_oid (oid, oidlen);
+          if (!digest_algo)
+            {
+              gpgrt_log_printhex (oid, oidlen, "kdf digest algo:");
+              err = gpg_error (GPG_ERR_DIGEST_ALGO);
+              goto bailout;
+            }
+          if (opt_verbose > 1)
+            log_debug ("kdf digest algo = %d\n", digest_algo);
+
+          if (tlv_next (tlv))
+            goto bailout;
+          if (tlv_expect_null (tlv))
+            tlv_set_pending (tlv);  /* NULL tag missing - ignore this.  */
+        }
+      else
+        digest_algo = GCRY_MD_SHA1;
+
       if (tlv_next (tlv))
         goto bailout;
       if (tlv_expect_sequence (tlv))
@@ -1468,6 +1539,7 @@ parse_bag_encrypted_data (struct p12_parse_ctx_s *ctx, struct tlv_ctx_s *tlv)
                  iv, is_pbes2?16:0, ctx->password,
                  is_pbes2 ? (is_aes256?GCRY_CIPHER_AES256:GCRY_CIPHER_AES128) :
                  is_3des  ? GCRY_CIPHER_3DES : GCRY_CIPHER_RFC2268_40,
+                 digest_algo,
                  bag_decrypted_data_p);
 
   /* We do not need the TLV anymore and allocated a new one.  */
@@ -1778,6 +1850,7 @@ parse_shrouded_key_bag (struct p12_parse_ctx_s *ctx, struct tlv_ctx_s *tlv)
   unsigned char *plain = NULL;
   int is_pbes2 = 0;
   int is_aes256 = 0;
+  int digest_algo = GCRY_MD_SHA1;
 
   where = "shrouded_key_bag";
   if (opt_verbose)
@@ -1819,6 +1892,8 @@ parse_shrouded_key_bag (struct p12_parse_ctx_s *ctx, struct tlv_ctx_s *tlv)
 
   if (is_pbes2)
     {
+      size_t parmlen;  /* Remaining length of the parameter sequence.  */
+
       where = "shrouded_key_bag.pkcs5PBES2-params";
       if (tlv_next (tlv))
         goto bailout;
@@ -1842,11 +1917,13 @@ parse_shrouded_key_bag (struct p12_parse_ctx_s *ctx, struct tlv_ctx_s *tlv)
         goto bailout;
       if (tlv_expect_sequence (tlv))
         goto bailout;
+      parmlen = tlv->ti.length;
 
       if (tlv_next (tlv))
         goto bailout;
       if (tlv_expect_octet_string (tlv, 0, &data, &datalen))
         goto bailout;
+      parmlen -= tlv->ti.length + tlv->ti.nhdr;
       if (datalen < 8 || datalen > sizeof salt)
         {
           log_info ("bad length of salt (%zu) for AES\n", datalen);
@@ -1860,6 +1937,7 @@ parse_shrouded_key_bag (struct p12_parse_ctx_s *ctx, struct tlv_ctx_s *tlv)
         goto bailout;
       if ((err = tlv_expect_integer (tlv, &intval)))
         goto bailout;
+      parmlen -= tlv->ti.length + tlv->ti.nhdr;
       if (!intval) /* Not a valid iteration count.  */
         {
           err = gpg_error (GPG_ERR_INV_VALUE);
@@ -1867,8 +1945,34 @@ parse_shrouded_key_bag (struct p12_parse_ctx_s *ctx, struct tlv_ctx_s *tlv)
         }
       iter = intval;
 
-      /* Note: We don't support the optional parameters but assume
-         that the algorithmIdentifier follows. */
+      if (parmlen > 2)  /* There is the optional prf.  */
+        {
+          if (tlv_next (tlv))
+            goto bailout;
+          if (tlv_expect_sequence (tlv))
+            goto bailout;
+          if (tlv_next (tlv))
+            goto bailout;
+          if (tlv_expect_object_id (tlv, &oid, &oidlen))
+            goto bailout;
+          digest_algo = digest_algo_from_oid (oid, oidlen);
+          if (!digest_algo)
+            {
+              gpgrt_log_printhex (oid, oidlen, "kdf digest algo:");
+              err = gpg_error (GPG_ERR_DIGEST_ALGO);
+              goto bailout;
+            }
+          if (opt_verbose > 1)
+            log_debug ("kdf digest algo = %d\n", digest_algo);
+
+          if (tlv_next (tlv))
+            goto bailout;
+          if (tlv_expect_null (tlv))
+            tlv_set_pending (tlv);  /* NULL tag missing - ignore this.  */
+        }
+      else
+        digest_algo = GCRY_MD_SHA1;
+
       if (tlv_next (tlv))
         goto bailout;
       if (tlv_expect_sequence (tlv))
@@ -1954,6 +2058,7 @@ parse_shrouded_key_bag (struct p12_parse_ctx_s *ctx, struct tlv_ctx_s *tlv)
                  iv, is_pbes2? 16:0, ctx->password,
                  is_pbes2 ? (is_aes256?GCRY_CIPHER_AES256:GCRY_CIPHER_AES128)
                           : GCRY_CIPHER_3DES,
+                 digest_algo,
                  bag_data_p);
 
 
@@ -3468,7 +3573,7 @@ p12_build (gcry_mpi_t *kparms, const void *cert, size_t certlen,
       /* Encrypt it. */
       gcry_randomize (salt, 8, GCRY_STRONG_RANDOM);
       crypt_block (buffer, buflen, salt, 8, 2048, NULL, 0, pw,
-                   GCRY_CIPHER_RFC2268_40, 1);
+                   GCRY_CIPHER_RFC2268_40, GCRY_MD_SHA1, 1);
 
       /* Encode the encrypted stuff into a bag. */
       seqlist[seqlistidx].buffer = build_cert_bag (buffer, buflen, salt, &n);
@@ -3500,7 +3605,7 @@ p12_build (gcry_mpi_t *kparms, const void *cert, size_t certlen,
       /* Encrypt it. */
       gcry_randomize (salt, 8, GCRY_STRONG_RANDOM);
       crypt_block (buffer, buflen, salt, 8, 2048, NULL, 0,
-                   pw, GCRY_CIPHER_3DES, 1);
+                   pw, GCRY_CIPHER_3DES, GCRY_MD_SHA1, 1);
 
       /* Encode the encrypted stuff into a bag. */
       if (cert && certlen)
