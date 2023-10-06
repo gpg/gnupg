@@ -559,13 +559,21 @@ run_one_test (const char *name, const char *desc, const char *pass,
   else if (!certexpected && certstr)
     printresult ("FAIL: %s - no certs expected but got one\n", name);
   else if (certexpected && certstr && strcmp (certexpected, certstr))
-    printresult ("FAIL: %s - certs not as expected\n", name);
+    {
+      printresult ("FAIL: %s - certs not as expected\n", name);
+      inf ("cert(exp)=%s", certexpected);
+      inf ("cert(got)=%s", certstr? certstr:"[null]");
+    }
   else if (keyexpected && !resulthash)
     printresult ("FAIL: %s - expected key but got none\n", name);
   else if (!keyexpected && resulthash)
     printresult ("FAIL: %s - key not expected but got one\n", name);
   else if (keyexpected && resulthash && strcmp (keyexpected, resulthash))
-    printresult ("FAIL: %s - keys not as expected\n", name);
+    {
+      printresult ("FAIL: %s - keys not as expected\n", name);
+      inf ("key(exp)=%s", keyexpected);
+      inf ("key(got)=%s", resulthash? resulthash:"[null]");
+    }
   else
     {
       printresult ("PASS: %s\n", name);
