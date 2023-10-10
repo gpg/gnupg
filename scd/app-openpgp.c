@@ -48,7 +48,6 @@
 #include <stdlib.h>
 #include <stdarg.h>
 #include <string.h>
-#include <assert.h>
 #include <time.h>
 
 #include "scdaemon.h"
@@ -412,7 +411,7 @@ get_cached_data (app_t app, int tag,
 
   /* Okay, cache it. */
   for (c=app->app_local->cache; c; c = c->next)
-    assert (c->tag != tag);
+    log_assert (c->tag != tag);
 
   c = xtrymalloc (sizeof *c + len);
   if (c)
@@ -451,7 +450,7 @@ flush_cache_item (app_t app, int tag)
 
         for (c=app->app_local->cache; c ; c = c->next)
           {
-            assert (c->tag != tag); /* Oops: duplicated entry. */
+            log_assert (c->tag != tag); /* Oops: duplicated entry. */
           }
         return;
       }
@@ -982,7 +981,7 @@ send_key_attr (ctrl_t ctrl, app_t app, const char *keyword, int keyno)
 {
   char buffer[200];
 
-  assert (keyno >=0 && keyno < DIM(app->app_local->keyattr));
+  log_assert (keyno >=0 && keyno < DIM(app->app_local->keyattr));
 
   if (app->app_local->keyattr[keyno].key_type == KEY_TYPE_RSA)
     snprintf (buffer, sizeof buffer, "%d 1 rsa%u %u %d",
@@ -1399,7 +1398,7 @@ retrieve_fpr_from_card (app_t app, int keyno, char *fpr)
   unsigned char *value;
   size_t valuelen;
 
-  assert (keyno >=0 && keyno <= 2);
+  log_assert (keyno >=0 && keyno <= 2);
 
   relptr = get_one_do (app, 0x00C5, &value, &valuelen, NULL);
   if (relptr && valuelen >= 60)
@@ -1985,7 +1984,7 @@ send_keypair_info (app_t app, ctrl_t ctrl, int key)
   if (err)
     goto leave;
 
-  assert (keyno >= 0 && keyno <= 2);
+  log_assert (keyno >= 0 && keyno <= 2);
   if (!app->app_local->pk[keyno].key)
     goto leave; /* No such key - ignore. */
 
@@ -3097,7 +3096,7 @@ do_change_pin (app_t app, ctrl_t ctrl,  const char *chvnostr,
   else
     {
       /* Version 2 cards.  */
-      assert (chvno == 1 || chvno == 3);
+      log_assert (chvno == 1 || chvno == 3);
 
       if (use_pinpad)
         {
@@ -3162,7 +3161,7 @@ does_key_exist (app_t app, int keyidx, int generating, int force)
   size_t buflen, n;
   int i;
 
-  assert (keyidx >=0 && keyidx <= 2);
+  log_assert (keyidx >=0 && keyidx <= 2);
 
   if (iso7816_get_data (app_get_slot (app), 0, 0x006E, &buffer, &buflen))
     {
@@ -3202,7 +3201,7 @@ add_tlv (unsigned char *buffer, unsigned int tag, size_t length)
 {
   unsigned char *p = buffer;
 
-  assert (tag <= 0xffff);
+  log_assert (tag <= 0xffff);
   if ( tag > 0xff )
     *p++ = tag >> 8;
   *p++ = tag;
@@ -3266,7 +3265,7 @@ build_privkey_template (app_t app, int keyno,
 
   /* Get the required length for E. Rounded up to the nearest byte  */
   rsa_e_reqlen = (app->app_local->keyattr[keyno].rsa.e_bits + 7) / 8;
-  assert (rsa_e_len <= rsa_e_reqlen);
+  log_assert (rsa_e_len <= rsa_e_reqlen);
 
   /* Build the 7f48 cardholder private key template.  */
   datalen = 0;
@@ -3365,12 +3364,13 @@ build_privkey_template (app_t app, int keyno,
 
   /* Sanity check.  We don't know the exact length because we
      allocated 3 bytes for the first length header.  */
-  assert (tp - template <= template_size);
+  log_assert (tp - template <= template_size);
 
   *result = template;
   *resultlen = tp - template;
   return 0;
 }
+
 
 static gpg_error_t
 build_ecc_privkey_template (app_t app, int keyno,
@@ -3472,7 +3472,7 @@ build_ecc_privkey_template (app_t app, int keyno,
       tp += ecc_q_len;
     }
 
-  assert (tp - template == template_size);
+  log_assert (tp - template == template_size);
 
   *result = template;
   *resultlen = tp - template;
@@ -3489,7 +3489,7 @@ change_keyattr (app_t app, int keyno, const unsigned char *buf, size_t buflen,
 {
   gpg_error_t err;
 
-  assert (keyno >=0 && keyno <= 2);
+  log_assert (keyno >=0 && keyno <= 2);
 
   /* Prepare for storing the key.  */
   err = verify_chv3 (app, pincb, pincb_arg);
@@ -4000,7 +4000,7 @@ rsa_writekey (app_t app, gpg_error_t (*pincb)(void*, const char *, char **),
          0xC1   <length> prime p
          0xC2   <length> prime q
       */
-      assert (rsa_e_len <= 4);
+      log_assert (rsa_e_len <= 4);
       template_len = (1 + 1 + 4
                       + 1 + 1 + rsa_p_len
                       + 1 + 1 + rsa_q_len);
@@ -4031,7 +4031,7 @@ rsa_writekey (app_t app, gpg_error_t (*pincb)(void*, const char *, char **),
       memcpy (tp, rsa_q, rsa_q_len);
       tp += rsa_q_len;
 
-      assert (tp - template == template_len);
+      log_assert (tp - template == template_len);
 
       /* Prepare for storing the key.  */
       err = verify_chv3 (app, pincb, pincb_arg);
@@ -4598,7 +4598,7 @@ compare_fingerprint (app_t app, int keyno, unsigned char *sha1fpr)
   size_t buflen, n;
   int rc, i;
 
-  assert (keyno >= 0 && keyno <= 2);
+  log_assert (keyno >= 0 && keyno <= 2);
 
   rc = get_cached_data (app, 0x006E, &buffer, &buflen, 0, 0);
   if (rc)
@@ -4841,7 +4841,7 @@ do_sign (app_t app, ctrl_t ctrl, const char *keyidstr, int hashalgo,
   if (hashalgo == GCRY_MD_ ## a && (d) )                      \
     {                                                         \
       datalen = sizeof b ## _prefix + indatalen;              \
-      assert (datalen <= sizeof data);                        \
+      log_assert (datalen <= sizeof data);                    \
       memcpy (data, b ## _prefix, sizeof b ## _prefix);       \
       memcpy (data + sizeof b ## _prefix, indata, indatalen); \
     }
