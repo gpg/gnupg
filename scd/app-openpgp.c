@@ -52,7 +52,6 @@
 #include <time.h>
 
 #include "scdaemon.h"
-
 #include "../common/util.h"
 #include "../common/i18n.h"
 #include "iso7816.h"
@@ -63,6 +62,9 @@
 
 #define KDF_DATA_LENGTH_MIN  90
 #define KDF_DATA_LENGTH_MAX 110
+
+/* The AID of this application.  */
+static char const openpgp_aid[] = { 0xD2, 0x76, 0x00, 0x01, 0x24, 0x01 };
 
 /* A table describing the DOs of the card.  */
 static struct {
@@ -5594,7 +5596,6 @@ parse_algorithm_attribute (app_t app, int keyno)
 gpg_error_t
 app_select_openpgp (app_t app)
 {
-  static char const aid[] = { 0xD2, 0x76, 0x00, 0x01, 0x24, 0x01 };
   int slot = app_get_slot (app);
   gpg_error_t err;
   unsigned char *buffer;
@@ -5603,7 +5604,8 @@ app_select_openpgp (app_t app)
 
   /* Note that the card can't cope with P2=0xCO, thus we need to pass a
      special flag value. */
-  err = iso7816_select_application (slot, aid, sizeof aid, 0x0001);
+  err = iso7816_select_application (slot,
+                                    openpgp_aid, sizeof openpgp_aid, 0x0001);
   if (!err)
     {
       unsigned int manufacturer;
