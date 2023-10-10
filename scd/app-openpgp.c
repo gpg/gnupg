@@ -222,8 +222,8 @@ struct app_local_s {
     int fixedlen_admin;
   } pinpad;
 
-   struct
-   {
+  struct
+  {
     key_type_t key_type;
     const char *keyalgo;         /* Algorithm in standard string format.  */
     union {
@@ -240,6 +240,7 @@ struct app_local_s {
       } ecc;
     };
    } keyattr[3];
+
 };
 
 #define ECC_FLAG_DJB_TWEAK (1 << 0)
@@ -259,7 +260,7 @@ static const char *get_algorithm_attribute_string (const unsigned char *buffer,
                                                    size_t buflen);
 static gpg_error_t parse_algorithm_attribute (app_t app, int keyno);
 static gpg_error_t change_keyattr_from_string
-                           (app_t app,
+                           (app_t app, ctrl_t ctrl,
                             gpg_error_t (*pincb)(void*, const char *, char **),
                             void *pincb_arg,
                             const char *keyref, const char *keyalgo,
@@ -2361,7 +2362,7 @@ pin2hash_if_kdf (app_t app, int chvno, char *pinvalue, int *r_pinlen)
    as an indication that the pinpad has been used.
    */
 static gpg_error_t
-verify_a_chv (app_t app,
+verify_a_chv (app_t app, ctrl_t ctrl,
               gpg_error_t (*pincb)(void*, const char *, char **),
               void *pincb_arg, int chvno, unsigned long sigcount,
               char **pinvalue, int *pinlen)
@@ -2372,6 +2373,8 @@ verify_a_chv (app_t app,
   pininfo_t pininfo;
   int minlen = 6;
   int remaining;
+
+  (void)ctrl;  /* Reserved for use by a PIN cache.  */
 
   log_assert (chvno == 1 || chvno == 2);
 
@@ -2486,7 +2489,7 @@ verify_a_chv (app_t app,
 /* Verify CHV2 if required.  Depending on the configuration of the
    card CHV1 will also be verified. */
 static gpg_error_t
-verify_chv2 (app_t app,
+verify_chv2 (app_t app, ctrl_t ctrl,
              gpg_error_t (*pincb)(void*, const char *, char **),
              void *pincb_arg)
 {
@@ -2504,7 +2507,7 @@ verify_chv2 (app_t app,
 
   if (app->app_local->pk[1].key || app->app_local->pk[2].key)
     {
-      rc = verify_a_chv (app, pincb, pincb_arg, 2, 0, &pinvalue, &pinlen);
+      rc = verify_a_chv (app, ctrl, pincb, pincb_arg, 2, 0, &pinvalue, &pinlen);
       if (rc)
         return rc;
       app->did_chv2 = 1;
@@ -2529,7 +2532,7 @@ verify_chv2 (app_t app,
     }
   else
     {
-      rc = verify_a_chv (app, pincb, pincb_arg, 1, 0, &pinvalue, &pinlen);
+      rc = verify_a_chv (app, ctrl, pincb, pincb_arg, 1, 0, &pinvalue, &pinlen);
       if (rc)
         return rc;
     }
@@ -2583,11 +2586,13 @@ build_enter_admin_pin_prompt (app_t app, char **r_prompt)
 
 /* Verify CHV3 if required. */
 static gpg_error_t
-verify_chv3 (app_t app,
+verify_chv3 (app_t app, ctrl_t ctrl,
              gpg_error_t (*pincb)(void*, const char *, char **),
              void *pincb_arg)
 {
   int rc = 0;
+
+  (void)ctrl;  /* Reserved for use by a PIN cache.  */
 
   if (!opt.allow_admin)
     {
@@ -2710,8 +2715,6 @@ do_setattr (app_t app, ctrl_t ctrl, const char *name,
   };
   int exmode;
 
-  (void)ctrl;
-
   for (idx=0; table[idx].name && strcmp (table[idx].name, name); idx++)
     ;
   if (!table[idx].name)
@@ -2720,16 +2723,16 @@ do_setattr (app_t app, ctrl_t ctrl, const char *name,
     return gpg_error (GPG_ERR_NOT_SUPPORTED); /* Not yet supported.  */
 
   if (table[idx].special == 3)
-    return change_keyattr_from_string (app, pincb, pincb_arg,
+    return change_keyattr_from_string (app, ctrl, pincb, pincb_arg,
                                        NULL, NULL, value, valuelen);
 
   switch (table[idx].need_chv)
     {
     case 2:
-      rc = verify_chv2 (app, pincb, pincb_arg);
+      rc = verify_chv2 (app, ctrl, pincb, pincb_arg);
       break;
     case 3:
-      rc = verify_chv3 (app, pincb, pincb_arg);
+      rc = verify_chv3 (app, ctrl, pincb, pincb_arg);
       break;
     default:
       rc = 0;
@@ -2836,8 +2839,6 @@ do_change_pin (app_t app, ctrl_t ctrl,  const char *chvnostr,
   int pinlen0 = 0;
   int pinlen = 0;
 
-  (void)ctrl;
-
   if (digitp (chvnostr))
     chvno = atoi (chvnostr);
   else if (!ascii_strcasecmp (chvnostr, "OPENPGP.1"))
@@ -2870,7 +2871,7 @@ do_change_pin (app_t app, ctrl_t ctrl,  const char *chvnostr,
         {
           /* We always require that the PIN is entered. */
           app->did_chv3 = 0;
-          rc = verify_chv3 (app, pincb, pincb_arg);
+          rc = verify_chv3 (app, ctrl, pincb, pincb_arg);
           if (rc)
             goto leave;
         }
@@ -2883,7 +2884,7 @@ do_change_pin (app_t app, ctrl_t ctrl,  const char *chvnostr,
           app->force_chv1 = 0;
           app->did_chv1 = 0;
           app->did_chv2 = 0;
-          rc = verify_chv2 (app, pincb, pincb_arg);
+          rc = verify_chv2 (app, ctrl, pincb, pincb_arg);
           app->force_chv1 = save_force;
           if (rc)
             goto leave;
@@ -2909,7 +2910,7 @@ do_change_pin (app_t app, ctrl_t ctrl,  const char *chvnostr,
           /* To reset a PIN the Admin PIN is required. */
           use_pinpad = 0;
           app->did_chv3 = 0;
-          rc = verify_chv3 (app, pincb, pincb_arg);
+          rc = verify_chv3 (app, ctrl, pincb, pincb_arg);
           if (rc)
             goto leave;
 
@@ -3483,7 +3484,8 @@ build_ecc_privkey_template (app_t app, int keyno,
 /* Helper for do_writekey to change the size of a key.  Note that
    this deletes the entire key without asking.  */
 static gpg_error_t
-change_keyattr (app_t app, int keyno, const unsigned char *buf, size_t buflen,
+change_keyattr (app_t app, ctrl_t ctrl,
+                int keyno, const unsigned char *buf, size_t buflen,
                 gpg_error_t (*pincb)(void*, const char *, char **),
                 void *pincb_arg)
 {
@@ -3492,7 +3494,7 @@ change_keyattr (app_t app, int keyno, const unsigned char *buf, size_t buflen,
   log_assert (keyno >=0 && keyno <= 2);
 
   /* Prepare for storing the key.  */
-  err = verify_chv3 (app, pincb, pincb_arg);
+  err = verify_chv3 (app, ctrl, pincb, pincb_arg);
   if (err)
     return err;
 
@@ -3513,7 +3515,7 @@ change_keyattr (app_t app, int keyno, const unsigned char *buf, size_t buflen,
 
 
 static gpg_error_t
-change_rsa_keyattr (app_t app, int keyno, unsigned int nbits,
+change_rsa_keyattr (app_t app, ctrl_t ctrl, int keyno, unsigned int nbits,
                     gpg_error_t (*pincb)(void*, const char *, char **),
                     void *pincb_arg)
 {
@@ -3553,7 +3555,7 @@ change_rsa_keyattr (app_t app, int keyno, unsigned int nbits,
           buflen = 6;
         }
 
-      err = change_keyattr (app, keyno, buf, buflen, pincb, pincb_arg);
+      err = change_keyattr (app, ctrl, keyno, buf, buflen, pincb, pincb_arg);
       xfree (relptr);
     }
 
@@ -3573,7 +3575,7 @@ change_rsa_keyattr (app_t app, int keyno, unsigned int nbits,
  * or "ed25519").
  */
 static gpg_error_t
-change_keyattr_from_string (app_t app,
+change_keyattr_from_string (app_t app, ctrl_t ctrl,
                             gpg_error_t (*pincb)(void*, const char *, char **),
                             void *pincb_arg,
                             const char *keyref, const char *keyalgo,
@@ -3698,7 +3700,7 @@ change_keyattr_from_string (app_t app,
       else if (nbits > 4096)
         err = gpg_error (GPG_ERR_TOO_LARGE);
       else
-        err = change_rsa_keyattr (app, keyno, nbits, pincb, pincb_arg);
+        err = change_rsa_keyattr (app, ctrl, keyno, nbits, pincb, pincb_arg);
     }
   else if (algo == PUBKEY_ALGO_ECDH || algo == PUBKEY_ALGO_ECDSA
            || algo == PUBKEY_ALGO_EDDSA)
@@ -3737,7 +3739,7 @@ change_keyattr_from_string (app_t app,
         }
       string[0] = algo;
       memcpy (string+1, oidbuf+1, oid_len-1);
-      err = change_keyattr (app, keyno, string, oid_len, pincb, pincb_arg);
+      err = change_keyattr (app, ctrl,keyno, string, oid_len, pincb, pincb_arg);
       gcry_mpi_release (oid);
     }
   else
@@ -3750,7 +3752,8 @@ change_keyattr_from_string (app_t app,
 
 
 static gpg_error_t
-rsa_writekey (app_t app, gpg_error_t (*pincb)(void*, const char *, char **),
+rsa_writekey (app_t app, ctrl_t ctrl,
+              gpg_error_t (*pincb)(void*, const char *, char **),
               void *pincb_arg, int keyno,
               const unsigned char *buf, size_t buflen, int depth)
 {
@@ -3876,7 +3879,7 @@ rsa_writekey (app_t app, gpg_error_t (*pincb)(void*, const char *, char **),
       && app->app_local->extcap.algo_attr_change)
     {
       /* Try to switch the key to a new length.  */
-      err = change_rsa_keyattr (app, keyno, nbits, pincb, pincb_arg);
+      err = change_rsa_keyattr (app, ctrl, keyno, nbits, pincb, pincb_arg);
       if (!err)
         maxbits = app->app_local->keyattr[keyno].rsa.n_bits;
     }
@@ -3978,7 +3981,7 @@ rsa_writekey (app_t app, gpg_error_t (*pincb)(void*, const char *, char **),
         goto leave;
 
       /* Prepare for storing the key.  */
-      err = verify_chv3 (app, pincb, pincb_arg);
+      err = verify_chv3 (app, ctrl, pincb, pincb_arg);
       if (err)
         goto leave;
 
@@ -4034,7 +4037,7 @@ rsa_writekey (app_t app, gpg_error_t (*pincb)(void*, const char *, char **),
       log_assert (tp - template == template_len);
 
       /* Prepare for storing the key.  */
-      err = verify_chv3 (app, pincb, pincb_arg);
+      err = verify_chv3 (app, ctrl, pincb, pincb_arg);
       if (err)
         goto leave;
 
@@ -4062,7 +4065,8 @@ rsa_writekey (app_t app, gpg_error_t (*pincb)(void*, const char *, char **),
 
 
 static gpg_error_t
-ecc_writekey (app_t app, gpg_error_t (*pincb)(void*, const char *, char **),
+ecc_writekey (app_t app, ctrl_t ctrl,
+              gpg_error_t (*pincb)(void*, const char *, char **),
               void *pincb_arg, int keyno,
               const unsigned char *buf, size_t buflen, int depth)
 {
@@ -4261,7 +4265,8 @@ ecc_writekey (app_t app, gpg_error_t (*pincb)(void*, const char *, char **),
             }
           keyattr[0] = algo;
           memcpy (keyattr+1, oidbuf+1, oid_len-1);
-          err = change_keyattr (app, keyno, keyattr, oid_len, pincb, pincb_arg);
+          err = change_keyattr (app, ctrl, keyno, keyattr,
+                                oid_len, pincb, pincb_arg);
           xfree (keyattr);
           if (err)
             goto leave;
@@ -4299,7 +4304,7 @@ ecc_writekey (app_t app, gpg_error_t (*pincb)(void*, const char *, char **),
         goto leave;
 
       /* Prepare for storing the key.  */
-      err = verify_chv3 (app, pincb, pincb_arg);
+      err = verify_chv3 (app, ctrl, pincb, pincb_arg);
       if (err)
         {
           xfree (template);
@@ -4356,8 +4361,6 @@ do_writekey (app_t app, ctrl_t ctrl,
   int depth;
   char *algostr = NULL;
 
-  (void)ctrl;
-
   if (!strcmp (keyid, "OPENPGP.1"))
     keyno = 0;
   else if (!strcmp (keyid, "OPENPGP.2"))
@@ -4412,16 +4415,18 @@ do_writekey (app_t app, ctrl_t ctrl,
         {
           log_info ("openpgp: changing key attribute from %s to %s\n",
                     app->app_local->keyattr[keyno].keyalgo, algostr);
-          err = change_keyattr_from_string (app, pincb, pincb_arg,
+          err = change_keyattr_from_string (app, ctrl, pincb, pincb_arg,
                                             keyid, algostr, NULL, 0);
           if (err)
             return err;
         }
 
       if (*tok == 'r')
-        err = rsa_writekey (app, pincb, pincb_arg, keyno, buf, buflen, depth);
+        err = rsa_writekey (app, ctrl, pincb, pincb_arg, keyno,
+                            buf, buflen, depth);
       else
-        err = ecc_writekey (app, pincb, pincb_arg, keyno, buf, buflen, depth);
+        err = ecc_writekey (app, ctrl, pincb, pincb_arg, keyno,
+                            buf, buflen, depth);
     }
   else
     {
@@ -4486,7 +4491,7 @@ do_genkey (app_t app, ctrl_t ctrl,  const char *keyref, const char *keyalgo,
        * configured algorithm.  Change it.  */
       log_info ("openpgp: changing key attribute from %s to %s\n",
                  app->app_local->keyattr[keyno].keyalgo, keyalgo);
-      err = change_keyattr_from_string (app, pincb, pincb_arg,
+      err = change_keyattr_from_string (app, ctrl, pincb, pincb_arg,
                                         keyref, keyalgo, NULL, 0);
       if (err)
         return err;
@@ -4515,7 +4520,7 @@ do_genkey (app_t app, ctrl_t ctrl,  const char *keyref, const char *keyalgo,
     }
 
   /* Prepare for key generation by verifying the Admin PIN.  */
-  err = verify_chv3 (app, pincb, pincb_arg);
+  err = verify_chv3 (app, ctrl, pincb, pincb_arg);
   if (err)
     return err;
 
@@ -4883,7 +4888,7 @@ do_sign (app_t app, ctrl_t ctrl, const char *keyidstr, int hashalgo,
       char *pinvalue;
       int pinlen;
 
-      rc = verify_a_chv (app, pincb, pincb_arg, 1, sigcount,
+      rc = verify_a_chv (app, ctrl, pincb, pincb_arg, 1, sigcount,
                          &pinvalue, &pinlen);
       if (rc)
         return rc;
@@ -4952,8 +4957,6 @@ do_auth (app_t app, ctrl_t ctrl, const char *keyidstr,
 {
   int rc;
 
-  (void)ctrl;
-
   if (!keyidstr || !*keyidstr)
     return gpg_error (GPG_ERR_INV_VALUE);
   if (app->app_local->keyattr[2].key_type == KEY_TYPE_RSA
@@ -4987,7 +4990,7 @@ do_auth (app_t app, ctrl_t ctrl, const char *keyidstr,
         return rc;
     }
 
-  rc = verify_chv2 (app, pincb, pincb_arg);
+  rc = verify_chv2 (app, ctrl, pincb, pincb_arg);
   if (!rc)
     {
       int exmode, le_value;
@@ -5040,8 +5043,6 @@ do_decipher (app_t app, ctrl_t ctrl, const char *keyidstr,
   int padind = 0;
   int fixuplen = 0;
 
-  (void)ctrl;
-
   if (!keyidstr || !*keyidstr || !indatalen)
     return gpg_error (GPG_ERR_INV_VALUE);
 
@@ -5055,7 +5056,7 @@ do_decipher (app_t app, ctrl_t ctrl, const char *keyidstr,
         return rc;
     }
 
-  rc = verify_chv2 (app, pincb, pincb_arg);
+  rc = verify_chv2 (app, ctrl, pincb, pincb_arg);
   if (rc)
     return rc;
 
@@ -5271,8 +5272,6 @@ do_check_pin (app_t app, ctrl_t ctrl, const char *keyidstr,
   int rc;
   int admin_pin = 0;
 
-  (void)ctrl;
-
   if (!keyidstr || !*keyidstr)
     return gpg_error (GPG_ERR_INV_VALUE);
 
@@ -5319,10 +5318,10 @@ do_check_pin (app_t app, ctrl_t ctrl, const char *keyidstr,
         }
 
       app->did_chv3 = 0; /* Force verification.  */
-      return verify_chv3 (app, pincb, pincb_arg);
+      return verify_chv3 (app, ctrl, pincb, pincb_arg);
     }
   else
-    return verify_chv2 (app, pincb, pincb_arg);
+    return verify_chv2 (app, ctrl, pincb, pincb_arg);
 }
 
 
