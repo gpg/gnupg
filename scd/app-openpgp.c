@@ -65,6 +65,7 @@
 /* The AID of this application.  */
 static char const openpgp_aid[] = { 0xD2, 0x76, 0x00, 0x01, 0x24, 0x01 };
 
+
 /* A table describing the DOs of the card.  */
 static struct {
   int tag;
@@ -244,7 +245,7 @@ struct app_local_s {
         rsa_key_format_t format;
       } rsa;
       struct {
-        const char *curve;
+        const char *curve;       /* Canonical name defined in openpgp-oid.c */
         int algo;
         unsigned int flags;
       } ecc;
@@ -1002,6 +1003,10 @@ send_key_attr (ctrl_t ctrl, app_t app, const char *keyword, int keyno)
 
   log_assert (keyno >=0 && keyno < DIM(app->app_local->keyattr));
 
+  /* Note that the code in gpg-card supports prefixing the key number
+   * with "OPENPGP." but older code does not yet support this.  There
+   * is also a discrepancy with the algorithm numbers: We should use
+   * the gcrypt numbers but the current code assumes OpenPGP numbers.  */
   if (app->app_local->keyattr[keyno].key_type == KEY_TYPE_RSA)
     snprintf (buffer, sizeof buffer, "%d 1 rsa%u %u %d",
               keyno+1,
@@ -1092,9 +1097,10 @@ do_getattr (app_t app, ctrl_t ctrl, const char *name)
 
   if (table[idx].special == -1)
     {
-      /* The serial number is very special.  We could have used the
-         AID DO to retrieve it.  The AID DO is available anyway but
-         not hex formatted. */
+      /* The serial number is very special.  We can't use the AID
+         DO (0x4f) because this is the serialno per specs with the
+         correct appversion.  We might however use a serialno with the
+         version set to 0.0 and that is what we need to return.  */
       char *serial = app_get_serialno (app);
 
       if (serial)
@@ -1138,9 +1144,9 @@ do_getattr (app_t app, ctrl_t ctrl, const char *name)
     }
   if (table[idx].special == -4)
     {
-      char *serial = app_get_dispserialno (app, 0);
+      char *serial;
 
-      if (serial)
+      if ((serial = app_get_dispserialno (app, 0)))
         {
           send_status_info (ctrl, table[idx].name,
                             serial, strlen (serial), NULL, 0);
@@ -1657,15 +1663,16 @@ ecdh_params (const char *curve)
   /* See RFC-6637 for those constants.
          0x03: Number of bytes
          0x01: Version for this parameter format
-         KDF hash algo
-         KEK symmetric cipher algo
+         KEK digest algorithm
+         KEK cipher algorithm
+
      Take care: They should match the parameters as used in g10/ecdh.c
      as long as the ecdh-param is not fully support (as in gnupg 2.2).
   */
   if (nbits <= 256)
     return (const unsigned char*)"\x03\x01\x08\x07";
   else if (nbits <= 384)
-    return (const unsigned char*)"\x03\x01\x09\x08";
+    return (const unsigned char*)"\x03\x01\x09\x08";  /* gnupg 2.2 only */
   else
     return (const unsigned char*)"\x03\x01\x0a\x09";
 }
@@ -1771,7 +1778,6 @@ ecc_read_pubkey (app_t app, ctrl_t ctrl, int meta_update,
 }
 
 
-/* Compute the keygrip form the local info and store it there.  */
 static gpg_error_t
 store_keygrip (app_t app, int keyno)
 {
@@ -1955,7 +1961,8 @@ get_public_key (app_t app, int keyno)
       hexkeyid = fpr + 24;
 
       ret = gpgrt_asprintf
-        (&command, "gpg --list-keys --with-colons --with-key-data '%s'", fpr);
+        (&command, "%s --list-keys --with-colons --with-key-data '%s'",
+         gnupg_module_name (GNUPG_MODULE_NAME_GPG), fpr);
       if (ret < 0)
         {
           err = gpg_error_from_syserror ();
@@ -2001,7 +2008,6 @@ get_public_key (app_t app, int keyno)
       app->app_local->pk[keyno].key = (unsigned char*)keybuf;
       /* Decrement for trailing '\0' */
       app->app_local->pk[keyno].keylen = len - 1;
-
       err = store_keygrip (app, keyno);
     }
 
@@ -2607,7 +2613,12 @@ verify_chv2 (app_t app, ctrl_t ctrl,
               flush_cache_after_error (app);
             }
           else
-            app->did_chv1 = 1;
+            {
+              app->did_chv1 = 1;
+              /* Note that we are not able to cache the CHV 1 here because
+               * it is possible that due to the use of a KDF-DO PINVALUE
+               * has the hashed binary PIN of length PINLEN.  */
+            }
         }
     }
   else
@@ -2624,7 +2635,7 @@ verify_chv2 (app_t app, ctrl_t ctrl,
 
 
 /* Build the prompt to enter the Admin PIN.  The prompt depends on the
-   current sdtate of the card.  */
+   current state of the card.  */
 static gpg_error_t
 build_enter_admin_pin_prompt (app_t app, char **r_prompt)
 {
@@ -2885,10 +2896,10 @@ do_setattr (app_t app, ctrl_t ctrl, const char *name,
 }
 
 
-/* Handle the WRITECERT command for OpenPGP.  This rites the standard
-   certifciate to the card; CERTID needs to be set to "OPENPGP.3".
-   PINCB and PINCB_ARG are the usual arguments for the pinentry
-   callback.  */
+/* Handle the WRITECERT command for OpenPGP.  This writes the standard
+ * certificate to the card; CERTID needs to be set to "OPENPGP.3".
+ * PINCB and PINCB_ARG are the usual arguments for the pinentry
+ * callback.  */
 static gpg_error_t
 do_writecert (app_t app, ctrl_t ctrl,
               const char *certidstr,
