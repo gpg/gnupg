@@ -241,14 +241,21 @@ p12_set_verbosity (int verbose, int debug)
 
 
 static void
-dump_tag_info (const char *text, struct tag_info *ti)
+dump_tag_info (const char *text, struct tlv_ctx_s *tlv)
 {
-  if (opt_verbose > 1)
-    log_debug ("p12_parse(%s): ti.class=%d tag=%lu len=%zu nhdr=%zu %s%s\n",
-               text,
-               ti->class, ti->tag, ti->length, ti->nhdr,
-               ti->is_constructed?" cons":"",
-               ti->ndef?" ndef":"");
+  struct tag_info *ti;
+
+  if (opt_verbose < 2)
+    return;
+
+  ti = &tlv->ti;
+  log_debug ("p12_parse(%s): ti.class=%-2d tag=%-2lu len=%-4zu nhdr=%zu %s %s"
+             "  (%u:%zu.%zu)\n",
+             text,
+             ti->class, ti->tag, ti->length, ti->nhdr,
+             ti->is_constructed?"cons":"    ",
+             ti->ndef?"ndef":"    ",
+             tlv->stacklen, tlv->bufsize, tlv->offset);
 }
 
 
@@ -473,7 +480,13 @@ _tlv_push (struct tlv_ctx_s *tlv)
   tlv->stack[tlv->stacklen].in_ndef = tlv->in_ndef;
   tlv->stacklen++;
   tlv->buffer += tlv->offset;
-  tlv->bufsize = tlv->ti.length;
+  if (tlv->ti.ndef)
+    {
+      log_assert (tlv->bufsize >= tlv->offset);
+      tlv->bufsize -= tlv->offset;
+    }
+  else
+    tlv->bufsize = tlv->ti.length;
   tlv->offset  = 0;
   tlv->in_ndef = tlv->ti.ndef;
   return 0;
@@ -551,7 +564,7 @@ tlv_next (struct tlv_ctx_s *tlv)
 
   /* Set offset to the value of the TLV.  */
   tlv->offset += tlv->bufsize - tlv->offset - n;
-  dump_tag_info ("tlv_next", &tlv->ti);
+  dump_tag_info ("tlv_next", tlv);
   return 0;
 }
 
@@ -706,7 +719,7 @@ tlv_expect_octet_string (struct tlv_ctx_s *tlv, int encapsulates,
         && (!tlv->ti.is_constructed || encapsulates)))
     return (tlv->lasterr = gpg_error (GPG_ERR_INV_OBJ));
   p = tlv->buffer + tlv->offset;
-  if (!(n=tlv->ti.length))
+  if (!(n=tlv->ti.length) && !tlv->ti.ndef)
     return (tlv->lasterr = gpg_error (GPG_ERR_TOO_SHORT));
 
   if (encapsulates && tlv->ti.is_constructed
