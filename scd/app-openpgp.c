@@ -1887,11 +1887,12 @@ get_public_key (app_t app, int keyno)
       if (err)
         {
           /* Yubikey returns wrong code.  Fix it up.  */
-          /*
-           * NOTE: It's not correct to blindly change the error code,
-           * however, for our experiences, it is only Yubikey...
-           */
-          err = gpg_error (GPG_ERR_NO_OBJ);
+          if (APP_CARD(app)->cardtype == CARDTYPE_YUBIKEY)
+            err = gpg_error (GPG_ERR_NO_OBJ);
+	  /* Yubikey NEO (!CARDTYPE_YUBIKEY) also returns wrong code.
+           * Fix it up.  */
+	  else if (gpg_err_code (err) == GPG_ERR_CARD)
+            err = gpg_error (GPG_ERR_NO_OBJ);
           log_error (_("reading public key failed: %s\n"), gpg_strerror (err));
           goto leave;
         }
