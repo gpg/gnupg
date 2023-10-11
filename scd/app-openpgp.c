@@ -351,6 +351,35 @@ do_deinit (app_t app)
 }
 
 
+/* This is a helper to do a wipememory followed by a free.  In general
+ * we do not need this if the buffer has been allocated in secure
+ * memory.  However at some places we can't make that sure and thus we
+ * better to an extra wipe here.  */
+static void
+wipe_and_free (void *p, size_t len)
+{
+  if (p)
+    {
+      if (len)
+        wipememory (p, len);
+      xfree (p);
+    }
+}
+
+
+/* Similar to wipe_and_free but assumes P is eitehr NULL or a proper
+ * string.  */
+static void
+wipe_and_free_string (char *p)
+{
+  if (p)
+    {
+      wipememory (p, strlen (p));
+      xfree (p);
+    }
+}
+
+
 /* Wrapper around iso7816_get_data which first tries to get the data
    from the cache.  With GET_IMMEDIATE passed as true, the cache is
    bypassed.  With TRY_EXTLEN extended lengths APDUs are use if
@@ -1377,30 +1406,6 @@ get_disp_name (app_t app)
 }
 
 
-/* Return the pretty formatted serialnumber.  On error NULL is
- * returned.  */
-static char *
-get_disp_serialno (app_t app)
-{
-  char *serial = app_get_serialno (app);
-
-  /* For our OpenPGP cards we do not want to show the entire serial
-   * number but a nicely reformatted actual serial number.  */
-  if (serial && strlen (serial) > 16+12)
-    {
-      memmove (serial, serial+16, 4);
-      serial[4] = ' ';
-      /* memmove (serial+5, serial+20, 4); */
-      /* serial[9] = ' '; */
-      /* memmove (serial+10, serial+24, 4); */
-      /* serial[14] = 0; */
-      memmove (serial+5, serial+20, 8);
-      serial[13] = 0;
-    }
-  return serial;
-}
-
-
 /* Return the number of remaining tries for the standard or the admin
  * pw.  Returns -1 on card error.  */
 static int
@@ -2021,6 +2026,21 @@ get_public_key (app_t app, int keyno)
 }
 
 
+static const char *
+get_usage_string (int keyno)
+{
+  const char *usage;
+  switch (keyno)
+    {
+    case 0: usage = "sc"; break;
+    case 1: usage = "e";  break;
+    case 2: usage = "sa"; break;
+    default: usage = "-";  break;
+    }
+  return usage;
+}
+
+
 /* Send the KEYPAIRINFO back. KEY needs to be in the range [1,3].
    This is used by the LEARN command. */
 static gpg_error_t
@@ -2039,13 +2059,7 @@ send_keypair_info (app_t app, ctrl_t ctrl, int key)
   if (!app->app_local->pk[keyno].key)
     goto leave; /* No such key - ignore. */
 
-  switch (keyno)
-    {
-    case 0: usage = "sc"; break;
-    case 1: usage = "e";  break;
-    case 2: usage = "sa"; break;
-    default: usage = "";  break;
-    }
+  usage = get_usage_string (keyno);
 
   sprintf (idbuf, "OPENPGP.%d", keyno+1);
   send_status_info (ctrl, "KEYPAIRINFO",
@@ -2323,7 +2337,7 @@ get_prompt_info (app_t app, int chvno, unsigned long sigcount, int remaining)
 {
   char *serial, *disp_name, *rembuf, *tmpbuf, *result;
 
-  serial = get_disp_serialno (app);
+  serial = app_get_dispserialno (app, 0);
   if (!serial)
     return NULL;
 
