@@ -10,7 +10,7 @@ case "$myhost:$myhostsub" in
     extraoptions="$extraoptions --disable-zip"
     ;;
   w32:)
-    extraoptions="--enable-gpgtar"
+    extraoptions="--enable-gpgtar --enable-gpgsum"
     ;;
 esac
 

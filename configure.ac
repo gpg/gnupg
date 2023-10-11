@@ -136,6 +136,7 @@ GNUPG_BUILD_PROGRAM(gpgtar, yes)
 # We also install the gpg-wks-server tool by default but disable it
 # later for platforms where it can't be build.
 GNUPG_BUILD_PROGRAM(wks-tools, yes)
+GNUPG_BUILD_PROGRAM(gpgsum, yes)
 
 
 AC_SUBST(PACKAGE)
@@ -1849,6 +1850,7 @@ AM_CONDITIONAL(BUILD_TPM2D,       test "$build_tpm2d" = "yes")
 AM_CONDITIONAL(BUILD_DOC,         test "$build_doc" = "yes")
 AM_CONDITIONAL(BUILD_GPGTAR,      test "$build_gpgtar" = "yes")
 AM_CONDITIONAL(BUILD_WKS_TOOLS,   test "$build_wks_tools" = "yes")
+AM_CONDITIONAL(BUILD_GPGSUM,      test "$build_gpgsum" = "yes")
 
 AM_CONDITIONAL(DISABLE_TESTS,       test "$run_tests" != yes)
 AM_CONDITIONAL(ENABLE_CARD_SUPPORT, test "$card_support" = yes)
@@ -1923,6 +1925,7 @@ AC_DEFINE_UNQUOTED(GPGCONF_DISP_NAME, "GPGConf",
                                       [The displayed name of gpgconf])
 
 AC_DEFINE_UNQUOTED(GPGTAR_NAME, "gpgtar", [The name of the gpgtar tool])
+AC_DEFINE_UNQUOTED(GPGSUM_NAME, "gpgsum", [The name of the gpgsum tool])
 
 AC_DEFINE_UNQUOTED(GPG_AGENT_SOCK_NAME, "S.gpg-agent",
                    [The name of the agent socket])
@@ -2118,6 +2121,7 @@ tools/gpgtar.w32-manifest
 tools/gpg-check-pattern.w32-manifest
 tools/gpg-wks-client.w32-manifest
 tools/gpg-card.w32-manifest
+tools/gpgsum.w32-manifest
 ])
 
 
@@ -2144,6 +2148,7 @@ echo "
         Keyboxd:   $build_keyboxd
         Gpgtar:    $build_gpgtar
         WKS tools: $build_wks_tools
+        Gpgsum:    $build_gpgsum
 
         Protect tool:       $show_gnupg_protect_tool_pgm
         LDAP wrapper:       $show_gnupg_dirmngr_ldap_pgm

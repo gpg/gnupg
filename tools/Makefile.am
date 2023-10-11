@@ -26,7 +26,8 @@ EXTRA_DIST = \
 	gpgtar-w32info.rc            gpgtar.w32-manifest.in \
 	gpg-check-pattern-w32info.rc gpg-check-pattern.w32-manifest.in \
 	gpg-wks-client-w32info.rc    gpg-wks-client.w32-manifest.in \
-	gpg-card-w32info.rc          gpg-card.w32-manifest.in
+	gpg-card-w32info.rc          gpg-card.w32-manifest.in \
+	gpgsum-w32info.rc            gpgsum.w32-manifest.in
 
 AM_CPPFLAGS =
 include $(top_srcdir)/am/cmacros.am
@@ -38,6 +39,7 @@ gpg_card_rc_objs          = gpg-card-w32info.o
 gpgtar_rc_objs            = gpgtar-w32info.o
 gpg_check_pattern_rc_objs = gpg-check-pattern-w32info.o
 gpg_wks_client_rc_objs    = gpg-wks-client-w32info.o
+gpgsum_rc_objs            = gpgsum-w32info.o
 
 gpg-connect-agent-w32info.o  : gpg-connect-agent.w32-manifest \
                                                      ../common/w32info-rc.h
@@ -48,6 +50,7 @@ gpg-check-pattern-w32info.o  : gpg-check-pattern.w32-manifest \
                                                      ../common/w32info-rc.h
 gpg-wks-client-w32info.o     : gpg-wks-client.w32-manifest \
                                                      ../common/w32info-rc.h
+gpgsum-w32info.o             : gpgsum.w32-manifest   ../common/w32info-rc.h
 
 endif
 
@@ -80,6 +83,12 @@ if BUILD_GPGTAR
   bin_PROGRAMS += gpgtar
 else
   noinst_PROGRAMS += gpgtar
+endif
+
+if BUILD_GPGSUM
+  bin_PROGRAMS += gpgsum
+else
+  noinst_PROGRAMS += gpgsum
 endif
 
 common_libs = $(libcommon)
@@ -156,6 +165,14 @@ gpgtar_CFLAGS = $(LIBGCRYPT_CFLAGS) $(GPG_ERROR_CFLAGS)
 gpgtar_LDADD = $(libcommon) $(LIBGCRYPT_LIBS) $(GPG_ERROR_LIBS) \
                $(LIBINTL) $(NETLIBS) $(LIBICONV) $(W32SOCKLIBS) \
 	       $(gpgtar_rc_objs)
+
+gpgsum_SOURCES = \
+	gpgsum.c
+
+gpgsum_CFLAGS = $(LIBGCRYPT_CFLAGS) $(GPG_ERROR_CFLAGS)
+gpgsum_LDADD = $(libcommon) $(LIBGCRYPT_LIBS) $(GPG_ERROR_LIBS) \
+	       $(LIBINTL) $(NETLIBS) \
+	       $(gpgsum_rc_objs)
 
 gpg_wks_server_SOURCES = \
 	gpg-wks-server.c \
