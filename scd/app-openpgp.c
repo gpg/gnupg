@@ -2161,6 +2161,8 @@ do_learn_status (app_t app, ctrl_t ctrl, unsigned int flags)
     }
   if (!err && app->app_local->extcap.has_button)
     err = do_getattr (app, ctrl, "UIF");
+  if (gpg_err_code (err) == GPG_ERR_NO_OBJ)
+    err = 0;
   if (!err && app->app_local->extcap.private_dos)
     {
       if (!err)
@@ -4986,7 +4988,10 @@ check_keyidstr (app_t app, const char *keyidstr, int keyno, int *r_use_auth)
             return gpg_error (GPG_ERR_INV_ID);
         }
 
-      if (n != 32 || strncmp (keyidstr, "D27600012401", 12))
+      /* For a description of the serialno compare function see
+       * is_same_serialno.  We don't use that function because here we
+       * are working on a hex string.  */
+      if (n != 32 || ascii_strncasecmp (keyidstr, "D27600012401", 12))
         return gpg_error (GPG_ERR_INV_ID);
       else if (!*s)
         ; /* no fingerprint given: we allow this for now. */
@@ -4994,7 +4999,9 @@ check_keyidstr (app_t app, const char *keyidstr, int keyno, int *r_use_auth)
         fpr = s + 1;
 
       serial = app_get_serialno (app);
-      if (strncmp (serial, keyidstr, 32))
+      if (!serial || strlen (serial) != 32
+          || ascii_memcasecmp (serial, "D27600012401", 12)
+          || ascii_memcasecmp (serial+16, keyidstr+16, 16))
         {
           xfree (serial);
           return gpg_error (GPG_ERR_WRONG_CARD);
