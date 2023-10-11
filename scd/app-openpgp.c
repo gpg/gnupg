@@ -2213,11 +2213,25 @@ do_readkey (app_t app, ctrl_t ctrl, const char *keyid, unsigned int flags,
 
   (void)ctrl;
 
-  if (!strcmp (keyid, "OPENPGP.1"))
+  if (strlen (keyid) == 40)
+    {
+      const unsigned char *keygrip_str;
+
+      for (keyno = 0; keyno < 3; keyno++)
+        {
+          keygrip_str = app->app_local->pk[keyno].keygrip_str;
+          if (!strncmp (keygrip_str, keyid, 40))
+            break;
+        }
+
+      if (keyno >= 3)
+        return gpg_error (GPG_ERR_INV_ID);
+    }
+  else if (!ascii_strcasecmp (keyid, "OPENPGP.1"))
     keyno = 0;
-  else if (!strcmp (keyid, "OPENPGP.2"))
+  else if (!ascii_strcasecmp (keyid, "OPENPGP.2"))
     keyno = 1;
-  else if (!strcmp (keyid, "OPENPGP.3"))
+  else if (!ascii_strcasecmp (keyid, "OPENPGP.3"))
     keyno = 2;
   else
     return gpg_error (GPG_ERR_INV_ID);
@@ -2280,7 +2294,28 @@ do_readcert (app_t app, const char *certid,
 
   *cert = NULL;
   *certlen = 0;
-  if (!ascii_strcasecmp (certid, "OPENPGP.3"))
+  if (strlen (certid) == 40)
+    {
+      int keyno;
+      const unsigned char *keygrip_str;
+
+      for (keyno = 0; keyno < 3; keyno++)
+        {
+          keygrip_str = app->app_local->pk[keyno].keygrip_str;
+          if (!strncmp (keygrip_str, certid, 40))
+            break;
+        }
+
+      if (keyno == 2)
+        ;
+      else if (keyno == 1)
+        occurrence = 1;
+      else if (keyno == 0)
+        occurrence = 2;
+      else
+        return gpg_error (GPG_ERR_INV_ID);
+    }
+  else if (!ascii_strcasecmp (certid, "OPENPGP.3"))
     ;
   else if (!ascii_strcasecmp (certid, "OPENPGP.2"))
     occurrence = 1;
