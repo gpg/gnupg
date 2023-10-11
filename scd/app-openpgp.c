@@ -1453,6 +1453,36 @@ retrieve_fpr_from_card (app_t app, int keyno, char *fpr)
 }
 
 
+/* Retrieve the creation time of the fingerprint for key KEYNO from
+ * the card inserted in the slot of APP and store it at R_FPRTIME.
+ * Returns 0 on success or an error code.  */
+static gpg_error_t
+retrieve_fprtime_from_card (app_t app, int keyno, u32 *r_fprtime)
+{
+  gpg_error_t err = 0;
+  void *relptr;
+  unsigned char *value;
+  size_t valuelen;
+  u32 fprtime;
+
+  log_assert (keyno >=0 && keyno <= 2);
+
+  relptr = get_one_do (app, 0x00CD, &value, &valuelen, NULL);
+  if (relptr && valuelen >= 4*(keyno+1))
+    {
+      fprtime = buf32_to_u32 (value + 4*keyno);
+      if (!fprtime)
+        err = gpg_error (GPG_ERR_NOT_FOUND);
+      else
+        *r_fprtime = fprtime;
+    }
+  else
+    err = gpg_error (GPG_ERR_NOT_FOUND);
+  xfree (relptr);
+  return err;
+}
+
+
 /* Retrieve the public key material for the RSA key, whose fingerprint
    is FPR, from gpg output, which can be read through the stream FP.
    The RSA modulus will be stored at the address of M and MLEN, the
@@ -2048,8 +2078,9 @@ send_keypair_info (app_t app, ctrl_t ctrl, int key)
 {
   int keyno = key - 1;
   gpg_error_t err = 0;
-  char idbuf[50];
   const char *usage;
+  u32 fprtime;
+  char *algostr = NULL;
 
   err = get_public_key (app, keyno);
   if (err)
@@ -2061,14 +2092,32 @@ send_keypair_info (app_t app, ctrl_t ctrl, int key)
 
   usage = get_usage_string (keyno);
 
-  sprintf (idbuf, "OPENPGP.%d", keyno+1);
-  send_status_info (ctrl, "KEYPAIRINFO",
-                    app->app_local->pk[keyno].keygrip_str, 40,
-                    idbuf, strlen (idbuf),
-                    usage, strlen (usage),
-                    NULL, (size_t)0);
+  if (retrieve_fprtime_from_card (app, keyno, &fprtime))
+    fprtime = 0;
+
+  {
+    gcry_sexp_t s_pkey;
+    if (gcry_sexp_new (&s_pkey, app->app_local->pk[keyno].key,
+                       app->app_local->pk[keyno].keylen, 0))
+      algostr = xtrystrdup ("?");
+    else
+      {
+        algostr = pubkey_algo_string (s_pkey, NULL);
+        gcry_sexp_release (s_pkey);
+      }
+  }
+  if (!algostr)
+    {
+      err = gpg_error_from_syserror ();
+      goto leave;
+    }
+
+  err = send_status_printf (ctrl, "KEYPAIRINFO", "%s OPENPGP.%d %s %lu %s",
+                            app->app_local->pk[keyno].keygrip_str,
+                            keyno+1, usage, (unsigned long)fprtime, algostr);
 
  leave:
+  xfree (algostr);
   return err;
 }
 
