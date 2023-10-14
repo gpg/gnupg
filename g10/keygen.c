@@ -2691,14 +2691,21 @@ parse_expire_string( const char *string )
       || !strcmp (string, "never") || !strcmp (string, "-"))
     seconds = 0;
   else if (!strncmp (string, "seconds=", 8))
-    seconds = atoi (string+8);
+    seconds = scan_secondsstr (string+8);
   else if ((abs_date = scan_isodatestr(string))
            && (abs_date+86400/2) > curtime)
     seconds = (abs_date+86400/2) - curtime;
   else if ((tt = isotime2epoch (string)) != (time_t)(-1))
     seconds = (u32)tt - curtime;
   else if ((mult = check_valid_days (string)))
-    seconds = atoi (string) * 86400L * mult;
+    {
+      uint64_t tmp64;
+      tmp64 = scan_secondsstr (string) * 86400L * mult;
+      if (tmp64 >= (u32)(-1))
+        seconds = (u32)(-1) - 1;  /* cap value.  */
+      else
+        seconds = (u32)tmp64;
+    }
   else
     seconds = (u32)(-1);
 
@@ -2715,7 +2722,7 @@ parse_creation_string (const char *string)
   if (!*string)
     seconds = 0;
   else if ( !strncmp (string, "seconds=", 8) )
-    seconds = atoi (string+8);
+    seconds = scan_secondsstr (string+8);
   else if ( !(seconds = scan_isodatestr (string)))
     {
       time_t tmp = isotime2epoch (string);
