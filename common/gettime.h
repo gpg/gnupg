@@ -51,6 +51,7 @@ int    gnupg_faked_time_p (void);
 u32    make_timestamp (void);
 char *elapsed_time_string (time_t since, time_t now);
 
+u32    scan_secondsstr (const char *string);
 u32    scan_isodatestr (const char *string);
 int    isotime_p (const char *string);
 int    isotime_human_p (const char *string, int date_only);

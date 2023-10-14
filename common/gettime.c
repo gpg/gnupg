@@ -37,6 +37,7 @@
 #ifdef HAVE_LANGINFO_H
 #include <langinfo.h>
 #endif
+#include <stdint.h>    /* We use uint64_t.  */
 
 #include "util.h"
 #include "i18n.h"
@@ -167,6 +168,28 @@ make_timestamp (void)
   return (u32)t;
 }
 
+
+/* Specialized version of atoi which returns an u32 instead of an int
+ * and caps the result at 2^32-2.  Leading white space is skipped,
+ * scanning stops at at the first non-convertable byte.  Note that we
+ * do not cap at 2^32-1 because that value is often used as error
+ * return. */
+u32
+scan_secondsstr (const char *string)
+{
+  uint64_t value = 0;
+
+  while (*string == ' ' || *string == '\t')
+    string++;
+  for (; *string >= '0' && *string <= '9'; string++)
+    {
+      value *= 10;
+      value += atoi_1 (string);
+      if (value >= (u32)(-1))
+        return (u32)(-1) - 1;
+    }
+  return (u32)value;
+}
 
 
 /****************
