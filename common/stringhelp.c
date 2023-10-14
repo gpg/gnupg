@@ -725,7 +725,7 @@ compare_filenames (const char *a, const char *b)
 
 /* Convert a base-10 number in STRING into a 64 bit unsigned int
  * value.  Leading white spaces are skipped but no error checking is
- * done.  Thus it is similar to atoi(). */
+ * done.  Thus it is similar to atoi().  See also scan_secondsstr.  */
 uint64_t
 string_to_u64 (const char *string)
 {
