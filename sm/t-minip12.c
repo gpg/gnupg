@@ -539,7 +539,10 @@ run_one_test (const char *name, const char *desc, const char *pass,
             }
         }
 
-      resulthash = hash_buffer (tmpstring, strlen (tmpstring));
+      /* Hash only if we have at least one parameter; i.e. the curve
+       * alone is not sufficient.  */
+      if (result[0])
+        resulthash = hash_buffer (tmpstring, strlen (tmpstring));
       xfree (tmpstring);
     }
 
