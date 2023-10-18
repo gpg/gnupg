@@ -54,7 +54,7 @@ struct list_external_parm_s
 #define OID_FLAG_SKIP 1
 /* The extension is a simple UTF8String and should be printed.  */
 #define OID_FLAG_UTF8 2
-/* The extension can be trnted as a hex string.  */
+/* The extension can be printed as a hex string.  */
 #define OID_FLAG_HEX  4
 /* Define if this specififies a key purpose.  */
 #define OID_FLAG_KP   8
@@ -207,6 +207,8 @@ static struct
   { "1.3.6.1.4.1.311.21.5",   "ms-caExchange", OID_FLAG_KP },
   { "1.3.6.1.4.1.311.21.6",   "ms-keyRecovery", OID_FLAG_KP },
   { "1.3.6.1.4.1.311.21.19",  "ms-dsEmailReplication", OID_FLAG_KP },
+
+  /* BSI policies.  */
 
   /* Other vendor extensions.  */
   { "1.3.6.1.4.1.30205.13.1.1", "trusted-disk", OID_FLAG_KP },
