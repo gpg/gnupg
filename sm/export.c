@@ -430,7 +430,7 @@ gpgsm_p12_export (ctrl_t ctrl, const char *name, estream_t stream, int rawmode)
 
   if (rawmode == 0)
     ctrl->pem_name = "PKCS12";
-  else if (gpgsm_get_key_algo_info (cert, NULL) == GCRY_PK_ECC)
+  else if (gpgsm_get_key_algo_info (cert, NULL, NULL) == GCRY_PK_ECC)
     ctrl->pem_name = "EC PRIVATE KEY";
   else if (rawmode == 1)
     ctrl->pem_name = "PRIVATE KEY";

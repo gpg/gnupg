@@ -640,6 +640,7 @@ gpgsm_sign (ctrl_t ctrl, certlist_t signerlist,
   certlist_t cl;
   int release_signerlist = 0;
   int binary_detached = detached && !ctrl->create_pem && !ctrl->create_base64;
+  char *curve = NULL;
 
   audit_set_type (ctrl->audit, AUDIT_TYPE_SIGN);
 
@@ -778,7 +779,8 @@ gpgsm_sign (ctrl_t ctrl, certlist_t signerlist,
       unsigned int nbits;
       int pk_algo;
 
-      pk_algo = gpgsm_get_key_algo_info (cl->cert, &nbits);
+      xfree (curve);
+      pk_algo = gpgsm_get_key_algo_info (cl->cert, &nbits, &curve);
       cl->pk_algo = pk_algo;
 
       if (opt.forced_digest_algo)
@@ -838,8 +840,8 @@ gpgsm_sign (ctrl_t ctrl, certlist_t signerlist,
           goto leave;
         }
 
-      if (! gnupg_pk_is_allowed (opt.compliance, PK_USE_SIGNING, pk_algo, 0,
-                                 NULL, nbits, NULL))
+      if (!gnupg_pk_is_allowed (opt.compliance, PK_USE_SIGNING, pk_algo, 0,
+                                NULL, nbits, curve))
         {
           char  kidstr[10+1];
 
@@ -1205,6 +1207,7 @@ gpgsm_sign (ctrl_t ctrl, certlist_t signerlist,
                gpg_strerror (rc), gpg_strsource (rc) );
   if (release_signerlist)
     gpgsm_release_certlist (signerlist);
+  xfree (curve);
   ksba_cms_release (cms);
   gnupg_ksba_destroy_writer (b64writer);
   keydb_release (kh);

@@ -468,7 +468,7 @@ gpgsm_verify (ctrl_t ctrl, int in_fd, int data_fd, estream_t out_fp)
 
       pkfpr = gpgsm_get_fingerprint_hexstring (cert, GCRY_MD_SHA1);
       pkalgostr = gpgsm_pubkey_algo_string (cert, NULL);
-      pkalgo = gpgsm_get_key_algo_info2 (cert, &nbits, &pkcurve);
+      pkalgo = gpgsm_get_key_algo_info (cert, &nbits, &pkcurve);
       /* Remap the ECC algo to the algo we use.  Note that EdDSA has
        * already been mapped.  */
       if (pkalgo == GCRY_PK_ECC)
@@ -504,7 +504,7 @@ gpgsm_verify (ctrl_t ctrl, int in_fd, int data_fd, estream_t out_fp)
 
       /* Check compliance.  */
       if (! gnupg_pk_is_allowed (opt.compliance, PK_USE_VERIFICATION,
-                                 pkalgo, pkalgoflags, NULL, nbits, NULL))
+                                 pkalgo, pkalgoflags, NULL, nbits, pkcurve))
         {
           char  kidstr[10+1];
 

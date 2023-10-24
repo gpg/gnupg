@@ -222,7 +222,7 @@ gpgsm_get_keygrip_hexstring (ksba_cert_t cert)
  * algorithm is used the name or OID of the curve is stored there; the
  * caller needs to free this value.  */
 int
-gpgsm_get_key_algo_info2 (ksba_cert_t cert, unsigned int *nbits, char **r_curve)
+gpgsm_get_key_algo_info (ksba_cert_t cert, unsigned int *nbits, char **r_curve)
 {
   gcry_sexp_t s_pkey;
   int rc;
@@ -299,18 +299,11 @@ gpgsm_get_key_algo_info2 (ksba_cert_t cert, unsigned int *nbits, char **r_curve)
 }
 
 
-int
-gpgsm_get_key_algo_info (ksba_cert_t cert, unsigned int *nbits)
-{
-  return gpgsm_get_key_algo_info2 (cert, nbits, NULL);
-}
-
-
 /* Return true if CERT is an ECC key.  */
 int
 gpgsm_is_ecc_key (ksba_cert_t cert)
 {
-  return GCRY_PK_ECC == gpgsm_get_key_algo_info2 (cert, NULL, NULL);
+  return GCRY_PK_ECC == gpgsm_get_key_algo_info (cert, NULL, NULL);
 }
 
 
