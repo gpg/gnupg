@@ -375,14 +375,14 @@ email_kludge (const char *name)
  * number.  NBITS is the length of the key in bits.  */
 static void
 print_compliance_flags (ksba_cert_t cert, int algo, unsigned int nbits,
-                        estream_t fp)
+                        const char *curvename, estream_t fp)
 {
   int hashalgo;
 
   /* Note that we do not need to test for PK_ALGO_FLAG_RSAPSS because
    * that is not a property of the key but one of the created
    * signature.  */
-  if (gnupg_pk_is_compliant (CO_DE_VS, algo, 0, NULL, nbits, NULL))
+  if (gnupg_pk_is_compliant (CO_DE_VS, algo, 0, NULL, nbits, curvename))
     {
       hashalgo = gcry_md_map_name (ksba_cert_get_digest_algo (cert));
       if (gnupg_digest_is_compliant (CO_DE_VS, hashalgo))
@@ -569,7 +569,7 @@ list_cert_colon (ctrl_t ctrl, ksba_cert_t cert, unsigned int validity,
   if (curve)
     es_fputs (curve, fp);
   es_putc (':', fp);  /* End of field 17. */
-  print_compliance_flags (cert, algo, nbits, fp);
+  print_compliance_flags (cert, algo, nbits, curve, fp);
   es_putc (':', fp);  /* End of field 18. */
   es_putc ('\n', fp);
 
