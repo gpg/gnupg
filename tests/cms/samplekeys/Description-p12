@@ -45,4 +45,10 @@ Pass: abc
 Cert: 5cea0c5bf09ccd92535267c662fc098f6c81c27e
 Key:  3cb2fba95d1976df69eb7aa8c65ac5354e15af32
 
+Name: t6752-ov-user-ff.p12
+Desc: Mozilla generated with a surplus octet string container
+Pass: start
+Cert: 4753a910e0c8b4caa8663ca0e4273a884eb5397d
+Key:  93be89edd11214ab74280d988a665b6beef876c5
+
 # eof #
