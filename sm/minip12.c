@@ -174,11 +174,14 @@ struct bufferlist_s
 /* An object to control the ASN.1 parsing.  */
 struct tlv_ctx_s
 {
+  /* The orginal buffer with the entire pkcs#12 object and its length.  */
+  const unsigned char *origbuffer;
+  size_t origbufsize;
+
   /* The current buffer we are working on and its length. */
   const unsigned char *buffer;
   size_t bufsize;
 
-  size_t offset;       /* The current offset into this buffer.   */
   int in_ndef;         /* Flag indicating that we are in a NDEF. */
   int pending;         /* The last tlv_next has not yet been processed.  */
 
@@ -186,15 +189,14 @@ struct tlv_ctx_s
   gpg_error_t lasterr; /* Last error from tlv function.  */
   const char *lastfunc;/* Name of last called function.  */
 
-  struct bufferlist_s *bufferlist;  /* To keep track of amlloced buffers. */
+  struct bufferlist_s *bufferlist;  /* To keep track of malloced buffers. */
 
-  unsigned int pop_count;/* Number of pops by tlv_next.  */
   unsigned int stacklen; /* Used size of the stack.  */
   struct {
     const unsigned char *buffer;  /* Saved value of BUFFER.   */
     size_t bufsize;               /* Saved value of BUFSIZE.  */
-    size_t offset;                /* Saved value of OFFSET.   */
-    int    in_ndef;               /* Saved IN_NDEF flag.  */
+    size_t length;                /* Length of the container (ti.length). */
+    int    in_ndef;               /* Saved IN_NDEF flag (ti.ndef).        */
   } stack[TLV_MAX_DEPTH];
 };
 
@@ -240,15 +242,41 @@ p12_set_verbosity (int verbose, int debug)
 }
 
 
+#define dump_tag_info(a,b) _dump_tag_info ((a),__LINE__,(b))
 static void
-dump_tag_info (const char *text, struct tag_info *ti)
+_dump_tag_info (const char *text, int lno, struct tlv_ctx_s *tlv)
 {
-  if (opt_verbose > 1)
-    log_debug ("p12_parse(%s): ti.class=%d tag=%lu len=%zu nhdr=%zu %s%s\n",
-               text,
-               ti->class, ti->tag, ti->length, ti->nhdr,
-               ti->is_constructed?" cons":"",
-               ti->ndef?" ndef":"");
+  struct tag_info *ti;
+
+  if (opt_verbose < 2)
+    return;
+
+  ti = &tlv->ti;
+
+  log_debug ("p12_parse:%s:%d: @%04zu class=%d tag=%lu len=%zu nhdr=%zu %s%s\n",
+             text, lno,
+             (size_t)(tlv->buffer - tlv->origbuffer) - ti->nhdr,
+             ti->class, ti->tag, ti->length, ti->nhdr,
+             ti->is_constructed?" cons":"",
+             ti->ndef?" ndef":"");
+}
+
+
+#define dump_tlv_ctx(a,b,c) _dump_tlv_ctx ((a),(b),__LINE__,(c))
+static void
+_dump_tlv_ctx (const char *text, const char *text2,
+              int lno, struct tlv_ctx_s *tlv)
+{
+  if (opt_verbose < 2)
+    return;
+
+  log_debug ("p12_parse:%s%s%s:%d: @%04zu lvl=%u %s\n",
+             text,
+             text2? "/":"", text2? text2:"",
+             lno,
+             (size_t)(tlv->buffer - tlv->origbuffer),
+             tlv->stacklen,
+             tlv->in_ndef? " in-ndef":"");
 }
 
 
@@ -406,6 +434,8 @@ tlv_new (const unsigned char *buffer, size_t bufsize)
   tlv = xtrycalloc (1, sizeof *tlv);
   if (tlv)
     {
+      tlv->origbuffer = buffer;
+      tlv->origbufsize = bufsize;
       tlv->buffer = buffer;
       tlv->bufsize = bufsize;
     }
@@ -447,17 +477,45 @@ tlv_release (struct tlv_ctx_s *tlv)
 }
 
 
-/* Helper for tlv_next and tlv_peek.  */
+/* Helper for the tlv_peek functions.  */
 static gpg_error_t
-_tlv_peek (struct tlv_ctx_s *tlv, size_t *r_n)
+_tlv_peek (struct tlv_ctx_s *tlv, struct tag_info *ti)
 {
   const unsigned char *p;
+  size_t n;
 
-  if (tlv->offset > tlv->bufsize)
+  /* Note that we want to peek ahead of any current container but of
+   * course not beyond our entire buffer.  */
+  p = tlv->buffer;
+  if ((p - tlv->origbuffer) > tlv->origbufsize)
     return gpg_error (GPG_ERR_BUG);
-  p = tlv->buffer + tlv->offset;
-  *r_n = tlv->bufsize - tlv->offset;
-  return parse_tag (&p, r_n, &tlv->ti);
+  n = tlv->origbufsize - (p - tlv->origbuffer);
+  return parse_tag (&p, &n, ti);
+}
+
+
+/* Look for the next tag and return true if it matches CLASS and TAG.
+ * Otherwise return false.  No state is changed.  */
+static int
+tlv_peek (struct tlv_ctx_s *tlv, int class, int tag)
+{
+  struct tag_info ti;
+
+  return (!_tlv_peek (tlv, &ti)
+          && ti.class == class && ti.tag == tag);
+}
+
+
+/* Look for the next tag and return true if it is the Null tag.
+ * Otherwise return false.  No state is changed.  */
+static int
+tlv_peek_null (struct tlv_ctx_s *tlv)
+{
+  struct tag_info ti;
+
+  return (!_tlv_peek (tlv, &ti)
+          && ti.class == CLASS_UNIVERSAL && ti.tag == TAG_NULL
+          && !ti.is_constructed && !ti.length);
 }
 
 
@@ -465,17 +523,30 @@ _tlv_peek (struct tlv_ctx_s *tlv, size_t *r_n)
 static gpg_error_t
 _tlv_push (struct tlv_ctx_s *tlv)
 {
+  /* Right now our pointer is at the value of the current container.
+   * We push that info onto the stack.  */
   if (tlv->stacklen >= TLV_MAX_DEPTH)
     return (tlv->lasterr = gpg_error (GPG_ERR_TOO_MANY));
   tlv->stack[tlv->stacklen].buffer  = tlv->buffer;
   tlv->stack[tlv->stacklen].bufsize = tlv->bufsize;
-  tlv->stack[tlv->stacklen].offset  = tlv->offset;
   tlv->stack[tlv->stacklen].in_ndef = tlv->in_ndef;
+  tlv->stack[tlv->stacklen].length  = tlv->ti.length;
   tlv->stacklen++;
-  tlv->buffer += tlv->offset;
-  tlv->bufsize = tlv->ti.length;
-  tlv->offset  = 0;
+
   tlv->in_ndef = tlv->ti.ndef;
+
+  /* We set the size of the buffer to the TLV length if it is known or
+   * else to the size of the remaining entire buffer.  */
+  if (tlv->in_ndef)
+    {
+      if ((tlv->buffer - tlv->origbuffer) > tlv->origbufsize)
+        return (tlv->lasterr = gpg_error (GPG_ERR_BUG));
+      tlv->bufsize = tlv->origbufsize - (tlv->buffer - tlv->origbuffer);
+    }
+  else
+    tlv->bufsize = tlv->ti.length;
+
+  dump_tlv_ctx (__func__, NULL, tlv);
   return 0;
 }
 
@@ -484,74 +555,102 @@ _tlv_push (struct tlv_ctx_s *tlv)
 static gpg_error_t
 _tlv_pop (struct tlv_ctx_s *tlv)
 {
-  size_t saveoff;
+  size_t lastlen;
 
+  /* We reached the end of a container, either due to the size limit
+   * or due to an end tag.  Now we pop the last container so that we
+   * are positioned at the value of the last container. */
   if (!tlv->stacklen)
     return gpg_error (GPG_ERR_EOF);
 
-  saveoff = tlv->offset;
-
   tlv->stacklen--;
-  tlv->buffer  = tlv->stack[tlv->stacklen].buffer;
-  tlv->bufsize = tlv->stack[tlv->stacklen].bufsize;
-  tlv->offset  = tlv->stack[tlv->stacklen].offset;
   tlv->in_ndef = tlv->stack[tlv->stacklen].in_ndef;
+  if (tlv->in_ndef)
+    {
+      /* We keep buffer but adjust bufsize to the end of the origbuffer. */
+      if ((tlv->buffer - tlv->origbuffer) > tlv->origbufsize)
+        return (tlv->lasterr = gpg_error (GPG_ERR_BUG));
+      tlv->bufsize = tlv->origbufsize - (tlv->buffer - tlv->origbuffer);
+    }
+  else
+    {
+      lastlen      = tlv->stack[tlv->stacklen].length;
+      tlv->buffer  = tlv->stack[tlv->stacklen].buffer;
+      tlv->bufsize = tlv->stack[tlv->stacklen].bufsize;
+      if (lastlen > tlv->bufsize)
+        {
+          log_debug ("%s: container length larger than buffer (%zu/%zu)\n",
+                     __func__, lastlen, tlv->bufsize);
+          return gpg_error (GPG_ERR_INV_BER);
+        }
+      tlv->buffer += lastlen;
+      tlv->bufsize -= lastlen;
+    }
 
-  /* Move offset of the container to the end of the container. */
-  tlv->offset += saveoff;
-  if (tlv->offset > tlv->bufsize)
-    return gpg_error (GPG_ERR_INV_BER);
-
-  tlv->pop_count++;
+  dump_tlv_ctx (__func__, NULL, tlv);
   return 0;
 }
 
 
-/* Parse the next tag and value.  Also detect the end of a container;
- * tlv_popped() can be used to detect this.  */
+/* Parse the next tag and value.  Also detect the end of a
+ * container. */
+#define tlv_next(a) _tlv_next ((a), __LINE__)
 static gpg_error_t
-tlv_next (struct tlv_ctx_s *tlv)
+_tlv_next (struct tlv_ctx_s *tlv, int lno)
 {
   gpg_error_t err;
-  size_t n;
 
-  tlv->pop_count = 0;
   tlv->lasterr = 0;
   tlv->lastfunc = __func__;
+
   if (tlv->pending)
     {
       tlv->pending = 0;
+      if (opt_verbose > 1)
+        log_debug ("%s: tlv_next skipped\n", __func__);
       return 0;
     }
 
-  if (!tlv->in_ndef && tlv->offset == tlv->bufsize)
+  if (opt_verbose > 1)
+    log_debug ("%s: tlv_next called\n", __func__);
+  /* If we are at the end of an ndef container pop the stack.  */
+  if (!tlv->in_ndef && !tlv->bufsize)
     {
-      /* We are at the end of a container.  Pop the stack.  */
       do
         err = _tlv_pop (tlv);
-      while (!err && !tlv->in_ndef && tlv->offset == tlv->bufsize);
+      while (!err && !tlv->in_ndef && !tlv->bufsize);
       if (err)
         return (tlv->lasterr = err);
+      if (opt_verbose > 1)
+        log_debug ("%s: container(s) closed due to size\n", __func__);
     }
 
-  err = _tlv_peek (tlv, &n);
+ again:
+  /* Get the next tag.  */
+  err = parse_tag (&tlv->buffer, &tlv->bufsize, &tlv->ti);
   if (err)
-    return err;
+    {
+      if (opt_verbose > 1)
+        log_debug ("%s: reading tag returned err=%d\n", __func__, err);
+      return err;
+    }
+
+  /* If there is an end tag in an ndef container pop the stack.  Also
+   * pop other containers which are fully consumed. */
   if (tlv->in_ndef && (tlv->ti.class == CLASS_UNIVERSAL
                        && !tlv->ti.tag && !tlv->ti.is_constructed))
     {
-      /* End tag while in ndef container.  Skip the tag, and pop.  */
-      tlv->offset += n - (tlv->bufsize - tlv->offset);
-      err = _tlv_pop (tlv);
-      /* FIXME: We need to peek whether there is another end tag and
-       *        pop again.  We can't modify the TLV object, though.  */
+      do
+        err = _tlv_pop (tlv);
+      while (!err && !tlv->in_ndef && !tlv->bufsize);
       if (err)
         return (tlv->lasterr = err);
+      if (opt_verbose > 1)
+        log_debug ("%s: container(s) closed due to end tag\n", __func__);
+      goto again;
     }
 
-  /* Set offset to the value of the TLV.  */
-  tlv->offset += tlv->bufsize - tlv->offset - n;
-  dump_tag_info ("tlv_next", &tlv->ti);
+  _dump_tag_info (__func__, lno, tlv);
   return 0;
 }
 
@@ -564,15 +663,6 @@ tlv_level (struct tlv_ctx_s *tlv)
 }
 
 
-/* If called right after tlv_next the number of container levels
- * popped are returned.  */
-static unsigned int
-tlv_popped (struct tlv_ctx_s *tlv)
-{
-  return tlv->pop_count;
-}
-
-
 /* Set a flag to indicate that the last tlv_next has not yet been
  * consumed.  */
 static void
@@ -582,12 +672,15 @@ tlv_set_pending (struct tlv_ctx_s *tlv)
 }
 
 
-/* Skip over the value of the current tag.  */
+/* Skip over the value of the current tag.  Does not yet work for ndef
+ * containers.  */
 static void
 tlv_skip (struct tlv_ctx_s *tlv)
 {
   tlv->lastfunc = __func__;
-  tlv->offset += tlv->ti.length;
+  log_assert (tlv->bufsize >= tlv->ti.length);
+  tlv->buffer += tlv->ti.length;
+  tlv->bufsize -= tlv->ti.length;
 }
 
 
@@ -600,19 +693,6 @@ tlv_expect_sequence (struct tlv_ctx_s *tlv)
   if (!(tlv->ti.class == CLASS_UNIVERSAL && tlv->ti.tag == TAG_SEQUENCE
         && tlv->ti.is_constructed))
     return (tlv->lasterr = gpg_error (GPG_ERR_INV_OBJ));
-  return _tlv_push (tlv);
-}
-
-/* Variant of tlv_expect_sequence to be used for the outer sequence
- * of an object which might have padding after the ASN.1 data.  */
-static gpg_error_t
-tlv_expect_top_sequence (struct tlv_ctx_s *tlv)
-{
-  tlv->lastfunc = __func__;
-  if (!(tlv->ti.class == CLASS_UNIVERSAL && tlv->ti.tag == TAG_SEQUENCE
-        && tlv->ti.is_constructed))
-    return (tlv->lasterr = gpg_error (GPG_ERR_INV_OBJ));
-  tlv->bufsize = tlv->ti.nhdr + tlv->ti.length;
   return _tlv_push (tlv);
 }
 
@@ -653,20 +733,28 @@ tlv_expect_object (struct tlv_ctx_s *tlv, int class, int tag,
 {
   gpg_error_t err;
   const unsigned char *p;
+  size_t n;
+  int needpush = 0;
 
   tlv->lastfunc = __func__;
   if (!(tlv->ti.class == class && tlv->ti.tag == tag))
     return (tlv->lasterr = gpg_error (GPG_ERR_INV_OBJ));
-  p = tlv->buffer + tlv->offset;
-  if (!tlv->ti.length)
+  p = tlv->buffer;
+  n = tlv->ti.length;
+  if (!n && tlv->ti.ndef)
+    {
+      n = tlv->bufsize;
+      needpush = 1;
+    }
+  else if (!tlv->ti.length)
     return (tlv->lasterr = gpg_error (GPG_ERR_TOO_SHORT));
 
   if (class == CLASS_CONTEXT && tag == 0 && tlv->ti.is_constructed
-      && need_octet_string_cramming (p, tlv->ti.length))
+      && need_octet_string_cramming (p, n))
     {
       char *newbuffer;
 
-      newbuffer = cram_octet_string (p, tlv->ti.length, r_datalen);
+      newbuffer = cram_octet_string (p, n, r_datalen);
       if (!newbuffer)
         return (tlv->lasterr = gpg_error (GPG_ERR_BAD_BER));
       err = tlv_register_buffer (tlv, newbuffer);
@@ -680,10 +768,15 @@ tlv_expect_object (struct tlv_ctx_s *tlv, int class, int tag,
   else
     {
       *r_data = p;
-      *r_datalen = tlv->ti.length;
+      *r_datalen = n;
     }
+  if (needpush)
+    return _tlv_push (tlv);
 
-  tlv->offset += tlv->ti.length;
+  if (!(tlv->bufsize >= tlv->ti.length))
+    return (tlv->lasterr = gpg_error (GPG_ERR_TOO_SHORT));
+  tlv->buffer += tlv->ti.length;
+  tlv->bufsize -= tlv->ti.length;
   return 0;
 }
 
@@ -705,8 +798,8 @@ tlv_expect_octet_string (struct tlv_ctx_s *tlv, int encapsulates,
   if (!(tlv->ti.class == CLASS_UNIVERSAL && tlv->ti.tag == TAG_OCTET_STRING
         && (!tlv->ti.is_constructed || encapsulates)))
     return (tlv->lasterr = gpg_error (GPG_ERR_INV_OBJ));
-  p = tlv->buffer + tlv->offset;
-  if (!(n=tlv->ti.length))
+  p = tlv->buffer;
+  if (!(n=tlv->ti.length) && !tlv->ti.ndef)
     return (tlv->lasterr = gpg_error (GPG_ERR_TOO_SHORT));
 
   if (encapsulates && tlv->ti.is_constructed
@@ -735,19 +828,10 @@ tlv_expect_octet_string (struct tlv_ctx_s *tlv, int encapsulates,
   if (encapsulates)
     return _tlv_push (tlv);
 
-  tlv->offset += tlv->ti.length;
-  return 0;
-}
-
-
-/* Expect a NULL tag.  */
-static gpg_error_t
-tlv_expect_null (struct tlv_ctx_s *tlv)
-{
-  tlv->lastfunc = __func__;
-  if (!(tlv->ti.class == CLASS_UNIVERSAL && tlv->ti.tag == TAG_NULL
-        && !tlv->ti.is_constructed && !tlv->ti.length))
-    return (tlv->lasterr = gpg_error (GPG_ERR_INV_OBJ));
+  if (!(tlv->bufsize >= tlv->ti.length))
+    return (tlv->lasterr = gpg_error (GPG_ERR_TOO_SHORT));
+  tlv->buffer += tlv->ti.length;
+  tlv->bufsize -= tlv->ti.length;
   return 0;
 }
 
@@ -765,7 +849,7 @@ tlv_expect_integer (struct tlv_ctx_s *tlv, int *r_value)
   if (!(tlv->ti.class == CLASS_UNIVERSAL && tlv->ti.tag == TAG_INTEGER
         && !tlv->ti.is_constructed))
     return (tlv->lasterr = gpg_error (GPG_ERR_INV_OBJ));
-  p = tlv->buffer + tlv->offset;
+  p = tlv->buffer;
   if (!(n=tlv->ti.length))
     return (tlv->lasterr = gpg_error (GPG_ERR_TOO_SHORT));
 
@@ -781,7 +865,10 @@ tlv_expect_integer (struct tlv_ctx_s *tlv, int *r_value)
         return (tlv->lasterr = gpg_error (GPG_ERR_EOVERFLOW));
     }
   *r_value = value;
-  tlv->offset += tlv->ti.length;
+  if (!(tlv->bufsize >= tlv->ti.length))
+    return (tlv->lasterr = gpg_error (GPG_ERR_TOO_SHORT));
+  tlv->buffer += tlv->ti.length;
+  tlv->bufsize -= tlv->ti.length;
   return 0;
 }
 
@@ -803,11 +890,14 @@ tlv_expect_mpinteger (struct tlv_ctx_s *tlv, int ignore_zero,
   if (!(tlv->ti.class == CLASS_UNIVERSAL && tlv->ti.tag == TAG_INTEGER
         && !tlv->ti.is_constructed))
     return (tlv->lasterr = gpg_error (GPG_ERR_INV_OBJ));
-  p = tlv->buffer + tlv->offset;
+  p = tlv->buffer;
   if (!(n=tlv->ti.length))
     return (tlv->lasterr = gpg_error (GPG_ERR_TOO_SHORT));
 
-  tlv->offset += tlv->ti.length;
+  if (!(tlv->bufsize >= tlv->ti.length))
+    return (tlv->lasterr = gpg_error (GPG_ERR_TOO_SHORT));
+  tlv->buffer += tlv->ti.length;
+  tlv->bufsize -= tlv->ti.length;
   if (ignore_zero && n == 1 && !*p)
     return gpg_error (GPG_ERR_FALSE);
 
@@ -829,13 +919,16 @@ tlv_expect_object_id (struct tlv_ctx_s *tlv,
   if (!(tlv->ti.class == CLASS_UNIVERSAL && tlv->ti.tag == TAG_OBJECT_ID
         && !tlv->ti.is_constructed))
     return (tlv->lasterr = gpg_error (GPG_ERR_INV_OBJ));
-  p = tlv->buffer + tlv->offset;
+  p = tlv->buffer;
   if (!(n=tlv->ti.length))
     return (tlv->lasterr = gpg_error (GPG_ERR_TOO_SHORT));
 
   *r_oid = p;
   *r_oidlen = tlv->ti.length;
-  tlv->offset += tlv->ti.length;
+  if (!(tlv->bufsize >= tlv->ti.length))
+    return (tlv->lasterr = gpg_error (GPG_ERR_TOO_SHORT));
+  tlv->buffer += tlv->ti.length;
+  tlv->bufsize -= tlv->ti.length;
   return 0;
 }
 
@@ -1158,9 +1251,9 @@ crypt_block (unsigned char *buffer, size_t length, char *salt, size_t saltlen,
    and CIPHER_ALGO is the algorithm id to use.  CHECK_FNC is a
    function called with the plaintext and used to check whether the
    decryption succeeded; i.e. that a correct passphrase has been
-   given.  That function shall return true if the decryption has likely
-   succeeded. */
-static void
+   given.  The function returns the length of the unpadded plaintext
+   or 0 on error.  */
+static size_t
 decrypt_block (const void *ciphertext, unsigned char *plaintext, size_t length,
                char *salt, size_t saltlen,
                int iter, const void *iv, size_t ivlen,
@@ -1189,6 +1282,7 @@ decrypt_block (const void *ciphertext, unsigned char *plaintext, size_t length,
   int charsetidx = 0;
   char *convertedpw = NULL;   /* Malloced and converted password or NULL.  */
   size_t convertedpwsize = 0; /* Allocated length.  */
+  size_t plainlen = 0;
 
   for (charsetidx=0; charsets[charsetidx]; charsetidx++)
     {
@@ -1238,9 +1332,31 @@ decrypt_block (const void *ciphertext, unsigned char *plaintext, size_t length,
       crypt_block (plaintext, length, salt, saltlen, iter, iv, ivlen,
                    convertedpw? convertedpw:pw, cipher_algo, digest_algo, 0);
       if (check_fnc (plaintext, length))
-        break; /* Decryption succeeded. */
+        {
+          /* Strip the pkcs#7 padding.  */
+          if (length)
+            {
+              int n, i;
+
+              n = plaintext[length-1];
+              if (n >= length || n > 16)
+                log_info ("decryption failed; invalid padding size\n");
+              else
+                {
+                  for (i=1; i < n; i++)
+                    if (plaintext[length-i-1] != n)
+                      break;
+                  if (i < n)
+                    log_info ("decryption failed; invalid padding octet\n");
+                  else
+                    plainlen = length - n;
+                }
+            }
+          break; /* Decryption probably succeeded. */
+        }
     }
   gcry_free (convertedpw);
+  return plainlen;
 }
 
 
@@ -1295,7 +1411,7 @@ parse_bag_encrypted_data (struct p12_parse_ctx_s *ctx, struct tlv_ctx_s *tlv)
   int keyelem_count;
   int renewed_tlv = 0;
   int loopcount;
-  unsigned int startlevel;
+  unsigned int startlevel, startlevel2;
   int digest_algo = GCRY_MD_SHA1;
 
   where = "bag.encryptedData";
@@ -1442,10 +1558,12 @@ parse_bag_encrypted_data (struct p12_parse_ctx_s *ctx, struct tlv_ctx_s *tlv)
           if (opt_verbose > 1)
             log_debug ("kdf digest algo = %d\n", digest_algo);
 
-          if (tlv_next (tlv))
-            goto bailout;
-          if (tlv_expect_null (tlv))
-            tlv_set_pending (tlv);  /* NULL tag missing - ignore this.  */
+          if (tlv_peek_null (tlv))
+            {
+              /* Read the optional Null tag.  */
+              if (tlv_next (tlv))
+                goto bailout;
+            }
         }
       else
         digest_algo = GCRY_MD_SHA1;
@@ -1535,12 +1653,17 @@ parse_bag_encrypted_data (struct p12_parse_ctx_s *ctx, struct tlv_ctx_s *tlv)
       log_error ("error allocating decryption buffer\n");
       goto bailout;
     }
-  decrypt_block (data, plain, datalen, salt, saltlen, iter,
+  datalen = decrypt_block (data, plain, datalen, salt, saltlen, iter,
                  iv, is_pbes2?16:0, ctx->password,
                  is_pbes2 ? (is_aes256?GCRY_CIPHER_AES256:GCRY_CIPHER_AES128) :
                  is_3des  ? GCRY_CIPHER_3DES : GCRY_CIPHER_RFC2268_40,
                  digest_algo,
                  bag_decrypted_data_p);
+  if (!datalen)
+    {
+      err = gpg_error (GPG_ERR_DECRYPT_FAILED);
+      goto bailout;
+    }
 
   /* We do not need the TLV anymore and allocated a new one.  */
   where = "bag.encryptedData.decrypted-text";
@@ -1557,7 +1680,7 @@ parse_bag_encrypted_data (struct p12_parse_ctx_s *ctx, struct tlv_ctx_s *tlv)
       ctx->badpass = 1;
       goto bailout;
     }
-  if (tlv_expect_top_sequence (tlv))
+  if (tlv_expect_sequence (tlv))
     {
       ctx->badpass = 1;
       goto bailout;
@@ -1679,7 +1802,8 @@ parse_bag_encrypted_data (struct p12_parse_ctx_s *ctx, struct tlv_ctx_s *tlv)
 
           where = "reading.keybag.key-parameters";
           keyelem_count = 0;
-          while (!(err = tlv_next (tlv)) && !tlv_popped (tlv))
+          startlevel2 = tlv_level (tlv);
+          while (!(err = tlv_next (tlv)) && tlv_level (tlv) == startlevel2)
             {
               if (keyelem_count >= 9)
                 {
@@ -1701,7 +1825,9 @@ parse_bag_encrypted_data (struct p12_parse_ctx_s *ctx, struct tlv_ctx_s *tlv)
                 log_debug ("RSA key parameter %d found\n", keyelem_count);
               keyelem_count++;
             }
-          if (err && gpg_err_code (err) != GPG_ERR_EOF)
+          if (!err)
+            tlv_set_pending (tlv);
+          else if (err && gpg_err_code (err) != GPG_ERR_EOF)
             goto bailout;
           err = 0;
         }
@@ -1750,24 +1876,21 @@ parse_bag_encrypted_data (struct p12_parse_ctx_s *ctx, struct tlv_ctx_s *tlv)
 
       /* Skip the optional SET with the pkcs12 cert attributes. */
       where = "bag.attribute_set";
-      err = tlv_next (tlv);
-      if (gpg_err_code (err) == GPG_ERR_EOF)
-        break;
-      if (err)
-        goto bailout;
-      err = tlv_expect_set (tlv);
-      if (!err)
-        { /* This is the optional set of attributes.  Skip it. */
+      if (tlv_peek (tlv, CLASS_UNIVERSAL, TAG_SET))
+        {
+          if (tlv_next (tlv))
+            goto bailout;
+          err = tlv_expect_set (tlv);
+          if (err)
+            goto bailout;
           tlv_skip (tlv);
           if (opt_verbose)
-            log_info ("skipping bag.attribute_set\n");
+            log_info ("skipping %s\n", where);
         }
-      else if (gpg_err_code (err) == GPG_ERR_INV_OBJ)
-        tlv_set_pending (tlv); /* The next tlv_next will be skipped.  */
-      else
-        goto bailout;
     }
-  if (err && gpg_err_code (err) != GPG_ERR_EOF)
+  if (!err)
+    tlv_set_pending (tlv);
+  else if (err && gpg_err_code (err) != GPG_ERR_EOF)
     {
       if (!loopcount)  /* The first while(tlv_next) failed.  */
         ctx->badpass = 1;
@@ -1791,10 +1914,9 @@ parse_bag_encrypted_data (struct p12_parse_ctx_s *ctx, struct tlv_ctx_s *tlv)
  bailout:
   if (!err)
     err = gpg_error (GPG_ERR_GENERAL);
-  log_error ("%s(%s): offset %u.%zu (%s): %s - %s\n",
+  log_error ("%s(%s): lvl=%u (%s): %s - %s\n",
              __func__, where,
              tlv? tlv->stacklen : 0,
-             tlv? tlv->offset : 0,
              tlv? tlv->lastfunc : "",
              tlv ? gpg_strerror (tlv->lasterr) : "init failed",
              gpg_strerror (err));
@@ -1965,10 +2087,12 @@ parse_shrouded_key_bag (struct p12_parse_ctx_s *ctx, struct tlv_ctx_s *tlv)
           if (opt_verbose > 1)
             log_debug ("kdf digest algo = %d\n", digest_algo);
 
-          if (tlv_next (tlv))
-            goto bailout;
-          if (tlv_expect_null (tlv))
-            tlv_set_pending (tlv);  /* NULL tag missing - ignore this.  */
+          if (tlv_peek_null (tlv))
+            {
+              /* Read the optional Null tag.  */
+              if (tlv_next (tlv))
+                goto bailout;
+            }
         }
       else
         digest_algo = GCRY_MD_SHA1;
@@ -2054,13 +2178,17 @@ parse_shrouded_key_bag (struct p12_parse_ctx_s *ctx, struct tlv_ctx_s *tlv)
       log_error ("error allocating decryption buffer\n");
       goto bailout;
     }
-  decrypt_block (data, plain, datalen, salt, saltlen, iter,
+  datalen = decrypt_block (data, plain, datalen, salt, saltlen, iter,
                  iv, is_pbes2? 16:0, ctx->password,
                  is_pbes2 ? (is_aes256?GCRY_CIPHER_AES256:GCRY_CIPHER_AES128)
                           : GCRY_CIPHER_3DES,
                  digest_algo,
                  bag_data_p);
-
+  if (!datalen)
+    {
+      err = gpg_error (GPG_ERR_DECRYPT_FAILED);
+      goto bailout;
+    }
 
   /* We do not need the TLV anymore and allocated a new one.  */
   where = "shrouded_key_bag.decrypted-text";
@@ -2080,7 +2208,7 @@ parse_shrouded_key_bag (struct p12_parse_ctx_s *ctx, struct tlv_ctx_s *tlv)
       ctx->badpass = 1;
       goto bailout;
     }
-  if (tlv_expect_top_sequence (tlv))
+  if (tlv_expect_sequence (tlv))
     {
       ctx->badpass = 1;
       goto bailout;
@@ -2117,10 +2245,13 @@ parse_shrouded_key_bag (struct p12_parse_ctx_s *ctx, struct tlv_ctx_s *tlv)
     {
       if (opt_verbose > 1)
         log_debug ("RSA parameters\n");
-      if (tlv_next (tlv))
-        goto bailout;
-      if (tlv_expect_null (tlv))
-        tlv_set_pending (tlv);  /* NULL tag missing - ignore this.  */
+
+      if (tlv_peek_null (tlv))
+        {
+          /* Read the optional Null tag.  */
+          if (tlv_next (tlv))
+            goto bailout;
+        }
     }
   else if (oidlen == DIM(oid_pcPublicKey)
            && !memcmp (oid, oid_pcPublicKey, oidlen))
@@ -2205,8 +2336,9 @@ parse_shrouded_key_bag (struct p12_parse_ctx_s *ctx, struct tlv_ctx_s *tlv)
     {
       int keyelem_count = 0;
       int firstparam = 1;
+      unsigned int startlevel = tlv_level (tlv);
 
-      while (!(err = tlv_next (tlv)) && !tlv_popped (tlv))
+      while (!(err = tlv_next (tlv)) && tlv_level (tlv) == startlevel)
         {
           if (keyelem_count >= 9)
             {
@@ -2232,7 +2364,9 @@ parse_shrouded_key_bag (struct p12_parse_ctx_s *ctx, struct tlv_ctx_s *tlv)
             }
           firstparam = 0;
         }
-      if (err && gpg_err_code (err) != GPG_ERR_EOF)
+      if (!err)
+        tlv_set_pending (tlv);
+      else if (err && gpg_err_code (err) != GPG_ERR_EOF)
         goto bailout;
       err = 0;
     }
@@ -2244,22 +2378,18 @@ parse_shrouded_key_bag (struct p12_parse_ctx_s *ctx, struct tlv_ctx_s *tlv)
   tlv = saved_tlv;
 
   where = "shrouded_key_bag.attribute_set";
-  err = tlv_next (tlv);
-  if (gpg_err_code (err) == GPG_ERR_EOF)
-    goto leave;
-  if (err)
-    goto bailout;
-  err = tlv_expect_set (tlv);
-  if (!err)
-    { /* This is the optional set of attributes.  Skip it. */
+  /* Check for an optional set of attributes.  */
+  if (tlv_peek (tlv, CLASS_UNIVERSAL, TAG_SET))
+    {
+      if (tlv_next (tlv))
+        goto bailout;
+      err = tlv_expect_set (tlv);
+      if (err)
+        goto bailout;
       tlv_skip (tlv);
       if (opt_verbose)
         log_info ("skipping %s\n", where);
     }
-  else if (gpg_err_code (err) == GPG_ERR_INV_OBJ)
-    tlv_set_pending (tlv); /* The next tlv_next will be skipped.  */
-  else /* Other error.  */
-    goto bailout;
 
 
  leave:
@@ -2275,10 +2405,9 @@ parse_shrouded_key_bag (struct p12_parse_ctx_s *ctx, struct tlv_ctx_s *tlv)
  bailout:
   if (!err)
     err = gpg_error (GPG_ERR_GENERAL);
-  log_error ("%s(%s): offset %u.%zu (%s): %s - %s\n",
+  log_error ("%s(%s): lvl=%d (%s): %s - %s\n",
              __func__, where,
              tlv? tlv->stacklen : 0,
-             tlv? tlv->offset : 0,
              tlv? tlv->lastfunc : "",
              tlv ? gpg_strerror (tlv->lasterr) : "init failed",
              gpg_strerror (err));
@@ -2354,28 +2483,27 @@ parse_cert_bag (struct p12_parse_ctx_s *ctx, struct tlv_ctx_s *tlv)
    *    SEQUENCE  -- we actually ignore this.
    */
   where = "certbag.attribute_set";
-  if (tlv_next (tlv))
-    goto bailout;
-  err = tlv_expect_set (tlv);
-  if (!err)
-    { /* This is the optional set of attributes.  Skip it. */
+  /* Check for an optional set of attributes.  */
+  if (tlv_peek (tlv, CLASS_UNIVERSAL, TAG_SET))
+    {
+      if (tlv_next (tlv))
+        goto bailout;
+      err = tlv_expect_set (tlv);
+      if (err)
+        goto bailout;
       tlv_skip (tlv);
       if (opt_verbose)
-        log_info ("skipping certbag.attribute_set\n");
+        log_info ("skipping %s\n", where);
     }
-  else if (gpg_err_code (err) == GPG_ERR_INV_OBJ)
-    tlv_set_pending (tlv); /* The next tlv_next will be skipped.  */
-  else
-    goto bailout;
+
 
  leave:
   return err;
 
  bailout:
-  log_error ("%s(%s): offset %u.%zu (%s): %s - %s\n",
+  log_error ("%s(%s): lvl=%u (%s): %s - %s\n",
              __func__, where,
              tlv? tlv->stacklen : 0,
-             tlv? tlv->offset : 0,
              tlv? tlv->lastfunc : "",
              tlv ? gpg_strerror (tlv->lasterr) : "init failed",
              gpg_strerror (err));
@@ -2413,6 +2541,14 @@ parse_bag_data (struct p12_parse_ctx_s *ctx, struct tlv_ctx_s *tlv)
   if (tlv_expect_octet_string (tlv, 1, NULL, NULL))
     goto bailout;
 
+  if (tlv_peek (tlv, CLASS_UNIVERSAL, TAG_OCTET_STRING))
+    {
+      if (tlv_next (tlv))
+        goto bailout;
+      err = tlv_expect_octet_string (tlv, 1, NULL, NULL);
+      if (err)
+        goto bailout;
+    }
 
   /* Expect:
    * SEQUENCE
@@ -2424,6 +2560,7 @@ parse_bag_data (struct p12_parse_ctx_s *ctx, struct tlv_ctx_s *tlv)
     goto bailout;
 
   startlevel = tlv_level (tlv);
+  dump_tlv_ctx ("data.outerseqs", "beginloop", tlv);
   while (!(err = tlv_next (tlv)) && tlv_level (tlv) == startlevel)
     {
       /* Expect:
@@ -2462,11 +2599,12 @@ parse_bag_data (struct p12_parse_ctx_s *ctx, struct tlv_ctx_s *tlv)
           log_info ("unknown inner data type - skipped\n");
         }
     }
-  if (err && gpg_err_code (err) != GPG_ERR_EOF)
+  dump_tlv_ctx ("data.outerseqs", "endloop", tlv);
+  if (!err)
+    tlv_set_pending (tlv);
+  else if (err && gpg_err_code (err) != GPG_ERR_EOF)
     goto bailout;
   err = 0;
-  if (tlv_popped (tlv))
-    tlv_set_pending (tlv);
 
  leave:
   return err;
@@ -2474,10 +2612,9 @@ parse_bag_data (struct p12_parse_ctx_s *ctx, struct tlv_ctx_s *tlv)
  bailout:
   if (!err)
     err = gpg_error (GPG_ERR_GENERAL);
-  log_error ("%s(%s): offset %u.%zu (%s): %s - %s\n",
+  log_error ("%s(%s): lvl=%d (%s): %s - %s\n",
              __func__, where,
              tlv? tlv->stacklen : 0,
-             tlv? tlv->offset : 0,
              tlv? tlv->lastfunc : "",
              tlv ? gpg_strerror (tlv->lasterr) : "init failed",
              gpg_strerror (err));
@@ -2554,6 +2691,14 @@ p12_parse (const unsigned char *buffer, size_t length, const char *pw,
   if (tlv_expect_octet_string (tlv, 1, NULL, NULL))
     goto bailout;
 
+  if (tlv_peek (tlv, CLASS_UNIVERSAL, TAG_OCTET_STRING))
+    {
+      if (tlv_next (tlv))
+        goto bailout;
+      err = tlv_expect_octet_string (tlv, 1, NULL, NULL);
+      if (err)
+        goto bailout;
+    }
 
   where = "bags";
   if (tlv_next (tlv))
@@ -2562,9 +2707,11 @@ p12_parse (const unsigned char *buffer, size_t length, const char *pw,
     goto bailout;
 
   startlevel = tlv_level (tlv);
+  dump_tlv_ctx ("bags", "beginloop", tlv);
   while (!(err = tlv_next (tlv)) && tlv_level (tlv) == startlevel)
     {
       where = "bag-sequence";
+      dump_tlv_ctx (where, NULL, tlv);
       if (tlv_expect_sequence (tlv))
         goto bailout;
 
@@ -2601,7 +2748,10 @@ p12_parse (const unsigned char *buffer, size_t length, const char *pw,
           log_info ("unknown outer bag type - skipped\n");
         }
     }
-  if (err && gpg_err_code (err) != GPG_ERR_EOF)
+  dump_tlv_ctx ("bags", "endloop", tlv);
+  if (!err)
+    tlv_set_pending (tlv);
+  else if (err && gpg_err_code (err) != GPG_ERR_EOF)
     goto bailout;
   err = 0;
 
@@ -2615,12 +2765,12 @@ p12_parse (const unsigned char *buffer, size_t length, const char *pw,
 
  bailout:
   *r_badpass = ctx.badpass;
-  log_error ("%s(%s): offset %u.%zu (%s): %s - %s\n",
+  log_error ("%s(%s): @%04zu lvl=%u %s: %s - %s\n",
              __func__, where,
+             tlv? (size_t)(tlv->buffer - tlv->origbuffer):0,
              tlv? tlv->stacklen : 0,
-             tlv? tlv->offset : 0,
              tlv? tlv->lastfunc : "",
-             tlv ? gpg_strerror (tlv->lasterr) : "init failed",
+             tlv? gpg_strerror (tlv->lasterr) : "init failed",
              gpg_strerror (err));
   if (ctx.privatekey)
     {
