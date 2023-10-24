@@ -502,7 +502,7 @@ list_cert_colon (ctrl_t ctrl, ksba_cert_t cert, unsigned int validity,
   if (*truststring)
     es_fputs (truststring, fp);
 
-  algo = gpgsm_get_key_algo_info2 (cert, &nbits, &curve);
+  algo = gpgsm_get_key_algo_info (cert, &nbits, &curve);
   es_fprintf (fp, ":%u:%d:%s:", nbits, algo, fpr+24);
 
   ksba_cert_get_validity (cert, 0, t);
