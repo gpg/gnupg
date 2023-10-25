@@ -53,6 +53,7 @@ EXTRA_DIST = runtest inittests $(testscripts) ChangeLog-2011 \
              samplekeys/t5793-test.pfx \
              samplekeys/edward.tester@demo.gnupg.com.p12 \
              samplekeys/nistp256-openssl-self-signed.p12 \
+	     samplekeys/t6752-ov-user-ff.p12 \
 	     run-tests.scm
 
 # We used to run $(testscripts) here but these asschk scripts are not
