@@ -26,6 +26,9 @@ Noteworthy changes in version 2.2.42 (unreleased)
 
   * gpg: Fix subkey re-import if a stub key still exists.  [T3456]
 
+  * gpg: Allow to specify seconds since Epoch beyond 2038 on 32-bit
+    platforms.  [T6736]
+
   * gpgsm: Support ECC certificates.  [T6253]
 
   * gpgsm: Print PROGRESS status lines.  Add new --input-size-hint.
@@ -95,6 +98,8 @@ Noteworthy changes in version 2.2.41 (2022-12-09)
   * wkd: Ignore expired user-ids in gpg-wks-client.  [T6292]
 
   * scd: Support the Telesec Signature Card v2.0.  [T6252]
+
+  * scd: Update the OpenPGP card code to be more in sync with 2.4.3.
 
   * Fix build regression depending on libgpg-error version.  [T6244]
 
