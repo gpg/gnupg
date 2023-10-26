@@ -2748,6 +2748,7 @@ parse_expire_string_with_ct (const char *string, u32 creation_time)
   u32 seconds;
   u32 abs_date = 0;
   time_t tt;
+  uint64_t tmp64;
   u32 curtime;
 
   if (creation_time == (u32)-1)
@@ -2763,11 +2764,16 @@ parse_expire_string_with_ct (const char *string, u32 creation_time)
   else if ((abs_date = scan_isodatestr(string))
            && (abs_date+86400/2) > curtime)
     seconds = (abs_date+86400/2) - curtime;
-  else if ((tt = isotime2epoch (string)) != (time_t)(-1))
-    seconds = (u32)tt - curtime;
+  else if ((tt = isotime2epoch_u64 (string)) != (uint64_t)(-1))
+    {
+      tmp64 = tt - curtime;
+      if (tmp64 >= (u32)(-1))
+        seconds = (u32)(-1) - 1;  /* cap value.  */
+      else
+        seconds = (u32)tmp64;
+    }
   else if ((mult = check_valid_days (string)))
     {
-      uint64_t tmp64;
       tmp64 = scan_secondsstr (string) * 86400L * mult;
       if (tmp64 >= (u32)(-1))
         seconds = (u32)(-1) - 1;  /* cap value.  */
@@ -2800,8 +2806,13 @@ parse_creation_string (const char *string)
     seconds = scan_secondsstr (string+8);
   else if ( !(seconds = scan_isodatestr (string)))
     {
-      time_t tmp = isotime2epoch (string);
-      seconds = (tmp == (time_t)(-1))? 0 : tmp;
+      uint64_t tmp = isotime2epoch_u64 (string);
+      if (tmp == (uint64_t)(-1))
+        seconds = 0;
+      else if (tmp > (u32)(-1))
+        seconds = 0;
+      else
+        seconds = tmp;
     }
   return seconds;
 }
