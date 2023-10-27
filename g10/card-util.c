@@ -1749,8 +1749,9 @@ card_store_subkey (KBNODE node, int use, strlist_t *processed_keys)
   int  keyno;
   PKT_public_key *pk;
   gpg_error_t err;
-  char *hexgrip;
+  char *hexgrip = NULL;
   int rc;
+  char *ecdh_param_str = NULL;
   gnupg_isotime_t timebuf;
 
   log_assert (node->pkt->pkttype == PKT_PUBLIC_KEY
@@ -1824,8 +1825,17 @@ card_store_subkey (KBNODE node, int use, strlist_t *processed_keys)
     goto leave;
 
   epoch2isotime (timebuf, (time_t)pk->timestamp);
-  rc = agent_keytocard (hexgrip, keyno, rc, info.serialno, timebuf);
-
+  if (pk->pubkey_algo == PUBKEY_ALGO_ECDH)
+    {
+      ecdh_param_str = ecdh_param_str_from_pk (pk);
+      if (!ecdh_param_str)
+        {
+          err = gpg_error_from_syserror ();
+          goto leave;
+        }
+    }
+  rc = agent_keytocard (hexgrip, keyno, rc, info.serialno,
+                        timebuf, ecdh_param_str);
   if (rc)
     log_error (_("KEYTOCARD failed: %s\n"), gpg_strerror (rc));
   else
@@ -1834,9 +1844,10 @@ card_store_subkey (KBNODE node, int use, strlist_t *processed_keys)
       if (processed_keys)
         add_to_strlist (processed_keys, hexgrip);
     }
-  xfree (hexgrip);
 
  leave:
+  xfree (hexgrip);
+  xfree (ecdh_param_str);
   agent_release_card_info (&info);
   return okay;
 }

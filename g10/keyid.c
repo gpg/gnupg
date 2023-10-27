@@ -994,3 +994,25 @@ hexkeygrip_from_pk (PKT_public_key *pk, char **r_grip)
     }
   return err;
 }
+
+
+/* Return a hexfied malloced string of the ECDH parameters for an ECDH
+ * key from the public key PK.  Returns NULL on error.  */
+char *
+ecdh_param_str_from_pk (PKT_public_key *pk)
+{
+  const unsigned char *s;
+  unsigned int n;
+
+  if (!pk
+      || pk->pubkey_algo != PUBKEY_ALGO_ECDH
+      || !gcry_mpi_get_flag (pk->pkey[2], GCRYMPI_FLAG_OPAQUE)
+      || !(s = gcry_mpi_get_opaque (pk->pkey[2], &n)) || !n)
+    {
+      gpg_err_set_errno (EINVAL);
+      return NULL;  /* Invalid parameter */
+    }
+
+  n = (n+7)/8;
+  return bin2hex (s, n, NULL);
+}

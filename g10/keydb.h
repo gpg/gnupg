@@ -552,6 +552,7 @@ char *format_hexfingerprint (const char *fingerprint,
                              char *buffer, size_t buflen);
 gpg_error_t keygrip_from_pk (PKT_public_key *pk, unsigned char *array);
 gpg_error_t hexkeygrip_from_pk (PKT_public_key *pk, char **r_grip);
+char *ecdh_param_str_from_pk (PKT_public_key *pk);
 
 
 /*-- kbnode.c --*/
