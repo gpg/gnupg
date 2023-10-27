@@ -69,7 +69,7 @@ agent_pkdecrypt (ctrl_t ctrl, const char *desc_text,
     }
   rc = agent_key_from_file (ctrl, NULL, desc_text,
                             ctrl->keygrip, &shadow_info,
-                            CACHE_MODE_NORMAL, NULL, &s_skey, NULL);
+                            CACHE_MODE_NORMAL, NULL, &s_skey, NULL, NULL);
   if (rc)
     {
       if (gpg_err_code (rc) != GPG_ERR_NO_SECKEY)

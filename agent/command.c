@@ -1941,7 +1941,7 @@ cmd_passwd (assuan_context_t ctx, char *line)
                              opt_verify? NULL : cache_nonce,
                              ctrl->server_local->keydesc,
                              grip, &shadow_info, CACHE_MODE_IGNORE, NULL,
-                             &s_skey, &passphrase);
+                             &s_skey, &passphrase, NULL);
   if (err)
     ;
   else if (shadow_info)
@@ -2522,7 +2522,7 @@ cmd_export_key (assuan_context_t ctx, char *line)
   err = agent_key_from_file (ctrl, cache_nonce,
                              ctrl->server_local->keydesc, grip,
                              &shadow_info, CACHE_MODE_IGNORE, NULL, &s_skey,
-                             openpgp ? &passphrase : NULL);
+                             openpgp ? &passphrase : NULL, NULL);
   if (err)
     goto leave;
   if (shadow_info)
@@ -2667,28 +2667,30 @@ cmd_delete_key (assuan_context_t ctx, char *line)
 
 
 
-#if SIZEOF_TIME_T > SIZEOF_UNSIGNED_LONG
-#define KEYTOCARD_TIMESTAMP_FORMAT "(10:created-at10:%010llu))"
-#else
-#define KEYTOCARD_TIMESTAMP_FORMAT "(10:created-at10:%010lu))"
-#endif
-
 static const char hlp_keytocard[] =
-  "KEYTOCARD [--force] <hexstring_with_keygrip> <serialno> <id> <timestamp>\n"
-  "\n";
+  "KEYTOCARD [--force] <hexgrip> <serialno> <keyref> [<timestamp> [<ecdh>]]\n"
+  "\n"
+  "TIMESTAMP is required for OpenPGP and defaults to the Epoch.\n"
+  "ECDH are the hexified ECDH parameters for OpenPGP.\n"
+  "SERIALNO is used for checking; use \"-\" to disable the check.";
 static gpg_error_t
 cmd_keytocard (assuan_context_t ctx, char *line)
 {
   ctrl_t ctrl = assuan_get_pointer (ctx);
   int force;
   gpg_error_t err = 0;
+  char *argv[5];
+  int argc;
   unsigned char grip[20];
+  const char *serialno, *keyref;
   gcry_sexp_t s_skey = NULL;
   unsigned char *keydata;
   size_t keydatalen;
-  const char *serialno, *timestamp_str, *id;
   unsigned char *shadow_info = NULL;
-  time_t timestamp;
+  uint64_t timestamp;
+  char *ecdh_params = NULL;
+  unsigned int ecdh_params_len;
+  unsigned int extralen1, extralen2;
 
   if (ctrl->restricted)
     return leave_cmd (ctx, gpg_error (GPG_ERR_FORBIDDEN));
@@ -2696,7 +2698,14 @@ cmd_keytocard (assuan_context_t ctx, char *line)
   force = has_option (line, "--force");
   line = skip_options (line);
 
-  err = parse_keygrip (ctx, line, grip);
+  argc = split_fields (line, argv, DIM (argv));
+  if (argc < 3)
+    {
+      err = gpg_error (GPG_ERR_MISSING_VALUE);
+      goto leave;
+    }
+
+  err = parse_keygrip (ctx, argv[0], grip);
   if (err)
     goto leave;
 
@@ -2706,82 +2715,112 @@ cmd_keytocard (assuan_context_t ctx, char *line)
       goto leave;
     }
 
-  /* Fixme: Replace the parsing code by split_fields().  */
-  line += 40;
-  while (*line && (*line == ' ' || *line == '\t'))
-    line++;
-  serialno = line;
-  while (*line && (*line != ' ' && *line != '\t'))
-    line++;
-  if (!*line)
-    {
-      err = gpg_error (GPG_ERR_MISSING_VALUE);
-      goto leave;
-    }
-  *line = '\0';
-  line++;
-  while (*line && (*line == ' ' || *line == '\t'))
-    line++;
-  id = line;
-  while (*line && (*line != ' ' && *line != '\t'))
-    line++;
-  if (!*line)
-    {
-      err = gpg_error (GPG_ERR_MISSING_VALUE);
-      goto leave;
-    }
-  *line = '\0';
-  line++;
-  while (*line && (*line == ' ' || *line == '\t'))
-    line++;
-  timestamp_str = line;
-  while (*line && (*line != ' ' && *line != '\t'))
-    line++;
-  if (*line)
-    *line = '\0';
+  /* Note that checking of the s/n is currently not implemented but we
+   * want to provide a clean interface if we ever implement it.  */
+  serialno = argv[1];
+  if (!strcmp (serialno, "-"))
+    serialno = NULL;
 
-  if ((timestamp = isotime2epoch (timestamp_str)) == (time_t)(-1))
+  keyref = argv[2];
+
+  err = agent_key_from_file (ctrl, NULL, ctrl->server_local->keydesc, grip,
+                             &shadow_info, CACHE_MODE_IGNORE, NULL,
+                             &s_skey, NULL, &timestamp);
+  if (err)
+    goto leave;
+
+  if (shadow_info)
+    {
+      /* Key is already on a smartcard - wer can't extract it.  */
+      err = gpg_error (GPG_ERR_UNUSABLE_SECKEY);
+      goto leave;
+    }
+
+  /* Default to the creation time as stored in the private key.  The
+   * parameter is here so that gpg can make sure that the timestamp is
+   * used.  It is also important for OpenPGP cards to allow computing
+   * of the fingerprint.  Same goes for the ECDH params.  */
+  if (argc > 3)
+    {
+      timestamp = isotime2epoch_u64 (argv[3]);
+      if (argc > 4)
+        {
+          size_t n;
+
+          err = parse_hexstring (ctx, argv[4], &n);
+          if (err)
+            goto leave;  /* Badly formatted ecdh params. */
+          n /= 2;
+          if (n < 4)
+            {
+              err = set_error (GPG_ERR_ASS_PARAMETER, "ecdh param too short");
+              goto leave;
+            }
+          ecdh_params_len = n;
+          ecdh_params = xtrymalloc (ecdh_params_len);
+          if (!ecdh_params)
+            {
+              err = gpg_error_from_syserror ();
+              goto leave;
+            }
+          if (hex2bin (argv[4], ecdh_params, ecdh_params_len) < 0)
+            {
+              err = set_error (GPG_ERR_BUG, "hex2bin");
+              goto leave;
+            }
+        }
+    }
+  else if (timestamp == (uint64_t)(-1))
+    timestamp = isotime2epoch_u64 ("19700101T000000");
+
+  if (timestamp == (uint64_t)(-1))
     {
       err = gpg_error (GPG_ERR_INV_TIME);
       goto leave;
     }
 
-  err = agent_key_from_file (ctrl, NULL, ctrl->server_local->keydesc, grip,
-                             &shadow_info, CACHE_MODE_IGNORE, NULL,
-                             &s_skey, NULL);
-  if (err)
-    {
-      xfree (shadow_info);
-      goto leave;
-    }
-  if (shadow_info)
-    {
-      /* Key is on a smartcard already.  */
-      xfree (shadow_info);
-      gcry_sexp_release (s_skey);
-      err = gpg_error (GPG_ERR_UNUSABLE_SECKEY);
-      goto leave;
-    }
-
-  keydatalen =  gcry_sexp_sprint (s_skey, GCRYSEXP_FMT_CANON, NULL, 0);
-  keydata = xtrymalloc_secure (keydatalen + 30);
+  /* Note: We can't use make_canon_sexp because we need to allocate a
+   * few extra bytes for our hack below.  The 20 for extralen2
+   * accounts for the sexp length of ecdh_params.  */
+  keydatalen = gcry_sexp_sprint (s_skey, GCRYSEXP_FMT_CANON, NULL, 0);
+  extralen1 = 30;
+  extralen2 = ecdh_params? (20+20+ecdh_params_len) : 0;
+  keydata = xtrymalloc_secure (keydatalen + extralen1 + extralen2);
   if (keydata == NULL)
     {
       err = gpg_error_from_syserror ();
-      gcry_sexp_release (s_skey);
       goto leave;
     }
-
   gcry_sexp_sprint (s_skey, GCRYSEXP_FMT_CANON, keydata, keydatalen);
   gcry_sexp_release (s_skey);
+  s_skey = NULL;
+
   keydatalen--;			/* Decrement for last '\0'.  */
-  /* Add timestamp "created-at" in the private key */
-  snprintf (keydata+keydatalen-1, 30, KEYTOCARD_TIMESTAMP_FORMAT, timestamp);
+
+  /* Hack to insert the timestamp "created-at" into the private key.  */
+  snprintf (keydata+keydatalen-1, extralen1, "(10:created-at10:%010llu))",
+            (unsigned long long)timestamp);
   keydatalen += 10 + 19 - 1;
-  err = divert_writekey (ctrl, force, serialno, id, keydata, keydatalen);
+
+  /* Hack to insert the timestamp "ecdh-params" into the private key.  */
+  if (ecdh_params)
+    {
+      snprintf (keydata+keydatalen-1, extralen2, "(11:ecdh-params%u:",
+                ecdh_params_len);
+      keydatalen += strlen (keydata+keydatalen-1) -1;
+      memcpy (keydata+keydatalen, ecdh_params, ecdh_params_len);
+      keydatalen += ecdh_params_len;
+      memcpy (keydata+keydatalen, "))", 3);
+      keydatalen += 2;
+    }
+
+  err = divert_writekey (ctrl, force, serialno, keyref, keydata, keydatalen);
   xfree (keydata);
 
  leave:
+  xfree (ecdh_params);
+  gcry_sexp_release (s_skey);
+  xfree (shadow_info);
   return leave_cmd (ctx, err);
 }
 

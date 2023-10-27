@@ -889,20 +889,24 @@ agent_key_from_file (ctrl_t ctrl, const char *cache_nonce,
                      const char *desc_text,
                      const unsigned char *grip, unsigned char **shadow_info,
                      cache_mode_t cache_mode, lookup_ttl_t lookup_ttl,
-                     gcry_sexp_t *result, char **r_passphrase)
+                     gcry_sexp_t *result, char **r_passphrase,
+                     uint64_t *r_timestamp)
 {
   gpg_error_t err;
   unsigned char *buf;
   size_t len, buflen, erroff;
   gcry_sexp_t s_skey;
+  nvc_t keymeta = NULL;
 
   *result = NULL;
   if (shadow_info)
     *shadow_info = NULL;
   if (r_passphrase)
     *r_passphrase = NULL;
+  if (r_timestamp)
+    *r_timestamp = (uint64_t)(-1);
 
-  err = read_key_file (grip, &s_skey, NULL);
+  err = read_key_file (grip, &s_skey, &keymeta);
   if (err)
     {
       if (gpg_err_code (err) == GPG_ERR_ENOENT)
@@ -915,7 +919,19 @@ agent_key_from_file (ctrl_t ctrl, const char *cache_nonce,
      now.  */
   err = make_canon_sexp (s_skey, &buf, &len);
   if (err)
-    return err;
+    {
+      nvc_release (keymeta);
+      return err;
+    }
+
+  if (r_timestamp && keymeta)
+    {
+      const char *created = nvc_get_string (keymeta, "Created:");
+
+      if (created)
+        *r_timestamp = isotime2epoch_u64 (created);
+    }
+  nvc_release (keymeta);
 
   switch (agent_private_key_type (buf))
     {
