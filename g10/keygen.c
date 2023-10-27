@@ -5386,17 +5386,26 @@ card_store_key_with_backup (ctrl_t ctrl, PKT_public_key *sub_psk,
     {
       ecdh_param_str = ecdh_param_str_from_pk (sk);
       if (!ecdh_param_str)
-        return gpg_error_from_syserror ();
+        {
+          free_public_key (sk);
+          return gpg_error_from_syserror ();
+        }
     }
 
   err = hexkeygrip_from_pk (sk, &hexgrip);
   if (err)
-    goto leave;
+    {
+      xfree (ecdh_param_str);
+      free_public_key (sk);
+      goto leave;
+    }
 
   memset(&info, 0, sizeof (info));
   rc = agent_scd_getattr ("SERIALNO", &info);
   if (rc)
     {
+      xfree (ecdh_param_str);
+      free_public_key (sk);
       err = (gpg_error_t)rc;
       goto leave;
     }
