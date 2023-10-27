@@ -29,6 +29,9 @@ Noteworthy changes in version 2.2.42 (unreleased)
   * gpg: Allow to specify seconds since Epoch beyond 2038 on 32-bit
     platforms.  [T6736]
 
+  * gpg: Fix the "keytocard" command for moving ECC keys with
+    non-standard ECDH parameters to OpenPGP cards.  [rG92af3f88a9]
+
   * gpgsm: Support ECC certificates.  [T6253]
 
   * gpgsm: Print PROGRESS status lines.  Add new --input-size-hint.
@@ -64,6 +67,8 @@ Noteworthy changes in version 2.2.42 (unreleased)
 
   * wkd: Make --add-revocs the default in gpg-wks-client.  New option
     --no-add-revocs.  [rG67d57fae3f]
+
+  * Fix garbled time output in non-English Windows.  [T6741]
 
   * Ignore attempts to remove the /dev/null device.  [T6556]
 

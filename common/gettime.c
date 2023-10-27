@@ -890,7 +890,7 @@ asctimestamp (u32 stamp)
          * 2018 has a lot of additional support but that will for sure
          * break other things.  We should move to ISO strings to get
          * rid of such problems.  */
-        setlocale (LC_TIME, "");
+        setlocale (LC_TIME, ".UTF8");
         done = 1;
         /* log_debug ("LC_ALL  now '%s'\n", setlocale (LC_ALL, NULL)); */
         /* log_debug ("LC_TIME now '%s'\n", setlocale (LC_TIME, NULL)); */
