@@ -1,6 +1,8 @@
 Noteworthy changes in version 2.4.4 (unreleased)
 ------------------------------------------------
 
+  * Fix garbled time output in non-English Windows.  [T6741]
+
   Release-info: https://dev.gnupg.org/T6578
 
 
