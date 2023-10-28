@@ -1020,7 +1020,7 @@ sign_file (ctrl_t ctrl, strlist_t filenames, int detached, strlist_t locusr,
   const char *fname;
   armor_filter_context_t *afx;
   compress_filter_context_t zfx;
-  gcry_md_hd_t md;
+  gcry_md_hd_t md = NULL;
   md_filter_context_t mfx;
   md_thd_filter_context_t mfx2 = NULL;
   text_filter_context_t tfx;
