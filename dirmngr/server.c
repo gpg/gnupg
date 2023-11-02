@@ -64,6 +64,7 @@
 #include "../common/mbox-util.h"
 #include "../common/zb32.h"
 #include "../common/server-help.h"
+#include "rfc3161.h"
 
 /* To avoid DoS attacks we limit the size of a certificate to
    something reasonable.  The DoS was actually only an issue back when
@@ -653,6 +654,29 @@ option_handler (assuan_context_t ctx, const char *key, const char *value)
     err = gpg_error (GPG_ERR_UNKNOWN_OPTION);
 
   return err;
+}
+
+static gpg_error_t
+cmd_tsa (assuan_context_t ctx, char *line)
+{
+  gpg_error_t err = 0;
+  unsigned char *digest;
+  ksba_cms_t cms;
+  ctrl_t ctrl = assuan_get_pointer(ctx);
+  gcry_md_hd_t hd;
+  const char *oid = "2.16.840.1.101.3.4.2.1";
+  gcry_md_open(&hd, gcry_md_map_name(oid), 0);
+  gcry_md_write(hd, line, strlen(line));
+  digest = gcry_md_read(hd, 0);
+  err = dirmngr_get_timestamp(ctrl, oid, digest, 32, &cms);
+  if (err)
+    goto leave;
+  gnupg_isotime_t time;
+  ksba_cms_get_signing_time(cms, 0, &time);
+  ksba_cms_release(cms);
+leave:
+  gcry_md_close(hd);
+  return leave_cmd (ctx, 0);
 }
 
 
@@ -3049,6 +3073,7 @@ register_commands (assuan_context_t ctx)
     assuan_handler_t handler;
     const char * const help;
   } table[] = {
+    { "TSA",        cmd_tsa,        hlp_dns_cert },
     { "DNS_CERT",   cmd_dns_cert,   hlp_dns_cert },
     { "WKD_GET",    cmd_wkd_get,    hlp_wkd_get },
     { "LDAPSERVER", cmd_ldapserver, hlp_ldapserver },

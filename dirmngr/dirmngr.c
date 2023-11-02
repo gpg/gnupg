@@ -161,6 +161,7 @@ enum cmd_and_opt_values {
   oListenBacklog,
   oFakeCRL,
   oCompatibilityFlags,
+  oTSAResponder,
   aTest
 };
 
@@ -308,6 +309,8 @@ static gpgrt_opt_t opts[] = {
   ARGPARSE_s_n (oBatch,    "batch",       "@"),
   ARGPARSE_s_s (oHTTPWrapperProgram, "http-wrapper-program", "@"),
 
+  ARGPARSE_s_s (oTSAResponder, "tsa-responder",
+                N_("|URL|use TSA responder at URL")),
 
   ARGPARSE_group (302,N_("@\n(See the \"info\" manual for a complete listing "
                          "of all commands and options)\n")),
@@ -726,6 +729,7 @@ parse_rereadable_options (gpgrt_argparse_t *pargs, int reread)
       xfree (opt.fake_crl);
       opt.fake_crl = NULL;
       opt.compat_flags = 0;
+      opt.tsa_responder = NULL;
       return 1;
     }
 
@@ -905,6 +909,7 @@ parse_rereadable_options (gpgrt_argparse_t *pargs, int reread)
           pargs->err = ARGPARSE_PRINT_WARNING;
         }
       break;
+    case oTSAResponder: opt.tsa_responder = pargs->r.ret_str; break;
 
     default:
       return 0; /* Not handled. */

@@ -162,6 +162,7 @@ struct
 
   /* Compatibility flags (COMPAT_FLAG_xxxx).  */
   unsigned int compat_flags;
+  char *tsa_responder;
 } opt;
 
 
