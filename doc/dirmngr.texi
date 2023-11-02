@@ -295,7 +295,7 @@ seconds.
 @opindex connect-quick-timeout
 Set the timeout for HTTP and generic TCP connection attempts to N
 seconds.  The value set with the quick variant is used when the
---quick option has been given to certain Assuan commands.  The quick
+@option{--quick} option has been given to certain Assuan commands.  The quick
 value is capped at the value of the regular connect timeout.  The
 default values are 15 and 2 seconds.  Note that the timeout values are
 for each connection attempt; the connection code will attempt to

@@ -362,9 +362,9 @@ public keys are listed.
 The variant @option{--locate-external-keys} does not consider a
 locally existing key and can thus be used to force the refresh of a
 key via the defined external methods.  If a fingerprint is given and
-and the methods defined by --auto-key-locate define LDAP servers, the
-key is fetched from these resources; defined non-LDAP keyservers are
-skipped.
+and the methods defined by @option{--auto-key-locate} define LDAP
+servers, the key is fetched from these resources; defined non-LDAP
+keyservers are skipped.
 
 
 @item --show-keys
@@ -1455,10 +1455,10 @@ give the opposite meaning.  The options are:
 
   @item sort-sigs
   @opindex list-options:sort-sigs
-  With --list-sigs and --check-sigs sort the signatures by keyID and
-  creation time to make it easier to view the history of these
-  signatures.  The self-signature is also listed before other
-  signatures. Defaults to yes.
+  With @option{--list-sigs} and @option{--check-sigs} sort the
+  signatures by keyID and creation time to make it easier to view the
+  history of these signatures.  The self-signature is also listed
+  before other signatures. Defaults to yes.
 
 @end table
 
@@ -1515,12 +1515,12 @@ the opposite meaning. The options are:
 @itemx --disable-large-rsa
 @opindex enable-large-rsa
 @opindex disable-large-rsa
-With --generate-key and --batch, enable the creation of RSA secret keys as
-large as 8192 bit.  Note: 8192 bit is more than is generally
-recommended.  These large keys don't significantly improve security,
-but they are more expensive to use, and their signatures and
-certifications are larger.  This option is only available if the
-binary was build with large-secmem support.
+With @option{--generate-key} and @option{--batch}, enable the creation
+of RSA secret keys as large as 8192 bit.  Note: 8192 bit is more than
+is generally recommended.  These large keys don't significantly
+improve security, but they are more expensive to use, and their
+signatures and certifications are larger.  This option is only
+available if the binary was build with large-secmem support.
 
 @item --enable-dsa2
 @itemx --disable-dsa2
@@ -2624,12 +2624,12 @@ The available filter types are:
 
   @item drop-subkey
   This filter drops the selected subkeys.
-  Currently only implemented for --export-filter.
+  Currently only implemented for @option{--export-filter}.
 
   @item drop-sig
   This filter drops the selected key signatures on user ids.
   Self-signatures are not considered.
-  Currently only implemented for --import-filter.
+  Currently only implemented for @option{--import-filter}.
 
   @item select
   This filter is only implemented by @option{--list-filter}.  All

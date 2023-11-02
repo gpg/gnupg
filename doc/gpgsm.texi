@@ -642,8 +642,8 @@ By default gpgsm prints distinguished names (DNs) like the Issuer or
 Subject in a more readable format (e.g., using a well defined order of
 the parts).  However, this format can't be used as input strings.
 This option reverts printing to standard RFC-2253 format and thus
-avoids the need to use --dump-cert or --with-colons to get the
-``real'' name.
+avoids the need to use @option{--dump-cert} or @option{--with-colons}
+to get the ``real'' name.
 
 @end table
 

@@ -91,7 +91,7 @@ Add @var{file} to the list of keyrings.
 If @var{file} begins with a tilde and a slash, these
 are replaced by the HOME directory. If the filename
 does not contain a slash, it is assumed to be in the
-home-directory ("~/.gnupg" if --homedir is not used).
+home-directory ("~/.gnupg" if @option{--homedir} is not used).
 
 @item --output @var{file}
 @itemx -o @var{file}

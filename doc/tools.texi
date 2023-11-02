@@ -133,8 +133,8 @@ for the configuration files is:
 log-file socket://
 @end example
 
-If the default socket as given above and returned by "echo $(gpgconf
---list-dirs socketdir)/S.log" is not desired an arbitrary socket name
+If the default socket as given above and returned by @code{"echo $(gpgconf
+--list-dirs socketdir)/S.log"} is not desired an arbitrary socket name
 can be specified, for example @file{socket:///home/foo/bar/mysocket}.
 For debugging purposes it is also possible to do remote logging.  Take
 care if you use this feature because the information is send in the
@@ -2066,9 +2066,10 @@ Pass the specified extra options to @command{gpg}.
 @item --tar-args @var{args}
 @opindex tar-args
 Assume @var{args} are standard options of the command @command{tar}
-and parse them.  The only supported tar options are "--directory",
-"--files-from", and "--null" This is an obsolete options because those
-supported tar options can also be given directly.
+and parse them.  The only supported tar options are
+@option{--directory}, @option{--files-from}, and @option{--null}.
+This is an obsolete options because those supported tar options can
+also be given directly.
 
 @item --tar @var{command}
 @opindex tar
