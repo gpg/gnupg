@@ -984,7 +984,6 @@ X.509 certificates.  This global file is installed in the data directory
 
 @end table
 
-@c man:.RE
 Note that on larger installations, it is useful to put predefined files
 into the directory @file{/etc/skel/.gnupg/} so that newly created users
 start up with a working configuration.  For existing users a small
