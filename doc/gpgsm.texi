@@ -1380,11 +1380,11 @@ The decryption is done by using the command
   DECRYPT
 @end example
 
-It performs the decrypt operation after doing some check on the internal
-state (e.g., that all needed data has been set).  Because it utilizes
-the GPG-Agent for the session key decryption, there is no need to ask
-the client for a protecting passphrase - GpgAgent takes care of this by
-requesting this from the user.
+It performs the decrypt operation after doing some check on the
+internal state (e.g., that all needed data has been set).  Because it
+utilizes the GPG-Agent for the session key decryption, there is no
+need to ask the client for a protecting passphrase --- GpgAgent takes
+care of this by requesting this from the user.
 
 
 @node GPGSM SIGN

@@ -1006,13 +1006,13 @@ signing.
   @item keytocard
   @opindex keyedit:keytocard
   Transfer the selected secret subkey (or the primary key if no subkey
-  has been selected) to a smartcard. The secret key in the keyring will
-  be replaced by a stub if the key could be stored successfully on the
-  card and you use the save command later. Only certain key types may be
-  transferred to the card. A sub menu allows you to select on what card
-  to store the key. Note that it is not possible to get that key back
-  from the card - if the card gets broken your secret key will be lost
-  unless you have a backup somewhere.
+  has been selected) to a smartcard. The secret key in the keyring
+  will be replaced by a stub if the key could be stored successfully
+  on the card and you use the save command later. Only certain key
+  types may be transferred to the card. A sub menu allows you to
+  select on what card to store the key. Note that it is not possible
+  to get that key back from the card --- if the card gets broken your
+  secret key will be lost unless you have a backup somewhere.
 
   @item bkuptocard @var{file}
   @opindex keyedit:bkuptocard
@@ -1266,13 +1266,13 @@ behaviour and to change the default configuration.
 @end menu
 
 Long options can be put in an options file (default
-"~/.gnupg/gpg.conf"). Short option names will not work - for example,
-"armor" is a valid option for the options file, while "a" is not. Do not
-write the 2 dashes, but simply the name of the option and any required
-arguments. Lines with a hash ('#') as the first non-white-space
-character are ignored. Commands may be put in this file too, but that is
-not generally useful as the command will execute automatically with
-every execution of gpg.
+"~/.gnupg/gpg.conf"). Short option names will not work --- for
+example, "armor" is a valid option for the options file, while "a" is
+not. Do not write the 2 dashes, but simply the name of the option and
+any required arguments. Lines with a hash ('#') as the first
+non-white-space character are ignored. Commands may be put in this
+file too, but that is not generally useful as the command will execute
+automatically with every execution of gpg.
 
 Please remember that option parsing stops as soon as a non-option is
 encountered, you can explicitly stop parsing by using the special option
@@ -2047,7 +2047,7 @@ option is ignored if the option @option{--with-colons} is used.
 
 @item --keyserver @var{name}
 @opindex keyserver
-This option is deprecated - please use the @option{--keyserver} in
+This option is deprecated --- please use the @option{--keyserver} in
 @file{dirmngr.conf} instead.
 
 Use @var{name} as your keyserver. This is the server that

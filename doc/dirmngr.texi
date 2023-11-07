@@ -749,7 +749,7 @@ certificate exists it is used to access the special keyservers
 
 Please note that @command{gpgsm} accepts Root CA certificates for its
 own purposes only if they are listed in its file @file{trustlist.txt}.
-@command{dirmngr} does not make use of this list - except FIXME.
+@command{dirmngr} does not make use of this list --- except FIXME.
 
 
 @mansect notes
