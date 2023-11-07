@@ -749,11 +749,12 @@ gpgsm_encrypt (ctrl_t ctrl, certlist_t recplist, estream_t data_fp,
       unsigned char *encval;
       unsigned int nbits;
       int pk_algo;
+      char *curve = NULL;
 
       /* Check compliance.  */
-      pk_algo = gpgsm_get_key_algo_info (cl->cert, &nbits);
+      pk_algo = gpgsm_get_key_algo_info (cl->cert, &nbits, &curve);
       if (!gnupg_pk_is_compliant (opt.compliance, pk_algo, 0,
-                                  NULL, nbits, NULL))
+                                  NULL, nbits, curve))
         {
           char  kidstr[10+1];
 
@@ -768,8 +769,11 @@ gpgsm_encrypt (ctrl_t ctrl, certlist_t recplist, estream_t data_fp,
       /* Fixme: When adding ECC we need to provide the curvename and
        * the key to gnupg_pk_is_compliant.  */
       if (compliant
-          && !gnupg_pk_is_compliant (CO_DE_VS, pk_algo, 0, NULL, nbits, NULL))
+          && !gnupg_pk_is_compliant (CO_DE_VS, pk_algo, 0, NULL, nbits, curve))
         compliant = 0;
+
+      xfree (curve);
+      curve = NULL;
 
       rc = encrypt_dek (dek, cl->cert, pk_algo, &encval);
       if (rc)

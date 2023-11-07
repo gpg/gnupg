@@ -54,7 +54,7 @@ struct list_external_parm_s
 #define OID_FLAG_SKIP 1
 /* The extension is a simple UTF8String and should be printed.  */
 #define OID_FLAG_UTF8 2
-/* The extension can be trnted as a hex string.  */
+/* The extension can be printed as a hex string.  */
 #define OID_FLAG_HEX  4
 /* Define if this specififies a key purpose.  */
 #define OID_FLAG_KP   8
@@ -207,6 +207,8 @@ static struct
   { "1.3.6.1.4.1.311.21.5",   "ms-caExchange", OID_FLAG_KP },
   { "1.3.6.1.4.1.311.21.6",   "ms-keyRecovery", OID_FLAG_KP },
   { "1.3.6.1.4.1.311.21.19",  "ms-dsEmailReplication", OID_FLAG_KP },
+
+  /* BSI policies.  */
 
   /* Other vendor extensions.  */
   { "1.3.6.1.4.1.30205.13.1.1", "trusted-disk", OID_FLAG_KP },
@@ -428,7 +430,7 @@ email_kludge (const char *name)
  * number.  NBITS is the length of the key in bits.  */
 static void
 print_compliance_flags (ksba_cert_t cert, int algo, unsigned int nbits,
-                        estream_t fp)
+                        const char *curvename, estream_t fp)
 {
   int indent = 0;
   int hashalgo;
@@ -436,7 +438,7 @@ print_compliance_flags (ksba_cert_t cert, int algo, unsigned int nbits,
   /* Note that we do not need to test for PK_ALGO_FLAG_RSAPSS because
    * that is not a property of the key but one of the created
    * signature.  */
-  if (gnupg_pk_is_compliant (CO_DE_VS, algo, 0, NULL, nbits, NULL))
+  if (gnupg_pk_is_compliant (CO_DE_VS, algo, 0, NULL, nbits, curvename))
     {
       hashalgo = gcry_md_map_name (ksba_cert_get_digest_algo (cert));
       if (gnupg_digest_is_compliant (CO_DE_VS, hashalgo))
@@ -560,7 +562,7 @@ list_cert_colon (ctrl_t ctrl, ksba_cert_t cert, unsigned int validity,
   if (*truststring)
     es_fputs (truststring, fp);
 
-  algo = gpgsm_get_key_algo_info2 (cert, &nbits, &curve);
+  algo = gpgsm_get_key_algo_info (cert, &nbits, &curve);
   es_fprintf (fp, ":%u:%d:%s:", nbits, algo, fpr+24);
 
   ksba_cert_get_validity (cert, 0, t);
@@ -627,7 +629,7 @@ list_cert_colon (ctrl_t ctrl, ksba_cert_t cert, unsigned int validity,
   if (curve)
     es_fputs (curve, fp);
   es_putc (':', fp);  /* End of field 17. */
-  print_compliance_flags (cert, algo, nbits, fp);
+  print_compliance_flags (cert, algo, nbits, curve, fp);
   es_putc (':', fp);  /* End of field 18. */
   es_putc ('\n', fp);
 

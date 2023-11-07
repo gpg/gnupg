@@ -22,4 +22,6 @@
 
 const char *get_default_keyserver (int name_only);
 
+void http_reinitialize (void);
+
 #endif /* HTTP_COMMON_H */

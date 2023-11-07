@@ -2199,9 +2199,15 @@ gpgsm_validate_chain (ctrl_t ctrl, ksba_cert_t cert, ksba_isotime_t checktime,
 
   memset (&rootca_flags, 0, sizeof rootca_flags);
 
-  rc = do_validate_chain (ctrl, cert, checktime,
-                          r_exptime, listmode, listfp, flags,
-                          &rootca_flags);
+  if ((flags & VALIDATE_FLAG_BYPASS))
+    {
+      *retflags |= VALIDATE_FLAG_BYPASS;
+      rc = 0;
+    }
+  else
+    rc = do_validate_chain (ctrl, cert, checktime,
+                            r_exptime, listmode, listfp, flags,
+                            &rootca_flags);
   if (!rc && (flags & VALIDATE_FLAG_STEED))
     {
       *retflags |= VALIDATE_FLAG_STEED;
@@ -2223,6 +2229,8 @@ gpgsm_validate_chain (ctrl_t ctrl, ksba_cert_t cert, ksba_isotime_t checktime,
 
   if (opt.verbose)
     do_list (0, listmode, listfp, _("validation model used: %s"),
+             (*retflags & VALIDATE_FLAG_BYPASS)?
+             "bypass" :
              (*retflags & VALIDATE_FLAG_STEED)?
              "steed" :
              (*retflags & VALIDATE_FLAG_CHAIN_MODEL)?

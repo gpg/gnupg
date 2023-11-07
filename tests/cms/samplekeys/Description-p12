@@ -1,4 +1,6 @@
 # Description-p12  - Machine readable description of our P12 test vectors
+# The Cert line gives the SHA1 fingerprint of the certificate
+# The Key line gives a hash of the key parameters as returned by minip12.c
 
 Name: ov-user.p12
 Desc: Private test key from www.openvalidation.org
@@ -30,3 +32,23 @@ Desc: QuaVadis format of t5793-openssl
 Pass: test
 Cert: 80348a438e4b803b99e708da0b7fdd0659dedd15
 Key:  c271e44ab4fb19ca1aae71102ea4d7292ccc981d
+
+Name: edward.tester@demo.gnupg.com.p12
+Desc: GnuPG exported Brainpool certificate
+Pass: abc,123456
+Cert: ff810b9281a43c394aa138e9c7fd4c0193216fa6
+Key:  94c6d0b067370a8f2a09ae43cfe8d700bbd61e75
+
+Name: nistp256-openssl-self-signed.p12
+Desc: OpenSSL generated self-signed nistp256 key+cert
+Pass: abc
+Cert: 5cea0c5bf09ccd92535267c662fc098f6c81c27e
+Key:  3cb2fba95d1976df69eb7aa8c65ac5354e15af32
+
+Name: t6752-ov-user-ff.p12
+Desc: Mozilla generated with a surplus octet string container
+Pass: start
+Cert: 4753a910e0c8b4caa8663ca0e4273a884eb5397d
+Key:  93be89edd11214ab74280d988a665b6beef876c5
+
+# eof #

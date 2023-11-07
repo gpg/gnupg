@@ -380,13 +380,14 @@ rfc4517toisotime (gnupg_isotime_t timebuf, const char *string)
   int year, month, day, hour, minu, sec;
   const char *s;
 
+  /* Sample value: "20230823141623Z";  */
   for (i=0, s=string; i < 10; i++, s++)  /* Need yyyymmddhh  */
     if (!digitp (s))
       return gpg_error (GPG_ERR_INV_TIME);
   year  = atoi_4 (string);
   month = atoi_2 (string + 4);
   day   = atoi_2 (string + 6);
-  hour  = atoi_2 (string + 9);
+  hour  = atoi_2 (string + 8);
   minu = 0;
   sec = 0;
   if (digitp (s) && digitp (s+1))

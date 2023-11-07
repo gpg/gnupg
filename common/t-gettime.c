@@ -44,6 +44,56 @@ static int errcount;
 
 
 static void
+test_scan_secondsstr (void)
+{
+  struct { const char *string; u32 expected; } array [] = {
+    { "",  0 },
+    { "0",  0 },
+    { " 0",  0 },
+    { " 0x",  0 },
+    { " 1",  1 },
+    { "-1",  0 },
+    { " -1",  0 },
+    { "2",  2 },
+    { "11",  11 },
+    { "011",  11 },
+    { "3600 ",  3600 },
+    { "65535",  65535 },
+    { "65536",  65536 },
+    { "65537",  65537 },
+    { "4294967289", 4294967289 },
+    { "4294967290", 4294967290 },
+    { "4294967293", 4294967293 },
+    { "4294967295", 4294967294 },
+    { "4294967296", 4294967294 },
+    { "4294967297", 4294967294 },
+    { "4294967298", 4294967294 },
+    { "4294967299", 4294967294 },
+    { "4294967300", 4294967294 },
+    { "5294967300", 4294967294 },
+    { "9999999999", 4294967294 },
+    { "99999999999",4294967294 },
+    { NULL, 0 }
+  };
+  int idx;
+  u32 val;
+
+  for (idx=0; array[idx].string; idx++)
+    {
+      val = scan_secondsstr (array[idx].string);
+      if (val != array[idx].expected )
+        {
+          fail (idx);
+          if (verbose)
+            fprintf (stderr, "string '%s' exp: %ld got: %ld\n",
+                     array[idx].string, (unsigned long)array[idx].expected,
+                     (unsigned long)val);
+        }
+    }
+}
+
+
+static void
 test_isotime2epoch (void)
 {
   struct { const char *string; time_t expected; } array [] = {
@@ -101,7 +151,6 @@ test_isotime2epoch (void)
         }
     }
 }
-
 
 
 static void
@@ -269,6 +318,7 @@ main (int argc, char **argv)
   if (argc > 1 && !strcmp (argv[1], "--verbose"))
     verbose = 1;
 
+  test_scan_secondsstr ();
   test_isotime2epoch ();
   test_string2isotime ();
   test_isodate_human_to_tm ();

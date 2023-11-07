@@ -175,6 +175,7 @@ unlock_pinentry (ctrl_t ctrl, gpg_error_t rc)
         case GPG_ERR_NO_PASSPHRASE:
         case GPG_ERR_BAD_PASSPHRASE:
         case GPG_ERR_BAD_PIN:
+        case GPG_ERR_BAD_RESET_CODE:
           break;
 
         case GPG_ERR_CORRUPTED_PROTECTION:
@@ -1610,12 +1611,13 @@ agent_askpin (ctrl_t ctrl,
               && (pininfo->status & PINENTRY_STATUS_PASSWORD_FROM_CACHE))
             return unlock_pinentry (ctrl, rc);
 
-          if (gpg_err_code (rc) == GPG_ERR_BAD_PASSPHRASE)
+          if (gpg_err_code (rc) == GPG_ERR_BAD_PASSPHRASE
+              || gpg_err_code (rc) == GPG_ERR_BAD_PIN
+              || gpg_err_code (rc) == GPG_ERR_BAD_RESET_CODE)
             {
               if (pininfo->cb_errtext)
                 errtext = pininfo->cb_errtext;
-              else if (gpg_err_code (rc) == GPG_ERR_BAD_PASSPHRASE
-                       || gpg_err_code (rc) == GPG_ERR_BAD_PIN)
+              else
                 errtext = (is_pin? L_("Bad PIN") : L_("Bad Passphrase"));
             }
           else if (rc)
@@ -1883,12 +1885,13 @@ agent_get_passphrase (ctrl_t ctrl,
           if (rc && (pininfo->status & PINENTRY_STATUS_PASSWORD_FROM_CACHE))
             return unlock_pinentry (ctrl, rc);
 
-          if (gpg_err_code (rc) == GPG_ERR_BAD_PASSPHRASE)
+          if (gpg_err_code (rc) == GPG_ERR_BAD_PASSPHRASE
+              || gpg_err_code (rc) == GPG_ERR_BAD_PIN
+              || gpg_err_code (rc) == GPG_ERR_BAD_RESET_CODE)
             {
               if (pininfo->cb_errtext)
                 errtext = pininfo->cb_errtext;
-              else if (gpg_err_code (rc) == GPG_ERR_BAD_PASSPHRASE
-                       || gpg_err_code (rc) == GPG_ERR_BAD_PIN)
+              else
                 errtext = (is_pin? L_("Bad PIN") : L_("Bad Passphrase"));
             }
           else if (rc)

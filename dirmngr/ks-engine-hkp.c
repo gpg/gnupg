@@ -1327,7 +1327,7 @@ send_request (ctrl_t ctrl, const char *request, const char *hostportstr,
       {
         xfree (request_buffer);
         err = http_prepare_redirect (&redirinfo, http_get_status_code (http),
-                                     http_get_header (http, "Location"),
+                                     http_get_header (http, "Location", 0),
                                      &request_buffer);
         if (err)
           goto leave;
@@ -1340,18 +1340,17 @@ send_request (ctrl_t ctrl, const char *request, const char *hostportstr,
       }
       goto once_more;
 
-    case 501:
-      err = gpg_error (GPG_ERR_NOT_IMPLEMENTED);
-      goto leave;
-
-    case 413:  /* Payload too large */
-      err = gpg_error (GPG_ERR_TOO_LARGE);
-      goto leave;
-
     default:
       log_error (_("error accessing '%s': http status %u\n"),
                  request, http_get_status_code (http));
-      err = gpg_error (GPG_ERR_NO_DATA);
+      switch (http_get_status_code (http))
+        {
+        case 401: err = gpg_error (GPG_ERR_NO_AUTH); break;
+        case 407: err = gpg_error (GPG_ERR_BAD_AUTH); break;
+        case 413: err = gpg_error (GPG_ERR_TOO_LARGE); break;
+        case 501: err = gpg_error (GPG_ERR_NOT_IMPLEMENTED); break;
+        default:  err = gpg_error (GPG_ERR_NO_DATA); break;
+        }
       goto leave;
     }
 

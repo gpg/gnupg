@@ -71,9 +71,21 @@ enum tlv_tag_type {
   TAG_BMP_STRING = 30
 };
 
+struct tag_info
+{
+  int class;
+  int is_constructed;
+  unsigned long tag;
+  size_t length;         /* length part of the TLV */
+  size_t nhdr;
+  int ndef;              /* It is an indefinite length */
+};
 
 struct tlv_builder_s;
 typedef struct tlv_builder_s *tlv_builder_t;
+
+struct tlv_parser_s;
+typedef struct tlv_parser_s *tlv_parser_t;
 
 /*-- tlv.c --*/
 
@@ -94,7 +106,7 @@ const unsigned char *find_tlv_unchecked (const unsigned char *buffer,
 
 /* ASN.1 BER parser: Parse BUFFER of length SIZE and return the tag
    and the length part from the TLV triplet.  Update BUFFER and SIZE
-   on success. */
+   on success.  See also tlv_parse_tag.  */
 gpg_error_t parse_ber_header (unsigned char const **buffer, size_t *size,
                               int *r_class, int *r_tag,
                               int *r_constructed,
@@ -136,6 +148,59 @@ void put_tlv_to_membuf (membuf_t *membuf, int class, int tag,
 /* Count the length of a to be constructed TLV.  */
 size_t get_tlv_length (int class, int tag, int constructed, size_t length);
 
+
+/*-- tlv-parser.c --*/
+
+tlv_parser_t tlv_parser_new (const unsigned char *buffer, size_t bufsize,
+                             int verbosity);
+void tlv_parser_release (tlv_parser_t tlv);
+
+void _tlv_parser_dump_tag (const char *text, int lno, tlv_parser_t tlv);
+void _tlv_parser_dump_state (const char *text, const char *text2,
+                             int lno, tlv_parser_t tlv);
+
+int _tlv_parser_peek (tlv_parser_t tlv, int class, int tag);
+int _tlv_parser_peek_null (tlv_parser_t tlv);
+gpg_error_t _tlv_parser_next (tlv_parser_t tlv, int lno);
+
+unsigned int tlv_parser_level (tlv_parser_t tlv);
+size_t tlv_parser_offset (tlv_parser_t tlv);
+const char *tlv_parser_lastfunc (tlv_parser_t tlv);
+const char *tlv_parser_lasterrstr (tlv_parser_t tlv);
+void tlv_parser_set_pending (tlv_parser_t tlv);
+size_t tlv_parser_tag_length (tlv_parser_t tlv, int with_header);
+
+void tlv_parser_skip (tlv_parser_t tlv);
+
+gpg_error_t tlv_expect_sequence (tlv_parser_t tlv);
+gpg_error_t tlv_expect_context_tag (tlv_parser_t tlv, int *r_tag);
+gpg_error_t tlv_expect_set (tlv_parser_t tlv);
+gpg_error_t tlv_expect_object (tlv_parser_t tlv, int class, int tag,
+                               unsigned char const **r_data,
+                               size_t *r_datalen);
+gpg_error_t tlv_expect_octet_string (tlv_parser_t tlv, int encapsulates,
+                                     unsigned char const **r_data,
+                                     size_t *r_datalen);
+gpg_error_t tlv_expect_integer (tlv_parser_t tlv, int *r_value);
+#ifdef GCRYPT_VERSION
+gpg_error_t tlv_expect_mpinteger (tlv_parser_t tlv, int ignore_zero,
+                                  gcry_mpi_t *r_value);
+#endif
+gpg_error_t tlv_expect_object_id (tlv_parser_t tlv,
+                                  unsigned char const **r_oid,
+                                  size_t *r_oidlen);
+
+/* Easier to use wrapper around parse_ber_header.  */
+gpg_error_t tlv_parse_tag (unsigned char const **buffer,
+                           size_t *size, struct tag_info *ti);
+
+/* Convenience macro and macros to include the line number.  */
+#define tlv_parser_dump_tag(a,b) _tlv_parser_dump_tag ((a),__LINE__,(b))
+#define tlv_parser_dump_state(a,b,c) \
+                            _tlv_parser_dump_state ((a),(b),__LINE__,(c))
+#define tlv_peek(a,b,c) _tlv_parser_peek ((a),(b),(c))
+#define tlv_peek_null(a) _tlv_parser_peek_null ((a))
+#define tlv_next(a) _tlv_parser_next ((a), __LINE__)
 
 
 

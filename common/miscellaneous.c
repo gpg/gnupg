@@ -687,3 +687,53 @@ parse_compatibility_flags (const char *string, unsigned int *flagvar,
   *flagvar |= result;
   return 0;
 }
+
+
+/* Convert STRING consisting of base64 characters into its binary
+ * representation and store the result in a newly allocated buffer at
+ * R_BUFFER with its length at R_BUFLEN.  If TITLE is NULL a plain
+ * base64 decoding is done.  If it is the empty string the decoder
+ * will skip everything until a "-----BEGIN " line has been seen,
+ * decoding then ends at a "----END " line.  On failure the function
+ * returns an error code and sets R_BUFFER to NULL.  If the decoded
+ * data has a length of 0 a dummy buffer will still be allocated and
+ * the length is set to 0. */
+gpg_error_t
+b64decode (const char *string, const char *title,
+           void **r_buffer, size_t *r_buflen)
+{
+  gpg_error_t err;
+  gpgrt_b64state_t state;
+  size_t nbytes;
+  char *buffer;
+
+  *r_buffer = NULL;
+  *r_buflen = 0;
+
+  buffer = xtrystrdup (string);
+  if (!buffer)
+    return gpg_error_from_syserror();
+
+  state = gpgrt_b64dec_start (title);
+  if (!state)
+    {
+      err = gpg_error_from_syserror ();
+      xfree (buffer);
+      return err;
+    }
+  err = gpgrt_b64dec_proc (state, buffer, strlen (buffer), &nbytes);
+  if (!err)
+    {
+      err = gpgrt_b64dec_finish (state);
+      state = NULL;
+    }
+  if (err)
+    xfree (buffer);
+  else
+    {
+      *r_buffer = buffer;
+      *r_buflen = nbytes;
+    }
+  gpgrt_b64dec_finish (state);  /* Make sure it is released.  */
+  return err;
+}

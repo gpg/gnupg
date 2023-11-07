@@ -730,7 +730,7 @@ tdb_check_or_update (ctrl_t ctrl)
       if (opt.interactive)
 	update_trustdb (ctrl);
       else if (!opt.no_auto_check_trustdb)
-	check_trustdb (ctrl);
+        check_trustdb (ctrl);
     }
 }
 
@@ -983,6 +983,7 @@ update_min_ownertrust (ctrl_t ctrl, u32 *kid, unsigned int new_trust)
 
 /*
  * Clear the ownertrust and min_ownertrust values.
+ * Also schedule a revalidation if a stale validity record exists.
  *
  * Return: True if a change actually happened.
  */
@@ -1015,6 +1016,26 @@ tdb_clear_ownertrusts (ctrl_t ctrl, PKT_public_key *pk)
           tdb_revalidation_mark (ctrl);
           do_sync ();
           return 1;
+        }
+      else
+        {
+          /* Check whether we have a stale RECTYPE_VALID for that key
+           * and if its validity ist set, schedule a revalidation.  */
+          ulong recno = rec.r.trust.validlist;
+          while (recno)
+            {
+              read_record (recno, &rec, RECTYPE_VALID);
+              if (rec.r.valid.validity)
+                break;
+              recno = rec.r.valid.next;
+            }
+          if (recno)
+            {
+              if (DBG_TRUST)
+                log_debug ("stale validity value detected"
+                           " - scheduling check\n");
+              tdb_revalidation_mark (ctrl);
+            }
         }
     }
   else if (gpg_err_code (err) != GPG_ERR_NOT_FOUND)

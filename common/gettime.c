@@ -37,6 +37,11 @@
 #ifdef HAVE_LANGINFO_H
 #include <langinfo.h>
 #endif
+#ifdef HAVE_W32_SYSTEM
+# define WIN32_LEAN_AND_MEAN
+# include <windows.h>
+#endif /*!HAVE_W32_SYSTEM*/
+#include <stdint.h>    /* We use uint64_t.  */
 
 #include "util.h"
 #include "i18n.h"
@@ -59,6 +64,111 @@ static enum { NORMAL = 0, FROZEN, FUTURE, PAST } timemode;
 
 /* Correction used to map to real Julian days. */
 #define JD_DIFF 1721060L
+
+
+
+/*
+  timegm() is a GNU function that might not be available everywhere.
+  It's basically the inverse of gmtime() - you give it a struct tm,
+  and get back a time_t.  It differs from mktime() in that it handles
+  the case where the struct tm is UTC and the local environment isn't.
+
+  Note, that this replacement implementation might not be thread-safe!
+
+  Some BSDs don't handle the putenv("foo") case properly, so we use
+  unsetenv if the platform has it to remove environment variables.
+*/
+#ifndef HAVE_TIMEGM
+time_t
+timegm (struct tm *tm)
+{
+#ifdef HAVE_W32_SYSTEM
+  uint64_t val = timegm_u64 (tm);
+  if (val == (uint64_t)(-1))
+    return (time_t)(-1);
+  return (time_t)val;
+#else /* (Non thread safe implementation!) */
+
+  time_t answer;
+  char *zone;
+
+  zone=getenv("TZ");
+  putenv("TZ=UTC");
+  tzset();
+  answer=mktime(tm);
+  if(zone)
+    {
+      static char *old_zone;
+
+      if (!old_zone)
+        {
+          old_zone = malloc(3+strlen(zone)+1);
+          if (old_zone)
+            {
+              strcpy(old_zone,"TZ=");
+              strcat(old_zone,zone);
+            }
+	}
+      if (old_zone)
+        putenv (old_zone);
+    }
+  else
+    gnupg_unsetenv("TZ");
+
+  tzset();
+  return answer;
+#endif
+}
+#endif /*!HAVE_TIMEGM*/
+
+
+/* Version of the GNU timegm which returns an unsigned 64 bit integer
+ * instead of the usually signed time_t.  On error (uint64_t)(-1) is
+ * returned.  This function is mostly here becuase on 32 bit Windows
+ * we have an internal API to get the system time even after
+ * 2023-01-19.  For 32 bit Unix we need to suffer from the too short
+ * time_t and no system function to construct the time from a tm.  */
+uint64_t
+timegm_u64 (struct tm *tm)
+{
+#ifdef HAVE_W32_SYSTEM
+  /* This one is thread safe.  */
+  SYSTEMTIME st;
+  FILETIME ft;
+  unsigned long long cnsecs;
+
+  st.wYear   = tm->tm_year + 1900;
+  st.wMonth  = tm->tm_mon  + 1;
+  st.wDay    = tm->tm_mday;
+  st.wHour   = tm->tm_hour;
+  st.wMinute = tm->tm_min;
+  st.wSecond = tm->tm_sec;
+  st.wMilliseconds = 0; /* Not available.  */
+  st.wDayOfWeek = 0;    /* Ignored.  */
+
+  /* System time is UTC thus the conversion is pretty easy.  */
+  if (!SystemTimeToFileTime (&st, &ft))
+    {
+      gpg_err_set_errno (EINVAL);
+      return (uint64_t)(-1);
+    }
+
+  cnsecs = (((unsigned long long)ft.dwHighDateTime << 32)
+            | ft.dwLowDateTime);
+  cnsecs -= 116444736000000000ULL; /* The filetime epoch is 1601-01-01.  */
+  return (uint64_t)(cnsecs / 10000000ULL);
+
+#else /*Unix*/
+
+  time_t t = timegm (tm);
+  if (t == (time_t)(-1))
+    return (uint64_t)(-1);
+  if ((int64_t)t < 0)
+    return (uint64_t)(-1);
+  return (uint64_t)t;
+
+#endif /*Unix*/
+}
 
 
 /* Wrapper for the time(3).  We use this here so we can fake the time
@@ -172,6 +282,28 @@ make_timestamp (void)
 }
 
 
+/* Specialized version of atoi which returns an u32 instead of an int
+ * and caps the result at 2^32-2.  Leading white space is skipped,
+ * scanning stops at at the first non-convertable byte.  Note that we
+ * do not cap at 2^32-1 because that value is often used as error
+ * return. */
+u32
+scan_secondsstr (const char *string)
+{
+  uint64_t value = 0;
+
+  while (*string == ' ' || *string == '\t')
+    string++;
+  for (; *string >= '0' && *string <= '9'; string++)
+    {
+      value *= 10;
+      value += atoi_1 (string);
+      if (value >= (u32)(-1))
+        return (u32)(-1) - 1;
+    }
+  return (u32)value;
+}
+
 
 /****************
  * Scan a date string and return a timestamp.
@@ -208,7 +340,21 @@ scan_isodatestr( const char *string )
     tmbuf.tm_isdst = -1;
     stamp = mktime( &tmbuf );
     if( stamp == (time_t)-1 )
-	return 0;
+      {
+        /* mktime did not work.  Construct an ISO timestring for noon
+         * of the given day instead.  We keep the use of mktime for 64
+         * bit system to limit the risk of regressions. */
+        gnupg_isotime_t isobuf;
+        uint64_t tmp64;
+
+        snprintf (isobuf, 16, "%04d%02d%02dT120000", year, month, day);
+        tmp64 = isotime2epoch_u64 (isobuf);
+        if (tmp64 == (uint64_t)(-1))
+          return 0;  /* Error.  */
+        if (tmp64 >= (u32)(-1))
+          return 0;   /* Error.  */
+        return (u32)tmp64;
+      }
     return stamp;
 }
 
@@ -363,18 +509,14 @@ string2isotime (gnupg_isotime_t atime, const char *string)
 }
 
 
-/* Scan an ISO timestamp and return an Epoch based timestamp.  The
-   only supported format is "yyyymmddThhmmss[Z]" delimited by white
-   space, nul, a colon or a comma.  Returns (time_t)(-1) for an
-   invalid string.  */
-time_t
-isotime2epoch (const char *string)
+/* Helper for isotime2epoch.  Returns 0 on success. */
+static int
+isotime_make_tm (const char *string, struct tm *tmbuf)
 {
   int year, month, day, hour, minu, sec;
-  struct tm tmbuf;
 
   if (!isotime_p (string))
-    return (time_t)(-1);
+    return -1;
 
   year  = atoi_4 (string);
   month = atoi_2 (string + 4);
@@ -386,17 +528,45 @@ isotime2epoch (const char *string)
   /* Basic checks.  */
   if (year < 1970 || month < 1 || month > 12 || day < 1 || day > 31
       || hour > 23 || minu > 59 || sec > 61 )
+    return -1;
+
+  memset (tmbuf, 0, sizeof *tmbuf);
+  tmbuf->tm_sec  = sec;
+  tmbuf->tm_min  = minu;
+  tmbuf->tm_hour = hour;
+  tmbuf->tm_mday = day;
+  tmbuf->tm_mon  = month-1;
+  tmbuf->tm_year = year - 1900;
+  tmbuf->tm_isdst = -1;
+  return 0;
+}
+
+
+/* Scan an ISO timestamp and return an Epoch based timestamp.  The
+   only supported format is "yyyymmddThhmmss[Z]" delimited by white
+   space, nul, a colon or a comma.  Returns (time_t)(-1) for an
+   invalid string.  */
+time_t
+isotime2epoch (const char *string)
+{
+  struct tm tmbuf;
+
+  if (isotime_make_tm (string, &tmbuf))
     return (time_t)(-1);
 
-  memset (&tmbuf, 0, sizeof tmbuf);
-  tmbuf.tm_sec  = sec;
-  tmbuf.tm_min  = minu;
-  tmbuf.tm_hour = hour;
-  tmbuf.tm_mday = day;
-  tmbuf.tm_mon  = month-1;
-  tmbuf.tm_year = year - 1900;
-  tmbuf.tm_isdst = -1;
   return timegm (&tmbuf);
+}
+
+
+uint64_t
+isotime2epoch_u64 (const char *string)
+{
+  struct tm tmbuf;
+
+  if (isotime_make_tm (string, &tmbuf))
+    return (uint64_t)(-1);
+
+  return timegm_u64 (&tmbuf);
 }
 
 
@@ -453,41 +623,6 @@ isodate_human_to_tm (const char *string, struct tm *t)
 }
 
 
-/* This function is a copy of gpgme/src/conversion.c:_gpgme_timegm.
-   If you change it, then update the other one too.  */
-#ifdef HAVE_W32_SYSTEM
-static time_t
-_win32_timegm (struct tm *tm)
-{
-  /* This one is thread safe.  */
-  SYSTEMTIME st;
-  FILETIME ft;
-  unsigned long long cnsecs;
-
-  st.wYear   = tm->tm_year + 1900;
-  st.wMonth  = tm->tm_mon  + 1;
-  st.wDay    = tm->tm_mday;
-  st.wHour   = tm->tm_hour;
-  st.wMinute = tm->tm_min;
-  st.wSecond = tm->tm_sec;
-  st.wMilliseconds = 0; /* Not available.  */
-  st.wDayOfWeek = 0;    /* Ignored.  */
-
-  /* System time is UTC thus the conversion is pretty easy.  */
-  if (!SystemTimeToFileTime (&st, &ft))
-    {
-      gpg_err_set_errno (EINVAL);
-      return (time_t)(-1);
-    }
-
-  cnsecs = (((unsigned long long)ft.dwHighDateTime << 32)
-	    | ft.dwLowDateTime);
-  cnsecs -= 116444736000000000ULL; /* The filetime epoch is 1601-01-01.  */
-  return (time_t)(cnsecs / 10000000ULL);
-}
-#endif
-
-
 /* Parse the string TIMESTAMP into a time_t.  The string may either be
    seconds since Epoch or in the ISO 8601 format like
    "20390815T143012".  Returns 0 for an empty string or seconds since
@@ -496,7 +631,11 @@ _win32_timegm (struct tm *tm)
 
    This function is a copy of
    gpgme/src/conversion.c:_gpgme_parse_timestamp.  If you change it,
-   then update the other one too.  */
+   then update the other one too.
+
+   FIXME: Replace users of this function by one of the more modern
+          functions or change the return type to u64.
+*/
 time_t
 parse_timestamp (const char *timestamp, char **endp)
 {
@@ -532,24 +671,7 @@ parse_timestamp (const char *timestamp, char **endp)
       buf.tm_min = atoi_2 (timestamp+11);
       buf.tm_sec = atoi_2 (timestamp+13);
 
-#ifdef HAVE_W32_SYSTEM
-      return _win32_timegm (&buf);
-#else
-#ifdef HAVE_TIMEGM
       return timegm (&buf);
-#else
-      {
-        time_t tim;
-
-        putenv ("TZ=UTC");
-        tim = mktime (&buf);
-#ifdef __GNUC__
-#warning fixme: we must somehow reset TZ here.  It is not threadsafe anyway.
-#endif
-        return tim;
-      }
-#endif /* !HAVE_TIMEGM */
-#endif /* !HAVE_W32_SYSTEM */
     }
   else
     return (time_t)strtoul (timestamp, endp, 10);
@@ -728,7 +850,7 @@ asctimestamp (u32 stamp)
          * 2018 has a lot of additional support but that will for sure
          * break other things.  We should move to ISO strings to get
          * rid of such problems.  */
-        setlocale (LC_TIME, "");
+        setlocale (LC_TIME, ".UTF8");
         done = 1;
         /* log_debug ("LC_ALL  now '%s'\n", setlocale (LC_ALL, NULL)); */
         /* log_debug ("LC_TIME now '%s'\n", setlocale (LC_TIME, NULL)); */

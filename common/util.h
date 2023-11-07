@@ -39,6 +39,11 @@
  * libgpg-error version.  Define them here.
  * Example: (#if GPG_ERROR_VERSION_NUMBER < 0x011500 // 1.21)
  */
+#if GPG_ERROR_VERSION_NUMBER < 0x012f00 /* 1.47 */
+# define GPG_ERR_BAD_PUK          320
+# define GPG_ERR_NO_RESET_CODE    321
+# define GPG_ERR_BAD_RESET_CODE   322
+#endif
 
 #ifndef EXTERN_UNLESS_MAIN_MODULE
 # if !defined (INCLUDED_BY_MAIN_MODULE)
@@ -142,6 +147,7 @@ int answer_is_okay_cancel (const char *s, int def_answer);
 ssize_t read_line (FILE *fp,
                    char **addr_of_buffer, size_t *length_of_buffer,
                    size_t *max_length);
+
 
 /*-- sexputil.c */
 char *canon_sexp_to_string (const unsigned char *canon, size_t canonlen);
@@ -351,6 +357,10 @@ struct compatibility_flags_s
 };
 int parse_compatibility_flags (const char *string, unsigned int *flagvar,
                                const struct compatibility_flags_s *flags);
+
+gpg_error_t b64decode (const char *string, const char *title,
+                       void **r_buffer, size_t *r_buflen);
+
 
 
 /*-- Simple replacement functions. */

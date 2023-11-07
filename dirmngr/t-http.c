@@ -288,6 +288,11 @@ main (int argc, char **argv)
           my_http_flags |= HTTP_FLAG_FORCE_TOR;
           argc--; argv++;
         }
+      else if (!strcmp (*argv, "--try-proxy"))
+        {
+          my_http_flags |= HTTP_FLAG_TRY_PROXY;
+          argc--; argv++;
+        }
       else if (!strcmp (*argv, "--no-out"))
         {
           no_out = 1;
@@ -458,7 +463,7 @@ main (int argc, char **argv)
       log_fatal ("http_get_header_names failed: %s\n",
                  gpg_strerror (gpg_error_from_syserror ()));
     for (i = 0; names[i]; i++)
-      printf ("HDR: %s: %s\n", names[i], http_get_header (hd, names[i]));
+      printf ("HDR: %s: %s\n", names[i], http_get_header (hd, names[i], 0));
     xfree (names);
   }
   fflush (stdout);
@@ -484,7 +489,7 @@ main (int argc, char **argv)
     case 301:
     case 302:
     case 307:
-      log_info ("Redirected to: %s\n", http_get_header (hd, "Location"));
+      log_info ("Redirected to: %s\n", http_get_header (hd, "Location", 0));
       break;
     }
   http_close (hd, 0);

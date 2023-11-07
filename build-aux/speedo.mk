@@ -282,6 +282,7 @@ AUTHENTICODE_FILES= \
                     gpgtar.exe                \
                     gpgv.exe                  \
                     gpg-card.exe              \
+                    keyboxd.exe               \
                     libassuan-0.dll           \
                     libgcrypt-20.dll          \
                     libgpg-error-0.dll        \

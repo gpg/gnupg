@@ -32,7 +32,7 @@
 
 #include <time.h>      /* We need time_t. */
 #include <gpg-error.h> /* We need gpg_error_t. */
-
+#include <stdint.h>    /* We use uint64_t.     */
 
 /* A type to hold the ISO time.  Note that this is the same as
    the KSBA type ksba_isotime_t. */
@@ -43,6 +43,11 @@ typedef char gnupg_isotime_t[16];
 #define GNUPG_ISOTIME_NONE \
         "\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"
 
+#ifndef HAVE_TIMEGM
+time_t timegm (struct tm *tm);
+#endif /*!HAVE_TIMEGM*/
+uint64_t timegm_u64 (struct tm *tm);
+
 time_t gnupg_get_time (void);
 struct tm *gnupg_gmtime (const time_t *timep, struct tm *result);
 void   gnupg_get_isotime (gnupg_isotime_t timebuf);
@@ -51,11 +56,13 @@ int    gnupg_faked_time_p (void);
 u32    make_timestamp (void);
 char *elapsed_time_string (time_t since, time_t now);
 
+u32    scan_secondsstr (const char *string);
 u32    scan_isodatestr (const char *string);
 int    isotime_p (const char *string);
 int    isotime_human_p (const char *string, int date_only);
 size_t string2isotime (gnupg_isotime_t atime, const char *string);
 time_t isotime2epoch (const char *string);
+uint64_t isotime2epoch_u64 (const char *string);
 void   epoch2isotime (gnupg_isotime_t timebuf, time_t atime);
 int    isodate_human_to_tm (const char *string, struct tm *t);
 time_t parse_timestamp (const char *timestamp, char **endp);

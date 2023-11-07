@@ -23,6 +23,9 @@ AC_DEFUN([AB_INIT],
 	if test "$hostname"; then
 	   AC_MSG_NOTICE([autobuild hostname... $hostname])
 	fi
+	if test "$EMAIL"; then
+	   AC_MSG_NOTICE([autobuild username... $EMAIL])
+	fi
 	ifelse([$1],[],,[AC_MSG_NOTICE([autobuild mode... $1])])
 	date=`date +%Y%m%d-%H%M%S`
 	if test "$?" != 0; then

@@ -180,7 +180,7 @@ available flags the sole word "help" can be used.
 This option is only useful for testing; it sets the system time back or
 forth to @var{epoch} which is the number of seconds elapsed since the year
 1970.  Alternatively @var{epoch} may be given as a full ISO time string
-(e.g., "20070924T154812").
+(e.g. "20070924T154812").
 
 @item --debug-level @var{level}
 @opindex debug-level
@@ -344,7 +344,8 @@ whether Tor is locally running or not.  The check for a running Tor is
 done for each new connection.
 
 If no keyserver is explicitly configured, dirmngr will use the
-built-in default of @code{https://keyserver.ubuntu.com}.
+built-in default of @code{https://keyserver.ubuntu.com}.  To avoid the
+use of a default keyserver the value @code{none} can be used.
 
 Windows users with a keyserver running on their Active Directory
 may use the short form @code{ldap:///} for @var{name} to access this directory.
@@ -426,7 +427,9 @@ force the use of the default responder.
 @item --honor-http-proxy
 @opindex honor-http-proxy
 If the environment variable @env{http_proxy} has been set, use its
-value to access HTTP servers.
+value to access HTTP servers.  If on Windows the option is used but
+the environment variable is not set, the proxy settings are taken
+from the system.
 
 @item --http-proxy @var{host}[:@var{port}]
 @opindex http-proxy

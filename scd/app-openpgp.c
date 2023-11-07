@@ -3453,7 +3453,7 @@ do_change_pin (app_t app, ctrl_t ctrl,  const char *chvnostr,
           if (!remaining)
             {
               log_error (_("Reset Code not or not anymore available\n"));
-              rc = gpg_error (GPG_ERR_BAD_PIN);
+              rc = gpg_error (GPG_ERR_NO_RESET_CODE);
               goto leave;
             }
 
@@ -3470,7 +3470,7 @@ do_change_pin (app_t app, ctrl_t ctrl,  const char *chvnostr,
             {
               log_info (_("Reset Code is too short; minimum length is %d\n"),
                         minlen);
-              rc = gpg_error (GPG_ERR_BAD_PIN);
+              rc = gpg_error (GPG_ERR_BAD_RESET_CODE);
               goto leave;
             }
         }
@@ -3538,7 +3538,7 @@ do_change_pin (app_t app, ctrl_t ctrl,  const char *chvnostr,
       if (bufferlen != 0 && bufferlen < 8)
         {
           log_error (_("Reset Code is too short; minimum length is %d\n"), 8);
-          rc = gpg_error (GPG_ERR_BAD_PIN);
+          rc = gpg_error (GPG_ERR_BAD_RESET_CODE);
         }
       else
         {

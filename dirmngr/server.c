@@ -2202,6 +2202,7 @@ ensure_keyserver (ctrl_t ctrl)
   uri_item_t plain_items = NULL;
   uri_item_t ui;
   strlist_t sl;
+  int none_seen = 1;
 
   if (ctrl->server_local->keyservers)
     return 0; /* Already set for this session.  */
@@ -2214,6 +2215,15 @@ ensure_keyserver (ctrl_t ctrl)
 
   for (sl = opt.keyserver; sl; sl = sl->next)
     {
+      /* Frontends like Kleopatra may prefix option values without a
+       * scheme with "hkps://".  Thus we need to check that too.
+       * Nobody will be mad enough to call a machine "none".  */
+      if (!strcmp (sl->d, "none") || !strcmp (sl->d, "hkp://none")
+          || !strcmp (sl->d, "hkps://none"))
+        {
+          none_seen = 1;
+          continue;
+        }
       err = make_keyserver_item (sl->d, &item);
       if (err)
         goto leave;
@@ -2227,6 +2237,12 @@ ensure_keyserver (ctrl_t ctrl)
           item->next = plain_items;
           plain_items = item;
         }
+    }
+
+  if (none_seen && !plain_items && !onion_items)
+    {
+      err = gpg_error (GPG_ERR_NO_KEYSERVER);
+      goto leave;
     }
 
   /* Decide which to use.  Note that the session has no keyservers
@@ -2299,8 +2315,7 @@ cmd_keyserver (assuan_context_t ctx, char *line)
   gpg_error_t err = 0;
   int clear_flag, add_flag, help_flag, host_flag, resolve_flag;
   int dead_flag, alive_flag;
-  uri_item_t item = NULL; /* gcc 4.4.5 is not able to detect that it
-                             is always initialized.  */
+  uri_item_t item = NULL;
 
   clear_flag = has_option (line, "--clear");
   help_flag = has_option (line, "--help");
@@ -2366,13 +2381,17 @@ cmd_keyserver (assuan_context_t ctx, char *line)
 
   if (add_flag)
     {
-      err = make_keyserver_item (line, &item);
+      if (!strcmp (line, "none") || !strcmp (line, "hkp://none")
+          || !strcmp (line, "hkps://none"))
+        err = 0;
+      else
+        err = make_keyserver_item (line, &item);
       if (err)
         goto leave;
     }
   if (clear_flag)
     release_ctrl_keyservers (ctrl);
-  if (add_flag)
+  if (add_flag && item)
     {
       item->next = ctrl->server_local->keyservers;
       ctrl->server_local->keyservers = item;

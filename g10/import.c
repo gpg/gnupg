@@ -1509,6 +1509,20 @@ impex_filter_getval (void *cookie, const char *propname)
         {
           result = dateonlystr_from_sig (sig);
         }
+      else if (!strcmp (propname, "sig_expires"))
+        {
+          snprintf (numbuf, sizeof numbuf, "%lu", (ulong)sig->expiredate);
+          result = numbuf;
+        }
+      else if (!strcmp (propname, "sig_expires_d"))
+        {
+          static char exdatestr[MK_DATESTR_SIZE];
+
+          if (sig->expiredate)
+            result = mk_datestr (exdatestr, sizeof exdatestr, sig->expiredate);
+          else
+            result = "";
+        }
       else if (!strcmp (propname, "sig_algo"))
         {
           snprintf (numbuf, sizeof numbuf, "%d", sig->pubkey_algo);

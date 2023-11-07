@@ -130,6 +130,7 @@ status_sc_op_failure (int rc)
       write_status_text (STATUS_SC_OP_FAILURE, "1");
       break;
     case GPG_ERR_BAD_PIN:
+    case GPG_ERR_BAD_RESET_CODE:
       write_status_text (STATUS_SC_OP_FAILURE, "2");
       break;
     default:

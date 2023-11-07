@@ -1064,6 +1064,7 @@ gpgsm_decrypt (ctrl_t ctrl, estream_t in_fp, estream_t out_fp)
   KEYDB_HANDLE kh;
   int recp;
   struct decrypt_filter_parm_s dfparm;
+  char *curve = NULL;
 
   memset (&dfparm, 0, sizeof dfparm);
 
@@ -1300,14 +1301,15 @@ gpgsm_decrypt (ctrl_t ctrl, estream_t in_fp, estream_t out_fp)
 
                   pkfpr = gpgsm_get_fingerprint_hexstring (cert, GCRY_MD_SHA1);
                   pkalgostr = gpgsm_pubkey_algo_string (cert, NULL);
-                  pk_algo = gpgsm_get_key_algo_info (cert, &nbits);
+                  xfree (curve);
+                  pk_algo = gpgsm_get_key_algo_info (cert, &nbits, &curve);
                   if (!opt.quiet)
                     log_info (_("encrypted to %s key %s\n"), pkalgostr, pkfpr);
 
                   /* Check compliance.  */
                   if (!gnupg_pk_is_allowed (opt.compliance,
                                             PK_USE_DECRYPTION,
-                                            pk_algo, 0, NULL, nbits, NULL))
+                                            pk_algo, 0, NULL, nbits, curve))
                     {
                       char  kidstr[10+1];
 
@@ -1325,7 +1327,7 @@ gpgsm_decrypt (ctrl_t ctrl, estream_t in_fp, estream_t out_fp)
                   dfparm.is_de_vs =
                     (dfparm.is_de_vs
                      && gnupg_pk_is_compliant (CO_DE_VS, pk_algo, 0,
-                                               NULL, nbits, NULL));
+                                               NULL, nbits, curve));
 
                 oops:
                   if (rc)
@@ -1503,6 +1505,7 @@ gpgsm_decrypt (ctrl_t ctrl, estream_t in_fp, estream_t out_fp)
       log_error ("message decryption failed: %s <%s>\n",
                  gpg_strerror (rc), gpg_strsource (rc));
     }
+  xfree (curve);
   ksba_cms_release (cms);
   gnupg_ksba_destroy_reader (b64reader);
   gnupg_ksba_destroy_writer (b64writer);

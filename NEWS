@@ -1,6 +1,9 @@
 Noteworthy changes in version 2.5.0 (unreleased)
 ------------------------------------------------
 
+  Changes also found in 2.4.3:
+
+  * Fix garbled time output in non-English Windows.  [T6741]
 
   Changes also found in 2.4.3:
 
@@ -32,6 +35,9 @@ Noteworthy changes in version 2.5.0 (unreleased)
   * dirmngr: New option --compatibility-flags.  [rGbf04b07327]
 
   * dirmngr: New option --ignore-crl-extensions.  [T6545]
+
+  * dirmngr: Support config value "none" to disable the default
+    keyserver.  [T6708]
 
   * wkd: Use export-clean for gpg-wks-client's --mirror and --create
     commands.  [rG2c7f7a5a27]
@@ -70,6 +76,7 @@ Noteworthy changes in version 2.5.0 (unreleased)
 Release dates of 2.4 versions
 -----------------------------
 
+Version 2.4.4 (unreleased) https://dev.gnupg.org/T6578
 Version 2.4.3 (2023-07-04) https://dev.gnupg.org/T6509
 Version 2.4.2 (2023-05-30) https://dev.gnupg.org/T6506
 Version 2.4.1 (2023-04-28) https://dev.gnupg.org/T6454

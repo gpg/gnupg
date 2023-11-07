@@ -57,35 +57,6 @@ mem_count_chr (const void *buffer, int c, size_t length)
 }
 
 
-/* This is a case-sensitive version of our memistr.  I wonder why no
-   standard function memstr exists but I better do not use the name
-   memstr to avoid future conflicts.  */
-static const char *
-my_memstr (const void *buffer, size_t buflen, const char *sub)
-{
-  const unsigned char *buf = buffer;
-  const unsigned char *t = (const unsigned char *)buf;
-  const unsigned char *s = (const unsigned char *)sub;
-  size_t n = buflen;
-
-  for ( ; n ; t++, n-- )
-    {
-      if (*t == *s)
-        {
-          for (buf = t++, buflen = n--, s++; n && *t ==*s; t++, s++, n--)
-            ;
-          if (!*s)
-            return (const char*)buf;
-          t = (const unsigned char *)buf;
-          s = (const unsigned char *)sub ;
-          n = buflen;
-	}
-    }
-  return NULL;
-}
-
-
-
 static int
 string_has_ctrl_or_space (const char *string)
 {
@@ -159,7 +130,7 @@ is_valid_mailbox_mem (const void *name_arg, size_t namelen)
             || *name == '@'
             || name[namelen-1] == '@'
             || name[namelen-1] == '.'
-            || my_memstr (name, namelen, ".."));
+            || gnupg_memstr (name, namelen, ".."));
 }
 
 

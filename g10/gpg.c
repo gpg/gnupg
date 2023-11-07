@@ -3486,7 +3486,7 @@ main (int argc, char **argv)
 	    break;
 	  case oUtf8Strings: utf8_strings = 1; break;
 	  case oNoUtf8Strings:
-#ifdef HAVE_W32_SYSTEM
+#ifndef HAVE_W32_SYSTEM
             utf8_strings = 0;
 #endif
             break;

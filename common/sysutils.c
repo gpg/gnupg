@@ -933,7 +933,12 @@ gnupg_remove (const char *fname)
     return -1;
   return 0;
 #else
-  return remove (fname);
+  /* It is common to use /dev/null for testing.  We better don't
+   * remove that file.  */
+  if (fname && !strcmp (fname, "/dev/null"))
+    return 0;
+  else
+    return remove (fname);
 #endif
 }
 

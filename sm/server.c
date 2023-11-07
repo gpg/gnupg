@@ -287,6 +287,17 @@ option_handler (assuan_context_t ctx, const char *key, const char *value)
           ctrl->offline = i;
         }
     }
+  else if (!strcmp (key, "always-trust"))
+    {
+      /* We ignore this option if gpgsm has been started with
+         --always-trust (which also sets offline) and if
+         --require-compliance is active */
+      if (!opt.always_trust && !opt.require_compliance)
+        {
+          int i = *value? !!atoi (value) : 1;
+          ctrl->always_trust = i;
+        }
+    }
   else if (!strcmp (key, "request-origin"))
     {
       if (!opt.request_origin)
@@ -320,6 +331,7 @@ reset_notify (assuan_context_t ctx, char *line)
   gpgsm_release_certlist (ctrl->server_local->signerlist);
   ctrl->server_local->recplist = NULL;
   ctrl->server_local->signerlist = NULL;
+  ctrl->always_trust = 0;
   close_message_fp (ctrl);
   assuan_close_input_fd (ctx);
   assuan_close_output_fd (ctx);
@@ -495,6 +507,7 @@ cmd_encrypt (assuan_context_t ctx, char *line)
 
   gpgsm_release_certlist (ctrl->server_local->recplist);
   ctrl->server_local->recplist = NULL;
+  ctrl->always_trust = 0;
   /* Close and reset the fp and the fds */
   close_message_fp (ctrl);
   assuan_close_input_fd (ctx);
@@ -1221,7 +1234,8 @@ static const char hlp_getinfo[] =
   "  agent-check - Return success if the agent is running.\n"
   "  cmd_has_option CMD OPT\n"
   "              - Returns OK if the command CMD implements the option OPT.\n"
-  "  offline     - Returns OK if the connection is in offline mode.";
+  "  offline     - Returns OK if the connection is in offline mode."
+  "  always-trust- Returns OK if the connection is in always-trust mode.";
 static gpg_error_t
 cmd_getinfo (assuan_context_t ctx, char *line)
 {
@@ -1279,6 +1293,11 @@ cmd_getinfo (assuan_context_t ctx, char *line)
   else if (!strcmp (line, "offline"))
     {
       rc = ctrl->offline? 0 : gpg_error (GPG_ERR_FALSE);
+    }
+  else if (!strcmp (line, "always-trust"))
+    {
+      rc = (ctrl->always_trust || opt.always_trust)? 0
+           /**/                                    : gpg_error (GPG_ERR_FALSE);
     }
   else
     rc = set_error (GPG_ERR_ASS_PARAMETER, "unknown value for WHAT");

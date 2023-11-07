@@ -2,7 +2,7 @@
  * Copyright (C) 1999, 2001-2004, 2006, 2009, 2010,
  *               2011 Free Software Foundation, Inc.
  * Copyright (C) 1999, 2001-2004, 2006, 2009, 2010, 2011, 2014 Werner Koch
- * Copyright (C) 2015-2017, 2021 g10 Code GmbH
+ * Copyright (C) 2015-2017, 2021, 2023 g10 Code GmbH
  *
  * This file is part of GnuPG.
  *
@@ -64,12 +64,9 @@
 #  include <winsock2.h>
 # endif
 # include <windows.h>
-# ifndef EHOSTUNREACH
-#  define EHOSTUNREACH WSAEHOSTUNREACH
-# endif
-# ifndef EAFNOSUPPORT
-#  define EAFNOSUPPORT WSAEAFNOSUPPORT
-# endif
+# include <winhttp.h>
+# define SECURITY_WIN32 1
+# include <security.h>
 #else /*!HAVE_W32_SYSTEM*/
 # include <sys/types.h>
 # include <sys/socket.h>
@@ -210,10 +207,29 @@ struct cookie_s
   /* True if TLS is to be used.  */
   int use_tls;
 
+  /* Optional malloced buffer holding pending bytes for the read
+   * function.  LEN gives the used length, SIZE the allocated length.
+   * Used by the up_to_empty_line machinery. */
+  struct {
+    size_t size;
+    size_t len;
+    char *data;
+  } pending;
+
   /* The remaining content length and a flag telling whether to use
      the content length.  */
   uint64_t content_length;
   unsigned int content_length_valid:1;
+
+  /* If the next flag is set the read function will limit the returned
+   * buffer to an empty line.  That is the the pattern "\n\r\n" is
+   * detected and any further bytes are not returned to the caller.
+   * The flag is then reset.  For technical reason we might have
+   * already read more which will be then saved for the next call in
+   * the PENDING buffer.  */
+  unsigned int up_to_empty_line:1;
+  unsigned int last_was_lf:1;      /* Helper to detect empty line.  */
+  unsigned int last_was_lfcr:1;    /* Helper to detect empty line.  */
 };
 typedef struct cookie_s *cookie_t;
 
@@ -229,6 +245,33 @@ static es_cookie_io_functions_t simple_cookie_functions =
     NULL
   };
 #endif
+
+enum auth_negotiate_states
+  {
+    AUTH_NGT_NONE = 0,
+    AUTH_NGT_RCVD = 1,
+    AUTH_NGT_SENT = 2
+  };
+
+/* An object to store information about a proxy.  */
+struct proxy_info_s
+{
+  parsed_uri_t uri;   /* The parsed proxy URL.   */
+  int is_http_proxy;  /* This is an http proxy.  */
+
+#ifdef HAVE_W32_SYSTEM
+  CredHandle cred_handle;   /* Credential handle.       */
+  wchar_t *spn;             /* Service principal name.  */
+  CtxtHandle ctxt_handle;   /* Security context.        */
+  unsigned long token_size; /* Max. length of a token.  */
+  unsigned int cred_handle_valid:1;
+  unsigned int ctxt_handle_valid:1;
+#endif  /*HAVE_W32_SYSTEM*/
+
+  unsigned char *outtoken;  /* The output token allocated with token_size. */
+  unsigned long outtoklen;  /* The current length of the token.            */
+};
+typedef struct proxy_info_s *proxy_info_t;
 
 
 #if SIZEOF_UNSIGNED_LONG == 8
@@ -297,6 +340,7 @@ struct http_context_s
   my_socket_t sock;
   unsigned int in_data:1;
   unsigned int is_http_0_9:1;
+  unsigned int keep_alive:1;  /* Keep the connection alive.  */
   estream_t fp_read;
   estream_t fp_write;
   void *write_cookie;
@@ -317,13 +361,13 @@ struct http_context_s
 static int opt_verbose;
 static int opt_debug;
 
-/* The global callback for the verification function.  */
+/* The global callback for the verification function for GNUTLS.  */
 static gpg_error_t (*tls_callback) (http_t, http_session_t, int);
 
-/* The list of files with trusted CA certificates.  */
+/* The list of files with trusted CA certificates for GNUTLS.  */
 static strlist_t tls_ca_certlist;
 
-/* The list of files with extra trusted CA certificates.  */
+/* The list of files with extra trusted CA certificates for GNUTLS.  */
 static strlist_t cfg_ca_certlist;
 
 /* The global callback for net activity.  */
@@ -596,7 +640,7 @@ http_set_verbose (int verbose, int debug)
 
 /* Register a non-standard global TLS callback function.  If no
    verification is desired a callback needs to be registered which
-   always returns NULL.  */
+   always returns NULL.  Only used for GNUTLS. */
 void
 http_register_tls_callback (gpg_error_t (*cb)(http_t, http_session_t, int))
 {
@@ -607,7 +651,7 @@ http_register_tls_callback (gpg_error_t (*cb)(http_t, http_session_t, int))
 /* Register a CA certificate for future use.  The certificate is
    expected to be in FNAME.  PEM format is assume if FNAME has a
    suffix of ".pem".  If FNAME is NULL the list of CA files is
-   removed.  */
+   removed.  Only used for GNUTLS. */
 void
 http_register_tls_ca (const char *fname)
 {
@@ -636,7 +680,8 @@ http_register_tls_ca (const char *fname)
  * expected to be in FNAME.  PEM format is assume if FNAME has a
  * suffix of ".pem".  If FNAME is NULL the list of CA files is
  * removed.  This is a variant of http_register_tls_ca which puts the
- * certificate into a separate list enabled using HTTP_FLAG_TRUST_CFG.  */
+ * certificate into a separate list enabled using HTTP_FLAG_TRUST_CFG.
+ * Only used for GNUTLS.  */
 void
 http_register_cfg_ca (const char *fname)
 {
@@ -737,6 +782,64 @@ http_session_release (http_session_t sess)
 }
 
 
+/* Create a write stream and store it in the fp_write member.  Also
+ * store the tls flag and the session.  */
+static gpg_error_t
+make_fp_write (http_t hd, int use_tls, http_session_t session)
+{
+  cookie_t cookie;
+
+  cookie = xtrycalloc (1, sizeof *cookie);
+  if (!cookie)
+    return gpg_error_from_syserror ();
+  cookie->sock = my_socket_ref (hd->sock);
+  cookie->use_tls = use_tls;
+  if (session)
+    cookie->session = http_session_ref (session);
+  hd->fp_write = es_fopencookie (cookie, "w", cookie_functions);
+  if (!hd->fp_write)
+    {
+      gpg_error_t err = gpg_error_from_syserror ();
+      my_socket_unref (cookie->sock, NULL, NULL);
+      if (session)
+        http_session_unref (cookie->session);
+      xfree (cookie);
+      return err;
+    }
+  hd->write_cookie = cookie;  /* Cookie now owned by FP_WRITE.  */
+  return 0;
+}
+
+
+/* Create a read stream and store it in the fp_read member.  Also
+ * store the tls flag and the session.  */
+static gpg_error_t
+make_fp_read (http_t hd, int use_tls, http_session_t session)
+{
+  cookie_t cookie;
+
+  cookie = xtrycalloc (1, sizeof *cookie);
+  if (!cookie)
+    return gpg_error_from_syserror ();
+  cookie->sock = my_socket_ref (hd->sock);
+  cookie->use_tls = use_tls;
+  if (session)
+    cookie->session = http_session_ref (session);
+  hd->fp_read = es_fopencookie (cookie, "r", cookie_functions);
+  if (!hd->fp_read)
+    {
+      gpg_error_t err = gpg_error_from_syserror ();
+      my_socket_unref (cookie->sock, NULL, NULL);
+      if (session)
+        http_session_unref (cookie->session);
+      xfree (cookie);
+      return err;
+    }
+  hd->read_cookie = cookie;  /* Cookie now owned by FP_READ.  */
+  return 0;
+}
+
+
 /* Create a new session object which is currently used to enable TLS
  * support.  It may eventually allow reusing existing connections.
  * Valid values for FLAGS are:
@@ -785,6 +888,8 @@ http_session_new (http_session_t *r_session,
     strlist_t sl;
     int add_system_cas = !!(flags & HTTP_FLAG_TRUST_SYS);
     int is_hkps_pool;
+
+    (void)intended_hostname;
 
     rc = gnutls_certificate_allocate_credentials (&sess->certcred);
     if (rc < 0)
@@ -850,7 +955,6 @@ http_session_new (http_session_t *r_session,
     /* Add system certificates to the session.  */
     if (add_system_cas)
       {
-#if GNUTLS_VERSION_NUMBER >= 0x030014
         static int shown;
 
         rc = gnutls_certificate_set_x509_system_trust (sess->certcred);
@@ -861,7 +965,6 @@ http_session_new (http_session_t *r_session,
             shown = 1;
             log_info ("number of system provided CAs: %d\n", rc);
           }
-#endif /* gnutls >= 3.0.20 */
       }
 
     /* Add other configured certificates to the session.  */
@@ -1027,7 +1130,6 @@ http_raw_connect (ctrl_t ctrl, http_t *r_hd,
 {
   gpg_error_t err = 0;
   http_t hd;
-  cookie_t cookie;
 
   *r_hd = NULL;
 
@@ -1075,39 +1177,13 @@ http_raw_connect (ctrl_t ctrl, http_t *r_hd,
   }
 
   /* Setup estreams for reading and writing.  */
-  cookie = xtrycalloc (1, sizeof *cookie);
-  if (!cookie)
-    {
-      err = gpg_err_make (default_errsource, gpg_err_code_from_syserror ());
-      goto leave;
-    }
-  cookie->sock = my_socket_ref (hd->sock);
-  hd->fp_write = es_fopencookie (cookie, "w", cookie_functions);
-  if (!hd->fp_write)
-    {
-      err = gpg_err_make (default_errsource, gpg_err_code_from_syserror ());
-      my_socket_unref (cookie->sock, NULL, NULL);
-      xfree (cookie);
-      goto leave;
-    }
-  hd->write_cookie = cookie; /* Cookie now owned by FP_WRITE.  */
+  err = make_fp_write (hd, 0, NULL);
+  if (err)
+    goto leave;
 
-  cookie = xtrycalloc (1, sizeof *cookie);
-  if (!cookie)
-    {
-      err = gpg_err_make (default_errsource, gpg_err_code_from_syserror ());
-      goto leave;
-    }
-  cookie->sock = my_socket_ref (hd->sock);
-  hd->fp_read = es_fopencookie (cookie, "r", cookie_functions);
-  if (!hd->fp_read)
-    {
-      err = gpg_err_make (default_errsource, gpg_err_code_from_syserror ());
-      my_socket_unref (cookie->sock, NULL, NULL);
-      xfree (cookie);
-      goto leave;
-    }
-  hd->read_cookie = cookie; /* Cookie now owned by FP_READ.  */
+  err = make_fp_read (hd, 0, NULL);
+  if (err)
+    goto leave;
 
   /* Register close notification to interlock the use of es_fclose in
      http_close and in user code.  */
@@ -1139,7 +1215,7 @@ http_start_data (http_t hd)
   if (!hd->in_data)
     {
       if (opt_debug || (hd->flags & HTTP_FLAG_LOG_RESP))
-        log_debug_string ("\r\n", "http.c:request-header:");
+        log_debug ("http.c:request-header:start_data:\n");
       es_fputs ("\r\n", hd->fp_write);
       es_fflush (hd->fp_write);
       hd->in_data = 1;
@@ -1155,6 +1231,7 @@ http_wait_response (http_t hd)
   gpg_error_t err;
   cookie_t cookie;
   int use_tls;
+  int newfpread;
 
   /* Make sure that we are in the data. */
   http_start_data (hd);
@@ -1166,41 +1243,36 @@ http_wait_response (http_t hd)
     return gpg_err_make (default_errsource, GPG_ERR_INTERNAL);
 
   use_tls = cookie->use_tls;
-  es_fclose (hd->fp_write);
-  hd->fp_write = NULL;
-  /* The close has released the cookie and thus we better set it to NULL.  */
-  hd->write_cookie = NULL;
+  if (!hd->keep_alive)
+    {
+      es_fclose (hd->fp_write);
+      hd->fp_write = NULL;
+      /* The close has released the cookie and thus we better set it
+       * to NULL.  */
+      hd->write_cookie = NULL;
+    }
 
   /* Shutdown one end of the socket is desired.  As per HTTP/1.0 this
      is not required but some very old servers (e.g. the original pksd
      keyserver didn't worked without it.  */
-  if ((hd->flags & HTTP_FLAG_SHUTDOWN))
+  if (!hd->keep_alive && (hd->flags & HTTP_FLAG_SHUTDOWN))
     shutdown (FD2INT (hd->sock->fd), 1);
   hd->in_data = 0;
 
   /* Create a new cookie and a stream for reading.  */
-  cookie = xtrycalloc (1, sizeof *cookie);
-  if (!cookie)
-    return gpg_err_make (default_errsource, gpg_err_code_from_syserror ());
-  cookie->sock = my_socket_ref (hd->sock);
-  cookie->session = http_session_ref (hd->session);
-  cookie->use_tls = use_tls;
-
-  hd->read_cookie = cookie;
-  hd->fp_read = es_fopencookie (cookie, "r", cookie_functions);
-  if (!hd->fp_read)
+  newfpread = 0;
+  if (!hd->keep_alive || !hd->fp_read)
     {
-      err = gpg_err_make (default_errsource, gpg_err_code_from_syserror ());
-      my_socket_unref (cookie->sock, NULL, NULL);
-      http_session_unref (cookie->session);
-      xfree (cookie);
-      hd->read_cookie = NULL;
-      return err;
+      err = make_fp_read (hd, use_tls, hd->session);
+      if (err)
+        return err;
+      newfpread = 1;
+      ((cookie_t)(hd->read_cookie))->up_to_empty_line = 1;
     }
 
   err = parse_response (hd);
 
-  if (!err)
+  if (!err && newfpread)
     err = es_onclose (hd->fp_read, 1, fp_onclose_notification, hd);
 
   return err;
@@ -1789,34 +1861,266 @@ is_hostname_port (const char *string)
 }
 
 
-/*
- * Send a HTTP request to the server
- * Returns 0 if the request was successful
- */
-static gpg_error_t
-send_request (ctrl_t ctrl, http_t hd, const char *httphost, const char *auth,
-	      const char *proxy, const char *srvtag, unsigned int timeout,
-              strlist_t headers)
+/* Free the PROXY object.  */
+static void
+release_proxy_info (proxy_info_t proxy)
 {
-  gpg_error_t err;
-  const char *server;
-  char *request, *p;
-  unsigned short port;
-  const char *http_proxy = NULL;
-  char *proxy_authstr = NULL;
-  char *authstr = NULL;
-  assuan_fd_t sock;
-  int have_http_proxy = 0;
+  if (!proxy)
+    return;
+  http_release_parsed_uri (proxy->uri);
+  xfree (proxy->outtoken);
+#ifdef HAVE_W32_SYSTEM
+  if (proxy->ctxt_handle_valid)
+    DeleteSecurityContext (&proxy->ctxt_handle);
+  if (proxy->cred_handle_valid)
+    FreeCredentialsHandle (&proxy->cred_handle);
+#endif
+  xfree (proxy);
+}
+
+
+/* Return an http session object.  If clear is set, the object is
+ * destroyed.  On error nULL is returned.  */
+#ifdef HAVE_W32_SYSTEM
+static HINTERNET
+w32_get_internet_session (int clear)
+{
+  static HINTERNET session;
+
+  if (clear)
+    {
+      if (session)
+        {
+          WinHttpCloseHandle (session);
+          session = NULL;
+        }
+      return NULL;
+    }
+
+  if (!session)
+    {
+      session = WinHttpOpen (L"GnuPG dirmngr",
+                             WINHTTP_ACCESS_TYPE_NO_PROXY,
+                             WINHTTP_NO_PROXY_NAME,
+                             WINHTTP_NO_PROXY_BYPASS,
+                             0);
+      if (!session)
+        {
+          log_error ("WinHttpOpen failed: %s\n", w32_strerror (-1));
+          return NULL;
+        }
+    }
+
+  return session;
+}
+#endif /*HAVE_W32_SYSTEM*/
+
+
+/* Return a proxy using a Windows API.  */
+#ifdef HAVE_W32_SYSTEM
+static char *
+w32_get_proxy (const char *url)
+{
+  WINHTTP_AUTOPROXY_OPTIONS options = {0};
+  WINHTTP_PROXY_INFO info;
+  char *result = NULL;
+  char *p;
+  wchar_t *wurl;
+  int defaultcfg = 0;
+
+  wurl = utf8_to_wchar (url);
+  if (!wurl)
+    {
+      log_error ("utf8_to_wchar failed: %s\n",
+                 gpg_strerror (gpg_error_from_syserror ()));
+      return NULL;
+    }
+
+  options.dwFlags = (WINHTTP_AUTOPROXY_ALLOW_AUTOCONFIG
+                     | WINHTTP_AUTOPROXY_ALLOW_CM
+                     | WINHTTP_AUTOPROXY_ALLOW_STATIC
+                     | WINHTTP_AUTOPROXY_AUTO_DETECT
+                     | WINHTTP_AUTOPROXY_SORT_RESULTS);
+  options.dwAutoDetectFlags = (WINHTTP_AUTO_DETECT_TYPE_DHCP
+                               | WINHTTP_AUTO_DETECT_TYPE_DNS_A);
+  options.fAutoLogonIfChallenged = TRUE;
+
+  if (opt_debug)
+    log_debug ("calling WinHttpGetProxyForUrl (%s)\n", url);
+  if (!WinHttpGetProxyForUrl (w32_get_internet_session (0),
+                              wurl, &options, &info))
+    {
+      int ec = (int)GetLastError ();
+      if (ec == ERROR_WINHTTP_AUTODETECTION_FAILED)
+        {
+          if (opt_debug)
+            log_debug ("calling WinHttpGetDefaultProxyConfiguration\n");
+          if (!WinHttpGetDefaultProxyConfiguration (&info))
+            {
+              if (opt_verbose)
+                log_info ("WinHttpGetDefaultProxyConfiguration failed: "
+                          "%s (%d)\n", w32_strerror (ec), ec);
+              xfree (wurl);
+              return NULL;
+            }
+          defaultcfg = 1;
+        }
+      else
+        {
+          if (opt_verbose)
+            log_info ("WinHttpGetProxyForUrl failed: %s (%d)\n",
+                      w32_strerror (ec), ec);
+          xfree (wurl);
+          return NULL;
+        }
+    }
+  xfree (wurl);
+
+  if (info.dwAccessType == WINHTTP_ACCESS_TYPE_NAMED_PROXY)
+    {
+      result = wchar_to_utf8 (info.lpszProxy);
+      if (!result)
+        log_error ("wchar_to_utf8 failed: %s\n",
+                   gpg_strerror (gpg_error_from_syserror ()));
+      else
+        {
+          if (opt_debug)
+            log_debug ("proxies to use: '%s'\n", result);
+          /* The returned proxies are delimited by whitespace or
+           * semicolons.  We return only the first proxy.  */
+          for (p=result; *p; p++)
+            if (spacep (p) || *p == ';')
+              {
+                *p = 0;
+                break;
+              }
+        }
+    }
+  else if (info.dwAccessType == WINHTTP_ACCESS_TYPE_NO_PROXY)
+    {
+      /* No proxy shall be used.  */
+    }
+  else
+    log_error ("%s returned unexpected code %lu\n",
+               defaultcfg? "WinHttpGetDefaultProxyConfiguration"
+               :"WinHttpGetProxyForUrl", info.dwAccessType);
+
+  if (info.lpszProxy)
+    GlobalFree (info.lpszProxy);
+  if (info.lpszProxyBypass)
+    GlobalFree (info.lpszProxyBypass);
+  return result;
+}
+#endif /*HAVE_W32_SYSTEM*/
+
+
+/* Return the proxy to be used for the URL or host specified in HD.
+ * If OVERRIDE_PROXY is not NULL and not empty, this proxy will be
+ * used instead of any configured or dynamically determined proxy.  If
+ * the function runs into an error an error code is returned and NULL
+ * is stored at R_PROXY.  If the fucntion was successful and a proxy
+ * is to be used, information on the procy is stored at R_PROXY; if no
+ * proxy shall be used R_PROXY is set to NULL.  Caller should always
+ * use release_proxy_info on the value stored at R_PROXY.  */
+static gpg_error_t
+get_proxy_for_url (http_t hd, const char *override_proxy, proxy_info_t *r_proxy)
+{
+  gpg_error_t err = 0;
+  const char *proxystr, *s;
+  proxy_info_t proxy;
+#ifdef HAVE_W32_SYSTEM
+  char *proxystrbuf = NULL;
+#endif
+
+  *r_proxy = NULL;
+
+  if (override_proxy && *override_proxy)
+    proxystr = override_proxy;
+  else if (!(hd->flags & HTTP_FLAG_TRY_PROXY))
+    return 0;  /* --honor-http-proxy not active  */
+  else if ((s = getenv (HTTP_PROXY_ENV)) && *s)
+    proxystr = s;
+#ifdef HAVE_W32_SYSTEM
+  else if (hd->uri && hd->uri->original
+           && (proxystrbuf = w32_get_proxy (hd->uri->original)))
+    proxystr = proxystrbuf;
+#endif
+  else
+    return 0;  /* No proxy known.  */
+
+  proxy = xtrycalloc (1, sizeof *proxy);
+  if (!proxy)
+    {
+      err = gpg_error_from_syserror ();
+      log_error ("error allocating memory for proxy\n");
+      goto leave;
+    }
+
+  err = parse_uri (&proxy->uri, proxystr, 0, 0);
+  if (gpg_err_code (err) == GPG_ERR_INV_URI
+      && is_hostname_port (proxystr))
+    {
+      /* Retry assuming a "hostname:port" string.  */
+      char *tmpname = strconcat ("http://", proxystr, NULL);
+      if (!tmpname)
+        err = gpg_error_from_syserror ();
+      else if (!parse_uri (&proxy->uri, tmpname, 0, 0))
+        err = 0;
+      xfree (tmpname);
+    }
+
+  if (!err)
+    {
+      /* Get rid of the escapes in the authstring.  */
+      if (proxy->uri->auth)
+        remove_escapes (proxy->uri->auth);
+
+      if (!strcmp (proxy->uri->scheme, "http"))
+        proxy->is_http_proxy = 1;
+      else if (!strcmp (proxy->uri->scheme, "socks4")
+               || !strcmp (proxy->uri->scheme, "socks5h"))
+        err = gpg_error (GPG_ERR_NOT_IMPLEMENTED);
+      else
+        err = gpg_error (GPG_ERR_INV_URI);
+
+      if (err)
+	{
+	  log_error ("invalid HTTP proxy (%s): %s\n",
+		     proxystr, gpg_strerror (err));
+	  err = gpg_err_make (default_errsource, GPG_ERR_CONFIGURATION);
+	}
+      else if (opt_verbose)
+        log_info ("using '%s' to proxy '%s'\n",
+                  proxystr, hd->uri? hd->uri->original : NULL);
+    }
+
+ leave:
+#ifdef HAVE_W32_SYSTEM
+  xfree (proxystrbuf);
+#endif
+  if (err)
+    xfree (proxy);
+  else
+    *r_proxy = proxy;
+  return err;
+}
+
+
+/* Some checks done by send_request.  */
+static gpg_error_t
+send_request_basic_checks (http_t hd)
+{
+  int mode;
 
   if (hd->uri->use_tls && !hd->session)
     {
       log_error ("TLS requested but no session object provided\n");
-      return gpg_err_make (default_errsource, GPG_ERR_INTERNAL);
+      return gpg_error (GPG_ERR_INTERNAL);
     }
   if (hd->uri->use_tls && !hd->session->tls_session)
     {
       log_error ("TLS requested but no TLS context available\n");
-      return gpg_err_make (default_errsource, GPG_ERR_INTERNAL);
+      return gpg_error (GPG_ERR_INTERNAL);
     }
   if (opt_debug)
     log_debug ("Using TLS library: %s %s\n",
@@ -1827,37 +2131,35 @@ send_request (ctrl_t ctrl, http_t hd, const char *httphost, const char *auth,
 #endif /*HTTP_USE_GNUTLS*/
                );
 
-  if ((hd->flags & HTTP_FLAG_FORCE_TOR))
+  if ((hd->flags & HTTP_FLAG_FORCE_TOR)
+      && (assuan_sock_get_flag (ASSUAN_INVALID_FD, "tor-mode", &mode) || !mode))
     {
-      int mode;
-
-      if (assuan_sock_get_flag (ASSUAN_INVALID_FD, "tor-mode", &mode) || !mode)
-        {
-          log_error ("Tor support is not available\n");
-          return gpg_err_make (default_errsource, GPG_ERR_NOT_IMPLEMENTED);
-        }
-      /* Non-blocking connects do not work with our Tor proxy because
-       * we can't continue the Socks protocol after the EINPROGRESS.
-       * Disable the timeout to use a blocking connect.  */
-      timeout = 0;
+      log_error ("Tor support is not available\n");
+      return gpg_error (GPG_ERR_NOT_IMPLEMENTED);
     }
 
-  server = *hd->uri->host ? hd->uri->host : "localhost";
-  port = hd->uri->port ? hd->uri->port : 80;
+  return 0;
+}
+
+
+/* Helper for send_request to set the servername.  */
+static gpg_error_t
+send_request_set_sni (http_t hd, const char *name)
+{
+  gpg_error_t err = 0;
+# if HTTP_USE_GNUTLS
+  int rc;
+# endif
 
   /* Try to use SNI.  */
   if (hd->uri->use_tls)
     {
-#if HTTP_USE_GNUTLS
-      int rc;
-#endif
-
       xfree (hd->session->servername);
-      hd->session->servername = xtrystrdup (httphost? httphost : server);
+      hd->session->servername = xtrystrdup (name);
       if (!hd->session->servername)
         {
-          err = gpg_err_make (default_errsource, gpg_err_code_from_syserror ());
-          return err;
+          err = gpg_error_from_syserror ();
+          goto leave;
         }
 
 #if HTTP_USE_NTBTLS
@@ -1866,7 +2168,7 @@ send_request (ctrl_t ctrl, http_t hd, const char *httphost, const char *auth,
       if (err)
         {
           log_info ("ntbtls_set_hostname failed: %s\n", gpg_strerror (err));
-          return err;
+          goto leave;
         }
 #elif HTTP_USE_GNUTLS
       rc = gnutls_server_name_set (hd->session->tls_session,
@@ -1878,175 +2180,21 @@ send_request (ctrl_t ctrl, http_t hd, const char *httphost, const char *auth,
 #endif /*HTTP_USE_GNUTLS*/
     }
 
-  if ( (proxy && *proxy)
-       || ( (hd->flags & HTTP_FLAG_TRY_PROXY)
-            && (http_proxy = getenv (HTTP_PROXY_ENV))
-            && *http_proxy ))
-    {
-      parsed_uri_t uri;
+ leave:
+  return err;
+}
 
-      if (proxy)
-	http_proxy = proxy;
 
-      err = parse_uri (&uri, http_proxy, 0, 0);
-      if (gpg_err_code (err) == GPG_ERR_INV_URI
-          && is_hostname_port (http_proxy))
-        {
-          /* Retry assuming a "hostname:port" string.  */
-          char *tmpname = strconcat ("http://", http_proxy, NULL);
-          if (tmpname && !parse_uri (&uri, tmpname, 0, 0))
-            err = 0;
-          xfree (tmpname);
-        }
-
-      if (err)
-        ;
-      else if (!strcmp (uri->scheme, "http"))
-        have_http_proxy = 1;
-      else if (!strcmp (uri->scheme, "socks4")
-               || !strcmp (uri->scheme, "socks5h"))
-        err = gpg_err_make (default_errsource, GPG_ERR_NOT_IMPLEMENTED);
-      else
-        err = gpg_err_make (default_errsource, GPG_ERR_INV_URI);
-
-      if (err)
-	{
-	  log_error ("invalid HTTP proxy (%s): %s\n",
-		     http_proxy, gpg_strerror (err));
-	  return gpg_err_make (default_errsource, GPG_ERR_CONFIGURATION);
-	}
-
-      if (uri->auth)
-        {
-          remove_escapes (uri->auth);
-          proxy_authstr = make_header_line ("Proxy-Authorization: Basic ",
-                                            "\r\n",
-                                            uri->auth, strlen(uri->auth));
-          if (!proxy_authstr)
-            {
-              err = gpg_err_make (default_errsource,
-                                  gpg_err_code_from_syserror ());
-              http_release_parsed_uri (uri);
-              return err;
-            }
-        }
-
-      err = connect_server (ctrl,
-                            *uri->host ? uri->host : "localhost",
-                            uri->port ? uri->port : 80,
-                            hd->flags, NULL, timeout, &sock);
-      http_release_parsed_uri (uri);
-    }
-  else
-    {
-      err = connect_server (ctrl,
-                            server, port, hd->flags, srvtag, timeout, &sock);
-    }
-
-  if (err)
-    {
-      xfree (proxy_authstr);
-      return err;
-    }
-  hd->sock = my_socket_new (sock);
-  if (!hd->sock)
-    {
-      xfree (proxy_authstr);
-      return gpg_err_make (default_errsource, gpg_err_code_from_syserror ());
-    }
-
-  if (have_http_proxy && hd->uri->use_tls)
-    {
-      int saved_flags;
-      cookie_t cookie;
-
-      /* Try to use the CONNECT method to proxy our TLS stream.  */
-      request = es_bsprintf
-        ("CONNECT %s:%hu HTTP/1.0\r\nHost: %s:%hu\r\n%s",
-         httphost ? httphost : server,
-         port,
-         httphost ? httphost : server,
-         port,
-         proxy_authstr ? proxy_authstr : "");
-      xfree (proxy_authstr);
-      proxy_authstr = NULL;
-
-      if (! request)
-        return gpg_err_make (default_errsource, gpg_err_code_from_syserror ());
-
-      if (opt_debug || (hd->flags & HTTP_FLAG_LOG_RESP))
-        log_debug_string (request, "http.c:request:");
-
-      cookie = xtrycalloc (1, sizeof *cookie);
-      if (! cookie)
-        {
-          err = gpg_err_make (default_errsource, gpg_err_code_from_syserror ());
-          xfree (request);
-          return err;
-        }
-      cookie->sock = my_socket_ref (hd->sock);
-      hd->write_cookie = cookie;
-
-      hd->fp_write = es_fopencookie (cookie, "w", cookie_functions);
-      if (! hd->fp_write)
-        {
-          err = gpg_err_make (default_errsource, gpg_err_code_from_syserror ());
-          my_socket_unref (cookie->sock, NULL, NULL);
-          xfree (cookie);
-          xfree (request);
-          hd->write_cookie = NULL;
-          return err;
-        }
-      else if (es_fputs (request, hd->fp_write) || es_fflush (hd->fp_write))
-        err = gpg_err_make (default_errsource, gpg_err_code_from_syserror ());
-
-      xfree (request);
-      request = NULL;
-
-      /* Make sure http_wait_response doesn't close the stream.  */
-      saved_flags = hd->flags;
-      hd->flags &= ~HTTP_FLAG_SHUTDOWN;
-
-      /* Get the response.  */
-      err = http_wait_response (hd);
-
-      /* Restore flags, destroy stream.  */
-      hd->flags = saved_flags;
-      es_fclose (hd->fp_read);
-      hd->fp_read = NULL;
-      hd->read_cookie = NULL;
-
-      /* Reset state.  */
-      hd->in_data = 0;
-
-      if (err)
-        return err;
-
-      if (hd->status_code != 200)
-        {
-          request = es_bsprintf
-            ("CONNECT %s:%hu",
-             httphost ? httphost : server,
-             port);
-
-          log_error (_("error accessing '%s': http status %u\n"),
-                     request ? request : "out of core",
-                     http_get_status_code (hd));
-
-          xfree (request);
-          return gpg_error (GPG_ERR_NO_DATA);
-        }
-
-      /* We are done with the proxy, the code below will establish a
-       * TLS session and talk directly to the target server.  */
-      http_proxy = NULL;
-    }
-
+/* Run the NTBTLS handshake if needed.  */
 #if HTTP_USE_NTBTLS
+static gpg_error_t
+run_ntbtls_handshake (http_t hd)
+{
+  gpg_error_t err;
+  estream_t in, out;
+
   if (hd->uri->use_tls)
     {
-      estream_t in, out;
-
       my_socket_ref (hd->sock);
 
       /* Until we support send/recv in estream under Windows we need
@@ -2060,8 +2208,7 @@ send_request (ctrl_t ctrl, http_t hd, const char *httphost, const char *auth,
       if (!in)
         {
           err = gpg_error_from_syserror ();
-          xfree (proxy_authstr);
-          return err;
+          goto leave;
         }
 
 # ifdef HAVE_W32_SYSTEM
@@ -2074,8 +2221,7 @@ send_request (ctrl_t ctrl, http_t hd, const char *httphost, const char *auth,
         {
           err = gpg_error_from_syserror ();
           es_fclose (in);
-          xfree (proxy_authstr);
-          return err;
+          goto leave;
         }
 
       err = ntbtls_set_transport (hd->session->tls_session, in, out);
@@ -2083,8 +2229,9 @@ send_request (ctrl_t ctrl, http_t hd, const char *httphost, const char *auth,
         {
           log_info ("TLS set_transport failed: %s <%s>\n",
                     gpg_strerror (err), gpg_strsource (err));
-          xfree (proxy_authstr);
-          return err;
+          es_fclose (in);
+          es_fclose (out);
+          goto leave;
         }
 
       if (hd->session->verify_cb)
@@ -2095,71 +2242,62 @@ send_request (ctrl_t ctrl, http_t hd, const char *httphost, const char *auth,
             {
               log_error ("ntbtls_set_verify_cb failed: %s\n",
                          gpg_strerror (err));
-              xfree (proxy_authstr);
-              return err;
+              goto leave;
             }
         }
 
       while ((err = ntbtls_handshake (hd->session->tls_session)))
         {
-#if NTBTLS_VERSION_NUMBER >= 0x000200
           unsigned int tlevel, ttype;
-          const char *s = ntbtls_get_last_alert (hd->session->tls_session,
-                                                 &tlevel, &ttype);
+          const char *s;
+
+          s = ntbtls_get_last_alert (hd->session->tls_session, &tlevel, &ttype);
           if (s)
             log_info ("TLS alert: %s (%u.%u)\n", s, tlevel, ttype);
-#endif
 
           switch (err)
             {
             default:
               log_info ("TLS handshake failed: %s <%s>\n",
                         gpg_strerror (err), gpg_strsource (err));
-              xfree (proxy_authstr);
-              return err;
+              goto leave;
             }
         }
 
       hd->session->verify.done = 0;
 
-      /* Try the available verify callbacks until one returns success
-       * or a real error.  Note that NTBTLS does the verification
-       * during the handshake via   */
-      err = 0; /* Fixme check that the CB has been called.  */
+      /* Note that in contrast to GNUTLS NTBTLS uses a registered
+       * callback to run the verification as part of the handshake.  */
+      err = 0;
+      /* FIXME: We could check that the CB has been called and if not
+       * error out with this warning:
+       * if (err)
+       *   {
+       *     log_info ("TLS connection authentication failed: %s <%s>\n",
+       *               gpg_strerror (err), gpg_strsource (err));
+       *     goto leave;
+       *   }
+       */
+       }
+  else
+    err = 0;
 
-      if (hd->session->verify_cb
-          && gpg_err_source (err) == GPG_ERR_SOURCE_DIRMNGR
-          && gpg_err_code (err) == GPG_ERR_NOT_IMPLEMENTED)
-        err = hd->session->verify_cb (hd->session->verify_cb_value,
-                                      hd, hd->session,
-                                      (hd->flags | hd->session->flags),
-                                      hd->session->tls_session);
+ leave:
+  return err;
+}
+#endif /*HTTP_USE_NTBTLS*/
 
-      if (tls_callback
-          && gpg_err_source (err) == GPG_ERR_SOURCE_DIRMNGR
-          && gpg_err_code (err) == GPG_ERR_NOT_IMPLEMENTED)
-        err = tls_callback (hd, hd->session, 0);
 
-      if (gpg_err_source (err) == GPG_ERR_SOURCE_DIRMNGR
-          && gpg_err_code (err) == GPG_ERR_NOT_IMPLEMENTED)
-        err = http_verify_server_credentials (hd->session);
-
-      if (err)
-        {
-          log_info ("TLS connection authentication failed: %s <%s>\n",
-                    gpg_strerror (err), gpg_strsource (err));
-          xfree (proxy_authstr);
-          return err;
-        }
-
-    }
-
-#elif HTTP_USE_GNUTLS
+/* Run the GNUTLS handshake if needed.  */
+#if HTTP_USE_GNUTLS
+static gpg_error_t
+run_gnutls_handshake (http_t hd, const char *server)
+{
+  gpg_error_t err;
+  int rc;
 
   if (hd->uri->use_tls)
     {
-      int rc;
-
       my_socket_ref (hd->sock);
       gnutls_transport_set_ptr (hd->session->tls_session, hd->sock);
       gnutls_transport_set_pull_function (hd->session->tls_session,
@@ -2195,8 +2333,8 @@ send_request (ctrl_t ctrl, http_t hd, const char *httphost, const char *auth,
             }
           else
             log_info ("TLS handshake failed: %s\n", gnutls_strerror (rc));
-          xfree (proxy_authstr);
-          return gpg_err_make (default_errsource, GPG_ERR_NETWORK);
+          err = gpg_error (GPG_ERR_NETWORK);
+          goto leave;
         }
 
       hd->session->verify.done = 0;
@@ -2208,12 +2346,586 @@ send_request (ctrl_t ctrl, http_t hd, const char *httphost, const char *auth,
         {
           log_info ("TLS connection authentication failed: %s\n",
                     gpg_strerror (err));
-          xfree (proxy_authstr);
-          return err;
+          goto leave;
+        }
+    }
+  else
+    err =0;
+
+ leave:
+  return err;
+}
+#endif /*HTTP_USE_GNUTLS*/
+
+
+/* It INPUTSTRING is NULL get the intial token.  If INPUTSTRING is not
+ * NULL, decode the string and use this as input from teh server.  On
+ * success the final output token is stored at PROXY->OUTTOKEN and
+ * OUTTOKLEN.  IF the authentication succeeded OUTTOKLEN is zero. */
+#ifdef USE_TLS
+static gpg_error_t
+proxy_get_token (proxy_info_t proxy, const char *inputstring)
+{
+#ifdef HAVE_W32_SYSTEM
+  gpg_error_t err;
+  int rc;
+  SecBuffer chlg_buf;       /* challenge buffer     */
+  SecBufferDesc chlg_desc;  /* challenge descriptor */
+  SecBuffer resp_buf;       /* response buffer      */
+  SecBufferDesc resp_desc;  /* response descriptor  */
+  unsigned long attrs;
+  TimeStamp expiry;         /* (value not used)  */
+  void *intoken = NULL;
+  size_t intoklen;
+
+  if (inputstring)
+    {
+      /* The input is expected in the token parameter but the paremter
+       * name is often forgotten.  Thus we simply detect the parameter
+       * name and skip it, assuming no other parameters are given.  */
+      if (!strncmp (inputstring, "token=", 6))
+        inputstring += 6;
+
+      err = b64decode (inputstring, NULL, &intoken, &intoklen);
+      /* Just to be safe that we don't overflow an ulong we check the
+       * actual size against an arbitrary limit. */
+      if (!err && intoklen > 65535)
+        err = gpg_error (GPG_ERR_ERANGE);
+      if (err || !intoklen)
+        {
+          log_error ("error decoding received auth token: %s\n",
+                     err? gpg_strerror (err):"empty challenge token received");
+          if (!err)
+            err = gpg_error (GPG_ERR_BAD_AUTH);
+          goto leave;
         }
     }
 
-#endif /*HTTP_USE_GNUTLS*/
+  if (!proxy->spn)
+    {
+      char *buffer = strconcat ("HTTP/", (*proxy->uri->host
+                                          ?proxy->uri->host:"localhost"), NULL);
+      if (!buffer)
+        {
+          err = gpg_error_from_syserror ();
+          goto leave;
+        }
+      if (opt_debug)
+        log_debug ("http.c:proxy_connect: using '%s' as SPN\n", buffer);
+      proxy->spn = utf8_to_wchar (buffer);
+      xfree (buffer);
+      if (!proxy->spn)
+        {
+          err = gpg_error_from_syserror ();
+          goto leave;
+        }
+    }
+
+  if (!proxy->token_size || !proxy->outtoken)  /* Not yet initialized.  */
+    {
+      PSecPkgInfoW pinfo;
+
+      rc = QuerySecurityPackageInfoW (NEGOSSP_NAME_W, &pinfo);
+      if (rc)
+        {
+          log_error ("QSPI(Negotiate) failed: %s (%d)\n",
+                     w32_strerror (rc), rc);
+          err = gpg_error (GPG_ERR_BAD_AUTH);
+          goto leave;
+        }
+      proxy->token_size = pinfo->cbMaxToken;
+      FreeContextBuffer (pinfo);
+
+      proxy->outtoken = xtrymalloc (proxy->token_size);
+      if (!proxy->outtoken)
+        {
+          err = gpg_error_from_syserror ();
+          goto leave;
+        }
+    }
+
+  if (!proxy->cred_handle_valid)
+    {
+      rc = AcquireCredentialsHandleW (NULL, NEGOSSP_NAME_W,
+                                      SECPKG_CRED_OUTBOUND, NULL,
+                                      NULL, /* Current user */
+                                      NULL, /* reserved */
+                                      NULL, /* reserved */
+                                      &proxy->cred_handle,
+                                      NULL  /* expiry */);
+      if (rc)
+        {
+          log_error ("ACH(Negotiate) failed: %s (%d)\n", w32_strerror (rc), rc);
+          err = gpg_error (GPG_ERR_NO_AUTH);
+          goto leave;
+        }
+      proxy->cred_handle_valid = 1;
+    }
+
+  /* Now generate our challenge-response message.  */
+  if (intoken)
+    {
+      chlg_buf.BufferType = SECBUFFER_TOKEN;
+      chlg_buf.pvBuffer   = intoken;
+      chlg_buf.cbBuffer   = intoklen;
+      chlg_desc.ulVersion = SECBUFFER_VERSION;
+      chlg_desc.cBuffers  = 1;
+      chlg_desc.pBuffers  = &chlg_buf;
+    }
+
+  resp_buf.BufferType = SECBUFFER_TOKEN;
+  resp_buf.pvBuffer   = proxy->outtoken;
+  resp_buf.cbBuffer   = proxy->token_size;
+  resp_desc.ulVersion = SECBUFFER_VERSION;
+  resp_desc.cBuffers  = 1;
+  resp_desc.pBuffers  = &resp_buf;
+  rc = InitializeSecurityContextW (&proxy->cred_handle,
+                                   (intoken && proxy->ctxt_handle_valid)
+                                   ? &proxy->ctxt_handle : NULL,
+                                   proxy->spn, /* service principal name */
+                                   ISC_REQ_CONFIDENTIALITY,
+                                   0,    /* reserved */
+                                   SECURITY_NATIVE_DREP,
+                                   intoken? &chlg_desc : NULL,
+                                   0,    /* reserved */
+                                   &proxy->ctxt_handle, /* new context */
+                                   &resp_desc,  /* the output.  */
+                                   &attrs,      /* attribs of the context. */
+                                   &expiry);
+  switch (rc)
+    {
+    case SEC_E_OK:  /* All done and no more ISC expected.  */
+      break;
+
+    case SEC_I_COMPLETE_AND_CONTINUE:  /* Need to call CompleteAuthToken.  */
+    case SEC_I_COMPLETE_NEEDED:
+      rc = CompleteAuthToken (&proxy->ctxt_handle, &resp_desc);
+      log_error ("CompleteAuthToken failed: %s (%d)\n", w32_strerror (rc), rc);
+      err = gpg_error (GPG_ERR_NO_AUTH);
+      goto leave;
+      break;
+
+    case SEC_I_CONTINUE_NEEDED: /* Send the new token to the client.  */
+      break;
+
+    default:
+      log_error ("ISC(Negotiate) failed: %s (%d)\n", w32_strerror (rc), rc);
+      err = gpg_error (GPG_ERR_NO_AUTH);
+      goto leave;
+    }
+
+  proxy->outtoklen = resp_buf.cbBuffer;
+  proxy->ctxt_handle_valid = 1;
+  err = 0;
+
+ leave:
+  xfree (intoken);
+  return err;
+
+#else /*!HAVE_W32_SYSTEM*/
+
+  (void)proxy;
+  (void)inputstring;
+  return gpg_error (GPG_ERR_NOT_IMPLEMENTED);
+
+#endif /*!HAVE_W32_SYSTEM*/
+}
+#endif /*USE_TLS*/
+
+
+/* Use the CONNECT method to proxy our TLS stream.  */
+#ifdef USE_TLS
+static gpg_error_t
+run_proxy_connect (http_t hd, proxy_info_t proxy,
+                   const char *httphost, const char *server,
+                   unsigned short port)
+{
+  gpg_error_t err;
+  int saved_flags = hd->flags;
+  char *authhdr = NULL;
+  char *request = NULL;
+  char *tmpstr  = NULL;
+  const char *s, *parms;
+  unsigned int idx;
+  int auth_basic = 0;
+  enum auth_negotiate_states authstate = 0;
+  unsigned int authpasses = 0;
+
+  /* Authentication methods implemented here:
+   * RFC-2617 - HTTP Authentication: Basic and Digest Access Authentication
+   * RFC-4559 - SPNEGO-based Kerberos and NTLM HTTP Authentication
+   */
+  auth_basic = !!proxy->uri->auth;
+
+  /* For basic authentication we need to send just one request.  */
+  if (auth_basic
+      && !(authhdr = make_header_line ("Proxy-Authorization: Basic ",
+                                       "\r\n",
+                                       proxy->uri->auth,
+                                       strlen (proxy->uri->auth))))
+    {
+      err = gpg_error_from_syserror ();
+      goto leave;
+    }
+
+ again:
+  xfree (request);
+  request = es_bsprintf ("CONNECT %s:%hu HTTP/1.%c\r\nHost: %s:%hu\r\n%s%s",
+                         httphost ? httphost : server,
+                         port,
+                         auth_basic? '0' : '1',
+                         httphost ? httphost : server,
+                         port,
+                         authhdr ? authhdr : "",
+                         auth_basic? "" : "Connection: keep-alive\r\n");
+  if (!request)
+    {
+      err = gpg_error_from_syserror ();
+      goto leave;
+    }
+  hd->keep_alive = !auth_basic; /* We may need to send more requests.  */
+
+  if (opt_debug || (hd->flags & HTTP_FLAG_LOG_RESP))
+    log_debug_with_string (request, "http.c:proxy:request:");
+
+  if (!hd->fp_write)
+    {
+      err = make_fp_write (hd, 0, NULL);
+      if (err)
+        goto leave;
+    }
+
+  if (es_fputs (request, hd->fp_write) || es_fflush (hd->fp_write))
+    {
+      err = gpg_error_from_syserror ();
+      goto leave;
+    }
+
+  /* Make sure http_wait_response doesn't close the stream.  */
+  saved_flags = hd->flags;
+  hd->flags &= ~HTTP_FLAG_SHUTDOWN;
+
+  /* Get the response and set hd->fp_read  */
+  err = http_wait_response (hd);
+  if (err)
+    goto leave;
+
+  {
+    unsigned long count = 0;
+
+    while (es_getc (hd->fp_read) != EOF)
+      count++;
+    if (opt_debug)
+      log_debug ("http.c:proxy_connect: skipped %lu bytes of response-body\n",
+                 count);
+  }
+
+  /* Reset state.  */
+  es_clearerr (hd->fp_read);
+  ((cookie_t)(hd->read_cookie))->up_to_empty_line = 1;
+  hd->in_data = 0;
+
+  if (hd->status_code >= 200 && hd->status_code < 300 )
+    err = 0; /* Success.  */
+  else if (hd->status_code == 407)
+    {
+      if (opt_debug)
+        log_debug ("http.c:proxy_connect: 407 seen\n");
+      parms = NULL;
+      for (idx=0; (s = http_get_header (hd, "Proxy-Authenticate", idx)); idx++)
+        {
+          if (opt_debug)
+            log_debug ("http.c:proxy_connect: method=%s\n", s);
+          if (!parms)
+            parms = has_leading_keyword (s, "Negotiate");
+        }
+      if (!parms)
+        authstate = AUTH_NGT_NONE;
+      else if (authstate == AUTH_NGT_NONE)
+        authstate = AUTH_NGT_RCVD;
+
+      switch (authstate)
+        {
+        case AUTH_NGT_NONE:
+          if (opt_debug)
+            log_debug ("http.c:proxy_connect: no supported auth method\n");
+          err = gpg_error (GPG_ERR_NO_AUTH);
+          break;
+
+        case AUTH_NGT_RCVD:
+          if (opt_debug)
+            log_debug ("http.c:proxy_connect: using negotiate - init\n");
+          err = proxy_get_token (proxy, NULL);
+          if (err)
+            goto leave;
+          if (proxy->outtoklen)  /* Authentication needs to continue.  */
+            {
+              xfree (authhdr);
+              authhdr = make_header_line ("Proxy-Authorization: Negotiate ",
+                                          "\r\n",
+                                          proxy->outtoken, proxy->outtoklen);
+              if (!authhdr)
+                {
+                  err = gpg_error_from_syserror ();
+                  goto leave;
+                }
+              authstate = AUTH_NGT_SENT;
+              authpasses++;
+              goto again;
+            }
+          break;
+
+        case AUTH_NGT_SENT:
+          if (opt_debug)
+            log_debug ("http.c:proxy_connect: using negotiate - next\n");
+          if (!*parms)
+            {
+              log_debug ("proxy authentication failed"
+                         " due to server not accepting our challenge\n");
+              err = gpg_error (GPG_ERR_BAD_AUTH);
+              goto leave;
+            }
+          if (authpasses > 5)
+            {
+              log_error ("proxy authentication failed"
+                         " due to too many passes\n");
+              err = gpg_error (GPG_ERR_BAD_AUTH);
+              goto leave;
+
+            }
+          err = proxy_get_token (proxy, parms);
+          if (err)
+            goto leave;
+          if (proxy->outtoklen)  /* Authentication needs to continue.  */
+            {
+              xfree (authhdr);
+              authhdr = make_header_line ("Proxy-Authorization: Negotiate ",
+                                          "\r\n",
+                                          proxy->outtoken, proxy->outtoklen);
+              if (!authhdr)
+                {
+                  err = gpg_error_from_syserror ();
+                  goto leave;
+                }
+              authpasses++;
+              goto again;
+            }
+          break;
+
+        default:
+          BUG();
+        }
+    }
+  else
+    err = gpg_error (GPG_ERR_NO_DATA);
+
+  if (err)
+    {
+      xfree (tmpstr);
+      tmpstr = es_bsprintf ("%s:%hu", httphost ? httphost : server, port);
+      log_error (_("error accessing '%s': http status %u\n"),
+                 tmpstr ? tmpstr : "out of core",
+                 http_get_status_code (hd));
+      goto leave;
+    }
+
+ leave:
+  /* Restore flags, destroy stream, reset state.  */
+  hd->flags = saved_flags;
+  es_fclose (hd->fp_read);
+  hd->fp_read = NULL;
+  hd->read_cookie = NULL;
+  hd->keep_alive = 0;
+  hd->in_data = 0;
+
+  xfree (request);
+  xfree (authhdr);
+  xfree (tmpstr);
+  return err;
+}
+#endif /*USE_TLS*/
+
+
+/* Make a request string using a standard proxy.  On success the
+ * request is stored at R_REQUEST (and will never be NULL).  */
+static gpg_error_t
+mk_proxy_request (http_t hd, proxy_info_t proxy,
+                  const char *httphost, const char *server,
+                  unsigned short port, const char *relpath,
+                  const char *authstr,
+                  char **r_request)
+{
+  gpg_error_t err = 0;
+  char *authhdr = NULL;
+  char *request = NULL;
+
+  *r_request = NULL;
+
+  if (proxy->uri->auth
+      && !(authhdr = make_header_line ("Proxy-Authorization: Basic ",
+                                       "\r\n",
+                                       proxy->uri->auth,
+                                       strlen (proxy->uri->auth))))
+    {
+      err = gpg_error_from_syserror ();
+      goto leave;
+    }
+
+  request = es_bsprintf ("%s %s://%s:%hu%s%s HTTP/1.0\r\n%s%s",
+                         hd->req_type == HTTP_REQ_GET ? "GET" :
+                         hd->req_type == HTTP_REQ_HEAD ? "HEAD" :
+                         hd->req_type == HTTP_REQ_POST ? "POST" : "OOPS",
+                         hd->uri->use_tls? "https" : "http",
+                         httphost? httphost : server,
+                         port, *relpath == '/' ? "" : "/", relpath,
+                         authstr ? authstr : "",
+                         authhdr ? authhdr : "");
+  if (!request)
+    {
+      err = gpg_error_from_syserror ();
+      goto leave;
+    }
+  *r_request = request;
+  request = NULL;
+
+ leave:
+  xfree (request);
+  xfree (authhdr);
+  return err;
+}
+
+
+/* Make a request string using.  On success the request is stored at
+ * R_REQUEST (and will never be NULL).  */
+static gpg_error_t
+mk_std_request (http_t hd,
+                const char *httphost, const char *server,
+                unsigned short port, const char *relpath,
+                const char *authstr,
+                char **r_request)
+{
+  gpg_error_t err = 0;
+  char portstr[35];
+  char *request = NULL;
+
+  *r_request = NULL;
+
+  if (port == (hd->uri->use_tls? 443 : 80))
+    *portstr = 0;
+  else
+    snprintf (portstr, sizeof portstr, ":%u", port);
+
+  request = es_bsprintf ("%s %s%s HTTP/1.0\r\nHost: %s%s\r\n%s",
+                         hd->req_type == HTTP_REQ_GET ? "GET" :
+                         hd->req_type == HTTP_REQ_HEAD ? "HEAD" :
+                         hd->req_type == HTTP_REQ_POST ? "POST" : "OOPS",
+                         *relpath == '/' ? "" : "/", relpath,
+                         httphost? httphost : server,
+                         portstr,
+                         authstr? authstr:"");
+  if (!request)
+    {
+      err = gpg_error_from_syserror ();
+      goto leave;
+    }
+  *r_request = request;
+  request = NULL;
+
+ leave:
+  xfree (request);
+  return err;
+}
+
+
+/*
+ * Send a HTTP request to the server
+ * Returns 0 if the request was successful
+ */
+static gpg_error_t
+send_request (ctrl_t ctrl,
+              http_t hd, const char *httphost, const char *auth,
+	      const char *override_proxy,
+              const char *srvtag, unsigned int timeout,
+              strlist_t headers)
+{
+  gpg_error_t err;
+  const char *server;
+  char *request = NULL;
+  char *relpath = NULL;
+  unsigned short port;
+  int use_http_proxy = 0;
+  char *proxy_authstr = NULL;
+  char *authstr = NULL;
+  assuan_fd_t sock;
+  proxy_info_t proxy = NULL;
+
+  err = send_request_basic_checks (hd);
+  if (err)
+    goto leave;
+
+  if ((hd->flags & HTTP_FLAG_FORCE_TOR))
+    {
+      /* Non-blocking connects do not work with our Tor proxy because
+       * we can't continue the Socks protocol after the EINPROGRESS.
+       * Disable the timeout to use a blocking connect.  */
+      timeout = 0;
+    }
+
+  server = *hd->uri->host ? hd->uri->host : "localhost";
+  port = hd->uri->port ? hd->uri->port : 80;
+
+  if ((err = send_request_set_sni (hd, httphost? httphost : server)))
+    goto leave;
+
+  if ((err = get_proxy_for_url (hd, override_proxy, &proxy)))
+    goto leave;
+
+  if (proxy && proxy->is_http_proxy)
+    {
+      use_http_proxy = 1;  /* We want to use a proxy for the conenction.  */
+      err = connect_server (ctrl,
+                            *proxy->uri->host ? proxy->uri->host : "localhost",
+                            proxy->uri->port ? proxy->uri->port : 80,
+                            hd->flags, NULL, timeout, &sock);
+    }
+  else
+    {
+      err = connect_server (ctrl,
+                            server, port, hd->flags, srvtag, timeout, &sock);
+    }
+  if (err)
+    goto leave;
+
+  hd->sock = my_socket_new (sock);
+  if (!hd->sock)
+    {
+      err = gpg_error_from_syserror ();
+      goto leave;
+    }
+
+#if USE_TLS
+  if (use_http_proxy && hd->uri->use_tls)
+    {
+      err = run_proxy_connect (hd, proxy, httphost, server, port);
+      if (err)
+        goto leave;
+
+      /* We are done with the proxy, the code below will establish a
+       * TLS session and talk directly to the target server.  Thus we
+       * clear the flag to indicate this.  */
+      use_http_proxy = 0;
+    }
+#endif	/* USE_TLS */
+
+#if HTTP_USE_NTBTLS
+  err = run_ntbtls_handshake (hd);
+#elif HTTP_USE_GNUTLS
+  err = run_gnutls_handshake (hd, server);
+#else
+  err = 0;
+#endif
+  if (err)
+    goto leave;
 
   if (auth || hd->uri->auth)
     {
@@ -2224,9 +2936,8 @@ send_request (ctrl_t ctrl, http_t hd, const char *httphost, const char *auth,
           myauth = xtrystrdup (auth);
           if (!myauth)
             {
-              xfree (proxy_authstr);
-              return gpg_err_make (default_errsource,
-                                   gpg_err_code_from_syserror ());
+              err = gpg_error_from_syserror ();
+              goto leave;
             }
           remove_escapes (myauth);
         }
@@ -2238,119 +2949,65 @@ send_request (ctrl_t ctrl, http_t hd, const char *httphost, const char *auth,
 
       authstr = make_header_line ("Authorization: Basic ", "\r\n",
                                   myauth, strlen (myauth));
-      if (auth)
+      if (auth)  /* (Was allocated.)  */
         xfree (myauth);
 
       if (!authstr)
         {
-          xfree (proxy_authstr);
-          return gpg_err_make (default_errsource,
-                               gpg_err_code_from_syserror ());
+          err = gpg_error_from_syserror ();
+          goto leave;
         }
     }
 
-  p = build_rel_path (hd->uri);
-  if (!p)
+  relpath = build_rel_path (hd->uri);
+  if (!relpath)
     {
-      xfree (authstr);
-      xfree (proxy_authstr);
-      return gpg_err_make (default_errsource, gpg_err_code_from_syserror ());
+      err = gpg_error_from_syserror ();
+      goto leave;
     }
 
-  if (http_proxy && *http_proxy)
-    {
-      request = es_bsprintf
-        ("%s %s://%s:%hu%s%s HTTP/1.0\r\n%s%s",
-         hd->req_type == HTTP_REQ_GET ? "GET" :
-         hd->req_type == HTTP_REQ_HEAD ? "HEAD" :
-         hd->req_type == HTTP_REQ_POST ? "POST" : "OOPS",
-         hd->uri->use_tls? "https" : "http",
-         httphost? httphost : server,
-         port, *p == '/' ? "" : "/", p,
-         authstr ? authstr : "",
-         proxy_authstr ? proxy_authstr : "");
-    }
+  if (use_http_proxy)
+    err = mk_proxy_request (hd, proxy, httphost, server, port,
+                            relpath, authstr, &request);
   else
-    {
-      char portstr[35];
-
-      if (port == (hd->uri->use_tls? 443 : 80))
-        *portstr = 0;
-      else
-        snprintf (portstr, sizeof portstr, ":%u", port);
-
-      request = es_bsprintf
-        ("%s %s%s HTTP/1.0\r\nHost: %s%s\r\n%s",
-         hd->req_type == HTTP_REQ_GET ? "GET" :
-         hd->req_type == HTTP_REQ_HEAD ? "HEAD" :
-         hd->req_type == HTTP_REQ_POST ? "POST" : "OOPS",
-         *p == '/' ? "" : "/", p,
-         httphost? httphost : server,
-         portstr,
-         authstr? authstr:"");
-    }
-  xfree (p);
-  if (!request)
-    {
-      err = gpg_err_make (default_errsource, gpg_err_code_from_syserror ());
-      xfree (authstr);
-      xfree (proxy_authstr);
-      return err;
-    }
+    err = mk_std_request (hd, httphost, server, port,
+                          relpath, authstr, &request);
+  if (err)
+    goto leave;
 
   if (opt_debug || (hd->flags & HTTP_FLAG_LOG_RESP))
     log_debug_string (request, "http.c:request:");
 
   /* First setup estream so that we can write even the first line
      using estream.  This is also required for the sake of gnutls. */
-  {
-    cookie_t cookie;
+  err = make_fp_write (hd, hd->uri->use_tls, hd->session);
+  if (err)
+    goto leave;
 
-    cookie = xtrycalloc (1, sizeof *cookie);
-    if (!cookie)
-      {
-        err = gpg_err_make (default_errsource, gpg_err_code_from_syserror ());
-        goto leave;
-      }
-    cookie->sock = my_socket_ref (hd->sock);
-    hd->write_cookie = cookie;
-    cookie->use_tls = hd->uri->use_tls;
-    cookie->session = http_session_ref (hd->session);
-
-    hd->fp_write = es_fopencookie (cookie, "w", cookie_functions);
-    if (!hd->fp_write)
-      {
-        err = gpg_err_make (default_errsource, gpg_err_code_from_syserror ());
-        my_socket_unref (cookie->sock, NULL, NULL);
-        xfree (cookie);
-        hd->write_cookie = NULL;
-      }
-    else if (es_fputs (request, hd->fp_write) || es_fflush (hd->fp_write))
-      err = gpg_err_make (default_errsource, gpg_err_code_from_syserror ());
-    else
-      err = 0;
-
-  if (!err)
+  if (es_fputs (request, hd->fp_write) || es_fflush (hd->fp_write))
     {
-      for (;headers; headers=headers->next)
+      err = gpg_error_from_syserror ();
+      goto leave;
+    }
+
+  for (;headers; headers=headers->next)
+    {
+      if (opt_debug || (hd->flags & HTTP_FLAG_LOG_RESP))
+        log_debug_string (headers->d, "http.c:request-header:");
+      if ((es_fputs (headers->d, hd->fp_write) || es_fflush (hd->fp_write))
+            || (es_fputs("\r\n",hd->fp_write) || es_fflush(hd->fp_write)))
         {
-          if (opt_debug || (hd->flags & HTTP_FLAG_LOG_RESP))
-            log_debug_string (headers->d, "http.c:request-header:");
-          if ((es_fputs (headers->d, hd->fp_write) || es_fflush (hd->fp_write))
-              || (es_fputs("\r\n",hd->fp_write) || es_fflush(hd->fp_write)))
-            {
-              err = gpg_err_make (default_errsource,
-                                  gpg_err_code_from_syserror ());
-              break;
-            }
+          err = gpg_error_from_syserror ();
+          goto leave;
         }
     }
-  }
 
  leave:
   es_free (request);
   xfree (authstr);
   xfree (proxy_authstr);
+  xfree (relpath);
+  release_proxy_info (proxy);
 
   return err;
 }
@@ -2476,19 +3133,26 @@ store_header (http_t hd, char *line)
     p++;
   value = p;
 
-  for (h=hd->headers; h; h = h->next)
-    if ( !strcmp (h->name, line) )
-      break;
-  if (h)
+  /* Check whether we have already seen a line with that name.  In
+   * that case we assume it is a comma separated list and merge
+   * them.  Of course there are a few exceptions.  */
+  if (!strcmp (line, "Proxy-Authenticate")
+      || !strcmp (line, "Www-Authenticate"))
+    ; /* Better to have them separate.  */
+  else
     {
-      /* We have already seen a line with that name.  Thus we assume
-       * it is a comma separated list and merge them.  */
-      p = strconcat (h->value, ",", value, NULL);
-      if (!p)
-        return gpg_err_code_from_syserror ();
-      xfree (h->value);
-      h->value = p;
-      return 0;
+      for (h=hd->headers; h; h = h->next)
+        if ( !strcmp (h->name, line) )
+          break;
+      if (h)
+        {
+          p = strconcat (h->value, ",", value, NULL);
+          if (!p)
+            return gpg_err_code_from_syserror ();
+          xfree (h->value);
+          h->value = p;
+          return 0;
+        }
     }
 
   /* Append a new header. */
@@ -2511,18 +3175,27 @@ store_header (http_t hd, char *line)
 
 
 /* Return the header NAME from the last response.  The returned value
-   is valid as along as HD has not been closed and no other request
-   has been send. If the header was not found, NULL is returned.  NAME
-   must be canonicalized, that is the first letter of each dash
-   delimited part must be uppercase and all other letters lowercase.  */
+ * is valid as along as HD has not been closed and no other request
+ * has been send. If the header was not found, NULL is returned.  NAME
+ * must be canonicalized, that is the first letter of each dash
+ * delimited part must be uppercase and all other letters lowercase.
+ * SKIP gives the number of entries of the requested NAME to skip
+ * before returning; this can be used to enumerate headers with the
+ * same name (see store_header).
+*/
 const char *
-http_get_header (http_t hd, const char *name)
+http_get_header (http_t hd, const char *name, unsigned int skip)
 {
   header_t h;
 
   for (h=hd->headers; h; h = h->next)
-    if ( !strcmp (h->name, name) )
-      return h->value;
+    if (!strcmp (h->name, name))
+      {
+        if (skip)
+          skip--;
+        else
+          return h->value;
+      }
   return NULL;
 }
 
@@ -2645,7 +3318,7 @@ parse_response (http_t hd)
   cookie->content_length_valid = 0;
   if (!(hd->flags & HTTP_FLAG_IGNORE_CL))
     {
-      s = http_get_header (hd, "Content-Length");
+      s = http_get_header (hd, "Content-Length", 0);
       if (s)
         {
           cookie->content_length_valid = 1;
@@ -3101,8 +3774,14 @@ connect_server (ctrl_t ctrl, const char *server, unsigned short port,
   if (!connected)
     {
       if (!hostfound)
-        log_error ("can't connect to '%s': %s\n",
-                   server, "host not found");
+        {
+          log_error ("can't connect to '%s': %s\n",
+                     server, "host not found");
+          /* If the resolver told us "no name" translate this in this
+           * case to "unknown host".  */
+          if (gpg_err_code (last_err) == GPG_ERR_NO_NAME)
+            last_err = 0;
+        }
       else if (!anyhostaddr)
         log_error ("can't connect to '%s': %s\n",
                    server, "no IP address for host");
@@ -3223,31 +3902,48 @@ cookie_read (void *cookie, void *buffer, size_t size)
 {
   cookie_t c = cookie;
   int nread;
+  size_t offset = 0;
 
   if (c->content_length_valid)
     {
       if (!c->content_length)
-        return 0; /* EOF */
+        {
+          c->content_length_valid = 0;
+          return 0; /* EOF */
+        }
       if (c->content_length < size)
         size = c->content_length;
     }
 
+  if (c->pending.len)
+    {
+      offset = c->pending.len > size? size : c->pending.len;
+      memcpy (buffer, c->pending.data, offset);
+      c->pending.len -= offset;
+    }
+
+  if (offset >= size)
+    nread = offset;
+  else
 #if HTTP_USE_NTBTLS
   if (c->use_tls && c->session && c->session->tls_session)
     {
       estream_t in, out;
 
       ntbtls_get_stream (c->session->tls_session, &in, &out);
-      nread = es_fread (buffer, 1, size, in);
+      nread = es_fread ((char*)buffer+offset, 1, size-offset, in);
       if (opt_debug)
-        log_debug ("TLS network read: %d/%zu\n", nread, size);
+        log_debug ("TLS network read: %d/%zu\n", nread, size-offset);
+      if (nread >= 0)
+        nread += offset;
     }
   else
 #elif HTTP_USE_GNUTLS
   if (c->use_tls && c->session && c->session->tls_session)
     {
     again:
-      nread = gnutls_record_recv (c->session->tls_session, buffer, size);
+      nread = gnutls_record_recv (c->session->tls_session,
+                                  (char*)buffer+offset, size-offset);
       if (nread < 0)
         {
           if (nread == GNUTLS_E_INTERRUPTED)
@@ -3274,11 +3970,86 @@ cookie_read (void *cookie, void *buffer, size_t size)
           gpg_err_set_errno (EIO);
           return -1;
         }
+      if (nread >= 0)
+        nread += offset;
     }
   else
 #endif /*HTTP_USE_GNUTLS*/
     {
-      nread = read_server (c->sock->fd, buffer, size);
+      nread = read_server (c->sock->fd, (char*)buffer+offset, size-offset);
+      if (opt_debug)
+        log_debug ("network read: %d/%zu\n", nread, size);
+      if (nread >= 0)
+        nread += offset;
+    }
+
+  if (nread > 0 && c->up_to_empty_line)
+    {
+      gpg_error_t err;
+      const char *s;
+      size_t n;
+      int extra;
+      int lfcr_pending = 0;
+      char *bufp = buffer;
+
+      if (c->last_was_lf && nread > 1 && bufp[0] == '\r' && bufp[1] == '\n')
+        {
+          s = buffer;
+          extra = 2;
+        }
+      else if (c->last_was_lf && bufp[0] == '\r')
+        {
+          lfcr_pending = 1;
+          s = buffer;  /* Only to avoid the call to gnupg_memstr.  */
+        }
+      else if (c->last_was_lfcr && bufp[0] == '\n')
+        {
+          s = buffer;
+          extra = 1;
+        }
+      else
+        s = NULL;
+
+      c->last_was_lfcr = c->last_was_lf = 0;
+
+      if (!s)
+        {
+          s = gnupg_memstr (buffer, nread, "\n\r\n");
+          extra = 3;
+        }
+
+      if (lfcr_pending)
+        c->last_was_lfcr = 1;
+      else if (s)
+        {
+          /* Save away the rest and return up to the LF.  */
+          log_assert (!c->pending.len);
+          n = (s+extra) - bufp;
+          log_assert (n <= nread);
+          c->pending.len = nread - n;
+          if (!c->pending.data || c->pending.len >= c->pending.size)
+            {
+              xfree (c->pending.data);
+              c->pending.size = c->pending.len + 256;  /* Some extra space.  */
+              c->pending.data = xtrymalloc (c->pending.size);
+              if (!c->pending.data)
+                {
+                  err = gpg_error_from_syserror ();
+                  log_error ("error allocating network read buffer: %s\n",
+                             gpg_strerror (err));
+                  return -1;
+                }
+              memcpy (c->pending.data, bufp + n, c->pending.len);
+            }
+          else
+            memcpy (c->pending.data, bufp + n, c->pending.len);
+          nread = n;  /* Return everything up to the empty line.  */
+          c->up_to_empty_line = 0;
+        }
+      else if (bufp[nread-1] == '\n')
+        c->last_was_lf = 1;
+      else if (nread > 1 && bufp[nread-2] == '\n' && bufp[nread-1] == '\r')
+        c->last_was_lfcr = 1;
     }
 
   if (c->content_length_valid && nread > 0)
@@ -3439,6 +4210,7 @@ cookie_close (void *cookie)
 
   if (c->session)
     http_session_unref (c->session);
+  xfree (c->pending.data);
   xfree (c);
   return 0;
 }
@@ -3447,7 +4219,7 @@ cookie_close (void *cookie)
 
 
 /* Verify the credentials of the server.  Returns 0 on success and
-   store the result in the session object.  */
+   store the result in the session object.  Only used by GNUTLS.  */
 gpg_error_t
 http_verify_server_credentials (http_session_t sess)
 {
@@ -3481,19 +4253,15 @@ http_verify_server_credentials (http_session_t sess)
     }
   else if (status)
     {
-      log_error ("%s: status=0x%04x\n", errprefix, status);
-#if GNUTLS_VERSION_NUMBER >= 0x030104
-      {
-        gnutls_datum_t statusdat;
+      gnutls_datum_t statusdat;
 
-        if (!gnutls_certificate_verification_status_print
-            (status, GNUTLS_CRT_X509, &statusdat, 0))
-          {
-            log_info ("%s: %s\n", errprefix, statusdat.data);
-            gnutls_free (statusdat.data);
-          }
-      }
-#endif /*gnutls >= 3.1.4*/
+      log_error ("%s: status=0x%04x\n", errprefix, status);
+      if (!gnutls_certificate_verification_status_print
+          (status, GNUTLS_CRT_X509, &statusdat, 0))
+        {
+          log_info ("%s: %s\n", errprefix, statusdat.data);
+          gnutls_free (statusdat.data);
+        }
 
       sess->verify.status = status;
       if (!err)
@@ -3833,4 +4601,14 @@ http_status2string (unsigned int status)
     }
 
   return "";
+}
+
+
+/* Fucntion called on SIGHUP to flush internal variables.  */
+void
+http_reinitialize (void)
+{
+#ifdef HAVE_W32_SYSTEM
+  w32_get_internet_session (1);  /* Clear our session.  */
+#endif /*HAVE_W32_SYSTEM*/
 }

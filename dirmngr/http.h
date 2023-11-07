@@ -132,9 +132,11 @@ typedef gpg_error_t (*http_verify_cb_t) (void *opaque,
 
 void http_set_verbose (int verbose, int debug);
 
+/* The next three functions are only used with GNUTLS.  */
 void http_register_tls_callback (gpg_error_t (*cb)(http_t,http_session_t,int));
 void http_register_tls_ca (const char *fname);
 void http_register_cfg_ca (const char *fname);
+
 void http_register_netactivity_cb (void (*cb)(void));
 
 
@@ -193,7 +195,7 @@ estream_t http_get_read_ptr (http_t hd);
 estream_t http_get_write_ptr (http_t hd);
 unsigned int http_get_status_code (http_t hd);
 const char *http_get_tls_info (http_t hd, const char *what);
-const char *http_get_header (http_t hd, const char *name);
+const char *http_get_header (http_t hd, const char *name, unsigned int skip);
 const char **http_get_header_names (http_t hd);
 gpg_error_t http_verify_server_credentials (http_session_t sess);
 

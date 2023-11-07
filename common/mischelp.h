@@ -38,12 +38,6 @@
 int same_file_p (const char *name1, const char *name2);
 
 
-#ifndef HAVE_TIMEGM
-#include <time.h>
-time_t timegm (struct tm *tm);
-#endif /*!HAVE_TIMEGM*/
-
-
 #define DIM(v)		     (sizeof(v)/sizeof((v)[0]))
 #define DIMof(type,member)   DIM(((type *)0)->member)
 
