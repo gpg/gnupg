@@ -32,7 +32,7 @@ Noteworthy changes in version 2.2.42 (unreleased)
   * gpg: Fix the "keytocard" command for moving ECC keys with
     non-standard ECDH parameters to OpenPGP cards.  [rG92af3f88a9]
 
-  * gpgsm: Support ECC certificates.  [T6253]
+  * gpgsm: Support ECC certificates.  [T6253, T6802]
 
   * gpgsm: Print PROGRESS status lines.  Add new --input-size-hint.
     [T6534]

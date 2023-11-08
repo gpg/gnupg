@@ -503,6 +503,7 @@ gpgsm_verify (ctrl_t ctrl, int in_fd, int data_fd, estream_t out_fp)
       audit_log_i (ctrl->audit, AUDIT_DATA_HASH_ALGO, algo);
 
       /* Check compliance.  */
+      pkalgoflags |= PK_ALGO_FLAG_ECC18;
       if (! gnupg_pk_is_allowed (opt.compliance, PK_USE_VERIFICATION,
                                  pkalgo, pkalgoflags, NULL, nbits, pkcurve))
         {
