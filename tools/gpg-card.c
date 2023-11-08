@@ -2983,7 +2983,7 @@ cmd_unblock (card_info_t info)
       else if (!info->chvinfo[1])
         {
           log_error (_("Reset Code not or not anymore available\n"));
-          err = gpg_error (GPG_ERR_PIN_BLOCKED);
+          err = gpg_error (GPG_ERR_NO_RESET_CODE);
         }
       else
         {
