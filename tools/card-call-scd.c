@@ -238,6 +238,12 @@ status_sc_op_failure (gpg_error_t err)
     case GPG_ERR_BAD_RESET_CODE:
       gnupg_status_printf (STATUS_SC_OP_FAILURE, "2");
       break;
+    case GPG_ERR_PIN_BLOCKED:
+      gnupg_status_printf (STATUS_SC_OP_FAILURE, "3");
+      break;
+    case GPG_ERR_NO_RESET_CODE:
+      gnupg_status_printf (STATUS_SC_OP_FAILURE, "4");
+      break;
     default:
       gnupg_status_printf (STATUS_SC_OP_FAILURE, NULL);
       break;
