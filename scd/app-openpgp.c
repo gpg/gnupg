@@ -2859,7 +2859,7 @@ build_enter_admin_pin_prompt (app_t app, char **r_prompt, int *r_remaining)
   if (!remaining)
     {
       log_info (_("card is permanently locked!\n"));
-      return gpg_error (GPG_ERR_BAD_PIN);
+      return gpg_error (GPG_ERR_PIN_BLOCKED);
     }
 
   log_info (ngettext("%d Admin PIN attempt remaining before card"
@@ -5998,7 +5998,7 @@ do_check_pin (app_t app, ctrl_t ctrl, const char *keyidstr,
       if (!count)
         {
           log_info (_("card is permanently locked!\n"));
-          return gpg_error (GPG_ERR_BAD_PIN);
+          return gpg_error (GPG_ERR_PIN_BLOCKED);
         }
       else if (count < 3)
         {
