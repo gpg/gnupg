@@ -256,6 +256,13 @@ gnupg_pk_is_allowed (enum gnupg_compliance_mode compliance,
   if (! initialized)
     return 1;
 
+  /* Map the the generic ECC algo to ECDSA if requested.  */
+  if ((algo_flags & PK_ALGO_FLAG_ECC18)
+      && algo == GCRY_PK_ECC
+      && (use == PK_USE_VERIFICATION
+          || use == PK_USE_SIGNING))
+    algo = GCRY_PK_ECDSA;
+
   switch (compliance)
     {
     case CO_DE_VS:
@@ -280,7 +287,6 @@ gnupg_pk_is_allowed (enum gnupg_compliance_mode compliance,
 	    default:
 	      log_assert (!"reached");
 	    }
-          (void)algo_flags;
 	  break;
 
 	case PUBKEY_ALGO_DSA:
@@ -301,7 +307,7 @@ gnupg_pk_is_allowed (enum gnupg_compliance_mode compliance,
 	  result = (use == PK_USE_DECRYPTION);
           break;
 
-	case PUBKEY_ALGO_ECDH:
+	case PUBKEY_ALGO_ECDH:  /* Same value as GCRY_PK_ECC, i.e. 18  */
 	case GCRY_PK_ECDH:
 	  if (use == PK_USE_DECRYPTION)
             result = 1;
@@ -548,6 +554,9 @@ gnupg_rng_is_compliant (enum gnupg_compliance_mode compliance)
 {
   int *result;
   int res;
+
+  /* #warning debug code ahead */
+  /* return 1; */
 
   result = get_compliance_cache (compliance, 1);
 

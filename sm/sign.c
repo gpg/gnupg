@@ -835,8 +835,8 @@ gpgsm_sign (ctrl_t ctrl, certlist_t signerlist,
           goto leave;
         }
 
-      if (!gnupg_pk_is_allowed (opt.compliance, PK_USE_SIGNING, pk_algo, 0,
-                                NULL, nbits, curve))
+      if (!gnupg_pk_is_allowed (opt.compliance, PK_USE_SIGNING, pk_algo,
+                                PK_ALGO_FLAG_ECC18, NULL, nbits, curve))
         {
           char  kidstr[10+1];
 
