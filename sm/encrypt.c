@@ -576,9 +576,8 @@ encrypt_cb (void *cb_value, char *buffer, size_t count, size_t *nread)
 int
 gpgsm_encrypt (ctrl_t ctrl, certlist_t recplist, int data_fd, estream_t out_fp)
 {
-  int rc = 0;
+  gpg_error_t err = 0;
   gnupg_ksba_io_t b64writer = NULL;
-  gpg_error_t err;
   ksba_writer_t writer;
   ksba_reader_t reader = NULL;
   ksba_cms_t cms = NULL;
@@ -607,7 +606,7 @@ gpgsm_encrypt (ctrl_t ctrl, certlist_t recplist, int data_fd, estream_t out_fp)
       log_error(_("no valid recipients given\n"));
       gpgsm_status (ctrl, STATUS_NO_RECP, "0");
       audit_log_i (ctrl->audit, AUDIT_GOT_RECIPIENTS, 0);
-      rc = gpg_error (GPG_ERR_NO_PUBKEY);
+      err = gpg_error (GPG_ERR_NO_PUBKEY);
       goto leave;
     }
 
@@ -619,7 +618,7 @@ gpgsm_encrypt (ctrl_t ctrl, certlist_t recplist, int data_fd, estream_t out_fp)
   if (!kh)
     {
       log_error (_("failed to allocate keyDB handle\n"));
-      rc = gpg_error (GPG_ERR_GENERAL);
+      err = gpg_error (GPG_ERR_GENERAL);
       goto leave;
     }
 
@@ -627,29 +626,27 @@ gpgsm_encrypt (ctrl_t ctrl, certlist_t recplist, int data_fd, estream_t out_fp)
   data_fp = es_fdopen_nc (data_fd, "rb");
   if (!data_fp)
     {
-      rc = gpg_error_from_syserror ();
-      log_error ("fdopen() failed: %s\n", strerror (errno));
+      err = gpg_error_from_syserror ();
+      log_error ("fdopen() failed: %s\n", gpg_strerror (err));
       goto leave;
     }
 
   err = ksba_reader_new (&reader);
+  if (!err)
+    err = ksba_reader_set_cb (reader, encrypt_cb, &encparm);
   if (err)
-      rc = err;
-  if (!rc)
-    rc = ksba_reader_set_cb (reader, encrypt_cb, &encparm);
-  if (rc)
-      goto leave;
+    goto leave;
 
   encparm.fp = data_fp;
 
   ctrl->pem_name = "ENCRYPTED MESSAGE";
-  rc = gnupg_ksba_create_writer
+  err = gnupg_ksba_create_writer
     (&b64writer, ((ctrl->create_pem? GNUPG_KSBA_IO_PEM : 0)
                   | (ctrl->create_base64? GNUPG_KSBA_IO_BASE64 : 0)),
      ctrl->pem_name, out_fp, &writer);
-  if (rc)
+  if (err)
     {
-      log_error ("can't create writer: %s\n", gpg_strerror (rc));
+      log_error ("can't create writer: %s\n", gpg_strerror (err));
       goto leave;
     }
 
@@ -659,17 +656,13 @@ gpgsm_encrypt (ctrl_t ctrl, certlist_t recplist, int data_fd, estream_t out_fp)
 
   err = ksba_cms_new (&cms);
   if (err)
-    {
-      rc = err;
-      goto leave;
-    }
+    goto leave;
 
   err = ksba_cms_set_reader_writer (cms, reader, writer);
   if (err)
     {
       log_error ("ksba_cms_set_reader_writer failed: %s\n",
                  gpg_strerror (err));
-      rc = err;
       goto leave;
     }
 
@@ -684,7 +677,6 @@ gpgsm_encrypt (ctrl_t ctrl, certlist_t recplist, int data_fd, estream_t out_fp)
     {
       log_error ("ksba_cms_set_content_type failed: %s\n",
                  gpg_strerror (err));
-      rc = err;
       goto leave;
     }
 
@@ -696,34 +688,34 @@ gpgsm_encrypt (ctrl_t ctrl, certlist_t recplist, int data_fd, estream_t out_fp)
       log_error (_("cipher algorithm '%s' may not be used in %s mode\n"),
 		 opt.def_cipher_algoid,
 		 gnupg_compliance_option_string (opt.compliance));
-      rc = gpg_error (GPG_ERR_CIPHER_ALGO);
+      err = gpg_error (GPG_ERR_CIPHER_ALGO);
       goto leave;
     }
 
   if (!gnupg_rng_is_compliant (opt.compliance))
     {
-      rc = gpg_error (GPG_ERR_FORBIDDEN);
+      err = gpg_error (GPG_ERR_FORBIDDEN);
       log_error (_("%s is not compliant with %s mode\n"),
                  "RNG",
                  gnupg_compliance_option_string (opt.compliance));
       gpgsm_status_with_error (ctrl, STATUS_ERROR,
-                               "random-compliance", rc);
+                               "random-compliance", err);
       goto leave;
     }
 
   /* Create a session key */
   dek = xtrycalloc_secure (1, sizeof *dek);
   if (!dek)
-    rc = out_of_core ();
+    err = gpg_error_from_syserror ();
   else
-  {
-    dek->algoid = opt.def_cipher_algoid;
-    rc = init_dek (dek);
-  }
-  if (rc)
+    {
+      dek->algoid = opt.def_cipher_algoid;
+      err = init_dek (dek);
+    }
+  if (err)
     {
       log_error ("failed to create the session key: %s\n",
-                 gpg_strerror (rc));
+                 gpg_strerror (err));
       goto leave;
     }
 
@@ -732,7 +724,6 @@ gpgsm_encrypt (ctrl_t ctrl, certlist_t recplist, int data_fd, estream_t out_fp)
     {
       log_error ("ksba_cms_set_content_enc_algo failed: %s\n",
                  gpg_strerror (err));
-      rc = err;
       goto leave;
     }
 
@@ -742,7 +733,7 @@ gpgsm_encrypt (ctrl_t ctrl, certlist_t recplist, int data_fd, estream_t out_fp)
   encparm.buffer = xtrymalloc (encparm.bufsize);
   if (!encparm.buffer)
     {
-      rc = out_of_core ();
+      err = gpg_error_from_syserror ();
       goto leave;
     }
 
@@ -784,12 +775,12 @@ gpgsm_encrypt (ctrl_t ctrl, certlist_t recplist, int data_fd, estream_t out_fp)
       xfree (curve);
       curve = NULL;
 
-      rc = encrypt_dek (dek, cl->cert, pk_algo, &encval);
-      if (rc)
+      err = encrypt_dek (dek, cl->cert, pk_algo, &encval);
+      if (err)
         {
-          audit_log_cert (ctrl->audit, AUDIT_ENCRYPTED_TO, cl->cert, rc);
+          audit_log_cert (ctrl->audit, AUDIT_ENCRYPTED_TO, cl->cert, err);
           log_error ("encryption failed for recipient no. %d: %s\n",
-                     recpno, gpg_strerror (rc));
+                     recpno, gpg_strerror (err));
           goto leave;
         }
 
@@ -799,7 +790,6 @@ gpgsm_encrypt (ctrl_t ctrl, certlist_t recplist, int data_fd, estream_t out_fp)
           audit_log_cert (ctrl->audit, AUDIT_ENCRYPTED_TO, cl->cert, err);
           log_error ("ksba_cms_add_recipient failed: %s\n",
                      gpg_strerror (err));
-          rc = err;
           xfree (encval);
           goto leave;
         }
@@ -811,7 +801,6 @@ gpgsm_encrypt (ctrl_t ctrl, certlist_t recplist, int data_fd, estream_t out_fp)
         {
           log_error ("ksba_cms_set_enc_val failed: %s\n",
                      gpg_strerror (err));
-          rc = err;
           goto leave;
         }
     }
@@ -825,7 +814,7 @@ gpgsm_encrypt (ctrl_t ctrl, certlist_t recplist, int data_fd, estream_t out_fp)
       log_error (_("operation forced to fail due to"
                    " unfulfilled compliance rules\n"));
       gpgsm_errors_seen = 1;
-      rc = gpg_error (GPG_ERR_FORBIDDEN);
+      err = gpg_error (GPG_ERR_FORBIDDEN);
       goto leave;
     }
 
@@ -837,7 +826,6 @@ gpgsm_encrypt (ctrl_t ctrl, certlist_t recplist, int data_fd, estream_t out_fp)
       if (err)
         {
           log_error ("creating CMS object failed: %s\n", gpg_strerror (err));
-          rc = err;
           goto leave;
         }
     }
@@ -846,15 +834,15 @@ gpgsm_encrypt (ctrl_t ctrl, certlist_t recplist, int data_fd, estream_t out_fp)
   if (encparm.readerror)
     {
       log_error ("error reading input: %s\n", strerror (encparm.readerror));
-      rc = gpg_error (gpg_err_code_from_errno (encparm.readerror));
+      err = gpg_error (gpg_err_code_from_errno (encparm.readerror));
       goto leave;
     }
 
 
-  rc = gnupg_ksba_finish_writer (b64writer);
-  if (rc)
+  err = gnupg_ksba_finish_writer (b64writer);
+  if (err)
     {
-      log_error ("write failed: %s\n", gpg_strerror (rc));
+      log_error ("write failed: %s\n", gpg_strerror (err));
       goto leave;
     }
   audit_log (ctrl->audit, AUDIT_ENCRYPTION_DONE);
@@ -869,5 +857,5 @@ gpgsm_encrypt (ctrl_t ctrl, certlist_t recplist, int data_fd, estream_t out_fp)
   xfree (dek);
   es_fclose (data_fp);
   xfree (encparm.buffer);
-  return rc;
+  return err;
 }
