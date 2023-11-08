@@ -59,6 +59,12 @@ write_sc_op_status (gpg_error_t err)
     case GPG_ERR_BAD_RESET_CODE:
       write_status_text (STATUS_SC_OP_FAILURE, "2");
       break;
+    case GPG_ERR_PIN_BLOCKED:
+      write_status_text (STATUS_SC_OP_FAILURE, "3");
+      break;
+    case GPG_ERR_NO_RESET_CODE:
+      write_status_text (STATUS_SC_OP_FAILURE, "4");
+      break;
     default:
       write_status (STATUS_SC_OP_FAILURE);
       break;
