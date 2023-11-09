@@ -161,6 +161,7 @@ default_inq_cb (void *opaque, const char *line)
             || has_leading_keyword (line, "NEW_PASSPHRASE"))
            && opt.pinentry_mode == PINENTRY_MODE_LOOPBACK)
     {
+      assuan_begin_confidential (parm->ctx);
       if (have_static_passphrase ())
         {
           s = get_static_passphrase ();
@@ -187,6 +188,7 @@ default_inq_cb (void *opaque, const char *line)
             err = assuan_send_data (parm->ctx, pw, strlen (pw));
           xfree (pw);
         }
+      assuan_end_confidential (parm->ctx);
     }
   else if ((s = has_leading_keyword (line, "CONFIRM"))
            && opt.pinentry_mode == PINENTRY_MODE_LOOPBACK
