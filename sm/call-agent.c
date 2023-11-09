@@ -222,7 +222,9 @@ default_inq_cb (void *opaque, const char *line)
            && have_static_passphrase ())
     {
       const char *s = get_static_passphrase ();
+      assuan_begin_confidential (parm->ctx);
       err = assuan_send_data (parm->ctx, s, strlen (s));
+      assuan_end_confidential (parm->ctx);
     }
   else
     log_error ("ignoring gpg-agent inquiry '%s'\n", line);
