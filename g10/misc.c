@@ -1783,6 +1783,8 @@ pubkey_get_nenc (pubkey_algo_t algo)
     case PUBKEY_ALGO_ECDSA:     return 0;
     case PUBKEY_ALGO_ELGAMAL:   return 2;
     case PUBKEY_ALGO_EDDSA:     return 0;
+    case PUBKEY_ALGO_KY768_25519: return 4;
+    case PUBKEY_ALGO_KY1024_448:  return 4;
     default: return 0;
     }
 }

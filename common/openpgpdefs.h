@@ -169,11 +169,11 @@ typedef enum
     PUBKEY_ALGO_ELGAMAL     = 20, /* Elgamal encrypt+sign (legacy).  */
     /*                        21     reserved by OpenPGP.            */
     PUBKEY_ALGO_EDDSA       = 22, /* EdDSA.                          */
-    PUBKEY_ALGO_KY768_25519 = 29, /* Kyber768 + X25519               */
-    PUBKEY_ALGO_KY1024_448  = 30, /* Kyber1024 + X448                */
-    PUBKEY_ALGO_DIL3_25519  = 35, /* Dilithium3 + Ed25519            */
-    PUBKEY_ALGO_DIL5_448    = 36, /* Dilithium5 + Ed448              */
-    PUBKEY_ALGO_SPHINX_SHA2 = 41, /* SPHINX+-simple-SHA2             */
+    PUBKEY_ALGO_KY768_25519 = 29, /* Kyber768 + X25519    (aka ML-KEM-768)   */
+    PUBKEY_ALGO_KY1024_448  = 30, /* Kyber1024 + X448     (aka ML-KEM-1024)  */
+    PUBKEY_ALGO_DIL3_25519  = 35, /* Dilithium3 + Ed25519 (aka ML-DSA-65)    */
+    PUBKEY_ALGO_DIL5_448    = 36, /* Dilithium5 + Ed448   (aka ML-DSA-87)    */
+    PUBKEY_ALGO_SPHINX_SHA2 = 41, /* SPHINX+-simple-SHA2  (aka SLH-DSA-SHA2) */
     PUBKEY_ALGO_PRIVATE10   = 110
   }
 pubkey_algo_t;
@@ -208,7 +208,7 @@ compress_algo_t;
 #define OPENPGP_MAX_NPKEY  5  /* Maximum number of public key parameters. */
 #define OPENPGP_MAX_NSKEY  7  /* Maximum number of secret key parameters. */
 #define OPENPGP_MAX_NSIG   2  /* Maximum number of signature parameters.  */
-#define OPENPGP_MAX_NENC   2  /* Maximum number of encryption parameters. */
+#define OPENPGP_MAX_NENC   4  /* Maximum number of encryption parameters. */
 
 
 /* Decode an rfc4880 encoded S2K count.  */
