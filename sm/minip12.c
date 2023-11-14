@@ -1662,6 +1662,7 @@ parse_bag_encrypted_data (struct p12_parse_ctx_s *ctx, struct tlv_ctx_s *tlv)
   if (!datalen)
     {
       err = gpg_error (GPG_ERR_DECRYPT_FAILED);
+      ctx->badpass = 1;  /* This is the most likley reason.  */
       goto bailout;
     }
 
@@ -2187,6 +2188,7 @@ parse_shrouded_key_bag (struct p12_parse_ctx_s *ctx, struct tlv_ctx_s *tlv)
   if (!datalen)
     {
       err = gpg_error (GPG_ERR_DECRYPT_FAILED);
+      ctx->badpass = 1;
       goto bailout;
     }
 
