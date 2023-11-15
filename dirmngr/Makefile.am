@@ -104,7 +104,7 @@ dirmngr_LDADD = $(libcommonpth) \
         $(DNSLIBS) $(LIBASSUAN_LIBS) \
 	$(KSBA_LIBS) $(NPTH_LIBS) $(NTBTLS_LIBS) $(LIBGNUTLS_LIBS) \
         $(LIBGCRYPT_LIBS) $(GPG_ERROR_LIBS) $(LIBINTL) $(LIBICONV) \
-        $(NETLIBS) $(dirmngr_rc_obj)
+        $(NETLIBS) $(dirmngr_rc_objs)
 if USE_LDAP
 dirmngr_LDADD += $(ldaplibs) $(LBER_LIBS)
 endif
