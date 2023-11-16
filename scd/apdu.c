@@ -3049,7 +3049,9 @@ send_le (int slot, int class, int ins, int p0, int p1,
                  sw, (unsigned int)resultlen);
       if ( !retbuf && (sw == SW_SUCCESS || (sw & 0xff00) == SW_MORE_DATA))
         {
-          if (all_zero_p (result, resultlen))
+          if (!resultlen)
+            ;
+          else if (all_zero_p (result, resultlen))
             log_debug ("     dump: [all zero]\n");
           else
             log_printhex (result, resultlen, "     dump:");

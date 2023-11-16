@@ -166,7 +166,7 @@ iso7816_select_mf (int slot)
 {
   int sw;
 
-  sw = apdu_send_simple (slot, 0, 0x00, CMD_SELECT_FILE, 0x000, 0x0c, -1, NULL);
+  sw = apdu_send_simple (slot, 0, 0x00, CMD_SELECT_FILE, 0x00, 0x0c, -1, NULL);
   return map_sw (sw);
 }
 
