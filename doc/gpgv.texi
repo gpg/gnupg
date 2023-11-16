@@ -180,13 +180,20 @@ If set directory used instead of "~/.gnupg".
 @mansect files
 @subsection FILES
 
-By default gpgv searches for the keyring holding the allowed keys
-in the following locations (First file found is used):
+Default keyring file is expected in the GnuPG home directory
+(@pxref{option --homedir}, @code{GNUPGHOME}).
 
-@itemize @bullet
-@item $@{GNUPGHOME@}/trustedkeys.kbx
-@item $@{GNUPGHOME@}/trustedkeys.gpg
-@end itemize
+@table @file
+@item ~/.gnupg/trustedkeys.kbx
+@efindex trustedkeys.kbx
+The default keyring with the allowed keys, using the new keybox format.
+
+@item ~/.gnupg/trustedkeys.gpg
+@efindex trustedkeys.gpg
+When @file{trustedkeys.kbx} is not available, the default keyring with
+the allowed keys, using a legacy format.
+
+@end table
 
 @mansect see also
 @command{gpg}(1)
