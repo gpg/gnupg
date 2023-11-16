@@ -75,7 +75,8 @@ typedef enum
     CARD_TYPE_CARDOS_50,
     CARD_TYPE_CARDOS_53,
     CARD_TYPE_AET,     /* A.E.T. Europe JCOP card.  */
-    CARD_TYPE_BELPIC   /* Belgian eID card specs. */
+    CARD_TYPE_BELPIC,  /* Belgian eID card specs. */
+    CARD_TYPE_STARCOS_32
   }
 card_type_t;
 
@@ -126,6 +127,9 @@ static struct
   { 24, X("\x3b\xfe\x18\x00\x00\x80\x31\xfe\x45\x53\x43\x45"
           "\x36\x30\x2d\x43\x44\x30\x38\x31\x2d\x6e\x46\xa9"),
     CARD_TYPE_AET },
+  { 25, X("\x3b\x9f\x96\x81\xb1\xfe\x45\x1f\x07\x00\x64\x05"
+          "\x1e\xb2\x00\x31\xb0\x73\x96\x21\xdb\x05\x90\x00\x5c"),
+    CARD_TYPE_STARCOS_32 },
   { 0 }
 };
 #undef X
@@ -518,6 +522,8 @@ struct app_local_s
 /*** Local prototypes.  ***/
 static gpg_error_t select_ef_by_path (app_t app, const unsigned short *path,
                                       size_t pathlen);
+static gpg_error_t select_df_by_path (app_t app, const unsigned short *path,
+                                      size_t pathlen);
 static gpg_error_t keygrip_from_prkdf (app_t app, prkdf_object_t prkdf);
 static gpg_error_t readcert_by_cdf (app_t app, cdf_object_t cdf,
                                     unsigned char **r_cert, size_t *r_certlen);
@@ -538,6 +544,7 @@ cardtype2str (card_type_t cardtype)
     case CARD_TYPE_CARDOS_53: return "CardOS 5.3";
     case CARD_TYPE_BELPIC:    return "Belgian eID";
     case CARD_TYPE_AET:       return "AET";
+    case CARD_TYPE_STARCOS_32:return "STARCOS 3.2";
     }
   return "";
 }
@@ -765,20 +772,28 @@ select_and_read_record (app_t app, unsigned short efid, int recno,
 
 
 /* This function calls select file to read a file using a complete
-   path which may or may not start at the master file (MF). */
+ * path which may or may not start at the master file (MF).  If
+ * EXPECT_DF is set a directory or file is expected - otherwise an
+ * elementary file expected.  */
 static gpg_error_t
-select_ef_by_path (app_t app, const unsigned short *path, size_t pathlen)
+select_by_path (app_t app, const unsigned short *path, size_t pathlen,
+                int expect_df)
 {
   gpg_error_t err;
   int i, j;
+  int home_df_used = 0;
 
   if (!pathlen)
     return gpg_error (GPG_ERR_INV_VALUE);
 
-  /* log_debug ("%s: path=", __func__); */
-  /* for (j=0; j < pathlen; j++) */
-  /*   log_printf ("%s%04hX", j? "/":"", path[j]); */
-  /* log_printf ("%s\n",app->app_local->direct_path_selection?" (direct)":"");*/
+  if (opt.debug)
+    {
+      log_debug ("%s: path=", __func__);
+      for (j=0; j < pathlen; j++)
+        log_printf ("%s%04hX", j? "/":"", path[j]);
+      log_printf ("%s\n",expect_df?" (DF requested)":"");
+      log_printf ("%s\n",app->app_local->direct_path_selection?" (direct)":"");
+    }
 
   if (app->app_local->direct_path_selection)
     {
@@ -791,33 +806,15 @@ select_ef_by_path (app_t app, const unsigned short *path, size_t pathlen)
                                        0);
         }
       else
-        err = iso7816_select_path (app_get_slot (app), path, pathlen,
-                                   app->app_local->home_df);
+        {
+          home_df_used = 1;
+          err = iso7816_select_path (app_get_slot (app), path, pathlen,
+                                     app->app_local->home_df);
+        }
       if (err)
         {
           log_error ("p15: error selecting path ");
           goto err_print_path;
-        }
-    }
-  else if (pathlen > 1 && path[0] == 0x3fff)
-    {
-      err = iso7816_select_file (app_get_slot (app), 0x3f00, 0);
-      if (err)
-        {
-          log_error ("p15: error selecting part %d from path ", 0);
-          goto err_print_path;
-        }
-      path++;
-      pathlen--;
-      for (i=0; i < pathlen; i++)
-        {
-          err = iso7816_select_file (app_get_slot (app),
-                                     path[i], (i+1 == pathlen)? 2 : 1);
-          if (err)
-            {
-              log_error ("p15: error selecting part %d from path ", i);
-              goto err_print_path;
-            }
         }
     }
   else
@@ -829,7 +826,7 @@ select_ef_by_path (app_t app, const unsigned short *path, size_t pathlen)
       for (i=0; i < pathlen; i++)
         {
           err = iso7816_select_file (app_get_slot (app),
-                                     path[i], !(i+1 == pathlen));
+                                     path[i], (expect_df || (i+1 < pathlen)));
           if (err)
             {
               log_error ("p15: error selecting part %d from path ", i);
@@ -842,12 +839,26 @@ select_ef_by_path (app_t app, const unsigned short *path, size_t pathlen)
  err_print_path:
   if (pathlen && *path != 0x3f00 )
     log_printf ("3F00/");
-  else
+  else if (home_df_used)
     log_printf ("%04hX/", app->app_local->home_df);
   for (j=0; j < pathlen; j++)
     log_printf ("%s%04hX", j? "/":"", path[j]);
   log_printf (": %s\n", gpg_strerror (err));
   return err;
+}
+
+
+static gpg_error_t
+select_ef_by_path (app_t app, const unsigned short *path, size_t pathlen)
+{
+  return select_by_path (app, path, pathlen, 0);
+}
+
+
+static gpg_error_t
+select_df_by_path (app_t app, const unsigned short *path, size_t pathlen)
+{
+  return select_by_path (app, path, pathlen, 1);
 }
 
 
@@ -3245,7 +3256,7 @@ read_ef_aodf (app_t app, unsigned short fid, aodf_object_t *result)
               if (aodf->max_length_valid)
                 log_printf (" max=%lu", aodf->max_length);
               if (aodf->pad_char_valid)
-                log_printf (" pad=0x%02x", aodf->pad_char);
+                log_printf (" pad=0x%02x", (unsigned char)aodf->pad_char);
 
               log_info ("p15:             flags=");
               s = "";
@@ -5023,6 +5034,13 @@ prepare_verify_pin (app_t app, const char *keyref,
         log_error ("p15: error selecting D-TRUST's AID for key %s: %s\n",
                    keyref, gpg_strerror (err));
     }
+  else if (prkdf && app->app_local->card_type == CARD_TYPE_STARCOS_32)
+    {
+      err = select_df_by_path (app, prkdf->path, prkdf->pathlen);
+      if (err)
+        log_error ("p15: error selecting file for key %s: %s\n",
+                   keyref, gpg_strerror (err));
+    }
   else if (prkdf)
     {
       /* Standard case: Select the key file.  Note that this may
@@ -6287,6 +6305,7 @@ app_select_p15 (app_t app)
           direct = 1;
           break;
         case CARD_TYPE_AET:
+        case CARD_TYPE_STARCOS_32:
           app->app_local->no_extended_mode = 1;
           break;
         default:
