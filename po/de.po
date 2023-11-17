@@ -9,7 +9,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnupg-2.1.0\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"PO-Revision-Date: 2023-01-11 10:09+0100\n"
+"PO-Revision-Date: 2023-11-17 10:07+0100\n"
 "Last-Translator: Werner Koch <wk@gnupg.org>\n"
 "Language-Team: German <de@li.org>\n"
 "Language: de\n"
@@ -56,6 +56,9 @@ msgstr "Das Passwort sichtbar machen"
 
 msgid "|pinentry-tt|Hide passphrase"
 msgstr "Das Passwort unsichtbar machen"
+
+msgid "Caps Lock is on"
+msgstr "FESTSTELLTASTE ist aktiviert"
 
 #. TRANSLATORS: This string is displayed by Pinentry as the label
 #. for generating a passphrase.
@@ -233,8 +236,9 @@ msgid ""
 "Please enter a passphrase to protect the received secret key%%0A   %s%%0A   "
 "%s%%0Awithin gpg-agent's key storage"
 msgstr ""
-"Bitte geben Sie ein Passwort ein, um den empfangenen geheimen Schlüssel"
-"%%0A   %s%%0A  %s%%0Aim Schlüsselspeicher des Gpg-Agenten zu schützen."
+"Bitte geben Sie ein Passwort ein, um den empfangenen geheimen "
+"Schlüssel%%0A   %s%%0A  %s%%0Aim Schlüsselspeicher des Gpg-Agenten zu "
+"schützen."
 
 #, c-format
 msgid "failed to create stream from socket: %s\n"
@@ -712,9 +716,9 @@ msgid ""
 "Do you ultimately trust%%0A  \"%s\"%%0Ato correctly certify user "
 "certificates?"
 msgstr ""
-"Wenn Sie vollständiges Vertrauen haben, daß%%0A  \"%s"
-"\"%%0ABenutzerzertifikate verläßlich zertifiziert, so antworten Sie mit \"Ja"
-"\"."
+"Wenn Sie vollständiges Vertrauen haben, daß%%0A  "
+"\"%s\"%%0ABenutzerzertifikate verläßlich zertifiziert, so antworten Sie mit "
+"\"Ja\"."
 
 msgid "Yes"
 msgstr "Ja"
@@ -769,8 +773,8 @@ msgstr "Ich werde sie später ändern"
 
 #, c-format
 msgid ""
-"Do you really want to delete the key identified by keygrip%%0A  %s%%0A  %%C"
-"%%0A?"
+"Do you really want to delete the key identified by keygrip%%0A  %s%%0A  "
+"%%C%%0A?"
 msgstr ""
 "Möchten Sie den Schlüssel mit dem \"Keygrip\"%%0A  %s%%0A  %%C%%0Awirklich "
 "entfernen?"
@@ -3022,6 +3026,10 @@ msgstr "Schlüssel %s: geheimer Schlüssel bereits vorhanden\n"
 msgid "key %s: error sending to agent: %s\n"
 msgstr "Schlüssel %s: Fehler beim Senden zum gpg-agent: %s\n"
 
+#, c-format
+msgid "key %s: card reference is overridden by key material\n"
+msgstr "Schlüssel %s: Der \\\"stub\\\" wurde durch einen realen Schlüssel ersetzt\n"
+
 #. TRANSLATORS: For a smartcard, each private key on host has a
 #. * reference (stub) to a smartcard and actual private key data
 #. * is stored on the card.  A single smartcard can have up to
@@ -3610,6 +3618,10 @@ msgstr "Geheimer Schlüssel ist vorhanden.\n"
 msgid "Secret subkeys are available.\n"
 msgstr "Geheimer Unterschlüssel ist vorhanden.\n"
 
+msgid ""
+"Note: the local copy of the secret key will only be deleted with \"save\".\n"
+msgstr "Hinweis: Die lokale Kopie des geheimen Schlüssels wird nur nach \"save\" gelöscht.\n"
+
 msgid "Need the secret key to do this.\n"
 msgstr "Hierzu wird der geheime Schlüssel benötigt.\n"
 
@@ -3722,6 +3734,10 @@ msgstr "Änderungen speichern? (j/N) "
 
 msgid "Quit without saving? (y/N) "
 msgstr "Beenden ohne zu speichern? (j/N) "
+
+#, c-format
+msgid "deleting copy of secret key failed: %s\n"
+msgstr "Fehler beim Löschen der Kopie des geheimen Schlüssels: %s\n"
 
 #, c-format
 msgid "Key not changed so no update needed.\n"
@@ -5701,10 +5717,6 @@ msgstr ""
 msgid "key %s may not be used for signing in %s mode\n"
 msgstr ""
 "Schlüssel \"%s\" darf zum Signieren im %s Modus nicht verwendet werden.\n"
-
-#, c-format
-msgid "continuing verification anyway due to option %s\n"
-msgstr "Die Prüfung wird aufgrund der Option %s weiter durchgeführt\n"
 
 #, c-format
 msgid "WARNING: signature digest conflict in message\n"
@@ -8952,6 +8964,10 @@ msgstr ""
 "Syntax: gpg-check-pattern [optionen] Musterdatei\n"
 "Das von stdin gelesene Passwort gegen die Musterdatei prüfen\n"
 
+#, c-format
+#~ msgid "continuing verification anyway due to option %s\n"
+#~ msgstr "Die Prüfung wird aufgrund der Option %s weiter durchgeführt\n"
+
 #~ msgid "%s/%s encrypted for: \"%s\"\n"
 #~ msgstr "%s/%s verschlüsselt für: %s\n"
 
@@ -10117,8 +10133,8 @@ msgstr ""
 
 #~ msgid "the trustdb is corrupted; please run \"gpg --fix-trustdb\".\n"
 #~ msgstr ""
-#~ "Die \"Trust\"-Datenbank ist beschädigt; verwenden Sie \"gpg --fix-trustdb"
-#~ "\".\n"
+#~ "Die \"Trust\"-Datenbank ist beschädigt; verwenden Sie \"gpg --fix-"
+#~ "trustdb\".\n"
 
 #~ msgid "Please report bugs to <"
 #~ msgstr "Fehlerberichte bitte an <"
@@ -10343,8 +10359,8 @@ msgstr ""
 #~ "\n"
 #~ "Note that the examples given above for levels 2 and 3 are *only* "
 #~ "examples.\n"
-#~ "In the end, it is up to you to decide just what \"casual\" and \"extensive"
-#~ "\"\n"
+#~ "In the end, it is up to you to decide just what \"casual\" and "
+#~ "\"extensive\"\n"
 #~ "mean to you when you sign other keys.\n"
 #~ "\n"
 #~ "If you don't know what the right answer is, answer \"0\"."
