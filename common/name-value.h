@@ -50,6 +50,9 @@ nvc_t nvc_new_private_key (void);
 /* Release a name value container structure.  */
 void nvc_release (nvc_t pk);
 
+/* Return the modified flag and optionally clear it.  */
+int nvc_modified (nvc_t pk, int clear);
+
 /* Get the name.  */
 char *nve_name (nve_t pke);
 
@@ -91,8 +94,8 @@ gpg_error_t nvc_add (nvc_t pk, const char *name, const char *value);
    first entry is updated.  */
 gpg_error_t nvc_set (nvc_t pk, const char *name, const char *value);
 
-/* Update entry E to VALUE.  */
-gpg_error_t nve_set (nve_t e, const char *value);
+/* Update entry E to VALUE.  PK is optional. */
+gpg_error_t nve_set (nvc_t pk, nve_t e, const char *value);
 
 /* Delete the given entry from PK.  */
 void nvc_delete (nvc_t pk, nve_t pke);

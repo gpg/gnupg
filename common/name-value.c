@@ -48,6 +48,7 @@ struct name_value_container
   struct name_value_entry *first;
   struct name_value_entry *last;
   unsigned int private_key_mode:1;
+  unsigned int modified:1;
 };
 
 
@@ -87,11 +88,15 @@ my_error (gpg_err_code_t ec)
 
 /* Allocation and deallocation.  */
 
-/* Allocate a private key container structure.  */
+/* Allocate a name value container structure.  */
 nvc_t
 nvc_new (void)
 {
-  return xtrycalloc (1, sizeof (struct name_value_container));
+  nvc_t nvc;
+  nvc = xtrycalloc (1, sizeof (struct name_value_container));
+  if (nvc)
+    nvc->modified = 1;
+  return nvc;
 }
 
 
@@ -141,6 +146,24 @@ nvc_release (nvc_t pk)
 
   xfree (pk);
 }
+
+
+/* Return the modified-flag of the container and clear it if CLEAR is
+ * set.  That flag is set for a new container and set with each
+ * update.  */
+int
+nvc_modified (nvc_t pk, int clear)
+{
+  int modified;
+
+  if (!pk)
+    return 0;
+  modified = pk->modified;
+  if (clear)
+    pk->modified = 0;
+  return modified;
+}
+
 
 
 
@@ -427,6 +450,8 @@ _nvc_add (nvc_t pk, char *name, char *value, strlist_t raw_value,
   else
     pk->first = pk->last = e;
 
+  pk->modified = 1;
+
  leave:
   if (err)
     {
@@ -476,20 +501,28 @@ nvc_set (nvc_t pk, const char *name, const char *value)
 
   e = nvc_lookup (pk, name);
   if (e)
-    return nve_set (e, value);
+    return nve_set (pk, e, value);
   else
     return nvc_add (pk, name, value);
 }
 
 
-/* Update entry E to VALUE.  */
+/* Update entry E to VALUE.  PK is optional; if given its modified
+ * flag will be updated.  */
 gpg_error_t
-nve_set (nve_t e, const char *value)
+nve_set (nvc_t pk, nve_t e, const char *value)
 {
   char *v;
 
   if (!e)
     return GPG_ERR_INV_ARG;
+
+  if (e->value && value && !strcmp (e->value, value))
+    {
+      /* Setting same value - ignore this call and don't set the
+       * modified flag.  */
+      return 0;
+    }
 
   v = xtrystrdup (value? value:"");
   if (!v)
@@ -501,6 +534,8 @@ nve_set (nve_t e, const char *value)
     wipememory (e->value, strlen (e->value));
   xfree (e->value);
   e->value = v;
+  if (pk)
+    pk->modified = 1;
 
   return 0;
 }
@@ -521,6 +556,7 @@ nvc_delete (nvc_t pk, nve_t entry)
     pk->last = entry->prev;
 
   nve_release (entry, pk->private_key_mode);
+  pk->modified = 1;
 }
 
 /* Delete the entries with NAME from PK.  */
