@@ -495,34 +495,13 @@ gpg_error_t
 nvc_set (nvc_t pk, const char *name, const char *value)
 {
   nve_t e;
-  char *v;
 
   if (! valid_name (name))
     return GPG_ERR_INV_NAME;
 
   e = nvc_lookup (pk, name);
   if (e)
-    {
-      if (e->value && value && !strcmp (e->value, value))
-        {
-          /* Setting same value - ignore this call and don't set the
-           * modified flag.  */
-          return 0;
-        }
-
-      v = xtrystrdup (value);
-      if (v == NULL)
-	return my_error_from_syserror ();
-
-      free_strlist_wipe (e->raw_value);
-      e->raw_value = NULL;
-      if (e->value)
-	wipememory (e->value, strlen (e->value));
-      xfree (e->value);
-      e->value = v;
-      pk->modified = 1;
-      return 0;
-    }
+    return nve_set (pk, e, value);
   else
     return nvc_add (pk, name, value);
 }
@@ -537,6 +516,13 @@ nve_set (nvc_t pk, nve_t e, const char *value)
 
   if (!e)
     return GPG_ERR_INV_ARG;
+
+  if (e->value && value && !strcmp (e->value, value))
+    {
+      /* Setting same value - ignore this call and don't set the
+       * modified flag (if PK is given).  */
+      return 0;
+    }
 
   v = xtrystrdup (value? value:"");
   if (!v)
