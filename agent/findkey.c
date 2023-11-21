@@ -146,6 +146,8 @@ agent_write_private_key (const unsigned char *grip,
         }
     }
 
+  nvc_modified (pk, 1);  /* Clear that flag after a read.  */
+
   if (!pk)
     {
       /* Key is still in the old format or does not exist - create a
@@ -242,7 +244,7 @@ agent_write_private_key (const unsigned char *grip,
             ; /* No need to update Token entry.  */
           else
             {
-              err = nve_set (item, token);
+              err = nve_set (pk, item, token);
               if (err)
                 goto leave;
             }
@@ -261,6 +263,13 @@ agent_write_private_key (const unsigned char *grip,
       err = nvc_add (pk, "Created:", timebuf);
       if (err)
         goto leave;
+    }
+
+  /* Check whether we need to write the file at all.  */
+  if (!nvc_modified (pk, 0))
+    {
+      err = 0;
+      goto leave;
     }
 
   /* Create a temporary file for writing.  */
