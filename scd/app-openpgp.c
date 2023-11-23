@@ -4733,9 +4733,11 @@ ecc_writekey (app_t app, ctrl_t ctrl,
 
   if (algo == PUBKEY_ALGO_ECDH && !ecdh_param)
     {
-      log_error ("opgp: ecdh parameters missing\n");
-      err = gpg_error (GPG_ERR_INV_VALUE);
-      goto leave;
+      /* In case this is used by older clients we fallback to our
+       * default ecc parameters.  */
+      log_info ("opgp: using default ecdh parameters\n");
+      ecdh_param = ecdh_params (curve);
+      ecdh_param_len = 4;
     }
 
   oidstr = openpgp_curve_to_oid (curve, &n, NULL);
