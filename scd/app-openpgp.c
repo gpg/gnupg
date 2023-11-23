@@ -355,6 +355,7 @@ do_deinit (app_t app)
  * we do not need this if the buffer has been allocated in secure
  * memory.  However at some places we can't make that sure and thus we
  * better to an extra wipe here.  */
+#if 0 /* Not yet used.  */
 static void
 wipe_and_free (void *p, size_t len)
 {
@@ -365,10 +366,11 @@ wipe_and_free (void *p, size_t len)
       xfree (p);
     }
 }
-
+#endif
 
 /* Similar to wipe_and_free but assumes P is eitehr NULL or a proper
  * string.  */
+#if 0 /* Not yet used.  */
 static void
 wipe_and_free_string (char *p)
 {
@@ -378,7 +380,7 @@ wipe_and_free_string (char *p)
       xfree (p);
     }
 }
-
+#endif
 
 /* Wrapper around iso7816_get_data which first tries to get the data
    from the cache.  With GET_IMMEDIATE passed as true, the cache is
@@ -4487,18 +4489,13 @@ ecc_writekey (app_t app, ctrl_t ctrl,
   else
     algo = PUBKEY_ALGO_ECDSA;
 
-  /* Not provided by GnuPG 2.2 - take the default value.  */
   if (algo == PUBKEY_ALGO_ECDH && !ecdh_param)
     {
+      /* In case this is used by older clients we fallback to our
+       * default ecc parameters.  */
+      log_info ("opgp: using default ecdh parameters\n");
       ecdh_param = ecdh_params (curve);
       ecdh_param_len = 4;
-    }
-
-  if (algo == PUBKEY_ALGO_ECDH && !ecdh_param)
-    {
-      log_error ("opgp: ecdh parameters missing\n");
-      err = gpg_error (GPG_ERR_INV_VALUE);
-      goto leave;
     }
 
   oidstr = openpgp_curve_to_oid (curve, &n, NULL);
