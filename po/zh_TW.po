@@ -67,6 +67,9 @@ msgstr ""
 msgid "|pinentry-tt|Hide passphrase"
 msgstr "請輸入新密語"
 
+msgid "Caps Lock is on"
+msgstr ""
+
 #. TRANSLATORS: This string is displayed by Pinentry as the label
 #. for generating a passphrase.
 msgid "Suggest"
@@ -770,8 +773,8 @@ msgstr "我稍後再變更"
 #, fuzzy, c-format
 #| msgid "Do you really want to delete the selected keys? (y/N) "
 msgid ""
-"Do you really want to delete the key identified by keygrip%%0A  %s%%0A  %%C"
-"%%0A?"
+"Do you really want to delete the key identified by keygrip%%0A  %s%%0A  "
+"%%C%%0A?"
 msgstr "你真的想要刪除所選的金鑰嗎? (y/N) "
 
 msgid "Delete key"
@@ -3060,6 +3063,10 @@ msgstr "金鑰 %s: 私鑰已存在\n"
 msgid "key %s: error sending to agent: %s\n"
 msgstr "金鑰 %s: 送至代理程式時出錯: %s\n"
 
+#, c-format
+msgid "key %s: card reference is overridden by key material\n"
+msgstr ""
+
 #. TRANSLATORS: For a smartcard, each private key on host has a
 #. * reference (stub) to a smartcard and actual private key data
 #. * is stored on the card.  A single smartcard can have up to
@@ -3626,6 +3633,10 @@ msgstr "私鑰可用.\n"
 msgid "Secret subkeys are available.\n"
 msgstr "私鑰可用.\n"
 
+msgid ""
+"Note: the local copy of the secret key will only be deleted with \"save\".\n"
+msgstr ""
+
 msgid "Need the secret key to do this.\n"
 msgstr "要有私鑰纔能這麼做.\n"
 
@@ -3733,6 +3744,11 @@ msgstr "要儲存變更嗎? (y/N) "
 
 msgid "Quit without saving? (y/N) "
 msgstr "要不儲存就離開嗎? (y/N) "
+
+#, fuzzy, c-format
+#| msgid "deleting secret %s failed: %s\n"
+msgid "deleting copy of secret key failed: %s\n"
+msgstr "刪除私鑰 %s 時失敗: %s\n"
 
 #, c-format
 msgid "Key not changed so no update needed.\n"
@@ -5680,10 +5696,6 @@ msgstr "%s 金鑰 %s 需要 %zu 位元以上的雜湊 (雜湊為 %s)\n"
 #| msgid "you may not use %s while in %s mode\n"
 msgid "key %s may not be used for signing in %s mode\n"
 msgstr "你不能夠將 %s 用於 %s 模式中\n"
-
-#, c-format
-msgid "continuing verification anyway due to option %s\n"
-msgstr ""
 
 #, c-format
 msgid "WARNING: signature digest conflict in message\n"

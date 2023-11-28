@@ -84,6 +84,9 @@ msgstr "|pinentry-tt|Zviditelnit heslo"
 msgid "|pinentry-tt|Hide passphrase"
 msgstr "|pinentry-tt|Skrýt heslo"
 
+msgid "Caps Lock is on"
+msgstr ""
+
 #. TRANSLATORS: This string is displayed by Pinentry as the label
 #. for generating a passphrase.
 msgid "Suggest"
@@ -263,8 +266,8 @@ msgid ""
 "Please enter a passphrase to protect the received secret key%%0A   %s%%0A   "
 "%s%%0Awithin gpg-agent's key storage"
 msgstr ""
-"Prosím, vložte heslo, abyste ochránil(a) přijatý tajný klíč%%0A   %s%%0A   %s"
-"%%0Auvnitř úložiště klíčů gpg-agenta"
+"Prosím, vložte heslo, abyste ochránil(a) přijatý tajný klíč%%0A   %s%%0A   "
+"%s%%0Auvnitř úložiště klíčů gpg-agenta"
 
 #, c-format
 msgid "failed to create stream from socket: %s\n"
@@ -792,8 +795,8 @@ msgstr "Změním jej později"
 
 #, c-format
 msgid ""
-"Do you really want to delete the key identified by keygrip%%0A  %s%%0A  %%C"
-"%%0A?"
+"Do you really want to delete the key identified by keygrip%%0A  %s%%0A  "
+"%%C%%0A?"
 msgstr ""
 "Opravdu chcete smazat klíč určený pomocí keygripu%%0A  %s%%0A  %%C%%0A?"
 
@@ -3044,6 +3047,10 @@ msgstr "klíč %s: tajný klíč již existuje\n"
 msgid "key %s: error sending to agent: %s\n"
 msgstr "klíč %s: chyba při odesílání dat agentovi: %s\n"
 
+#, c-format
+msgid "key %s: card reference is overridden by key material\n"
+msgstr ""
+
 #. TRANSLATORS: For a smartcard, each private key on host has a
 #. * reference (stub) to a smartcard and actual private key data
 #. * is stored on the card.  A single smartcard can have up to
@@ -3619,6 +3626,12 @@ msgstr "Tajný klíč je dostupný.\n"
 msgid "Secret subkeys are available.\n"
 msgstr "Tajné podklíče jsou dostupné.\n"
 
+#, fuzzy
+#| msgid "Note: Only the secret part of the shown subkey will be deleted.\n"
+msgid ""
+"Note: the local copy of the secret key will only be deleted with \"save\".\n"
+msgstr "Poznámka: Smazána bude pouze tajná část zobrazeného podklíče.\n"
+
 msgid "Need the secret key to do this.\n"
 msgstr "Pro provedení této operace je potřeba tajný klíč.\n"
 
@@ -3726,6 +3739,12 @@ msgstr "Uložit změny? (a/N) "
 
 msgid "Quit without saving? (y/N) "
 msgstr "Ukončit bez uložení? (a/N) "
+
+# The first argument is a "key" or "subkey"
+#, fuzzy, c-format
+#| msgid "deleting secret %s failed: %s\n"
+msgid "deleting copy of secret key failed: %s\n"
+msgstr "smazání tajného %s se nezdařilo: %s\n"
 
 #, c-format
 msgid "Key not changed so no update needed.\n"
@@ -5660,10 +5679,6 @@ msgstr "%s klíč %s vyžaduje hash o délce %zu nebo více bitů (hash je %s)\
 #, c-format
 msgid "key %s may not be used for signing in %s mode\n"
 msgstr "klíč %s se nesmí používat v režimu %s\n"
-
-#, c-format
-msgid "continuing verification anyway due to option %s\n"
-msgstr ""
 
 #, c-format
 msgid "WARNING: signature digest conflict in message\n"
@@ -10352,8 +10367,8 @@ msgstr ""
 #~ "\n"
 #~ "Note that the examples given above for levels 2 and 3 are *only* "
 #~ "examples.\n"
-#~ "In the end, it is up to you to decide just what \"casual\" and \"extensive"
-#~ "\"\n"
+#~ "In the end, it is up to you to decide just what \"casual\" and "
+#~ "\"extensive\"\n"
 #~ "mean to you when you sign other keys.\n"
 #~ "\n"
 #~ "If you don't know what the right answer is, answer \"0\"."
@@ -10400,8 +10415,8 @@ msgstr ""
 #~ "Answer \"yes\" if you really want to delete this user ID.\n"
 #~ "All certificates are then also lost!"
 #~ msgstr ""
-#~ "Pokud opravdu chcete smazat tento identifikátor uživatele, odpovězte \"ano"
-#~ "\".\n"
+#~ "Pokud opravdu chcete smazat tento identifikátor uživatele, odpovězte "
+#~ "\"ano\".\n"
 #~ "Všechny certifikáty budou také ztraceny!"
 
 #~ msgid "Answer \"yes\" if it is okay to delete the subkey"

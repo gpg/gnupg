@@ -65,6 +65,9 @@ msgstr ""
 msgid "|pinentry-tt|Hide passphrase"
 msgstr "phrase de passe incorrecte"
 
+msgid "Caps Lock is on"
+msgstr ""
+
 #. TRANSLATORS: This string is displayed by Pinentry as the label
 #. for generating a passphrase.
 msgid "Suggest"
@@ -247,8 +250,8 @@ msgid ""
 "Please enter a passphrase to protect the received secret key%%0A   %s%%0A   "
 "%s%%0Awithin gpg-agent's key storage"
 msgstr ""
-"Veuillez entrer une phrase secrète pour protéger la clef secrète%%0A   %s"
-"%%0A   %s%%0Areçue dans l'espace de stockage de clefs de gpg-agent"
+"Veuillez entrer une phrase secrète pour protéger la clef secrète%%0A   "
+"%s%%0A   %s%%0Areçue dans l'espace de stockage de clefs de gpg-agent"
 
 #, c-format
 msgid "failed to create stream from socket: %s\n"
@@ -810,8 +813,8 @@ msgstr "Je la modifierai plus tard"
 #, fuzzy, c-format
 #| msgid "Do you really want to delete the selected keys? (y/N) "
 msgid ""
-"Do you really want to delete the key identified by keygrip%%0A  %s%%0A  %%C"
-"%%0A?"
+"Do you really want to delete the key identified by keygrip%%0A  %s%%0A  "
+"%%C%%0A?"
 msgstr "Voulez-vous vraiment supprimer les clefs sélectionnées ? (o/N) "
 
 msgid "Delete key"
@@ -3176,6 +3179,10 @@ msgstr "clef %s : la clef secrète clef existe déjà\n"
 msgid "key %s: error sending to agent: %s\n"
 msgstr "clef %s : erreur d'envoi à l'agent : %s\n"
 
+#, c-format
+msgid "key %s: card reference is overridden by key material\n"
+msgstr ""
+
 #. TRANSLATORS: For a smartcard, each private key on host has a
 #. * reference (stub) to a smartcard and actual private key data
 #. * is stored on the card.  A single smartcard can have up to
@@ -3762,6 +3769,10 @@ msgstr "La clef secrète est disponible.\n"
 msgid "Secret subkeys are available.\n"
 msgstr "La clef secrète est disponible.\n"
 
+msgid ""
+"Note: the local copy of the secret key will only be deleted with \"save\".\n"
+msgstr ""
+
 msgid "Need the secret key to do this.\n"
 msgstr "La clef secrète est nécessaire pour faire cela.\n"
 
@@ -3875,6 +3886,11 @@ msgstr "Faut-il enregistrer les modifications ? (o/N) "
 
 msgid "Quit without saving? (y/N) "
 msgstr "Faut-il quitter sans enregistrer ? (o/N) "
+
+#, fuzzy, c-format
+#| msgid "deleting secret %s failed: %s\n"
+msgid "deleting copy of secret key failed: %s\n"
+msgstr "échec de suppression de %s secrète : %s\n"
 
 #, c-format
 msgid "Key not changed so no update needed.\n"
@@ -5927,10 +5943,6 @@ msgstr ""
 #| msgid "you may not use %s while in %s mode\n"
 msgid "key %s may not be used for signing in %s mode\n"
 msgstr "impossible d'utiliser %s en mode %s.\n"
-
-#, c-format
-msgid "continuing verification anyway due to option %s\n"
-msgstr ""
 
 #, c-format
 msgid "WARNING: signature digest conflict in message\n"
@@ -10578,8 +10590,8 @@ msgstr ""
 #~ "\n"
 #~ "Note that the examples given above for levels 2 and 3 are *only* "
 #~ "examples.\n"
-#~ "In the end, it is up to you to decide just what \"casual\" and \"extensive"
-#~ "\"\n"
+#~ "In the end, it is up to you to decide just what \"casual\" and "
+#~ "\"extensive\"\n"
 #~ "mean to you when you sign other keys.\n"
 #~ "\n"
 #~ "If you don't know what the right answer is, answer \"0\"."

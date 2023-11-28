@@ -1234,7 +1234,9 @@ keyserver_refresh (ctrl_t ctrl, strlist_t users)
 	      struct keyserver_spec *keyserver=desc[i].skipfncvalue;
 
               if (!opt.quiet)
-                log_info (_("refreshing %d key from %s\n"), 1, keyserver->uri);
+                log_info (ngettext("refreshing %d key from %s\n",
+                                   "refreshing %d keys from %s\n",
+                                   1), 1, keyserver->uri);
 
 	      /* We use the keyserver structure we parsed out before.
 		 Note that a preferred keyserver without a scheme://

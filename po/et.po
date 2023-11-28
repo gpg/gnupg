@@ -54,6 +54,9 @@ msgstr ""
 msgid "|pinentry-tt|Hide passphrase"
 msgstr "vigane parool"
 
+msgid "Caps Lock is on"
+msgstr ""
+
 #. TRANSLATORS: This string is displayed by Pinentry as the label
 #. for generating a passphrase.
 msgid "Suggest"
@@ -768,8 +771,8 @@ msgstr ""
 
 #, fuzzy, c-format
 msgid ""
-"Do you really want to delete the key identified by keygrip%%0A  %s%%0A  %%C"
-"%%0A?"
+"Do you really want to delete the key identified by keygrip%%0A  %s%%0A  "
+"%%C%%0A?"
 msgstr "Kas te tõesti soovite valitud võtmeid kustutada? "
 
 #, fuzzy
@@ -3145,6 +3148,10 @@ msgstr "jätsin vahele: avalik võti on juba olemas\n"
 msgid "key %s: error sending to agent: %s\n"
 msgstr "viga teate saatmisel serverile `%s': %s\n"
 
+#, c-format
+msgid "key %s: card reference is overridden by key material\n"
+msgstr ""
+
 #. TRANSLATORS: For a smartcard, each private key on host has a
 #. * reference (stub) to a smartcard and actual private key data
 #. * is stored on the card.  A single smartcard can have up to
@@ -3758,6 +3765,10 @@ msgstr "Salajane võti on kasutatav.\n"
 msgid "Secret subkeys are available.\n"
 msgstr "Salajane võti on kasutatav.\n"
 
+msgid ""
+"Note: the local copy of the secret key will only be deleted with \"save\".\n"
+msgstr ""
+
 msgid "Need the secret key to do this.\n"
 msgstr "Selle tegamiseks on vaja salajast võtit.\n"
 
@@ -3878,6 +3889,10 @@ msgstr "Salvestan muutused? "
 #, fuzzy
 msgid "Quit without saving? (y/N) "
 msgstr "Väljun salvestamata? "
+
+#, fuzzy, c-format
+msgid "deleting copy of secret key failed: %s\n"
+msgstr "võtmebloki kustutamine ebaõnnestus: %s\n"
 
 #, c-format
 msgid "Key not changed so no update needed.\n"
@@ -5861,10 +5876,6 @@ msgstr ""
 #| msgid "you may not use %s while in %s mode\n"
 msgid "key %s may not be used for signing in %s mode\n"
 msgstr "%s ei ole moodis %s lubatud.\n"
-
-#, c-format
-msgid "continuing verification anyway due to option %s\n"
-msgstr ""
 
 #, c-format
 msgid "WARNING: signature digest conflict in message\n"
@@ -9991,8 +10002,8 @@ msgstr ""
 
 #~ msgid "If you want to use this untrusted key anyway, answer \"yes\"."
 #~ msgstr ""
-#~ "Kui te ikkagi soovite kasutada seda mitteusaldatavat võtit, vastake \"jah"
-#~ "\"."
+#~ "Kui te ikkagi soovite kasutada seda mitteusaldatavat võtit, vastake "
+#~ "\"jah\"."
 
 #~ msgid ""
 #~ "Enter the user ID of the addressee to whom you want to send the message."
@@ -10088,8 +10099,8 @@ msgstr ""
 #~ "\n"
 #~ "Note that the examples given above for levels 2 and 3 are *only* "
 #~ "examples.\n"
-#~ "In the end, it is up to you to decide just what \"casual\" and \"extensive"
-#~ "\"\n"
+#~ "In the end, it is up to you to decide just what \"casual\" and "
+#~ "\"extensive\"\n"
 #~ "mean to you when you sign other keys.\n"
 #~ "\n"
 #~ "If you don't know what the right answer is, answer \"0\"."

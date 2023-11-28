@@ -55,6 +55,9 @@ msgstr ""
 msgid "|pinentry-tt|Hide passphrase"
 msgstr "contrasinal incorrecto"
 
+msgid "Caps Lock is on"
+msgstr ""
+
 #. TRANSLATORS: This string is displayed by Pinentry as the label
 #. for generating a passphrase.
 msgid "Suggest"
@@ -773,8 +776,8 @@ msgstr ""
 
 #, fuzzy, c-format
 msgid ""
-"Do you really want to delete the key identified by keygrip%%0A  %s%%0A  %%C"
-"%%0A?"
+"Do you really want to delete the key identified by keygrip%%0A  %s%%0A  "
+"%%C%%0A?"
 msgstr "¿Seguro de que quere borra-las chaves seleccionadas? "
 
 #, fuzzy
@@ -3152,6 +3155,10 @@ msgstr "omítese: a chave secreta xa está presente\n"
 msgid "key %s: error sending to agent: %s\n"
 msgstr "erro ao enviar a `%s': %s\n"
 
+#, c-format
+msgid "key %s: card reference is overridden by key material\n"
+msgstr ""
+
 #. TRANSLATORS: For a smartcard, each private key on host has a
 #. * reference (stub) to a smartcard and actual private key data
 #. * is stored on the card.  A single smartcard can have up to
@@ -3234,8 +3241,8 @@ msgstr "chave %08lX: non hai ID de usuario para a sinatura\n"
 #, fuzzy, c-format
 msgid "key %s: unsupported public key algorithm on user ID \"%s\"\n"
 msgstr ""
-"chave %08lX: algoritmo de chave pública non soportado no ID de usuario \"%s"
-"\"\n"
+"chave %08lX: algoritmo de chave pública non soportado no ID de usuario "
+"\"%s\"\n"
 
 #, fuzzy, c-format
 msgid "key %s: invalid self-signature on user ID \"%s\"\n"
@@ -3780,6 +3787,10 @@ msgstr "A chave secreta está disponible.\n"
 msgid "Secret subkeys are available.\n"
 msgstr "A chave secreta está disponible.\n"
 
+msgid ""
+"Note: the local copy of the secret key will only be deleted with \"save\".\n"
+msgstr ""
+
 msgid "Need the secret key to do this.\n"
 msgstr "Cómpre a chave secreta para facer isto.\n"
 
@@ -3902,6 +3913,10 @@ msgstr "¿Garda-los cambios? "
 #, fuzzy
 msgid "Quit without saving? (y/N) "
 msgstr "¿Saír sin gardar? "
+
+#, fuzzy, c-format
+msgid "deleting copy of secret key failed: %s\n"
+msgstr "fallou o borrado do bloque de chaves: %s\n"
 
 #, c-format
 msgid "Key not changed so no update needed.\n"
@@ -5910,10 +5925,6 @@ msgstr ""
 #| msgid "you may not use %s while in %s mode\n"
 msgid "key %s may not be used for signing in %s mode\n"
 msgstr "non se pode empregar %s no modo %s\n"
-
-#, c-format
-msgid "continuing verification anyway due to option %s\n"
-msgstr ""
 
 #, c-format
 msgid "WARNING: signature digest conflict in message\n"
@@ -10015,8 +10026,8 @@ msgstr ""
 
 #~ msgid "the trustdb is corrupted; please run \"gpg --fix-trustdb\".\n"
 #~ msgstr ""
-#~ "a base de datos de confianza está corrompida; execute \"gpg --fix-trustdb"
-#~ "\".\n"
+#~ "a base de datos de confianza está corrompida; execute \"gpg --fix-"
+#~ "trustdb\".\n"
 
 #~ msgid "Please report bugs to <gnupg-bugs@gnu.org>.\n"
 #~ msgstr ""
@@ -10196,8 +10207,8 @@ msgstr ""
 #~ "\n"
 #~ "Note that the examples given above for levels 2 and 3 are *only* "
 #~ "examples.\n"
-#~ "In the end, it is up to you to decide just what \"casual\" and \"extensive"
-#~ "\"\n"
+#~ "In the end, it is up to you to decide just what \"casual\" and "
+#~ "\"extensive\"\n"
 #~ "mean to you when you sign other keys.\n"
 #~ "\n"
 #~ "If you don't know what the right answer is, answer \"0\"."

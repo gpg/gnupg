@@ -55,6 +55,9 @@ msgstr "|pinentry-tt|Pokazanie hasła"
 msgid "|pinentry-tt|Hide passphrase"
 msgstr "|pinentry-tt|Ukrycie hasła"
 
+msgid "Caps Lock is on"
+msgstr ""
+
 #. TRANSLATORS: This string is displayed by Pinentry as the label
 #. for generating a passphrase.
 msgid "Suggest"
@@ -231,8 +234,8 @@ msgid ""
 "Please enter a passphrase to protect the received secret key%%0A   %s%%0A   "
 "%s%%0Awithin gpg-agent's key storage"
 msgstr ""
-"Proszę wprowadzić hasło do zabezpieczenia odebranego klucza tajnego%%0A   %s"
-"%%0A   %s%%0Aw miejscu przechowywania kluczy gpg-agenta"
+"Proszę wprowadzić hasło do zabezpieczenia odebranego klucza tajnego%%0A   "
+"%s%%0A   %s%%0Aw miejscu przechowywania kluczy gpg-agenta"
 
 #, c-format
 msgid "failed to create stream from socket: %s\n"
@@ -759,8 +762,8 @@ msgstr "Zmienię je później"
 
 #, c-format
 msgid ""
-"Do you really want to delete the key identified by keygrip%%0A  %s%%0A  %%C"
-"%%0A?"
+"Do you really want to delete the key identified by keygrip%%0A  %s%%0A  "
+"%%C%%0A?"
 msgstr ""
 "Czy na pewno usunąć klucz identyfikowany przez uchwyt%%0A  %s%%0A  %%C%%0A?"
 
@@ -3007,6 +3010,10 @@ msgstr "klucz %s: klucz prywatny już istnieje\n"
 msgid "key %s: error sending to agent: %s\n"
 msgstr "klucz %s: błąd wysyłania do agenta: %s\n"
 
+#, c-format
+msgid "key %s: card reference is overridden by key material\n"
+msgstr ""
+
 #. TRANSLATORS: For a smartcard, each private key on host has a
 #. * reference (stub) to a smartcard and actual private key data
 #. * is stored on the card.  A single smartcard can have up to
@@ -3599,6 +3606,12 @@ msgstr "Dostępny jest klucz tajny.\n"
 msgid "Secret subkeys are available.\n"
 msgstr "Dostępne są podklucze tajne.\n"
 
+#, fuzzy
+#| msgid "Note: Only the secret part of the shown subkey will be deleted.\n"
+msgid ""
+"Note: the local copy of the secret key will only be deleted with \"save\".\n"
+msgstr "Uwaga: usunięta zostanie tylko tajna część pokazanego podklucza.\n"
+
 msgid "Need the secret key to do this.\n"
 msgstr "Do wykonania tej operacji potrzebny jest klucz tajny.\n"
 
@@ -3712,6 +3725,11 @@ msgstr "Zapisać zmiany? (t/N) "
 
 msgid "Quit without saving? (y/N) "
 msgstr "Wyjść bez zapisania zmian? (t/N) "
+
+#, fuzzy, c-format
+#| msgid "deleting secret %s failed: %s\n"
+msgid "deleting copy of secret key failed: %s\n"
+msgstr "usunięcie %s tajnego nie powiodło się: %s\n"
 
 #, c-format
 msgid "Key not changed so no update needed.\n"
@@ -5679,10 +5697,6 @@ msgstr "klucz %s %s wymaga skrótu %zu-bitowego lub większego (skrót to %s)\n"
 #, c-format
 msgid "key %s may not be used for signing in %s mode\n"
 msgstr "klucz %s nie może być używany do podpisów w trybie %s\n"
-
-#, c-format
-msgid "continuing verification anyway due to option %s\n"
-msgstr ""
 
 #, c-format
 msgid "WARNING: signature digest conflict in message\n"

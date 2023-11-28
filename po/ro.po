@@ -59,6 +59,9 @@ msgstr ""
 msgid "|pinentry-tt|Hide passphrase"
 msgstr "frază-parolă invalidă"
 
+msgid "Caps Lock is on"
+msgstr ""
+
 #. TRANSLATORS: This string is displayed by Pinentry as the label
 #. for generating a passphrase.
 msgid "Suggest"
@@ -789,8 +792,8 @@ msgstr ""
 #, fuzzy, c-format
 #| msgid "Do you really want to delete the selected keys? (y/N) "
 msgid ""
-"Do you really want to delete the key identified by keygrip%%0A  %s%%0A  %%C"
-"%%0A?"
+"Do you really want to delete the key identified by keygrip%%0A  %s%%0A  "
+"%%C%%0A?"
 msgstr "Doriţi într-adevăr să ştergeţi cheile selectate? (d/N) "
 
 #, fuzzy
@@ -2532,8 +2535,8 @@ msgstr ""
 
 #, fuzzy, c-format
 #| msgid ""
-#| "WARNING: unsafe enclosing directory permissions on configuration file `"
-#| "%s'\n"
+#| "WARNING: unsafe enclosing directory permissions on configuration file "
+#| "`%s'\n"
 msgid ""
 "WARNING: unsafe enclosing directory permissions on configuration file '%s'\n"
 msgstr ""
@@ -3217,6 +3220,10 @@ msgstr "sărită: cheia secretă deja prezentă\n"
 msgid "key %s: error sending to agent: %s\n"
 msgstr "eroare trimitere la `%s': %s\n"
 
+#, c-format
+msgid "key %s: card reference is overridden by key material\n"
+msgstr ""
+
 #. TRANSLATORS: For a smartcard, each private key on host has a
 #. * reference (stub) to a smartcard and actual private key data
 #. * is stored on the card.  A single smartcard can have up to
@@ -3293,8 +3300,8 @@ msgstr "cheia %s: nici un ID utilizator pentru semnătură\n"
 #, c-format
 msgid "key %s: unsupported public key algorithm on user ID \"%s\"\n"
 msgstr ""
-"cheia %s: algoritm cu cheie publică nesuportat pentru ID-ul utilizator \"%s"
-"\"\n"
+"cheia %s: algoritm cu cheie publică nesuportat pentru ID-ul utilizator "
+"\"%s\"\n"
 
 #, c-format
 msgid "key %s: invalid self-signature on user ID \"%s\"\n"
@@ -3805,6 +3812,10 @@ msgstr "Cheia secretă este disponibilă.\n"
 msgid "Secret subkeys are available.\n"
 msgstr "Cheia secretă este disponibilă.\n"
 
+msgid ""
+"Note: the local copy of the secret key will only be deleted with \"save\".\n"
+msgstr ""
+
 msgid "Need the secret key to do this.\n"
 msgstr "Aveţi nevoie de cheia secretă pentru a face aceasta.\n"
 
@@ -3928,6 +3939,10 @@ msgstr "Salvaţi schimbările?  (d/N) "
 
 msgid "Quit without saving? (y/N) "
 msgstr "Terminaţi fără a salva?  (d/N) "
+
+#, fuzzy, c-format
+msgid "deleting copy of secret key failed: %s\n"
+msgstr "stergere keyblock a eşuat: %s\n"
 
 #, c-format
 msgid "Key not changed so no update needed.\n"
@@ -5947,10 +5962,6 @@ msgstr ""
 #| msgid "you may not use %s while in %s mode\n"
 msgid "key %s may not be used for signing in %s mode\n"
 msgstr "nu puteţi folosi %s câtă vreme în modul %s\n"
-
-#, c-format
-msgid "continuing verification anyway due to option %s\n"
-msgstr ""
 
 #, c-format
 msgid "WARNING: signature digest conflict in message\n"
@@ -10302,8 +10313,8 @@ msgstr ""
 #~ "\n"
 #~ "Note that the examples given above for levels 2 and 3 are *only* "
 #~ "examples.\n"
-#~ "In the end, it is up to you to decide just what \"casual\" and \"extensive"
-#~ "\"\n"
+#~ "In the end, it is up to you to decide just what \"casual\" and "
+#~ "\"extensive\"\n"
 #~ "mean to you when you sign other keys.\n"
 #~ "\n"
 #~ "If you don't know what the right answer is, answer \"0\"."
@@ -11224,8 +11235,8 @@ msgstr ""
 #~ "crea\n"
 #~ "o cheie sigură pentru semnături: acest program face acest lucru, dar "
 #~ "alte\n"
-#~ "implementări OpenPGP ar putea să nu înţeleagă varianta de semnare"
-#~ "+cifrare.\n"
+#~ "implementări OpenPGP ar putea să nu înţeleagă varianta de "
+#~ "semnare+cifrare.\n"
 #~ "\n"
 #~ "Prima cheie (primară) trebuie să fie întotdeauna capabilă de semnare;\n"
 #~ "acesta este motivul pentru care cheia ElGamal nu este disponibilă în\n"

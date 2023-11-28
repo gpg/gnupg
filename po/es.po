@@ -57,6 +57,9 @@ msgstr "|pinentry-tt|Mostrar frase contraseña"
 msgid "|pinentry-tt|Hide passphrase"
 msgstr "|pinentry-tt|Esconder frase contraseña"
 
+msgid "Caps Lock is on"
+msgstr ""
+
 #. TRANSLATORS: This string is displayed by Pinentry as the label
 #. for generating a passphrase.
 msgid "Suggest"
@@ -763,8 +766,8 @@ msgid ""
 "Please verify that the certificate identified as:%%0A  \"%s\"%%0Ahas the "
 "fingerprint:%%0A  %s"
 msgstr ""
-"Por favor verifique que el certificado identificado como:%%0A \"%s"
-"\"%%0Atiene la huella digital:%%0A  %s"
+"Por favor verifique que el certificado identificado como:%%0A "
+"\"%s\"%%0Atiene la huella digital:%%0A  %s"
 
 #. TRANSLATORS: "Correct" is the label of a button and intended
 #. to be hit if the fingerprint matches the one of the CA.  The
@@ -796,8 +799,8 @@ msgstr "La cambiaré más tarde"
 
 #, c-format
 msgid ""
-"Do you really want to delete the key identified by keygrip%%0A  %s%%0A  %%C"
-"%%0A?"
+"Do you really want to delete the key identified by keygrip%%0A  %s%%0A  "
+"%%C%%0A?"
 msgstr ""
 "¿De verdad quiere borrar la clave identificada con el keygrip%%0A  %s%%0A  "
 "%%C%%0A?"
@@ -3054,6 +3057,10 @@ msgstr "clave %s: clave secreta ya existe\n"
 msgid "key %s: error sending to agent: %s\n"
 msgstr "clave %s: error enviando al agente: %s\n"
 
+#, c-format
+msgid "key %s: card reference is overridden by key material\n"
+msgstr ""
+
 #. TRANSLATORS: For a smartcard, each private key on host has a
 #. * reference (stub) to a smartcard and actual private key data
 #. * is stored on the card.  A single smartcard can have up to
@@ -3622,6 +3629,10 @@ msgstr "Clave secreta disponible.\n"
 msgid "Secret subkeys are available.\n"
 msgstr "Subclaves secretas disponibles.\n"
 
+msgid ""
+"Note: the local copy of the secret key will only be deleted with \"save\".\n"
+msgstr ""
+
 msgid "Need the secret key to do this.\n"
 msgstr "Se necesita la clave secreta para hacer esto.\n"
 
@@ -3732,6 +3743,11 @@ msgstr "¿Grabar cambios? (s/N) "
 
 msgid "Quit without saving? (y/N) "
 msgstr "¿Salir sin grabar? (s/N) "
+
+#, fuzzy, c-format
+#| msgid "deleting secret %s failed: %s\n"
+msgid "deleting copy of secret key failed: %s\n"
+msgstr "ha fallado el borrado del secreto %s: %s\n"
 
 #, c-format
 msgid "Key not changed so no update needed.\n"
@@ -5578,8 +5594,8 @@ msgstr ""
 "la clave secreta. De cualquier modo, si la clave secreta está disponible,\n"
 "es mejor generar un nuevo certificado de revocación y dar una razón para la "
 "misma\n"
-"Para más detalles, lee la descripción de la orden gpg \"--generate-revocation"
-"\"\n"
+"Para más detalles, lee la descripción de la orden gpg \"--generate-"
+"revocation\"\n"
 "en el manual GnuPG."
 
 msgid ""
@@ -5678,10 +5694,6 @@ msgstr ""
 #, c-format
 msgid "key %s may not be used for signing in %s mode\n"
 msgstr "no puede usar la clave %s para firmar en modo %s\n"
-
-#, c-format
-msgid "continuing verification anyway due to option %s\n"
-msgstr ""
 
 #, c-format
 msgid "WARNING: signature digest conflict in message\n"
@@ -10115,8 +10127,8 @@ msgstr ""
 #~ "\n"
 #~ "Note that the examples given above for levels 2 and 3 are *only* "
 #~ "examples.\n"
-#~ "In the end, it is up to you to decide just what \"casual\" and \"extensive"
-#~ "\"\n"
+#~ "In the end, it is up to you to decide just what \"casual\" and "
+#~ "\"extensive\"\n"
 #~ "mean to you when you sign other keys.\n"
 #~ "\n"
 #~ "If you don't know what the right answer is, answer \"0\"."
@@ -10155,8 +10167,8 @@ msgstr ""
 #~ "      al poseedor de la clave.\n"
 #~ "\n"
 #~ "Observe que los ejemplos dados en los niveles 2 y 3 son *solo* ejemplos.\n"
-#~ "En definitiva, usted decide lo que significa \"informal\" y \"exhaustivo"
-#~ "\"\n"
+#~ "En definitiva, usted decide lo que significa \"informal\" y "
+#~ "\"exhaustivo\"\n"
 #~ "para usted cuando firma las claves de otros.\n"
 #~ "\n"
 #~ "Si no sabe qué contestar, conteste \"0\"."

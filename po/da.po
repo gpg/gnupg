@@ -70,6 +70,9 @@ msgstr ""
 msgid "|pinentry-tt|Hide passphrase"
 msgstr "Indtast ny adgangsfrase"
 
+msgid "Caps Lock is on"
+msgstr ""
+
 #. TRANSLATORS: This string is displayed by Pinentry as the label
 #. for generating a passphrase.
 msgid "Suggest"
@@ -261,8 +264,8 @@ msgid ""
 "Please enter a passphrase to protect the received secret key%%0A   %s%%0A   "
 "%s%%0Awithin gpg-agent's key storage"
 msgstr ""
-"Indtast venligst en adgangsfrase for at beskytte den modtaget hemmelige nøgle"
-"%%0A   %s%%0A   %s%%0Ainden i gpg-agentens nøglelager"
+"Indtast venligst en adgangsfrase for at beskytte den modtaget hemmelige "
+"nøgle%%0A   %s%%0A   %s%%0Ainden i gpg-agentens nøglelager"
 
 #, c-format
 msgid "failed to create stream from socket: %s\n"
@@ -855,8 +858,8 @@ msgstr "Jeg ændrer den senere"
 #, fuzzy, c-format
 #| msgid "Do you really want to delete the selected keys? (y/N) "
 msgid ""
-"Do you really want to delete the key identified by keygrip%%0A  %s%%0A  %%C"
-"%%0A?"
+"Do you really want to delete the key identified by keygrip%%0A  %s%%0A  "
+"%%C%%0A?"
 msgstr "Vil du virkelig slette de valgte nøgler? (j/N) "
 
 #, fuzzy
@@ -2585,8 +2588,8 @@ msgstr "ADVARSEL: Usikre indelukkede mapperettigheder på hjemmemappe »%s«\n"
 
 #, fuzzy, c-format
 #| msgid ""
-#| "WARNING: unsafe enclosing directory permissions on configuration file `"
-#| "%s'\n"
+#| "WARNING: unsafe enclosing directory permissions on configuration file "
+#| "`%s'\n"
 msgid ""
 "WARNING: unsafe enclosing directory permissions on configuration file '%s'\n"
 msgstr ""
@@ -3263,6 +3266,10 @@ msgstr "udelod: hemmelig nøgle er allerede til stede\n"
 msgid "key %s: error sending to agent: %s\n"
 msgstr "fejl under afsendelse af %s-kommando: %s\n"
 
+#, c-format
+msgid "key %s: card reference is overridden by key material\n"
+msgstr ""
+
 #. TRANSLATORS: For a smartcard, each private key on host has a
 #. * reference (stub) to a smartcard and actual private key data
 #. * is stored on the card.  A single smartcard can have up to
@@ -3864,6 +3871,10 @@ msgstr "Hemmelig nøgle er tilgængelig.\n"
 msgid "Secret subkeys are available.\n"
 msgstr "Hemmelig nøgle er tilgængelig.\n"
 
+msgid ""
+"Note: the local copy of the secret key will only be deleted with \"save\".\n"
+msgstr ""
+
 msgid "Need the secret key to do this.\n"
 msgstr "Har brug for den hemmelige nøgle for dette.\n"
 
@@ -3986,6 +3997,11 @@ msgstr "Gem ændringer? (j/N) "
 
 msgid "Quit without saving? (y/N) "
 msgstr "Afslut uden at gemme? (j/N) "
+
+#, fuzzy, c-format
+#| msgid "deleting certificate \"%s\" failed: %s\n"
+msgid "deleting copy of secret key failed: %s\n"
+msgstr "sletning af certifikat »%s« mislykkedes: %s\n"
 
 #, c-format
 msgid "Key not changed so no update needed.\n"
@@ -6021,10 +6037,6 @@ msgstr "DSA-nøgle %s kræver en %u bit eller større hash\n"
 #| msgid "you may not use %s while in %s mode\n"
 msgid "key %s may not be used for signing in %s mode\n"
 msgstr "du kan ikke bruge %s i tilstanden %s\n"
-
-#, c-format
-msgid "continuing verification anyway due to option %s\n"
-msgstr ""
 
 #, c-format
 msgid "WARNING: signature digest conflict in message\n"

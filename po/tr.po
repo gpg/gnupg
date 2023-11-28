@@ -58,6 +58,9 @@ msgstr ""
 msgid "|pinentry-tt|Hide passphrase"
 msgstr "Yeni anahtar parolasını giriniz"
 
+msgid "Caps Lock is on"
+msgstr ""
+
 #. TRANSLATORS: This string is displayed by Pinentry as the label
 #. for generating a passphrase.
 msgid "Suggest"
@@ -834,8 +837,8 @@ msgstr "Sonra değiştireceğim"
 #, fuzzy, c-format
 #| msgid "Do you really want to delete the selected keys? (y/N) "
 msgid ""
-"Do you really want to delete the key identified by keygrip%%0A  %s%%0A  %%C"
-"%%0A?"
+"Do you really want to delete the key identified by keygrip%%0A  %s%%0A  "
+"%%C%%0A?"
 msgstr "Seçili anahtarları gerçekten silmek istiyor musunuz? (e/H ya da y/N) "
 
 #, fuzzy
@@ -2564,8 +2567,8 @@ msgstr "UYARI: '%s' evdizinindeki ilgili dizinin izinleri güvensiz\n"
 
 #, fuzzy, c-format
 #| msgid ""
-#| "WARNING: unsafe enclosing directory permissions on configuration file `"
-#| "%s'\n"
+#| "WARNING: unsafe enclosing directory permissions on configuration file "
+#| "`%s'\n"
 msgid ""
 "WARNING: unsafe enclosing directory permissions on configuration file '%s'\n"
 msgstr "UYARI: '%s' yapılandırma dosyasını içeren dizinin izinleri güvensiz\n"
@@ -3254,6 +3257,10 @@ msgstr "atlandı: gizli anahtar zaten var\n"
 msgid "key %s: error sending to agent: %s\n"
 msgstr "%s komutu gönderilirken hata: %s\n"
 
+#, c-format
+msgid "key %s: card reference is overridden by key material\n"
+msgstr ""
+
 #. TRANSLATORS: For a smartcard, each private key on host has a
 #. * reference (stub) to a smartcard and actual private key data
 #. * is stored on the card.  A single smartcard can have up to
@@ -3859,6 +3866,10 @@ msgstr "Gizli anahtar mevcut.\n"
 msgid "Secret subkeys are available.\n"
 msgstr "Gizli anahtar mevcut.\n"
 
+msgid ""
+"Note: the local copy of the secret key will only be deleted with \"save\".\n"
+msgstr ""
+
 msgid "Need the secret key to do this.\n"
 msgstr "Bunu yapmak için gizli anahtar gerekli.\n"
 
@@ -3991,6 +4002,11 @@ msgstr "Değişiklikler kaydedilecek mi? (e/H ya da y/N) "
 
 msgid "Quit without saving? (y/N) "
 msgstr "Kaydetmeden çıkılsın mı? (e/H ya da y/N) "
+
+#, fuzzy, c-format
+#| msgid "deleting certificate \"%s\" failed: %s\n"
+msgid "deleting copy of secret key failed: %s\n"
+msgstr "\"%s\" sertifikası silinemedi: %s\n"
 
 #, c-format
 msgid "Key not changed so no update needed.\n"
@@ -6049,10 +6065,6 @@ msgstr "DSA anahtarı %s, %u bitlik veya daha geniş bir çittirim gerektiriyor\
 #| msgid "you may not use %s while in %s mode\n"
 msgid "key %s may not be used for signing in %s mode\n"
 msgstr "%2$s kipindeyken %1$s kullanılamayabilir.\n"
-
-#, c-format
-msgid "continuing verification anyway due to option %s\n"
-msgstr ""
 
 #, c-format
 msgid "WARNING: signature digest conflict in message\n"

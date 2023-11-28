@@ -20,8 +20,8 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11) ? 0 : ((n%10>=2 && n"
-"%10<=4 && (n%100<10 || n%100>=20)) ? 1 : 2);\n"
+"Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11) ? 0 : ((n%10>=2 && "
+"n%10<=4 && (n%100<10 || n%100>=20)) ? 1 : 2);\n"
 
 #, c-format
 msgid "failed to acquire the pinentry lock: %s\n"
@@ -59,6 +59,9 @@ msgstr "|pinentry-tt|Показывать фразу-пароль"
 
 msgid "|pinentry-tt|Hide passphrase"
 msgstr "|pinentry-tt|Скрывать фразу-пароль"
+
+msgid "Caps Lock is on"
+msgstr ""
 
 #. TRANSLATORS: This string is displayed by Pinentry as the label
 #. for generating a passphrase.
@@ -334,8 +337,8 @@ msgstr[2] ""
 #, c-format
 msgid "A passphrase may not be a known term or match%%0Acertain pattern."
 msgstr ""
-"Фраза-пароль не должна быть известным выражением и не должна быть составлена"
-"%%0Aпо определенному образцу."
+"Фраза-пароль не должна быть известным выражением и не должна быть "
+"составлена%%0Aпо определенному образцу."
 
 msgid "Warning: You have entered an insecure passphrase."
 msgstr "Внимание: Вы ввели небезопасную фразу-пароль."
@@ -766,8 +769,8 @@ msgstr "Сменю позже"
 
 #, c-format
 msgid ""
-"Do you really want to delete the key identified by keygrip%%0A  %s%%0A  %%C"
-"%%0A?"
+"Do you really want to delete the key identified by keygrip%%0A  %s%%0A  "
+"%%C%%0A?"
 msgstr "Вы действительно хотите удалить ключ с кодом%%0A  %s%%0A  %%C%%0A?"
 
 msgid "Delete key"
@@ -3005,6 +3008,10 @@ msgstr "ключ %s: секретный ключ уже имеется\n"
 msgid "key %s: error sending to agent: %s\n"
 msgstr "ключ %s: ошибка отправки в агент: %s\n"
 
+#, c-format
+msgid "key %s: card reference is overridden by key material\n"
+msgstr ""
+
 #. TRANSLATORS: For a smartcard, each private key on host has a
 #. * reference (stub) to a smartcard and actual private key data
 #. * is stored on the card.  A single smartcard can have up to
@@ -3583,6 +3590,13 @@ msgstr "Секретный ключ доступен.\n"
 msgid "Secret subkeys are available.\n"
 msgstr "Секретные подключи доступны.\n"
 
+#, fuzzy
+#| msgid "Note: Only the secret part of the shown subkey will be deleted.\n"
+msgid ""
+"Note: the local copy of the secret key will only be deleted with \"save\".\n"
+msgstr ""
+"Замечание: Будет удалена только секретная часть показанного подключа.\n"
+
 msgid "Need the secret key to do this.\n"
 msgstr "Для данного действия нужен секретный ключ.\n"
 
@@ -3696,6 +3710,11 @@ msgstr "Сохранить изменения? (y/N) "
 
 msgid "Quit without saving? (y/N) "
 msgstr "Выйти без сохранения? (y/N) "
+
+#, fuzzy, c-format
+#| msgid "deleting secret %s failed: %s\n"
+msgid "deleting copy of secret key failed: %s\n"
+msgstr "сбой при удалении секретного %s: %s\n"
 
 #, c-format
 msgid "Key not changed so no update needed.\n"
@@ -5632,10 +5651,6 @@ msgstr "Ключ %s %s требует %zu-битного или более дл�
 #, c-format
 msgid "key %s may not be used for signing in %s mode\n"
 msgstr "ключ %s нельзя использовать для подписи в режиме %s\n"
-
-#, c-format
-msgid "continuing verification anyway due to option %s\n"
-msgstr ""
 
 #, c-format
 msgid "WARNING: signature digest conflict in message\n"
@@ -9179,8 +9194,8 @@ msgstr ""
 
 #~ msgid "error setting policy for key %s, user id \"%s\": %s"
 #~ msgstr ""
-#~ "ошибка установки правил для ключа %s с идентификатором пользователя \"%s"
-#~ "\": %s"
+#~ "ошибка установки правил для ключа %s с идентификатором пользователя "
+#~ "\"%s\": %s"
 
 #~ msgid "only SHA-1 is supported for OCSP responses\n"
 #~ msgstr "для ответов OCSP поддерживается только SHA-1\n"

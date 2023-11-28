@@ -14,8 +14,8 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11) ? 0 : ((n%10>=2 && n"
-"%10<=4 && (n%100<10 || n%100>=20)) ? 1 : 2);\n"
+"Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11) ? 0 : ((n%10>=2 && "
+"n%10<=4 && (n%100<10 || n%100>=20)) ? 1 : 2);\n"
 "X-Generator: Lokalize 20.11.70\n"
 
 #, c-format
@@ -54,6 +54,9 @@ msgstr "Зробити пароль видимим"
 
 msgid "|pinentry-tt|Hide passphrase"
 msgstr "Приховати пароль"
+
+msgid "Caps Lock is on"
+msgstr ""
 
 #. TRANSLATORS: This string is displayed by Pinentry as the label
 #. for generating a passphrase.
@@ -236,8 +239,8 @@ msgid ""
 "Please enter a passphrase to protect the received secret key%%0A   %s%%0A   "
 "%s%%0Awithin gpg-agent's key storage"
 msgstr ""
-"Будь ласка, вкажіть пароль для захисту отриманого закритого ключа%%0A   %s"
-"%%0A   %s%%0Aу сховищі ключів gpg-agent"
+"Будь ласка, вкажіть пароль для захисту отриманого закритого ключа%%0A   "
+"%s%%0A   %s%%0Aу сховищі ключів gpg-agent"
 
 #, c-format
 msgid "failed to create stream from socket: %s\n"
@@ -771,8 +774,8 @@ msgstr "Я зміню його пізніше"
 
 #, c-format
 msgid ""
-"Do you really want to delete the key identified by keygrip%%0A  %s%%0A  %%C"
-"%%0A?"
+"Do you really want to delete the key identified by keygrip%%0A  %s%%0A  "
+"%%C%%0A?"
 msgstr ""
 "Справді хочете вилучити ключ, що визначається keygrip%%0A  %s%%0A  %%C%%0A?"
 
@@ -3062,6 +3065,10 @@ msgstr "ключ %s: закритий ключ вже існує\n"
 msgid "key %s: error sending to agent: %s\n"
 msgstr "ключ %s: помилка під час спроби надсилання агенту: %s\n"
 
+#, c-format
+msgid "key %s: card reference is overridden by key material\n"
+msgstr ""
+
 #. TRANSLATORS: For a smartcard, each private key on host has a
 #. * reference (stub) to a smartcard and actual private key data
 #. * is stored on the card.  A single smartcard can have up to
@@ -3648,6 +3655,10 @@ msgstr "Доступний закритий ключ.\n"
 msgid "Secret subkeys are available.\n"
 msgstr "Доступні закриті підключі.\n"
 
+msgid ""
+"Note: the local copy of the secret key will only be deleted with \"save\".\n"
+msgstr ""
+
 msgid "Need the secret key to do this.\n"
 msgstr "Для цього потрібен закритий ключ.\n"
 
@@ -3756,6 +3767,11 @@ msgstr "Зберегти зміни? (y/N або т/Н) "
 
 msgid "Quit without saving? (y/N) "
 msgstr "Вийти без збереження? (y/N або т/Н) "
+
+#, fuzzy, c-format
+#| msgid "deleting secret %s failed: %s\n"
+msgid "deleting copy of secret key failed: %s\n"
+msgstr "помилка під час спроби вилучення закритого %s: %s\n"
 
 #, c-format
 msgid "Key not changed so no update needed.\n"
@@ -5732,10 +5748,6 @@ msgstr ""
 #, c-format
 msgid "key %s may not be used for signing in %s mode\n"
 msgstr "ключ %s не можна використовувати для підписування у режимі %s\n"
-
-#, c-format
-msgid "continuing verification anyway due to option %s\n"
-msgstr ""
 
 #, c-format
 msgid "WARNING: signature digest conflict in message\n"

@@ -58,6 +58,9 @@ msgstr "|pinentry-tt|使密码可见"
 msgid "|pinentry-tt|Hide passphrase"
 msgstr "|pinentry-tt|隐藏密码"
 
+msgid "Caps Lock is on"
+msgstr ""
+
 #. TRANSLATORS: This string is displayed by Pinentry as the label
 #. for generating a passphrase.
 msgid "Suggest"
@@ -222,8 +225,8 @@ msgid ""
 "Please enter a passphrase to protect the received secret key%%0A   %s%%0A   "
 "%s%%0Awithin gpg-agent's key storage"
 msgstr ""
-"请输入一个密码，以便于在 gpg-agent 的密钥存储中保护接收到的私钥 %%0A   %s"
-"%%0A   %s%%0A"
+"请输入一个密码，以便于在 gpg-agent 的密钥存储中保护接收到的私钥 %%0A   "
+"%s%%0A   %s%%0A"
 
 #, c-format
 msgid "failed to create stream from socket: %s\n"
@@ -733,8 +736,8 @@ msgstr "稍后修改"
 
 #, c-format
 msgid ""
-"Do you really want to delete the key identified by keygrip%%0A  %s%%0A  %%C"
-"%%0A?"
+"Do you really want to delete the key identified by keygrip%%0A  %s%%0A  "
+"%%C%%0A?"
 msgstr ""
 "您真的想要删除这个被以下的 keygrip 所标识的密钥吗 %%0A  %s%%0A  %%C%%0A？"
 
@@ -2923,6 +2926,10 @@ msgstr "密钥 %s：私钥已存在\n"
 msgid "key %s: error sending to agent: %s\n"
 msgstr "密钥 %s：发送至代理人程序时出现错误：%s\n"
 
+#, c-format
+msgid "key %s: card reference is overridden by key material\n"
+msgstr ""
+
 #. TRANSLATORS: For a smartcard, each private key on host has a
 #. * reference (stub) to a smartcard and actual private key data
 #. * is stored on the card.  A single smartcard can have up to
@@ -3467,6 +3474,12 @@ msgstr "私钥可用。\n"
 msgid "Secret subkeys are available.\n"
 msgstr "私密子密钥可用。\n"
 
+#, fuzzy
+#| msgid "Note: Only the secret part of the shown subkey will be deleted.\n"
+msgid ""
+"Note: the local copy of the secret key will only be deleted with \"save\".\n"
+msgstr "主要：只有显示的子钥的秘密部分会被删除。\n"
+
 msgid "Need the secret key to do this.\n"
 msgstr "要有私钥才能这么做。\n"
 
@@ -3572,6 +3585,11 @@ msgstr "要保存变更吗？(y/N) "
 
 msgid "Quit without saving? (y/N) "
 msgstr "要不保存而退出吗？(y/N) "
+
+#, fuzzy, c-format
+#| msgid "deleting secret %s failed: %s\n"
+msgid "deleting copy of secret key failed: %s\n"
+msgstr "删除私钥 %s 时失败： %s\n"
 
 #, c-format
 msgid "Key not changed so no update needed.\n"
@@ -5447,10 +5465,6 @@ msgstr "%s 密钥 %s 要求一个 %zu 位或更长的散列（散列是 %s）\n"
 #, c-format
 msgid "key %s may not be used for signing in %s mode\n"
 msgstr "密钥 %s 在 %s 模式中不适用于签名\n"
-
-#, c-format
-msgid "continuing verification anyway due to option %s\n"
-msgstr "由于 %s 选项，验证仍在继续中\n"
 
 #, c-format
 msgid "WARNING: signature digest conflict in message\n"
@@ -8510,6 +8524,10 @@ msgid ""
 msgstr ""
 "语法：gpg-check-pattern [选项] patternfile\n"
 "按照 patternfile 检查一个由标准输入（stdin）给定的密码\n"
+
+#, c-format
+#~ msgid "continuing verification anyway due to option %s\n"
+#~ msgstr "由于 %s 选项，验证仍在继续中\n"
 
 #~ msgid "%s/%s encrypted for: \"%s\"\n"
 #~ msgstr "%s/%s 已经加密给：“%s”\n"

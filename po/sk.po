@@ -57,6 +57,9 @@ msgstr ""
 msgid "|pinentry-tt|Hide passphrase"
 msgstr "nesprávne heslo"
 
+msgid "Caps Lock is on"
+msgstr ""
+
 #. TRANSLATORS: This string is displayed by Pinentry as the label
 #. for generating a passphrase.
 msgid "Suggest"
@@ -773,8 +776,8 @@ msgstr ""
 
 #, fuzzy, c-format
 msgid ""
-"Do you really want to delete the key identified by keygrip%%0A  %s%%0A  %%C"
-"%%0A?"
+"Do you really want to delete the key identified by keygrip%%0A  %s%%0A  "
+"%%C%%0A?"
 msgstr "Skutočne chcete zmazať vybrané kľúče? "
 
 #, fuzzy
@@ -3165,6 +3168,10 @@ msgstr "preskočené: tajný kľúč je už v databáze\n"
 msgid "key %s: error sending to agent: %s\n"
 msgstr "chyba pri posielaní na `%s': %s\n"
 
+#, c-format
+msgid "key %s: card reference is overridden by key material\n"
+msgstr ""
+
 #. TRANSLATORS: For a smartcard, each private key on host has a
 #. * reference (stub) to a smartcard and actual private key data
 #. * is stored on the card.  A single smartcard can have up to
@@ -3240,8 +3247,8 @@ msgstr "kľúč %08lX: neexistuje id užívateľa pre podpis\n"
 #, fuzzy, c-format
 msgid "key %s: unsupported public key algorithm on user ID \"%s\"\n"
 msgstr ""
-"kľúč %08lX: nepodporovaný algoritmus verejného kľúča u užívateľského id \"%s"
-"\"\n"
+"kľúč %08lX: nepodporovaný algoritmus verejného kľúča u užívateľského id "
+"\"%s\"\n"
 
 #, fuzzy, c-format
 msgid "key %s: invalid self-signature on user ID \"%s\"\n"
@@ -3784,6 +3791,10 @@ msgstr "Tajný kľúč je dostupný.\n"
 msgid "Secret subkeys are available.\n"
 msgstr "Tajný kľúč je dostupný.\n"
 
+msgid ""
+"Note: the local copy of the secret key will only be deleted with \"save\".\n"
+msgstr ""
+
 msgid "Need the secret key to do this.\n"
 msgstr "Na vykonanie tejto operácie je potrebný tajný kľúč.\n"
 
@@ -3904,6 +3915,10 @@ msgstr "Uložiť zmeny? "
 #, fuzzy
 msgid "Quit without saving? (y/N) "
 msgstr "Ukončiť bez uloženia? "
+
+#, fuzzy, c-format
+msgid "deleting copy of secret key failed: %s\n"
+msgstr "zmazanie bloku kľúča sa nepodarilo:  %s\n"
 
 #, c-format
 msgid "Key not changed so no update needed.\n"
@@ -5898,10 +5913,6 @@ msgid "key %s may not be used for signing in %s mode\n"
 msgstr ""
 "použitie %s nie je v móde %s dovolené\n"
 "\n"
-
-#, c-format
-msgid "continuing verification anyway due to option %s\n"
-msgstr ""
 
 #, c-format
 msgid "WARNING: signature digest conflict in message\n"
@@ -10167,8 +10178,8 @@ msgstr ""
 #~ "\n"
 #~ "Note that the examples given above for levels 2 and 3 are *only* "
 #~ "examples.\n"
-#~ "In the end, it is up to you to decide just what \"casual\" and \"extensive"
-#~ "\"\n"
+#~ "In the end, it is up to you to decide just what \"casual\" and "
+#~ "\"extensive\"\n"
 #~ "mean to you when you sign other keys.\n"
 #~ "\n"
 #~ "If you don't know what the right answer is, answer \"0\"."
@@ -10211,8 +10222,8 @@ msgstr ""
 #, fuzzy
 #~ msgid "Answer \"yes\" if you want to sign ALL the user IDs"
 #~ msgstr ""
-#~ "Pokiaľ chcete podpísať VŠETKY identifikátory užívateľov, odpovedzte \"ano"
-#~ "\""
+#~ "Pokiaľ chcete podpísať VŠETKY identifikátory užívateľov, odpovedzte "
+#~ "\"ano\""
 
 #~ msgid ""
 #~ "Answer \"yes\" if you really want to delete this user ID.\n"
