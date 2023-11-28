@@ -74,6 +74,7 @@ typedef enum
     CARD_TYPE_MICARDO,
     CARD_TYPE_CARDOS_50,
     CARD_TYPE_CARDOS_53,
+    CARD_TYPE_CARDOS_54,
     CARD_TYPE_AET,     /* A.E.T. Europe JCOP card.  */
     CARD_TYPE_BELPIC,  /* Belgian eID card specs. */
     CARD_TYPE_STARCOS_32
@@ -124,6 +125,8 @@ static struct
     CARD_TYPE_CARDOS_50 }, /* CardOS 5.0 */
   { 11, X("\x3b\xd2\x18\x00\x81\x31\xfe\x58\xc9\x03\x16"),
     CARD_TYPE_CARDOS_53 }, /* CardOS 5.3 */
+  { 11, X("\x3b\xd2\x18\x00\x81\x31\xfe\x58\xc9\x04\x11"),
+    CARD_TYPE_CARDOS_54 }, /* CardOS 5.4 */
   { 24, X("\x3b\xfe\x18\x00\x00\x80\x31\xfe\x45\x53\x43\x45"
           "\x36\x30\x2d\x43\x44\x30\x38\x31\x2d\x6e\x46\xa9"),
     CARD_TYPE_AET },
@@ -135,9 +138,10 @@ static struct
 #undef X
 
 
-/* Macro to test for CardOS 5.0 and 5.3.  */
+/* Macro to test for CardOS 5.0, 5.3 and 5.4.  */
 #define IS_CARDOS_5(a) ((a)->app_local->card_type == CARD_TYPE_CARDOS_50 \
-                        || (a)->app_local->card_type == CARD_TYPE_CARDOS_53)
+                        || (a)->app_local->card_type == CARD_TYPE_CARDOS_53 \
+                        || (a)->app_local->card_type == CARD_TYPE_CARDOS_54)
 
 /* The default PKCS-15 home DF */
 #define DEFAULT_HOME_DF 0x5015
@@ -542,6 +546,7 @@ cardtype2str (card_type_t cardtype)
     case CARD_TYPE_MICARDO:   return "Micardo";
     case CARD_TYPE_CARDOS_50: return "CardOS 5.0";
     case CARD_TYPE_CARDOS_53: return "CardOS 5.3";
+    case CARD_TYPE_CARDOS_54: return "CardOS 5.4";
     case CARD_TYPE_BELPIC:    return "Belgian eID";
     case CARD_TYPE_AET:       return "AET";
     case CARD_TYPE_STARCOS_32:return "STARCOS 3.2";
@@ -6302,6 +6307,7 @@ app_select_p15 (app_t app)
         {
         case CARD_TYPE_CARDOS_50:
         case CARD_TYPE_CARDOS_53:
+        case CARD_TYPE_CARDOS_54:
           direct = 1;
           break;
         case CARD_TYPE_AET:
