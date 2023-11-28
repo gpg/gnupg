@@ -1,4 +1,4 @@
-Noteworthy changes in version 2.2.42 (unreleased)
+Noteworthy changes in version 2.2.42 (2023-11-28)
 -------------------------------------------------
 
   * gpg: Set default expiration date to 3 years.  [T2701]
