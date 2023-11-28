@@ -88,7 +88,8 @@ typedef enum
   {
     CARD_PRODUCT_UNKNOWN,
     CARD_PRODUCT_RSCS,     /* Rohde&Schwarz Cybersecurity       */
-    CARD_PRODUCT_DTRUST,   /* D-Trust GmbH (bundesdruckerei.de) */
+    CARD_PRODUCT_DTRUST3,  /* D-Trust GmbH (bundesdruckerei.de) */
+    CARD_PRODUCT_DTRUST4,
     CARD_PRODUCT_GENUA,    /* GeNUA mbH                         */
     CARD_PRODUCT_NEXUS     /* Technology Nexus                  */
   }
@@ -154,6 +155,11 @@ static char const pkcs15_aid[] = { 0xA0, 0, 0, 0, 0x63,
    is useful for a standard.  Oh well. */
 static char const pkcs15be_aid[] = { 0xA0, 0, 0, 0x01, 0x77,
                                    0x50, 0x4B, 0x43, 0x53, 0x2D, 0x31, 0x35 };
+
+/* The D-TRUST Card 4.x variant - dito */
+static char const pkcs15dtrust4_aid[] = { 0xE8, 0x28, 0xBD, 0x08, 0x0F, 0xA0,
+                                          0x00, 0x00, 0x01, 0x67, 0x45, 0x53,
+                                          0x49, 0x47, 0x4E };
 
 
 /* The PIN types as defined in pkcs#15 v1.1 */
@@ -561,7 +567,8 @@ cardproduct2str (card_product_t cardproduct)
     {
     case CARD_PRODUCT_UNKNOWN: return "";
     case CARD_PRODUCT_RSCS:    return "R&S";
-    case CARD_PRODUCT_DTRUST:  return "D-Trust";
+    case CARD_PRODUCT_DTRUST3: return "D-Trust 3";
+    case CARD_PRODUCT_DTRUST4: return "D-Trust 4.1/4.4";
     case CARD_PRODUCT_GENUA:   return "GeNUA";
     case CARD_PRODUCT_NEXUS:   return "Nexus";
     }
@@ -3511,7 +3518,7 @@ read_ef_tokeninfo (app_t app)
       ul |= (*p++) & 0xff;
       n--;
     }
-  if (ul)
+  if (ul > 1)
     {
       log_error ("p15: invalid version %lu in TokenInfo\n", ul);
       err = gpg_error (GPG_ERR_INV_OBJ);
@@ -3845,7 +3852,14 @@ read_p15_info (app_t app)
       && !strncmp (app->app_local->token_label, "D-TRUST Card V3", 15)
       && app->app_local->card_type == CARD_TYPE_CARDOS_50)
     {
-      app->app_local->card_product = CARD_PRODUCT_DTRUST;
+      app->app_local->card_product = CARD_PRODUCT_DTRUST3;
+    }
+  if (!app->app_local->card_product
+      && app->app_local->token_label
+      && !strncmp (app->app_local->token_label, "D-TRUST Card 4.", 15)
+      && app->app_local->card_type == CARD_TYPE_CARDOS_54)
+    {
+      app->app_local->card_product = CARD_PRODUCT_DTRUST4;
     }
 
 
@@ -5023,7 +5037,7 @@ prepare_verify_pin (app_t app, const char *keyref,
     }
 
 
-  if (app->app_local->card_product == CARD_PRODUCT_DTRUST)
+  if (app->app_local->card_product == CARD_PRODUCT_DTRUST3)
     {
       /* According to our protocol analysis we need to select a
        * special AID here.  Before that the master file needs to be
@@ -5281,7 +5295,8 @@ verify_pin (app_t app,
   if (prkdf
       && prkdf->usageflags.non_repudiation
       && (app->app_local->card_type == CARD_TYPE_BELPIC
-          || app->app_local->card_product == CARD_PRODUCT_DTRUST))
+          || app->app_local->card_product == CARD_PRODUCT_DTRUST3
+          || app->app_local->card_product == CARD_PRODUCT_DTRUST4))
     label = _("||Please enter the PIN for the key to create "
               "qualified signatures.");
   else if (aodf->pinflags.so_pin)
@@ -5645,7 +5660,8 @@ do_sign (app_t app, ctrl_t ctrl, const char *keyidstr, int hashalgo,
           goto leave;
         }
       if (app->app_local->card_type == CARD_TYPE_BELPIC
-          || app->app_local->card_product == CARD_PRODUCT_NEXUS)
+          || app->app_local->card_product == CARD_PRODUCT_NEXUS
+          || app->app_local->card_product == CARD_PRODUCT_DTRUST4)
         {
           /* The default for these cards is to use a plain hash.  We
            * assume that due to the used certificate the correct hash
@@ -5730,6 +5746,30 @@ do_sign (app_t app, ctrl_t ctrl, const char *keyidstr, int hashalgo,
         err = gpg_error (GPG_ERR_BUG);
       else
         err = micardo_mse (app, prkdf->path[prkdf->pathlen-1]);
+    }
+  else if (app->app_local->card_product == CARD_PRODUCT_DTRUST4)
+    {
+      if (prkdf->is_ecc)
+        {
+          /* Not implemented due to lacking test hardware. */
+          err = gpg_error (GPG_ERR_UNSUPPORTED_ALGORITHM);
+        }
+      else
+        {
+          /* The D-TRUST Card 4.x doesn't support setting a security
+           * environment, at least as specified in the specs.  Insted a
+           * predefined security environment has to be loaded depending on the
+           * cipher and message digest used.  The spec states SE-ID 0x25 for
+           * SHA256, 0x26 for SHA384 and 0x27 for SHA512, when using PKCS#1
+           * padding.  But this matters only if the message digest is computed
+           * on the card.  When providing the digest info and a pre-calculated
+           * hash, all security environments yield the same result.  Thus we
+           * choose 0x25.
+           *
+           * Note: For PSS signatures, different values apply. */
+            err = iso7816_manage_security_env (app_get_slot (app),
+                                               0xf3, 0x25, NULL, 0);
+        }
     }
   else if (prkdf->key_reference_valid)
     {
@@ -5886,7 +5926,7 @@ do_decipher (app_t app, ctrl_t ctrl, const char *keyidstr,
 
 
   /* The next is guess work for CardOS.  */
-  if (app->app_local->card_product == CARD_PRODUCT_DTRUST)
+  if (app->app_local->card_product == CARD_PRODUCT_DTRUST3)
     {
       /* From analyzing an USB trace of a Windows signing application
        * we see that the SE is simply reset to 0x14.  It seems to be
@@ -5902,6 +5942,21 @@ do_decipher (app_t app, ctrl_t ctrl, const char *keyidstr,
       err = iso7816_manage_security_env (app_get_slot (app),
                                          0xF3, 0x14, NULL, 0);
 
+    }
+  else if (app->app_local->card_product == CARD_PRODUCT_DTRUST4)
+    {
+      if (prkdf->is_ecc)
+        {
+          /* Not implemented due to lacking test hardware. */
+          err = gpg_error (GPG_ERR_UNSUPPORTED_ALGORITHM);
+        }
+      else
+        {
+          /* SE-ID 0x31 is for PKCS#1 padded cryptograms. For OAEP encryption
+           * schemes, different values apply. */
+          err = iso7816_manage_security_env (app_get_slot (app),
+                                             0xF3, 0x31, NULL, 0);
+        }
     }
   else if (prkdf->key_reference_valid)
     {
@@ -5946,7 +6001,8 @@ do_decipher (app_t app, ctrl_t ctrl, const char *keyidstr,
       le_value = prkdf->keynbits / 8;
     }
 
-  if (app->app_local->card_product == CARD_PRODUCT_DTRUST)
+  if (app->app_local->card_product == CARD_PRODUCT_DTRUST3
+      || app->app_local->card_product == CARD_PRODUCT_DTRUST4)
     padind = 0x81;
 
   if (prkdf->is_ecc && IS_CARDOS_5(app))
@@ -6208,6 +6264,12 @@ app_select_p15 (app_t app)
 
   rc = iso7816_select_application_ext (slot, pkcs15_aid, sizeof pkcs15_aid, 1,
                                        &fci, &fcilen);
+  if (rc)
+    {
+      /* D-TRUST Card 4.x uses a different AID. */
+      rc = iso7816_select_application_ext (slot, pkcs15dtrust4_aid, sizeof pkcs15dtrust4_aid, 1,
+                                           &fci, &fcilen);
+    }
   if (rc)
     { /* Not found: Try to locate it from 2F00.  We use direct path
          selection here because it seems that the Belgian eID card
