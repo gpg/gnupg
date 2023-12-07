@@ -194,11 +194,11 @@ msgstr "klucze ssh większe niż %d bitów nie są obsługiwane\n"
 
 #, c-format
 msgid "can't create '%s': %s\n"
-msgstr "nie można utworzyć ,,%s'': %s\n"
+msgstr "nie można utworzyć „%s”: %s\n"
 
 #, c-format
 msgid "can't open '%s': %s\n"
-msgstr "nie można otworzyć ,,%s'': %s\n"
+msgstr "nie można otworzyć „%s”: %s\n"
 
 #, c-format
 msgid "no suitable card key found: %s\n"
@@ -429,7 +429,7 @@ msgid "disallow the use of an external password cache"
 msgstr "niezezwalanie na użycie zewnętrznej pamięci podręcznej haseł"
 
 msgid "disallow clients to mark keys as \"trusted\""
-msgstr "niezezwalanie klientom na oznaczanie kluczy jako ,,zaufanych''"
+msgstr "niezezwalanie klientom na oznaczanie kluczy jako „zaufanych”"
 
 msgid "allow presetting passphrase"
 msgstr "zezwolenie na predefiniowane hasło"
@@ -496,7 +496,7 @@ msgstr ""
 
 #, c-format
 msgid "invalid debug-level '%s' given\n"
-msgstr "podano błędny poziom diagnostyki ,,%s''\n"
+msgstr "podano błędny poziom diagnostyki „%s”\n"
 
 #, c-format
 msgid "selected digest algorithm is invalid\n"
@@ -504,15 +504,15 @@ msgstr "wybrany algorytm skrótów wiadomości jest niepoprawny\n"
 
 #, c-format
 msgid "reading options from '%s'\n"
-msgstr "odczyt opcji z ,,%s''\n"
+msgstr "odczyt opcji z „%s”\n"
 
 #, c-format
 msgid "Note: '%s' is not considered an option\n"
-msgstr "Uwaga: ,,%s'' nie jest uznane za opcję\n"
+msgstr "Uwaga: „%s” nie jest uznane za opcję\n"
 
 #, c-format
 msgid "WARNING: \"%s\" is a deprecated option\n"
-msgstr "OSTRZEŻENIE: ,,%s'' jest przestarzałą opcją.\n"
+msgstr "OSTRZEŻENIE: „%s” jest przestarzałą opcją.\n"
 
 #, c-format
 msgid "can't create socket: %s\n"
@@ -520,7 +520,7 @@ msgstr "nie można utworzyć gniazda: %s\n"
 
 #, c-format
 msgid "socket name '%s' is too long\n"
-msgstr "nazwa gniazda ,,%s'' zbyt długa\n"
+msgstr "nazwa gniazda „%s” zbyt długa\n"
 
 #, c-format
 msgid "trying to steal socket from running %s\n"
@@ -536,31 +536,31 @@ msgstr "błąd podczas pobierania nonce z gniazda\n"
 
 #, c-format
 msgid "error binding socket to '%s': %s\n"
-msgstr "błąd podczas przypisywania gniazda do ,,%s'': %s\n"
+msgstr "błąd podczas przypisywania gniazda do „%s”: %s\n"
 
 #, c-format
 msgid "can't set permissions of '%s': %s\n"
-msgstr "nie można ustawić praw dostępu do ,,%s'': %s\n"
+msgstr "nie można ustawić praw dostępu do „%s”: %s\n"
 
 #, c-format
 msgid "listening on socket '%s'\n"
-msgstr "nasłuchiwanie na gnieździe ,,%s''\n"
+msgstr "nasłuchiwanie na gnieździe „%s”\n"
 
 #, c-format
 msgid "can't create directory '%s': %s\n"
-msgstr "nie można utworzyć katalogu ,,%s'': %s\n"
+msgstr "nie można utworzyć katalogu „%s”: %s\n"
 
 #, c-format
 msgid "directory '%s' created\n"
-msgstr "katalog ,,%s'' utworzony\n"
+msgstr "katalog „%s” utworzony\n"
 
 #, c-format
 msgid "stat() failed for '%s': %s\n"
-msgstr "stat() nie powiodło się dla ,,%s'': %s\n"
+msgstr "stat() nie powiodło się dla „%s”: %s\n"
 
 #, c-format
 msgid "can't use '%s' as home directory\n"
-msgstr "nie można użyć ,,%s'' jako katalogu domowego\n"
+msgstr "nie można użyć „%s” jako katalogu domowego\n"
 
 #, c-format
 msgid "error reading nonce on fd %d: %s\n"
@@ -667,31 +667,31 @@ msgstr "błąd podczas pytania o hasło: %s\n"
 
 #, c-format
 msgid "error opening '%s': %s\n"
-msgstr "błąd podczas otwierania ,,%s'': %s\n"
+msgstr "błąd podczas otwierania „%s”: %s\n"
 
 #, c-format
 msgid "file '%s', line %d: %s\n"
-msgstr "plik ,,%s'', linia %d: %s\n"
+msgstr "plik „%s”, linia %d: %s\n"
 
 #, c-format
 msgid "statement \"%s\" ignored in '%s', line %d\n"
-msgstr "instrukcja \"%s\" zignorowana w ,,%s'', w linii %d\n"
+msgstr "instrukcja \"%s\" zignorowana w „%s”, w linii %d\n"
 
 #, c-format
 msgid "system trustlist '%s' not available\n"
-msgstr "systemowa lista zaufania ,,%s'' niedostępna\n"
+msgstr "systemowa lista zaufania „%s” niedostępna\n"
 
 #, c-format
 msgid "bad fingerprint in '%s', line %d\n"
-msgstr "błędny odcisk w ,,%s'', w linii %d\n"
+msgstr "błędny odcisk w „%s”, w linii %d\n"
 
 #, c-format
 msgid "invalid keyflag in '%s', line %d\n"
-msgstr "nieprawidłowa flaga klucza w ,,%s'', w linii %d\n"
+msgstr "nieprawidłowa flaga klucza w „%s”, w linii %d\n"
 
 #, c-format
 msgid "error reading '%s', line %d: %s\n"
-msgstr "błąd odczytu ,,%s'', w linii %d: %s\n"
+msgstr "błąd odczytu „%s”, w linii %d: %s\n"
 
 #, c-format
 msgid "error reading list of trusted root certificates\n"
@@ -710,7 +710,7 @@ msgid ""
 "Do you ultimately trust%%0A  \"%s\"%%0Ato correctly certify user "
 "certificates?"
 msgstr ""
-"Czy absolutnie ufasz, że%%0A  ,,%s''%%0Apoprawnie poświadcza certyfikaty "
+"Czy absolutnie ufasz, że%%0A  „%s”%%0Apoprawnie poświadcza certyfikaty "
 "użytkowników?"
 
 msgid "Yes"
@@ -732,7 +732,7 @@ msgid ""
 "Please verify that the certificate identified as:%%0A  \"%s\"%%0Ahas the "
 "fingerprint:%%0A  %s"
 msgstr ""
-"Proszę sprawdzić, że certyfikat zidentyfikowany jako:%%0a  ,,%s''%%0Ama "
+"Proszę sprawdzić, że certyfikat zidentyfikowany jako:%%0a  „%s”%%0Ama "
 "odcisk:%%0A  %s"
 
 #. TRANSLATORS: "Correct" is the label of a button and intended
@@ -839,15 +839,15 @@ msgstr "oczekiwanie na zakończenie procesu %d nie powiodło się: %s\n"
 
 #, c-format
 msgid "error running '%s': probably not installed\n"
-msgstr "błąd uruchamiania ,,%s'': prawdopodobnie nie zainstalowany\n"
+msgstr "błąd uruchamiania „%s”: prawdopodobnie nie zainstalowany\n"
 
 #, c-format
 msgid "error running '%s': exit status %d\n"
-msgstr "błąd uruchamiania ,,%s'': kod wyjścia %d\n"
+msgstr "błąd uruchamiania „%s”: kod wyjścia %d\n"
 
 #, c-format
 msgid "error running '%s': terminated\n"
-msgstr "błąd uruchamiania ,,%s'': zakończono\n"
+msgstr "błąd uruchamiania „%s”: zakończono\n"
 
 #, c-format
 msgid "waiting for processes to terminate failed: %s\n"
@@ -859,7 +859,7 @@ msgstr "błąd odczytu kodu zakończenia procesu %d: %s\n"
 
 #, c-format
 msgid "can't connect to '%s': %s\n"
-msgstr "nie można się połączyć z ,,%s'': %s\n"
+msgstr "nie można się połączyć z „%s”: %s\n"
 
 #, c-format
 msgid "problem setting the gpg-agent options\n"
@@ -871,19 +871,19 @@ msgstr "nie można wyłączyć zrzutów pamięci: %s\n"
 
 #, c-format
 msgid "Warning: unsafe ownership on %s \"%s\"\n"
-msgstr "Ostrzeżenie: niebezpieczne prawa własności do %s ,,%s''\n"
+msgstr "Ostrzeżenie: niebezpieczne prawa własności do %s „%s”\n"
 
 #, c-format
 msgid "Warning: unsafe permissions on %s \"%s\"\n"
-msgstr "Ostrzeżenie: niebezpieczne prawa dostępu do %s ,,%s''\n"
+msgstr "Ostrzeżenie: niebezpieczne prawa dostępu do %s „%s”\n"
 
 #, c-format
 msgid "waiting for file '%s' to become accessible ...\n"
-msgstr "oczekiwanie aż plik ,,%s'' stanie się dostępny...\n"
+msgstr "oczekiwanie aż plik „%s” stanie się dostępny...\n"
 
 #, c-format
 msgid "renaming '%s' to '%s' failed: %s\n"
-msgstr "zmiana nazwy ,,%s'' na ,,%s'' nie powiodła się: %s\n"
+msgstr "zmiana nazwy „%s” na „%s” nie powiodła się: %s\n"
 
 #. TRANSLATORS: See doc/TRANSLATE about this string.
 msgid "yes"
@@ -934,15 +934,15 @@ msgstr "błąd przydzielania wystarczającej ilości pamięci: %s\n"
 
 #, c-format
 msgid "%s:%u: obsolete option \"%s\" - it has no effect\n"
-msgstr "%s:%u: przestarzała opcja ,,%s'' - nie ma efektu\n"
+msgstr "%s:%u: przestarzała opcja „%s” - nie ma efektu\n"
 
 #, c-format
 msgid "WARNING: \"%s%s\" is an obsolete option - it has no effect\n"
-msgstr "OSTRZEŻENIE: ,,%s%s'' jest przestarzałą opcją - nie ma efektu\n"
+msgstr "OSTRZEŻENIE: „%s%s” jest przestarzałą opcją - nie ma efektu\n"
 
 #, c-format
 msgid "unknown debug flag '%s' ignored\n"
-msgstr "nieznana flaga diagnostyczna ,,%s'' zignorowana\n"
+msgstr "nieznana flaga diagnostyczna „%s” zignorowana\n"
 
 #, fuzzy, c-format
 #| msgid "waiting for the %s to come up ... (%ds)\n"
@@ -977,7 +977,7 @@ msgstr "ustanowiono połączenie z procesem %s\n"
 #, fuzzy, c-format
 #| msgid "no running Dirmngr - starting '%s'\n"
 msgid "no running %s - starting '%s'\n"
-msgstr "Dirmngr nie działa - uruchamianie ,,%s''\n"
+msgstr "Dirmngr nie działa - uruchamianie „%s”\n"
 
 #, fuzzy, c-format
 #| msgid "connection to agent is in restricted mode\n"
@@ -986,11 +986,11 @@ msgstr "połączenie z agentem jest w trybie ograniczonym\n"
 
 #, c-format
 msgid "error getting version from '%s': %s\n"
-msgstr "błąd pobierania wersji z ,,%s'': %s\n"
+msgstr "błąd pobierania wersji z „%s”: %s\n"
 
 #, c-format
 msgid "server '%s' is older than us (%s < %s)"
-msgstr "serwer ,,%s'' jest starszy niż nasz (%s < %s)"
+msgstr "serwer „%s” jest starszy niż nasz (%s < %s)"
 
 #, c-format
 msgid "WARNING: %s\n"
@@ -1003,7 +1003,7 @@ msgstr ""
 
 #, c-format
 msgid "Note: Use the command \"%s\" to restart them.\n"
-msgstr "Uwaga: do restartu ich należy użyć polecenia ,,%s''.\n"
+msgstr "Uwaga: do restartu ich należy użyć polecenia „%s”.\n"
 
 #. TRANSLATORS: Copy the prefix between the vertical bars
 #. verbatim.  It will not be printed.
@@ -1140,7 +1140,7 @@ msgstr "Dirmngr sprawny"
 
 #, c-format
 msgid "No help available for '%s'."
-msgstr "Brak pomocy dla ,,%s''."
+msgstr "Brak pomocy dla „%s”."
 
 msgid "ignoring garbage line"
 msgstr "zignorowano błędną linię"
@@ -1170,7 +1170,7 @@ msgstr ""
 
 #, c-format
 msgid "conversion from '%s' to '%s' not available\n"
-msgstr "konwersja z ,,%s'' do ,,%s'' niedostępna\n"
+msgstr "konwersja z „%s” do „%s” niedostępna\n"
 
 #, c-format
 msgid "iconv_open failed: %s\n"
@@ -1178,15 +1178,15 @@ msgstr "iconv_open nie powiodło się: %s\n"
 
 #, c-format
 msgid "conversion from '%s' to '%s' failed: %s\n"
-msgstr "konwersja z ,,%s'' do ,,%s'' nie powiodła się: %s\n"
+msgstr "konwersja z „%s” do „%s” nie powiodła się: %s\n"
 
 #, c-format
 msgid "failed to create temporary file '%s': %s\n"
-msgstr "nie udało się utworzyć pliku tymczasowego ,,%s'': %s\n"
+msgstr "nie udało się utworzyć pliku tymczasowego „%s”: %s\n"
 
 #, c-format
 msgid "error writing to '%s': %s\n"
-msgstr "błąd zapisu do ,,%s'': %s\n"
+msgstr "błąd zapisu do „%s”: %s\n"
 
 #, c-format
 msgid "removing stale lockfile (created by %d)\n"
@@ -1201,7 +1201,7 @@ msgstr "(zakleszczenie?) "
 
 #, c-format
 msgid "lock '%s' not made: %s\n"
-msgstr "blokada ,,%s'' nie założona: %s\n"
+msgstr "blokada „%s” nie założona: %s\n"
 
 #, c-format
 msgid "waiting for lock %s...\n"
@@ -1213,11 +1213,11 @@ msgstr "biblioteka %s jest zbyt stara (wymagana %s, zainstalowana %s)\n"
 
 #, c-format
 msgid "error creating '%s': %s\n"
-msgstr "błąd tworzenia ,,%s'': %s\n"
+msgstr "błąd tworzenia „%s”: %s\n"
 
 #, c-format
 msgid "error closing '%s': %s\n"
-msgstr "błąd zamykania ,,%s'': %s\n"
+msgstr "błąd zamykania „%s”: %s\n"
 
 #, c-format
 msgid "armor: %s\n"
@@ -1253,7 +1253,7 @@ msgstr "niepoprawne oznaczenie linii minusami: "
 
 #, c-format
 msgid "invalid radix64 character %02X skipped\n"
-msgstr "niewłaściwy znak formatu radix64 ,,%02X'' został pominięty\n"
+msgstr "niewłaściwy znak formatu radix64 „%02X” został pominięty\n"
 
 #, c-format
 msgid "premature eof (no CRC)\n"
@@ -1304,15 +1304,15 @@ msgid ""
 "an '='\n"
 msgstr ""
 "nazwa adnotacji musi zawierać tylko znaki drukowalne lub spacje i kończyć "
-"się znakiem ,,=''\n"
+"się znakiem „=”\n"
 
 #, c-format
 msgid "a user notation name must contain the '@' character\n"
-msgstr "nazwa adnotacji użytkownika musi zawierać znak ,,@''\n"
+msgstr "nazwa adnotacji użytkownika musi zawierać znak „@”\n"
 
 #, c-format
 msgid "a notation name must not contain more than one '@' character\n"
-msgstr "nazwa adnotacjinie może zawierać więcej niż jednego znaku ,,@''\n"
+msgstr "nazwa adnotacjinie może zawierać więcej niż jednego znaku „@”\n"
 
 #, c-format
 msgid "a notation value must not use any control characters\n"
@@ -1320,7 +1320,7 @@ msgstr "wartość adnotacji nie może zawierać żadnych znaków sterujących\n"
 
 #, c-format
 msgid "a notation name may not contain an '=' character\n"
-msgstr "nazwa adnotacji nie może zawierać znaku ,,=''\n"
+msgstr "nazwa adnotacji nie może zawierać znaku „=”\n"
 
 #, c-format
 msgid "a notation name must have only printable characters or spaces\n"
@@ -1357,7 +1357,7 @@ msgstr "brak działającego dirmngr w tej sesji\n"
 #, fuzzy, c-format
 #| msgid "keyserver option \"%s\" may not be used in %s mode\n"
 msgid "keyserver option \"honor-keyserver-url\" may not be used in Tor mode\n"
-msgstr "opcja serwera kluczy ,,%s'' nie może być używana w trybie %s\n"
+msgstr "opcja serwera kluczy „%s” nie może być używana w trybie %s\n"
 
 msgid "WKD uses a cached result"
 msgstr "WKD używa zapamiętanego wyniku"
@@ -1430,7 +1430,7 @@ msgid "Error: Only plain ASCII is currently allowed.\n"
 msgstr "Błąd: aktualnie dopuszczalne jest tylko czyste ASCII.\n"
 
 msgid "Error: The \"<\" character may not be used.\n"
-msgstr "Błąd: znak ,,<'' nie może być użyty.\n"
+msgstr "Błąd: znak „<” nie może być użyty.\n"
 
 msgid "Error: Double spaces are not allowed.\n"
 msgstr "Błąd: podwójne spacje nie są dopuszczalne.\n"
@@ -1450,11 +1450,11 @@ msgstr "URL do odczytania klucza publicznego: "
 
 #, c-format
 msgid "error reading '%s': %s\n"
-msgstr "błąd odczytu ,,%s'': %s\n"
+msgstr "błąd odczytu „%s”: %s\n"
 
 #, c-format
 msgid "error writing '%s': %s\n"
-msgstr "błąd zapisu ,,%s'': %s\n"
+msgstr "błąd zapisu „%s”: %s\n"
 
 msgid "Login data (account name): "
 msgstr "Dane logowania (nazwa konta): "
@@ -1590,7 +1590,7 @@ msgid ""
 "You should change them using the command --change-pin\n"
 msgstr ""
 "Fabryczne ustawienia PIN-ów to\n"
-"   PIN = ,,%s''   PIN administracyjny = ,,%s''\n"
+"   PIN = „%s”   PIN administracyjny = „%s”\n"
 "Należy je zmienić przy użyciu polecenia --change-pin\n"
 
 msgid "Please select the type of key to generate:\n"
@@ -1620,7 +1620,7 @@ msgid "Continue? (y/N) "
 msgstr "Kontynuować? (t/N) "
 
 msgid "Really do a factory reset? (enter \"yes\") "
-msgstr "Naprawdę przywrócić stan fabryczny? (proszę wpisać ,,yes'') "
+msgstr "Naprawdę przywrócić stan fabryczny? (proszę wpisać „yes”) "
 
 #, c-format
 msgid "error for setup KDF: %s\n"
@@ -1712,7 +1712,7 @@ msgstr "Polecenia dla administratora nie są dozwolone\n"
 
 #, c-format
 msgid "Invalid command  (try \"help\")\n"
-msgstr "Niepoprawne polecenie  (spróbuj ,,help'')\n"
+msgstr "Niepoprawne polecenie  (spróbuj „help”)\n"
 
 #, c-format
 msgid "--output doesn't work for this command\n"
@@ -1720,11 +1720,11 @@ msgstr "opcja --output nie działa z tym poleceniem\n"
 
 #, c-format
 msgid "can't open '%s'\n"
-msgstr "nie można otworzyć ,,%s''\n"
+msgstr "nie można otworzyć „%s”\n"
 
 #, c-format
 msgid "key \"%s\" not found: %s\n"
-msgstr "klucz ,,%s'' nie został odnaleziony: %s\n"
+msgstr "klucz „%s” nie został odnaleziony: %s\n"
 
 #, c-format
 msgid "error reading keyblock: %s\n"
@@ -1732,11 +1732,11 @@ msgstr "błąd odczytu bloku kluczy: %s\n"
 
 #, c-format
 msgid "key \"%s\" not found\n"
-msgstr "klucz ,,%s'' nie został odnaleziony\n"
+msgstr "klucz „%s” nie został odnaleziony\n"
 
 #, c-format
 msgid "can't do this in batch mode without \"--yes\"\n"
-msgstr "bez opcji ,,--yes'' nie działa w trybie wsadowym\n"
+msgstr "bez opcji „--yes” nie działa w trybie wsadowym\n"
 
 #, c-format
 msgid "(unless you specify the key by fingerprint)\n"
@@ -1786,7 +1786,7 @@ msgstr "informacja o zaufaniu dla właściciela klucza została wymazana\n"
 
 #, c-format
 msgid "there is a secret key for public key \"%s\"!\n"
-msgstr "dla klucza publicznego ,,%s'' istnieje klucz prywatny!\n"
+msgstr "dla klucza publicznego „%s” istnieje klucz prywatny!\n"
 
 #, c-format
 msgid "use option \"--delete-secret-keys\" to delete it first.\n"
@@ -1802,7 +1802,7 @@ msgstr ""
 #, fuzzy, c-format
 #| msgid "cipher algorithm '%s' may not be used in %s mode\n"
 msgid "cipher algorithm '%s' may not be used for encryption\n"
-msgstr "szyfr ,,%s'' nie może być używany w trybie %s\n"
+msgstr "szyfr „%s” nie może być używany w trybie %s\n"
 
 #, c-format
 msgid "(use option \"%s\" to override)\n"
@@ -1810,7 +1810,7 @@ msgstr ""
 
 #, c-format
 msgid "cipher algorithm '%s' may not be used in %s mode\n"
-msgstr "szyfr ,,%s'' nie może być używany w trybie %s\n"
+msgstr "szyfr „%s” nie może być używany w trybie %s\n"
 
 #, c-format
 msgid "WARNING: key %s is not suitable for encryption in %s mode\n"
@@ -1833,19 +1833,19 @@ msgstr "szyfrem %s\n"
 
 #, c-format
 msgid "'%s' already compressed\n"
-msgstr ",,%s'' już jest skompresowany\n"
+msgstr "„%s” już jest skompresowany\n"
 
 #, c-format
 msgid "WARNING: '%s' is an empty file\n"
-msgstr "OSTRZEŻENIE: plik ,,%s'' jest pusty\n"
+msgstr "OSTRZEŻENIE: plik „%s” jest pusty\n"
 
 #, c-format
 msgid "digest algorithm '%s' may not be used in %s mode\n"
-msgstr "algorytm skrótu ,,%s'' nie może być używany w trybie %s\n"
+msgstr "algorytm skrótu „%s” nie może być używany w trybie %s\n"
 
 #, c-format
 msgid "reading from '%s'\n"
-msgstr "odczyt z ,,%s''\n"
+msgstr "odczyt z „%s”\n"
 
 #, c-format
 msgid ""
@@ -1858,11 +1858,11 @@ msgstr ""
 #, fuzzy, c-format
 #| msgid "%s/%s encrypted for: \"%s\"\n"
 msgid "%s/%s.%s encrypted for: \"%s\"\n"
-msgstr "%s/%s zaszyfrowany dla: ,,%s''\n"
+msgstr "%s/%s zaszyfrowany dla: „%s”\n"
 
 #, c-format
 msgid "option '%s' may not be used in %s mode\n"
-msgstr "opcja ,,%s'' nie może być używana w trybie %s\n"
+msgstr "opcja „%s” nie może być używana w trybie %s\n"
 
 #, fuzzy, c-format
 #| msgid "%s encrypted data\n"
@@ -1890,7 +1890,7 @@ msgid "export attribute user IDs (generally photo IDs)"
 msgstr "eksport atrybutów ID użytkownika (ogólnie ID zdjęć)"
 
 msgid "export revocation keys marked as \"sensitive\""
-msgstr "eksport kluczy unieważniających oznaczonych jako ,,poufne''"
+msgstr "eksport kluczy unieważniających oznaczonych jako „poufne”"
 
 msgid "remove unusable parts from key during export"
 msgstr "usunięcie bezużytecznych części z klucza przy eksporcie"
@@ -1916,7 +1916,7 @@ msgstr " - pominięty"
 
 #, c-format
 msgid "writing to '%s'\n"
-msgstr "zapis do ,,%s''\n"
+msgstr "zapis do „%s”\n"
 
 #, c-format
 msgid "key %s: key material on-card - skipped\n"
@@ -1939,11 +1939,11 @@ msgstr "[brak identyfikatora użytkownika]"
 
 #, c-format
 msgid "automatically retrieved '%s' via %s\n"
-msgstr "automatycznie pobrano ,,%s'' poprzez %s\n"
+msgstr "automatycznie pobrano „%s” poprzez %s\n"
 
 #, c-format
 msgid "error retrieving '%s' via %s: %s\n"
-msgstr "błąd pobierania ,,%s'' poprzez %s: %s\n"
+msgstr "błąd pobierania „%s” poprzez %s: %s\n"
 
 msgid "No fingerprint"
 msgstr "Brak odcisku"
@@ -1954,23 +1954,23 @@ msgstr "szukanie świeżej kopii wygasłego klucza poprzez %s\n"
 
 #, c-format
 msgid "secret key \"%s\" not found: %s\n"
-msgstr "klucz prywatny ,,%s'' nie został odnaleziony: %s\n"
+msgstr "klucz prywatny „%s” nie został odnaleziony: %s\n"
 
 #, c-format
 msgid "(check argument of option '%s')\n"
-msgstr "(sprawdzić argument opcji ,,%s'')\n"
+msgstr "(sprawdzić argument opcji „%s”)\n"
 
 #, c-format
 msgid "Warning: not using '%s' as default key: %s\n"
-msgstr "Ostrzeżenie: ,,%s'' nie jest użyty jako domyślny klucz: %s\n"
+msgstr "Ostrzeżenie: „%s” nie jest użyty jako domyślny klucz: %s\n"
 
 #, c-format
 msgid "using \"%s\" as default secret key for signing\n"
-msgstr "użycie ,,%s'' jako domyślnego klucza tajnego do podpisywania\n"
+msgstr "użycie „%s” jako domyślnego klucza tajnego do podpisywania\n"
 
 #, c-format
 msgid "all values passed to '%s' ignored\n"
-msgstr "wszystkie wartości przekazane do ,,%s'' zostały zignorowane\n"
+msgstr "wszystkie wartości przekazane do „%s” zostały zignorowane\n"
 
 #, c-format
 msgid "Invalid key %s made valid by --allow-non-selfsigned-uid\n"
@@ -1984,7 +1984,7 @@ msgstr "używany jest podklucz %s zamiast klucza głównego %s\n"
 
 #, c-format
 msgid "valid values for option '%s':\n"
-msgstr "poprawne argimenty dla opcji ,,%s'':\n"
+msgstr "poprawne argimenty dla opcji „%s”:\n"
 
 msgid "make a signature"
 msgstr "złożenie podpisu"
@@ -2261,76 +2261,76 @@ msgstr "sprzeczne polecenia\n"
 
 #, c-format
 msgid "no = sign found in group definition '%s'\n"
-msgstr "w definicji grupy ,,%s'' brak znaku ,,=''\n"
+msgstr "w definicji grupy „%s” brak znaku „=”\n"
 
 #, c-format
 msgid "WARNING: unsafe ownership on homedir '%s'\n"
 msgstr ""
-"OSTRZEŻENIE: niebezpieczne prawa własności do katalogu domowego ,,%s''\n"
+"OSTRZEŻENIE: niebezpieczne prawa własności do katalogu domowego „%s”\n"
 
 #, c-format
 msgid "WARNING: unsafe ownership on configuration file '%s'\n"
 msgstr ""
-"OSTRZEŻENIE: niebezpieczne prawa własności do pliku konfiguracyjnego ,,%s''\n"
+"OSTRZEŻENIE: niebezpieczne prawa własności do pliku konfiguracyjnego „%s”\n"
 
 #, c-format
 msgid "WARNING: unsafe ownership on extension '%s'\n"
-msgstr "OSTRZEŻENIE: niebezpieczne prawa własności do rozszerzenia ,,%s''\n"
+msgstr "OSTRZEŻENIE: niebezpieczne prawa własności do rozszerzenia „%s”\n"
 
 #, c-format
 msgid "WARNING: unsafe permissions on homedir '%s'\n"
-msgstr "OSTRZEŻENIE: niebezpieczne prawa dostępu do katalogu domowego ,,%s''\n"
+msgstr "OSTRZEŻENIE: niebezpieczne prawa dostępu do katalogu domowego „%s”\n"
 
 #, c-format
 msgid "WARNING: unsafe permissions on configuration file '%s'\n"
 msgstr ""
-"OSTRZEŻENIE: niebezpieczne prawa dostępu do pliku konfiguracyjnego ,,%s''\n"
+"OSTRZEŻENIE: niebezpieczne prawa dostępu do pliku konfiguracyjnego „%s”\n"
 
 #, c-format
 msgid "WARNING: unsafe permissions on extension '%s'\n"
-msgstr "OSTRZEŻENIE: niebezpieczne prawa dostępu do rozszerzenia ,,%s''\n"
+msgstr "OSTRZEŻENIE: niebezpieczne prawa dostępu do rozszerzenia „%s”\n"
 
 #, c-format
 msgid "WARNING: unsafe enclosing directory ownership on homedir '%s'\n"
 msgstr ""
 "OSTRZEŻENIE: niebezpieczne prawa własności do katalogu zawierającego katalog "
-"domowy ,,%s''\n"
+"domowy „%s”\n"
 
 #, c-format
 msgid ""
 "WARNING: unsafe enclosing directory ownership on configuration file '%s'\n"
 msgstr ""
 "OSTRZEŻENIE: niebezpieczne prawa własności do katalogu zawierającego plik "
-"konfiguracyjny ,,%s''\n"
+"konfiguracyjny „%s”\n"
 
 #, c-format
 msgid "WARNING: unsafe enclosing directory ownership on extension '%s'\n"
 msgstr ""
 "OSTRZEŻENIE: niebezpieczne prawa własności do katalogu zawierającego "
-"rozszerzenie ,,%s''\n"
+"rozszerzenie „%s”\n"
 
 #, c-format
 msgid "WARNING: unsafe enclosing directory permissions on homedir '%s'\n"
 msgstr ""
 "OSTRZEŻENIE: niebezpieczne prawa dostępu do katalogu zawierającego katalog "
-"domowy ,,%s''\n"
+"domowy „%s”\n"
 
 #, c-format
 msgid ""
 "WARNING: unsafe enclosing directory permissions on configuration file '%s'\n"
 msgstr ""
 "OSTRZEŻENIE: niebezpieczne prawa dostępu do katalogu zawierającego plik "
-"konfiguracyjny ,,%s''\n"
+"konfiguracyjny „%s”\n"
 
 #, c-format
 msgid "WARNING: unsafe enclosing directory permissions on extension '%s'\n"
 msgstr ""
 "OSTRZEŻENIE: niebezpieczne prawa dostępu do katalogu zawierającego "
-"rozszerzenie ,,%s''\n"
+"rozszerzenie „%s”\n"
 
 #, c-format
 msgid "unknown configuration item '%s'\n"
-msgstr "nieznana opcja konfiguracyjna ,,%s''\n"
+msgstr "nieznana opcja konfiguracyjna „%s”\n"
 
 msgid "display photo IDs during key listings"
 msgstr "wyświetlenie ID zdjęć przy wypisywaniu kluczy"
@@ -2382,11 +2382,11 @@ msgstr "ustawienia (zaawansowane)"
 
 #, c-format
 msgid "unknown TOFU policy '%s'\n"
-msgstr "nieznana polityka TOFU ,,%s''\n"
+msgstr "nieznana polityka TOFU „%s”\n"
 
 #, c-format
 msgid "(use \"help\" to list choices)\n"
-msgstr "(,,help'' wyświetli listę wyborów)\n"
+msgstr "(„help” wyświetli listę wyborów)\n"
 
 #, c-format
 msgid "This command is not allowed while in %s mode.\n"
@@ -2398,23 +2398,23 @@ msgstr "Uwaga: %s nie jest do normalnego użytku!\n"
 
 #, c-format
 msgid "'%s' is not a valid signature expiration\n"
-msgstr ",,%s'' nie jest poprawnym czasem wygaśnięcia podpisu\n"
+msgstr "„%s” nie jest poprawnym czasem wygaśnięcia podpisu\n"
 
 #, c-format
 msgid "\"%s\" is not a proper mail address\n"
-msgstr ",,%s'' nie jest niepoprawnym adresem e-mail\n"
+msgstr "„%s” nie jest niepoprawnym adresem e-mail\n"
 
 #, c-format
 msgid "invalid pinentry mode '%s'\n"
-msgstr "błędny tryb pinentry ,,%s''\n"
+msgstr "błędny tryb pinentry „%s”\n"
 
 #, c-format
 msgid "invalid request origin '%s'\n"
-msgstr "błędne źródło żądania ,,%s''\n"
+msgstr "błędne źródło żądania „%s”\n"
 
 #, c-format
 msgid "'%s' is not a valid character set\n"
-msgstr ",,%s'' nie jest poprawną nazwą zestawu znaków\n"
+msgstr "„%s” nie jest poprawną nazwą zestawu znaków\n"
 
 #, c-format
 msgid "could not parse keyserver URL\n"
@@ -2508,7 +2508,7 @@ msgstr "Niepoprawna lista auto-key-locate\n"
 
 #, c-format
 msgid "invalid argument for option \"%.50s\"\n"
-msgstr "błędny argument dla opcji ,,%.50s''\n"
+msgstr "błędny argument dla opcji „%.50s”\n"
 
 #, c-format
 msgid "WARNING: program may create a core file!\n"
@@ -2603,7 +2603,7 @@ msgstr "%s jeszcze nie działa z %s!\n"
 
 #, c-format
 msgid "compression algorithm '%s' may not be used in %s mode\n"
-msgstr "algorytm kompresji ,,%s'' nie może być używany w trybie %s\n"
+msgstr "algorytm kompresji „%s” nie może być używany w trybie %s\n"
 
 #, c-format
 msgid "failed to initialize the TrustDB: %s\n"
@@ -2615,7 +2615,7 @@ msgstr "OSTRZEŻENIE: podano adresatów (-r) w działaniu które ich nie dotyczy
 
 #, c-format
 msgid "symmetric encryption of '%s' failed: %s\n"
-msgstr "szyfrowanie symetryczne ,,%s'' nie powiodło się: %s\n"
+msgstr "szyfrowanie symetryczne „%s” nie powiodło się: %s\n"
 
 #, c-format
 msgid "you cannot use --symmetric --encrypt with --s2k-mode 0\n"
@@ -2667,16 +2667,16 @@ msgstr "opakowywanie ASCII nie powiodło się: %s\n"
 
 #, c-format
 msgid "invalid hash algorithm '%s'\n"
-msgstr "niewłaściwy algorytm skrótu ,,%s''\n"
+msgstr "niewłaściwy algorytm skrótu „%s”\n"
 
 #, c-format
 msgid "error parsing key specification '%s': %s\n"
-msgstr "błąd analizy specyfikacji klucza ,,%s'': %s\n"
+msgstr "błąd analizy specyfikacji klucza „%s”: %s\n"
 
 #, c-format
 msgid "'%s' does not appear to be a valid key ID, fingerprint or keygrip\n"
 msgstr ""
-",,%s'' nie wygląda na prawidłowy identyfikator, odcisk ani uchwyt klucza\n"
+"„%s” nie wygląda na prawidłowy identyfikator, odcisk ani uchwyt klucza\n"
 
 #, c-format
 msgid "WARNING: no command supplied.  Trying to guess what you mean ...\n"
@@ -2725,7 +2725,7 @@ msgstr "Pomoc niedostępna"
 
 #, c-format
 msgid "No help available for '%s'"
-msgstr "Brak pomocy o ,,%s''"
+msgstr "Brak pomocy o „%s”"
 
 msgid "import signatures that are marked as local-only"
 msgstr "import podpisów oznaczonych jako tylko lokalne"
@@ -2855,20 +2855,20 @@ msgstr ""
 
 #, c-format
 msgid "         \"%s\": preference for cipher algorithm %s\n"
-msgstr "         ,,%s'': preferowany szyfr %s\n"
+msgstr "         „%s”: preferowany szyfr %s\n"
 
 #, fuzzy, c-format
 #| msgid "         \"%s\": preference for cipher algorithm %s\n"
 msgid "         \"%s\": preference for AEAD algorithm %s\n"
-msgstr "         ,,%s'': preferowany szyfr %s\n"
+msgstr "         „%s”: preferowany szyfr %s\n"
 
 #, c-format
 msgid "         \"%s\": preference for digest algorithm %s\n"
-msgstr "         ,,%s'': preferowany algorytm skrótu %s\n"
+msgstr "         „%s”: preferowany algorytm skrótu %s\n"
 
 #, c-format
 msgid "         \"%s\": preference for compression algorithm %s\n"
-msgstr "         ,,%s'': preferowany algorytm kompresji %s\n"
+msgstr "         „%s”: preferowany algorytm kompresji %s\n"
 
 #, c-format
 msgid "it is strongly suggested that you update your preferences and\n"
@@ -2900,7 +2900,7 @@ msgstr "klucz %s: podklucz uszkodzony przez serwer został naprawiony\n"
 
 #, c-format
 msgid "key %s: accepted non self-signed user ID \"%s\"\n"
-msgstr "klucz %s: przyjęto identyfikator nie podpisany nim samym ,,%s''\n"
+msgstr "klucz %s: przyjęto identyfikator nie podpisany nim samym „%s”\n"
 
 #, c-format
 msgid "key %s: no valid user IDs\n"
@@ -2924,11 +2924,11 @@ msgstr "brak zapisywalnego zbioru kluczy: %s\n"
 
 #, c-format
 msgid "error writing keyring '%s': %s\n"
-msgstr "błąd zapisu zbioru kluczy ,,%s'': %s\n"
+msgstr "błąd zapisu zbioru kluczy „%s”: %s\n"
 
 #, c-format
 msgid "key %s: public key \"%s\" imported\n"
-msgstr "klucz %s: klucz publiczny ,,%s'' wczytano do zbioru\n"
+msgstr "klucz %s: klucz publiczny „%s” wczytano do zbioru\n"
 
 #, c-format
 msgid "key %s: doesn't match our copy\n"
@@ -2936,47 +2936,47 @@ msgstr "klucz %s: nie zgadza się z lokalną kopią\n"
 
 #, c-format
 msgid "key %s: \"%s\" 1 new user ID\n"
-msgstr "klucz %s: ,,%s'' 1 nowy identyfikator użytkownika\n"
+msgstr "klucz %s: „%s” 1 nowy identyfikator użytkownika\n"
 
 #, c-format
 msgid "key %s: \"%s\" %d new user IDs\n"
-msgstr "klucz %s: ,,%s'' %d nowych identyfikatorów użytkownika\n"
+msgstr "klucz %s: „%s” %d nowych identyfikatorów użytkownika\n"
 
 #, c-format
 msgid "key %s: \"%s\" 1 new signature\n"
-msgstr "klucz %s: ,,%s'' 1 nowy podpis\n"
+msgstr "klucz %s: „%s” 1 nowy podpis\n"
 
 #, c-format
 msgid "key %s: \"%s\" %d new signatures\n"
-msgstr "klucz %s: ,,%s'' %d nowych podpisów\n"
+msgstr "klucz %s: „%s” %d nowych podpisów\n"
 
 #, c-format
 msgid "key %s: \"%s\" 1 new subkey\n"
-msgstr "klucz %s: ,,%s'' 1 nowy podklucz\n"
+msgstr "klucz %s: „%s” 1 nowy podklucz\n"
 
 #, c-format
 msgid "key %s: \"%s\" %d new subkeys\n"
-msgstr "klucz %s: ,,%s'' %d nowych podkluczy\n"
+msgstr "klucz %s: „%s” %d nowych podkluczy\n"
 
 #, c-format
 msgid "key %s: \"%s\" %d signature cleaned\n"
-msgstr "klucz %s: ,,%s'' %d podpis wyczyszczony\n"
+msgstr "klucz %s: „%s” %d podpis wyczyszczony\n"
 
 #, c-format
 msgid "key %s: \"%s\" %d signatures cleaned\n"
-msgstr "klucz %s: ,,%s'' %d podpisów wyczyszczonych\n"
+msgstr "klucz %s: „%s” %d podpisów wyczyszczonych\n"
 
 #, c-format
 msgid "key %s: \"%s\" %d user ID cleaned\n"
-msgstr "klucz %s: ,,%s'' %d identyfikator użytkownika wyczyszczony\n"
+msgstr "klucz %s: „%s” %d identyfikator użytkownika wyczyszczony\n"
 
 #, c-format
 msgid "key %s: \"%s\" %d user IDs cleaned\n"
-msgstr "klucz %s: ,,%s'' %d identyfikatorów użytkownika wyczyszczonych\n"
+msgstr "klucz %s: „%s” %d identyfikatorów użytkownika wyczyszczonych\n"
 
 #, c-format
 msgid "key %s: \"%s\" not changed\n"
-msgstr "klucz %s: ,,%s'' bez zmian\n"
+msgstr "klucz %s: „%s” bez zmian\n"
 
 #, c-format
 msgid "key %s: secret key imported\n"
@@ -3005,7 +3005,7 @@ msgstr ""
 #, c-format
 msgid "To migrate '%s', with each smartcard, run: %s\n"
 msgstr ""
-"Aby zmigrować ,,%s'', dla każdej karty procesorowej należy uruchomić: %s\n"
+"Aby zmigrować „%s”, dla każdej karty procesorowej należy uruchomić: %s\n"
 
 #, c-format
 msgid "secret key %s: %s\n"
@@ -3062,7 +3062,7 @@ msgstr "klucz %s: niepoprawny certyfikat unieważnienia: %s - odrzucony\n"
 
 #, c-format
 msgid "key %s: \"%s\" revocation certificate imported\n"
-msgstr "klucz %s: ,,%s'' certyfikat unieważnienia został już wczytany\n"
+msgstr "klucz %s: „%s” certyfikat unieważnienia został już wczytany\n"
 
 #, c-format
 msgid "key %s: no user ID for signature\n"
@@ -3070,11 +3070,11 @@ msgstr "klucz %s: brak identyfikatora użytkownika do podpisu\n"
 
 #, c-format
 msgid "key %s: unsupported public key algorithm on user ID \"%s\"\n"
-msgstr "klucz %s: algorytm asymetryczny dla id ,,%s'' nie jest obsługiwany\n"
+msgstr "klucz %s: algorytm asymetryczny dla id „%s” nie jest obsługiwany\n"
 
 #, c-format
 msgid "key %s: invalid self-signature on user ID \"%s\"\n"
-msgstr "klucz %s: niepoprawny podpis na identyfikatorze ,,%s''\n"
+msgstr "klucz %s: niepoprawny podpis na identyfikatorze „%s”\n"
 
 #, c-format
 msgid "key %s: unsupported public key algorithm\n"
@@ -3110,7 +3110,7 @@ msgstr "klucz %s: usunięto wielokrotne unieważnienie podklucza\n"
 
 #, c-format
 msgid "key %s: skipped user ID \"%s\"\n"
-msgstr "klucz %s: pominięto identyfikator użytkownika ,,%s''\n"
+msgstr "klucz %s: pominięto identyfikator użytkownika „%s”\n"
 
 #, c-format
 msgid "key %s: skipped subkey\n"
@@ -3161,7 +3161,7 @@ msgstr ""
 
 #, c-format
 msgid "key %s: \"%s\" revocation certificate added\n"
-msgstr "klucz %s: ,,%s'' dodany certyfikat unieważnienia\n"
+msgstr "klucz %s: „%s” dodany certyfikat unieważnienia\n"
 
 #, c-format
 msgid "key %s: direct key signature added\n"
@@ -3228,23 +3228,23 @@ msgstr ""
 
 #, c-format
 msgid "error creating keybox '%s': %s\n"
-msgstr "błąd tworzenia keyboksa ,,%s'': %s\n"
+msgstr "błąd tworzenia keyboksa „%s”: %s\n"
 
 #, c-format
 msgid "error creating keyring '%s': %s\n"
-msgstr "błąd tworzenia zbioru kluczy ,,%s'': %s\n"
+msgstr "błąd tworzenia zbioru kluczy „%s”: %s\n"
 
 #, c-format
 msgid "keybox '%s' created\n"
-msgstr "keybox ,,%s'' utworzony\n"
+msgstr "keybox „%s” utworzony\n"
 
 #, c-format
 msgid "keyring '%s' created\n"
-msgstr "zbiór kluczy ,,%s'' został utworzony\n"
+msgstr "zbiór kluczy „%s” został utworzony\n"
 
 #, c-format
 msgid "keyblock resource '%s': %s\n"
-msgstr "zasób bloku klucza ,,%s'': %s\n"
+msgstr "zasób bloku klucza „%s”: %s\n"
 
 #, c-format
 msgid "failed to rebuild keyring cache: %s\n"
@@ -3289,12 +3289,12 @@ msgstr "Proszę wpisać domenę ograniczającą ten podpis lub Enter dla żadnej
 #, c-format
 msgid "Skipping user ID \"%s\", which is not a text ID.\n"
 msgstr ""
-"Pominięto identyfikator użytkownika ,,%s'' nie będący identyfikatorem "
+"Pominięto identyfikator użytkownika „%s” nie będący identyfikatorem "
 "tekstowym.\n"
 
 #, c-format
 msgid "User ID \"%s\" is revoked."
-msgstr "Identyfikator użytkownika ,,%s'' został unieważniony."
+msgstr "Identyfikator użytkownika „%s” został unieważniony."
 
 msgid "Are you sure you still want to sign it? (y/N) "
 msgstr "Czy na pewno chcesz podpisać? (t/N) "
@@ -3304,15 +3304,15 @@ msgstr " Nie da się złożyć podpisu.\n"
 
 #, c-format
 msgid "User ID \"%s\" is expired."
-msgstr "Identyfikator użytkownika ,,%s'' przekroczył swój termin ważności."
+msgstr "Identyfikator użytkownika „%s” przekroczył swój termin ważności."
 
 #, c-format
 msgid "User ID \"%s\" is not self-signed."
-msgstr "Identyfikator ,,%s'' nie jest podpisany swoim kluczem."
+msgstr "Identyfikator „%s” nie jest podpisany swoim kluczem."
 
 #, c-format
 msgid "User ID \"%s\" is signable.  "
-msgstr "Identyfikator użytkownika ,,%s'' jest podpisywalny. "
+msgstr "Identyfikator użytkownika „%s” jest podpisywalny. "
 
 msgid "Sign it? (y/N) "
 msgstr "Podpisać go? (t/N) "
@@ -3322,7 +3322,7 @@ msgid ""
 "The self-signature on \"%s\"\n"
 "is a PGP 2.x-style signature.\n"
 msgstr ""
-"Podpis klucza nim samym na ,,%s''\n"
+"Podpis klucza nim samym na „%s”\n"
 "jest podpisem złożonym przez PGP 2.x.\n"
 
 msgid "Do you want to promote it to an OpenPGP self-signature? (y/N) "
@@ -3333,7 +3333,7 @@ msgid ""
 "Your current signature on \"%s\"\n"
 "has expired.\n"
 msgstr ""
-"Twój podpis na ,,%s''\n"
+"Twój podpis na „%s”\n"
 "przekroczył datę ważności.\n"
 
 msgid "Do you want to issue a new signature to replace the expired one? (y/N) "
@@ -3344,7 +3344,7 @@ msgid ""
 "Your current signature on \"%s\"\n"
 "is a local signature.\n"
 msgstr ""
-"Twój podpis na ,,%s''\n"
+"Twój podpis na „%s”\n"
 "jest podpisem prywatnym (lokalnym).\n"
 
 msgid "Do you want to promote it to a full exportable signature? (y/N) "
@@ -3353,11 +3353,11 @@ msgstr ""
 
 #, c-format
 msgid "\"%s\" was already locally signed by key %s\n"
-msgstr ",,%s'' jest już lokalnie podpisany kluczem %s\n"
+msgstr "„%s” jest już lokalnie podpisany kluczem %s\n"
 
 #, c-format
 msgid "\"%s\" was already signed by key %s\n"
-msgstr ",,%s'' jest już podpisany kluczem %s\n"
+msgstr "„%s” jest już podpisany kluczem %s\n"
 
 msgid "Do you want to sign it again anyway? (y/N) "
 msgstr "Czy na pewno chcesz to podpisać jeszcze raz? (t/N) "
@@ -3383,7 +3383,7 @@ msgid ""
 "to the person named above?  If you don't know what to answer, enter \"0\".\n"
 msgstr ""
 "Jak dokładnie została przez Ciebie sprawdzona tożsamość tej osoby?\n"
-"Jeśli nie wiesz co odpowiedzieć, podaj ,,0''.\n"
+"Jeśli nie wiesz co odpowiedzieć, podaj „0”.\n"
 
 #, c-format
 msgid "   (0) I will not answer.%s\n"
@@ -3402,7 +3402,7 @@ msgid "   (3) I have done very careful checking.%s\n"
 msgstr "   (3) Bardzo dokładnie.%s\n"
 
 msgid "Your selection? (enter '?' for more information): "
-msgstr "Wybór (,,?'' podaje więcej informacji): "
+msgstr "Wybór („?” podaje więcej informacji): "
 
 #, c-format
 msgid ""
@@ -3410,7 +3410,7 @@ msgid ""
 "key \"%s\" (%s)\n"
 msgstr ""
 "Czy jesteś naprawdę pewien, że chcesz podpisać ten klucz\n"
-"swoim kluczem ,,%s'' (%s)\n"
+"swoim kluczem „%s” (%s)\n"
 
 msgid "This will be a self-signature.\n"
 msgstr "To będzie podpis klucza nim samym.\n"
@@ -3610,8 +3610,8 @@ msgid ""
 "  a 't' for trust signatures (tsign), an 'nr' for non-revocable signatures\n"
 "  (nrsign), or any combination thereof (ltsign, tnrsign, etc.).\n"
 msgstr ""
-"* Polecenie ,,sign'' można poprzedzić ,,l'' dla lokalnych sygnatur (lsign),\n"
-"  ,,t'' dla sygnatur zaufania (tsign) albo ,,nr'' dla sygnatur nie\n"
+"* Polecenie „sign” można poprzedzić „l” dla lokalnych sygnatur (lsign),\n"
+"  „t” dla sygnatur zaufania (tsign) albo „nr” dla sygnatur nie\n"
 "  podlegających unieważnieniu (nrsign), albo dowolną ich kombinacją "
 "(ltsign,\n"
 "  tnrsign itd.).\n"
@@ -3631,14 +3631,14 @@ msgstr "Podpowiedź: wybierz identyfikatory użytkownika do podpisania.\n"
 
 #, c-format
 msgid "Unknown signature type '%s'\n"
-msgstr "Nieznany rodzaj podpisu ,,%s''\n"
+msgstr "Nieznany rodzaj podpisu „%s”\n"
 
 msgid "You must select at least one user ID.\n"
 msgstr "Musisz wybrać co najmniej jeden identyfikator użytkownika.\n"
 
 #, c-format
 msgid "(Use the '%s' command.)\n"
-msgstr "(Należy użyć polecenia ,,%s''.)\n"
+msgstr "(Należy użyć polecenia „%s”.)\n"
 
 msgid "You can't delete the last user ID!\n"
 msgstr "Nie możesz usunąć ostatniego identyfikatora użytkownika!\n"
@@ -3663,11 +3663,11 @@ msgstr "Polecenie oczekuje argumentu będącego nazwą pliku\n"
 
 #, c-format
 msgid "Can't open '%s': %s\n"
-msgstr "Nie można otworzyć ,,%s'': %s\n"
+msgstr "Nie można otworzyć „%s”: %s\n"
 
 #, c-format
 msgid "Error reading backup key from '%s': %s\n"
-msgstr "Błąd podczas odczytu klucza zapasowego z ,,%s'': %s\n"
+msgstr "Błąd podczas odczytu klucza zapasowego z „%s”: %s\n"
 
 msgid "You must select at least one key.\n"
 msgstr "Musisz wybrać co najmniej jeden klucz.\n"
@@ -3738,15 +3738,15 @@ msgstr "ustawienie głównego identyfikatora użytkownika nie powiodło się: %s
 
 #, c-format
 msgid "\"%s\" is not a fingerprint\n"
-msgstr ",,%s'' nie jest odciskiem\n"
+msgstr "„%s” nie jest odciskiem\n"
 
 #, c-format
 msgid "\"%s\" is not the primary fingerprint\n"
-msgstr ",,%s'' nie jest głównym odciskiem\n"
+msgstr "„%s” nie jest głównym odciskiem\n"
 
 #, c-format
 msgid "Invalid user ID '%s': %s\n"
-msgstr "Błędny identyfikator użytkownika ,,%s'': %s\n"
+msgstr "Błędny identyfikator użytkownika „%s”: %s\n"
 
 msgid "No matching user IDs."
 msgstr "Brak pasującego identyfikatora użytkownika."
@@ -3764,15 +3764,15 @@ msgstr "unieważnienie podpisu klucza nie powiodło się: %s\n"
 
 #, c-format
 msgid "'%s' is not a valid expiration time\n"
-msgstr ",,%s'' nie jest poprawnym czasem wygaśnięcia\n"
+msgstr "„%s” nie jest poprawnym czasem wygaśnięcia\n"
 
 #, c-format
 msgid "\"%s\" is not a proper fingerprint\n"
-msgstr ",,%s'' nie jest właściwym odciskiem\n"
+msgstr "„%s” nie jest właściwym odciskiem\n"
 
 #, c-format
 msgid "subkey \"%s\" not found\n"
-msgstr "podklucz ,,%s'' nie został odnaleziony\n"
+msgstr "podklucz „%s” nie został odnaleziony\n"
 
 msgid "Preferred keyserver: "
 msgstr "Preferowany serwer kluczy: "
@@ -3909,22 +3909,22 @@ msgstr "niepoprawny"
 
 #, c-format
 msgid "User ID \"%s\" compacted: %s\n"
-msgstr "Identyfikator użytkownika ,,%s'' upakowany: %s\n"
+msgstr "Identyfikator użytkownika „%s” upakowany: %s\n"
 
 #, c-format
 msgid "User ID \"%s\": %d signature removed\n"
 msgid_plural "User ID \"%s\": %d signatures removed\n"
-msgstr[0] "Identyfikator użytkownika ,,%s'': %d podpis usunięty\n"
-msgstr[1] "Identyfikator użytkownika ,,%s'': %d podpisy usunięte\n"
-msgstr[2] "Identyfikator użytkownika ,,%s'': %d podpisów usuniętych\n"
+msgstr[0] "Identyfikator użytkownika „%s”: %d podpis usunięty\n"
+msgstr[1] "Identyfikator użytkownika „%s”: %d podpisy usunięte\n"
+msgstr[2] "Identyfikator użytkownika „%s”: %d podpisów usuniętych\n"
 
 #, c-format
 msgid "User ID \"%s\": already minimized\n"
-msgstr "Identyfikator użytkownika ,,%s'': już zmniejszony.\n"
+msgstr "Identyfikator użytkownika „%s”: już zmniejszony.\n"
 
 #, c-format
 msgid "User ID \"%s\": already clean\n"
-msgstr "Identyfikator użytkownika ,,%s'': już czysty.\n"
+msgstr "Identyfikator użytkownika „%s”: już czysty.\n"
 
 msgid ""
 "WARNING: This is a PGP 2.x-style key.  Adding a designated revoker may "
@@ -4009,7 +4009,7 @@ msgstr "Proszę wybrać dokładnie jeden identyfikator użytkownika.\n"
 
 #, c-format
 msgid "skipping v3 self-signature on user ID \"%s\"\n"
-msgstr "podpis w wersji 3 na identyfikatorze ,,%s'' zostaje pominięty\n"
+msgstr "podpis w wersji 3 na identyfikatorze „%s” zostaje pominięty\n"
 
 msgid "Enter your preferred keyserver URL: "
 msgstr "Podaj preferowany URL serwera kluczy: "
@@ -4036,7 +4036,7 @@ msgstr "Brak identyfikatora użytkownika o skrócie %s\n"
 
 #, c-format
 msgid "No subkey with key ID '%s'.\n"
-msgstr "Brak podklucza o identyfikatorze ,,%s''.\n"
+msgstr "Brak podklucza o identyfikatorze „%s”.\n"
 
 #, c-format
 msgid "No subkey with index %d\n"
@@ -4044,7 +4044,7 @@ msgstr "Brak podklucza o numerze %d.\n"
 
 #, c-format
 msgid "user ID: \"%s\"\n"
-msgstr "identyfikator użytkownika: ,,%s''\n"
+msgstr "identyfikator użytkownika: „%s”\n"
 
 #, c-format
 msgid "signed by your key %s on %s%s%s\n"
@@ -4091,7 +4091,7 @@ msgstr ""
 
 #, c-format
 msgid "user ID \"%s\" is already revoked\n"
-msgstr "identyfikator użytkownika ,,%s'' został już unieważniony\n"
+msgstr "identyfikator użytkownika „%s” został już unieważniony\n"
 
 #, c-format
 msgid "WARNING: a user ID signature is dated %d seconds in the future\n"
@@ -4120,11 +4120,11 @@ msgstr ""
 
 #, c-format
 msgid "invalid value for option '%s'\n"
-msgstr "błędna wartość dla opcji ,,%s''\n"
+msgstr "błędna wartość dla opcji „%s”\n"
 
 #, c-format
 msgid "preference '%s' duplicated\n"
-msgstr "ustawienie ,,%s'' powtarza się\n"
+msgstr "ustawienie „%s” powtarza się\n"
 
 #, c-format
 msgid "too many cipher preferences\n"
@@ -4145,7 +4145,7 @@ msgstr "zbyt wiele ustawień szyfru\n"
 
 #, c-format
 msgid "invalid item '%s' in preference string\n"
-msgstr "niewłaściwy element ,,%s'' w tekście ustawień\n"
+msgstr "niewłaściwy element „%s” w tekście ustawień\n"
 
 #, c-format
 msgid "writing direct signature\n"
@@ -4435,7 +4435,7 @@ msgstr "Niewłaściwy znak w imieniu lub nazwisku\n"
 
 #, c-format
 msgid "The characters '%s' and '%s' may not appear in name\n"
-msgstr "Znaki ,,%s'' i ,,%s'' nie mogą występować w inieniu ani nazwisku\n"
+msgstr "Znaki „%s” i „%s” nie mogą występować w inieniu ani nazwisku\n"
 
 msgid "Email address: "
 msgstr "Adres poczty elektronicznej: "
@@ -4451,7 +4451,7 @@ msgstr "Niewłaściwy znak w komentarzu\n"
 
 #, c-format
 msgid "You are using the '%s' character set.\n"
-msgstr "Używany zestaw znaków: ,,%s''.\n"
+msgstr "Używany zestaw znaków: „%s”.\n"
 
 #, c-format
 msgid ""
@@ -4534,7 +4534,7 @@ msgid ""
 "\n"
 msgstr ""
 "Będzie tworzony klucz dla:\n"
-"    ,,%s''\n"
+"    „%s”\n"
 "\n"
 
 msgid "Continue? (Y/n) "
@@ -4542,7 +4542,7 @@ msgstr "Kontynuować? (T/n) "
 
 #, c-format
 msgid "A key for \"%s\" already exists\n"
-msgstr "klucz dla ,,%s'' już istnieje\n"
+msgstr "klucz dla „%s” już istnieje\n"
 
 msgid "Create anyway? (y/N) "
 msgstr "Utworzyć klucz mimo to? (t/N) "
@@ -4554,8 +4554,8 @@ msgstr "tworzenie mimo to\n"
 #, c-format
 msgid "Note: Use \"%s %s\" for a full featured key generation dialog.\n"
 msgstr ""
-"Uwaga: pełną funkcjonalność generowania klucza można uzyskać przez ,,%s "
-"%s''.\n"
+"Uwaga: pełną funkcjonalność generowania klucza można uzyskać przez „%s "
+"%s”.\n"
 
 #, c-format
 msgid "Key generation canceled.\n"
@@ -4563,15 +4563,15 @@ msgstr "Procedura generacji klucza została anulowana.\n"
 
 #, c-format
 msgid "can't create backup file '%s': %s\n"
-msgstr "nie można utworzyć pliku kopii zapasowej ,,%s'': %s\n"
+msgstr "nie można utworzyć pliku kopii zapasowej „%s”: %s\n"
 
 #, c-format
 msgid "Note: backup of card key saved to '%s'\n"
-msgstr "Uwaga: kopia zapasowa klucza karty zapisana do ,,%s''\n"
+msgstr "Uwaga: kopia zapasowa klucza karty zapisana do „%s”\n"
 
 #, c-format
 msgid "writing public key to '%s'\n"
-msgstr "zapis klucza publicznego w ,,%s''\n"
+msgstr "zapis klucza publicznego w „%s”\n"
 
 #, c-format
 msgid "no writable public keyring found: %s\n"
@@ -4579,7 +4579,7 @@ msgstr "brak zapisywalnego zbioru kluczy publicznych: %s\n"
 
 #, c-format
 msgid "error writing public keyring '%s': %s\n"
-msgstr "błąd podczas zapisu zbioru kluczy publicznych ,,%s'': %s\n"
+msgstr "błąd podczas zapisu zbioru kluczy publicznych „%s”: %s\n"
 
 msgid "public and secret key created and signed.\n"
 msgstr "klucz publiczny i prywatny (tajny) zostały utworzone i podpisane.\n"
@@ -4697,7 +4697,7 @@ msgstr "    Nr seryjny karty ="
 
 #, c-format
 msgid "caching keyring '%s'\n"
-msgstr "buforowanie zbioru kluczy ,,%s''\n"
+msgstr "buforowanie zbioru kluczy „%s”\n"
 
 #, c-format
 msgid "%lu keys cached so far (%lu signature)\n"
@@ -4754,7 +4754,7 @@ msgstr "niepoprawny protokół serwera kluczy (nasz %d != moduł obsługi %d)\n"
 
 #, c-format
 msgid "\"%s\" not a key ID: skipping\n"
-msgstr ",,%s'' nie jest identyfikatorem klucza - pominięto\n"
+msgstr "„%s” nie jest identyfikatorem klucza - pominięto\n"
 
 #, c-format
 msgid "refreshing %d key from %s\n"
@@ -4769,7 +4769,7 @@ msgstr "OSTRZEŻENIE: nie można odświeżyć klucza %s przez %s: %s\n"
 
 #, c-format
 msgid "key \"%s\" not found on keyserver\n"
-msgstr "klucz ,,%s'' nie został odnaleziony na serwerze kluczy\n"
+msgstr "klucz „%s” nie został odnaleziony na serwerze kluczy\n"
 
 #, c-format
 msgid "key not found on keyserver\n"
@@ -4785,7 +4785,7 @@ msgstr "brak znanego serwera kluczy\n"
 
 #, c-format
 msgid "skipped \"%s\": %s\n"
-msgstr "pominięty ,,%s'': %s\n"
+msgstr "pominięty „%s”: %s\n"
 
 #, c-format
 msgid "sending key %s to %s\n"
@@ -4793,7 +4793,7 @@ msgstr "wysyłanie klucza %s na %s\n"
 
 #, c-format
 msgid "requesting key from '%s'\n"
-msgstr "zapytanie o klucz z ,,%s''\n"
+msgstr "zapytanie o klucz z „%s”\n"
 
 #, c-format
 msgid "WARNING: unable to fetch URI %s: %s\n"
@@ -4834,7 +4834,7 @@ msgstr ""
 
 #, c-format
 msgid "      \"%s\"\n"
-msgstr "      ,,%s''\n"
+msgstr "      „%s”\n"
 
 #, c-format
 msgid "encrypted with %s key, ID %s\n"
@@ -4883,7 +4883,7 @@ msgstr ""
 
 #, c-format
 msgid "Use the option '%s' to decrypt anyway.\n"
-msgstr "Użycie mimo to opcji ,,%s'' do odszyfrowania.\n"
+msgstr "Użycie mimo to opcji „%s” do odszyfrowania.\n"
 
 #, c-format
 msgid "decryption forced to fail!\n"
@@ -4916,7 +4916,7 @@ msgstr "pierwotna nazwa pliku='%.*s'\n"
 #, c-format
 msgid "standalone revocation - use \"gpg --import\" to apply\n"
 msgstr ""
-"osobny certyfikat unieważnienia - użyj ,,gpg --import'' aby go wczytać\n"
+"osobny certyfikat unieważnienia - użyj „gpg --import” aby go wczytać\n"
 
 #, c-format
 msgid "no signature found\n"
@@ -4924,15 +4924,15 @@ msgstr "nie znaleziono podpisu\n"
 
 #, c-format
 msgid "BAD signature from \"%s\""
-msgstr "NIEPOPRAWNY podpis złożony przez ,,%s''"
+msgstr "NIEPOPRAWNY podpis złożony przez „%s”"
 
 #, c-format
 msgid "Expired signature from \"%s\""
-msgstr "Przeterminowany podpis złożony przez ,,%s''"
+msgstr "Przeterminowany podpis złożony przez „%s”"
 
 #, c-format
 msgid "Good signature from \"%s\""
-msgstr "Poprawny podpis złożony przez ,,%s''"
+msgstr "Poprawny podpis złożony przez „%s”"
 
 #, c-format
 msgid "signature verification suppressed\n"
@@ -4956,7 +4956,7 @@ msgstr "Podpisano w %s kluczem %s o numerze %s\n"
 
 #, c-format
 msgid "               issuer \"%s\"\n"
-msgstr "                        wystawca ,,%s''\n"
+msgstr "                        wystawca „%s”\n"
 
 #, c-format
 msgid "Key available at: "
@@ -4964,14 +4964,14 @@ msgstr "Klucz dostępny w: "
 
 #, c-format
 msgid "Note: Use '%s' to make use of this info\n"
-msgstr "Uwaga: aby wykorzystać tę informację, należy użyć ,,%s''\n"
+msgstr "Uwaga: aby wykorzystać tę informację, należy użyć „%s”\n"
 
 msgid "[uncertain]"
 msgstr "[niepewne]"
 
 #, c-format
 msgid "                aka \"%s\""
-msgstr "                        alias ,,%s''"
+msgstr "                        alias „%s”"
 
 #, c-format
 msgid "WARNING: This key is not suitable for signing in %s mode\n"
@@ -5004,7 +5004,7 @@ msgstr ", algorytm klucza "
 #, c-format
 msgid "WARNING: not a detached signature; file '%s' was NOT verified!\n"
 msgstr ""
-"OSTRZEŻENIE: to nie jest oddzielony podpis; plik ,,%s'' NIE został "
+"OSTRZEŻENIE: to nie jest oddzielony podpis; plik „%s” NIE został "
 "zweryfikowany!\n"
 
 #, c-format
@@ -5031,7 +5031,7 @@ msgstr "podpis starego typu (PGP 2.x).\n"
 
 #, c-format
 msgid "fstat of '%s' failed in %s: %s\n"
-msgstr "fstat na ,,%s'' nie powiodło się w %s: %s\n"
+msgstr "fstat na „%s” nie powiodło się w %s: %s\n"
 
 #, c-format
 msgid "fstat(%d) failed in %s: %s\n"
@@ -5083,27 +5083,27 @@ msgstr "(dalsze informacje: "
 
 #, c-format
 msgid "%s:%d: deprecated option \"%s\"\n"
-msgstr "%s:%d: przestarzała opcja ,,%s''\n"
+msgstr "%s:%d: przestarzała opcja „%s”\n"
 
 #, c-format
 msgid "please use \"%s%s\" instead\n"
-msgstr "w jej miejsce należy użyć ,,%s%s''\n"
+msgstr "w jej miejsce należy użyć „%s%s”\n"
 
 #, c-format
 msgid "WARNING: \"%s\" is a deprecated command - do not use it\n"
 msgstr ""
-"OSTRZEŻENIE: ,,%s'' jest przestarzałym poleceniem - nie należy go używać\n"
+"OSTRZEŻENIE: „%s” jest przestarzałym poleceniem - nie należy go używać\n"
 
 #, c-format
 msgid "%s:%u: \"%s\" is obsolete in this file - it only has effect in %s\n"
 msgstr ""
-"%s:%u: ,,%s'' jest przestarzałe w tym pliku - ma znaczenie tylko w %s\n"
+"%s:%u: „%s” jest przestarzałe w tym pliku - ma znaczenie tylko w %s\n"
 
 #, c-format
 msgid ""
 "WARNING: \"%s%s\" is an obsolete option - it has no effect except on %s\n"
 msgstr ""
-"OSTRZEŻENIE: ,,%s%s'' jest przestarzałą opcją - nie ma efektu z wyjątkiem "
+"OSTRZEŻENIE: „%s%s” jest przestarzałą opcją - nie ma efektu z wyjątkiem "
 "%s\n"
 
 msgid "Uncompressed"
@@ -5119,11 +5119,11 @@ msgstr "ta wiadomość może nie dać się odczytać za pomocą %s\n"
 
 #, c-format
 msgid "ambiguous option '%s'\n"
-msgstr "niejednoznaczna opcja ,,%s''\n"
+msgstr "niejednoznaczna opcja „%s”\n"
 
 #, c-format
 msgid "unknown option '%s'\n"
-msgstr "nieznana opcja ,,%s''\n"
+msgstr "nieznana opcja „%s”\n"
 
 #, c-format
 msgid "ECDSA public key is expected to be in SEC encoding multiple of 8 bits\n"
@@ -5132,11 +5132,11 @@ msgstr ""
 
 #, c-format
 msgid "unknown weak digest '%s'\n"
-msgstr "nieznany słaby skrót ,,%s''\n"
+msgstr "nieznany słaby skrót „%s”\n"
 
 #, c-format
 msgid "File '%s' exists. "
-msgstr "Plik ,,%s'' istnieje. "
+msgstr "Plik „%s” istnieje. "
 
 msgid "Overwrite? (y/N) "
 msgstr "Nadpisać? (t/N) "
@@ -5223,7 +5223,7 @@ msgid ""
 "%s"
 msgstr ""
 "%s\n"
-",,%.*s''\n"
+"„%.*s”\n"
 "klucz %u-bitowy %s, ID %s,\n"
 "utworzony %s%s.\n"
 "%s"
@@ -5246,7 +5246,7 @@ msgstr "Nazwa pliku ze zdjęciem w formacie JPEG: "
 
 #, c-format
 msgid "unable to open JPEG file '%s': %s\n"
-msgstr "nie można otworzyć pliku JPEG ,,%s'': %s\n"
+msgstr "nie można otworzyć pliku JPEG „%s”: %s\n"
 
 #, c-format
 msgid "This JPEG is really large (%d bytes) !\n"
@@ -5257,7 +5257,7 @@ msgstr "Czy na pewno chcesz go użyć? (t/N) "
 
 #, c-format
 msgid "'%s' is not a JPEG file\n"
-msgstr ",,%s'' nie jest plikiem JPEG\n"
+msgstr "„%s” nie jest plikiem JPEG\n"
 
 msgid "Is this photo correct (y/N/q)? "
 msgstr "Czy zdjęcie jest w porządku? (t/N/w) "
@@ -5274,7 +5274,7 @@ msgstr ""
 
 #, c-format
 msgid "unable to execute shell '%s': %s\n"
-msgstr "nie można uruchomić powłoki ,,%s'': %s\n"
+msgstr "nie można uruchomić powłoki „%s”: %s\n"
 
 #, c-format
 msgid "unnatural exit of external program\n"
@@ -5286,11 +5286,11 @@ msgstr "błąd systemu podczas wołania programu zewnętrznego: %s\n"
 
 #, c-format
 msgid "WARNING: unable to remove tempfile (%s) '%s': %s\n"
-msgstr "OSTRZEŻENIE: nie można skasować pliku tymczasowego (%s) ,,%s'': %s\n"
+msgstr "OSTRZEŻENIE: nie można skasować pliku tymczasowego (%s) „%s”: %s\n"
 
 #, c-format
 msgid "WARNING: unable to remove temp directory '%s': %s\n"
-msgstr "OSTRZEŻENIE: nie można skasować tymczasowego katalogu ,,%s'': %s\n"
+msgstr "OSTRZEŻENIE: nie można skasować tymczasowego katalogu „%s”: %s\n"
 
 #, c-format
 msgid ""
@@ -5320,7 +5320,7 @@ msgstr "Brak wartości zaufania dla:\n"
 
 #, c-format
 msgid "  aka \"%s\"\n"
-msgstr "  alias ,,%s''\n"
+msgstr "  alias „%s”\n"
 
 msgid ""
 "How much do you trust that this key actually belongs to the named user?\n"
@@ -5390,7 +5390,7 @@ msgid ""
 "question with yes.\n"
 msgstr ""
 "Ten klucz jest niedobry! Został oznaczony jako niezaufany!\n"
-"Jeżeli *naprawdę* wiesz, co robisz, możesz odpowiedzieć ,,tak'' na\n"
+"Jeżeli *naprawdę* wiesz, co robisz, możesz odpowiedzieć „tak” na\n"
 "następne pytanie.\n"
 
 msgid ""
@@ -5400,7 +5400,7 @@ msgid ""
 msgstr ""
 "NIE MA pewności, czy klucz należy do osoby wymienionej w identyfikatorze.\n"
 "Jeśli nie masz co do tego żadnych wątpliwości i *naprawdę* wiesz co robisz,\n"
-"możesz odpowiedzieć ,,tak'' na następne pytanie.\n"
+"możesz odpowiedzieć „tak” na następne pytanie.\n"
 
 msgid "Use this key anyway? (y/N) "
 msgstr "Użyć tego klucza pomimo to? (t/N) "
@@ -5418,12 +5418,12 @@ msgstr ""
 #, fuzzy, c-format
 #| msgid "user ID: \"%s\"\n"
 msgid "checking User ID \"%s\"\n"
-msgstr "identyfikator użytkownika: ,,%s''\n"
+msgstr "identyfikator użytkownika: „%s”\n"
 
 #, fuzzy, c-format
 #| msgid "option '%s' given, but option '%s' not given\n"
 msgid "option %s given but issuer \"%s\" does not match\n"
-msgstr "podano opcję ,,%s'', ale nie podano opcji ,,%s''\n"
+msgstr "podano opcję „%s”, ale nie podano opcji „%s”\n"
 
 #, fuzzy, c-format
 #| msgid "key %s: doesn't match our copy\n"
@@ -5433,7 +5433,7 @@ msgstr "klucz %s: nie zgadza się z lokalną kopią\n"
 #, fuzzy, c-format
 #| msgid "option '%s' given, but option '%s' not given\n"
 msgid "option %s given but no matching User ID found\n"
-msgstr "podano opcję ,,%s'', ale nie podano opcji ,,%s''\n"
+msgstr "podano opcję „%s”, ale nie podano opcji „%s”\n"
 
 #, c-format
 msgid "WARNING: This key has been revoked by its designated revoker!\n"
@@ -5517,18 +5517,18 @@ msgstr "%s: pominięty: został już wybrany w innej opcji\n"
 
 #, c-format
 msgid "can't encrypt to '%s'\n"
-msgstr "nie można zaszyfrować do ,,%s''\n"
+msgstr "nie można zaszyfrować do „%s”\n"
 
 #, c-format
 msgid "option '%s' given, but no valid default keys given\n"
-msgstr "podano opcję ,,%s'', ale nie podano poprawnych kluczy domyślnych\n"
+msgstr "podano opcję „%s”, ale nie podano poprawnych kluczy domyślnych\n"
 
 #, c-format
 msgid "option '%s' given, but option '%s' not given\n"
-msgstr "podano opcję ,,%s'', ale nie podano opcji ,,%s''\n"
+msgstr "podano opcję „%s”, ale nie podano opcji „%s”\n"
 
 msgid "You did not specify a user ID. (you may use \"-r\")\n"
-msgstr "Nie został podany identyfikator użytkownika (np. za pomocą ,,-r'')\n"
+msgstr "Nie został podany identyfikator użytkownika (np. za pomocą „-r”)\n"
 
 msgid "Current recipients:\n"
 msgstr "Aktualni odbiorcy:\n"
@@ -5556,7 +5556,7 @@ msgstr "pominięty: został już wybrany w innej opcji\n"
 
 #, c-format
 msgid "unknown default recipient \"%s\"\n"
-msgstr "nieznany domyślny adresat ,,%s''\n"
+msgstr "nieznany domyślny adresat „%s”\n"
 
 #, c-format
 msgid "no valid addressees\n"
@@ -5591,7 +5591,7 @@ msgstr "brak podpisanych danych\n"
 
 #, c-format
 msgid "can't open signed data '%s'\n"
-msgstr "nie można otworzyć podpisanego pliku ,,%s''\n"
+msgstr "nie można otworzyć podpisanego pliku „%s”\n"
 
 #, c-format
 msgid "can't open signed data fd=%d: %s\n"
@@ -5666,7 +5666,7 @@ msgstr "Certyfikat unieważnienia został utworzony.\n"
 
 #, c-format
 msgid "no revocation keys found for \"%s\"\n"
-msgstr "brak kluczy unieważniających dla ,,%s''\n"
+msgstr "brak kluczy unieważniających dla „%s”\n"
 
 msgid "This is a revocation certificate for the OpenPGP key:"
 msgstr "To certyfikat unieważnienia dla klucza OpenPGP:"
@@ -5676,7 +5676,7 @@ msgid ""
 "declare that a key shall not anymore be used.  It is not possible\n"
 "to retract such a revocation certificate once it has been published."
 msgstr ""
-"Certyfikat unieważnienia to rodzaj ,,wyłącznika awaryjnego,, do\n"
+"Certyfikat unieważnienia to rodzaj „wyłącznika awaryjnego” do\n"
 "publicznego zadeklarowania, że klucz nie powinien być już więcej\n"
 "używany. Po opublikowaniu takiego certyfikatu nie jest już możliwe\n"
 "wycofanie go."
@@ -5692,7 +5692,7 @@ msgstr ""
 "klucza tajnego. Co więcej, jeśli klucz tajny jest nadal dostępny,\n"
 "lepiej wygenerować nowy certyfikat unieważnienia i podać powód\n"
 "unieważnienia. Więcej szczegółów w opisie polecenia gpg\n"
-",,--generate-revocation'' w podręczniku do GnuPG."
+"„--generate-revocation” w podręczniku do GnuPG."
 
 msgid ""
 "To avoid an accidental use of this file, a colon has been inserted\n"
@@ -5706,18 +5706,18 @@ msgstr ""
 
 #, c-format
 msgid "revocation certificate stored as '%s.rev'\n"
-msgstr "certyfikat unieważnienia został zapisany jako ,,%s.rev''\n"
+msgstr "certyfikat unieważnienia został zapisany jako „%s.rev”\n"
 
 #, c-format
 msgid "secret key \"%s\" not found\n"
-msgstr "klucz prywatny ,,%s'' nie został odnaleziony\n"
+msgstr "klucz prywatny „%s” nie został odnaleziony\n"
 
 #. TRANSLATORS: The %s prints a key specification which
 #. for example has been given at the command line.  Several lines
 #. lines with secret key infos are printed after this message.
 #, c-format
 msgid "'%s' matches multiple secret keys:\n"
-msgstr ",,%s'' pasuje do wielu kluczy tajnych:\n"
+msgstr "„%s” pasuje do wielu kluczy tajnych:\n"
 
 #, c-format
 msgid "error searching the keyring: %s\n"
@@ -5907,7 +5907,7 @@ msgstr ""
 
 #, c-format
 msgid "%s/%s signature from: \"%s\"\n"
-msgstr "podpis %s/%s złożony przez: ,,%s''\n"
+msgstr "podpis %s/%s złożony przez: „%s”\n"
 
 #, c-format
 msgid ""
@@ -5933,7 +5933,7 @@ msgstr ""
 
 #, c-format
 msgid "skipped \"%s\": duplicated\n"
-msgstr "pominięty ,,%s'': duplikat\n"
+msgstr "pominięty „%s”: duplikat\n"
 
 #, c-format
 msgid "skipped: secret key already present\n"
@@ -5958,7 +5958,7 @@ msgstr ""
 
 #, c-format
 msgid "error in '%s': %s\n"
-msgstr "błąd w ,,%s'': %s\n"
+msgstr "błąd w „%s”: %s\n"
 
 msgid "line too long"
 msgstr "linia zbyt długa"
@@ -5974,11 +5974,11 @@ msgstr "brak wartości zaufania właściciela"
 
 #, c-format
 msgid "error finding trust record in '%s': %s\n"
-msgstr "błąd podczas szukania zapisu wartości zaufania w ,,%s'': %s\n"
+msgstr "błąd podczas szukania zapisu wartości zaufania w „%s”: %s\n"
 
 #, c-format
 msgid "read error in '%s': %s\n"
-msgstr "błąd odczytu w ,,%s'': %s\n"
+msgstr "błąd odczytu w „%s”: %s\n"
 
 #, c-format
 msgid "trustdb: sync failed: %s\n"
@@ -5986,11 +5986,11 @@ msgstr "baza zaufania: synchronizacja nie powiodła się %s\n"
 
 #, c-format
 msgid "can't create lock for '%s'\n"
-msgstr "nie można utworzyć blokady dla ,,%s''\n"
+msgstr "nie można utworzyć blokady dla „%s”\n"
 
 #, c-format
 msgid "can't lock '%s'\n"
-msgstr "nie można zablokować ,,%s''\n"
+msgstr "nie można zablokować „%s”\n"
 
 #, c-format
 msgid "trustdb rec %lu: lseek failed: %s\n"
@@ -6010,7 +6010,7 @@ msgstr "%s: katalog nie istnieje!\n"
 
 #, c-format
 msgid "can't access '%s': %s\n"
-msgstr "nie można dostać się do ,,%s'': %s\n"
+msgstr "nie można dostać się do „%s”: %s\n"
 
 #, c-format
 msgid "%s: failed to create version record: %s"
@@ -6130,7 +6130,7 @@ msgstr "błąd inicjowania bazy danych TOFU: %s\n"
 
 #, c-format
 msgid "error opening TOFU database '%s': %s\n"
-msgstr "błąd otwierania bazy danych TOFU ,,%s'': %s\n"
+msgstr "błąd otwierania bazy danych TOFU „%s”: %s\n"
 
 #, c-format
 msgid "error updating TOFU database: %s\n"
@@ -6139,19 +6139,19 @@ msgstr "błąd uaktualniania bazy danych TOFU: %s\n"
 #, c-format
 msgid ""
 "This is the first time the email address \"%s\" is being used with key %s."
-msgstr "To pierwsze użycie adresu e-mail ,,%s'' z kluczem %s."
+msgstr "To pierwsze użycie adresu e-mail „%s” z kluczem %s."
 
 #, c-format
 msgid "The email address \"%s\" is associated with %d key!"
 msgid_plural "The email address \"%s\" is associated with %d keys!"
-msgstr[0] "Adres e-mail ,,%s'' jest powiązany z %d kluczem!"
-msgstr[1] "Adres e-mail ,,%s'' jest powiązany z %d kluczami!"
-msgstr[2] "Adres e-mail ,,%s'' jest powiązany z %d kluczami!"
+msgstr[0] "Adres e-mail „%s” jest powiązany z %d kluczem!"
+msgstr[1] "Adres e-mail „%s” jest powiązany z %d kluczami!"
+msgstr[2] "Adres e-mail „%s” jest powiązany z %d kluczami!"
 
 msgid "  Since this binding's policy was 'auto', it has been changed to 'ask'."
 msgstr ""
-"  Ponieważ polityką tego powiązania było ,,auto'', została zmieniona na ,,"
-"ask''."
+"  Ponieważ polityką tego powiązania było „auto”, została zmieniona na „"
+"ask”."
 
 #, c-format
 msgid ""
@@ -6159,7 +6159,7 @@ msgid ""
 "or whether you think someone is impersonating \"%s\"."
 msgstr ""
 "Proszę zdecydować, czy ten adres e-mail powinien być powiązany z kluczem %s, "
-"czy raczej ktoś się podszywa za ,,%s''."
+"czy raczej ktoś się podszywa za „%s”."
 
 #, c-format
 msgid "error gathering other user IDs: %s\n"
@@ -6179,13 +6179,13 @@ msgstr "błąd zbierania statystyk podpisów: %s\n"
 #, c-format
 msgid "The email address \"%s\" is associated with %d key:\n"
 msgid_plural "The email address \"%s\" is associated with %d keys:\n"
-msgstr[0] "Adres e-mail ,,%s'' jest powiązany z %d kluczem:\n"
-msgstr[1] "Adres e-mail ,,%s'' jest powiązany z %d kluczami:\n"
-msgstr[2] "Adres e-mail ,,%s'' jest powiązany z %d kluczami:\n"
+msgstr[0] "Adres e-mail „%s” jest powiązany z %d kluczem:\n"
+msgstr[1] "Adres e-mail „%s” jest powiązany z %d kluczami:\n"
+msgstr[2] "Adres e-mail „%s” jest powiązany z %d kluczami:\n"
 
 #, c-format
 msgid "Statistics for keys with the email address \"%s\":\n"
-msgstr "Statystyki dla kluczy o adresie e-mail ,,%s'':\n"
+msgstr "Statystyki dla kluczy o adresie e-mail „%s”:\n"
 
 msgid "this key"
 msgstr "ten klucz"
@@ -6432,7 +6432,7 @@ msgstr ""
 
 #, c-format
 msgid "'%s' is not a valid long keyID\n"
-msgstr ",,%s'' nie jest poprawnym długim identyfikatorem klucza\n"
+msgstr "„%s” nie jest poprawnym długim identyfikatorem klucza\n"
 
 #, c-format
 msgid "key %s: accepted as trusted key\n"
@@ -6485,11 +6485,11 @@ msgstr "następne sprawdzanie bazy odbędzie się %s\n"
 
 #, c-format
 msgid "no need for a trustdb check with '%s' trust model\n"
-msgstr "nie ma potrzeby sprawdzania trustdb przy modelu zaufania ,,%s''\n"
+msgstr "nie ma potrzeby sprawdzania trustdb przy modelu zaufania „%s”\n"
 
 #, c-format
 msgid "no need for a trustdb update with '%s' trust model\n"
-msgstr "nie ma potrzeby uaktualniania trustdb przy modelu zaufania ,,%s''\n"
+msgstr "nie ma potrzeby uaktualniania trustdb przy modelu zaufania „%s”\n"
 
 #, c-format
 msgid "public key %s not found: %s\n"
@@ -6497,7 +6497,7 @@ msgstr "klucz publiczny %s nie odnaleziony: %s\n"
 
 #, c-format
 msgid "please do a --check-trustdb\n"
-msgstr "należy uruchomić gpg z opcją ,,--check-trustdb''\n"
+msgstr "należy uruchomić gpg z opcją „--check-trustdb”\n"
 
 #, c-format
 msgid "checking the trustdb\n"
@@ -6614,7 +6614,7 @@ msgstr "OSTRZEŻENIE: wiadomość nie była zabezpieczona przed manipulacją\n"
 #, fuzzy, c-format
 #| msgid "ambiguous option '%s'\n"
 msgid "Hint: Do not use option %s\n"
-msgstr "niejednoznaczna opcja ,,%s''\n"
+msgstr "niejednoznaczna opcja „%s”\n"
 
 msgid "set debugging flags"
 msgstr "ustawienie flag diagnostycznych"
@@ -7001,7 +7001,7 @@ msgstr ""
 
 #, c-format
 msgid "please use the option '--daemon' to run the program in the background\n"
-msgstr "proszę użyć opcji ,,--daemon'' do uruchomienia programu w tle\n"
+msgstr "proszę użyć opcji „--daemon” do uruchomienia programu w tle\n"
 
 #, c-format
 msgid "handler for fd %d started\n"
@@ -7041,7 +7041,7 @@ msgstr "polityka oznaczona jako krytyczna bez skonfigurowanych polityk"
 
 #, c-format
 msgid "failed to open '%s': %s\n"
-msgstr "nie udało się otworzyć ,,%s'': %s\n"
+msgstr "nie udało się otworzyć „%s”: %s\n"
 
 #, c-format
 msgid "Note: non-critical certificate policy not allowed"
@@ -7092,7 +7092,7 @@ msgstr "status certyfikatu jest nieznany"
 
 #, c-format
 msgid "please make sure that the \"dirmngr\" is properly installed\n"
-msgstr "proszę upewnić się, że ,,dirmngr'' jest poprawnie zainstalowany\n"
+msgstr "proszę upewnić się, że „dirmngr” jest poprawnie zainstalowany\n"
 
 #, c-format
 msgid "checking the CRL failed: %s"
@@ -7262,7 +7262,7 @@ msgid ""
 "created %s, expires %s.\n"
 msgstr ""
 "Proszę wprowadzić hasło aby odbezpieczyć klucz tajny certyfikatu X.509:\n"
-",,%s''\n"
+"„%s”\n"
 "S/N %s, ID 0x%08lX,\n"
 "stworzony %s, wygasa %s.\n"
 
@@ -7313,11 +7313,11 @@ msgstr "linia %d: nie podano nazwy przedmiotu\n"
 
 #, c-format
 msgid "line %d: invalid subject name label '%.*s'\n"
-msgstr "linia %d: niewłaściwa etykieta nazwy przedmiotu ,,%.*s''\n"
+msgstr "linia %d: niewłaściwa etykieta nazwy przedmiotu „%.*s”\n"
 
 #, c-format
 msgid "line %d: invalid subject name '%s' at pos %d\n"
-msgstr "linia %d: niewłaściwa nazwa przedmiotu ,,%s'' na pozycji %d\n"
+msgstr "linia %d: niewłaściwa nazwa przedmiotu „%s” na pozycji %d\n"
 
 #, c-format
 msgid "line %d: not a valid email address\n"
@@ -7329,11 +7329,11 @@ msgstr "linia %d: niewłaściwy numer seryjny\n"
 
 #, c-format
 msgid "line %d: invalid issuer name label '%.*s'\n"
-msgstr "linia %d: niewłaściwa etykieta nazwy wystawcy ,,%.*s''\n"
+msgstr "linia %d: niewłaściwa etykieta nazwy wystawcy „%.*s”\n"
 
 #, c-format
 msgid "line %d: invalid issuer name '%s' at pos %d\n"
-msgstr "linia %d: niewłaściwa nazwa wystawcy ,,%s'' na pozycji %d\n"
+msgstr "linia %d: niewłaściwa nazwa wystawcy „%s” na pozycji %d\n"
 
 #, c-format
 msgid "line %d: invalid date given\n"
@@ -7341,7 +7341,7 @@ msgstr "linia %d: podano niewłaściwą datę\n"
 
 #, c-format
 msgid "line %d: error getting signing key by keygrip '%s': %s\n"
-msgstr "linia %d: błąd pobierania klucza podpisującego z uchwytu ,,%s'': %s\n"
+msgstr "linia %d: błąd pobierania klucza podpisującego z uchwytu „%s”: %s\n"
 
 #, c-format
 msgid "line %d: invalid hash algorithm given\n"
@@ -7361,11 +7361,11 @@ msgstr "linia %d: niewłaściwa składnia rozszerzenia\n"
 
 #, c-format
 msgid "line %d: error reading key '%s' from card: %s\n"
-msgstr "linia %d: błąd odczytu klucza ,,%s'' z karty: %s\n"
+msgstr "linia %d: błąd odczytu klucza „%s” z karty: %s\n"
 
 #, c-format
 msgid "line %d: error getting key by keygrip '%s': %s\n"
-msgstr "linia %d: błąd pobierania klucza z uchwytu ,,%s'': %s\n"
+msgstr "linia %d: błąd pobierania klucza z uchwytu „%s”: %s\n"
 
 #, c-format
 msgid "line %d: key generation failed: %s <%s>\n"
@@ -7410,7 +7410,7 @@ msgstr "Nie podano nazwy przedmiotu\n"
 
 #, c-format
 msgid "Invalid subject name label '%.*s'\n"
-msgstr "Nieprawidłowa etykieta nazwy przedmiotu ,,%.*s''\n"
+msgstr "Nieprawidłowa etykieta nazwy przedmiotu „%.*s”\n"
 
 #. TRANSLATORS: The 22 in the second string is the
 #. length of the first string up to the "%s".  Please
@@ -7419,7 +7419,7 @@ msgstr "Nieprawidłowa etykieta nazwy przedmiotu ,,%.*s''\n"
 #. drop everything after the number.
 #, c-format
 msgid "Invalid subject name '%s'\n"
-msgstr "Nieprawidłowa nazwa przedmiotu ,,%s''\n"
+msgstr "Nieprawidłowa nazwa przedmiotu „%s”\n"
 
 msgid "22 translator: see certreg-ui.c:gpgsm_gencertreq_tty"
 msgstr "33"
@@ -7484,7 +7484,7 @@ msgstr "zaszyfrowano kluczem %s o identyfikatorze %s\n"
 
 #, c-format
 msgid "certificate '%s' not found: %s\n"
-msgstr "nie znaleziono certyfikatu ,,%s'': %s\n"
+msgstr "nie znaleziono certyfikatu „%s”: %s\n"
 
 #, c-format
 msgid "error locking keybox: %s\n"
@@ -7492,15 +7492,15 @@ msgstr "błąd blokowania keyboksa: %s\n"
 
 #, c-format
 msgid "duplicated certificate '%s' deleted\n"
-msgstr "powtórzony certyfikat ,,%s'' usunięty\n"
+msgstr "powtórzony certyfikat „%s” usunięty\n"
 
 #, c-format
 msgid "certificate '%s' deleted\n"
-msgstr "certyfikat ,,%s'' usunięty\n"
+msgstr "certyfikat „%s” usunięty\n"
 
 #, c-format
 msgid "deleting certificate \"%s\" failed: %s\n"
-msgstr "usunięcie certyfikatu ,,%s'' nie powiodło się: %s\n"
+msgstr "usunięcie certyfikatu „%s” nie powiodło się: %s\n"
 
 #, c-format
 msgid "no valid recipients given\n"
@@ -7582,10 +7582,10 @@ msgid "batch mode: never ask"
 msgstr "tryb wsadowy: bez żadnych pytań"
 
 msgid "assume yes on most questions"
-msgstr "przyjęcie odpowiedzi ,,tak'' na większość pytań"
+msgstr "przyjęcie odpowiedzi „tak” na większość pytań"
 
 msgid "assume no on most questions"
-msgstr "przyjęcie odpowiedzi ,,nie'' na większość pytań"
+msgstr "przyjęcie odpowiedzi „nie” na większość pytań"
 
 msgid "|FILE|write an audit log to FILE"
 msgstr "|PLIK|zapisanie logów audytowych do PLIKU"
@@ -7605,19 +7605,19 @@ msgstr ""
 
 #, c-format
 msgid "Note: won't be able to encrypt to '%s': %s\n"
-msgstr "Uwaga: nie można zaszyfrować do ,,%s'': %s\n"
+msgstr "Uwaga: nie można zaszyfrować do „%s”: %s\n"
 
 #, c-format
 msgid "unknown validation model '%s'\n"
-msgstr "nieznany model poprawności ,,%s''\n"
+msgstr "nieznany model poprawności „%s”\n"
 
 #, c-format
 msgid "importing common certificates '%s'\n"
-msgstr "import wspólnych certyfikatów ,,%s''\n"
+msgstr "import wspólnych certyfikatów „%s”\n"
 
 #, c-format
 msgid "can't sign using '%s': %s\n"
-msgstr "nie można podpisać z użyciem ,,%s'': %s\n"
+msgstr "nie można podpisać z użyciem „%s”: %s\n"
 
 #, c-format
 msgid "invalid command (there is no implicit command)\n"
@@ -7687,11 +7687,11 @@ msgstr ""
 
 #, c-format
 msgid "invalid formatted fingerprint in '%s', line %d\n"
-msgstr "niewłaściwie sformatowany odcisk w ,,%s'', w linii %d\n"
+msgstr "niewłaściwie sformatowany odcisk w „%s”, w linii %d\n"
 
 #, c-format
 msgid "invalid country code in '%s', line %d\n"
-msgstr "niewłaściwy kod kraju w ,,%s'', w linii %d\n"
+msgstr "niewłaściwy kod kraju w „%s”, w linii %d\n"
 
 #, c-format
 msgid ""
@@ -7703,7 +7703,7 @@ msgid ""
 "%s%sAre you really sure that you want to do this?"
 msgstr ""
 "Ta operacja złoży podpis przy użyciu certyfikatu:\n"
-",,%s''\n"
+"„%s”\n"
 "Utworzy to kwalifikowany podpis równoważny prawnie podpisowi odręcznemu.\n"
 "\n"
 "%s%sNa pewno chcesz to zrobić?"
@@ -7723,7 +7723,7 @@ msgid ""
 "Note, that this certificate will NOT create a qualified signature!"
 msgstr ""
 "Ta operacja złoży podpis przy użyciu certyfikatu:\n"
-",,%s''\n"
+"„%s”\n"
 "Należy zauważyć, że ten certyfikat NIE utworzy kwalifikowanego podpisu!"
 
 #, c-format
@@ -7798,19 +7798,19 @@ msgstr "porzucanie %u certyfikatów z pamięci podręcznej\n"
 
 #, c-format
 msgid "can't parse certificate '%s': %s\n"
-msgstr "nie można przeanalizować certyfikatu ,,%s'': %s\n"
+msgstr "nie można przeanalizować certyfikatu „%s”: %s\n"
 
 #, c-format
 msgid "certificate '%s' already cached\n"
-msgstr "certyfikat ,,%s'' jest już w pamięci podręcznej\n"
+msgstr "certyfikat „%s” jest już w pamięci podręcznej\n"
 
 #, c-format
 msgid "trusted certificate '%s' loaded\n"
-msgstr "certyfikat zaufany ,,%s'' załadowany\n"
+msgstr "certyfikat zaufany „%s” załadowany\n"
 
 #, c-format
 msgid "certificate '%s' loaded\n"
-msgstr "certyfikat ,,%s'' załadowany\n"
+msgstr "certyfikat „%s” załadowany\n"
 
 #, c-format
 msgid "  SHA1 fingerprint = %s\n"
@@ -7824,7 +7824,7 @@ msgstr "  przedmiot ="
 
 #, c-format
 msgid "error loading certificate '%s': %s\n"
-msgstr "błąd ładowania certyfikatu ,,%s'': %s\n"
+msgstr "błąd ładowania certyfikatu „%s”: %s\n"
 
 #, c-format
 msgid "permanently loaded certificates: %u\n"
@@ -7852,7 +7852,7 @@ msgstr "błąd zapisu certyfikatu w pamięci podręcznej: %s\n"
 
 #, c-format
 msgid "invalid SHA1 fingerprint string '%s'\n"
-msgstr "niewłaściwy łańcuch odcisku SHA1 ,,%s''\n"
+msgstr "niewłaściwy łańcuch odcisku SHA1 „%s”\n"
 
 #, c-format
 msgid "error fetching certificate by S/N: %s\n"
@@ -7872,27 +7872,27 @@ msgstr "błąd pobierania authorityKeyIdentifier: %s\n"
 
 #, c-format
 msgid "creating directory '%s'\n"
-msgstr "tworzenie katalogu ,,%s''\n"
+msgstr "tworzenie katalogu „%s”\n"
 
 #, c-format
 msgid "error creating directory '%s': %s\n"
-msgstr "błąd tworzenia katalogu ,,%s'': %s\n"
+msgstr "błąd tworzenia katalogu „%s”: %s\n"
 
 #, c-format
 msgid "ignoring database dir '%s'\n"
-msgstr "zignorowano katalog bazy danych ,,%s''\n"
+msgstr "zignorowano katalog bazy danych „%s”\n"
 
 #, c-format
 msgid "error reading directory '%s': %s\n"
-msgstr "błąd odczytu katalogu ,,%s'': %s\n"
+msgstr "błąd odczytu katalogu „%s”: %s\n"
 
 #, c-format
 msgid "removing cache file '%s'\n"
-msgstr "usuwanie pliku pamięci podręcznej ,,%s''\n"
+msgstr "usuwanie pliku pamięci podręcznej „%s”\n"
 
 #, c-format
 msgid "not removing file '%s'\n"
-msgstr "bez usuwania pliku ,,%s''\n"
+msgstr "bez usuwania pliku „%s”\n"
 
 #, c-format
 msgid "error closing cache file: %s\n"
@@ -7900,33 +7900,33 @@ msgstr "błąd zamykania pliku pamięci podręcznej: %s\n"
 
 #, c-format
 msgid "failed to open cache dir file '%s': %s\n"
-msgstr "nie udało się otworzyć pliku katalogu pamięci podręcznej ,,%s'': %s\n"
+msgstr "nie udało się otworzyć pliku katalogu pamięci podręcznej „%s”: %s\n"
 
 #, c-format
 msgid "error creating new cache dir file '%s': %s\n"
-msgstr "błąd tworzenia nowego pliku katalogu pamięci podręcznej ,,%s'': %s\n"
+msgstr "błąd tworzenia nowego pliku katalogu pamięci podręcznej „%s”: %s\n"
 
 #, c-format
 msgid "error writing new cache dir file '%s': %s\n"
 msgstr ""
-"błąd podczas zapisu nowego pliku katalogu pamięci podręcznej ,,%s'': %s\n"
+"błąd podczas zapisu nowego pliku katalogu pamięci podręcznej „%s”: %s\n"
 
 #, c-format
 msgid "error closing new cache dir file '%s': %s\n"
-msgstr "błąd zamykania nowego pliku katalogu pamięci podręcznej ,,%s'': %s\n"
+msgstr "błąd zamykania nowego pliku katalogu pamięci podręcznej „%s”: %s\n"
 
 #, c-format
 msgid "new cache dir file '%s' created\n"
-msgstr "nowy plik katalogu pamięci podręcznej ,,%s'' został utworzony\n"
+msgstr "nowy plik katalogu pamięci podręcznej „%s” został utworzony\n"
 
 #, c-format
 msgid "failed to re-open cache dir file '%s': %s\n"
 msgstr ""
-"nie udało ponownie otworzyć pliku katalogu pamięci podręcznej ,,%s'': %s\n"
+"nie udało ponownie otworzyć pliku katalogu pamięci podręcznej „%s”: %s\n"
 
 #, c-format
 msgid "first record of '%s' is not the version\n"
-msgstr "pierwszy rekord ,,%s'' nie jest wersją\n"
+msgstr "pierwszy rekord „%s” nie jest wersją\n"
 
 #, c-format
 msgid "old version of cache directory - cleaning up\n"
@@ -7938,36 +7938,36 @@ msgstr "stara wersja katalogu pamięci podręcznej - poddaję się\n"
 
 #, c-format
 msgid "extra field detected in crl record of '%s' line %u\n"
-msgstr "wykryto nadmiarowe pole w rekordzie CRL ,,%s'', linia %u\n"
+msgstr "wykryto nadmiarowe pole w rekordzie CRL „%s”, linia %u\n"
 
 #, c-format
 msgid "invalid line detected in '%s' line %u\n"
-msgstr "wykryto niewłaściwą linię w ,,%s'', linia %u\n"
+msgstr "wykryto niewłaściwą linię w „%s”, linia %u\n"
 
 #, c-format
 msgid "duplicate entry detected in '%s' line %u\n"
-msgstr "wykryto powtórzony wpis w ,,%s'', linia %u\n"
+msgstr "wykryto powtórzony wpis w „%s”, linia %u\n"
 
 #, c-format
 msgid "unsupported record type in '%s' line %u skipped\n"
-msgstr "pominięto nieobsługiwany typ rekordu w ,,%s'', linia %u\n"
+msgstr "pominięto nieobsługiwany typ rekordu w „%s”, linia %u\n"
 
 #, c-format
 msgid "invalid issuer hash in '%s' line %u\n"
-msgstr "nieprawidłowy skrót wystawcy w ,,%s'', linia %u\n"
+msgstr "nieprawidłowy skrót wystawcy w „%s”, linia %u\n"
 
 #, c-format
 msgid "no issuer DN in '%s' line %u\n"
-msgstr "brak DN wystawcy w ,,%s'', linia %u\n"
+msgstr "brak DN wystawcy w „%s”, linia %u\n"
 
 #, c-format
 msgid "invalid timestamp in '%s' line %u\n"
-msgstr "nieprawidłowy znacznik czasu w ,,%s'', linia %u\n"
+msgstr "nieprawidłowy znacznik czasu w „%s”, linia %u\n"
 
 #, c-format
 msgid "WARNING: invalid cache file hash in '%s' line %u\n"
 msgstr ""
-"UWAGA: nieprawidłowy skrót pliku pamięci podręcznej w ,,%s'', linia %u\n"
+"UWAGA: nieprawidłowy skrót pliku pamięci podręcznej w „%s”, linia %u\n"
 
 #, c-format
 msgid "detected errors in cache dir file\n"
@@ -7980,16 +7980,16 @@ msgstr "proszę sprawdzić przyczynę i ręcznie usunąć ten plik\n"
 #, c-format
 msgid "failed to create temporary cache dir file '%s': %s\n"
 msgstr ""
-"nie udało się utworzyć pliku tymczasowego katalogu pamięci podręcznej ,,"
-"%s'': %s\n"
+"nie udało się utworzyć pliku tymczasowego katalogu pamięci podręcznej „"
+"%s”: %s\n"
 
 #, c-format
 msgid "error renaming '%s' to '%s': %s\n"
-msgstr "błąd zmiany nazwy ,,%s'' na ,,%s'': %s\n"
+msgstr "błąd zmiany nazwy „%s” na „%s”: %s\n"
 
 #, c-format
 msgid "can't hash '%s': %s\n"
-msgstr "nie można policzyć skrótu ,,%s'': %s\n"
+msgstr "nie można policzyć skrótu „%s”: %s\n"
 
 #, c-format
 msgid "error setting up MD5 hash context: %s\n"
@@ -7997,11 +7997,11 @@ msgstr "błąd ustawiania kontekstu skrótu MD5: %s\n"
 
 #, c-format
 msgid "error hashing '%s': %s\n"
-msgstr "błąd liczenia skrótu ,,%s'': %s\n"
+msgstr "błąd liczenia skrótu „%s”: %s\n"
 
 #, c-format
 msgid "invalid formatted checksum for '%s'\n"
-msgstr "niewłaściwie sformatowana suma kontrolna ,,%s''\n"
+msgstr "niewłaściwie sformatowana suma kontrolna „%s”\n"
 
 #, c-format
 msgid "too many open cache files; can't open anymore\n"
@@ -8010,15 +8010,15 @@ msgstr ""
 
 #, c-format
 msgid "opening cache file '%s'\n"
-msgstr "otwieranie pliku pamięci podręcznej ,,%s''\n"
+msgstr "otwieranie pliku pamięci podręcznej „%s”\n"
 
 #, c-format
 msgid "error opening cache file '%s': %s\n"
-msgstr "błąd otwierania pliku pamięci podręcznej ,,%s'': %s\n"
+msgstr "błąd otwierania pliku pamięci podręcznej „%s”: %s\n"
 
 #, c-format
 msgid "error initializing cache file '%s' for reading: %s\n"
-msgstr "błąd inicjowania pliku pamięci podręcznej ,,%s'' do odczytu: %s\n"
+msgstr "błąd inicjowania pliku pamięci podręcznej „%s” do odczytu: %s\n"
 
 #, c-format
 msgid "calling unlock_db_file on a closed file\n"
@@ -8094,7 +8094,7 @@ msgstr "konwersja S-wyrażenia nie powiodła się: %s\n"
 
 #, c-format
 msgid "unknown hash algorithm '%s'\n"
-msgstr "niewłaściwy algorytm skrótu ,,%s''\n"
+msgstr "niewłaściwy algorytm skrótu „%s”\n"
 
 #, c-format
 msgid "gcry_md_open for algorithm %d failed: %s\n"
@@ -8155,17 +8155,17 @@ msgstr "ksba_crl_set_reader nie powiodło się: %s\n"
 
 #, c-format
 msgid "removed stale temporary cache file '%s'\n"
-msgstr "usunięto zleżały plik tymczasowy pamięci podręcznej ,,%s''\n"
+msgstr "usunięto zleżały plik tymczasowy pamięci podręcznej „%s”\n"
 
 #, c-format
 msgid "problem removing stale temporary cache file '%s': %s\n"
 msgstr ""
-"problem z usunięciem zleżałego pliku tymczasowego pamięci podręcznej ,,%s'': "
+"problem z usunięciem zleżałego pliku tymczasowego pamięci podręcznej „%s”: "
 "%s\n"
 
 #, c-format
 msgid "error creating temporary cache file '%s': %s\n"
-msgstr "błąd tworzenia pliku tymczasowego pamięci podręcznej ,,%s'': %s\n"
+msgstr "błąd tworzenia pliku tymczasowego pamięci podręcznej „%s”: %s\n"
 
 #, c-format
 msgid "crl_parse_insert failed: %s\n"
@@ -8173,11 +8173,11 @@ msgstr "crl_parse_insert nie powiodło się: %s\n"
 
 #, c-format
 msgid "error finishing temporary cache file '%s': %s\n"
-msgstr "błąd finalizacji pliku tymczasowego pamięci podręcznej ,,%s'': %s\n"
+msgstr "błąd finalizacji pliku tymczasowego pamięci podręcznej „%s”: %s\n"
 
 #, c-format
 msgid "error closing temporary cache file '%s': %s\n"
-msgstr "błąd zamykania pliku tymczasowego pamięci podręcznej ,,%s'': %s\n"
+msgstr "błąd zamykania pliku tymczasowego pamięci podręcznej „%s”: %s\n"
 
 #, c-format
 msgid "WARNING: new CRL still too old; it expired on %s - loading anyway\n"
@@ -8198,11 +8198,11 @@ msgstr "błąd odczytu rozszerzeń CRL: %s\n"
 
 #, c-format
 msgid "creating cache file '%s'\n"
-msgstr "błąd tworzenia pliku pamięci podręcznej ,,%s''\n"
+msgstr "błąd tworzenia pliku pamięci podręcznej „%s”\n"
 
 #, c-format
 msgid "problem renaming '%s' to '%s': %s\n"
-msgstr "problem ze zmianą nazwy ,,%s'' na ,,%s'': %s\n"
+msgstr "problem ze zmianą nazwy „%s” na „%s”: %s\n"
 
 #, c-format
 msgid ""
@@ -8280,7 +8280,7 @@ msgstr "Dostęp do CRL niemożliwy z powodu wyłączonego %s\n"
 
 #, c-format
 msgid "error retrieving '%s': %s\n"
-msgstr "błąd odtwarzania ,,%s'': %s\n"
+msgstr "błąd odtwarzania „%s”: %s\n"
 
 #, c-format
 msgid "error initializing reader object: %s\n"
@@ -8345,7 +8345,7 @@ msgstr "błąd odczytu certyfikatu ze standardowego wejścia: %s\n"
 
 #, c-format
 msgid "error reading certificate from '%s': %s\n"
-msgstr "błąd odczytu certyfikatu z ,,%s'': %s\n"
+msgstr "błąd odczytu certyfikatu z „%s”: %s\n"
 
 #, c-format
 msgid "certificate too large to make any sense\n"
@@ -8361,7 +8361,7 @@ msgstr "wyszukanie nie powiodło się: %s\n"
 
 #, c-format
 msgid "loading CRL '%s' failed: %s\n"
-msgstr "załadowanie CRL ,,%s'' nie powiodła się: %s\n"
+msgstr "załadowanie CRL „%s” nie powiodła się: %s\n"
 
 #, c-format
 msgid "a dirmngr daemon is up and running\n"
@@ -8385,7 +8385,7 @@ msgstr "sprawdzenie certyfikatu nie powiodło się: %s\n"
 
 #, c-format
 msgid "got status: '%s'\n"
-msgstr "otrzymano status: ,,%s''\n"
+msgstr "otrzymano status: „%s”\n"
 
 #, c-format
 msgid "error writing base64 encoding: %s\n"
@@ -8393,7 +8393,7 @@ msgstr "błąd zapisu kodowania base64: %s\n"
 
 #, c-format
 msgid "unsupported inquiry '%s'\n"
-msgstr "nieobsługiwane zapytanie ,,%s''\n"
+msgstr "nieobsługiwane zapytanie „%s”\n"
 
 #, c-format
 msgid "absolute file name expected\n"
@@ -8401,7 +8401,7 @@ msgstr "oczekiwano bezwzględnej nazwy pliku\n"
 
 #, c-format
 msgid "looking up '%s'\n"
-msgstr "wyszukiwanie ,,%s''\n"
+msgstr "wyszukiwanie „%s”\n"
 
 msgid "list the contents of the CRL cache"
 msgstr "lista zawartości pamięci podręcznej CRL"
@@ -8511,7 +8511,7 @@ msgid ""
 "options)\n"
 msgstr ""
 "@\n"
-"(pełną listę poleceń i opcji można znaleźć w podręczniku ,,info'')\n"
+"(pełną listę poleceń i opcji można znaleźć w podręczniku „info”)\n"
 
 msgid "Usage: @DIRMNGR@ [options] (-h for help)"
 msgstr "Składnia: @DIRMNGR@ [opcje] (-h wyświetla pomoc)"
@@ -8537,11 +8537,11 @@ msgstr "dwukropki nie są dozwolone w nazwie gniazda\n"
 
 #, c-format
 msgid "fetching CRL from '%s' failed: %s\n"
-msgstr "pobranie CRL z ,,%s'' nie powiodło się: %s\n"
+msgstr "pobranie CRL z „%s” nie powiodło się: %s\n"
 
 #, c-format
 msgid "processing CRL from '%s' failed: %s\n"
-msgstr "przetworzenie CRL z ,,%s'' nie powiodło się: %s\n"
+msgstr "przetworzenie CRL z „%s” nie powiodło się: %s\n"
 
 #, c-format
 msgid "%s:%u: line too long - skipped\n"
@@ -8590,11 +8590,11 @@ msgstr "otrzymano sygnał %d - nie zdefiniowano akcji\n"
 
 #, c-format
 msgid "error accessing '%s': http status %u\n"
-msgstr "błąd dostępu do ,,%s'': status http %u\n"
+msgstr "błąd dostępu do „%s”: status http %u\n"
 
 #, c-format
 msgid "URL '%s' redirected to '%s' (%u)\n"
-msgstr "URL ,,%s'' przekierowany na ,,%s'' (%u)\n"
+msgstr "URL „%s” przekierowany na „%s” (%u)\n"
 
 #, c-format
 msgid "too many redirections\n"
@@ -8602,7 +8602,7 @@ msgstr "za dużo przekierowań\n"
 
 #, c-format
 msgid "redirection changed to '%s'\n"
-msgstr "przekierowanie zmienione na ,,%s''\n"
+msgstr "przekierowanie zmienione na „%s”\n"
 
 #, c-format
 msgid "error printing log line: %s\n"
@@ -8638,7 +8638,7 @@ msgstr "błędny znak 0x%02x w nazwie hosta - nie dodano\n"
 
 #, c-format
 msgid "adding '%s:%d' to the ldap server list\n"
-msgstr "dodano ,,%s:%d'' do listy serwerów LDAP\n"
+msgstr "dodano „%s:%d” do listy serwerów LDAP\n"
 
 #, c-format
 msgid "malloc failed: %s\n"
@@ -8646,11 +8646,11 @@ msgstr "malloc nie powiodło się: %s\n"
 
 #, c-format
 msgid "'%s' is not an LDAP URL\n"
-msgstr ",,%s'' nie jest URL-em LDAP\n"
+msgstr "„%s” nie jest URL-em LDAP\n"
 
 #, c-format
 msgid "'%s' is an invalid LDAP URL\n"
-msgstr ",,%s'' jest nieprawidłowym URL-em LDAP\n"
+msgstr "„%s” jest nieprawidłowym URL-em LDAP\n"
 
 #, c-format
 msgid "ldap_search hit the size limit of the server\n"
@@ -8711,19 +8711,19 @@ msgstr "błąd budowania żądania OCSP: %s\n"
 
 #, c-format
 msgid "error connecting to '%s': %s\n"
-msgstr "błąd połączenia z ,,%s'': %s\n"
+msgstr "błąd połączenia z „%s”: %s\n"
 
 #, c-format
 msgid "error reading HTTP response for '%s': %s\n"
-msgstr "błąd odczytu odpowiedzi HTTP dla ,,%s'': %s\n"
+msgstr "błąd odczytu odpowiedzi HTTP dla „%s”: %s\n"
 
 #, c-format
 msgid "error parsing OCSP response for '%s': %s\n"
-msgstr "błąd przetwarzania odpowiedzi OCSP dla ,,%s'': %s\n"
+msgstr "błąd przetwarzania odpowiedzi OCSP dla „%s”: %s\n"
 
 #, c-format
 msgid "OCSP responder at '%s' status: %s\n"
-msgstr "status respondera OCSP pod ,,%s'': %s\n"
+msgstr "status respondera OCSP pod „%s”: %s\n"
 
 #, c-format
 msgid "failed to establish a hashing context for OCSP: %s\n"
@@ -8731,7 +8731,7 @@ msgstr "nie udało się ustanowić kontekstu haszowania dla OCSP: %s\n"
 
 #, c-format
 msgid "hashing the OCSP response for '%s' failed: %s\n"
-msgstr "liczenie skrótu odpowiedzi OCSP dla ,,%s'' nie powiodło się: %s\n"
+msgstr "liczenie skrótu odpowiedzi OCSP dla „%s” nie powiodło się: %s\n"
 
 #, c-format
 msgid "not signed by a default OCSP signer's certificate"
@@ -8776,11 +8776,11 @@ msgstr "nie zdefiniowano domyślnego podpisującego OCSP\n"
 
 #, c-format
 msgid "using default OCSP responder '%s'\n"
-msgstr "użycie domyślnego respondera OCSP ,,%s''\n"
+msgstr "użycie domyślnego respondera OCSP „%s”\n"
 
 #, c-format
 msgid "using OCSP responder '%s'\n"
-msgstr "użycie respondera OCSP ,,%s''\n"
+msgstr "użycie respondera OCSP „%s”\n"
 
 #, c-format
 msgid "error getting OCSP status for target certificate: %s\n"
@@ -8937,11 +8937,11 @@ msgstr ""
 
 #, c-format
 msgid "option \"%s\" requires a program and optional arguments\n"
-msgstr "opcja ,,%s'' wymaga programu i opcjonalnych argumentów\n"
+msgstr "opcja „%s” wymaga programu i opcjonalnych argumentów\n"
 
 #, c-format
 msgid "option \"%s\" ignored due to \"%s\"\n"
-msgstr "opcja ,,%s'' zignorowana z powodu ,,%s''\n"
+msgstr "opcja „%s” zignorowana z powodu „%s”\n"
 
 #, c-format
 msgid "receiving line failed: %s\n"
@@ -8957,7 +8957,7 @@ msgstr "linia skrócona z powodu osadzonego znaku Nul\n"
 
 #, c-format
 msgid "unknown command '%s'\n"
-msgstr "nieznane polecenie ,,%s''\n"
+msgstr "nieznane polecenie „%s”\n"
 
 #, c-format
 msgid "sending line failed: %s\n"
@@ -9007,7 +9007,7 @@ msgstr "Plik konfiguracyjny komponentu %s jest uszkodzony\n"
 
 #, c-format
 msgid "Note: Use the command \"%s%s\" to get details.\n"
-msgstr "Podpowiedź: można użyć polecenia ,,%s%s'', aby uzyskać szczegóły.\n"
+msgstr "Podpowiedź: można użyć polecenia „%s%s”, aby uzyskać szczegóły.\n"
 
 #, c-format
 msgid "External verification of component %s failed"
@@ -9018,11 +9018,11 @@ msgstr "Uwaga, określenia grup są ignorowane\n"
 
 #, c-format
 msgid "error closing '%s'\n"
-msgstr "błąd zamykania ,,%s''\n"
+msgstr "błąd zamykania „%s”\n"
 
 #, c-format
 msgid "error parsing '%s'\n"
-msgstr "błąd analizy ,,%s''\n"
+msgstr "błąd analizy „%s”\n"
 
 msgid "list all components"
 msgstr "lista wszystkich komponentów"
@@ -9182,7 +9182,7 @@ msgstr ""
 #, fuzzy
 #~| msgid "cipher algorithm '%s' may not be used in %s mode\n"
 #~ msgid "AEAD algorithm '%s' may not be used in %s mode\n"
-#~ msgstr "szyfr ,,%s'' nie może być używany w trybie %s\n"
+#~ msgstr "szyfr „%s” nie może być używany w trybie %s\n"
 
 #~ msgid "forcing symmetric cipher %s (%d) violates recipient preferences\n"
 #~ msgstr "wymuszone użycie szyfru %s (%d) kłóci się z ustawieniami adresata\n"
@@ -9263,74 +9263,74 @@ msgstr ""
 #~ msgstr "błędny numer portu %d\n"
 
 #~ msgid "scanning result for attribute '%s'\n"
-#~ msgstr "przeszukiwanie wyniku pod kątem atrybutu ,,%s''\n"
+#~ msgstr "przeszukiwanie wyniku pod kątem atrybutu „%s”\n"
 
 #~ msgid "error writing to stdout: %s\n"
 #~ msgstr "błąd zapisu na standardowe wyjście: %s\n"
 
 #~ msgid "          available attribute '%s'\n"
-#~ msgstr "          dostępny atrybut ,,%s''\n"
+#~ msgstr "          dostępny atrybut „%s”\n"
 
 #~ msgid "attribute '%s' not found\n"
-#~ msgstr "nie znaleziono atrybutu ,,%s''\n"
+#~ msgstr "nie znaleziono atrybutu „%s”\n"
 
 #~ msgid "found attribute '%s'\n"
-#~ msgstr "znaleziono atrybut ,,%s''\n"
+#~ msgstr "znaleziono atrybut „%s”\n"
 
 #~ msgid "processing url '%s'\n"
-#~ msgstr "przetwarzanie URL-a ,,%s''\n"
+#~ msgstr "przetwarzanie URL-a „%s”\n"
 
 #~ msgid "          user '%s'\n"
-#~ msgstr "          użytkownik ,,%s''\n"
+#~ msgstr "          użytkownik „%s”\n"
 
 #~ msgid "          pass '%s'\n"
-#~ msgstr "          hasło ,,%s''\n"
+#~ msgstr "          hasło „%s”\n"
 
 #~ msgid "          host '%s'\n"
-#~ msgstr "          host ,,%s''\n"
+#~ msgstr "          host „%s”\n"
 
 #~ msgid "          port %d\n"
 #~ msgstr "          port %d\n"
 
 #~ msgid "            DN '%s'\n"
-#~ msgstr "            DN ,,%s''\n"
+#~ msgstr "            DN „%s”\n"
 
 #~ msgid "        filter '%s'\n"
-#~ msgstr "        filtr ,,%s''\n"
+#~ msgstr "        filtr „%s”\n"
 
 #~ msgid "          attr '%s'\n"
-#~ msgstr "          atrybut ,,%s''\n"
+#~ msgstr "          atrybut „%s”\n"
 
 #~ msgid "no host name in '%s'\n"
-#~ msgstr "brak nazwy hosta w ,,%s''\n"
+#~ msgstr "brak nazwy hosta w „%s”\n"
 
 #~ msgid "no attribute given for query '%s'\n"
-#~ msgstr "nie podano atrybutu dla zapytania ,,%s''\n"
+#~ msgstr "nie podano atrybutu dla zapytania „%s”\n"
 
 #~ msgid "WARNING: using first attribute only\n"
 #~ msgstr "OSTRZEŻENIE: użyto tylko pierwszego atrybutu\n"
 
 #~ msgid "LDAP init to '%s:%d' failed: %s\n"
-#~ msgstr "nie udało się zainicjować LDAP na ,,%s:%d'': %s\n"
+#~ msgstr "nie udało się zainicjować LDAP na „%s:%d”: %s\n"
 
 #, fuzzy
 #~| msgid "LDAP init to '%s:%d' failed: %s\n"
 #~ msgid "LDAP init to '%s' failed: %s\n"
-#~ msgstr "nie udało się zainicjować LDAP na ,,%s:%d'': %s\n"
+#~ msgstr "nie udało się zainicjować LDAP na „%s:%d”: %s\n"
 
 #, fuzzy
 #~| msgid "LDAP init to '%s:%d' failed: %s\n"
 #~ msgid "LDAP init to '%s' done\n"
-#~ msgstr "nie udało się zainicjować LDAP na ,,%s:%d'': %s\n"
+#~ msgstr "nie udało się zainicjować LDAP na „%s:%d”: %s\n"
 
 #~ msgid "binding to '%s:%d' failed: %s\n"
-#~ msgstr "dowiązanie do ,,%s:%d'' nie powiodło się: %s\n"
+#~ msgstr "dowiązanie do „%s:%d” nie powiodło się: %s\n"
 
 #~ msgid "searching '%s' failed: %s\n"
-#~ msgstr "szukanie ,,%s'' nie powiodło się: %s\n"
+#~ msgstr "szukanie „%s” nie powiodło się: %s\n"
 
 #~ msgid "start_cert_fetch: invalid pattern '%s'\n"
-#~ msgstr "start_cert_fetch: błędny wzorzec ,,%s''\n"
+#~ msgstr "start_cert_fetch: błędny wzorzec „%s”\n"
 
 #~ msgid "ldapserver missing"
 #~ msgstr "brak pola ldapserver"
@@ -9353,7 +9353,7 @@ msgstr ""
 #~ msgstr "użycie pliku loga dla serwera"
 
 #~ msgid "no running gpg-agent - starting '%s'\n"
-#~ msgstr "gpg-agent nie działa - uruchamianie ,,%s''\n"
+#~ msgstr "gpg-agent nie działa - uruchamianie „%s”\n"
 
 #~ msgid "argument not expected"
 #~ msgstr "nieoczekiwany argument"
@@ -9387,7 +9387,7 @@ msgstr ""
 #, fuzzy
 #~| msgid "unknown command '%s'\n"
 #~ msgid "unknown meta command"
-#~ msgstr "nieznane polecenie ,,%s''\n"
+#~ msgstr "nieznane polecenie „%s”\n"
 
 #, fuzzy
 #~| msgid "unexpected armor: "
@@ -9398,31 +9398,31 @@ msgstr ""
 #~ msgstr "błędna opcja"
 
 #~ msgid "missing argument for option \"%.50s\"\n"
-#~ msgstr "brak argumentu dla opcji ,,%.50s''\n"
+#~ msgstr "brak argumentu dla opcji „%.50s”\n"
 
 #~ msgid "option \"%.50s\" does not expect an argument\n"
-#~ msgstr "opcja ,,%.50s'' nie może mieć argumentów\n"
+#~ msgstr "opcja „%.50s” nie może mieć argumentów\n"
 
 #~ msgid "invalid command \"%.50s\"\n"
-#~ msgstr "błędne polecenie ,,%.50s''\n"
+#~ msgstr "błędne polecenie „%.50s”\n"
 
 #~ msgid "option \"%.50s\" is ambiguous\n"
-#~ msgstr "opcja ,,%.50s'' jest niejednoznaczna\n"
+#~ msgstr "opcja „%.50s” jest niejednoznaczna\n"
 
 #~ msgid "command \"%.50s\" is ambiguous\n"
-#~ msgstr "polecenie ,,%.50s'' jest niejednoznaczne\n"
+#~ msgstr "polecenie „%.50s” jest niejednoznaczne\n"
 
 #~ msgid "invalid option \"%.50s\"\n"
-#~ msgstr "błędna opcja ,,%.50s''\n"
+#~ msgstr "błędna opcja „%.50s”\n"
 
 #~ msgid "Note: no default option file '%s'\n"
-#~ msgstr "Uwaga: brak domyślnego pliku opcji ,,%s''\n"
+#~ msgstr "Uwaga: brak domyślnego pliku opcji „%s”\n"
 
 #~ msgid "option file '%s': %s\n"
-#~ msgstr "plik opcji ,,%s'': %s\n"
+#~ msgstr "plik opcji „%s”: %s\n"
 
 #~ msgid "unable to execute program '%s': %s\n"
-#~ msgstr "nie można uruchomić programu ,,%s'': %s\n"
+#~ msgstr "nie można uruchomić programu „%s”: %s\n"
 
 #~ msgid "unable to execute external program\n"
 #~ msgstr "nie można uruchomić zewnętrznego programu\n"
@@ -9443,10 +9443,10 @@ msgstr ""
 #~ msgstr "honorowanie rekordu PKA ustawionego w kluczu przy pobieraniu kluczy"
 
 #~ msgid "Note: Verified signer's address is '%s'\n"
-#~ msgstr "Uwaga: Sprawdzony adres pospisującego to ,,%s''\n"
+#~ msgstr "Uwaga: Sprawdzony adres pospisującego to „%s”\n"
 
 #~ msgid "Note: Signer's address '%s' does not match DNS entry\n"
-#~ msgstr "Uwaga: Adres podpisującego ,,%s'' nie pasuje do wpisu DNS\n"
+#~ msgstr "Uwaga: Adres podpisującego „%s” nie pasuje do wpisu DNS\n"
 
 #~ msgid "trustlevel adjusted to FULL due to valid PKA info\n"
 #~ msgstr ""
@@ -9476,7 +9476,7 @@ msgstr ""
 #~ msgstr "lista serwerów LDAP"
 
 #~ msgid "Note: old default options file '%s' ignored\n"
-#~ msgstr "Uwaga: stary domyślny plik opcji ,,%s'' został zignorowany\n"
+#~ msgstr "Uwaga: stary domyślny plik opcji „%s” został zignorowany\n"
 
 #~ msgid ""
 #~ "@\n"
@@ -9524,7 +9524,7 @@ msgstr ""
 #~ msgstr "%s na %s nie powiódł się ze stanem %i\n"
 
 #~ msgid "can't create temporary directory '%s': %s\n"
-#~ msgstr "nie można utworzyć katalogu tymczasowego ,,%s'': %s\n"
+#~ msgstr "nie można utworzyć katalogu tymczasowego „%s”: %s\n"
 
 #~ msgid "could not open %s for writing: %s\n"
 #~ msgstr "nie udało się otworzyć %s do zapisu: %s\n"
