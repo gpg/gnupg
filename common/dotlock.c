@@ -1061,6 +1061,7 @@ static int
 dotlock_take_unix (dotlock_t h, long timeout)
 {
   int wtime = 0;
+  int timedout = 0;
   int sumtime = 0;
   int pid;
   int lastpid = -1;
@@ -1218,6 +1219,8 @@ dotlock_take_unix (dotlock_t h, long timeout)
         wtime = 0;  /* Reset because owner chnaged.  */
 
       wtimereal = next_wait_interval (&wtime, &timeout);
+      if (!timeout)
+        timedout = 1;  /* remember.  */
 
       sumtime += wtimereal;
       if (sumtime >= 1500)
@@ -1233,7 +1236,7 @@ dotlock_take_unix (dotlock_t h, long timeout)
       goto again;
     }
 
-  my_set_errno (EACCES);
+  my_set_errno (timedout? ETIMEDOUT : EACCES);
   return -1;
 }
 #endif /*HAVE_POSIX_SYSTEM*/
@@ -1246,6 +1249,7 @@ static int
 dotlock_take_w32 (dotlock_t h, long timeout)
 {
   int wtime = 0;
+  int timedout = 0;
   int w32err;
   OVERLAPPED ovl;
 
@@ -1273,6 +1277,8 @@ dotlock_take_w32 (dotlock_t h, long timeout)
       int wtimereal;
 
       wtimereal = next_wait_interval (&wtime, &timeout);
+      if (!timeout)
+        timedout = 1;  /* remember.  */
 
       if (wtime >= 800)
         my_info_1 (_("waiting for lock %s...\n"), h->lockname);
@@ -1281,7 +1287,7 @@ dotlock_take_w32 (dotlock_t h, long timeout)
       goto again;
     }
 
-  my_set_errno (EACCES);
+  my_set_errno (timedout? ETIMEDOUT : EACCES);
   return -1;
 }
 #endif /*HAVE_DOSISH_SYSTEM*/
