@@ -241,18 +241,16 @@ Instead of using this option you might also want to install a symbolic
 link to the default file name (e.g., from @file{libpcsclite.so.1}).
 A Unicode file name may not be used on Windows.
 
-@item --ctapi-driver @var{library}
-@opindex ctapi-driver
-Use @var{library} to access the smartcard reader.  The current default
-is @file{libtowitoko.so}.  Note that the use of this interface is
-deprecated; it may be removed in future releases.
-
 @item --disable-ccid
 @opindex disable-ccid
-Disable the integrated support for CCID compliant readers.  This
-allows falling back to one of the other drivers even if the internal
-CCID driver can handle the reader.  Note, that CCID support is only
-available if libusb was available at build time.
+The integrated CCID driver for CCID compliant devices can be available
+when libusb was detected at build time, and it is used to access the
+smartcard reader.  If access via PC/SC driver is needed, please
+configure this option to disable CCID driver support (if any).  In
+GnuPG 2.2, there was a fallback mechanism from CCID driver to PC/SC
+driver.  The fallback mechanism worked, because scdaemon in GnuPG 2.2
+only supported a single token/reader.  To support of multiple
+tokens/readers at the same time, fallback mechanism was removed.
 
 @item --reader-port @var{number_or_string}
 @opindex reader-port
