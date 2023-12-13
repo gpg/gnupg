@@ -52,6 +52,7 @@
 #ifdef HAVE_W32_SYSTEM
 #define DIM(v)		     (sizeof(v)/sizeof((v)[0]))
 
+
 const char *
 w32_strerror (int ec)
 {
@@ -174,6 +175,11 @@ strconcat (const char *s1, ...)
 
 #define PGM "t-dotlock"
 
+static int opt_silent;
+
+
+
+
 #ifndef HAVE_W32_SYSTEM
 static volatile int ctrl_c_pending_flag;
 static void
@@ -217,11 +223,29 @@ inf (const char *format, ...)
 {
   va_list arg_ptr;
 
+  if (opt_silent)
+    return;
+
   va_start (arg_ptr, format);
   fprintf (stderr, PGM "[%lu]: ", (unsigned long)getpid ());
   vfprintf (stderr, format, arg_ptr);
   putc ('\n', stderr);
   va_end (arg_ptr);
+}
+
+
+static int
+lock_info_cb (dotlock_t h, void *opaque, enum dotlock_reasons reason,
+              const char *format, ...)
+{
+  va_list arg_ptr;
+
+  va_start (arg_ptr, format);
+  fprintf (stderr, PGM "[%lu]: info_cb: reason %d, ",
+           (unsigned long)getpid (), (int)reason);
+  vfprintf (stderr, format, arg_ptr);
+  va_end (arg_ptr);
+  return 0;
 }
 
 
@@ -231,9 +255,14 @@ lock_and_unlock (const char *fname)
   dotlock_t h;
   unsigned long usec;
 
-  h = dotlock_create (fname, 0);
+  h = dotlock_create (fname, DOTLOCK_PREPARE_CREATE);
   if (!h)
     die ("error creating lock file for '%s': %s", fname, strerror (errno));
+  dotlock_set_info_cb (h, lock_info_cb, NULL);
+  h = dotlock_finish_create (h, fname);
+  if (!h)
+    die ("error finishing lock file creation for '%s': %s",
+         fname, strerror (errno));
   inf ("lock created");
 
   do
@@ -268,6 +297,11 @@ main (int argc, char **argv)
   if (argc > 1 && !strcmp (argv[1], "--one-shot"))
     {
       ctrl_c_pending_flag = 1;
+      argc--;
+    }
+  if (argc > 1 && !strcmp (argv[1], "--silent"))
+    {
+      opt_silent = 1;
       argc--;
     }
 

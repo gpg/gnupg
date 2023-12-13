@@ -396,6 +396,13 @@ struct dotlock_handle
 
   int extra_fd;              /* A place for the caller to store an FD.  */
 
+  /* An optional info callback - see dotlock_set_info_cb.             */
+  int (*info_cb)(dotlock_t, void *,
+                 enum dotlock_reasons reason,
+                 const char *,...);
+  void *info_cb_value;
+
+
 #ifdef HAVE_DOSISH_SYSTEM
   HANDLE lockhd;       /* The W32 handle of the lock file.      */
 #else /*!HAVE_DOSISH_SYSTEM */
@@ -545,8 +552,15 @@ read_lockfile (dotlock_t h, int *same_node, int *r_fd)
   if ( (fd = open (h->lockname, O_RDONLY)) == -1 )
     {
       int e = errno;
-      my_info_2 ("error opening lockfile '%s': %s\n",
-                 h->lockname, strerror(errno) );
+      if (errno != ENOENT)
+        {
+          my_info_2 ("error opening lockfile '%s': %s\n",
+                     h->lockname, strerror(errno) );
+          if (h->info_cb)
+            h->info_cb (h, h->info_cb_value, DOTLOCK_FILE_ERROR,
+                        "error opening lockfile '%s': %s\n",
+                        h->lockname, strerror (errno) );
+        }
       if (buffer != buffer_space)
         xfree (buffer);
       my_set_errno (e); /* Need to return ERRNO here. */
@@ -564,6 +578,10 @@ read_lockfile (dotlock_t h, int *same_node, int *r_fd)
         {
           int e = errno;
           my_info_1 ("error reading lockfile '%s'\n", h->lockname );
+          if (h->info_cb)
+            h->info_cb (h, h->info_cb_value, DOTLOCK_FILE_ERROR,
+                        "error reading lockfile '%s': %s\n",
+                        h->lockname, strerror (errno) );
           close (fd);
           if (buffer != buffer_space)
             xfree (buffer);
@@ -583,6 +601,9 @@ read_lockfile (dotlock_t h, int *same_node, int *r_fd)
   if (nread < 11)
     {
       my_info_1 ("invalid size of lockfile '%s'\n", h->lockname);
+      if (h->info_cb)
+        h->info_cb (h, h->info_cb_value, DOTLOCK_INV_FILE,
+                    "invalid size of lockfile '%s'\n", h->lockname);
       if (buffer != buffer_space)
         xfree (buffer);
       my_set_errno (EINVAL);
@@ -594,6 +615,9 @@ read_lockfile (dotlock_t h, int *same_node, int *r_fd)
       || !pid )
     {
       my_error_2 ("invalid pid %d in lockfile '%s'\n", pid, h->lockname);
+      if (h->info_cb)
+        h->info_cb (h, h->info_cb_value, DOTLOCK_INV_FILE,
+                    "invalid pid %d in lockfile '%s'\n", pid, h->lockname);
       if (buffer != buffer_space)
         xfree (buffer);
       my_set_errno (EINVAL);
@@ -722,6 +746,10 @@ dotlock_create_unix (dotlock_t h, const char *file_to_lock)
       UNLOCK_all_lockfiles ();
       my_error_2 (_("failed to create temporary file '%s': %s\n"),
                   h->tname, strerror (errno));
+      if (h->info_cb)
+        h->info_cb (h, h->info_cb_value, DOTLOCK_WAITING,
+                    _("failed to create temporary file '%s': %s\n"),
+                    h->tname, strerror (errno));
       xfree (h->tname);
       xfree (h);
       my_set_errno (saveerrno);
@@ -755,6 +783,10 @@ dotlock_create_unix (dotlock_t h, const char *file_to_lock)
         int saveerrno = errno;
         my_error_2 ("can't check whether hardlinks are supported for '%s': %s\n"
                     , h->tname, strerror (saveerrno));
+        if (h->info_cb)
+          h->info_cb (h, h->info_cb_value, DOTLOCK_CONFIG_TEST,
+                   "can't check whether hardlinks are supported for '%s': %s\n"
+                   , h->tname, strerror (saveerrno));
         my_set_errno (saveerrno);
       }
       goto write_failed;
@@ -783,6 +815,11 @@ dotlock_create_unix (dotlock_t h, const char *file_to_lock)
     all_lockfiles = h->next;
     UNLOCK_all_lockfiles ();
     my_error_2 (_("error writing to '%s': %s\n"), h->tname, strerror (errno));
+    if (h->info_cb)
+      h->info_cb (h, h->info_cb_value, DOTLOCK_FILE_ERROR,
+                  _("error writing to '%s': %s\n"),
+                  h->tname, strerror (errno));
+
     if ( fd != -1 )
       close (fd);
     unlink (h->tname);
@@ -849,6 +886,10 @@ dotlock_create_w32 (dotlock_t h, const char *file_to_lock)
       all_lockfiles = h->next;
       UNLOCK_all_lockfiles ();
       my_error_2 (_("can't create '%s': %s\n"), h->lockname, w32_strerror (-1));
+      if (h->info_cb)
+        h->info_cb (h, h->info_cb_value, DOTLOCK_FILE_ERROR,
+                    _("can't create '%s': %s\n"),
+                    h->lockname, w32_strerror (-1));
       xfree (h->lockname);
       xfree (h);
       my_set_errno (saveerrno);
@@ -873,7 +914,10 @@ dotlock_create_w32 (dotlock_t h, const char *file_to_lock)
    POSIX systems a temporary file ".#lk.<hostname>.pid[.threadid] is
    used.
 
-   FLAGS must be 0.
+   The only defined FLAG bit is DOTLOCK_PREPARE_CREATE, which only
+   allocates the handle and requires a further call to
+   dotlock_finish_create.  This can be used to set a callback between
+   these calls.
 
    The function returns an new handle which needs to be released using
    destroy_dotlock but gets also released at the termination of the
@@ -895,7 +939,7 @@ dotlock_create (const char *file_to_lock, unsigned int flags)
   if ( !file_to_lock )
     return NULL;  /* Only initialization was requested.  */
 
-  if (flags)
+  if ((flags & ~DOTLOCK_PREPARE_CREATE))
     {
       my_set_errno (EINVAL);
       return NULL;
@@ -915,6 +959,24 @@ dotlock_create (const char *file_to_lock, unsigned int flags)
       UNLOCK_all_lockfiles ();
       return h;
     }
+
+  if ((flags & DOTLOCK_PREPARE_CREATE))
+    return h;
+  else
+    return dotlock_finish_create (h, file_to_lock);
+}
+
+
+/* This function may be used along with dotlock_create (file_name,
+ * DOTLOCK_PREPARE_CREATE) to finish the creation call. The given
+ * filename shall be the same as passed to dotlock_create.  On success
+ * the same handle H is returned, on error NULL is returned and H is
+ * released.  */
+dotlock_t
+dotlock_finish_create (dotlock_t h, const char *file_to_lock)
+{
+  if (!h || !file_to_lock)
+    return NULL;
 
 #ifdef HAVE_DOSISH_SYSTEM
   return dotlock_create_w32 (h, file_to_lock);
@@ -940,6 +1002,24 @@ dotlock_get_fd (dotlock_t h)
 {
   return h->extra_fd;
 }
+
+
+/* Set a callback function for info diagnostics.  The callback
+ * function CB is called with the handle, the opaque value OPAQUE, a
+ * reason code, and a format string with its arguments.  The callback
+ * shall return 0 to continue operation or true in which case the
+ * current function will be terminated with an error.  */
+void
+dotlock_set_info_cb (dotlock_t h,
+                     int (*cb)(dotlock_t, void *,
+                               enum dotlock_reasons reason,
+                               const char *,...),
+                     void *opaque)
+{
+  h->info_cb = cb;
+  h->info_cb_value = opaque;
+}
+
 
 
 
@@ -1090,6 +1170,10 @@ dotlock_take_unix (dotlock_t h, long timeout)
           saveerrno = errno;
           my_error_2 ("lock not made: open(O_EXCL) of '%s' failed: %s\n",
                       h->lockname, strerror (saveerrno));
+          if (h->info_cb)
+            h->info_cb (h, h->info_cb_value, DOTLOCK_FILE_ERROR,
+                        "lock not made: open(O_EXCL) of '%s' failed: %s\n",
+                        h->lockname, strerror (saveerrno));
           my_set_errno (saveerrno);
           return -1;
         }
@@ -1111,6 +1195,10 @@ dotlock_take_unix (dotlock_t h, long timeout)
           saveerrno = errno;
           my_error_2 ("lock not made: writing to '%s' failed: %s\n",
                       h->lockname, strerror (errno));
+          if (h->info_cb)
+            h->info_cb (h, h->info_cb_value, DOTLOCK_FILE_ERROR,
+                        "lock not made: writing to '%s' failed: %s\n",
+                        h->lockname, strerror (errno));
           close (fd);
           unlink (h->lockname);
           my_set_errno (saveerrno);
@@ -1129,6 +1217,10 @@ dotlock_take_unix (dotlock_t h, long timeout)
           saveerrno = errno;
           my_error_1 ("lock not made: Oops: stat of tmp file failed: %s\n",
                       strerror (errno));
+          if (h->info_cb)
+            h->info_cb (h, h->info_cb_value, DOTLOCK_FILE_ERROR,
+                        "lock not made: Oops: stat of tmp file failed: %s\n",
+                        strerror (errno));
           /* In theory this might be a severe error: It is possible
              that link succeeded but stat failed due to changed
              permissions.  We can't do anything about it, though.  */
@@ -1150,6 +1242,9 @@ dotlock_take_unix (dotlock_t h, long timeout)
         {
           saveerrno = errno;
           my_info_0 ("cannot read lockfile\n");
+          if (h->info_cb)
+            h->info_cb (h, h->info_cb_value, DOTLOCK_FILE_ERROR,
+                        "cannot read lockfile\n");
           my_set_errno (saveerrno);
           return -1;
         }
@@ -1158,8 +1253,8 @@ dotlock_take_unix (dotlock_t h, long timeout)
     }
   else if ( (pid == getpid() && same_node)
             || (same_node && kill (pid, 0) && errno == ESRCH) )
-    /* Stale lockfile is detected. */
     {
+      /* Stale lockfile is detected. */
       struct stat sb;
 
       /* Check if it's unlocked during examining the lockfile.  */
@@ -1202,6 +1297,9 @@ dotlock_take_unix (dotlock_t h, long timeout)
       unlink (h->lockname);
       my_info_1 (_("removing stale lockfile (created by %d)\n"), pid);
       close (fd);
+      if (h->info_cb)
+        h->info_cb (h, h->info_cb_value, DOTLOCK_STALE_REMOVED,
+                    _("removing stale lockfile (created by %d)\n"), pid);
       goto again;
     }
 
@@ -1228,6 +1326,15 @@ dotlock_take_unix (dotlock_t h, long timeout)
           sumtime = 0;
           my_info_3 (_("waiting for lock (held by %d%s) %s...\n"),
                      pid, maybe_dead, maybe_deadlock(h)? _("(deadlock?) "):"");
+          if (h->info_cb
+              && h->info_cb (h, h->info_cb_value, DOTLOCK_WAITING,
+                             _("waiting for lock (held by %d%s) %s...\n"),
+                             pid, maybe_dead,
+                             maybe_deadlock(h)? _("(deadlock?) "):""))
+            {
+              my_set_errno (ECANCELED);
+              return -1;
+            }
         }
 
       tv.tv_sec = wtimereal / 1000;
@@ -1268,7 +1375,11 @@ dotlock_take_w32 (dotlock_t h, long timeout)
     {
       my_error_2 (_("lock '%s' not made: %s\n"),
                   h->lockname, w32_strerror (w32err));
-      my_set_errno (map_w32_to_errno (w32err));
+      if (h->info_cb)
+        h->info_cb (h, h->info_cb_value, DOTLOCK_FILE_ERROR,
+                    _("lock '%s' not made: %s\n"),
+                    h->lockname, w32_strerror (w32err));
+      _set_errno (map_w32_to_errno (w32err));
       return -1;
     }
 
@@ -1281,7 +1392,16 @@ dotlock_take_w32 (dotlock_t h, long timeout)
         timedout = 1;  /* remember.  */
 
       if (wtime >= 800)
-        my_info_1 (_("waiting for lock %s...\n"), h->lockname);
+        {
+          my_info_1 (_("waiting for lock %s...\n"), h->lockname);
+          if (h->info_cb
+              && h->info_cb (h, h->info_cb_value, DOTLOCK_WAITING,
+                             _("waiting for lock %s...\n"), h->lockname))
+            {
+              my_set_errno (ECANCELED);
+              return -1;
+            }
+        }
 
       Sleep (wtimereal);
       goto again;
@@ -1334,12 +1454,18 @@ dotlock_release_unix (dotlock_t h)
     {
       saveerrno = errno;
       my_error_0 ("release_dotlock: lockfile error\n");
+      if (h->info_cb)
+        h->info_cb (h, h->info_cb_value, DOTLOCK_FILE_ERROR,
+                    "release_dotlock: lockfile error\n");
       my_set_errno (saveerrno);
       return -1;
     }
   if ( pid != getpid() || !same_node )
     {
       my_error_1 ("release_dotlock: not our lock (pid=%d)\n", pid);
+      if (h->info_cb)
+        h->info_cb (h, h->info_cb_value, DOTLOCK_CONFLICT,
+                    "release_dotlock: not our lock (pid=%d)\n", pid);
       my_set_errno (EACCES);
       return -1;
     }
@@ -1349,6 +1475,10 @@ dotlock_release_unix (dotlock_t h)
       saveerrno = errno;
       my_error_1 ("release_dotlock: error removing lockfile '%s'\n",
                   h->lockname);
+      if (h->info_cb)
+        h->info_cb (h, h->info_cb_value, DOTLOCK_FILE_ERROR,
+                    "release_dotlock: error removing lockfile '%s'\n",
+                    h->lockname);
       my_set_errno (saveerrno);
       return -1;
     }
@@ -1369,10 +1499,15 @@ dotlock_release_w32 (dotlock_t h)
   memset (&ovl, 0, sizeof ovl);
   if (!UnlockFileEx (h->lockhd, 0, 1, 0, &ovl))
     {
-      int saveerrno = map_w32_to_errno (GetLastError ());
+      int ec = (int)GetLastError ();
+
       my_error_2 ("release_dotlock: error removing lockfile '%s': %s\n",
-                  h->lockname, w32_strerror (-1));
-      my_set_errno (saveerrno);
+                  h->lockname, w32_strerror (ec));
+      if (h->info_cb)
+        h->info_cb (h, h->info_cb_value, DOTLOCK_FILE_ERROR,
+                    "release_dotlock: error removing lockfile '%s': %s\n",
+                    h->lockname, w32_strerror (ec));
+      my_set_errno (map_w32_to_errno (ec));
       return -1;
     }
 
@@ -1403,6 +1538,9 @@ dotlock_release (dotlock_t h)
   if ( !h->locked )
     {
       my_debug_1 ("Oops, '%s' is not locked\n", h->lockname);
+      if (h->info_cb)
+        h->info_cb (h, h->info_cb_value, DOTLOCK_NOT_LOCKED,
+                    "Oops, '%s' is not locked\n", h->lockname);
       return 0;
     }
 
