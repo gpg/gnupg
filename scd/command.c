@@ -957,7 +957,8 @@ pin_cb (void *opaque, const char *info, char **retstr)
          We ignore any value returned.  */
       if (info)
         {
-          log_debug ("prompting for pinpad entry '%s'\n", info);
+          if (DBG_IPC)
+            log_debug ("prompting for pinpad entry '%s'\n", info);
           rc = gpgrt_asprintf (&command, "POPUPPINPADPROMPT %s", info);
           if (rc < 0)
             return gpg_error (gpg_err_code_from_errno (errno));
@@ -966,7 +967,8 @@ pin_cb (void *opaque, const char *info, char **retstr)
         }
       else
         {
-          log_debug ("dismiss pinpad entry prompt\n");
+          if (DBG_IPC)
+            log_debug ("dismiss pinpad entry prompt\n");
           rc = assuan_inquire (ctx, "DISMISSPINPADPROMPT",
                                &value, &valuelen, MAXLEN_PIN);
         }
@@ -976,7 +978,8 @@ pin_cb (void *opaque, const char *info, char **retstr)
     }
 
   *retstr = NULL;
-  log_debug ("asking for PIN '%s'\n", info);
+  if (DBG_IPC)
+    log_debug ("asking for PIN '%s'\n", info);
 
   rc = gpgrt_asprintf (&command, "NEEDPIN %s", info);
   if (rc < 0)
@@ -2989,12 +2992,16 @@ send_client_notifications (card_t card, int removal)
             if (killed[kidx].handle == handle)
               break;
           if (kidx < killidx)
-            log_info ("event %p already triggered for client\n",
-                      sl->event_signal);
+            {
+              if (opt.verbose)
+                log_info ("event %p already triggered for client\n",
+                          sl->event_signal);
+            }
           else
             {
-              log_info ("triggering event %p for client\n",
-                        sl->event_signal);
+              if (opt.verbose)
+                log_info ("triggering event %p for client\n",
+                          sl->event_signal);
               if (!SetEvent (handle))
                 log_error ("SetEvent(%p) failed: %s\n",
                            sl->event_signal, w32_strerror (-1));
@@ -3015,12 +3022,16 @@ send_client_notifications (card_t card, int removal)
                     && killed[kidx].signo == signo)
                   break;
               if (kidx < killidx)
-                log_info ("signal %d already sent to client %d\n",
-                          signo, (int)pid);
+                {
+                  if (opt.verbose)
+                    log_info ("signal %d already sent to client %d\n",
+                              signo, (int)pid);
+                }
               else
                 {
-                  log_info ("sending signal %d to client %d\n",
-                            signo, (int)pid);
+                  if (opt.verbose)
+                    log_info ("sending signal %d to client %d\n",
+                              signo, (int)pid);
                   kill (pid, signo);
                   if (killidx < DIM (killed))
                     {
