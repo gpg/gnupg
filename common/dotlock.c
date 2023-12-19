@@ -291,6 +291,7 @@
 # include <sys/types.h>
 # include <sys/stat.h>
 # include <sys/utsname.h>
+# include <dirent.h>
 #endif
 #include <sys/types.h>
 #include <sys/time.h>
@@ -393,6 +394,8 @@ struct dotlock_handle
   unsigned int locked:1;     /* Lock status.                          */
   unsigned int disable:1;    /* If true, locking is disabled.         */
   unsigned int use_o_excl:1; /* Use open (O_EXCL) for locking.        */
+  unsigned int by_parent:1;  /* Parent does the locking.              */
+  unsigned int no_write:1;   /* No write to the lockfile.             */
 
   int extra_fd;              /* A place for the caller to store an FD.  */
 
@@ -679,6 +682,80 @@ use_hardlinks_p (const char *tname)
 
 
 #ifdef  HAVE_POSIX_SYSTEM
+static int
+dotlock_get_process_id (dotlock_t h)
+{
+  return h->by_parent? (int)getppid(): (int)getpid();
+}
+
+static int
+dotlock_detect_tname (dotlock_t h)
+{
+  struct stat sb;
+  DIR *dir;
+  char *dirname;
+  char *basename;
+  struct dirent *d;
+  int r;
+
+  if (stat (h->lockname, &sb))
+    return -1;
+
+  basename = make_basename (h->lockname, NULL);
+  dirname = make_dirname (h->lockname);
+
+  dir = opendir (dirname);
+  if (dir == NULL)
+    {
+      xfree (basename);
+      xfree (dirname);
+      return -1;
+    }
+
+  while ((d = readdir (dir)))
+    if (sb.st_ino == d->d_ino && strcmp (d->d_name, basename))
+      break;
+
+  if (d)
+    {
+      int len = strlen (h->tname);
+      int dlen = strlen (d->d_name);
+      const char *tname_path;
+
+      if (dlen > len)
+        {
+          xfree (basename);
+          xfree (dirname);
+          return -1;
+        }
+
+      strcpy (stpcpy (stpcpy (h->tname, dirname), DIRSEP_S), d->d_name);
+      h->use_o_excl = 0;
+      tname_path = strchr (h->tname + strlen (dirname) + 2, '.');
+      if (!tname_path)
+        {
+          xfree (basename);
+          xfree (dirname);
+          return -1;
+        }
+      h->nodename_off = tname_path - h->tname + 1;
+    }
+  else
+    h->use_o_excl = 1;
+
+  r = closedir (dir);
+  if (r)
+    {
+      xfree (basename);
+      xfree (dirname);
+      return r;
+    }
+
+  xfree (basename);
+  xfree (dirname);
+  return 0;
+}
+
 /* Locking core for Unix.  It used a temporary file and the link
    system call to make locking an atomic operation. */
 static dotlock_t
@@ -691,8 +768,10 @@ dotlock_create_unix (dotlock_t h, const char *file_to_lock)
   int dirpartlen;
   struct utsname utsbuf;
   size_t tnamelen;
+  int pid;
 
-  snprintf (pidstr, sizeof pidstr, "%10d\n", (int)getpid() );
+  pid = dotlock_get_process_id (h);
+  snprintf (pidstr, sizeof pidstr, "%10d\n", pid);
 
   /* Create a temporary file. */
   if ( uname ( &utsbuf ) )
@@ -726,10 +805,17 @@ dotlock_create_unix (dotlock_t h, const char *file_to_lock)
     }
   h->nodename_len = strlen (nodename);
 
+  if (h->no_write)
+    {
+      memset (h->tname, '_', tnamelen);
+      h->tname[tnamelen] = 0;
+      goto skip_write;
+    }
+
   snprintf (h->tname, tnamelen, "%.*s/.#lk%p.", dirpartlen, dirpart, h );
   h->nodename_off = strlen (h->tname);
   snprintf (h->tname+h->nodename_off, tnamelen - h->nodename_off,
-           "%s.%d", nodename, (int)getpid ());
+           "%s.%d", nodename, pid);
 
   do
     {
@@ -792,6 +878,7 @@ dotlock_create_unix (dotlock_t h, const char *file_to_lock)
       goto write_failed;
     }
 
+ skip_write:
   h->lockname = xtrymalloc (strlen (file_to_lock) + 6 );
   if (!h->lockname)
     {
@@ -806,6 +893,20 @@ dotlock_create_unix (dotlock_t h, const char *file_to_lock)
     }
   strcpy (stpcpy (h->lockname, file_to_lock), EXTSEP_S "lock");
   UNLOCK_all_lockfiles ();
+
+  if (h->no_write)
+    {
+      if (dotlock_detect_tname (h) < 0)
+        {
+          xfree (h->lockname);
+          xfree (h->tname);
+          xfree (h);
+          my_set_errno (EACCES);
+          return NULL;
+        }
+
+      h->locked = 1;
+    }
 
   return h;
 
@@ -914,10 +1015,15 @@ dotlock_create_w32 (dotlock_t h, const char *file_to_lock)
    POSIX systems a temporary file ".#lk.<hostname>.pid[.threadid] is
    used.
 
-   The only defined FLAG bit is DOTLOCK_PREPARE_CREATE, which only
-   allocates the handle and requires a further call to
-   dotlock_finish_create.  This can be used to set a callback between
-   these calls.
+   FLAGS may include DOTLOCK_PREPARE_CREATE bit, which only allocates
+   the handle and requires a further call to dotlock_finish_create.
+   This can be used to set a callback between these calls.
+
+   FLAGS may include DOTLOCK_LOCK_BY_PARENT bit, when it's the parent
+   process controlling the lock.  This is used by dotlock util.
+
+   FLAGS may include DOTLOCK_LOCKED bit, when it should not create the
+   lockfile, but to unlock.  This is used by dotlock util.
 
    The function returns an new handle which needs to be released using
    destroy_dotlock but gets also released at the termination of the
@@ -929,8 +1035,13 @@ dotlock_create (const char *file_to_lock, unsigned int flags)
 {
   static int initialized;
   dotlock_t h;
+#ifndef HAVE_DOSISH_SYSTEM
+  int by_parent = 0;
+  int no_write = 0;
+#endif
 
-  if ( !initialized )
+  if ( !(flags & DOTLOCK_LOCK_BY_PARENT)
+       && !initialized )
     {
       atexit (dotlock_remove_lockfiles);
       initialized = 1;
@@ -939,6 +1050,14 @@ dotlock_create (const char *file_to_lock, unsigned int flags)
   if ( !file_to_lock )
     return NULL;  /* Only initialization was requested.  */
 
+#ifndef HAVE_DOSISH_SYSTEM
+  if ((flags & DOTLOCK_LOCK_BY_PARENT) || (flags & DOTLOCK_LOCKED))
+    {
+      by_parent = !!(flags & DOTLOCK_LOCK_BY_PARENT);
+      no_write = !!(flags & DOTLOCK_LOCKED);
+      flags &= ~(DOTLOCK_LOCK_BY_PARENT | DOTLOCK_LOCKED);
+    }
+#endif
   if ((flags & ~DOTLOCK_PREPARE_CREATE))
     {
       my_set_errno (EINVAL);
@@ -949,6 +1068,10 @@ dotlock_create (const char *file_to_lock, unsigned int flags)
   if (!h)
     return NULL;
   h->extra_fd = -1;
+#ifndef HAVE_DOSISH_SYSTEM
+  h->by_parent = by_parent;
+  h->no_write = no_write;
+#endif
 
   if (never_lock)
     {
@@ -1181,7 +1304,8 @@ dotlock_take_unix (dotlock_t h, long timeout)
         {
           char pidstr[16];
 
-          snprintf (pidstr, sizeof pidstr, "%10d\n", (int)getpid());
+          snprintf (pidstr, sizeof pidstr, "%10d\n",
+                    dotlock_get_process_id (h));
           if (write (fd, pidstr, 11 ) == 11
               && write (fd, h->tname + h->nodename_off,h->nodename_len)
               == h->nodename_len
@@ -1251,7 +1375,7 @@ dotlock_take_unix (dotlock_t h, long timeout)
       my_info_0 ("lockfile disappeared\n");
       goto again;
     }
-  else if ( (pid == getpid() && same_node)
+  else if ( (pid == dotlock_get_process_id (h) && same_node && !h->by_parent)
             || (same_node && kill (pid, 0) && errno == ESRCH) )
     {
       /* Stale lockfile is detected. */
@@ -1460,7 +1584,7 @@ dotlock_release_unix (dotlock_t h)
       my_set_errno (saveerrno);
       return -1;
     }
-  if ( pid != getpid() || !same_node )
+  if ( pid != dotlock_get_process_id (h) || !same_node )
     {
       my_error_1 ("release_dotlock: not our lock (pid=%d)\n", pid);
       if (h->info_cb)
