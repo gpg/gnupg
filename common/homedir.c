@@ -604,43 +604,40 @@ unix_rootdir (int want_sysconfdir)
       sysconfdir = NULL;
       while ((length = es_read_line (fp, &line, &linelen, NULL)) > 0)
         {
+          static const char *names[] =
+            {
+              "rootdir",
+              "sysconfdir",
+              ".enable"
+            };
+          int i;
+          size_t n;
+
           /* Strip NL and CR, if present.  */
           while (length > 0
                  && (line[length - 1] == '\n' || line[length - 1] == '\r'))
             line[--length] = 0;
           trim_spaces (line);
-          if (!strncmp (line, "rootdir=", 8))
+          /* Find the stamement.  */
+          name = NULL;
+          for (i=0; i < DIM (names); i++)
             {
-              name = "rootdir";
-              p = line + 8;
+              n = strlen (names[i]);
+              if (!strncmp (line, names[i], n))
+                {
+                  while (line[n] == ' ' || line[n] == '\t')
+                    n++;
+                  if (line[n] == '=')
+                    {
+                      name = names[i];
+                      p = line + n + 1;
+                      break;
+                    }
+                }
             }
-          else if (!strncmp (line, "rootdir =", 9))  /* (What a kludge) */
-            {
-              name = "rootdir";
-              p = line + 9;
-            }
-          else if (!strncmp (line, "sysconfdir=", 11))
-            {
-              name = "sysconfdir";
-              p = line + 11;
-            }
-          else if (!strncmp (line, "sysconfdir =", 12))  /* (What a kludge) */
-            {
-              name = "sysconfdir";
-              p = line + 12;
-            }
-          else if (!strncmp (line, ".enable=", 8))
-            {
-              name = ".enable";
-              p = line + 8;
-            }
-          else if (!strncmp (line, ".enable =", 9))
-            {
-              name = ".enable";
-              p = line + 9;
-            }
-          else
-            continue;
+          if (!name)
+            continue;  /* Statement not known.  */
+
           trim_spaces (p);
           p = substitute_envvars (p);
           if (!p)
