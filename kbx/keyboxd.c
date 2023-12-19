@@ -1262,6 +1262,7 @@ create_directories (void)
                 {
                   if (!opt.quiet)
                     log_info (_("directory '%s' created\n"), home);
+                  create_public_keys_directory (home);
                 }
             }
         }
