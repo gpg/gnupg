@@ -345,7 +345,7 @@ static struct debug_flags_s debug_flags [] =
  * in standard socket mode.  If that value is 0 we don't check at all.
  * Values is in seconds. */
 #define CHECK_OWN_SOCKET_INTERVAL  (60)
-/* CHECK_PROBLEMS_INTERFAL defines how often we check the existence of
+/* CHECK_PROBLEMS_INTERVAL defines how often we check the existence of
  * parent process and homedir.  Value is in seconds.  */
 #define CHECK_PROBLEMS_INTERVAL     (4)
 
@@ -3042,10 +3042,8 @@ handle_connections (gnupg_fd_t listen_fd,
                   gpg_strerror (err));
     }
 
-  if (disable_check_own_socket)
-    home_inotify_fd = -1;
-  else if ((err = gnupg_inotify_watch_delete_self (&home_inotify_fd,
-                                                   gnupg_homedir ())))
+  if ((err = gnupg_inotify_watch_delete_self (&home_inotify_fd,
+                                              gnupg_homedir ())))
     {
       if (gpg_err_code (err) != GPG_ERR_NOT_SUPPORTED)
         log_info ("error enabling daemon termination by homedir removal: %s\n",
