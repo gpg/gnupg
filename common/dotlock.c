@@ -1155,7 +1155,6 @@ dotlock_destroy_unix (dotlock_t h)
     unlink (h->lockname);
   if (h->tname && !h->use_o_excl)
     unlink (h->tname);
-  xfree (h->tname);
 }
 #endif /*HAVE_POSIX_SYSTEM*/
 
@@ -1208,8 +1207,12 @@ dotlock_destroy (dotlock_t h)
 #else /* !HAVE_DOSISH_SYSTEM */
       dotlock_destroy_unix (h);
 #endif /* HAVE_DOSISH_SYSTEM */
-      xfree (h->lockname);
     }
+
+#ifdef HAVE_POSIX_SYSTEM
+  xfree (h->tname);
+#endif
+  xfree (h->lockname);
   xfree(h);
 }
 
