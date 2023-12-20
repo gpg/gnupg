@@ -1,4 +1,4 @@
-/* dotlock.c - Command to handle dotlock.
+/* dotlock.c - A utility to handle dotlock by command line.
  *	Copyright (C) 2023 g10 Code GmbH
  *
  * This file is part of GnuPG.
@@ -25,63 +25,91 @@
 #include <stdarg.h>
 #include <string.h>
 #include <errno.h>
-#include <signal.h>
 #include <unistd.h>
-#ifdef HAVE_W32_SYSTEM
-# include "windows.h"
-#else
-#include <sys/random.h>
-#endif
 
-#include "dotlock.h"
+#include <gpg-error.h>
+#include "../common/util.h"
+#include "../common/stringhelp.h"
+#include "../common/dotlock.h"
 
 static void
-lock (const char *fname)
+lock (const char *filename)
 {
   dotlock_t h;
-  unsigned int flags = DOTLOCK_FLAG_LOCK_BY_PARENT;
+  unsigned int flags = DOTLOCK_LOCK_BY_PARENT;
 
-  h = dotlock_create (fname, flags);
+  h = dotlock_create (filename, flags);
   if (!h)
-    die ("error creating lock file for '%s': %s", fname, strerror (errno));
+    {
+      perror ("error creating lock file");
+      exit (1);
+    }
 
   if (dotlock_take (h, 0))
-    die ("error taking lock");
+    {
+      perror ("error taking lock");
+      dotlock_destroy (h);
+      exit (1);
+    }
+
+  dotlock_destroy (h);
 }
 
 static void
-unlock (const char *fname, long timeout)
+unlock (const char *filename)
 {
   dotlock_t h;
-  unsigned int flags = (DOTLOCK_FLAG_LOCK_BY_PARENT
-                        | DOTLOCK_FLAG_READONLY);
+  unsigned int flags = (DOTLOCK_LOCK_BY_PARENT | DOTLOCK_LOCKED);
 
-  h = dotlock_create (fname, flags);
+  h = dotlock_create (filename, flags);
   if (!h)
-    die ("error creating lock file for '%s': %s", fname, strerror (errno));
+    {
+      perror ("no lock file");
+      exit (1);
+    }
 
+  dotlock_release (h);
   dotlock_destroy (h);
 }
 
 
 int
-main (int argc, char **argv)
+main (int argc, const char *argv[])
 {
+  const char *name;
   const char *fname;
+  char *filename;
+  int op_unlock = 0;
 
-  fname = argv[argc-1];
+  if (argc >= 2 && !strcmp (argv[1], "-u"))
+    {
+      op_unlock = 1;
+      argc--;
+      argv++;
+    }
 
-  if ()
-    lock (fname);
+  if (argc != 2)
+    {
+      printf ("Usage: %s [-u] NAME\n", argv[0]);
+      exit (1);
+    }
+
+  name = argv[1];
+
+  if (!strcmp (name, "pubring.db"))
+    /* Keybox pubring.db lock */
+    fname = "public-keys.d/pubring.db";
   else
-    unlock (fname);
+    /* Other locks.  */
+    fname = name;
 
+  filename = make_absfilename (gnupg_homedir (), fname, NULL);
+
+  if (op_unlock)
+    unlock (filename);
+  else
+    lock (filename);
+
+  xfree (filename);
   return 0;
 }
-
-
-/*
-Local Variables:
-compile-command: "cc -Wall -O2 -D_FILE_OFFSET_BITS=64 -o t-dotlock t-dotlock.c"
-End:
-*/
