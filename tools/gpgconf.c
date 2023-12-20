@@ -34,6 +34,7 @@
 #include "../common/init.h"
 #include "../common/status.h"
 #include "../common/exechelp.h"
+#include "../common/dotlock.h"
 
 #ifdef HAVE_W32_SYSTEM
 #include <windows.h>
@@ -76,7 +77,9 @@ enum cmd_and_opt_values
     aCreateSocketDir,
     aRemoveSocketDir,
     aApplyProfile,
-    aShowCodepages
+    aShowCodepages,
+    aDotlockLock,
+    aDotlockUnlock
   };
 
 
@@ -109,7 +112,10 @@ static gpgrt_opt_t opts[] =
     { aRemoveSocketDir, "remove-socketdir", 256, "@"},
     ARGPARSE_c (aShowVersions, "show-versions", ""),
     ARGPARSE_c (aShowConfigs,  "show-configs", ""),
+    /* hidden commands: for debugging */
     ARGPARSE_c (aShowCodepages, "show-codepages", "@"),
+    ARGPARSE_c (aDotlockLock, "lock", "@"),
+    ARGPARSE_c (aDotlockUnlock, "unlock", "@"),
 
     { 301, NULL, 0, N_("@\nOptions:\n ") },
 
@@ -604,6 +610,41 @@ query_swdb (estream_t out, const char *name, const char *current_version)
 }
 
 
+#if !defined(HAVE_W32_SYSTEM)
+/* dotlock tool to handle dotlock by command line
+   DO_LOCK: 1 for to lock, 0 for unlock
+   FILENAME: filename for the dotlock   */
+static void
+dotlock_tool (int do_lock, const char *filename)
+{
+  dotlock_t h;
+  unsigned int flags = DOTLOCK_LOCK_BY_PARENT;
+
+  if (!do_lock)
+    flags |= DOTLOCK_LOCKED;
+
+  h = dotlock_create (filename, flags);
+  if (!h)
+    {
+      if (do_lock)
+        log_error ("error creating the lock file\n");
+      else
+        log_error ("no lock file found\n");
+      return;
+    }
+
+  if (do_lock)
+    {
+      if (dotlock_take (h, 0))
+        log_error ("error taking the lock\n");
+    }
+  else
+    dotlock_release (h);
+
+  dotlock_destroy (h);
+}
+#endif
+
 /* gpgconf main. */
 int
 main (int argc, char **argv)
@@ -669,6 +710,8 @@ main (int argc, char **argv)
         case aShowVersions:
         case aShowConfigs:
         case aShowCodepages:
+        case aDotlockLock:
+        case aDotlockUnlock:
 	  cmd = pargs.r_opt;
 	  break;
 
@@ -1024,7 +1067,32 @@ main (int argc, char **argv)
 #endif
       break;
 
+    case aDotlockLock:
+    case aDotlockUnlock:
+#if !defined(HAVE_W32_SYSTEM)
+      if (!fname)
+	{
+	  es_fprintf (es_stderr, "usage: %s [options] lock|unlock NAME",
+                      GPGCONF_NAME);
+	  es_putc ('\n', es_stderr);
+	  es_fputs (_("Need one NAME argument"), es_stderr);
+	  es_putc ('\n', es_stderr);
+	  gpgconf_failure (GPG_ERR_USER_2);
+	}
+      else
+	{
+          char *filename;
 
+          /* Keybox pubring.db lock is under public-keys.d.  */
+          if (!strcmp (fname, "pubring.db"))
+            fname = "public-keys.d/pubring.db";
+
+          filename = make_absfilename (gnupg_homedir (), fname, NULL);
+          dotlock_tool (cmd == aDotlockLock, filename);
+          xfree (filename);
+        }
+#endif
+      break;
     }
 
   if (outfp != es_stdout)
