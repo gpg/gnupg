@@ -1200,8 +1200,11 @@ dotlock_destroy (dotlock_t h)
   UNLOCK_all_lockfiles ();
 
   /* Then destroy the lock. */
-  if (!h->disable)
+  if (!h->disable
+      && (!h->by_parent || h->no_write))
     {
+      /* NOTE: under the condition of (by_parent && !no_write),
+         it doesn't come here.  So, the lock file remains.  */
 #ifdef HAVE_DOSISH_SYSTEM
       dotlock_destroy_w32 (h);
 #else /* !HAVE_DOSISH_SYSTEM */
