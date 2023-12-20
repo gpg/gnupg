@@ -1213,6 +1213,12 @@ dotlock_destroy (dotlock_t h)
     }
 
 #ifdef HAVE_POSIX_SYSTEM
+  /* When DOTLOCK_LOCK_BY_PARENT and lock fails,
+     the temporary file created should be removed.  */
+  if (h->by_parent && !h->no_write && !h->locked)
+    if (h->tname && !h->use_o_excl)
+      unlink (h->tname);
+
   xfree (h->tname);
 #endif
   xfree (h->lockname);
