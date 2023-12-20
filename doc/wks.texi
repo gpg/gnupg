@@ -243,6 +243,21 @@ Display a brief help page and exit.
 
 @end table
 
+@noindent
+@mansect examples
+@chapheading Examples
+
+To use the services with clients lacking integrated support, the
+mailcap mechanism can be used.  Simply put:
+@example
+application/vnd.gnupg.wks; \
+  @value{BINDIR}/gpg-wks-client -v --read --send; \
+  needsterminal; \
+  description=WKS message
+@end example
+into the @file{/etc/mailcap}.  This assumes that a /usr/lib/sendmail
+is installed.  With this configuration any real mail programs will run
+gpg-wks-client for messages received from a Web Key Service.
 
 @mansect see also
 @ifset isman
