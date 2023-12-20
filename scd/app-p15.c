@@ -5752,6 +5752,7 @@ do_sign (app_t app, ctrl_t ctrl, const char *keyidstr, int hashalgo,
       if (prkdf->is_ecc)
         {
           /* Not implemented due to lacking test hardware. */
+          log_info ("Note: ECC is not yet implemented for DTRUST 4 cards\n");
           err = gpg_error (GPG_ERR_UNSUPPORTED_ALGORITHM);
         }
       else
@@ -5948,6 +5949,7 @@ do_decipher (app_t app, ctrl_t ctrl, const char *keyidstr,
       if (prkdf->is_ecc)
         {
           /* Not implemented due to lacking test hardware. */
+          log_info ("Note: ECC is not yet implemented for DTRUST 4 cards\n");
           err = gpg_error (GPG_ERR_UNSUPPORTED_ALGORITHM);
         }
       else
@@ -6267,7 +6269,8 @@ app_select_p15 (app_t app)
   if (rc)
     {
       /* D-TRUST Card 4.x uses a different AID. */
-      rc = iso7816_select_application_ext (slot, pkcs15dtrust4_aid, sizeof pkcs15dtrust4_aid, 1,
+      rc = iso7816_select_application_ext (slot, pkcs15dtrust4_aid,
+                                           sizeof pkcs15dtrust4_aid, 1,
                                            &fci, &fcilen);
     }
   if (rc)
