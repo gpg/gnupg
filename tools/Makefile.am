@@ -69,7 +69,7 @@ else
 bin_PROGRAMS += gpgconf-w32
 endif
 
-libexec_PROGRAMS = gpg-check-pattern gpg-pair-tool dotlock
+libexec_PROGRAMS = gpg-check-pattern gpg-pair-tool
 if !HAVE_W32_SYSTEM
 libexec_PROGRAMS += gpg-auth
 endif
@@ -202,12 +202,6 @@ gpg_auth_LDADD = $(common_libs) \
 	         $(LIBASSUAN_LIBS) $(LIBGCRYPT_LIBS) \
                  $(GPG_ERROR_LIBS) \
                  $(LIBINTL) $(NETLIBS) $(LIBICONV)
-
-dotlock_SOURCES = dotlock.c
-dotlock_LDADD = $(common_libs) \
-		 $(LIBGCRYPT_LIBS) \
-		 $(GPG_ERROR_LIBS) \
-		 $(LIBINTL) $(NETLIBS) $(LIBICONV)
 
 # Instead of a symlink we install a simple wrapper script for the new
 # gpg-wks-client location.  We assume bin is a sibling of libexec.
