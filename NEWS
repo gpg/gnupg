@@ -1,7 +1,9 @@
 Noteworthy changes in version 2.5.0 (unreleased)
 ------------------------------------------------
 
-  Changes also found in 2.4.3:
+  Changes also found in 2.4.4:
+
+  * gpgsm: Support ECDSA in de-vs compliance mode.  [T6802]
 
   * Fix garbled time output in non-English Windows.  [T6741]
 

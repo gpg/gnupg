@@ -532,6 +532,8 @@ list_cert_colon (ctrl_t ctrl, ksba_cert_t cert, unsigned int validity,
         {
           if (gpgsm_cert_has_well_known_private_key (cert))
             *truststring = 'w';  /* Well, this is dummy CA.  */
+          else if (gpg_err_code (valerr) == GPG_ERR_NOT_TRUSTED)
+            *truststring = 'n';  /* Likely the root cert is not trusted.  */
           else
             *truststring = 'i';
         }

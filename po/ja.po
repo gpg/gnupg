@@ -9,9 +9,9 @@
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: gnupg 2.4.1\n"
+"Project-Id-Version: gnupg 2.4.3\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"PO-Revision-Date: 2023-05-25 11:12+0900\n"
+"PO-Revision-Date: 2023-11-20 10:50+0900\n"
 "Last-Translator: NIIBE Yutaka <gniibe@fsij.org>\n"
 "Language-Team: none\n"
 "Language: ja\n"
@@ -1789,12 +1789,12 @@ msgid "using cipher %s.%s\n"
 msgstr "暗号方式 %s.%s を使います\n"
 
 #, c-format
-msgid "'%s' already compressed\n"
-msgstr "'%s'はもう圧縮済みです\n"
-
-#, c-format
 msgid "WARNING: '%s' is an empty file\n"
 msgstr "*警告*: '%s'は空のファイルです\n"
+
+#, c-format
+msgid "'%s' already compressed\n"
+msgstr "'%s'はもう圧縮済みです\n"
 
 #, c-format
 msgid "digest algorithm '%s' may not be used in %s mode\n"
@@ -1869,7 +1869,7 @@ msgstr "'%s'への書き込み\n"
 
 #, c-format
 msgid "key %s: key material on-card - skipped\n"
-msgstr "鍵%s: 鍵マテリアルはカード上にあります - スキップします\n"
+msgstr "鍵%s: 鍵の実体はカード上にあります - スキップします\n"
 
 #, c-format
 msgid "exporting secret keys not allowed\n"
@@ -2893,7 +2893,7 @@ msgstr "鍵 %s: エージェントへの送信エラー: %s\n"
 
 #, c-format
 msgid "key %s: card reference is overridden by key material\n"
-msgstr "鍵 %s: カード参照が鍵マテリアルで上書きされます\n"
+msgstr "鍵 %s: カード参照が鍵の実体で上書きされます\n"
 
 #. TRANSLATORS: For a smartcard, each private key on host has a
 #. * reference (stub) to a smartcard and actual private key data

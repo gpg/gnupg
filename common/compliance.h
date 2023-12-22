@@ -50,6 +50,7 @@ enum pk_use_case
 
 /* Flags to distinguish public key algorithm variants.  */
 #define PK_ALGO_FLAG_RSAPSS 1    /* Use rsaPSS padding. */
+#define PK_ALGO_FLAG_ECC18  256  /* GCRY_PK_ECC is used in a generic way.  */
 
 
 int gnupg_pk_is_compliant (enum gnupg_compliance_mode compliance, int algo,

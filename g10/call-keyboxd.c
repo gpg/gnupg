@@ -393,6 +393,23 @@ keydb_get_keyblock (KEYDB_HANDLE hd, kbnode_t *ret_kb)
 }
 
 
+/* Default status callback used to show diagnostics from the keyboxd  */
+static gpg_error_t
+keydb_default_status_cb (void *opaque, const char *line)
+{
+  const char *s;
+
+  (void)opaque;
+
+  if ((s = has_leading_keyword (line, "NOTE")))
+    log_info (_("Note: %s\n"), s);
+  else if ((s = has_leading_keyword (line, "WARNING")))
+    log_info (_("WARNING: %s\n"), s);
+
+  return 0;
+}
+
+
 
 /* Communication object for STORE commands.  */
 struct store_parm_s
@@ -472,7 +489,8 @@ keydb_update_keyblock (ctrl_t ctrl, KEYDB_HANDLE hd, kbnode_t kb)
   err = assuan_transact (hd->kbl->ctx, "STORE --update",
                          NULL, NULL,
                          store_inq_cb, &parm,
-                         NULL, NULL);
+                         keydb_default_status_cb, hd);
+
 
  leave:
   iobuf_close (iobuf);
@@ -523,7 +541,7 @@ keydb_insert_keyblock (KEYDB_HANDLE hd, kbnode_t kb)
   err = assuan_transact (hd->kbl->ctx, "STORE --insert",
                          NULL, NULL,
                          store_inq_cb, &parm,
-                         NULL, NULL);
+                         keydb_default_status_cb, hd);
 
  leave:
   iobuf_close (iobuf);
@@ -569,7 +587,7 @@ keydb_delete_keyblock (KEYDB_HANDLE hd)
   err = assuan_transact (hd->kbl->ctx, line,
                          NULL, NULL,
                          NULL, NULL,
-                         NULL, NULL);
+                         keydb_default_status_cb, hd);
 
  leave:
   return err;
@@ -656,6 +674,8 @@ search_status_cb (void *opaque, const char *line)
             }
         }
     }
+  else
+    err = keydb_default_status_cb (opaque, line);
 
   return err;
 }

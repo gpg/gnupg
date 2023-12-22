@@ -1309,7 +1309,8 @@ gpgsm_decrypt (ctrl_t ctrl, estream_t in_fp, estream_t out_fp)
                   /* Check compliance.  */
                   if (!gnupg_pk_is_allowed (opt.compliance,
                                             PK_USE_DECRYPTION,
-                                            pk_algo, 0, NULL, nbits, curve))
+                                            pk_algo, PK_ALGO_FLAG_ECC18,
+                                            NULL, nbits, curve))
                     {
                       char  kidstr[10+1];
 

@@ -1323,6 +1323,7 @@ gpgsm_agent_ask_passphrase (ctrl_t ctrl, const char *desc_msg, int repeat,
   char *arg4 = NULL;
   membuf_t data;
   struct default_inq_parm_s inq_parm;
+  int wasconf;
 
   *r_passphrase = NULL;
 
@@ -1341,9 +1342,13 @@ gpgsm_agent_ask_passphrase (ctrl_t ctrl, const char *desc_msg, int repeat,
   xfree (arg4);
 
   init_membuf_secure (&data, 64);
+  wasconf = assuan_get_flag (agent_ctx, ASSUAN_CONFIDENTIAL);
+  assuan_begin_confidential (agent_ctx);
   err = assuan_transact (agent_ctx, line,
                          put_membuf_cb, &data,
                          default_inq_cb, &inq_parm, NULL, NULL);
+  if (!wasconf)
+    assuan_end_confidential (agent_ctx);
 
   if (err)
     xfree (get_membuf (&data, NULL));

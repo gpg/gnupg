@@ -521,11 +521,45 @@ run_sql_statement (const char *sqlstr)
 }
 
 
+static int
+dblock_info_cb (dotlock_t h, void *opaque, enum dotlock_reasons reason,
+                const char *format, ...)
+{
+  ctrl_t ctrl = opaque;
+  va_list arg_ptr;
+  gpg_error_t err;
+  int rc = 0;
+  char tmpbuf[200];
+
+  (void)h;
+
+  if (reason == DOTLOCK_WAITING)
+    {
+      if (format)
+        {
+          va_start (arg_ptr, format);
+          gpgrt_vsnprintf (tmpbuf, sizeof tmpbuf, format, arg_ptr);
+          va_end (arg_ptr);
+        }
+      else
+        *tmpbuf = 0;
+      err = kbxd_status_printf (ctrl, "NOTE", "database_open %u %s",
+                                gpg_error (GPG_ERR_LOCKED), tmpbuf);
+      if (err)
+        {
+          log_error ("sending status line failed: %s\n", gpg_strerror (err));
+          rc = 1;  /* snprintf failed.  */
+        }
+
+    }
+  return rc;
+}
+
 /* Create and initialize a new SQL database file if it does not
  * exists; else open it and check that all required objects are
  * available.  */
 static gpg_error_t
-create_or_open_database (const char *filename)
+create_or_open_database (ctrl_t ctrl, const char *filename)
 {
   gpg_error_t err;
   int res;
@@ -542,7 +576,16 @@ create_or_open_database (const char *filename)
   /* To avoid races with other temporary instances of keyboxd trying
    * to create or update the database, we run the database with a lock
    * file held. */
-  database_lock = dotlock_create (filename, 0);
+  database_lock = dotlock_create (filename, DOTLOCK_PREPARE_CREATE);
+  if (!database_lock)
+    {
+      err = gpg_error_from_syserror ();
+      if (opt.verbose)
+        log_info ("can't allocate dotlock handle: %s\n", gpg_strerror (err));
+      goto leave;
+    }
+  dotlock_set_info_cb (database_lock, dblock_info_cb, ctrl);
+  database_lock = dotlock_finish_create (database_lock, filename);
   if (!database_lock)
     {
       err = gpg_error_from_syserror ();
@@ -556,7 +599,7 @@ create_or_open_database (const char *filename)
       goto leave;
     }
 
-  if (dotlock_take (database_lock, -1))
+  if (dotlock_take (database_lock, 10000))
     {
       err = gpg_error_from_syserror ();
       /* This is something bad.  Probably a stale lockfile.  */
@@ -646,7 +689,8 @@ create_or_open_database (const char *filename)
     {
       log_error (_("error creating database '%s': %s\n"),
                  filename, gpg_strerror (err));
-      dotlock_release (database_lock);
+      if (dotlock_is_locked (database_lock))
+        dotlock_release (database_lock);
       dotlock_destroy (database_lock);
       database_lock = NULL;
     }
@@ -660,7 +704,6 @@ gpg_error_t
 be_sqlite_add_resource (ctrl_t ctrl, backend_handle_t *r_hd,
                         const char *filename, int readonly)
 {
-  gpg_error_t err;
   backend_handle_t hd;
 
   (void)ctrl;
@@ -672,19 +715,10 @@ be_sqlite_add_resource (ctrl_t ctrl, backend_handle_t *r_hd,
     return gpg_error_from_syserror ();
   hd->db_type = DB_TYPE_SQLITE;
   strcpy (hd->filename, filename);
-
-  err = create_or_open_database (filename);
-  if (err)
-    goto leave;
-
   hd->backend_id = be_new_backend_id ();
 
   *r_hd = hd;
-  hd = NULL;
-
- leave:
-  xfree (hd);
-  return err;
+  return 0;
 }
 
 
@@ -1138,6 +1172,10 @@ be_sqlite_search (ctrl_t ctrl,
 
   log_assert (backend_hd && backend_hd->db_type == DB_TYPE_SQLITE);
   log_assert (request);
+
+  err = create_or_open_database (ctrl, backend_hd->filename);
+  if (err)
+    return err;
 
   acquire_mutex ();
 

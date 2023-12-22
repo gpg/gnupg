@@ -1996,7 +1996,7 @@ agent_get_passphrase (const char *cache_id,
   char *arg4 = NULL;
   membuf_t data;
   struct default_inq_parm_s dfltparm;
-  int have_newsymkey;
+  int have_newsymkey, wasconf;
 
   memset (&dfltparm, 0, sizeof dfltparm);
 
@@ -2048,10 +2048,14 @@ agent_get_passphrase (const char *cache_id,
   xfree (arg4);
 
   init_membuf_secure (&data, 64);
+  wasconf = assuan_get_flag (agent_ctx, ASSUAN_CONFIDENTIAL);
+  assuan_begin_confidential (agent_ctx);
   rc = assuan_transact (agent_ctx, line,
                         put_membuf_cb, &data,
                         default_inq_cb, &dfltparm,
                         NULL, NULL);
+  if (!wasconf)
+    assuan_end_confidential (agent_ctx);
 
   if (rc)
     xfree (get_membuf (&data, NULL));

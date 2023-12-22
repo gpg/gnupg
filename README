@@ -144,6 +144,13 @@
        gpg --import --import-options restore < allkeys.gpg
        gpgsm --import                        < allcerts.crt
 
+  In case the keyboxd is not able to startup due to a stale lockfile
+  created by another host, the command
+
+     gpgconf --unlock pubring.db
+
+  can be used to remove the lock file.
+
 ** Socket directory
 
   GnuPG uses Unix domain sockets to connect its components (on Windows
@@ -165,6 +172,29 @@
                 chmod 700 /run/user/$uid
               fi
             done )
+
+** Conflicts with systemd socket activation
+
+  Some Linux distribution use the meanwhile deprecated --supervised
+  option with gpg-agent, dirmngr, and keyboxd.  The idea is that the
+  systemd process launches the daemons as soon as gpg or gpgsm try to
+  access them.  However, this creates a race condition with GnuPG's
+  own on-demand launching of these daemon.  It also conflicts with the
+  remote use gpg-agent because the no-autostart feature on the remote
+  site will not work as expected.
+
+  Thus the recommendation is not to use the --supervised option.  All
+  GnuPG components handle the startup of their daemons on their own.
+
+  The only problem is that for using GnuPG's ssh-agent protocol
+  support, the gpg-agent must have been started before ssh.  This can
+  either be done with an ssh wrapper running
+
+    gpg-connect-agent updatestartuptty /bye
+
+  for each new tty or by using that command directly after login when
+  the anyway required SSH_AUTH_SOCK envvar is set (see the example in
+  the gpg-agent man page).
 
 
 * DOCUMENTATION

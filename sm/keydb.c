@@ -1137,6 +1137,23 @@ keydb_set_flags (KEYDB_HANDLE hd, int which, int idx, unsigned int value)
 }
 
 
+/* Default status callback used to show diagnostics from the keyboxd  */
+static gpg_error_t
+keydb_default_status_cb (void *opaque, const char *line)
+{
+  const char *s;
+
+  (void)opaque;
+
+  if ((s = has_leading_keyword (line, "NOTE")))
+    log_info (_("Note: %s\n"), s);
+  else if ((s = has_leading_keyword (line, "WARNING")))
+    log_info (_("WARNING: %s\n"), s);
+
+  return 0;
+}
+
+
 
 /* Communication object for Keyboxd STORE commands.  */
 struct store_parm_s
@@ -1200,7 +1217,7 @@ keydb_insert_cert (KEYDB_HANDLE hd, ksba_cert_t cert)
       err = assuan_transact (hd->kbl->ctx, "STORE --insert",
                              NULL, NULL,
                              store_inq_cb, &parm,
-                             NULL, NULL);
+                             keydb_default_status_cb, hd);
       goto leave;
     }
 
@@ -1335,7 +1352,7 @@ keydb_delete (KEYDB_HANDLE hd)
       err = assuan_transact (hd->kbl->ctx, line,
                              NULL, NULL,
                              NULL, NULL,
-                             NULL, NULL);
+                             keydb_default_status_cb, hd);
       goto leave;
     }
 
@@ -1563,6 +1580,8 @@ search_status_cb (void *opaque, const char *line)
             }
         }
     }
+  else
+    err = keydb_default_status_cb (opaque, line);
 
   return err;
 }

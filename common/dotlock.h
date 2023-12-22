@@ -97,12 +97,35 @@ extern "C"
 struct dotlock_handle;
 typedef struct dotlock_handle *dotlock_t;
 
+enum dotlock_reasons
+  {
+    DOTLOCK_CONFIG_TEST,   /* Can't check system - function terminates.  */
+    DOTLOCK_FILE_ERROR,    /* General file error - function terminates.  */
+    DOTLOCK_INV_FILE,      /* Invalid file       - function terminates.  */
+    DOTLOCK_CONFLICT,      /* Something is wrong - function terminates.  */
+    DOTLOCK_NOT_LOCKED,    /* Not locked - No action required.           */
+    DOTLOCK_STALE_REMOVED, /* Stale lock file was removed - retrying.    */
+    DOTLOCK_WAITING        /* Waiting for the lock - may be terminated.  */
+  };
+
+/* Flags for dotlock_create.  */
+#define DOTLOCK_PREPARE_CREATE (1U << 5) /* Require dotlock_finish_create.  */
+#define DOTLOCK_LOCK_BY_PARENT (1U << 6) /* Used by dotlock util.  */
+#define DOTLOCK_LOCKED         (1U << 7) /* Used by dotlock util.  */
+
 void dotlock_disable (void);
 dotlock_t dotlock_create (const char *file_to_lock, unsigned int flags);
+dotlock_t dotlock_finish_create (dotlock_t h, const char *file_to_lock);
 void dotlock_set_fd (dotlock_t h, int fd);
 int  dotlock_get_fd (dotlock_t h);
+void dotlock_set_info_cb (dotlock_t h,
+                          int (*cb)(dotlock_t, void *,
+                                    enum dotlock_reasons reason,
+                                    const char *,...),
+                          void *opaque);
 void dotlock_destroy (dotlock_t h);
 int dotlock_take (dotlock_t h, long timeout);
+int dotlock_is_locked (dotlock_t h);
 int dotlock_release (dotlock_t h);
 void dotlock_remove_lockfiles (void);
 

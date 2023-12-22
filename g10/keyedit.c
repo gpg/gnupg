@@ -4794,7 +4794,7 @@ fail:
 /*
  * Ask for a new additional decryption subkey and add it to the key
  * block.  Returns true if the keyblock was changed and false
- * otherwise.  If ADSKFPR is not NULL, this fucntion has been called
+ * otherwise.  If ADSKFPR is not NULL, this function has been called
  * by quick_addadsk and gives the fingerprint of the to be added key.
  */
 static int

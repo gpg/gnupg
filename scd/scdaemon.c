@@ -79,6 +79,7 @@ enum cmd_and_opt_values
   oDebugAllowCoreDump,
   oDebugCCIDDriver,
   oDebugLogTid,
+  oDebugAllowPINLogging,
   oDebugAssuanLogCats,
   oNoGreeting,
   oNoOptions,
@@ -138,6 +139,7 @@ static gpgrt_opt_t opts[] = {
   ARGPARSE_s_n (oDebugAllowCoreDump, "debug-allow-core-dump", "@"),
   ARGPARSE_s_n (oDebugCCIDDriver, "debug-ccid-driver", "@"),
   ARGPARSE_s_n (oDebugLogTid, "debug-log-tid", "@"),
+  ARGPARSE_s_n (oDebugAllowPINLogging, "debug-allow-pin-logging", "@"),
   ARGPARSE_p_u (oDebugAssuanLogCats, "debug-assuan-log-cats", "@"),
   ARGPARSE_s_s (oLogFile,  "log-file", N_("|FILE|write a log to FILE")),
 
@@ -582,6 +584,9 @@ main (int argc, char **argv )
           break;
         case oDebugLogTid:
           log_set_pid_suffix_cb (tid_log_callback);
+          break;
+        case oDebugAllowPINLogging:
+          opt.debug_allow_pin_logging = 1;
           break;
         case oDebugAssuanLogCats:
           set_libassuan_log_cats (pargs.r.ret_ulong);

@@ -122,6 +122,9 @@ typedef enum
     SIGSUBPKT_ATTST_SIGS    = 37, /* Attested Certifications.  */
     SIGSUBPKT_KEY_BLOCK     = 38, /* Entire key used.          */
 
+    SIGSUBPKT_META_HASH     = 40, /* Literal Data Meta Hash.   */
+    SIGSUBPKT_TRUST_ALIAS   = 41, /* Trust Alias.              */
+
     SIGSUBPKT_FLAG_CRITICAL = 128
   }
 sigsubpkttype_t;

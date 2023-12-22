@@ -775,8 +775,8 @@ pcsc_send_apdu (int slot, unsigned char *apdu, size_t apdulen,
   if (DBG_CARD_IO)
     {
       /* Do not dump the PIN in a VERIFY command.  */
-      if (apdulen > 5 && apdu[1] == 0x20)
-        log_debug ("PCSC_data: %02X %02X %02X %02X %02X [redacted]\n",
+      if (apdulen > 5 && apdu[1] == 0x20 && !opt.debug_allow_pin_logging)
+        log_debug ("PCSC_data: %02X %02X %02X %02X %02X [hidden]\n",
                    apdu[0], apdu[1], apdu[2], apdu[3], apdu[4]);
       else
         log_printhex (apdu, apdulen, "PCSC_data:");
@@ -1564,8 +1564,8 @@ send_apdu_ccid (int slot, unsigned char *apdu, size_t apdulen,
   if (DBG_CARD_IO)
     {
       /* Do not dump the PIN in a VERIFY command.  */
-      if (apdulen > 5 && apdu[1] == 0x20)
-        log_debug (" raw apdu: %02x%02x%02x%02x%02x [redacted]\n",
+      if (apdulen > 5 && apdu[1] == 0x20 && !opt.debug_allow_pin_logging)
+        log_debug (" raw apdu: %02x%02x%02x%02x%02x [hidden]\n",
                    apdu[0], apdu[1], apdu[2], apdu[3], apdu[4]);
       else
         log_printhex (apdu, apdulen, " raw apdu:");
@@ -3049,7 +3049,9 @@ send_le (int slot, int class, int ins, int p0, int p1,
                  sw, (unsigned int)resultlen);
       if ( !retbuf && (sw == SW_SUCCESS || (sw & 0xff00) == SW_MORE_DATA))
         {
-          if (all_zero_p (result, resultlen))
+          if (!resultlen)
+            ;
+          else if (all_zero_p (result, resultlen))
             log_debug ("     dump: [all zero]\n");
           else
             log_printhex (result, resultlen, "     dump:");

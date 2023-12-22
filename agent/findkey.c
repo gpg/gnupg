@@ -41,7 +41,8 @@
 
 
 static gpg_error_t read_key_file (const unsigned char *grip,
-                                  gcry_sexp_t *result, nvc_t *r_keymeta);
+                                  gcry_sexp_t *result, nvc_t *r_keymeta,
+                                  char **r_orig_key_value);
 static gpg_error_t is_shadowed_key (gcry_sexp_t s_skey);
 
 
@@ -129,12 +130,15 @@ agent_write_private_key (const unsigned char *grip,
   char **tokenfields = NULL;
   int is_regular;
   int blocksigs = 0;
+  char *orig_key_value = NULL;
+  const char *s;
+  int force_modify = 0;
 
   fname = fname_from_keygrip (grip, 0);
   if (!fname)
     return gpg_error_from_syserror ();
 
-  err = read_key_file (grip, &key, &pk);
+  err = read_key_file (grip, &key, &pk, &orig_key_value);
   if (err)
     {
       if (gpg_err_code (err) == GPG_ERR_ENOENT)
@@ -146,6 +150,8 @@ agent_write_private_key (const unsigned char *grip,
         }
     }
 
+  nvc_modified (pk, 1);  /* Clear that flag after a read.  */
+
   if (!pk)
     {
       /* Key is still in the old format or does not exist - create a
@@ -156,6 +162,7 @@ agent_write_private_key (const unsigned char *grip,
           err = gpg_error_from_syserror ();
           goto leave;
         }
+      force_modify = 1;
     }
 
   /* Check whether we already have a regular key.  */
@@ -170,6 +177,19 @@ agent_write_private_key (const unsigned char *grip,
   err = nvc_set_private_key (pk, key);
   if (err)
     goto leave;
+
+  /* Detect whether the key value actually changed and if not clear
+   * the modified flag.  This extra check is required because
+   * read_key_file removes the Key entry from the container and we
+   * then create a new Key entry which might be the same, though.  */
+  if (!force_modify
+      && orig_key_value && (s = nvc_get_string (pk, "Key:"))
+      && !strcmp (orig_key_value, s))
+    {
+      nvc_modified (pk, 1);  /* Clear that flag.  */
+    }
+  xfree (orig_key_value);
+  orig_key_value = NULL;
 
   /* Check that we do not update a regular key with a shadow key.  */
   if (is_regular && gpg_err_code (is_shadowed_key (key)) == GPG_ERR_TRUE)
@@ -192,7 +212,6 @@ agent_write_private_key (const unsigned char *grip,
   if (serialno && keyref)
     {
       nve_t item;
-      const char *s;
       size_t token0len;
 
       if (dispserialno)
@@ -242,7 +261,7 @@ agent_write_private_key (const unsigned char *grip,
             ; /* No need to update Token entry.  */
           else
             {
-              err = nve_set (item, token);
+              err = nve_set (pk, item, token);
               if (err)
                 goto leave;
             }
@@ -261,6 +280,13 @@ agent_write_private_key (const unsigned char *grip,
       err = nvc_add (pk, "Created:", timebuf);
       if (err)
         goto leave;
+    }
+
+  /* Check whether we need to write the file at all.  */
+  if (!nvc_modified (pk, 0))
+    {
+      err = 0;
+      goto leave;
     }
 
   /* Create a temporary file for writing.  */
@@ -310,6 +336,7 @@ agent_write_private_key (const unsigned char *grip,
   es_fclose (fp);
   if (removetmp && tmpfname)
     gnupg_remove (tmpfname);
+  xfree (orig_key_value);
   xfree (fname);
   xfree (tmpfname);
   xfree (token);
@@ -856,10 +883,13 @@ unprotect (ctrl_t ctrl, const char *cache_nonce, const char *desc_text,
  * return it as an gcrypt S-expression object in RESULT.  If R_KEYMETA
  * is not NULL and the extended key format is used, the meta data
  * items are stored there.  However the "Key:" item is removed from
- * it.  On failure returns an error code and stores NULL at RESULT and
- * R_KEYMETA. */
+ * it.  If R_ORIG_KEY_VALUE is non-NULL and the Key item was removed,
+ * its original value is stored at that R_ORIG_KEY_VALUE and the
+ * caller must free it.  On failure returns an error code and stores
+ * NULL at RESULT and R_KEYMETA. */
 static gpg_error_t
-read_key_file (const unsigned char *grip, gcry_sexp_t *result, nvc_t *r_keymeta)
+read_key_file (const unsigned char *grip, gcry_sexp_t *result, nvc_t *r_keymeta,
+               char **r_orig_key_value)
 {
   gpg_error_t err;
   char *fname;
@@ -873,6 +903,8 @@ read_key_file (const unsigned char *grip, gcry_sexp_t *result, nvc_t *r_keymeta)
   *result = NULL;
   if (r_keymeta)
     *r_keymeta = NULL;
+  if (r_orig_key_value)
+    *r_orig_key_value = NULL;
 
   fname = fname_from_keygrip (grip, 0);
   if (!fname)
@@ -927,7 +959,24 @@ read_key_file (const unsigned char *grip, gcry_sexp_t *result, nvc_t *r_keymeta)
             log_error ("error getting private key from '%s': %s\n",
                        fname, gpg_strerror (err));
           else
-            nvc_delete_named (pk, "Key:");
+            {
+              if (r_orig_key_value)
+                {
+                  const char *s = nvc_get_string (pk, "Key:");
+                  if (s)
+                    {
+                      *r_orig_key_value = xtrystrdup (s);
+                      if (!*r_orig_key_value)
+                        {
+                          err = gpg_error_from_syserror ();
+                          nvc_release (pk);
+                          xfree (fname);
+                          return err;
+                        }
+                    }
+                }
+              nvc_delete_named (pk, "Key:");
+            }
         }
 
       if (!err && r_keymeta)
@@ -1177,7 +1226,7 @@ agent_key_from_file (ctrl_t ctrl, const char *cache_nonce,
   if (!grip && !ctrl->have_keygrip)
     return gpg_error (GPG_ERR_NO_SECKEY);
 
-  err = read_key_file (grip? grip : ctrl->keygrip, &s_skey, &keymeta);
+  err = read_key_file (grip? grip : ctrl->keygrip, &s_skey, &keymeta, NULL);
   if (err)
     {
       if (gpg_err_code (err) == GPG_ERR_ENOENT)
@@ -1436,7 +1485,7 @@ agent_raw_key_from_file (ctrl_t ctrl, const unsigned char *grip,
 
   *result = NULL;
 
-  err = read_key_file (grip, &s_skey, r_keymeta);
+  err = read_key_file (grip, &s_skey, r_keymeta, NULL);
   if (!err)
     *result = s_skey;
   return err;
@@ -1479,7 +1528,7 @@ public_key_from_file (ctrl_t ctrl, const unsigned char *grip,
   if (r_sshorder)
     *r_sshorder = 0;
 
-  err = read_key_file (grip, &s_skey, for_ssh? &keymeta : NULL);
+  err = read_key_file (grip, &s_skey, for_ssh? &keymeta : NULL, NULL);
   if (err)
     return err;
 
@@ -1651,7 +1700,7 @@ agent_key_info_from_file (ctrl_t ctrl, const unsigned char *grip,
   {
     gcry_sexp_t sexp;
 
-    err = read_key_file (grip, &sexp, NULL);
+    err = read_key_file (grip, &sexp, NULL, NULL);
     if (err)
       {
         if (gpg_err_code (err) == GPG_ERR_ENOENT)
@@ -1735,7 +1784,7 @@ agent_delete_key (ctrl_t ctrl, const char *desc_text,
   char *default_desc = NULL;
   int key_type;
 
-  err = read_key_file (grip, &s_skey, NULL);
+  err = read_key_file (grip, &s_skey, NULL, NULL);
   if (gpg_err_code (err) == GPG_ERR_ENOENT)
     err = gpg_error (GPG_ERR_NO_SECKEY);
   if (err)

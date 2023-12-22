@@ -405,10 +405,10 @@ kbx_client_data_cmd (kbx_client_data_t kcd, const char *command,
                              status_cb, status_cb_value);
       if (err)
         {
-          if (gpg_err_code (err) != GPG_ERR_NOT_FOUND
-              && gpg_err_code (err) != GPG_ERR_NOTHING_FOUND)
-            log_debug ("%s: finished command with error: %s\n",
-                       __func__, gpg_strerror (err));
+          /* if (gpg_err_code (err) != GPG_ERR_NOT_FOUND */
+          /*     && gpg_err_code (err) != GPG_ERR_NOTHING_FOUND) */
+          /*   log_debug ("%s: finished command with error: %s\n", */
+          /*              __func__, gpg_strerror (err)); */
           xfree (get_membuf (&mb, &len));
           kcd->dlineerr = err;
           goto leave;

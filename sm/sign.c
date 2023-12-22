@@ -606,8 +606,8 @@ int
 gpgsm_sign (ctrl_t ctrl, certlist_t signerlist,
             estream_t data_fp, int detached, estream_t out_fp)
 {
-  int i, rc;
   gpg_error_t err;
+  int i;
   gnupg_ksba_io_t b64writer = NULL;
   ksba_writer_t writer;
   estream_t sig_fp = NULL;  /* Used for detached signatures.  */
@@ -630,18 +630,18 @@ gpgsm_sign (ctrl_t ctrl, certlist_t signerlist,
   if (!kh)
     {
       log_error (_("failed to allocate keyDB handle\n"));
-      rc = gpg_error (GPG_ERR_GENERAL);
+      err = gpg_error (GPG_ERR_GENERAL);
       goto leave;
     }
 
   if (!gnupg_rng_is_compliant (opt.compliance))
     {
-      rc = gpg_error (GPG_ERR_FORBIDDEN);
+      err = gpg_error (GPG_ERR_FORBIDDEN);
       log_error (_("%s is not compliant with %s mode\n"),
                  "RNG",
                  gnupg_compliance_option_string (opt.compliance));
       gpgsm_status_with_error (ctrl, STATUS_ERROR,
-                               "random-compliance", rc);
+                               "random-compliance", err);
       goto leave;
     }
 
@@ -653,20 +653,20 @@ gpgsm_sign (ctrl_t ctrl, certlist_t signerlist,
   if (binary_detached)
     {
       sig_fp = es_fopenmem (0, "w+");
-      rc = sig_fp? 0 : gpg_error_from_syserror ();
-      if (!rc)
-        rc = gnupg_ksba_create_writer (&b64writer, 0, NULL, sig_fp, &writer);
+      err = sig_fp? 0 : gpg_error_from_syserror ();
+      if (!err)
+        err = gnupg_ksba_create_writer (&b64writer, 0, NULL, sig_fp, &writer);
     }
   else
     {
-      rc = gnupg_ksba_create_writer
+      err = gnupg_ksba_create_writer
         (&b64writer, ((ctrl->create_pem? GNUPG_KSBA_IO_PEM : 0)
                       | (ctrl->create_base64? GNUPG_KSBA_IO_BASE64 : 0)),
          ctrl->pem_name, out_fp, &writer);
     }
-  if (rc)
+  if (err)
     {
-      log_error ("can't create writer: %s\n", gpg_strerror (rc));
+      log_error ("can't create writer: %s\n", gpg_strerror (err));
       goto leave;
     }
 
@@ -676,17 +676,13 @@ gpgsm_sign (ctrl_t ctrl, certlist_t signerlist,
 
   err = ksba_cms_new (&cms);
   if (err)
-    {
-      rc = err;
-      goto leave;
-    }
+    goto leave;
 
   err = ksba_cms_set_reader_writer (cms, NULL, writer);
   if (err)
     {
       log_debug ("ksba_cms_set_reader_writer failed: %s\n",
                  gpg_strerror (err));
-      rc = err;
       goto leave;
     }
 
@@ -703,7 +699,6 @@ gpgsm_sign (ctrl_t ctrl, certlist_t signerlist,
     {
       log_debug ("ksba_cms_set_content_type failed: %s\n",
                  gpg_strerror (err));
-      rc = err;
       goto leave;
     }
 
@@ -716,23 +711,23 @@ gpgsm_sign (ctrl_t ctrl, certlist_t signerlist,
           log_error ("no default signer found\n");
           gpgsm_status2 (ctrl, STATUS_INV_SGNR,
                          get_inv_recpsgnr_code (GPG_ERR_NO_SECKEY), NULL);
-          rc = gpg_error (GPG_ERR_GENERAL);
+          err = gpg_error (GPG_ERR_GENERAL);
           goto leave;
         }
 
       /* Although we don't check for ambiguous specification we will
          check that the signer's certificate is usable and valid.  */
-      rc = gpgsm_cert_use_sign_p (cert, 0);
-      if (!rc)
-        rc = gpgsm_validate_chain (ctrl, cert,
+      err = gpgsm_cert_use_sign_p (cert, 0);
+      if (!err)
+        err = gpgsm_validate_chain (ctrl, cert,
                                    GNUPG_ISOTIME_NONE, NULL, 0, NULL, 0, NULL);
-      if (rc)
+      if (err)
         {
           char *tmpfpr;
 
           tmpfpr = gpgsm_get_fingerprint_hexstring (cert, 0);
           gpgsm_status2 (ctrl, STATUS_INV_SGNR,
-                         get_inv_recpsgnr_code (rc), tmpfpr, NULL);
+                         get_inv_recpsgnr_code (err), tmpfpr, NULL);
           xfree (tmpfpr);
           goto leave;
         }
@@ -741,7 +736,7 @@ gpgsm_sign (ctrl_t ctrl, certlist_t signerlist,
       signerlist = xtrycalloc (1, sizeof *signerlist);
       if (!signerlist)
         {
-          rc = out_of_core ();
+          err = gpg_error_from_syserror ();
           ksba_cert_release (cert);
           goto leave;
         }
@@ -822,8 +817,8 @@ gpgsm_sign (ctrl_t ctrl, certlist_t signerlist,
           goto leave;
         }
 
-      if (!gnupg_pk_is_allowed (opt.compliance, PK_USE_SIGNING, pk_algo, 0,
-                                NULL, nbits, curve))
+      if (!gnupg_pk_is_allowed (opt.compliance, PK_USE_SIGNING, pk_algo,
+                                PK_ALGO_FLAG_ECC18, NULL, nbits, curve))
         {
           char  kidstr[10+1];
 
@@ -849,22 +844,21 @@ gpgsm_sign (ctrl_t ctrl, certlist_t signerlist,
   /* Gather certificates of signers and store them in the CMS object. */
   for (cl=signerlist; cl; cl = cl->next)
     {
-      rc = gpgsm_cert_use_sign_p (cl->cert, 0);
-      if (rc)
+      err = gpgsm_cert_use_sign_p (cl->cert, 0);
+      if (err)
         goto leave;
 
       err = ksba_cms_add_signer (cms, cl->cert);
       if (err)
         {
           log_error ("ksba_cms_add_signer failed: %s\n", gpg_strerror (err));
-          rc = err;
           goto leave;
         }
-      rc = add_certificate_list (ctrl, cms, cl->cert);
-      if (rc)
+      err = add_certificate_list (ctrl, cms, cl->cert);
+      if (err)
         {
           log_error ("failed to store list of certificates: %s\n",
-                     gpg_strerror(rc));
+                     gpg_strerror (err));
           goto leave;
         }
       /* Set the hash algorithm we are going to use */
@@ -873,7 +867,6 @@ gpgsm_sign (ctrl_t ctrl, certlist_t signerlist,
         {
           log_debug ("ksba_cms_add_digest_algo failed: %s\n",
                      gpg_strerror (err));
-          rc = err;
           goto leave;
         }
     }
@@ -895,7 +888,6 @@ gpgsm_sign (ctrl_t ctrl, certlist_t signerlist,
             {
               log_error (_("checking for qualified certificate failed: %s\n"),
                          gpg_strerror (err));
-              rc = err;
               goto leave;
             }
           if (*buffer)
@@ -903,19 +895,16 @@ gpgsm_sign (ctrl_t ctrl, certlist_t signerlist,
           else
             err = gpgsm_not_qualified_warning (ctrl, cl->cert);
           if (err)
-            {
-              rc = err;
-              goto leave;
-            }
+            goto leave;
         }
     }
 
   /* Prepare hashing (actually we are figuring out what we have set
      above). */
-  rc = gcry_md_open (&data_md, 0, 0);
-  if (rc)
+  err = gcry_md_open (&data_md, 0, 0);
+  if (err)
     {
-      log_error ("md_open failed: %s\n", gpg_strerror (rc));
+      log_error ("md_open failed: %s\n", gpg_strerror (err));
       goto leave;
     }
   if (DBG_HASHING)
@@ -927,7 +916,7 @@ gpgsm_sign (ctrl_t ctrl, certlist_t signerlist,
       if (!algo)
         {
           log_error ("unknown hash algorithm '%s'\n", algoid? algoid:"?");
-          rc = gpg_error (GPG_ERR_BUG);
+          err = gpg_error (GPG_ERR_BUG);
           goto leave;
         }
       gcry_md_enable (data_md, algo);
@@ -952,7 +941,7 @@ gpgsm_sign (ctrl_t ctrl, certlist_t signerlist,
           if ( !digest || !digest_len )
             {
               log_error ("problem getting the hash of the data\n");
-              rc = gpg_error (GPG_ERR_BUG);
+              err = gpg_error (GPG_ERR_BUG);
               goto leave;
             }
           err = ksba_cms_set_message_digest (cms, signer, digest, digest_len);
@@ -960,7 +949,6 @@ gpgsm_sign (ctrl_t ctrl, certlist_t signerlist,
             {
               log_error ("ksba_cms_set_message_digest failed: %s\n",
                          gpg_strerror (err));
-              rc = err;
               goto leave;
             }
         }
@@ -974,7 +962,6 @@ gpgsm_sign (ctrl_t ctrl, certlist_t signerlist,
         {
           log_error ("ksba_cms_set_signing_time failed: %s\n",
                      gpg_strerror (err));
-          rc = err;
           goto leave;
         }
     }
@@ -1016,7 +1003,6 @@ gpgsm_sign (ctrl_t ctrl, certlist_t signerlist,
       if (err)
         {
           log_error ("creating CMS object failed: %s\n", gpg_strerror (err));
-          rc = err;
           goto leave;
         }
 
@@ -1028,8 +1014,8 @@ gpgsm_sign (ctrl_t ctrl, certlist_t signerlist,
 
           log_assert (!detached);
 
-          rc = hash_and_copy_data (data_fp, data_md, writer);
-          if (rc)
+          err = hash_and_copy_data (data_fp, data_md, writer);
+          if (err)
             goto leave;
           audit_log (ctrl->audit, AUDIT_GOT_DATA);
           for (cl=signerlist,signer=0; cl; cl = cl->next, signer++)
@@ -1039,7 +1025,7 @@ gpgsm_sign (ctrl_t ctrl, certlist_t signerlist,
               if ( !digest || !digest_len )
                 {
                   log_error ("problem getting the hash of the data\n");
-                  rc = gpg_error (GPG_ERR_BUG);
+                  err = gpg_error (GPG_ERR_BUG);
                   goto leave;
                 }
               err = ksba_cms_set_message_digest (cms, signer,
@@ -1048,7 +1034,6 @@ gpgsm_sign (ctrl_t ctrl, certlist_t signerlist,
                 {
                   log_error ("ksba_cms_set_message_digest failed: %s\n",
                              gpg_strerror (err));
-                  rc = err;
                   goto leave;
                 }
             }
@@ -1058,10 +1043,10 @@ gpgsm_sign (ctrl_t ctrl, certlist_t signerlist,
           /* Compute the signature for all signers.  */
           gcry_md_hd_t md;
 
-          rc = gcry_md_open (&md, 0, 0);
-          if (rc)
+          err = gcry_md_open (&md, 0, 0);
+          if (err)
             {
-              log_error ("md_open failed: %s\n", gpg_strerror (rc));
+              log_error ("md_open failed: %s\n", gpg_strerror (err));
               goto leave;
             }
           if (DBG_HASHING)
@@ -1086,20 +1071,20 @@ gpgsm_sign (ctrl_t ctrl, certlist_t signerlist,
                   }
               }
 
-              rc = ksba_cms_hash_signed_attrs (cms, signer);
-              if (rc)
+              err = ksba_cms_hash_signed_attrs (cms, signer);
+              if (err)
                 {
                   log_debug ("hashing signed attrs failed: %s\n",
-                             gpg_strerror (rc));
+                             gpg_strerror (err));
                   gcry_md_close (md);
                   goto leave;
                 }
 
-              rc = gpgsm_create_cms_signature (ctrl, cl->cert,
-                                               md, cl->hash_algo, &sigval);
-              if (rc)
+              err = gpgsm_create_cms_signature (ctrl, cl->cert,
+                                                md, cl->hash_algo, &sigval);
+              if (err)
                 {
-                  audit_log_cert (ctrl->audit, AUDIT_SIGNED_BY, cl->cert, rc);
+                  audit_log_cert (ctrl->audit, AUDIT_SIGNED_BY, cl->cert, err);
                   gcry_md_close (md);
                   goto leave;
                 }
@@ -1111,7 +1096,6 @@ gpgsm_sign (ctrl_t ctrl, certlist_t signerlist,
                   audit_log_cert (ctrl->audit, AUDIT_SIGNED_BY, cl->cert, err);
                   log_error ("failed to store the signature: %s\n",
                              gpg_strerror (err));
-                  rc = err;
                   gcry_md_close (md);
                   goto leave;
                 }
@@ -1120,11 +1104,10 @@ gpgsm_sign (ctrl_t ctrl, certlist_t signerlist,
               fpr = gpgsm_get_fingerprint_hexstring (cl->cert, GCRY_MD_SHA1);
               if (!fpr)
                 {
-                  rc = gpg_error (GPG_ERR_ENOMEM);
+                  err = gpg_error (GPG_ERR_ENOMEM);
                   gcry_md_close (md);
                   goto leave;
                 }
-              rc = 0;
               if (opt.verbose)
                 {
                   char *pkalgostr = gpgsm_pubkey_algo_string (cl->cert, NULL);
@@ -1141,9 +1124,9 @@ gpgsm_sign (ctrl_t ctrl, certlist_t signerlist,
                                   signed_at,
                                   fpr);
               if (!buf)
-                rc = gpg_error_from_syserror ();
+                err = gpg_error_from_syserror ();
               xfree (fpr);
-              if (rc)
+              if (err)
                 {
                   gcry_md_close (md);
                   goto leave;
@@ -1157,10 +1140,10 @@ gpgsm_sign (ctrl_t ctrl, certlist_t signerlist,
     }
   while (stopreason != KSBA_SR_READY);
 
-  rc = gnupg_ksba_finish_writer (b64writer);
-  if (rc)
+  err = gnupg_ksba_finish_writer (b64writer);
+  if (err)
     {
-      log_error ("write failed: %s\n", gpg_strerror (rc));
+      log_error ("write failed: %s\n", gpg_strerror (err));
       goto leave;
     }
 
@@ -1169,13 +1152,14 @@ gpgsm_sign (ctrl_t ctrl, certlist_t signerlist,
       void *blob = NULL;
       size_t bloblen;
 
-      rc = es_fclose_snatch (sig_fp, &blob, &bloblen);
+      err = (es_fclose_snatch (sig_fp, &blob, &bloblen)?
+             gpg_error_from_syserror () : 0);
       sig_fp = NULL;
-      if (rc)
+      if (err)
         goto leave;
-      rc = write_detached_signature (ctrl, blob, bloblen, out_fp);
+      err = write_detached_signature (ctrl, blob, bloblen, out_fp);
       xfree (blob);
-      if (rc)
+      if (err)
         goto leave;
     }
 
@@ -1184,9 +1168,9 @@ gpgsm_sign (ctrl_t ctrl, certlist_t signerlist,
   log_info ("signature created\n");
 
  leave:
-  if (rc)
+  if (err)
     log_error ("error creating signature: %s <%s>\n",
-               gpg_strerror (rc), gpg_strsource (rc) );
+               gpg_strerror (err), gpg_strsource (err) );
   if (release_signerlist)
     gpgsm_release_certlist (signerlist);
   xfree (curve);
@@ -1195,5 +1179,5 @@ gpgsm_sign (ctrl_t ctrl, certlist_t signerlist,
   keydb_release (kh);
   gcry_md_close (data_md);
   es_fclose (sig_fp);
-  return rc;
+  return err;
 }

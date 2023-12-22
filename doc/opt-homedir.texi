@@ -13,13 +13,3 @@ directory stated through the environment variable @env{GNUPGHOME} or
 On Windows systems it is possible to install GnuPG as a portable
 application.  In this case only this command line option is
 considered, all other ways to set a home directory are ignored.
-
-@efindex gpgconf.ctl
-To install GnuPG as a portable application under Windows, create an
-empty file named @file{gpgconf.ctl} in the same directory as the tool
-@file{gpgconf.exe}.  The root of the installation is then that
-directory; or, if @file{gpgconf.exe} has been installed directly below
-a directory named @file{bin}, its parent directory.  You also need to
-make sure that the following directories exist and are writable:
-@file{ROOT/home} for the GnuPG home and @file{ROOT@value{LOCALCACHEDIR}}
-for internal cache files.

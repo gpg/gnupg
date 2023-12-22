@@ -77,6 +77,14 @@
 #endif
 
 
+/* Mode flags for unix_rootdir.  */
+enum wantdir_values {
+  WANTDIR_ROOT = 0,
+  WANTDIR_SYSCONF,
+  WANTDIR_SOCKET
+};
+
+
 /* The GnuPG homedir.  This is only accessed by the functions
  * gnupg_homedir and gnupg_set_homedir.  Malloced.  */
 static char *the_gnupg_homedir;
@@ -491,11 +499,12 @@ w32_rootdir (void)
  * file system.  If WANT_SYSCONFDIR is true the optional sysconfdir
  * entry is returned.  */
 static const char *
-unix_rootdir (int want_sysconfdir)
+unix_rootdir (enum wantdir_values wantdir)
 {
   static int checked;
   static char *dir;   /* for the rootdir  */
   static char *sdir;  /* for the sysconfdir */
+  static char *s2dir; /* for the socketdir */
 
   if (!checked)
     {
@@ -510,8 +519,10 @@ unix_rootdir (int want_sysconfdir)
       estream_t fp;
       char *rootdir;
       char *sysconfdir;
+      char *socketdir;
       const char *name;
       int ignoreall = 0;
+      int okay;
 
       for (;;)
         {
@@ -602,45 +613,44 @@ unix_rootdir (int want_sysconfdir)
       linelen = 0;
       rootdir = NULL;
       sysconfdir = NULL;
+      socketdir = NULL;
       while ((length = es_read_line (fp, &line, &linelen, NULL)) > 0)
         {
+          static const char *names[] =
+            {
+              "rootdir",
+              "sysconfdir",
+              "socketdir",
+              ".enable"
+            };
+          int i;
+          size_t n;
+
           /* Strip NL and CR, if present.  */
           while (length > 0
                  && (line[length - 1] == '\n' || line[length - 1] == '\r'))
             line[--length] = 0;
           trim_spaces (line);
-          if (!strncmp (line, "rootdir=", 8))
+          /* Find the stamement.  */
+          name = NULL;
+          for (i=0; i < DIM (names); i++)
             {
-              name = "rootdir";
-              p = line + 8;
+              n = strlen (names[i]);
+              if (!strncmp (line, names[i], n))
+                {
+                  while (line[n] == ' ' || line[n] == '\t')
+                    n++;
+                  if (line[n] == '=')
+                    {
+                      name = names[i];
+                      p = line + n + 1;
+                      break;
+                    }
+                }
             }
-          else if (!strncmp (line, "rootdir =", 9))  /* (What a kludge) */
-            {
-              name = "rootdir";
-              p = line + 9;
-            }
-          else if (!strncmp (line, "sysconfdir=", 11))
-            {
-              name = "sysconfdir";
-              p = line + 11;
-            }
-          else if (!strncmp (line, "sysconfdir =", 12))  /* (What a kludge) */
-            {
-              name = "sysconfdir";
-              p = line + 12;
-            }
-          else if (!strncmp (line, ".enable=", 8))
-            {
-              name = ".enable";
-              p = line + 8;
-            }
-          else if (!strncmp (line, ".enable =", 9))
-            {
-              name = ".enable";
-              p = line + 9;
-            }
-          else
-            continue;
+          if (!name)
+            continue;  /* Statement not known.  */
+
           trim_spaces (p);
           p = substitute_envvars (p);
           if (!p)
@@ -665,6 +675,11 @@ unix_rootdir (int want_sysconfdir)
               xfree (sysconfdir);
               sysconfdir = p;
             }
+          else if (!strcmp (name, "socketdir"))
+            {
+              xfree (socketdir);
+              socketdir = p;
+            }
           else
             {
               xfree (rootdir);
@@ -680,6 +695,7 @@ unix_rootdir (int want_sysconfdir)
           xfree (line);
           xfree (rootdir);
           xfree (sysconfdir);
+          xfree (socketdir);
           checked = 1;
           return NULL;
         }
@@ -687,29 +703,26 @@ unix_rootdir (int want_sysconfdir)
       xfree (buffer);
       xfree (line);
 
+      okay = 0;
       if (ignoreall)
-        {
-          xfree (rootdir);
-          xfree (sysconfdir);
-          sdir = dir = NULL;
-        }
+        ;
       else if (!rootdir || !*rootdir || *rootdir != '/')
         {
           log_info ("invalid rootdir '%s' specified in gpgconf.ctl\n", rootdir);
-          xfree (rootdir);
-          xfree (sysconfdir);
-          dir = NULL;
         }
       else if (sysconfdir && (!*sysconfdir || *sysconfdir != '/'))
         {
           log_info ("invalid sysconfdir '%s' specified in gpgconf.ctl\n",
                     sysconfdir);
-          xfree (rootdir);
-          xfree (sysconfdir);
-          dir = NULL;
+        }
+      else if (socketdir && (!*socketdir || *socketdir != '/'))
+        {
+          log_info ("invalid socketdir '%s' specified in gpgconf.ctl\n",
+                    socketdir);
         }
       else
         {
+          okay = 1;
           while (*rootdir && rootdir[strlen (rootdir)-1] == '/')
             rootdir[strlen (rootdir)-1] = 0;
           dir = rootdir;
@@ -723,11 +736,34 @@ unix_rootdir (int want_sysconfdir)
               gpgrt_annotate_leaked_object (sdir);
               /* log_info ("want sysconfdir '%s'\n", sdir); */
             }
+          if (socketdir)
+            {
+              while (*socketdir && socketdir[strlen (socketdir)-1] == '/')
+                socketdir[strlen (socketdir)-1] = 0;
+              s2dir = socketdir;
+              gpgrt_annotate_leaked_object (s2dir);
+              /* log_info ("want socketdir '%s'\n", s2dir); */
+            }
+        }
+
+      if (!okay)
+        {
+          xfree (rootdir);
+          xfree (sysconfdir);
+          xfree (socketdir);
+          dir = sdir = s2dir = NULL;
         }
       checked = 1;
     }
 
-  return want_sysconfdir? sdir : dir;
+  switch (wantdir)
+    {
+    case WANTDIR_ROOT:    return dir;
+    case WANTDIR_SYSCONF: return sdir;
+    case WANTDIR_SOCKET:  return s2dir;
+    }
+
+  return NULL; /* Not reached.  */
 }
 #endif /* Unix */
 
@@ -1038,7 +1074,8 @@ _gnupg_socketdir_internal (int skip_checks, unsigned *r_info)
   };
   int i;
   struct stat sb;
-  char prefix[19 + 1 + 20 + 6 + 1];
+  char prefixbuffer[19 + 1 + 20 + 6 + 1];
+  const char *prefix;
   const char *s;
   char *name = NULL;
 
@@ -1053,35 +1090,42 @@ _gnupg_socketdir_internal (int skip_checks, unsigned *r_info)
    * as a background process with no (desktop) user logged in.  Thus
    * we better don't do that.  */
 
-  /* Check whether we have a /run/[gnupg/]user dir.  */
-  for (i=0; bases[i]; i++)
+  prefix = unix_rootdir (WANTDIR_SOCKET);
+  if (!prefix)
     {
-      snprintf (prefix, sizeof prefix, "%s/user/%u",
-                bases[i], (unsigned int)getuid ());
-      if (!stat (prefix, &sb) && S_ISDIR(sb.st_mode))
-        break;
-    }
-  if (!bases[i])
-    {
-      *r_info |= 2; /* No /run/user directory.  */
-      goto leave;
+      /* gpgconf.ctl does not specify a directory.  Check whether we
+       * have the usual /run/[gnupg/]user dir.  */
+      for (i=0; bases[i]; i++)
+        {
+          snprintf (prefixbuffer, sizeof prefixbuffer, "%s/user/%u",
+                    bases[i], (unsigned int)getuid ());
+          prefix = prefixbuffer;
+          if (!stat (prefix, &sb) && S_ISDIR(sb.st_mode))
+            break;
+        }
+      if (!bases[i])
+        {
+          *r_info |= 2; /* No /run/user directory.  */
+          goto leave;
+        }
+
+      if (sb.st_uid != getuid ())
+        {
+          *r_info |= 4; /* Not owned by the user.  */
+          if (!skip_checks)
+            goto leave;
+        }
+
+      if (strlen (prefix) + 7 >= sizeof prefixbuffer)
+        {
+          *r_info |= 1; /* Ooops: Buffer too short to append "/gnupg".  */
+          goto leave;
+        }
+      strcat (prefixbuffer, "/gnupg");
     }
 
-  if (sb.st_uid != getuid ())
-    {
-      *r_info |= 4; /* Not owned by the user.  */
-      if (!skip_checks)
-        goto leave;
-    }
-
-  if (strlen (prefix) + 7 >= sizeof prefix)
-    {
-      *r_info |= 1; /* Ooops: Buffer too short to append "/gnupg".  */
-      goto leave;
-    }
-  strcat (prefix, "/gnupg");
-
-  /* Check whether the gnupg sub directory has proper permissions.  */
+  /* Check whether the gnupg sub directory (or the specified diretory)
+   * has proper permissions.  */
   if (stat (prefix, &sb))
     {
       if (errno != ENOENT)
@@ -1241,7 +1285,7 @@ gnupg_sysconfdir (void)
     }
   return name;
 #else /*!HAVE_W32_SYSTEM*/
-  const char *dir = unix_rootdir (1);
+  const char *dir = unix_rootdir (WANTDIR_SYSCONF);
   if (dir)
     return dir;
   else
@@ -1270,7 +1314,7 @@ gnupg_bindir (void)
   else
     return rdir;
 #else /*!HAVE_W32_SYSTEM*/
-  rdir = unix_rootdir (0);
+  rdir = unix_rootdir (WANTDIR_ROOT);
   if (rdir)
     {
       if (!name)
@@ -1297,7 +1341,7 @@ gnupg_libexecdir (void)
   static char *name;
   const char *rdir;
 
-  rdir = unix_rootdir (0);
+  rdir = unix_rootdir (WANTDIR_ROOT);
   if (rdir)
     {
       if (!name)
@@ -1327,7 +1371,7 @@ gnupg_libdir (void)
 #else /*!HAVE_W32_SYSTEM*/
   const char *rdir;
 
-  rdir = unix_rootdir (0);
+  rdir = unix_rootdir (WANTDIR_ROOT);
   if (rdir)
     {
       if (!name)
@@ -1358,7 +1402,7 @@ gnupg_datadir (void)
 #else /*!HAVE_W32_SYSTEM*/
   const char *rdir;
 
-  rdir = unix_rootdir (0);
+  rdir = unix_rootdir (WANTDIR_ROOT);
   if (rdir)
     {
       if (!name)
@@ -1390,7 +1434,7 @@ gnupg_localedir (void)
 #else /*!HAVE_W32_SYSTEM*/
   const char *rdir;
 
-  rdir = unix_rootdir (0);
+  rdir = unix_rootdir (WANTDIR_ROOT);
   if (rdir)
     {
       if (!name)

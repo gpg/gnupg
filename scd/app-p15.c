@@ -74,8 +74,10 @@ typedef enum
     CARD_TYPE_MICARDO,
     CARD_TYPE_CARDOS_50,
     CARD_TYPE_CARDOS_53,
+    CARD_TYPE_CARDOS_54,
     CARD_TYPE_AET,     /* A.E.T. Europe JCOP card.  */
-    CARD_TYPE_BELPIC   /* Belgian eID card specs. */
+    CARD_TYPE_BELPIC,  /* Belgian eID card specs. */
+    CARD_TYPE_STARCOS_32
   }
 card_type_t;
 
@@ -86,7 +88,8 @@ typedef enum
   {
     CARD_PRODUCT_UNKNOWN,
     CARD_PRODUCT_RSCS,     /* Rohde&Schwarz Cybersecurity       */
-    CARD_PRODUCT_DTRUST,   /* D-Trust GmbH (bundesdruckerei.de) */
+    CARD_PRODUCT_DTRUST3,  /* D-Trust GmbH (bundesdruckerei.de) */
+    CARD_PRODUCT_DTRUST4,
     CARD_PRODUCT_GENUA,    /* GeNUA mbH                         */
     CARD_PRODUCT_NEXUS     /* Technology Nexus                  */
   }
@@ -123,17 +126,23 @@ static struct
     CARD_TYPE_CARDOS_50 }, /* CardOS 5.0 */
   { 11, X("\x3b\xd2\x18\x00\x81\x31\xfe\x58\xc9\x03\x16"),
     CARD_TYPE_CARDOS_53 }, /* CardOS 5.3 */
+  { 11, X("\x3b\xd2\x18\x00\x81\x31\xfe\x58\xc9\x04\x11"),
+    CARD_TYPE_CARDOS_54 }, /* CardOS 5.4 */
   { 24, X("\x3b\xfe\x18\x00\x00\x80\x31\xfe\x45\x53\x43\x45"
           "\x36\x30\x2d\x43\x44\x30\x38\x31\x2d\x6e\x46\xa9"),
     CARD_TYPE_AET },
+  { 25, X("\x3b\x9f\x96\x81\xb1\xfe\x45\x1f\x07\x00\x64\x05"
+          "\x1e\xb2\x00\x31\xb0\x73\x96\x21\xdb\x05\x90\x00\x5c"),
+    CARD_TYPE_STARCOS_32 },
   { 0 }
 };
 #undef X
 
 
-/* Macro to test for CardOS 5.0 and 5.3.  */
+/* Macro to test for CardOS 5.0, 5.3 and 5.4.  */
 #define IS_CARDOS_5(a) ((a)->app_local->card_type == CARD_TYPE_CARDOS_50 \
-                        || (a)->app_local->card_type == CARD_TYPE_CARDOS_53)
+                        || (a)->app_local->card_type == CARD_TYPE_CARDOS_53 \
+                        || (a)->app_local->card_type == CARD_TYPE_CARDOS_54)
 
 /* The default PKCS-15 home DF */
 #define DEFAULT_HOME_DF 0x5015
@@ -146,6 +155,11 @@ static char const pkcs15_aid[] = { 0xA0, 0, 0, 0, 0x63,
    is useful for a standard.  Oh well. */
 static char const pkcs15be_aid[] = { 0xA0, 0, 0, 0x01, 0x77,
                                    0x50, 0x4B, 0x43, 0x53, 0x2D, 0x31, 0x35 };
+
+/* The D-TRUST Card 4.x variant - dito */
+static char const pkcs15dtrust4_aid[] = { 0xE8, 0x28, 0xBD, 0x08, 0x0F, 0xA0,
+                                          0x00, 0x00, 0x01, 0x67, 0x45, 0x53,
+                                          0x49, 0x47, 0x4E };
 
 
 /* The PIN types as defined in pkcs#15 v1.1 */
@@ -518,6 +532,8 @@ struct app_local_s
 /*** Local prototypes.  ***/
 static gpg_error_t select_ef_by_path (app_t app, const unsigned short *path,
                                       size_t pathlen);
+static gpg_error_t select_df_by_path (app_t app, const unsigned short *path,
+                                      size_t pathlen);
 static gpg_error_t keygrip_from_prkdf (app_t app, prkdf_object_t prkdf);
 static gpg_error_t readcert_by_cdf (app_t app, cdf_object_t cdf,
                                     unsigned char **r_cert, size_t *r_certlen);
@@ -536,8 +552,10 @@ cardtype2str (card_type_t cardtype)
     case CARD_TYPE_MICARDO:   return "Micardo";
     case CARD_TYPE_CARDOS_50: return "CardOS 5.0";
     case CARD_TYPE_CARDOS_53: return "CardOS 5.3";
+    case CARD_TYPE_CARDOS_54: return "CardOS 5.4";
     case CARD_TYPE_BELPIC:    return "Belgian eID";
     case CARD_TYPE_AET:       return "AET";
+    case CARD_TYPE_STARCOS_32:return "STARCOS 3.2";
     }
   return "";
 }
@@ -549,7 +567,8 @@ cardproduct2str (card_product_t cardproduct)
     {
     case CARD_PRODUCT_UNKNOWN: return "";
     case CARD_PRODUCT_RSCS:    return "R&S";
-    case CARD_PRODUCT_DTRUST:  return "D-Trust";
+    case CARD_PRODUCT_DTRUST3: return "D-Trust 3";
+    case CARD_PRODUCT_DTRUST4: return "D-Trust 4.1/4.4";
     case CARD_PRODUCT_GENUA:   return "GeNUA";
     case CARD_PRODUCT_NEXUS:   return "Nexus";
     }
@@ -765,20 +784,28 @@ select_and_read_record (app_t app, unsigned short efid, int recno,
 
 
 /* This function calls select file to read a file using a complete
-   path which may or may not start at the master file (MF). */
+ * path which may or may not start at the master file (MF).  If
+ * EXPECT_DF is set a directory or file is expected - otherwise an
+ * elementary file expected.  */
 static gpg_error_t
-select_ef_by_path (app_t app, const unsigned short *path, size_t pathlen)
+select_by_path (app_t app, const unsigned short *path, size_t pathlen,
+                int expect_df)
 {
   gpg_error_t err;
   int i, j;
+  int home_df_used = 0;
 
   if (!pathlen)
     return gpg_error (GPG_ERR_INV_VALUE);
 
-  /* log_debug ("%s: path=", __func__); */
-  /* for (j=0; j < pathlen; j++) */
-  /*   log_printf ("%s%04hX", j? "/":"", path[j]); */
-  /* log_printf ("%s\n",app->app_local->direct_path_selection?" (direct)":"");*/
+  if (opt.debug)
+    {
+      log_debug ("%s: path=", __func__);
+      for (j=0; j < pathlen; j++)
+        log_printf ("%s%04hX", j? "/":"", path[j]);
+      log_printf ("%s\n",expect_df?" (DF requested)":"");
+      log_printf ("%s\n",app->app_local->direct_path_selection?" (direct)":"");
+    }
 
   if (app->app_local->direct_path_selection)
     {
@@ -791,33 +818,15 @@ select_ef_by_path (app_t app, const unsigned short *path, size_t pathlen)
                                        0);
         }
       else
-        err = iso7816_select_path (app_get_slot (app), path, pathlen,
-                                   app->app_local->home_df);
+        {
+          home_df_used = 1;
+          err = iso7816_select_path (app_get_slot (app), path, pathlen,
+                                     app->app_local->home_df);
+        }
       if (err)
         {
           log_error ("p15: error selecting path ");
           goto err_print_path;
-        }
-    }
-  else if (pathlen > 1 && path[0] == 0x3fff)
-    {
-      err = iso7816_select_file (app_get_slot (app), 0x3f00, 0);
-      if (err)
-        {
-          log_error ("p15: error selecting part %d from path ", 0);
-          goto err_print_path;
-        }
-      path++;
-      pathlen--;
-      for (i=0; i < pathlen; i++)
-        {
-          err = iso7816_select_file (app_get_slot (app),
-                                     path[i], (i+1 == pathlen)? 2 : 1);
-          if (err)
-            {
-              log_error ("p15: error selecting part %d from path ", i);
-              goto err_print_path;
-            }
         }
     }
   else
@@ -829,7 +838,7 @@ select_ef_by_path (app_t app, const unsigned short *path, size_t pathlen)
       for (i=0; i < pathlen; i++)
         {
           err = iso7816_select_file (app_get_slot (app),
-                                     path[i], !(i+1 == pathlen));
+                                     path[i], (expect_df || (i+1 < pathlen)));
           if (err)
             {
               log_error ("p15: error selecting part %d from path ", i);
@@ -842,12 +851,26 @@ select_ef_by_path (app_t app, const unsigned short *path, size_t pathlen)
  err_print_path:
   if (pathlen && *path != 0x3f00 )
     log_printf ("3F00/");
-  else
+  else if (home_df_used)
     log_printf ("%04hX/", app->app_local->home_df);
   for (j=0; j < pathlen; j++)
     log_printf ("%s%04hX", j? "/":"", path[j]);
   log_printf (": %s\n", gpg_strerror (err));
   return err;
+}
+
+
+static gpg_error_t
+select_ef_by_path (app_t app, const unsigned short *path, size_t pathlen)
+{
+  return select_by_path (app, path, pathlen, 0);
+}
+
+
+static gpg_error_t
+select_df_by_path (app_t app, const unsigned short *path, size_t pathlen)
+{
+  return select_by_path (app, path, pathlen, 1);
 }
 
 
@@ -3245,7 +3268,7 @@ read_ef_aodf (app_t app, unsigned short fid, aodf_object_t *result)
               if (aodf->max_length_valid)
                 log_printf (" max=%lu", aodf->max_length);
               if (aodf->pad_char_valid)
-                log_printf (" pad=0x%02x", aodf->pad_char);
+                log_printf (" pad=0x%02x", (unsigned char)aodf->pad_char);
 
               log_info ("p15:             flags=");
               s = "";
@@ -3495,7 +3518,7 @@ read_ef_tokeninfo (app_t app)
       ul |= (*p++) & 0xff;
       n--;
     }
-  if (ul)
+  if (ul > 1)
     {
       log_error ("p15: invalid version %lu in TokenInfo\n", ul);
       err = gpg_error (GPG_ERR_INV_OBJ);
@@ -3829,7 +3852,14 @@ read_p15_info (app_t app)
       && !strncmp (app->app_local->token_label, "D-TRUST Card V3", 15)
       && app->app_local->card_type == CARD_TYPE_CARDOS_50)
     {
-      app->app_local->card_product = CARD_PRODUCT_DTRUST;
+      app->app_local->card_product = CARD_PRODUCT_DTRUST3;
+    }
+  if (!app->app_local->card_product
+      && app->app_local->token_label
+      && !strncmp (app->app_local->token_label, "D-TRUST Card 4.", 15)
+      && app->app_local->card_type == CARD_TYPE_CARDOS_54)
+    {
+      app->app_local->card_product = CARD_PRODUCT_DTRUST4;
     }
 
 
@@ -5007,7 +5037,7 @@ prepare_verify_pin (app_t app, const char *keyref,
     }
 
 
-  if (app->app_local->card_product == CARD_PRODUCT_DTRUST)
+  if (app->app_local->card_product == CARD_PRODUCT_DTRUST3)
     {
       /* According to our protocol analysis we need to select a
        * special AID here.  Before that the master file needs to be
@@ -5021,6 +5051,13 @@ prepare_verify_pin (app_t app, const char *keyref,
                                           dtrust_aid, sizeof dtrust_aid, 0);
       if (err)
         log_error ("p15: error selecting D-TRUST's AID for key %s: %s\n",
+                   keyref, gpg_strerror (err));
+    }
+  else if (prkdf && app->app_local->card_type == CARD_TYPE_STARCOS_32)
+    {
+      err = select_df_by_path (app, prkdf->path, prkdf->pathlen);
+      if (err)
+        log_error ("p15: error selecting file for key %s: %s\n",
                    keyref, gpg_strerror (err));
     }
   else if (prkdf)
@@ -5258,7 +5295,8 @@ verify_pin (app_t app,
   if (prkdf
       && prkdf->usageflags.non_repudiation
       && (app->app_local->card_type == CARD_TYPE_BELPIC
-          || app->app_local->card_product == CARD_PRODUCT_DTRUST))
+          || app->app_local->card_product == CARD_PRODUCT_DTRUST3
+          || app->app_local->card_product == CARD_PRODUCT_DTRUST4))
     label = _("||Please enter the PIN for the key to create "
               "qualified signatures.");
   else if (aodf->pinflags.so_pin)
@@ -5622,7 +5660,8 @@ do_sign (app_t app, ctrl_t ctrl, const char *keyidstr, int hashalgo,
           goto leave;
         }
       if (app->app_local->card_type == CARD_TYPE_BELPIC
-          || app->app_local->card_product == CARD_PRODUCT_NEXUS)
+          || app->app_local->card_product == CARD_PRODUCT_NEXUS
+          || app->app_local->card_product == CARD_PRODUCT_DTRUST4)
         {
           /* The default for these cards is to use a plain hash.  We
            * assume that due to the used certificate the correct hash
@@ -5707,6 +5746,31 @@ do_sign (app_t app, ctrl_t ctrl, const char *keyidstr, int hashalgo,
         err = gpg_error (GPG_ERR_BUG);
       else
         err = micardo_mse (app, prkdf->path[prkdf->pathlen-1]);
+    }
+  else if (app->app_local->card_product == CARD_PRODUCT_DTRUST4)
+    {
+      if (prkdf->is_ecc)
+        {
+          /* Not implemented due to lacking test hardware. */
+          log_info ("Note: ECC is not yet implemented for DTRUST 4 cards\n");
+          err = gpg_error (GPG_ERR_UNSUPPORTED_ALGORITHM);
+        }
+      else
+        {
+          /* The D-TRUST Card 4.x doesn't support setting a security
+           * environment, at least as specified in the specs.  Insted a
+           * predefined security environment has to be loaded depending on the
+           * cipher and message digest used.  The spec states SE-ID 0x25 for
+           * SHA256, 0x26 for SHA384 and 0x27 for SHA512, when using PKCS#1
+           * padding.  But this matters only if the message digest is computed
+           * on the card.  When providing the digest info and a pre-calculated
+           * hash, all security environments yield the same result.  Thus we
+           * choose 0x25.
+           *
+           * Note: For PSS signatures, different values apply. */
+            err = iso7816_manage_security_env (app_get_slot (app),
+                                               0xf3, 0x25, NULL, 0);
+        }
     }
   else if (prkdf->key_reference_valid)
     {
@@ -5863,7 +5927,7 @@ do_decipher (app_t app, ctrl_t ctrl, const char *keyidstr,
 
 
   /* The next is guess work for CardOS.  */
-  if (app->app_local->card_product == CARD_PRODUCT_DTRUST)
+  if (app->app_local->card_product == CARD_PRODUCT_DTRUST3)
     {
       /* From analyzing an USB trace of a Windows signing application
        * we see that the SE is simply reset to 0x14.  It seems to be
@@ -5879,6 +5943,22 @@ do_decipher (app_t app, ctrl_t ctrl, const char *keyidstr,
       err = iso7816_manage_security_env (app_get_slot (app),
                                          0xF3, 0x14, NULL, 0);
 
+    }
+  else if (app->app_local->card_product == CARD_PRODUCT_DTRUST4)
+    {
+      if (prkdf->is_ecc)
+        {
+          /* Not implemented due to lacking test hardware. */
+          log_info ("Note: ECC is not yet implemented for DTRUST 4 cards\n");
+          err = gpg_error (GPG_ERR_UNSUPPORTED_ALGORITHM);
+        }
+      else
+        {
+          /* SE-ID 0x31 is for PKCS#1 padded cryptograms. For OAEP encryption
+           * schemes, different values apply. */
+          err = iso7816_manage_security_env (app_get_slot (app),
+                                             0xF3, 0x31, NULL, 0);
+        }
     }
   else if (prkdf->key_reference_valid)
     {
@@ -5923,7 +6003,8 @@ do_decipher (app_t app, ctrl_t ctrl, const char *keyidstr,
       le_value = prkdf->keynbits / 8;
     }
 
-  if (app->app_local->card_product == CARD_PRODUCT_DTRUST)
+  if (app->app_local->card_product == CARD_PRODUCT_DTRUST3
+      || app->app_local->card_product == CARD_PRODUCT_DTRUST4)
     padind = 0x81;
 
   if (prkdf->is_ecc && IS_CARDOS_5(app))
@@ -6186,6 +6267,13 @@ app_select_p15 (app_t app)
   rc = iso7816_select_application_ext (slot, pkcs15_aid, sizeof pkcs15_aid, 1,
                                        &fci, &fcilen);
   if (rc)
+    {
+      /* D-TRUST Card 4.x uses a different AID. */
+      rc = iso7816_select_application_ext (slot, pkcs15dtrust4_aid,
+                                           sizeof pkcs15dtrust4_aid, 1,
+                                           &fci, &fcilen);
+    }
+  if (rc)
     { /* Not found: Try to locate it from 2F00.  We use direct path
          selection here because it seems that the Belgian eID card
          does only allow for that.  Many other cards supports this
@@ -6284,9 +6372,11 @@ app_select_p15 (app_t app)
         {
         case CARD_TYPE_CARDOS_50:
         case CARD_TYPE_CARDOS_53:
+        case CARD_TYPE_CARDOS_54:
           direct = 1;
           break;
         case CARD_TYPE_AET:
+        case CARD_TYPE_STARCOS_32:
           app->app_local->no_extended_mode = 1;
           break;
         default:

@@ -1122,10 +1122,36 @@ More fields may be added in future to the output.
 
 @table @file
 
+@item gpgconf.ctl
+@cindex gpgconf.ctl
+  Under Unix @file{gpgconf.ctl} may be used to change some of the
+  compiled in directories where the GnuPG components are expected.  This
+  file is expected in the same directory as @file{gpgconf}.  The
+  physical installation directories are evaluated and no symlinks.
+  Blank lines and lines starting with pound sign are ignored in the
+  file.  The keywords must be followed by optional white space, an equal
+  sign, optional white space, and the value.  Environment variables are
+  substituted in standard shell manner, the final value must start with
+  a slash, trailing slashes are stripped.  Valid keywords are
+  @code{rootdir}, @code{sysconfdir}, @code{socketdir}, and
+  @code{.enable}.  No errors are printed for unknown keywords.  The
+  @code{.enable} keyword is special: if the keyword is used and its
+  value evaluates to true the entire file is ignored.
+
+  Under Windows this file is used to install GnuPG as a portable
+  application.  An empty file named @file{gpgconf.ctl} is expected in
+  the same directory as the tool @file{gpgconf.exe}.  The root of the
+  installation is then that directory; or, if @file{gpgconf.exe} has
+  been installed directly below a directory named @file{bin}, its parent
+  directory.  You also need to make sure that the following directories
+  exist and are writable: @file{ROOT/home} for the GnuPG home and
+  @file{ROOT@value{LOCALCACHEDIR}} for internal cache files.
+
+
 @item /etc/gnupg/gpgconf.conf
 @cindex gpgconf.conf
   If this file exists, it is processed as a global configuration file.
-  This is a legacy mechanism which should not be used tigether with
+  This is a legacy mechanism which should not be used together with
   the modern global per component configuration files.  A commented
   example can be found in the @file{examples} directory of the
   distribution.
