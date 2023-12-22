@@ -3499,6 +3499,31 @@ do_change_pin (app_t app, ctrl_t ctrl,  const char *chvnostr,
           log_error (_("error getting new PIN: %s\n"), gpg_strerror (rc));
           goto leave;
         }
+
+      if (set_resetcode)
+        {
+          size_t bufferlen = strlen (pinvalue);
+
+          if (bufferlen != 0 && bufferlen < 8)
+            {
+              log_error (_("Reset Code is too short; minimum length is %d\n"), 8);
+              rc = gpg_error (GPG_ERR_BAD_RESET_CODE);
+              goto leave;
+            }
+        }
+      else
+        {
+          if (chvno == 3)
+            minlen = 8;
+
+          if (strlen (pinvalue) < minlen)
+            {
+              log_info (_("PIN for CHV%d is too short;"
+                          " minimum length is %d\n"), chvno, minlen);
+              rc = gpg_error (GPG_ERR_BAD_PIN);
+              goto leave;
+            }
+        }
     }
 
 
@@ -3533,24 +3558,15 @@ do_change_pin (app_t app, ctrl_t ctrl,  const char *chvnostr,
     }
   else if (set_resetcode)
     {
-      size_t bufferlen = strlen (pinvalue);
+      size_t bufferlen;
+      char *buffer = NULL;
 
-      if (bufferlen != 0 && bufferlen < 8)
-        {
-          log_error (_("Reset Code is too short; minimum length is %d\n"), 8);
-          rc = gpg_error (GPG_ERR_BAD_RESET_CODE);
-        }
-      else
-        {
-          char *buffer = NULL;
+      rc = pin2hash_if_kdf (app, 0, pinvalue, &buffer, &bufferlen);
+      if (!rc)
+        rc = iso7816_put_data (app_get_slot (app),
+                               0, 0xD3, buffer, bufferlen);
 
-          rc = pin2hash_if_kdf (app, 0, pinvalue, &buffer, &bufferlen);
-          if (!rc)
-            rc = iso7816_put_data (app_get_slot (app),
-                                   0, 0xD3, buffer, bufferlen);
-
-          wipe_and_free (buffer, bufferlen);
-        }
+      wipe_and_free (buffer, bufferlen);
     }
   else if (reset_mode)
     {
