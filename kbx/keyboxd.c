@@ -249,8 +249,7 @@ static void kbxd_libgcrypt_progress_cb (void *data, const char *what,
 static void kbxd_init_default_ctrl (ctrl_t ctrl);
 static void kbxd_deinit_default_ctrl (ctrl_t ctrl);
 
-static void handle_connections (gnupg_fd_t listen_fd,
-                                int reliable_homedir_inotify);
+static void handle_connections (gnupg_fd_t listen_fd);
 static void check_own_socket (void);
 static int check_for_running_kbxd (int silent);
 
@@ -460,8 +459,6 @@ main (int argc, char **argv )
   int gpgconf_list = 0;
   int debug_wait = 0;
   struct assuan_malloc_hooks malloc_hooks;
-  int reliable_homedir_inotify = 0;
-
 
   early_system_init ();
 
@@ -802,11 +799,6 @@ main (int argc, char **argv )
           log_get_prefix (&oldflags);
           log_set_prefix (NULL, oldflags | GPGRT_LOG_RUN_DETACHED);
           opt.running_detached = 1;
-
-          /* Because we don't support running a program on the command
-           * line we can assume that the inotify things works and thus
-           * we can avoid the regular stat calls.  */
-          reliable_homedir_inotify = 1;
         }
 
       {
@@ -844,7 +836,7 @@ main (int argc, char **argv )
       }
 
       log_info ("%s %s started\n", gpgrt_strusage(11), gpgrt_strusage(13));
-      handle_connections (fd, reliable_homedir_inotify);
+      handle_connections (fd);
       assuan_sock_close (fd);
     }
 
@@ -1446,7 +1438,7 @@ start_connection_thread (void *arg)
 /* Connection handler loop.  Wait for connection requests and spawn a
  * thread after accepting a connection.  */
 static void
-handle_connections (gnupg_fd_t listen_fd, int reliable_homedir_inotify)
+handle_connections (gnupg_fd_t listen_fd)
 {
   gpg_error_t err;
   npth_attr_t tattr;
@@ -1501,10 +1493,8 @@ handle_connections (gnupg_fd_t listen_fd, int reliable_homedir_inotify)
                   gpg_strerror (err));
     }
 
-  if (!reliable_homedir_inotify)
-    home_inotify_fd = -1;
-  else if ((err = gnupg_inotify_watch_delete_self (&home_inotify_fd,
-                                                   gnupg_homedir ())))
+  if ((err = gnupg_inotify_watch_delete_self (&home_inotify_fd,
+                                              gnupg_homedir ())))
     {
       if (gpg_err_code (err) != GPG_ERR_NOT_SUPPORTED)
         log_info ("error enabling daemon termination by homedir removal: %s\n",

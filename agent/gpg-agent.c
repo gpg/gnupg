@@ -1093,7 +1093,7 @@ main (int argc, char **argv)
   int gpgconf_list = 0;
   gpg_error_t err;
   struct assuan_malloc_hooks malloc_hooks;
-  int reliable_homedir_inotify = 0;
+  int reliable_homedir_inotify = 1;
 
   early_system_init ();
 
@@ -1819,13 +1819,13 @@ main (int argc, char **argv)
           log_get_prefix (&oldflags);
           log_set_prefix (NULL, oldflags | GPGRT_LOG_RUN_DETACHED);
           opt.running_detached = 1;
-
-          /* Unless we are running with a program given on the command
-           * line we can assume that the inotify things works and thus
-           * we can avoid the regular stat calls.  */
-          if (!argc)
-            reliable_homedir_inotify = 1;
         }
+
+      /* When we are running with a program given on the command
+       * line, the inotify things may not work well and thus
+       * we cannot avoid the regular stat calls.  */
+      if (argc)
+        reliable_homedir_inotify = 0;
 
       {
         struct sigaction sa;
