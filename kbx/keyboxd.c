@@ -204,11 +204,6 @@ static char *current_logfile;
  * alternative but portable stat based check.  */
 static int have_homedir_inotify;
 
-/* Depending on how keyboxd was started, the homedir inotify watch may
- * not be reliable.  This flag is set if we assume that inotify works
- * reliable.  */
-static int reliable_homedir_inotify;
-
 /* Number of active connections.  */
 static int active_connections;
 
@@ -254,7 +249,8 @@ static void kbxd_libgcrypt_progress_cb (void *data, const char *what,
 static void kbxd_init_default_ctrl (ctrl_t ctrl);
 static void kbxd_deinit_default_ctrl (ctrl_t ctrl);
 
-static void handle_connections (gnupg_fd_t listen_fd);
+static void handle_connections (gnupg_fd_t listen_fd,
+                                int reliable_homedir_inotify);
 static void check_own_socket (void);
 static int check_for_running_kbxd (int silent);
 
@@ -464,6 +460,8 @@ main (int argc, char **argv )
   int gpgconf_list = 0;
   int debug_wait = 0;
   struct assuan_malloc_hooks malloc_hooks;
+  int reliable_homedir_inotify = 0;
+
 
   early_system_init ();
 
@@ -846,7 +844,7 @@ main (int argc, char **argv )
       }
 
       log_info ("%s %s started\n", gpgrt_strusage(11), gpgrt_strusage(13));
-      handle_connections (fd);
+      handle_connections (fd, reliable_homedir_inotify);
       assuan_sock_close (fd);
     }
 
@@ -1300,7 +1298,7 @@ handle_tick (void)
 
   /* Check whether the homedir is still available.  */
   if (!shutdown_pending
-      && (!have_homedir_inotify || !reliable_homedir_inotify)
+      && !have_homedir_inotify
       && gnupg_stat (gnupg_homedir (), &statbuf) && errno == ENOENT)
     {
       shutdown_pending = 1;
@@ -1448,7 +1446,7 @@ start_connection_thread (void *arg)
 /* Connection handler loop.  Wait for connection requests and spawn a
  * thread after accepting a connection.  */
 static void
-handle_connections (gnupg_fd_t listen_fd)
+handle_connections (gnupg_fd_t listen_fd, int reliable_homedir_inotify)
 {
   gpg_error_t err;
   npth_attr_t tattr;
@@ -1503,7 +1501,7 @@ handle_connections (gnupg_fd_t listen_fd)
                   gpg_strerror (err));
     }
 
-  if (disable_check_own_socket)
+  if (!reliable_homedir_inotify)
     home_inotify_fd = -1;
   else if ((err = gnupg_inotify_watch_delete_self (&home_inotify_fd,
                                                    gnupg_homedir ())))

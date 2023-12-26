@@ -479,11 +479,6 @@ static pid_t parent_pid = (pid_t)(-1);
  * alternative but portable stat based check.  */
 static int have_homedir_inotify;
 
-/* Depending on how gpg-agent was started, the homedir inotify watch
- * may not be reliable.  This flag is set if we assume that inotify
- * works reliable.  */
-static int reliable_homedir_inotify;
-
 /* Number of active connections.  */
 static int active_connections;
 
@@ -533,7 +528,8 @@ static void agent_deinit_default_ctrl (ctrl_t ctrl);
 static void handle_connections (gnupg_fd_t listen_fd,
                                 gnupg_fd_t listen_fd_extra,
                                 gnupg_fd_t listen_fd_browser,
-                                gnupg_fd_t listen_fd_ssh);
+                                gnupg_fd_t listen_fd_ssh,
+                                int reliable_homedir_inotify);
 static int check_for_running_agent (int silent);
 #if CHECK_OWN_SOCKET_INTERVAL > 0
 static void *check_own_socket_thread (void *arg);
@@ -1097,6 +1093,7 @@ main (int argc, char **argv)
   int gpgconf_list = 0;
   gpg_error_t err;
   struct assuan_malloc_hooks malloc_hooks;
+  int reliable_homedir_inotify = 0;
 
   early_system_init ();
 
@@ -1594,7 +1591,7 @@ main (int argc, char **argv)
 
       log_info ("listening on: std=%d extra=%d browser=%d ssh=%d\n",
                 fd, fd_extra, fd_browser, fd_ssh);
-      handle_connections (fd, fd_extra, fd_browser, fd_ssh);
+      handle_connections (fd, fd_extra, fd_browser, fd_ssh, 1);
 #endif /*!HAVE_W32_SYSTEM*/
     }
   else if (!is_daemon)
@@ -1848,7 +1845,8 @@ main (int argc, char **argv)
         }
 
       log_info ("%s %s started\n", gpgrt_strusage(11), gpgrt_strusage(13) );
-      handle_connections (fd, fd_extra, fd_browser, fd_ssh);
+      handle_connections (fd, fd_extra, fd_browser, fd_ssh,
+                          reliable_homedir_inotify);
       assuan_sock_close (fd);
     }
 
@@ -2966,7 +2964,8 @@ static void
 handle_connections (gnupg_fd_t listen_fd,
                     gnupg_fd_t listen_fd_extra,
                     gnupg_fd_t listen_fd_browser,
-                    gnupg_fd_t listen_fd_ssh)
+                    gnupg_fd_t listen_fd_ssh,
+                    int reliable_homedir_inotify)
 {
   gpg_error_t err;
   npth_attr_t tattr;
@@ -3042,8 +3041,10 @@ handle_connections (gnupg_fd_t listen_fd,
                   gpg_strerror (err));
     }
 
-  if ((err = gnupg_inotify_watch_delete_self (&home_inotify_fd,
-                                              gnupg_homedir ())))
+  if (!reliable_homedir_inotify)
+    home_inotify_fd = -1;
+  else if ((err = gnupg_inotify_watch_delete_self (&home_inotify_fd,
+                                                   gnupg_homedir ())))
     {
       if (gpg_err_code (err) != GPG_ERR_NOT_SUPPORTED)
         log_info ("error enabling daemon termination by homedir removal: %s\n",
@@ -3064,7 +3065,7 @@ handle_connections (gnupg_fd_t listen_fd,
 #endif
 
   if ((HAVE_PARENT_PID_SUPPORT && parent_pid != (pid_t)(-1))
-      || (!have_homedir_inotify || !reliable_homedir_inotify))
+      || !have_homedir_inotify)
     {
       npth_t thread;
 
@@ -3462,7 +3463,7 @@ check_others_thread (void *arg)
 #endif /*HAVE_W32_SYSTEM*/
 
       /* Check whether the homedir is still available.  */
-      if ((!have_homedir_inotify || !reliable_homedir_inotify)
+      if (!have_homedir_inotify
           && gnupg_stat (homedir, &statbuf) && errno == ENOENT)
         problem_detected |= AGENT_PROBLEM_HOMEDIR_REMOVED;
     }
