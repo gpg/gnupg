@@ -160,7 +160,7 @@ endif
 module_tests = t-stringhelp t-timestuff \
                t-convert t-percent t-gettime t-sysutils t-sexputil \
 	       t-session-env t-openpgp-oid t-ssh-utils \
-	       t-mapstrings t-zb32 t-mbox-util t-iobuf t-strlist t-b64 \
+	       t-mapstrings t-zb32 t-mbox-util t-iobuf t-strlist \
 	       t-name-value t-ccparray t-recsel t-w32-cmdline t-exechelp
 
 if HAVE_W32_SYSTEM
@@ -210,7 +210,6 @@ t_zb32_LDADD = $(t_common_ldadd)
 t_mbox_util_LDADD = $(t_common_ldadd)
 t_iobuf_LDADD = $(t_common_ldadd)
 t_strlist_LDADD = $(t_common_ldadd)
-t_b64_LDADD = $(t_common_ldadd)
 t_name_value_LDADD = $(t_common_ldadd)
 t_ccparray_LDADD = $(t_common_ldadd)
 t_recsel_LDADD = $(t_common_ldadd)
