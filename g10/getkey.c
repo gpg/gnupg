@@ -3772,6 +3772,13 @@ finish_lookup (kbnode_t keyblock, unsigned int req_usage, int want_exact,
                   continue;
                 }
 
+              if (secret_key_avail < last_secret_key_avail)
+                {
+                  if (DBG_LOOKUP)
+                    log_debug ("\tskipping secret key with lower avail\n");
+                  continue;
+                }
+
               if (secret_key_avail > last_secret_key_avail)
                 {
                   /* Use this key.  */

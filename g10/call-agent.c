@@ -2226,7 +2226,14 @@ keyinfo_status_cb (void *opaque, const char *line)
 
 
 /* Ask the agent whether a secret key for the given public key is
-   available.  Returns 0 if not available.  Bigger value is preferred.  */
+ * available.  Returns 0 if not available.  Bigger value is preferred.
+ * Will never return a value less than 0.   Defined return values are:
+ *  0 := No key or error
+ *  1 := Key available
+ *  2 := Key available on a smartcard
+ *  3 := Key available and passphrase cached
+ *  4 := Key available on current smartcard
+ */
 int
 agent_probe_secret_key (ctrl_t ctrl, PKT_public_key *pk)
 {
@@ -2240,11 +2247,11 @@ agent_probe_secret_key (ctrl_t ctrl, PKT_public_key *pk)
 
   err = start_agent (ctrl, 0);
   if (err)
-    return err;
+    return 0;
 
   err = hexkeygrip_from_pk (pk, &hexgrip);
   if (err)
-    return err;
+    return 0;
 
   snprintf (line, sizeof line, "KEYINFO %s", hexgrip);
   xfree (hexgrip);
