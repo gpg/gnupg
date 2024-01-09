@@ -103,6 +103,7 @@ enum cmd_and_opt_values {
   oWithColons,
   oDryRun,
   oNoDetach,
+  oNoMount,
 
   oNoRandomSeedFile,
   oFakedSystemTime
@@ -137,6 +138,7 @@ static gpgrt_opt_t opts[] = {
   ARGPARSE_s_s (oLogFile, "log-file",  N_("|FILE|write log output to FILE")),
   ARGPARSE_s_n (oNoLogFile, "no-log-file", "@"),
   ARGPARSE_s_i (oLoggerFD, "logger-fd", "@"),
+  ARGPARSE_s_n (oNoMount, "no-mount", N_("stop right before running mount")),
 
   ARGPARSE_s_n (oDryRun, "dry-run", N_("do not make any changes")),
 
@@ -517,6 +519,8 @@ main (int argc, char **argv)
         case oNoLogFile: logfile = NULL; break;
 
         case oNoDetach: /*nodetach = 1; */break;
+
+        case oNoMount: opt.no_mount = 1; break;
 
         case oDebug:
           if (parse_debug_flag (pargs.r.ret_str, &opt.debug, debug_flags))

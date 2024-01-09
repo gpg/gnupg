@@ -220,7 +220,7 @@ mk_setup_area_prefix (size_t *r_length)
 }
 
 
-/* Create a new g13 styloe DM-Crypt container on devoce DEVNAME.  */
+/* Create a new g13 style DM-Crypt container on device DEVNAME.  */
 gpg_error_t
 sh_dmcrypt_create_container (ctrl_t ctrl, const char *devname, estream_t devfp)
 {
@@ -538,10 +538,11 @@ sh_dmcrypt_create_container (ctrl_t ctrl, const char *devname, estream_t devfp)
 
 
 /* Mount a DM-Crypt container on device DEVNAME taking keys and other
- * meta data from KEYBLOB.  */
+ * meta data from KEYBLOB.  If NOMOUNT is set the actual mount command
+ * is not run.  */
 gpg_error_t
 sh_dmcrypt_mount_container (ctrl_t ctrl, const char *devname,
-                            tupledesc_t keyblob)
+                            tupledesc_t keyblob, int nomount)
 {
   gpg_error_t err;
   char *targetname_abs = NULL;
@@ -696,8 +697,10 @@ sh_dmcrypt_mount_container (ctrl_t ctrl, const char *devname,
   xfree (result);
   result = NULL;
 
+  g13_status (ctrl, STATUS_PLAINDEV, targetname_abs, NULL);
+
   /* Mount if a mountpoint has been given.  */
-  if (ctrl->devti->mountpoint)
+  if (!nomount && ctrl->devti->mountpoint)
     {
       const char *argv[3];
 
@@ -766,32 +769,43 @@ sh_dmcrypt_umount_container (ctrl_t ctrl, const char *devname)
       goto leave;
     }
 
-  /* Run the regular umount command.  */
+  /* Run the regular umount command but first test with findmnt.  */
   {
-    const char *argv[2];
+    const char *argv[3];
 
     argv[0] = targetname_abs;
     argv[1] = NULL;
-    log_debug ("now running \"umount %s\"\n", targetname_abs);
-    err = gnupg_exec_tool ("/bin/umount", argv, NULL, &result, NULL);
-  }
-  if (err)
-    {
-      log_error ("error running umount: %s\n", gpg_strerror (err));
-      if (1)
-        {
-          /* Try to show some info about processes using the partition. */
-          const char *argv[3];
+    log_debug ("now running \"findmnt %s\"\n", targetname_abs);
+    err = gnupg_exec_tool ("/bin/findmnt", argv, NULL, &result, NULL);
 
-          argv[0] = "-mv";
-          argv[1] = targetname_abs;
-          argv[2] = NULL;
-          gnupg_exec_tool ("/bin/fuser", argv, NULL, &result, NULL);
-        }
-      goto leave;
-    }
-  if (result && *result)  /* (We should not see output to stdout).  */
-    log_info ("WARNING: umount returned data on stdout! (%s)\n", result);
+    if (err)
+      log_info ("Note: device was not mounted\n");
+    else
+      {
+        xfree (result);
+        result = NULL;
+
+        argv[0] = targetname_abs;
+        argv[1] = NULL;
+        log_debug ("now running \"umount %s\"\n", targetname_abs);
+        err = gnupg_exec_tool ("/bin/umount", argv, NULL, &result, NULL);
+        if (err)
+          {
+            log_error ("error running umount: %s\n", gpg_strerror (err));
+            if (1)
+              {
+                /* Try to show some info about processes using the partition. */
+                argv[0] = "-mv";
+                argv[1] = targetname_abs;
+                argv[2] = NULL;
+                gnupg_exec_tool ("/bin/fuser", argv, NULL, &result, NULL);
+              }
+            goto leave;
+          }
+        if (result && *result)  /* (We should not see output to stdout).  */
+          log_info ("WARNING: umount returned data on stdout! (%s)\n", result);
+      }
+  }
   xfree (result);
   result = NULL;
 

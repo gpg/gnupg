@@ -81,6 +81,8 @@ struct
   /* Name of the output file - FIXME: what is this?  */
   const char *outfile;
 
+  int no_mount; /* Stop right before mounting a device.  */
+
 } opt;
 
 

@@ -152,6 +152,7 @@ enum
     STATUS_TRUNCATED,
     STATUS_MOUNTPOINT,
     STATUS_BLOCKDEV,
+    STATUS_PLAINDEV,           /* The decrypted virtual device.  */
 
     STATUS_PINENTRY_LAUNCHED,
 

@@ -433,10 +433,15 @@ static gpg_error_t
 mount_status_cb (void *opaque, const char *line)
 {
   struct mount_parm_s *parm = opaque;
+  const char *s;
 
-  /* Nothing right now.  */
   (void)parm;
-  (void)line;
+
+  if ((s=has_leading_keyword (line, "PLAINDEV")))
+    {
+      if (opt.verbose || opt.no_mount)
+        log_info ("Device: %s\n", s);
+    }
 
   return 0;
 }
@@ -497,7 +502,10 @@ call_syshelp_run_mount (ctrl_t ctrl, int conttype, const char *mountpoint,
     {
       ref_tupledesc (tuples);
       parm.keyblob = get_tupledesc_data (tuples, &parm.keybloblen);
-      err = assuan_transact (ctx, "MOUNT dm-crypt",
+      err = assuan_transact (ctx,
+                             (opt.no_mount
+                              ? "MOUNT --no-mount dm-crypt"
+                              : "MOUNT dm-crypt"),
                              NULL, NULL,
                              mount_inq_cb, &parm,
                              mount_status_cb, &parm);
