@@ -3,6 +3,9 @@ Noteworthy changes in version 2.4.4 (unreleased)
 
   * gpgsm: Support ECDSA in de-vs compliance mode.  [T6802]
 
+  * dirmngr: Avoid starting a second instance on Windows via GPGME
+    based launching.  [T6833]
+
   * Fix garbled time output in non-English Windows.  [T6741]
 
   Release-info: https://dev.gnupg.org/T6578

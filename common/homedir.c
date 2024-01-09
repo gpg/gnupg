@@ -222,6 +222,10 @@ copy_dir_with_fixup (const char *newdir)
 {
   char *result = NULL;
   char *p;
+#ifdef HAVE_W32_SYSTEM
+  char *p0;
+  const char *s;
+#endif
 
   if (!*newdir)
     return NULL;
@@ -251,6 +255,29 @@ copy_dir_with_fixup (const char *newdir)
              && (*p == '/' || *p == '\\')
              && (p-1 > result && p[-1] != ':')) /* We keep "c:/". */
         *p-- = 0;
+    }
+
+  /* Hack to mitigate badly doubled backslashes.  */
+  s = result? result : newdir;
+  if (s[0] == '\\' && s[1] == '\\' && s[2] != '\\')
+    {
+      /* UNC (\\Servername\file) or Long UNC (\\?\Servername\file)
+       * Does not seem to be double quoted.  */
+    }
+  else if (strstr (s, "\\\\"))
+    {
+      /* Double quotes detected.  Fold them into one because that is
+       * what what Windows does.  This way we get a unique hash
+       * regardless of the number of doubled backslashes. */
+      if (!result)
+        result = xstrdup (newdir);
+      for (p0=p=result; *p; p++)
+        {
+          *p0++ = *p;
+          while (*p == '\\' && p[1] == '\\')
+            p++;
+        }
+      *p0 = 0;
     }
 
 #else /*!HAVE_W32_SYSTEM*/
