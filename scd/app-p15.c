@@ -91,7 +91,8 @@ typedef enum
     CARD_PRODUCT_DTRUST3,  /* D-Trust GmbH (bundesdruckerei.de) */
     CARD_PRODUCT_DTRUST4,
     CARD_PRODUCT_GENUA,    /* GeNUA mbH                         */
-    CARD_PRODUCT_NEXUS     /* Technology Nexus                  */
+    CARD_PRODUCT_NEXUS,    /* Technology Nexus                  */
+    CARD_PRODUCT_CVISION   /* Cryptovision GmbH                 */
   }
 card_product_t;
 
@@ -143,6 +144,8 @@ static struct
 #define IS_CARDOS_5(a) ((a)->app_local->card_type == CARD_TYPE_CARDOS_50 \
                         || (a)->app_local->card_type == CARD_TYPE_CARDOS_53 \
                         || (a)->app_local->card_type == CARD_TYPE_CARDOS_54)
+#define IS_STARCOS_3(a) ((a)->app_local->card_type == CARD_TYPE_STARCOS_32)
+
 
 /* The default PKCS-15 home DF */
 #define DEFAULT_HOME_DF 0x5015
@@ -532,8 +535,6 @@ struct app_local_s
 /*** Local prototypes.  ***/
 static gpg_error_t select_ef_by_path (app_t app, const unsigned short *path,
                                       size_t pathlen);
-static gpg_error_t select_df_by_path (app_t app, const unsigned short *path,
-                                      size_t pathlen);
 static gpg_error_t keygrip_from_prkdf (app_t app, prkdf_object_t prkdf);
 static gpg_error_t readcert_by_cdf (app_t app, cdf_object_t cdf,
                                     unsigned char **r_cert, size_t *r_certlen);
@@ -571,6 +572,7 @@ cardproduct2str (card_product_t cardproduct)
     case CARD_PRODUCT_DTRUST4: return "D-Trust 4.1/4.4";
     case CARD_PRODUCT_GENUA:   return "GeNUA";
     case CARD_PRODUCT_NEXUS:   return "Nexus";
+    case CARD_PRODUCT_CVISION: return "Cryptovison";
     }
   return "";
 }
@@ -803,7 +805,7 @@ select_by_path (app_t app, const unsigned short *path, size_t pathlen,
       log_debug ("%s: path=", __func__);
       for (j=0; j < pathlen; j++)
         log_printf ("%s%04hX", j? "/":"", path[j]);
-      log_printf ("%s\n",expect_df?" (DF requested)":"");
+      log_printf ("%s", expect_df?" (DF requested)":"");
       log_printf ("%s\n",app->app_local->direct_path_selection?" (direct)":"");
     }
 
@@ -867,11 +869,13 @@ select_ef_by_path (app_t app, const unsigned short *path, size_t pathlen)
 }
 
 
+#if 0 /* Currently not used.  */
 static gpg_error_t
 select_df_by_path (app_t app, const unsigned short *path, size_t pathlen)
 {
   return select_by_path (app, path, pathlen, 1);
 }
+#endif
 
 
 /* Parse a cert Id string (or a key Id string) and return the binary
@@ -3611,6 +3615,7 @@ read_p15_info (app_t app)
   gpg_error_t err;
   prkdf_object_t prkdf;
   unsigned int flag;
+  const char *manu;
 
   err = read_ef_tokeninfo (app);
   if (err)
@@ -3631,18 +3636,22 @@ read_p15_info (app_t app)
   release_lists (app);
 
   /* Set a product type from the manufacturer_id.  */
-  if (IS_CARDOS_5 (app) && app->app_local->manufacturer_id)
+  if (!(manu = app->app_local->manufacturer_id) || !*manu)
+    ; /* No manufacturer_id. */
+  else if (app->app_local->card_product)
+    ; /* Already set.  */
+  else if (IS_CARDOS_5 (app))
     {
-      const char *manu = app->app_local->manufacturer_id;
-
-      if (app->app_local->card_product)
-        ; /* Already set.  */
-      else if (!ascii_strcasecmp (manu, "GeNUA mbH"))
+      if (!ascii_strcasecmp (manu, "GeNUA mbH"))
         app->app_local->card_product = CARD_PRODUCT_GENUA;
       else if (!ascii_strcasecmp (manu, "Technology Nexus"))
         app->app_local->card_product = CARD_PRODUCT_NEXUS;
     }
-
+  else if (app->app_local->card_type == CARD_TYPE_STARCOS_32)
+    {
+      if (strstr (manu, "cryptovision"))
+        app->app_local->card_product = CARD_PRODUCT_CVISION;
+    }
 
   /* Read the ODF so that we know the location of all directory
      files. */
@@ -5053,11 +5062,18 @@ prepare_verify_pin (app_t app, const char *keyref,
         log_error ("p15: error selecting D-TRUST's AID for key %s: %s\n",
                    keyref, gpg_strerror (err));
     }
-  else if (prkdf && app->app_local->card_type == CARD_TYPE_STARCOS_32)
+  else if (app->app_local->card_product == CARD_PRODUCT_CVISION)
     {
-      err = select_df_by_path (app, prkdf->path, prkdf->pathlen);
+      /* According to our protocol analysis we need to select the
+       * PKCS#15 AID here.  The traces actually show that this is done
+       * two times but that looks more like a bug.  Before that the
+       * master file needs to be selected.  */
+      err = iso7816_select_mf (app_get_slot (app));
+      if (!err)
+        err = iso7816_select_application (app_get_slot (app),
+                                          pkcs15_aid, sizeof pkcs15_aid, 0);
       if (err)
-        log_error ("p15: error selecting file for key %s: %s\n",
+        log_error ("p15: error selecting PKCS#15 AID for key %s: %s\n",
                    keyref, gpg_strerror (err));
     }
   else if (prkdf)
@@ -5862,6 +5878,7 @@ do_decipher (app_t app, ctrl_t ctrl, const char *keyidstr,
   prkdf_object_t prkdf;    /* The private key object. */
   aodf_object_t aodf;      /* The associated authentication object. */
   int exmode, le_value, padind;
+  int i;
 
   (void)ctrl;
   (void)r_info;
@@ -5960,10 +5977,33 @@ do_decipher (app_t app, ctrl_t ctrl, const char *keyidstr,
                                              0xF3, 0x31, NULL, 0);
         }
     }
+  else if (prkdf->key_reference_valid && IS_STARCOS_3 (app))
+    {
+      unsigned char mse[9];
+
+      i = 0;
+      if (prkdf->is_ecc)
+        {
+          log_info ("Note: ECC is not yet implemented for Starcos 3 cards\n");
+          err = gpg_error (GPG_ERR_UNSUPPORTED_ALGORITHM);
+        }
+      else
+        {
+          mse[i++] = 0x84; /* Key reference.  */
+          mse[i++] = 1;
+          mse[i++] = prkdf->key_reference;
+          mse[i++] = 0x89; /* Algorithm reference (BCD encoded).  */
+          mse[i++] = 2;
+          mse[i++] = 0x11; /* RSA no padding (1 1 3 0).  */
+          mse[i++] = 0x30;
+          log_assert (i <= DIM(mse));
+          err = iso7816_manage_security_env (app_get_slot (app), 0x41, 0xB8,
+                                             mse, i);
+        }
+    }
   else if (prkdf->key_reference_valid)
     {
       unsigned char mse[9];
-      int i;
 
       /* Note: This works with CardOS but the D-Trust card has the
        * problem that the next created signature would be broken.  */
