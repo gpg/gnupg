@@ -1042,10 +1042,12 @@ get_revision_from_blurb (const char *blurb, int *r_len)
 static void
 show_version_gnupg (estream_t fp, const char *prefix)
 {
-  char *fname, *p;
+  char *fname, *p, *p0;
   size_t n;
   estream_t verfp;
-  char line[100];
+  char *line = NULL;
+  size_t line_len = 0;
+  ssize_t length;
 
   es_fprintf (fp, "%s%sGnuPG %s (%s)\n%s%s\n", prefix, *prefix?"":"* ",
               strusage (13), BUILD_REVISION, prefix, strusage (17));
@@ -1064,20 +1066,46 @@ show_version_gnupg (estream_t fp, const char *prefix)
           verfp = es_fopen (fname, "r");
           if (!verfp)
             es_fprintf (fp, "%s[VERSION file not found]\n", prefix);
-          else if (!es_fgets (line, sizeof line, verfp))
-            es_fprintf (fp, "%s[VERSION file is empty]\n", prefix);
           else
             {
-              trim_spaces (line);
-              for (p=line; *p; p++)
-                if (*p < ' ' || *p > '~' || *p == '[')
-                  *p = '?';
-              es_fprintf (fp, "%s%s\n", prefix, line);
+              int lnr = 0;
+
+              p0 = NULL;
+              while ((length = es_read_line (verfp, &line, &line_len, NULL))>0)
+                {
+                  lnr++;
+                  trim_spaces (line);
+                  if (lnr == 1 && *line != '[')
+                    {
+                      /* Old file format where we look only at the
+                       * first line.  */
+                      p0 = line;
+                      break;
+                    }
+                  else if (!strncmp (line, "version=", 8))
+                    {
+                      p0 = line + 8;
+                      break;
+                    }
+                }
+              if (length < 0 || es_ferror (verfp))
+                es_fprintf (fp, "%s[VERSION file read error]\n", prefix);
+              else if (p0)
+                {
+                  for (p=p0; *p; p++)
+                    if (*p < ' ' || *p > '~' || *p == '[')
+                      *p = '?';
+                  es_fprintf (fp, "%s%s\n", prefix, p0);
+                }
+              else
+                es_fprintf (fp, "%s[VERSION file is empty]\n", prefix);
+
+              es_fclose (verfp);
             }
-          es_fclose (verfp);
         }
       xfree (fname);
     }
+  xfree (line);
 
 #ifdef HAVE_W32_SYSTEM
   {
