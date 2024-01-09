@@ -1,5 +1,8 @@
-Noteworthy changes in version 2.2.42 (unreleased)
+Noteworthy changes in version 2.2.43 (unreleased)
 -------------------------------------------------
+
+  * dirmngr: Avoid starting a second instance on Windows via GPGME
+    based launching.  [T6833]
 
 
 Noteworthy changes in version 2.2.42 (2023-11-28)
