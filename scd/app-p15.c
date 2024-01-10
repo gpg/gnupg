@@ -5513,6 +5513,7 @@ do_sign (app_t app, ctrl_t ctrl, const char *keyidstr, int hashalgo,
   unsigned char oidbuf[64];
   size_t oidbuflen;
   size_t n;
+  int i;
   unsigned char *indata_buffer = NULL; /* Malloced helper.  */
 
   (void)ctrl;
@@ -5610,7 +5611,6 @@ do_sign (app_t app, ctrl_t ctrl, const char *keyidstr, int hashalgo,
     {
       unsigned int framelen;
       unsigned char *frame;
-      int i;
 
       framelen = (prkdf->keynbits+7) / 8;
       if (!framelen)
@@ -5684,6 +5684,23 @@ do_sign (app_t app, ctrl_t ctrl, const char *keyidstr, int hashalgo,
            * algo is used.  */
           memcpy (frame, indata, indatalen);
           framelen = indatalen;
+        }
+      else if (hashalgo && IS_STARCOS_3 (app)
+               && app->app_local->card_product != CARD_PRODUCT_CVISION)
+        {
+          /* For Starcos we need the plain hash w/o the prefix.  */
+          /* Note: This has never been tested because the cvision
+           * sample cards seem not to work this way.  */
+          if (indatalen != oidbuflen + digestlen
+              || memcmp (indata, oidbuf, oidbuflen))
+            {
+              log_error ("p15: non-matching input data for Starcos:"
+                         " hash=%d len=%zu\n", hashalgo, indatalen);
+              err = gpg_error (GPG_ERR_INV_VALUE);
+              goto leave;
+            }
+          framelen = indatalen - oidbuflen;
+          memcpy (frame, (const char*)indata + oidbuflen, framelen);
         }
       else
         {
@@ -5774,7 +5791,7 @@ do_sign (app_t app, ctrl_t ctrl, const char *keyidstr, int hashalgo,
       else
         {
           /* The D-TRUST Card 4.x doesn't support setting a security
-           * environment, at least as specified in the specs.  Insted a
+           * environment, at least as specified in the specs.  Instead a
            * predefined security environment has to be loaded depending on the
            * cipher and message digest used.  The spec states SE-ID 0x25 for
            * SHA256, 0x26 for SHA384 and 0x27 for SHA512, when using PKCS#1
@@ -5786,6 +5803,61 @@ do_sign (app_t app, ctrl_t ctrl, const char *keyidstr, int hashalgo,
            * Note: For PSS signatures, different values apply. */
             err = iso7816_manage_security_env (app_get_slot (app),
                                                0xf3, 0x25, NULL, 0);
+        }
+    }
+  else if (app->app_local->card_product == CARD_PRODUCT_CVISION)
+    {
+      /* I can't make the Starcos 3.2 work the correct way, so let's
+       * make them work in the same way the cryptovision product seems
+       * to do it: Use the plain RSA decryption instead.  */
+      unsigned char mse[9];
+
+      i = 0;
+      mse[i++] = 0x84; /* Key reference.  */
+      mse[i++] = 1;
+      mse[i++] = prkdf->key_reference;
+      mse[i++] = 0x89; /* Algorithm reference (BCD encoded).  */
+      mse[i++] = 2;
+      mse[i++] = 0x11; /* RSA no padding (1 1 3 0).  */
+      mse[i++] = 0x30;
+      log_assert (i <= DIM(mse));
+      err = iso7816_manage_security_env (app_get_slot (app), 0x41, 0xB8,
+                                         mse, i);
+    }
+  else if (prkdf->key_reference_valid && IS_STARCOS_3 (app))
+    {
+      unsigned char mse[9];
+
+      i = 0;
+      if (prkdf->is_ecc)
+        {
+          log_info ("Note: ECC is not yet implemented for Starcos 3 cards\n");
+          err = gpg_error (GPG_ERR_UNSUPPORTED_ALGORITHM);
+        }
+      else
+        {
+          err = 0;
+          mse[i++] = 0x84; /* Key reference.  */
+          mse[i++] = 1;
+          mse[i++] = prkdf->key_reference;
+          mse[i++] = 0x89; /* Algorithm reference (BCD encoded).  */
+          mse[i++] = 3;
+          mse[i++] = 0x13; /* RSA PKCS#1 (standard) (1 3 2 3).  */
+          mse[i++] = 0x23;
+          switch (hashalgo)
+            {
+            case GCRY_MD_SHA1:   mse[i++] = 0x10; break;
+            case GCRY_MD_RMD160: mse[i++] = 0x20; break;
+            case GCRY_MD_SHA256: mse[i++] = 0x30; break;
+            case GCRY_MD_SHA384: mse[i++] = 0x40; break;
+            case GCRY_MD_SHA512: mse[i++] = 0x50; break;
+            case GCRY_MD_SHA224: mse[i++] = 0x60; break;
+            default: err = gpg_error (GPG_ERR_DIGEST_ALGO); break;
+            }
+          log_assert (i <= DIM(mse));
+          if (!err)
+            err = iso7816_manage_security_env (app_get_slot (app), 0x41, 0xB6,
+                                               mse, i);
         }
     }
   else if (prkdf->key_reference_valid)
@@ -5817,9 +5889,14 @@ do_sign (app_t app, ctrl_t ctrl, const char *keyidstr, int hashalgo,
       le_value = 0;
     }
 
-  err = iso7816_compute_ds (app_get_slot (app),
+  if (app->app_local->card_product == CARD_PRODUCT_CVISION)
+    err = iso7816_decipher (app_get_slot (app),
                             exmode, indata, indatalen,
-                            le_value, outdata, outdatalen);
+                            le_value, 0, outdata, outdatalen);
+  else
+    err = iso7816_compute_ds (app_get_slot (app),
+                              exmode, indata, indatalen,
+                              le_value, outdata, outdatalen);
 
  leave:
   xfree (indata_buffer);
