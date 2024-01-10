@@ -176,8 +176,11 @@ static char *
 copy_dir_with_fixup (const char *newdir)
 {
   char *result = NULL;
-  char *p, *p0;
+  char *p;
+#ifdef HAVE_W32_SYSTEM
+  char *p0;
   const char *s;
+#endif
 
   if (!*newdir)
     return NULL;
