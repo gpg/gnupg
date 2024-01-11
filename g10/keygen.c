@@ -4079,7 +4079,7 @@ parse_revocation_key (const char *fname,
 
   pn++;
 
-  for(i=0;i<MAX_FINGERPRINT_LEN && *pn;i++,pn+=2)
+  for(i=0;i<MAX_FINGERPRINT_LEN && *pn && !spacep (pn);i++,pn+=2)
     {
       int c=hextobyte(pn);
       if(c==-1)

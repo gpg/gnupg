@@ -4638,9 +4638,10 @@ in the @option{--edit-key} menu.
 @item  Revoker: @var{algo}:@var{fpr} [sensitive]
 Add a designated revoker to the generated key.  Algo is the public key
 algorithm of the designated revoker (i.e. RSA=1, DSA=17, etc.)
-@var{fpr} is the fingerprint of the designated revoker.  The optional
-@samp{sensitive} flag marks the designated revoker as sensitive
-information.  Only v4 keys may be designated revokers.
+@var{fpr} is the fingerprint of the designated revoker.  @var{fpr} may
+not contain spaces or colons.  The optional @samp{sensitive} flag
+marks the designated revoker as sensitive information.  Only v4 and v5
+keys may be designated revokers.
 
 @item Keyserver: @var{string}
 This is an optional parameter that specifies the preferred keyserver
