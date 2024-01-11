@@ -1074,12 +1074,12 @@ main (int argc, char **argv)
 #if !defined(HAVE_W32_SYSTEM)
       if (!fname)
 	{
-	  es_fprintf (es_stderr, "usage: %s [options] lock|unlock NAME",
-                      GPGCONF_NAME);
+	  es_fprintf (es_stderr, "usage: %s --%slock NAME",
+                      GPGCONF_NAME, cmd==aDotlockUnlock?"un":"");
 	  es_putc ('\n', es_stderr);
-	  es_fputs (_("Need one NAME argument"), es_stderr);
+	  es_fputs ("Need name of file protected by the lock", es_stderr);
 	  es_putc ('\n', es_stderr);
-	  gpgconf_failure (GPG_ERR_USER_2);
+	  gpgconf_failure (GPG_ERR_SYNTAX);
 	}
       else
 	{

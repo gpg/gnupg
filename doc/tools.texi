@@ -387,11 +387,22 @@ daemons.  Note that as of now reload and kill have the same effect for
 Create a directory for sockets below /run/user or /var/run/user.  This
 is command is only required if a non default home directory is used
 and the /run based sockets shall be used.  For the default home
-directory GnUPG creates a directory on the fly.
+directory GnuPG creates a directory on the fly.
 
 @item --remove-socketdir
 @opindex remove-socketdir
 Remove a directory created with command @option{--create-socketdir}.
+
+@item --unlock @var{name}
+@itemx --lock @var{name}
+Remove a stale lock file hold for @file{file}.  The file is
+expected in the current GnuPG home directory.  This command is usually
+not required because GnuPG is able to detect and remove stale lock
+files.  Before using the command make sure that the file protected by
+the lock file is actually not in use.  The lock command may be used to
+lock an accidently removed lock file.  Note that the commands have no
+effect on Windows because the mere existence of a lock file does not
+mean that the lock is active.
 
 @end table
 
