@@ -113,7 +113,7 @@ help:
 	@echo 'Prepend TARGET with "git-" to build from GIT repos.'
 	@echo 'Prepend TARGET with "this-" to build from the source tarball.'
 	@echo 'Use STATIC=1 to build with statically linked libraries.'
-	@echo 'Use SELFCHECK=0 for a non-released version.'
+	@echo 'Use SELFCHECK=1 for additional check of the gnupg version.'
 	@echo 'Use CUSTOM_SWDB=1 for an already downloaded swdb.lst.'
 	@echo 'Use WIXPREFIX to provide the WIX binaries for the MSI package.'
 	@echo '    Using WIX also requires wine with installed wine mono.'
@@ -182,19 +182,17 @@ this-w32-source: check-tools
 	$(SPEEDOMAKE) TARGETOS=w32    WHAT=this  CUSTOM_SWDB=1 dist-source
 
 w32-release: check-tools
-	$(SPEEDOMAKE) TARGETOS=w32 WHAT=release     SELFCHECK=0 \
-                                                   installer-from-source
+	$(SPEEDOMAKE) TARGETOS=w32 WHAT=release   installer-from-source
 
 w32-msi-release: check-tools
-	$(SPEEDOMAKE) TARGETOS=w32 WHAT=release     SELFCHECK=0 \
+	$(SPEEDOMAKE) TARGETOS=w32 WHAT=release    \
                                    WITH_WIXLIB=1   installer-from-source
 
 w32-sign-installer: check-tools
-	$(SPEEDOMAKE) TARGETOS=w32 WHAT=release     SELFCHECK=0 \
-                                                   sign-installer
+	$(SPEEDOMAKE) TARGETOS=w32 WHAT=release    sign-installer
 
 w32-release-offline: check-tools
-	$(SPEEDOMAKE) TARGETOS=w32 WHAT=release     SELFCHECK=0 \
+	$(SPEEDOMAKE) TARGETOS=w32 WHAT=release     \
 	  CUSTOM_SWDB=1 pkgrep=${HOME}/b pkg10rep=${HOME}/b  \
 	  installer-from-source
 
@@ -213,8 +211,8 @@ CUSTOM_SWDB=0
 # Set to 1 to really download the swdb.
 UPD_SWDB=0
 
-# Set to 0 to skip the GnuPG version self-check
-SELFCHECK=1
+# Set to 1 to run an additional GnuPG version check
+SELFCHECK=0
 
 # Set to 1 to build with statically linked libraries.
 STATIC=0
@@ -644,6 +642,8 @@ speedo_pkg_gettext_make_dir = gettext-runtime
 # ---------
 
 all: all-speedo
+
+install: install-speedo
 
 report: report-speedo
 
@@ -1129,9 +1129,54 @@ ifneq ($(TARGETOS),w32)
 	 echo "rootdir = $(idir)" >>bin/gpgconf.ctl ;\
 	 echo "speedo: /*" ;\
 	 echo "speedo:  * Now copy $(idir)/ to the final location and" ;\
-	 echo "speedo:  * adjust $(idir)/bin/gpgconf.ctl accordingly." ;\
+	 echo "speedo:  * adjust $(idir)/bin/gpgconf.ctl accordingly" ;\
+	 echo "speedo:  * Or run:" ;\
+	 echo "speedo:  *   make -f build-aux/speedo.mk install SYSROOT=/somewhere" ;\
 	 echo "speedo:  */")
 endif
+
+# No dependencies for the install target; instead we test whether
+# some of the to be installed files are available.  This avoids
+# accidental rebuilds under a wrong account.
+install-speedo:
+ifneq ($(TARGETOS),w32)
+	@(set -e; \
+         cd "$(idir)"; \
+         if [ x"$$SYSROOT" = x ]; then \
+           echo "speedo: ERROR: SYSROOT has not been given";\
+           echo "speedo: Set SYSROOT to the desired install directory";\
+	   echo "speedo: Example:";\
+           echo "speedo:   make -f build-aux/speedo.mk install SYSROOT=/usr/local";\
+           exit 1;\
+         fi;\
+         if [ ! -d "$$SYSROOT"/bin ]; then if ! mkdir "$$SYSROOT"/bin; then \
+           echo "speedo: error creating target directory";\
+           exit 1;\
+         fi; fi;\
+         if ! touch "$$SYSROOT"/bin/gpgconf.ctl; then \
+           echo "speedo: Error writing $$SYSROOT/bin/gpgconf.ctl";\
+           echo "speedo: Please check the permissions";\
+           exit 1;\
+         fi;\
+         if [ ! -f bin/gpgconf.ctl ]; then \
+           echo "speedo: ERROR: Nothing to install";\
+           echo "speedo: Please run a build first";\
+	   echo "speedo: Example:";\
+           echo "speedo:   make -f build-aux/speedo.mk native";\
+           exit 1;\
+         fi;\
+         echo "speedo: Installing files to $$SYSROOT";\
+         find . -type f -executable \
+                -exec install -Dm 755 "{}" "$$SYSROOT/{}" \; ;\
+         find . -type f \! -executable \
+                -exec install -Dm 644 "{}" "$$SYSROOT/{}" \; ;\
+	 echo "sysconfdir = /etc"    > "$$SYSROOT"/bin/gpgconf.ctl ;\
+	 echo "rootdir = $$SYSROOT" >> "$$SYSROOT"/bin/gpgconf.ctl ;\
+         echo '/*' ;\
+         echo " * Installation to $$SYSROOT done" ;\
+	 echo ' */' )
+endif
+
 
 report-speedo: $(addprefix report-,$(speedo_build_list))
 
@@ -1408,4 +1453,4 @@ check-tools: $(stampdir)/stamp-directories
 # Mark phony targets
 #
 .PHONY: all all-speedo report-speedo clean-stamps clean-speedo installer \
-	w32_insthelpers check-tools clean-pkg-versions
+	w32_insthelpers check-tools clean-pkg-versions install-speedo install
