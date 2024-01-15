@@ -580,13 +580,7 @@ run_one_test (const char *name, const char *desc, const char *pass,
       ret = 0;
     }
 
-  if (result)
-    {
-      int i;
-      for (i=0; result[i]; i++)
-        gcry_mpi_release (result[i]);
-      gcry_free (result);
-    }
+  p12_parse_free_kparms (result);
   xfree (certstr);
   xfree (resulthash);
   xfree (curve);

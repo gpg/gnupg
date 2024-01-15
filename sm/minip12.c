@@ -168,6 +168,9 @@ struct p12_parse_ctx_s
 
   /* The private key as an MPI array.   */
   gcry_mpi_t *privatekey;
+
+  /* A second private key as an MPI array.   */
+  gcry_mpi_t *privatekey2;
 };
 
 
@@ -1248,6 +1251,7 @@ parse_shrouded_key_bag (struct p12_parse_ctx_s *ctx, tlv_parser_t tlv)
   int is_pbes2 = 0;
   int is_aes256 = 0;
   int digest_algo = GCRY_MD_SHA1;
+  gcry_mpi_t *privatekey;
 
   where = "shrouded_key_bag";
   if (opt_verbose)
@@ -1565,19 +1569,26 @@ parse_shrouded_key_bag (struct p12_parse_ctx_s *ctx, tlv_parser_t tlv)
   if (tlv_expect_sequence (tlv))
     goto bailout;
 
-  if (ctx->privatekey)
+  if (ctx->privatekey2)
     {
       err = gpg_error (GPG_ERR_DUP_VALUE);
-      log_error ("a private key has already been received\n");
+      log_error ("two private kesy have already been received\n");
       goto bailout;
     }
-  ctx->privatekey = gcry_calloc (10, sizeof *ctx->privatekey);
-  if (!ctx->privatekey)
+  privatekey = gcry_calloc (10, sizeof *privatekey);
+  if (!privatekey)
     {
       err = gpg_error_from_syserror ();
       log_error ("error allocating privatekey element array\n");
       goto bailout;
     }
+  if (ctx->privatekey)
+    {
+      log_info ("a private key has already been received - reading second\n");
+      ctx->privatekey2 = privatekey;
+    }
+  else
+    ctx->privatekey = privatekey;
 
   where = "shrouded_key_bag.reading.key-parameters";
   if (ctx->curve)  /* ECC case.  */
@@ -1600,7 +1611,7 @@ parse_shrouded_key_bag (struct p12_parse_ctx_s *ctx, tlv_parser_t tlv)
         goto bailout;
       if (opt_verbose > 1)
         log_printhex (data, datalen, "ecc q=");
-      err = gcry_mpi_scan (ctx->privatekey, GCRYMPI_FMT_USG,
+      err = gcry_mpi_scan (privatekey, GCRYMPI_FMT_USG,
                            data, datalen, NULL);
       if (err)
         {
@@ -1623,7 +1634,7 @@ parse_shrouded_key_bag (struct p12_parse_ctx_s *ctx, tlv_parser_t tlv)
             }
 
           err = tlv_expect_mpinteger (tlv, firstparam,
-                                      ctx->privatekey+keyelem_count);
+                                      privatekey+keyelem_count);
           if (firstparam && gpg_err_code (err) == GPG_ERR_FALSE)
             ; /* Ignore the first value iff it is zero. */
           else if (err)
@@ -1918,6 +1929,7 @@ p12_parse (const unsigned char *buffer, size_t length, const char *pw,
   size_t oidlen;
   int intval;
   unsigned int startlevel;
+  int i;
 
   *r_badpass = 0;
 
@@ -2037,6 +2049,15 @@ p12_parse (const unsigned char *buffer, size_t length, const char *pw,
   else
     gcry_free (ctx.curve);
 
+  /* We have no way yet to return the second private key.  */
+  if (ctx.privatekey2)
+    {
+      for (i=0; ctx.privatekey2[i]; i++)
+        gcry_mpi_release (ctx.privatekey2[i]);
+      gcry_free (ctx.privatekey2);
+      ctx.privatekey2 = NULL;
+    }
+
   return ctx.privatekey;
 
  bailout:
@@ -2050,12 +2071,17 @@ p12_parse (const unsigned char *buffer, size_t length, const char *pw,
              gpg_strerror (err));
   if (ctx.privatekey)
     {
-      int i;
-
       for (i=0; ctx.privatekey[i]; i++)
         gcry_mpi_release (ctx.privatekey[i]);
       gcry_free (ctx.privatekey);
       ctx.privatekey = NULL;
+    }
+  if (ctx.privatekey2)
+    {
+      for (i=0; ctx.privatekey2[i]; i++)
+        gcry_mpi_release (ctx.privatekey2[i]);
+      gcry_free (ctx.privatekey2);
+      ctx.privatekey2 = NULL;
     }
   tlv_parser_release (tlv);
   gcry_free (ctx.curve);
@@ -2063,6 +2089,22 @@ p12_parse (const unsigned char *buffer, size_t length, const char *pw,
     *r_curve = NULL;
   return NULL;
 }
+
+
+/* Free the parameters as returned by p12_parse.  */
+void
+p12_parse_free_kparms (gcry_mpi_t *kparms)
+{
+  int i;
+
+  if (kparms)
+    {
+      for (i=0; i < 8; i++)
+        gcry_mpi_release (kparms[i]);
+      gcry_free (kparms);
+    }
+}
+
 
 
 
