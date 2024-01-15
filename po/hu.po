@@ -4396,24 +4396,24 @@ msgstr " (alapértelmezés)"
 #, fuzzy, c-format
 #| msgid "   (%d) DSA (sign only)\n"
 msgid "  (%d) ECC (sign only)\n"
-msgstr "   (%d) DSA (csak aláírás)\n"
+msgstr "  (%d) DSA (csak aláírás)\n"
 
 #, fuzzy, c-format
 msgid "  (%d) ECC (set your own capabilities)%s\n"
-msgstr "   (%d) RSA (csak titkosítás)\n"
+msgstr "  (%d) RSA (csak titkosítás)\n"
 
 #, fuzzy, c-format
 #| msgid "   (%d) RSA (encrypt only)\n"
 msgid "  (%d) ECC (encrypt only)%s\n"
-msgstr "   (%d) RSA (csak titkosítás)\n"
+msgstr "  (%d) RSA (csak titkosítás)\n"
 
 #, fuzzy, c-format
 msgid "  (%d) Existing key%s\n"
-msgstr "   (%d) RSA (csak titkosítás)\n"
+msgstr "  (%d) RSA (csak titkosítás)\n"
 
 #, fuzzy, c-format
 msgid "  (%d) Existing key from card%s\n"
-msgstr "   (%d) RSA (csak titkosítás)\n"
+msgstr "  (%d) RSA (csak titkosítás)\n"
 
 #, fuzzy
 msgid "Enter the keygrip: "
@@ -11148,7 +11148,7 @@ msgstr ""
 
 #, fuzzy
 #~ msgid "  (%d) RSA (sign, encrypt and auth)\n"
-#~ msgstr "   (%d) RSA (aláírás és titkosítás)\n"
+#~ msgstr "  (%d) RSA (aláírás és titkosítás)\n"
 
 #~ msgid "%s: can't open: %s\n"
 #~ msgstr "%s-t nem tudom megnyitni: %s.\n"

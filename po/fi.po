@@ -4420,24 +4420,24 @@ msgstr " (oletusarvo)"
 #, fuzzy, c-format
 #| msgid "   (%d) DSA (sign only)\n"
 msgid "  (%d) ECC (sign only)\n"
-msgstr "   (%d) DSA (vain allekirjoitus)\n"
+msgstr "  (%d) DSA (vain allekirjoitus)\n"
 
 #, fuzzy, c-format
 msgid "  (%d) ECC (set your own capabilities)%s\n"
-msgstr "   (%d) RSA (vain salaus)\n"
+msgstr "  (%d) RSA (vain salaus)\n"
 
 #, fuzzy, c-format
 #| msgid "   (%d) RSA (encrypt only)\n"
 msgid "  (%d) ECC (encrypt only)%s\n"
-msgstr "   (%d) RSA (vain salaus)\n"
+msgstr "  (%d) RSA (vain salaus)\n"
 
 #, fuzzy, c-format
 msgid "  (%d) Existing key%s\n"
-msgstr "   (%d) RSA (vain salaus)\n"
+msgstr "  (%d) RSA (vain salaus)\n"
 
 #, fuzzy, c-format
 msgid "  (%d) Existing key from card%s\n"
-msgstr "   (%d) RSA (vain salaus)\n"
+msgstr "  (%d) RSA (vain salaus)\n"
 
 #, fuzzy
 msgid "Enter the keygrip: "
@@ -11195,7 +11195,7 @@ msgstr ""
 
 #, fuzzy
 #~ msgid "  (%d) RSA (sign, encrypt and auth)\n"
-#~ msgstr "   (%d) RSA (salaus ja allekirjoitus)\n"
+#~ msgstr "  (%d) RSA (salaus ja allekirjoitus)\n"
 
 #~ msgid "%s: can't open: %s\n"
 #~ msgstr "%s: ei voida avata kohdetta: %s\n"

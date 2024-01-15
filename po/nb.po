@@ -4282,7 +4282,7 @@ msgstr "  (%d) Nøkkel\n"
 #, fuzzy, c-format
 #| msgid "   (%d) Existing key from card\n"
 msgid "  (%d) Existing key from card%s\n"
-msgstr "   (%d) Nøkkel fra kort\n"
+msgstr "  (%d) Nøkkel fra kort\n"
 
 msgid "Enter the keygrip: "
 msgstr "Skriv inn nøkkelgrep: "

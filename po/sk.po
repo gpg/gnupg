@@ -4417,24 +4417,24 @@ msgstr "dešifrovať dáta (implicitne)"
 #, fuzzy, c-format
 #| msgid "   (%d) DSA (sign only)\n"
 msgid "  (%d) ECC (sign only)\n"
-msgstr "   (%d) DSA (len na podpis)\n"
+msgstr "  (%d) DSA (len na podpis)\n"
 
 #, fuzzy, c-format
 msgid "  (%d) ECC (set your own capabilities)%s\n"
-msgstr "   (%d) RSA (len na šifrovanie)\n"
+msgstr "  (%d) RSA (len na šifrovanie)\n"
 
 #, fuzzy, c-format
 #| msgid "   (%d) RSA (encrypt only)\n"
 msgid "  (%d) ECC (encrypt only)%s\n"
-msgstr "   (%d) RSA (len na šifrovanie)\n"
+msgstr "  (%d) RSA (len na šifrovanie)\n"
 
 #, fuzzy, c-format
 msgid "  (%d) Existing key%s\n"
-msgstr "   (%d) RSA (len na šifrovanie)\n"
+msgstr "  (%d) RSA (len na šifrovanie)\n"
 
 #, fuzzy, c-format
 msgid "  (%d) Existing key from card%s\n"
-msgstr "   (%d) RSA (len na šifrovanie)\n"
+msgstr "  (%d) RSA (len na šifrovanie)\n"
 
 #, fuzzy
 msgid "Enter the keygrip: "
@@ -11179,7 +11179,7 @@ msgstr ""
 
 #, fuzzy
 #~ msgid "  (%d) RSA (sign, encrypt and auth)\n"
-#~ msgstr "   (%d) RSA (pro šifrování a podpis)\n"
+#~ msgstr "  (%d) RSA (pro šifrování a podpis)\n"
 
 #~ msgid "%s: can't open: %s\n"
 #~ msgstr "%s: nemôžem otvoriť: %s\n"

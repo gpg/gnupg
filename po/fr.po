@@ -4465,7 +4465,7 @@ msgstr "  (%d) Clef existante\n"
 #, fuzzy, c-format
 #| msgid "   (%d) Existing key from card\n"
 msgid "  (%d) Existing key from card%s\n"
-msgstr "   (%d) Clef existante sur la carte\n"
+msgstr "  (%d) Clef existante sur la carte\n"
 
 msgid "Enter the keygrip: "
 msgstr "Entrez le keygrip : "

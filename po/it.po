@@ -4228,7 +4228,7 @@ msgstr " *predefinito*"
 
 #, c-format
 msgid "  (%d) ECC (sign only)\n"
-msgstr "   (%d) DSA (firma solo)\n"
+msgstr "  (%d) DSA (firma solo)\n"
 
 #, c-format
 msgid "  (%d) ECC (set your own capabilities)%s\n"
@@ -7286,7 +7286,7 @@ msgstr ""
 
 #, c-format
 msgid "   (%d) Existing key\n"
-msgstr "  (%d) Chiave esistente\n"
+msgstr "   (%d) Chiave esistente\n"
 
 #, c-format
 msgid "   (%d) Existing key from card\n"
@@ -7298,7 +7298,7 @@ msgstr "Azioni possibili per una chiave %s: \n"
 
 #, c-format
 msgid "   (%d) sign, encrypt\n"
-msgstr "    (%d) segno, cifra\n"
+msgstr "   (%d) segno, cifra\n"
 
 #, c-format
 msgid "   (%d) sign\n"

@@ -4245,11 +4245,11 @@ msgstr "  (%d) ECC (nur verschlüsseln)%s\n"
 
 #, c-format
 msgid "  (%d) Existing key%s\n"
-msgstr "   (%d) Vorhandener Schlüssel%s\n"
+msgstr "  (%d) Vorhandener Schlüssel%s\n"
 
 #, c-format
 msgid "  (%d) Existing key from card%s\n"
-msgstr "   (%d) Vorhandener Schlüssel auf der Karte%s\n"
+msgstr "  (%d) Vorhandener Schlüssel auf der Karte%s\n"
 
 msgid "Enter the keygrip: "
 msgstr "Geben Sie den \"Keygrip\" ein: "
@@ -9406,7 +9406,7 @@ msgstr "Verwaltung der Kommandohistorie"
 #~ msgstr "Werte das Vertrauen zu Signaturen durch gültige PKA-Daten auf"
 
 #~ msgid "   (%d) ECC and ECC\n"
-#~ msgstr "  (%d) ECC und ECC\n"
+#~ msgstr "   (%d) ECC und ECC\n"
 
 #~ msgid "honor the PKA record set on a key when retrieving keys"
 #~ msgstr "Die im Schlüssel enthaltenen PKA-Daten beim Schlüsselholen beachten"

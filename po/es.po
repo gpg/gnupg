@@ -4297,22 +4297,22 @@ msgstr "  (%d) ECC (sólo firmar)\n"
 #, fuzzy, c-format
 #| msgid "  (%d) ECC (set your own capabilities)\n"
 msgid "  (%d) ECC (set your own capabilities)%s\n"
-msgstr "   (%d) ECC (permite elegir capacidades)\n"
+msgstr "  (%d) ECC (permite elegir capacidades)\n"
 
 #, fuzzy, c-format
 #| msgid "  (%d) ECC (encrypt only)\n"
 msgid "  (%d) ECC (encrypt only)%s\n"
-msgstr "   (%d) ECC (sólo cifrar)\n"
+msgstr "  (%d) ECC (sólo cifrar)\n"
 
 #, fuzzy, c-format
 #| msgid "  (%d) Existing key\n"
 msgid "  (%d) Existing key%s\n"
-msgstr "   (%d) Clave existente\n"
+msgstr "  (%d) Clave existente\n"
 
 #, fuzzy, c-format
 #| msgid "   (%d) Existing key from card\n"
 msgid "  (%d) Existing key from card%s\n"
-msgstr "   (%d) Clave existente de la tarjeta\n"
+msgstr "  (%d) Clave existente de la tarjeta\n"
 
 msgid "Enter the keygrip: "
 msgstr "Introduzca keygrip: "

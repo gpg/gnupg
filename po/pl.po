@@ -4273,22 +4273,22 @@ msgstr ""
 
 #, c-format
 msgid "  (%d) ECC (sign only)\n"
-msgstr "   (%d) ECC (tylko do podpisywania)\n"
+msgstr "  (%d) ECC (tylko do podpisywania)\n"
 
 #, fuzzy, c-format
 #| msgid "  (%d) ECC (set your own capabilities)\n"
 msgid "  (%d) ECC (set your own capabilities)%s\n"
-msgstr "   (%d) ECC (możliwości do ustawienia)\n"
+msgstr "  (%d) ECC (możliwości do ustawienia)\n"
 
 #, fuzzy, c-format
 #| msgid "  (%d) ECC (encrypt only)\n"
 msgid "  (%d) ECC (encrypt only)%s\n"
-msgstr "   (%d) ECC (tylko do szyfrowania)\n"
+msgstr "  (%d) ECC (tylko do szyfrowania)\n"
 
 #, fuzzy, c-format
 #| msgid "  (%d) Existing key\n"
 msgid "  (%d) Existing key%s\n"
-msgstr "   (%d) Istniejący klucz\n"
+msgstr "  (%d) Istniejący klucz\n"
 
 #, fuzzy, c-format
 #| msgid "  (%d) Existing key from card\n"

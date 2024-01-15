@@ -4464,17 +4464,17 @@ msgstr "(implicit)"
 #, fuzzy, c-format
 #| msgid "   (%d) DSA (sign only)\n"
 msgid "  (%d) ECC (sign only)\n"
-msgstr "   (%d) DSA (numai semnare)\n"
+msgstr "  (%d) DSA (numai semnare)\n"
 
 #, fuzzy, c-format
 #| msgid "   (%d) DSA (set your own capabilities)\n"
 msgid "  (%d) ECC (set your own capabilities)%s\n"
-msgstr "   (%d) DSA (setează singur capabilităţile)\n"
+msgstr "  (%d) DSA (setează singur capabilităţile)\n"
 
 #, fuzzy, c-format
 #| msgid "   (%d) RSA (encrypt only)\n"
 msgid "  (%d) ECC (encrypt only)%s\n"
-msgstr "   (%d) RSA (numai cifrare)\n"
+msgstr "  (%d) RSA (numai cifrare)\n"
 
 #, fuzzy, c-format
 msgid "  (%d) Existing key%s\n"

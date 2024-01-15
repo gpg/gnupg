@@ -1585,11 +1585,11 @@ msgstr "Silakan pilih kunci yang anda inginkan:\n"
 
 #, fuzzy, c-format
 msgid "   (%d) RSA\n"
-msgstr "  (%d) RSA (hanya menandai)\n"
+msgstr "   (%d) RSA (hanya menandai)\n"
 
 #, fuzzy, c-format
 msgid "   (%d) ECC\n"
-msgstr "  (%d) DSA dan ElGamal (baku)\n"
+msgstr "   (%d) DSA dan ElGamal (baku)\n"
 
 msgid "Invalid selection.\n"
 msgstr "Pilihan tidak valid.\n"
@@ -4360,43 +4360,43 @@ msgstr ""
 
 #, fuzzy, c-format
 msgid "   (%d) RSA and RSA%s\n"
-msgstr "  (%d) DSA dan ElGamal (baku)\n"
+msgstr "   (%d) DSA dan ElGamal (baku)\n"
 
 #, fuzzy, c-format
 msgid "   (%d) DSA and Elgamal%s\n"
-msgstr "  (%d) DSA dan ElGamal (baku)\n"
+msgstr "   (%d) DSA dan ElGamal (baku)\n"
 
 #, fuzzy, c-format
 #| msgid "   (%d) DSA (sign only)\n"
 msgid "   (%d) DSA (sign only)%s\n"
-msgstr "  (%d) DSA (hanya menandai)\n"
+msgstr "   (%d) DSA (hanya menandai)\n"
 
 #, fuzzy, c-format
 #| msgid "   (%d) RSA (sign only)\n"
 msgid "   (%d) RSA (sign only)%s\n"
-msgstr "  (%d) RSA (hanya menandai)\n"
+msgstr "   (%d) RSA (hanya menandai)\n"
 
 #, fuzzy, c-format
 msgid "   (%d) Elgamal (encrypt only)%s\n"
-msgstr "  (%d) ElGamal (hanya enkripsi)\n"
+msgstr "   (%d) ElGamal (hanya enkripsi)\n"
 
 #, fuzzy, c-format
 #| msgid "   (%d) RSA (encrypt only)\n"
 msgid "   (%d) RSA (encrypt only)%s\n"
-msgstr "  (%d) RSA (hanya enkripsi)\n"
+msgstr "   (%d) RSA (hanya enkripsi)\n"
 
 #, fuzzy, c-format
 msgid "   (%d) DSA (set your own capabilities)%s\n"
-msgstr "  (%d) RSA (hanya enkripsi)\n"
+msgstr "   (%d) RSA (hanya enkripsi)\n"
 
 #, fuzzy, c-format
 msgid "   (%d) RSA (set your own capabilities)%s\n"
-msgstr "  (%d) RSA (hanya enkripsi)\n"
+msgstr "   (%d) RSA (hanya enkripsi)\n"
 
 #, fuzzy, c-format
 #| msgid "   (%d) ElGamal (sign and encrypt)\n"
 msgid "   (%d) ECC (sign and encrypt)%s\n"
-msgstr "  (%d) ElGamal (tandai dan enkripsi)\n"
+msgstr "   (%d) ElGamal (tandai dan enkripsi)\n"
 
 #, fuzzy
 #| msgid " (default)"
@@ -7461,7 +7461,7 @@ msgstr ""
 
 #, fuzzy, c-format
 msgid "   (%d) Existing key\n"
-msgstr "  (%d) RSA (hanya enkripsi)\n"
+msgstr "   (%d) RSA (hanya enkripsi)\n"
 
 #, c-format
 msgid "   (%d) Existing key from card\n"
@@ -7477,11 +7477,11 @@ msgstr "   (%d) RSA (tandai dan enkripsi)\n"
 
 #, fuzzy, c-format
 msgid "   (%d) sign\n"
-msgstr "  (%d) DSA (hanya menandai)\n"
+msgstr "   (%d) DSA (hanya menandai)\n"
 
 #, fuzzy, c-format
 msgid "   (%d) encrypt\n"
-msgstr "  (%d) RSA (hanya enkripsi)\n"
+msgstr "   (%d) RSA (hanya enkripsi)\n"
 
 msgid "Enter the X.509 subject name: "
 msgstr ""
@@ -9502,7 +9502,7 @@ msgstr ""
 
 #, fuzzy
 #~ msgid "   (%d) ECC and ECC\n"
-#~ msgstr "  (%d) DSA dan ElGamal (baku)\n"
+#~ msgstr "   (%d) DSA dan ElGamal (baku)\n"
 
 #, fuzzy
 #~ msgid "run without asking a user"
@@ -11140,7 +11140,7 @@ msgstr ""
 
 #, fuzzy
 #~ msgid "   (%d) RSA (auth only)\n"
-#~ msgstr "  (%d) RSA (hanya menandai)\n"
+#~ msgstr "   (%d) RSA (hanya menandai)\n"
 
 #, fuzzy
 #~ msgid "   (%d) RSA (sign and auth)\n"
@@ -11148,11 +11148,11 @@ msgstr ""
 
 #, fuzzy
 #~ msgid "   (%d) RSA (encrypt and auth)\n"
-#~ msgstr "  (%d) RSA (hanya enkripsi)\n"
+#~ msgstr "   (%d) RSA (hanya enkripsi)\n"
 
 #, fuzzy
 #~ msgid "  (%d) RSA (sign, encrypt and auth)\n"
-#~ msgstr "   (%d) RSA (tandai dan enkripsi)\n"
+#~ msgstr "  (%d) RSA (tandai dan enkripsi)\n"
 
 #~ msgid "%s: can't open: %s\n"
 #~ msgstr "%s: tidak dapat membuka: %s\n"

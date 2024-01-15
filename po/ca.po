@@ -4535,24 +4535,24 @@ msgstr " (predeterminat)"
 #, fuzzy, c-format
 #| msgid "   (%d) DSA (sign only)\n"
 msgid "  (%d) ECC (sign only)\n"
-msgstr "   (%d) DSA (només signar)\n"
+msgstr "  (%d) DSA (només signar)\n"
 
 #, fuzzy, c-format
 msgid "  (%d) ECC (set your own capabilities)%s\n"
-msgstr "   (%d) DSA (només signar)\n"
+msgstr "  (%d) DSA (només signar)\n"
 
 #, fuzzy, c-format
 #| msgid "   (%d) RSA (encrypt only)\n"
 msgid "  (%d) ECC (encrypt only)%s\n"
-msgstr "   (%d) RSA (només xifrar)\n"
+msgstr "  (%d) RSA (només xifrar)\n"
 
 #, fuzzy, c-format
 msgid "  (%d) Existing key%s\n"
-msgstr "   (%d) RSA (només xifrar)\n"
+msgstr "  (%d) RSA (només xifrar)\n"
 
 #, fuzzy, c-format
 msgid "  (%d) Existing key from card%s\n"
-msgstr "   (%d) RSA (només xifrar)\n"
+msgstr "  (%d) RSA (només xifrar)\n"
 
 #, fuzzy
 msgid "Enter the keygrip: "

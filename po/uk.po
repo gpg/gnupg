@@ -4335,12 +4335,12 @@ msgstr "  (%d) ECC (лише шифрування)\n"
 #, fuzzy, c-format
 #| msgid "  (%d) Existing key\n"
 msgid "  (%d) Existing key%s\n"
-msgstr "   (%d) Вже записаний ключ\n"
+msgstr "  (%d) Вже записаний ключ\n"
 
 #, fuzzy, c-format
 #| msgid "   (%d) Existing key from card\n"
 msgid "  (%d) Existing key from card%s\n"
-msgstr "   (%d) Вже записаний ключ з картки\n"
+msgstr "  (%d) Вже записаний ключ з картки\n"
 
 msgid "Enter the keygrip: "
 msgstr "Вкажіть keygrip: "

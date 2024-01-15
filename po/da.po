@@ -4553,27 +4553,27 @@ msgstr ""
 #, fuzzy, c-format
 #| msgid "   (%d) DSA (sign only)\n"
 msgid "  (%d) ECC (sign only)\n"
-msgstr "   (%d) DSA (kun underskriv)\n"
+msgstr "  (%d) DSA (kun underskriv)\n"
 
 #, fuzzy, c-format
 #| msgid "   (%d) DSA (set your own capabilities)\n"
 msgid "  (%d) ECC (set your own capabilities)%s\n"
-msgstr "   (%d) DSA (angiv dine egne evner)\n"
+msgstr "  (%d) DSA (angiv dine egne evner)\n"
 
 #, fuzzy, c-format
 #| msgid "   (%d) RSA (encrypt only)\n"
 msgid "  (%d) ECC (encrypt only)%s\n"
-msgstr "   (%d) RSA (kun krypter)\n"
+msgstr "  (%d) RSA (kun krypter)\n"
 
 #, fuzzy, c-format
 #| msgid "   (%d) Existing key\n"
 msgid "  (%d) Existing key%s\n"
-msgstr "   (%d) Eksisterende nøgle\n"
+msgstr "  (%d) Eksisterende nøgle\n"
 
 #, fuzzy, c-format
 #| msgid "   (%d) Existing key from card\n"
 msgid "  (%d) Existing key from card%s\n"
-msgstr "   (%d) Eksisterende nøgle fra kort\n"
+msgstr "  (%d) Eksisterende nøgle fra kort\n"
 
 # key grip
 # chiefly  ( US ) See also grip the person in charge of moving and setting up camera

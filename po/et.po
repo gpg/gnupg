@@ -4391,24 +4391,24 @@ msgstr " (vaikimisi)"
 #, fuzzy, c-format
 #| msgid "   (%d) DSA (sign only)\n"
 msgid "  (%d) ECC (sign only)\n"
-msgstr "   (%d) DSA (ainult allkirjastamiseks)\n"
+msgstr "  (%d) DSA (ainult allkirjastamiseks)\n"
 
 #, fuzzy, c-format
 msgid "  (%d) ECC (set your own capabilities)%s\n"
-msgstr "   (%d) RSA (ainult krüpteerimiseks)\n"
+msgstr "  (%d) RSA (ainult krüpteerimiseks)\n"
 
 #, fuzzy, c-format
 #| msgid "   (%d) RSA (encrypt only)\n"
 msgid "  (%d) ECC (encrypt only)%s\n"
-msgstr "   (%d) RSA (ainult krüpteerimiseks)\n"
+msgstr "  (%d) RSA (ainult krüpteerimiseks)\n"
 
 #, fuzzy, c-format
 msgid "  (%d) Existing key%s\n"
-msgstr "   (%d) RSA (ainult krüpteerimiseks)\n"
+msgstr "  (%d) RSA (ainult krüpteerimiseks)\n"
 
 #, fuzzy, c-format
 msgid "  (%d) Existing key from card%s\n"
-msgstr "   (%d) RSA (ainult krüpteerimiseks)\n"
+msgstr "  (%d) RSA (ainult krüpteerimiseks)\n"
 
 #, fuzzy
 msgid "Enter the keygrip: "
@@ -11089,7 +11089,7 @@ msgstr ""
 
 #, fuzzy
 #~ msgid "  (%d) RSA (sign, encrypt and auth)\n"
-#~ msgstr "   (%d) RSA (allkirjastamiseks ja krüptimiseks)\n"
+#~ msgstr "  (%d) RSA (allkirjastamiseks ja krüptimiseks)\n"
 
 #~ msgid "%s: can't open: %s\n"
 #~ msgstr "%s: ei õnnestu avada: %s\n"
