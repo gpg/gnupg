@@ -634,10 +634,12 @@ cmd_marktrusted (assuan_context_t ctx, char *line)
 static const char hlp_havekey[] =
   "HAVEKEY <hexstrings_with_keygrips>\n"
   "HAVEKEY --list[=<limit>]\n"
+  "HAVEKEY --info <hexkeygrip>\n"
   "\n"
   "Return success if at least one of the secret keys with the given\n"
   "keygrips is available.  With --list return all available keygrips\n"
-  "as binary data; with <limit> bail out at this number of keygrips";
+  "as binary data; with <limit> bail out at this number of keygrips.\n"
+  "In --info mode check just one keygrip.";
 static gpg_error_t
 cmd_havekey (assuan_context_t ctx, char *line)
 {
@@ -645,7 +647,8 @@ cmd_havekey (assuan_context_t ctx, char *line)
   gpg_error_t err;
   unsigned char grip[20];
   char *p;
-  int list_mode;  /* Less than 0 for no limit.  */
+  int list_mode = 0;  /* Less than 0 for no limit.  */
+  int info_mode = 0;
   int counter;
   char *dirname;
   gnupg_dir_t dir;
@@ -653,15 +656,46 @@ cmd_havekey (assuan_context_t ctx, char *line)
   char hexgrip[41];
   struct card_key_info_s *keyinfo_on_cards, *l;
 
-  if (has_option_name (line, "--list"))
+  if (has_option (line, "--info"))
+    info_mode = 1;
+  else if (has_option_name (line, "--list"))
     {
       if ((p = option_value (line, "--list")))
 	list_mode = atoi (p);
       else
 	list_mode = -1;
     }
-  else
-    list_mode = 0;
+
+  line = skip_options (line);
+
+
+  if (info_mode)
+    {
+      int keytype;
+      const char *infostring;
+
+      ctrl = assuan_get_pointer (ctx);
+
+      err = parse_keygrip (ctx, line, grip);
+      if (err)
+        goto leave;
+
+      err = agent_key_info_from_file (ctrl, grip, &keytype, NULL, NULL);
+      if (err)
+        goto leave;
+
+      switch (keytype)
+        {
+        case PRIVATE_KEY_CLEAR:
+        case PRIVATE_KEY_OPENPGP_NONE: infostring = "clear";       break;
+        case PRIVATE_KEY_PROTECTED:    infostring = "protected";   break;
+        case PRIVATE_KEY_SHADOWED:     infostring = "shadowed";    break;
+        default:                       infostring = "unknown";    break;
+        }
+
+      err = agent_write_status (ctrl, "KEYFILEINFO", infostring, NULL);
+      goto leave;
+    }
 
 
   if (!list_mode)
