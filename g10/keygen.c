@@ -4220,12 +4220,13 @@ proc_parameter_file (ctrl_t ctrl, struct para_data_s *para, const char *fname,
       if (!err)
 	{
 	  /* Default to algo capabilities if subkey-usage is not
-	     provided */
+	     provided.  Take care not to include RENC. */
 	  r = xmalloc_clear (sizeof(*r));
 	  r->key = pSUBKEYUSAGE;
 	  r->u.usage = (is_default
                         ? PUBKEY_USAGE_ENC
-                        : openpgp_pk_algo_usage (algo));
+                        : (openpgp_pk_algo_usage (algo)
+                           & ~PUBKEY_USAGE_RENC)       );
           append_to_parameter (para, r);
 	}
       else if (err == -1)
