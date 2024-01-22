@@ -40,7 +40,7 @@
 #endif
 
 
-static gpg_error_t read_key_file (const unsigned char *grip,
+static gpg_error_t read_key_file (ctrl_t ctrl, const unsigned char *grip,
                                   gcry_sexp_t *result, nvc_t *r_keymeta,
                                   char **r_orig_key_value);
 static gpg_error_t is_shadowed_key (gcry_sexp_t s_skey);
@@ -71,6 +71,30 @@ fname_from_keygrip (const unsigned char *grip, int for_new)
   return make_filename_try (gnupg_homedir (), GNUPG_PRIVATE_KEYS_DIR,
                             hexgrip, NULL);
 }
+
+
+/* Helper until we have a "wipe" mode flag in es_fopen.  */
+static void
+wipe_and_fclose (estream_t fp)
+{
+  void *blob;
+  size_t blob_size;
+
+  if (!fp)
+    ;
+  else if (es_fclose_snatch (fp, &blob, &blob_size))
+    {
+      log_error ("error wiping buffer during fclose\n");
+      es_fclose (fp);
+    }
+  else if (blob)
+    {
+      wipememory (blob, blob_size);
+      gpgrt_free (blob);
+    }
+}
+
+
 
 
 /* Replace all linefeeds in STRING by "%0A" and return a new malloced
@@ -110,7 +134,8 @@ linefeed_to_percent0A (const char *string)
  * TIMESTAMP is not zero and the key does not yet exists it will be
  * recorded as creation date.  */
 gpg_error_t
-agent_write_private_key (const unsigned char *grip,
+agent_write_private_key (ctrl_t ctrl,
+                         const unsigned char *grip,
                          const void *buffer, size_t length, int force,
                          const char *serialno, const char *keyref,
                          const char *dispserialno,
@@ -120,7 +145,7 @@ agent_write_private_key (const unsigned char *grip,
   char *fname = NULL;
   char *tmpfname = NULL;
   estream_t fp = NULL;
-  int newkey;
+  int newkey = 0;
   nvc_t pk = NULL;
   gcry_sexp_t key = NULL;
   int removetmp = 0;
@@ -134,11 +159,13 @@ agent_write_private_key (const unsigned char *grip,
   const char *s;
   int force_modify = 0;
 
-  fname = fname_from_keygrip (grip, 0);
+  fname = (ctrl->ephemeral_mode
+           ? xtrystrdup ("[ephemeral key store]")
+           : fname_from_keygrip (grip, 0));
   if (!fname)
     return gpg_error_from_syserror ();
 
-  err = read_key_file (grip, &key, &pk, &orig_key_value);
+  err = read_key_file (ctrl, grip, &key, &pk, &orig_key_value);
   if (err)
     {
       if (gpg_err_code (err) == GPG_ERR_ENOENT)
@@ -289,43 +316,99 @@ agent_write_private_key (const unsigned char *grip,
       goto leave;
     }
 
-  /* Create a temporary file for writing.  */
-  tmpfname = fname_from_keygrip (grip, 1);
-  fp = tmpfname ? es_fopen (tmpfname, "wbx,mode=-rw") : NULL;
-  if (!fp)
+  if (ctrl->ephemeral_mode)
     {
-      err = gpg_error_from_syserror ();
-      log_error ("can't create '%s': %s\n", tmpfname, gpg_strerror (err));
-      goto leave;
-    }
+      ephemeral_private_key_t ek;
+      void *blob;
+      size_t blobsize;
 
-  err = nvc_write (pk, fp);
-  if (!err && es_fflush (fp))
-    err = gpg_error_from_syserror ();
-  if (err)
-    {
-      log_error ("error writing '%s': %s\n", tmpfname, gpg_strerror (err));
-      removetmp = 1;
-      goto leave;
-    }
+      for (ek = ctrl->ephemeral_keys; ek; ek = ek->next)
+        if (!memcmp (ek->grip, grip, KEYGRIP_LEN))
+          break;
+      if (!ek)
+        {
+          ek = xtrycalloc (1, sizeof *ek);
+          if (!ek)
+            {
+              err = gpg_error_from_syserror ();
+              goto leave;
+            }
+          memcpy (ek->grip, grip, KEYGRIP_LEN);
+          ek->next = ctrl->ephemeral_keys;
+          ctrl->ephemeral_keys = ek;
+        }
 
-  if (es_fclose (fp))
-    {
-      err = gpg_error_from_syserror ();
-      log_error ("error closing '%s': %s\n", tmpfname, gpg_strerror (err));
-      removetmp = 1;
-      goto leave;
+      fp = es_fopenmem (0, "wb,wipe");
+      if (!fp)
+        {
+          err = gpg_error_from_syserror ();
+          log_error ("can't open memory stream: %s\n", gpg_strerror (err));
+          goto leave;
+        }
+
+      err = nvc_write (pk, fp);
+      if (err)
+        {
+          log_error ("error writing to memory stream: %s\n",gpg_strerror (err));
+          goto leave;
+        }
+
+      if (es_fclose_snatch (fp, &blob, &blobsize) || !blob)
+        {
+          err = gpg_error_from_syserror ();
+          log_error ("error getting memory stream buffer: %s\n",
+                     gpg_strerror (err));
+          /* Closing right away so that we don't try another snatch in
+           * the cleanup.  */
+          es_fclose (fp);
+          fp = NULL;
+          goto leave;
+        }
+      fp = NULL;
+      xfree (ek->keybuf);
+      ek->keybuf = blob;
+      ek->keybuflen = blobsize;
     }
   else
-    fp = NULL;
-
-  err = gnupg_rename_file (tmpfname, fname, &blocksigs);
-  if (err)
     {
-      err = gpg_error_from_syserror ();
-      log_error ("error renaming '%s': %s\n", tmpfname, gpg_strerror (err));
-      removetmp = 1;
-      goto leave;
+      /* Create a temporary file for writing.  */
+      tmpfname = fname_from_keygrip (grip, 1);
+      fp = tmpfname ? es_fopen (tmpfname, "wbx,mode=-rw") : NULL;
+      if (!fp)
+        {
+          err = gpg_error_from_syserror ();
+          log_error ("can't create '%s': %s\n", tmpfname, gpg_strerror (err));
+          goto leave;
+        }
+
+      err = nvc_write (pk, fp);
+      if (!err && es_fflush (fp))
+        err = gpg_error_from_syserror ();
+      if (err)
+        {
+          log_error ("error writing '%s': %s\n", tmpfname, gpg_strerror (err));
+          removetmp = 1;
+          goto leave;
+        }
+
+      if (es_fclose (fp))
+        {
+          err = gpg_error_from_syserror ();
+          log_error ("error closing '%s': %s\n", tmpfname, gpg_strerror (err));
+          removetmp = 1;
+          goto leave;
+        }
+      else
+        fp = NULL;
+
+      err = gnupg_rename_file (tmpfname, fname, &blocksigs);
+      if (err)
+        {
+          err = gpg_error_from_syserror ();
+          log_error ("error renaming '%s': %s\n", tmpfname, gpg_strerror (err));
+          removetmp = 1;
+          goto leave;
+        }
     }
 
   bump_key_eventcounter ();
@@ -333,7 +416,10 @@ agent_write_private_key (const unsigned char *grip,
  leave:
   if (blocksigs)
     gnupg_unblock_all_signals ();
-  es_fclose (fp);
+  if (ctrl->ephemeral_mode)
+    wipe_and_fclose (fp);
+  else
+    es_fclose (fp);
   if (removetmp && tmpfname)
     gnupg_remove (tmpfname);
   xfree (orig_key_value);
@@ -350,7 +436,7 @@ agent_write_private_key (const unsigned char *grip,
 
 
 gpg_error_t
-agent_update_private_key (const unsigned char *grip, nvc_t pk)
+agent_update_private_key (ctrl_t ctrl, const unsigned char *grip, nvc_t pk)
 {
   gpg_error_t err;
   char *fname0 = NULL;   /* The existing file name.  */
@@ -358,6 +444,57 @@ agent_update_private_key (const unsigned char *grip, nvc_t pk)
   estream_t fp = NULL;
   int removetmp = 0;
   int blocksigs = 0;
+
+  if (ctrl->ephemeral_mode)
+    {
+      ephemeral_private_key_t ek;
+      void *blob;
+      size_t blobsize;
+
+      for (ek = ctrl->ephemeral_keys; ek; ek = ek->next)
+        if (!memcmp (ek->grip, grip, KEYGRIP_LEN))
+          break;
+      if (!ek)
+        {
+          err = gpg_error (GPG_ERR_ENOENT);
+          goto leave;
+        }
+
+      fp = es_fopenmem (0, "wbx,wipe");
+      if (!fp)
+        {
+          err = gpg_error_from_syserror ();
+          log_error ("can't open memory stream: %s\n", gpg_strerror (err));
+          goto leave;
+        }
+
+      err = nvc_write (pk, fp);
+      if (err)
+        {
+          log_error ("error writing to memory stream: %s\n",gpg_strerror (err));
+          goto leave;
+        }
+
+      if (es_fclose_snatch (fp, &blob, &blobsize) || !blob)
+        {
+          err = gpg_error_from_syserror ();
+          log_error ("error getting memory stream buffer: %s\n",
+                     gpg_strerror (err));
+          /* Closing right away so that we don't try another snatch in
+           * the cleanup.  */
+          es_fclose (fp);
+          fp = NULL;
+          goto leave;
+        }
+      fp = NULL;
+      /* No need to revisit the linked list because the found EK is
+       * not expected to change due to the other syscalls above.  */
+      xfree (ek->keybuf);
+      ek->keybuf = blob;
+      ek->keybuflen = blobsize;
+      goto leave;
+    }
+
 
   fname0 = fname_from_keygrip (grip, 0);
   if (!fname0)
@@ -404,7 +541,10 @@ agent_update_private_key (const unsigned char *grip, nvc_t pk)
  leave:
   if (blocksigs)
     gnupg_unblock_all_signals ();
-  es_fclose (fp);
+  if (ctrl->ephemeral_mode)
+    wipe_and_fclose (fp);
+  else
+    es_fclose (fp);
   if (removetmp && fname)
     gnupg_remove (fname);
   xfree (fname);
@@ -888,17 +1028,17 @@ unprotect (ctrl_t ctrl, const char *cache_nonce, const char *desc_text,
  * caller must free it.  On failure returns an error code and stores
  * NULL at RESULT and R_KEYMETA. */
 static gpg_error_t
-read_key_file (const unsigned char *grip, gcry_sexp_t *result, nvc_t *r_keymeta,
-               char **r_orig_key_value)
+read_key_file (ctrl_t ctrl, const unsigned char *grip,
+               gcry_sexp_t *result, nvc_t *r_keymeta, char **r_orig_key_value)
 {
   gpg_error_t err;
   char *fname;
-  estream_t fp;
-  struct stat st;
-  unsigned char *buf;
+  estream_t fp = NULL;
+  unsigned char *buf = NULL;
   size_t buflen, erroff;
-  gcry_sexp_t s_skey;
+  nvc_t pk = NULL;
   char first;
+  size_t keybuflen;
 
   *result = NULL;
   if (r_keymeta)
@@ -906,19 +1046,42 @@ read_key_file (const unsigned char *grip, gcry_sexp_t *result, nvc_t *r_keymeta,
   if (r_orig_key_value)
     *r_orig_key_value = NULL;
 
-  fname = fname_from_keygrip (grip, 0);
+  fname = (ctrl->ephemeral_mode
+           ? xtrystrdup ("[ephemeral key store]")
+           : fname_from_keygrip (grip, 0));
   if (!fname)
     {
-      return gpg_error_from_syserror ();
+      err = gpg_error_from_syserror ();
+      goto leave;
     }
-  fp = es_fopen (fname, "rb");
+
+  if (ctrl->ephemeral_mode)
+    {
+      ephemeral_private_key_t ek;
+
+      for (ek = ctrl->ephemeral_keys; ek; ek = ek->next)
+        if (!memcmp (ek->grip, grip, KEYGRIP_LEN)
+            && ek->keybuf && ek->keybuflen)
+          break;
+      if (!ek || !ek->keybuf || !ek->keybuflen)
+        {
+          err = gpg_error (GPG_ERR_ENOENT);
+          goto leave;
+        }
+      keybuflen = ek->keybuflen;
+      fp = es_fopenmem_init (0, "rb", ek->keybuf, ek->keybuflen);
+    }
+  else
+    {
+      keybuflen = 0;  /* Indicates that this is not ephemeral mode.  */
+      fp = es_fopen (fname, "rb");
+    }
   if (!fp)
     {
       err = gpg_error_from_syserror ();
       if (gpg_err_code (err) != GPG_ERR_ENOENT)
         log_error ("can't open '%s': %s\n", fname, gpg_strerror (err));
-      xfree (fname);
-      return err;
+      goto leave;
     }
 
   if (es_fread (&first, 1, 1, fp) != 1)
@@ -926,28 +1089,22 @@ read_key_file (const unsigned char *grip, gcry_sexp_t *result, nvc_t *r_keymeta,
       err = gpg_error_from_syserror ();
       log_error ("error reading first byte from '%s': %s\n",
                  fname, gpg_strerror (err));
-      xfree (fname);
-      es_fclose (fp);
-      return err;
+      goto leave;
     }
 
   if (es_fseek (fp, 0, SEEK_SET))
     {
       err = gpg_error_from_syserror ();
       log_error ("error seeking in '%s': %s\n", fname, gpg_strerror (err));
-      xfree (fname);
-      es_fclose (fp);
-      return err;
+      goto leave;
     }
 
   if (first != '(')
     {
       /* Key is in extended format.  */
-      nvc_t pk = NULL;
       int line;
 
       err = nvc_parse_private_key (&pk, &line, fp);
-      es_fclose (fp);
 
       if (err)
         log_error ("error parsing '%s' line %d: %s\n",
@@ -969,9 +1126,7 @@ read_key_file (const unsigned char *grip, gcry_sexp_t *result, nvc_t *r_keymeta,
                       if (!*r_orig_key_value)
                         {
                           err = gpg_error_from_syserror ();
-                          nvc_release (pk);
-                          xfree (fname);
-                          return err;
+                          goto leave;
                         }
                     }
                 }
@@ -979,35 +1134,31 @@ read_key_file (const unsigned char *grip, gcry_sexp_t *result, nvc_t *r_keymeta,
             }
         }
 
-      if (!err && r_keymeta)
-        *r_keymeta = pk;
-      else
-        nvc_release (pk);
-      xfree (fname);
-      return err;
+      goto leave; /* Ready. */
     }
 
-  if (fstat (es_fileno (fp), &st))
+  if (keybuflen)
+    buflen = keybuflen;
+  else
     {
-      err = gpg_error_from_syserror ();
-      log_error ("can't stat '%s': %s\n", fname, gpg_strerror (err));
-      xfree (fname);
-      es_fclose (fp);
-      return err;
+      struct stat st;
+
+      if (fstat (es_fileno (fp), &st))
+        {
+          err = gpg_error_from_syserror ();
+          log_error ("can't stat '%s': %s\n", fname, gpg_strerror (err));
+          goto leave;
+        }
+      buflen = st.st_size;
     }
 
-  buflen = st.st_size;
   buf = xtrymalloc (buflen+1);
   if (!buf)
     {
       err = gpg_error_from_syserror ();
       log_error ("error allocating %zu bytes for '%s': %s\n",
                  buflen, fname, gpg_strerror (err));
-      xfree (fname);
-      es_fclose (fp);
-      xfree (buf);
-      return err;
-
+      goto leave;
     }
 
   if (es_fread (buf, buflen, 1, fp) != 1)
@@ -1015,25 +1166,32 @@ read_key_file (const unsigned char *grip, gcry_sexp_t *result, nvc_t *r_keymeta,
       err = gpg_error_from_syserror ();
       log_error ("error reading %zu bytes from '%s': %s\n",
                  buflen, fname, gpg_strerror (err));
-      xfree (fname);
-      es_fclose (fp);
-      xfree (buf);
-      return err;
+      goto leave;
     }
 
   /* Convert the file into a gcrypt S-expression object.  */
-  err = gcry_sexp_sscan (&s_skey, &erroff, (char*)buf, buflen);
-  xfree (fname);
-  es_fclose (fp);
-  xfree (buf);
-  if (err)
-    {
+  {
+    gcry_sexp_t s_skey;
+
+    err = gcry_sexp_sscan (&s_skey, &erroff, (char*)buf, buflen);
+    if (err)
       log_error ("failed to build S-Exp (off=%u): %s\n",
                  (unsigned int)erroff, gpg_strerror (err));
-      return err;
-    }
-  *result = s_skey;
-  return 0;
+    else
+      *result = s_skey;
+  }
+
+ leave:
+  if (!err && r_keymeta)
+    *r_keymeta = pk;
+  else
+    nvc_release (pk);
+  if (ctrl->ephemeral_mode)
+    wipe_and_fclose (fp);
+   else
+    es_fclose (fp);
+  xfree (fname);
+  return err;
 }
 
 
@@ -1226,7 +1384,8 @@ agent_key_from_file (ctrl_t ctrl, const char *cache_nonce,
   if (!grip && !ctrl->have_keygrip)
     return gpg_error (GPG_ERR_NO_SECKEY);
 
-  err = read_key_file (grip? grip : ctrl->keygrip, &s_skey, &keymeta, NULL);
+  err = read_key_file (ctrl, grip? grip : ctrl->keygrip,
+                       &s_skey, &keymeta, NULL);
   if (err)
     {
       if (gpg_err_code (err) == GPG_ERR_ENOENT)
@@ -1485,7 +1644,7 @@ agent_raw_key_from_file (ctrl_t ctrl, const unsigned char *grip,
 
   *result = NULL;
 
-  err = read_key_file (grip, &s_skey, r_keymeta, NULL);
+  err = read_key_file (ctrl, grip, &s_skey, r_keymeta, NULL);
   if (!err)
     *result = s_skey;
   return err;
@@ -1528,7 +1687,7 @@ public_key_from_file (ctrl_t ctrl, const unsigned char *grip,
   if (r_sshorder)
     *r_sshorder = 0;
 
-  err = read_key_file (grip, &s_skey, for_ssh? &keymeta : NULL, NULL);
+  err = read_key_file (ctrl, grip, &s_skey, for_ssh? &keymeta : NULL, NULL);
   if (err)
     return err;
 
@@ -1656,13 +1815,23 @@ agent_ssh_key_from_file (ctrl_t ctrl,
 
 
 /* Check whether the secret key identified by GRIP is available.
-   Returns 0 is the key is available.  */
+   Returns 0 is the key is available. */
 int
-agent_key_available (const unsigned char *grip)
+agent_key_available (ctrl_t ctrl, const unsigned char *grip)
 {
   int result;
   char *fname;
   char hexgrip[40+4+1];
+  ephemeral_private_key_t ek;
+
+  if (ctrl && ctrl->ephemeral_mode)
+    {
+      for (ek = ctrl->ephemeral_keys; ek; ek = ek->next)
+        if (!memcmp (ek->grip, grip, KEYGRIP_LEN)
+            && ek->keybuf && ek->keybuflen)
+          return 0;
+      return -1;
+    }
 
   bin2hex (grip, 20, hexgrip);
   strcpy (hexgrip+40, ".key");
@@ -1673,7 +1842,6 @@ agent_key_available (const unsigned char *grip)
   xfree (fname);
   return result;
 }
-
 
 
 /* Return the information about the secret key specified by the binary
@@ -1700,7 +1868,7 @@ agent_key_info_from_file (ctrl_t ctrl, const unsigned char *grip,
   {
     gcry_sexp_t sexp;
 
-    err = read_key_file (grip, &sexp, NULL, NULL);
+    err = read_key_file (ctrl, grip, &sexp, NULL, NULL);
     if (err)
       {
         if (gpg_err_code (err) == GPG_ERR_ENOENT)
@@ -1784,7 +1952,13 @@ agent_delete_key (ctrl_t ctrl, const char *desc_text,
   char *default_desc = NULL;
   int key_type;
 
-  err = read_key_file (grip, &s_skey, NULL, NULL);
+  if (ctrl->ephemeral_mode)
+    {
+      err = gpg_error (GPG_ERR_NO_SECKEY);
+      goto leave;
+    }
+
+  err = read_key_file (ctrl, grip, &s_skey, NULL, NULL);
   if (gpg_err_code (err) == GPG_ERR_ENOENT)
     err = gpg_error (GPG_ERR_NO_SECKEY);
   if (err)
@@ -1885,7 +2059,7 @@ agent_delete_key (ctrl_t ctrl, const char *desc_text,
    card's SERIALNO and the IDSTRING.  With FORCE passed as true an
    existing key with the given GRIP will get overwritten.  */
 gpg_error_t
-agent_write_shadow_key (const unsigned char *grip,
+agent_write_shadow_key (ctrl_t ctrl, const unsigned char *grip,
                         const char *serialno, const char *keyid,
                         const unsigned char *pkbuf, int force,
                         const char *dispserialno)
@@ -1915,7 +2089,7 @@ agent_write_shadow_key (const unsigned char *grip,
     }
 
   len = gcry_sexp_canon_len (shdkey, 0, NULL, NULL);
-  err = agent_write_private_key (grip, shdkey, len, force,
+  err = agent_write_private_key (ctrl, grip, shdkey, len, force,
                                  serialno, keyid, dispserialno, 0);
   xfree (shdkey);
   if (err)

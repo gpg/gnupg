@@ -755,8 +755,9 @@ release_passphrase (char *pw)
 
 /* Stub function.  */
 int
-agent_key_available (const unsigned char *grip)
+agent_key_available (ctrl_t ctrl, const unsigned char *grip)
 {
+  (void)ctrl;
   (void)grip;
   return -1;  /* Not available.  */
 }
@@ -814,7 +815,7 @@ agent_askpin (ctrl_t ctrl,
 /* Replacement for the function in findkey.c.  Here we write the key
  * to stdout. */
 gpg_error_t
-agent_write_private_key (const unsigned char *grip,
+agent_write_private_key (ctrl_t ctrl, const unsigned char *grip,
                          const void *buffer, size_t length, int force,
                          const char *serialno, const char *keyref,
                          const char *dispserialno, time_t timestamp)
@@ -822,6 +823,7 @@ agent_write_private_key (const unsigned char *grip,
   char hexgrip[40+4+1];
   char *p;
 
+  (void)ctrl;
   (void)force;
   (void)serialno;
   (void)keyref;

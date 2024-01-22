@@ -57,7 +57,7 @@ agent_write_tpm2_shadow_key (ctrl_t ctrl, const unsigned char *grip,
     }
 
   len = gcry_sexp_canon_len (shdkey, 0, NULL, NULL);
-  err = agent_write_private_key (grip, shdkey, len, 1 /*force*/,
+  err = agent_write_private_key (ctrl, grip, shdkey, len, 1 /*force*/,
                                  NULL, NULL, NULL, 0);
   xfree (shdkey);
   if (err)
@@ -70,7 +70,7 @@ agent_write_tpm2_shadow_key (ctrl_t ctrl, const unsigned char *grip,
 	return GPG_ERR_ENOMEM;
 
       gcry_sexp_sprint(s_key, GCRYSEXP_FMT_CANON, pkbuf, len);
-      err1 = agent_write_private_key (grip, pkbuf, len, 1 /*force*/,
+      err1 = agent_write_private_key (ctrl, grip, pkbuf, len, 1 /*force*/,
 				      NULL, NULL, NULL, 0);
       xfree(pkbuf);
       if (err1)

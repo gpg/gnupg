@@ -1989,6 +1989,7 @@ agent_deinit_default_ctrl (ctrl_t ctrl)
 {
   unregister_progress_cb ();
   session_env_release (ctrl->session_env);
+  clear_ephemeral_keys (ctrl);
 
   xfree (ctrl->digest.data);
   ctrl->digest.data = NULL;
