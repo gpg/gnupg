@@ -3243,6 +3243,45 @@ agent_passwd (ctrl_t ctrl, const char *hexkeygrip, const char *desc, int verify,
 }
 
 
+/* Enable or disable the ephemeral mode.  In ephemeral mode keys are
+ * created,searched and used in a per-session key store and not in the
+ * on-disk file.  Set ENABLE to 1 to enable this mode, to 0 to disable
+ * this mode and to -1 to only query the current mode.  If R_PREVIOUS
+ * is given the previously used state of the ephemeral mode is stored
+ * at that address.  */
+gpg_error_t
+agent_set_ephemeral_mode (ctrl_t ctrl, int enable, int *r_previous)
+{
+  gpg_error_t err;
+
+  err = start_agent (ctrl, 0);
+  if (err)
+    goto leave;
+
+  if (r_previous)
+    {
+      err = assuan_transact (agent_ctx, "GETINFO ephemeral",
+                             NULL, NULL, NULL, NULL, NULL, NULL);
+      if (!err)
+        *r_previous = 1;
+      else if (gpg_err_code (err) == GPG_ERR_FALSE)
+        *r_previous = 0;
+      else
+        goto leave;
+    }
+
+  /* Skip setting if we are only querying or if the mode is already set. */
+  if (enable == -1 || (r_previous && !!*r_previous == !!enable))
+    err = 0;
+  else
+    err = assuan_transact (agent_ctx,
+                           enable? "OPTION ephemeral=1" : "OPTION ephemeral=0",
+                           NULL, NULL, NULL, NULL, NULL, NULL);
+ leave:
+  return err;
+}
+
+
 /* Return the version reported by gpg-agent.  */
 gpg_error_t
 agent_get_version (ctrl_t ctrl, char **r_version)

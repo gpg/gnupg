@@ -1905,6 +1905,7 @@ keyedit_menu (ctrl_t ctrl, const char *username, strlist_t locusr,
 	    PACKET *pkt;
 	    IOBUF a;
             struct parse_packet_ctx_s parsectx;
+            int lastmode;
 
             if (!*arg_string)
 	      {
@@ -1959,17 +1960,28 @@ keyedit_menu (ctrl_t ctrl, const char *username, strlist_t locusr,
 	    xfree (fname);
 	    node = new_kbnode (pkt);
 
-            /* Transfer it to gpg-agent which handles secret keys.  */
-            err = transfer_secret_keys (ctrl, NULL, node, 1, 1, 0);
-
-            /* Treat the pkt as a public key.  */
-            pkt->pkttype = PKT_PUBLIC_KEY;
-
-            /* Ask gpg-agent to store the secret key to card.  */
-            if (card_store_subkey (node, 0, NULL))
+            err = agent_set_ephemeral_mode (ctrl, 1, &lastmode);
+            if (err)
+              log_error ("error switching to ephemeral mode: %s\n",
+                         gpg_strerror (err));
+            else
               {
-                redisplay = 1;
-                sec_shadowing = 1;
+                /* Transfer it to gpg-agent which handles secret keys.  */
+                err = transfer_secret_keys (ctrl, NULL, node, 1, 1, 0);
+                if (!err)
+                  {
+                    /* Treat the pkt as a public key.  */
+                    pkt->pkttype = PKT_PUBLIC_KEY;
+
+                    /* Ask gpg-agent to store the secret key to card.  */
+                    if (card_store_subkey (node, 0, NULL))
+                      {
+                        redisplay = 1;
+                        sec_shadowing = 1;
+                      }
+                  }
+                if (!lastmode && agent_set_ephemeral_mode (ctrl, 0, NULL))
+                  log_error ("error clearing the ephemeral mode\n");
               }
             release_kbnode (node);
           }

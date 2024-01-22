@@ -247,6 +247,10 @@ gpg_error_t agent_delete_key (ctrl_t ctrl, const char *hexkeygrip,
 gpg_error_t agent_passwd (ctrl_t ctrl, const char *hexkeygrip, const char *desc,
                           int verify,
                           char **cache_nonce_addr, char **passwd_nonce_addr);
+
+/* Set or get the ephemeral mode.  */
+gpg_error_t agent_set_ephemeral_mode (ctrl_t ctrl, int enable, int *r_previous);
+
 /* Get the version reported by gpg-agent.  */
 gpg_error_t agent_get_version (ctrl_t ctrl, char **r_version);
 

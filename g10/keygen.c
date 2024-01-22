@@ -5754,7 +5754,6 @@ do_generate_keypair (ctrl_t ctrl, struct para_data_s *para,
 
   if (!err && get_parameter (para, pSUBKEYTYPE))
     {
-      const char *cardbackupkey = NULL;
       int subkey_algo = get_parameter_algo (ctrl, para, pSUBKEYTYPE, NULL);
 
       key_from_hexgrip = get_parameter_value (para, pSUBKEYGRIP);
@@ -5769,22 +5768,57 @@ do_generate_keypair (ctrl_t ctrl, struct para_data_s *para,
                                       pub_root, subkeytimestamp,
                                       get_parameter_u32 (para, pSUBKEYEXPIRE),
                                       1, &keygen_flags);
-      else if (!card
-               || (cardbackupkey = get_parameter_value (para, pCARDBACKUPKEY)))
+      else if (get_parameter_value (para, pCARDBACKUPKEY))
         {
+          int lastmode;
           unsigned int mykeygenflags = KEYGEN_FLAG_NO_PROTECTION;
 
+          err = agent_set_ephemeral_mode (ctrl, 1, &lastmode);
+          if (err)
+            log_error ("error switching to ephemeral mode: %s\n",
+                       gpg_strerror (err));
+          else
+            {
+              err = do_create (subkey_algo,
+                               get_parameter_uint (para, pSUBKEYLENGTH),
+                               get_parameter_value (para, pSUBKEYCURVE),
+                               pub_root,
+                               subkeytimestamp,
+                               get_parameter_u32 (para, pSUBKEYEXPIRE), 1,
+                               &mykeygenflags,
+                               get_parameter_passphrase (para),
+                               &cache_nonce, NULL,
+                               NULL, NULL);
+              /* Get the pointer to the generated public subkey packet.  */
+              if (!err)
+                {
+                  kbnode_t node;
+
+                  for (node = pub_root; node; node = node->next)
+                    if (node->pkt->pkttype == PKT_PUBLIC_SUBKEY)
+                      sub_psk = node->pkt->pkt.public_key;
+                  log_assert (sub_psk);
+                  err = card_store_key_with_backup (ctrl,
+                                                    sub_psk, gnupg_homedir ());
+                }
+
+              /* Reset the ephemeral mode as needed.  */
+              if (!lastmode && agent_set_ephemeral_mode (ctrl, 0, NULL))
+                log_error ("error clearing the ephemeral mode\n");
+            }
+        }
+      else if (!card)
+        {
           err = do_create (subkey_algo,
                            get_parameter_uint (para, pSUBKEYLENGTH),
                            get_parameter_value (para, pSUBKEYCURVE),
                            pub_root,
                            subkeytimestamp,
                            get_parameter_u32 (para, pSUBKEYEXPIRE), 1,
-                           cardbackupkey? &mykeygenflags : &keygen_flags,
+                           &keygen_flags,
                            get_parameter_passphrase (para),
                            &cache_nonce, NULL,
                            NULL, NULL);
-          /* Get the pointer to the generated public subkey packet.  */
           if (!err)
             {
               kbnode_t node;
@@ -5793,10 +5827,6 @@ do_generate_keypair (ctrl_t ctrl, struct para_data_s *para,
                 if (node->pkt->pkttype == PKT_PUBLIC_SUBKEY)
                   sub_psk = node->pkt->pkt.public_key;
               log_assert (sub_psk);
-
-              if (cardbackupkey)
-                err = card_store_key_with_backup (ctrl,
-                                                  sub_psk, gnupg_homedir ());
             }
         }
       else
