@@ -638,12 +638,11 @@ The @option{--dearmor} command can also be used to dearmor PEM armors.
 
 @item --unwrap
 @opindex unwrap
-This command is similar to @option{--decrypt} with the difference that the
-output is not the usual plaintext but the original message with the
-encryption layer removed.  Thus the output will be an OpenPGP data
-structure which often means a signed OpenPGP message.  Note that this
-option may or may not remove a compression layer which is often found
-beneath the encryption layer.
+This option modifies the command @option{--decrypt} to output the
+original message with the encryption layer removed.  Thus the output
+will be an OpenPGP data structure which often means a signed OpenPGP
+message.  Note that this option may or may not remove a compression
+layer which is often found beneath the encryption layer.
 
 @item --tofu-policy @{auto|good|unknown|bad|ask@}  @var{keys}
 @opindex tofu-policy
