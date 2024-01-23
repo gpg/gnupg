@@ -1125,13 +1125,13 @@ ifneq ($(TARGETOS),w32)
              fi; \
            done; \
          done; \
-	 echo "sysconfdir = /etc"  >bin/gpgconf.ctl ;\
+	 echo "sysconfdir = /etc/gnupg"  >bin/gpgconf.ctl ;\
 	 echo "rootdir = $(idir)" >>bin/gpgconf.ctl ;\
 	 echo "speedo: /*" ;\
 	 echo "speedo:  * Now copy $(idir)/ to the final location and" ;\
 	 echo "speedo:  * adjust $(idir)/bin/gpgconf.ctl accordingly" ;\
 	 echo "speedo:  * Or run:" ;\
-	 echo "speedo:  *   make -f build-aux/speedo.mk install SYSROOT=/somewhere" ;\
+	 echo "speedo:  *   make -f $(topsrc)/build-aux/speedo.mk install SYSROOT=/usr/local/gnupg24" ;\
 	 echo "speedo:  */")
 endif
 
@@ -1146,7 +1146,7 @@ ifneq ($(TARGETOS),w32)
            echo "speedo: ERROR: SYSROOT has not been given";\
            echo "speedo: Set SYSROOT to the desired install directory";\
 	   echo "speedo: Example:";\
-           echo "speedo:   make -f build-aux/speedo.mk install SYSROOT=/usr/local";\
+           echo "speedo:   make -f $(topsrc)/build-aux/speedo.mk install SYSROOT=/usr/local/gnupg24";\
            exit 1;\
          fi;\
          if [ ! -d "$$SYSROOT"/bin ]; then if ! mkdir "$$SYSROOT"/bin; then \
@@ -1170,8 +1170,8 @@ ifneq ($(TARGETOS),w32)
                 -exec install -Dm 755 "{}" "$$SYSROOT/{}" \; ;\
          find . -type f \! -executable \
                 -exec install -Dm 644 "{}" "$$SYSROOT/{}" \; ;\
-	 echo "sysconfdir = /etc"    > "$$SYSROOT"/bin/gpgconf.ctl ;\
-	 echo "rootdir = $$SYSROOT" >> "$$SYSROOT"/bin/gpgconf.ctl ;\
+	 echo "sysconfdir = /etc/gnupg" > "$$SYSROOT"/bin/gpgconf.ctl ;\
+	 echo "rootdir = $$SYSROOT"    >> "$$SYSROOT"/bin/gpgconf.ctl ;\
          echo '/*' ;\
          echo " * Installation to $$SYSROOT done" ;\
 	 echo ' */' )

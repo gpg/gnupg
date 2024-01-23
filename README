@@ -93,9 +93,9 @@
   libraries can be installed into an arbitrary location using for
   example:
 
-    make -f build-aux/speedo.mk install SYSROOT=/usr/local/gnupg-foo
+    make -f build-aux/speedo.mk install SYSROOT=/usr/local/gnupg24
 
-  and adding the directory to PATH.
+  and adding /usr/local/gnupg24/bin to PATH.
 
 
 ** Specific build problems on some machines:
