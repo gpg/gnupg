@@ -94,6 +94,7 @@
   example:
 
     make -f build-aux/speedo.mk install SYSROOT=/usr/local/gnupg24
+    ldconfig -n /usr/local/gnupg24/lib
 
   and adding /usr/local/gnupg24/bin to PATH.
 

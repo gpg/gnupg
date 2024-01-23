@@ -3336,7 +3336,7 @@ keyedit_quick_addadsk (ctrl_t ctrl, const char *fpr, const char *adskfpr)
 /* Unattended expiration setting function for the main key.  If
  * SUBKEYFPRS is not NULL and SUBKEYSFPRS[0] is neither NULL, it is
  * expected to be an array of fingerprints for subkeys to change. It
- * may also be an array which just one item "*" to indicate that all
+ * may also be an array with only the item "*" to indicate that all
  * keys shall be set to that expiration date.
  */
 void

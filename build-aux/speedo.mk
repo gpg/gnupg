@@ -1132,6 +1132,7 @@ ifneq ($(TARGETOS),w32)
 	 echo "speedo:  * adjust $(idir)/bin/gpgconf.ctl accordingly" ;\
 	 echo "speedo:  * Or run:" ;\
 	 echo "speedo:  *   make -f $(topsrc)/build-aux/speedo.mk install SYSROOT=/usr/local/gnupg24" ;\
+         echo "speedo:  *   ldconfig -n /usr/local/gnupg24/lib";\
 	 echo "speedo:  */")
 endif
 
@@ -1147,6 +1148,7 @@ ifneq ($(TARGETOS),w32)
            echo "speedo: Set SYSROOT to the desired install directory";\
 	   echo "speedo: Example:";\
            echo "speedo:   make -f $(topsrc)/build-aux/speedo.mk install SYSROOT=/usr/local/gnupg24";\
+           echo "speedo:   ldconfig -n /usr/local/gnupg24/lib";\
            exit 1;\
          fi;\
          if [ ! -d "$$SYSROOT"/bin ]; then if ! mkdir "$$SYSROOT"/bin; then \
