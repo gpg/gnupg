@@ -1490,6 +1490,7 @@ cmd_checkkeys (card_info_t callerinfo, char *argstr)
           xfree (infostr);
         }
     }
+  es_fflush (es_stdout);
   if (delete_count)
     log_info ("Number of deleted key copies: %d\n", delete_count);
 
