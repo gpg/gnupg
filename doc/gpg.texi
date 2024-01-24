@@ -2579,6 +2579,10 @@ opposite meaning. The options are:
   import-clean it suppresses the final clean step after merging the
   imported key into the existing key.
 
+  @item ignore-attributes
+  Ignore all attribute user IDs (photo IDs) and their signatures while
+  importing a key.
+
   @item repair-keys
   After import, fix various problems with the
   keys.  For example, this reorders signatures, and strips duplicate

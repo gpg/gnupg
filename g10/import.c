@@ -209,6 +209,9 @@ parse_import_options(char *str,unsigned int *options,int noisy)
       {"repair-keys", IMPORT_REPAIR_KEYS, NULL,
        N_("repair keys on import")},
 
+      /* New options.  Right now, without description string.  */
+      {"ignore-attributes", IMPORT_IGNORE_ATTRIBUTES, NULL, NULL},
+
       /* Hidden options which are enabled by default and are provided
        * in case of problems with the respective implementation.  */
       {"collapse-uids", IMPORT_COLLAPSE_UIDS, NULL, NULL},
@@ -1008,6 +1011,15 @@ read_block( IOBUF a, unsigned int options,
           init_packet(pkt);
           continue;
 	}
+      else if ((opt.import_options & IMPORT_IGNORE_ATTRIBUTES)
+               && (pkt->pkttype == PKT_USER_ID || pkt->pkttype == PKT_ATTRIBUTE)
+               && pkt->pkt.user_id->attrib_data)
+        {
+          skip_sigs = 1;
+          free_packet (pkt, &parsectx);
+          init_packet (pkt);
+          continue;
+        }
 
       if (skip_sigs)
         {
