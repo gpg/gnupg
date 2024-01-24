@@ -430,6 +430,7 @@ pk_encrypt (pubkey_algo_t algo, gcry_mpi_t *resarr, gcry_mpi_t data,
   gcry_sexp_t s_data = NULL;
   gcry_sexp_t s_pkey = NULL;
   int rc;
+  int with_ecdh_cv25519 = 0;
 
   /* Make a sexp from pkey.  */
   if (algo == PUBKEY_ALGO_ELGAMAL || algo == PUBKEY_ALGO_ELGAMAL_E)
@@ -452,32 +453,154 @@ pk_encrypt (pubkey_algo_t algo, gcry_mpi_t *resarr, gcry_mpi_t data,
     }
   else if (algo == PUBKEY_ALGO_ECDH)
     {
-      gcry_mpi_t k;
-
-      rc = pk_ecdh_generate_ephemeral_key (pkey, &k);
-      if (!rc)
+      with_ecdh_cv25519 = openpgp_oid_is_cv25519 (pkey[0]);
+      if (with_ecdh_cv25519)
         {
-          char *curve;
+          unsigned char ephemkey[GCRY_KEM_ECC_X25519_ENCAPS_LEN+1];
+          unsigned int nbits;
+          const byte *oid;
+          const byte *pubkey;
+          const byte *kek_params;
+          unsigned char kdf_params[256];
+          size_t oidlen;
+          size_t pubkeylen;
+          size_t kdf_params_size;
+          byte fp[MAX_FINGERPRINT_LEN];
+          byte *kekkey;
+          size_t kekkeylen;
+          int kdf_encr_algo;
+          gcry_cipher_hd_t hd;
 
-          curve = openpgp_oid_to_str (pkey[0]);
-          if (!curve)
-            rc = gpg_error_from_syserror ();
-          else
+          oid = gcry_mpi_get_opaque (pkey[0], &nbits);
+          oidlen = (nbits + 7) / 8;
+
+          pubkey = (const byte *)gcry_mpi_get_opaque (pkey[1], &nbits) + 1;
+          pubkeylen = (nbits + 7) / 8 - 1;
+          /*FIXME check pubkeylen == GCRY_KEM_ECC_X25519_PUBKEY_LEN */
+          (void)pubkeylen;
+
+          kek_params = gcry_mpi_get_opaque (pkey[2], &nbits);
+          /*FIXME check nbits good: 4-byte long*/
+          kdf_encr_algo = kek_params[3];
+
+          if (kdf_encr_algo != CIPHER_ALGO_AES
+              && kdf_encr_algo != CIPHER_ALGO_AES192
+              && kdf_encr_algo != CIPHER_ALGO_AES256)
+            return gpg_error (GPG_ERR_BAD_PUBKEY);
+
+          kekkeylen = gcry_cipher_get_algo_keylen (kdf_encr_algo);
+          kekkey = xtrymalloc_secure (kekkeylen);
+          if (!kekkey)
+            return gpg_error_from_syserror ();
+
+          fingerprint_from_pk (pk, fp, NULL);
+          memcpy (kdf_params, oid, oidlen);
+          kdf_params_size = oidlen;
+          kdf_params[kdf_params_size++] = PUBKEY_ALGO_ECDH;
+          memcpy (kdf_params + kdf_params_size, kek_params, 4);
+          kdf_params_size += 4;
+          memcpy (kdf_params + kdf_params_size, "Anonymous Sender    ", 20);
+          kdf_params_size += 20;
+          memcpy (kdf_params + kdf_params_size, fp, 20);
+          kdf_params_size += 20;
+
+          rc = gcry_kem_encap (GCRY_KEM_PGP_X25519,
+                               pubkey, GCRY_KEM_ECC_X25519_PUBKEY_LEN,
+                               ephemkey+1, GCRY_KEM_ECC_X25519_ENCAPS_LEN,
+                               kekkey, kekkeylen,
+                               kdf_params, kdf_params_size);
+          if (rc)
             {
-              int with_djb_tweak_flag = openpgp_oid_is_cv25519 (pkey[0]);
-
-              /* Now use the ephemeral secret to compute the shared point.  */
-              rc = gcry_sexp_build (&s_pkey, NULL,
-                                    with_djb_tweak_flag ?
-                                    "(public-key(ecdh(curve%s)(flags djb-tweak)(q%m)))"
-                                    : "(public-key(ecdh(curve%s)(q%m)))",
-                                    curve, pkey[1]);
-              xfree (curve);
-              /* Put K into a simplified S-expression.  */
-              if (!rc)
-                rc = gcry_sexp_build (&s_data, NULL, "%m", k);
+              xfree (kekkey);
+              return rc;
             }
-          gcry_mpi_release (k);
+
+          rc = gcry_cipher_open (&hd, kdf_encr_algo, GCRY_CIPHER_MODE_AESWRAP, 0);
+          if (rc)
+            {
+              log_error ("ecdh failed to initialize AESWRAP: %s\n",
+                         gpg_strerror (rc));
+              xfree (kekkey);
+              return rc;
+            }
+
+          rc = gcry_cipher_setkey (hd, kekkey, kekkeylen);
+          xfree (kekkey);
+          if (rc)
+            {
+              gcry_cipher_close (hd);
+              log_error ("ecdh failed in gcry_cipher_setkey: %s\n",
+                         gpg_strerror (rc));
+              return rc;
+            }
+
+          {
+            byte *data_buf;
+            int data_buf_size;
+            byte *p = gcry_mpi_get_opaque (data, &nbits);
+            size_t ndata = (nbits + 7)/8;
+            byte *in;
+            gcry_mpi_t result;
+
+            data_buf_size = ndata;
+            data_buf = xtrymalloc_secure (1 + 2*data_buf_size + 8);
+
+            if (!data_buf)
+              return gpg_error_from_syserror ();
+
+            in = data_buf + 1 + data_buf_size + 8;
+            memcpy (in, p, ndata);
+
+            gcry_cipher_encrypt (hd, data_buf+1, data_buf_size+8,
+                                 in, data_buf_size);
+            memset (in, 0, data_buf_size);
+            gcry_cipher_close (hd);
+            data_buf[0] = data_buf_size+8;
+
+            result = gcry_mpi_set_opaque (NULL, data_buf, 8 * (1+data_buf[0]));
+            if (!result)
+              {
+                rc = gpg_error_from_syserror ();
+                xfree (data_buf);
+                return rc;
+              }
+            ephemkey[0] = 0x40;
+            resarr[0] = gcry_mpi_set_opaque_copy (NULL, ephemkey,
+                                                  sizeof (ephemkey) * 8);
+            resarr[1] = result;
+            rc = 0;
+          }
+          return rc;
+        }
+      else
+        {
+          gcry_mpi_t k;
+
+          rc = pk_ecdh_generate_ephemeral_key (pkey, &k);
+          if (!rc)
+            {
+              char *curve;
+
+              curve = openpgp_oid_to_str (pkey[0]);
+              if (!curve)
+                rc = gpg_error_from_syserror ();
+              else
+                {
+                  int with_djb_tweak_flag = with_ecdh_cv25519;
+
+                  /* Now use the ephemeral secret to compute the shared point.  */
+                  rc = gcry_sexp_build (&s_pkey, NULL,
+                                        with_djb_tweak_flag ?
+                                        "(public-key(ecdh(curve%s)(flags djb-tweak)(q%m)))"
+                                        : "(public-key(ecdh(curve%s)(q%m)))",
+                                        curve, pkey[1]);
+                  xfree (curve);
+                  /* Put K into a simplified S-expression.  */
+                  if (!rc)
+                    rc = gcry_sexp_build (&s_data, NULL, "%m", k);
+                }
+              gcry_mpi_release (k);
+            }
         }
     }
   else
