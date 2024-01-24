@@ -144,14 +144,13 @@ static struct debug_flags_s debug_flags [] =
     { 77, NULL } /* 77 := Do not exit on "help" or "?".  */
   };
 
-/* The timer tick used for housekeeping stuff.  Note that on Windows
- * we use a SetWaitableTimer seems to signal earlier than about 2
- * seconds.  Thus we use 4 seconds on all platforms.
- * CHECK_OWN_SOCKET_INTERVAL defines how often we check
- * our own socket in standard socket mode.  If that value is 0 we
- * don't check at all.  All values are in seconds. */
-# define TIMERTICK_INTERVAL          (4)
-# define CHECK_OWN_SOCKET_INTERVAL  (60)
+/* CHECK_OWN_SOCKET_INTERVAL defines how often we check our own socket
+ * in standard socket mode.  If that value is 0 we don't check at all.
+ * Values is in seconds. */
+#define CHECK_OWN_SOCKET_INTERVAL  (60)
+/* CHECK_PROBLEMS_INTERVAL defines how often we check the existence of
+ * homedir.  Value is in seconds.  */
+#define CHECK_PROBLEMS_INTERVAL     (4)
 
 /* The list of open file descriptors at startup.  Note that this list
  * has been allocated using the standard malloc.  */
@@ -171,8 +170,10 @@ static int shutdown_pending;
 /* Flag indicating to start the daemon even if one already runs.  */
 static int steal_socket;
 
-/* Counter for the currently running own socket checks.  */
-static int check_own_socket_running;
+/* Flag to monitor problems.  */
+static int problem_detected;
+#define KEYBOXD_PROBLEM_SOCKET_TAKEOVER (1 << 0)
+#define KEYBOXD_PROBLEM_HOMEDIR_REMOVED (1 << 1)
 
 /* Flag to indicate that we shall not watch our own socket. */
 static int disable_check_own_socket;
@@ -192,17 +193,23 @@ static assuan_sock_nonce_t socket_nonce;
  * Let's try this as default.  Change at runtime with --listen-backlog.  */
 static int listen_backlog = 64;
 
+#ifdef HAVE_W32_SYSTEM
+/* The event to break the select call.  */
+static HANDLE the_event2;
+#elif defined(HAVE_PSELECT_NO_EINTR)
+/* An FD to break the select call.  */
+static int event_pipe_fd;
+#else
+/* PID of the main thread.  */
+static pid_t main_thread_pid;
+#endif
+
 /* Name of a config file, which will be reread on a HUP if it is not NULL. */
 static char *config_filename;
 
 /* Keep track of the current log file so that we can avoid updating
  * the log file after a SIGHUP if it didn't changed.  Malloced. */
 static char *current_logfile;
-
-/* This flag is true if the inotify mechanism for detecting the
- * removal of the homedir is active.  This flag is used to disable the
- * alternative but portable stat based check.  */
-static int have_homedir_inotify;
 
 /* Number of active connections.  */
 static int active_connections;
@@ -250,8 +257,11 @@ static void kbxd_init_default_ctrl (ctrl_t ctrl);
 static void kbxd_deinit_default_ctrl (ctrl_t ctrl);
 
 static void handle_connections (gnupg_fd_t listen_fd);
-static void check_own_socket (void);
 static int check_for_running_kbxd (int silent);
+#if CHECK_OWN_SOCKET_INTERVAL > 0
+static void *check_own_socket_thread (void *arg);
+#endif
+static void *check_others_thread (void *arg);
 
 /*
  * Functions.
@@ -1055,6 +1065,44 @@ get_kbxd_active_connection_count (void)
 }
 
 
+/* Under W32, this function returns the handle of the scdaemon
+   notification event.  Calling it the first time creates that
+   event.  */
+#if defined(HAVE_W32_SYSTEM)
+static void *
+create_an_event (void)
+{
+  HANDLE h, h2;
+  SECURITY_ATTRIBUTES sa = { sizeof (SECURITY_ATTRIBUTES), NULL, TRUE};
+
+  /* We need to use a manual reset event object due to the way our
+     w32-pth wait function works: If we would use an automatic
+     reset event we are not able to figure out which handle has
+     been signaled because at the time we single out the signaled
+     handles using WFSO the event has already been reset due to
+     the WFMO.  */
+  h = CreateEvent (&sa, TRUE, FALSE, NULL);
+  if (!h)
+    log_error ("can't create an event: %s\n", w32_strerror (-1) );
+  else if (!DuplicateHandle (GetCurrentProcess(), h,
+                             GetCurrentProcess(), &h2,
+                             EVENT_MODIFY_STATE|SYNCHRONIZE, TRUE, 0))
+    {
+      log_error ("setting synchronize for an event failed: %s\n",
+                 w32_strerror (-1) );
+      CloseHandle (h);
+    }
+  else
+    {
+      CloseHandle (h);
+      return h2;
+    }
+
+  return INVALID_HANDLE_VALUE;
+}
+#endif /*HAVE_W32_SYSTEM*/
+
+
 /* Create a name for the socket in the home directory as using
  * STANDARD_NAME.  We also check for valid characters as well as
  * against a maximum allowed length for a Unix domain socket is done.
@@ -1267,38 +1315,6 @@ create_directories (void)
 
 
 
-/* This is the worker for the ticker.  It is called every few seconds
- * and may only do fast operations. */
-static void
-handle_tick (void)
-{
-  static time_t last_minute;
-  struct stat statbuf;
-
-  if (!last_minute)
-    last_minute = time (NULL);
-
-  /* Code to be run from time to time.  */
-#if CHECK_OWN_SOCKET_INTERVAL > 0
-  if (last_minute + CHECK_OWN_SOCKET_INTERVAL <= time (NULL))
-    {
-      check_own_socket ();
-      last_minute = time (NULL);
-    }
-#endif
-
-
-  /* Check whether the homedir is still available.  */
-  if (!shutdown_pending
-      && !have_homedir_inotify
-      && gnupg_stat (gnupg_homedir (), &statbuf) && errno == ENOENT)
-    {
-      shutdown_pending = 1;
-      log_info ("homedir has been removed - shutting down\n");
-    }
-}
-
-
 /* A global function which allows us to call the reload stuff from
  * other places too.  This is only used when build for W32.  */
 void
@@ -1342,6 +1358,11 @@ handle_signal (int signo)
 
     case SIGUSR2:
       kbxd_sigusr2_action ();
+      break;
+
+    case SIGCONT:
+      /* Do nothing, but break the syscall.  */
+      log_debug ("SIGCONT received - breaking select\n");
       break;
 
     case SIGTERM:
@@ -1435,6 +1456,28 @@ start_connection_thread (void *arg)
 }
 
 
+static void
+keyboxd_kick_the_loop (void)
+{
+  /* Kick the select loop.  */
+#ifdef HAVE_W32_SYSTEM
+  int ret = SetEvent (the_event2);
+  if (ret == 0)
+    log_error ("SetEvent for agent_kick_the_loop failed: %s\n",
+               w32_strerror (-1));
+#else
+# ifdef HAVE_PSELECT_NO_EINTR
+  write (event_pipe_fd, "", 1);
+# else
+  int ret = kill (main_thread_pid, SIGCONT);
+  if (ret < 0)
+    log_error ("sending signal for agent_kick_the_loop failed: %s\n",
+               gpg_strerror (gpg_error_from_syserror ()));
+# endif
+#endif
+}
+
+
 /* Connection handler loop.  Wait for connection requests and spawn a
  * thread after accepting a connection.  */
 static void
@@ -1449,12 +1492,14 @@ handle_connections (gnupg_fd_t listen_fd)
   gnupg_fd_t fd;
   int nfd;
   int saved_errno;
-  struct timespec abstime;
-  struct timespec curtime;
-  struct timespec timeout;
 #ifdef HAVE_W32_SYSTEM
   HANDLE events[2];
   unsigned int events_set;
+#else
+  int signo;
+# ifdef HAVE_PSELECT_NO_EINTR
+  int pipe_fd[2];
+# endif
 #endif
   int sock_inotify_fd = -1;
   int home_inotify_fd = -1;
@@ -1465,7 +1510,7 @@ handle_connections (gnupg_fd_t listen_fd)
   } listentbl[] = {
     { "std",     start_connection_thread },
   };
-
+  int have_homedir_inotify = 0;
 
   ret = npth_attr_init(&tattr);
   if (ret)
@@ -1478,10 +1523,23 @@ handle_connections (gnupg_fd_t listen_fd)
   npth_sigev_add (SIGUSR1);
   npth_sigev_add (SIGUSR2);
   npth_sigev_add (SIGINT);
+  npth_sigev_add (SIGCONT);
   npth_sigev_add (SIGTERM);
   npth_sigev_fini ();
+# ifdef HAVE_PSELECT_NO_EINTR
+  ret = gnupg_create_pipe (pipe_fd);
+  if (ret)
+    {
+      log_error ("pipe creation failed: %s\n", gpg_strerror (ret));
+      return;
+    }
+  event_pipe_fd = pipe_fd[1];
+# else
+  main_thread_pid = getpid ();
+# endif
 #else
-  events[0] = INVALID_HANDLE_VALUE;
+  events[0] = the_event2 = create_an_event ();
+  events[1] = INVALID_HANDLE_VALUE;
 #endif
 
   if (disable_check_own_socket)
@@ -1503,6 +1561,26 @@ handle_connections (gnupg_fd_t listen_fd)
   else
     have_homedir_inotify = 1;
 
+#if CHECK_OWN_SOCKET_INTERVAL > 0
+  if (!disable_check_own_socket && sock_inotify_fd == -1)
+    {
+      npth_t thread;
+
+      err = npth_create (&thread, &tattr, check_own_socket_thread, NULL);
+      if (err)
+        log_error ("error spawning check_own_socket_thread: %s\n", strerror (err));
+    }
+#endif
+
+  if (!have_homedir_inotify)
+    {
+      npth_t thread;
+
+      err = npth_create (&thread, &tattr, check_others_thread, NULL);
+      if (err)
+        log_error ("error spawning check_others_thread: %s\n", strerror (err));
+    }
+
   FD_ZERO (&fdset);
   FD_SET (FD2INT (listen_fd), &fdset);
   nfd = FD2NUM (listen_fd);
@@ -1520,9 +1598,6 @@ handle_connections (gnupg_fd_t listen_fd)
     }
 
   listentbl[0].l_fd = listen_fd;
-
-  npth_clock_gettime (&abstime);
-  abstime.tv_sec += TIMERTICK_INTERVAL;
 
   for (;;)
     {
@@ -1556,28 +1631,21 @@ handle_connections (gnupg_fd_t listen_fd)
 
       read_fdset = fdset;
 
-      npth_clock_gettime (&curtime);
-      if (!(npth_timercmp (&curtime, &abstime, <)))
-	{
-	  /* Timeout.  */
-	  handle_tick ();
-	  npth_clock_gettime (&abstime);
-	  abstime.tv_sec += TIMERTICK_INTERVAL;
-	}
-      npth_timersub (&abstime, &curtime, &timeout);
+#ifdef HAVE_PSELECT_NO_EINTR
+      FD_SET (pipe_fd[0], &read_fdset);
+      if (nfd < pipe_fd[0])
+        nfd = pipe_fd[0];
+#endif
 
 #ifndef HAVE_W32_SYSTEM
-      ret = npth_pselect (nfd+1, &read_fdset, NULL, NULL, &timeout,
+      ret = npth_pselect (nfd+1, &read_fdset, NULL, NULL, NULL,
                           npth_sigev_sigmask ());
       saved_errno = errno;
 
-      {
-        int signo;
-        while (npth_sigev_get_pending (&signo))
-          handle_signal (signo);
-      }
+      while (npth_sigev_get_pending (&signo))
+        handle_signal (signo);
 #else
-      ret = npth_eselect (nfd+1, &read_fdset, NULL, NULL, &timeout,
+      ret = npth_eselect (nfd+1, &read_fdset, NULL, NULL, NULL,
                           events, &events_set);
       saved_errno = errno;
 
@@ -1593,12 +1661,37 @@ handle_connections (gnupg_fd_t listen_fd)
           gnupg_sleep (1);
           continue;
 	}
+
+      if ((problem_detected & KEYBOXD_PROBLEM_SOCKET_TAKEOVER))
+        {
+          /* We may not remove the socket as it is now in use by another
+             server. */
+          inhibit_socket_removal = 1;
+          shutdown_pending = 2;
+          log_info ("this process is useless - shutting down\n");
+        }
+
+      if ((problem_detected & KEYBOXD_PROBLEM_HOMEDIR_REMOVED))
+        {
+          shutdown_pending = 1;
+          log_info ("homedir has been removed - shutting down\n");
+        }
+
       if (ret <= 0)
         {
           /* Interrupt or timeout.  Will be handled when calculating the
            * next timeout.  */
           continue;
         }
+
+#ifdef HAVE_PSELECT_NO_EINTR
+      if (FD_ISSET (pipe_fd[0], &read_fdset))
+        {
+          char buf[256];
+
+          read (pipe_fd[0], buf, sizeof buf);
+        }
+#endif
 
       /* The inotify fds are set even when a shutdown is pending (see
        * above).  So we must handle them in any case.  To avoid that
@@ -1670,13 +1763,21 @@ handle_connections (gnupg_fd_t listen_fd)
     close (sock_inotify_fd);
   if (home_inotify_fd != -1)
     close (home_inotify_fd);
+#ifdef HAVE_W32_SYSTEM
+  if (the_event2 != INVALID_HANDLE_VALUE)
+    CloseHandle (the_event2);
+#endif
+#ifdef HAVE_PSELECT_NO_EINTR
+  close (pipe_fd[0]);
+  close (pipe_fd[1]);
+#endif
   cleanup ();
   log_info (_("%s %s stopped\n"), gpgrt_strusage(11), gpgrt_strusage(13));
   npth_attr_destroy (&tattr);
 }
 
 
-
+#if CHECK_OWN_SOCKET_INTERVAL > 0
 /* Helper for check_own_socket.  */
 static gpg_error_t
 check_own_socket_pid_cb (void *opaque, const void *buffer, size_t length)
@@ -1687,19 +1788,17 @@ check_own_socket_pid_cb (void *opaque, const void *buffer, size_t length)
 }
 
 
-/* The thread running the actual check.  We need to run this in a
- * separate thread so that check_own_thread can be called from the
- * timer tick.  */
-static void *
-check_own_socket_thread (void *arg)
+/* Check whether we are still listening on our own socket.  In case
+   another gpg-agent process started after us has taken ownership of
+   our socket, we would linger around without any real task.  Thus we
+   better check once in a while whether we are really needed.  */
+static int
+do_check_own_socket (const char *sockname)
 {
   int rc;
-  char *sockname = arg;
   assuan_context_t ctx = NULL;
   membuf_t mb;
   char *buffer;
-
-  check_own_socket_running++;
 
   rc = assuan_new (&ctx);
   if (rc)
@@ -1738,57 +1837,70 @@ check_own_socket_thread (void *arg)
   xfree (buffer);
 
  leave:
-  xfree (sockname);
   if (ctx)
     assuan_release (ctx);
-  if (rc)
-    {
-      /* We may not remove the socket as it is now in use by another
-       * server. */
-      inhibit_socket_removal = 1;
-      shutdown_pending = 2;
-      log_info ("this process is useless - shutting down\n");
-    }
-  check_own_socket_running--;
-  return NULL;
+
+  return rc;
 }
 
-
-/* Check whether we are still listening on our own socket.  In case
- * another keyboxd process started after us has taken ownership of our
- * socket, we would linger around without any real task.  Thus we
- * better check once in a while whether we are really needed.  */
-static void
-check_own_socket (void)
+/* The thread running the actual check.  */
+static void *
+check_own_socket_thread (void *arg)
 {
   char *sockname;
-  npth_t thread;
-  npth_attr_t tattr;
-  int err;
 
-  if (disable_check_own_socket)
-    return;
-
-  if (check_own_socket_running || shutdown_pending)
-    return;  /* Still running or already shutting down.  */
+  (void)arg;
 
   sockname = make_filename_try (gnupg_socketdir (), KEYBOXD_SOCK_NAME, NULL);
   if (!sockname)
-    return; /* Out of memory.  */
+    return NULL; /* Out of memory.  */
 
-  err = npth_attr_init (&tattr);
-  if (err)
+  while (!problem_detected)
     {
-      xfree (sockname);
-      return;
-    }
-  npth_attr_setdetachstate (&tattr, NPTH_CREATE_DETACHED);
-  err = npth_create (&thread, &tattr, check_own_socket_thread, sockname);
-  if (err)
-    log_error ("error spawning check_own_socket_thread: %s\n", strerror (err));
-  npth_attr_destroy (&tattr);
-}
+      if (shutdown_pending)
+        goto leave;
 
+      gnupg_sleep (CHECK_OWN_SOCKET_INTERVAL);
+
+      if (do_check_own_socket (sockname))
+        problem_detected |= KEYBOXD_PROBLEM_SOCKET_TAKEOVER;
+    }
+
+  keyboxd_kick_the_loop ();
+
+ leave:
+  xfree (sockname);
+  return NULL;
+}
+#endif
+
+/* The thread running other checks.  */
+static void *
+check_others_thread (void *arg)
+{
+  const char *homedir = gnupg_homedir ();
+
+  (void)arg;
+
+  while (!problem_detected)
+    {
+      struct stat statbuf;
+
+      if (shutdown_pending)
+        goto leave;
+
+      gnupg_sleep (CHECK_PROBLEMS_INTERVAL);
+
+      /* Check whether the homedir is still available.  */
+      if (gnupg_stat (homedir, &statbuf) && errno == ENOENT)
+        problem_detected |= KEYBOXD_PROBLEM_HOMEDIR_REMOVED;
+    }
+
+  keyboxd_kick_the_loop ();
+
+ leave:
+  return NULL;
+}
 
 
 /* Figure out whether a keyboxd is available and running.  Prints an
