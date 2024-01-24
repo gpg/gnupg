@@ -304,14 +304,9 @@ w32src := $(topsrc)/build-aux/speedo/w32
 # Fixme: Do we need to build pkg-config for cross-building?
 
 speedo_spkgs  = \
-	libgpg-error npth libgcrypt
-
-ifeq ($(TARGETOS),w32)
-speedo_spkgs += \
-	zlib bzip2 sqlite
-endif
-
-speedo_spkgs += libassuan libksba ntbtls gnupg
+	libgpg-error npth libgcrypt \
+	zlib bzip2 sqlite \
+        libassuan libksba ntbtls gnupg
 
 ifeq ($(STATIC),0)
 speedo_spkgs += gpgme
@@ -546,7 +541,7 @@ speedo_pkg_gnupg_configure = \
 else
 speedo_pkg_gnupg_configure = --disable-g13 --enable-wks-tools
 endif
-speedo_pkg_gnupg_extracflags = -g
+speedo_pkg_gnupg_extracflags =
 
 # Create the version info files only for W32 so that they won't get
 # installed if for example INSTALL_PREFIX=/usr/local is used.
