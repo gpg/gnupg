@@ -745,6 +745,11 @@ learn_status_cb (void *opaque, const char *line)
  *  card-util.c
  *  keyedit_menu
  *  card_store_key_with_backup  (Woth force to remove secret key data)
+ *
+ * If force has the value 2 the --reallyforce option is also used.
+ * This is to make sure the sshadow key overwrites the private key.
+ * Note that this option is gnupg 2.2 specific because since 2.4.4 an
+ * ephemeral private key store is used instead.
  */
 int
 agent_scd_learn (struct agent_card_info_s *info, int force)
@@ -764,6 +769,7 @@ agent_scd_learn (struct agent_card_info_s *info, int force)
 
   parm.ctx = agent_ctx;
   rc = assuan_transact (agent_ctx,
+                        force == 2? "LEARN --sendinfo --force --reallyforce" :
                         force ? "LEARN --sendinfo --force" : "LEARN --sendinfo",
                         dummy_data_cb, NULL, default_inq_cb, &parm,
                         learn_status_cb, info);

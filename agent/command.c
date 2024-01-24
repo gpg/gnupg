@@ -1042,7 +1042,7 @@ cmd_readkey (assuan_context_t ctx, char *line)
       /* Shadow-key is or is not available in our key storage.  In
        * any case we need to check whether we need to update with
        * a new display-s/n or whatever.  */
-      rc = agent_write_shadow_key (grip, serialno, keyid, pkbuf, 0,
+      rc = agent_write_shadow_key (grip, serialno, keyid, pkbuf, 0, 0,
                                    dispserialno);
       if (rc)
         goto leave;
@@ -1855,16 +1855,18 @@ cmd_learn (assuan_context_t ctx, char *line)
 {
   ctrl_t ctrl = assuan_get_pointer (ctx);
   gpg_error_t err;
-  int send, sendinfo, force;
+  int send, sendinfo, force, reallyforce;
 
   send = has_option (line, "--send");
   sendinfo = send? 1 : has_option (line, "--sendinfo");
   force = has_option (line, "--force");
+  reallyforce = has_option (line, "--reallyforce");
 
   if (ctrl->restricted)
     return leave_cmd (ctx, gpg_error (GPG_ERR_FORBIDDEN));
 
-  err = agent_handle_learn (ctrl, send, sendinfo? ctx : NULL, force);
+  err = agent_handle_learn (ctrl, send, sendinfo? ctx : NULL,
+                            force, reallyforce);
   return leave_cmd (ctx, err);
 }
 
@@ -2427,11 +2429,11 @@ cmd_import_key (assuan_context_t ctx, char *line)
       err = agent_protect (key, passphrase, &finalkey, &finalkeylen,
                            ctrl->s2k_count);
       if (!err)
-        err = agent_write_private_key (grip, finalkey, finalkeylen, force,
+        err = agent_write_private_key (grip, finalkey, finalkeylen, force, 0,
                                        NULL, NULL, NULL, opt_timestamp);
     }
   else
-    err = agent_write_private_key (grip, key, realkeylen, force,
+    err = agent_write_private_key (grip, key, realkeylen, force, 0,
                                    NULL, NULL, NULL, opt_timestamp);
 
  leave:

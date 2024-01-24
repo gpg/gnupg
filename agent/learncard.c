@@ -297,9 +297,12 @@ send_cert_back (ctrl_t ctrl, const char *id, void *assuan_context)
 }
 
 /* Perform the learn operation.  If ASSUAN_CONTEXT is not NULL and
-   SEND is true all new certificates are send back via Assuan.  */
+   SEND is true all new certificates are send back via Assuan.  If
+   REALLYFORCE is true a private key will be overwritten by a stub
+   key. */
 int
-agent_handle_learn (ctrl_t ctrl, int send, void *assuan_context, int force)
+agent_handle_learn (ctrl_t ctrl, int send, void *assuan_context,
+                    int force, int reallyforce)
 {
   int rc;
   struct kpinfo_cb_parm_s parm;
@@ -414,7 +417,7 @@ agent_handle_learn (ctrl_t ctrl, int send, void *assuan_context, int force)
 
         agent_card_getattr (ctrl, "$DISPSERIALNO", &dispserialno);
         rc = agent_write_shadow_key (grip, serialno, item->id, pubkey,
-                                     force, dispserialno);
+                                     force, reallyforce, dispserialno);
         xfree (dispserialno);
       }
       xfree (pubkey);

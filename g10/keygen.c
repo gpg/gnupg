@@ -5201,8 +5201,11 @@ card_store_key_with_backup (ctrl_t ctrl, PKT_public_key *sub_psk,
   if (err)
     log_error ("writing card key to backup file: %s\n", gpg_strerror (err));
   else
-    /* Remove secret key data in agent side.  */
-    agent_scd_learn (NULL, 1);
+    {
+      /* Remove secret key data in agent side.  We use force 2 here to
+       * allow overwriting of the temporary private key.  */
+      agent_scd_learn (NULL, 2);
+    }
 
  leave:
   xfree (ecdh_param_str);

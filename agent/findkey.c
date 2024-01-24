@@ -82,7 +82,8 @@ fname_from_keygrip (const unsigned char *grip, int for_new)
  * recorded as creation date.  */
 int
 agent_write_private_key (const unsigned char *grip,
-                         const void *buffer, size_t length, int force,
+                         const void *buffer, size_t length,
+                         int force, int reallyforce,
                          const char *serialno, const char *keyref,
                          const char *dispserialno,
                          time_t timestamp)
@@ -165,10 +166,13 @@ agent_write_private_key (const unsigned char *grip,
   /* Check that we do not update a regular key with a shadow key.  */
   if (is_regular && gpg_err_code (is_shadowed_key (key)) == GPG_ERR_TRUE)
     {
-      log_info ("updating regular key file '%s'"
-                " by a shadow key inhibited\n", oldfname);
-      err = 0;  /* Simply ignore the error.  */
-      goto leave;
+      if (!reallyforce)
+        {
+          log_info ("updating regular key file '%s'"
+                    " by a shadow key inhibited\n", oldfname);
+          err = 0;  /* Simply ignore the error.  */
+          goto leave;
+        }
     }
   /* Check that we update a regular key only in force mode.  */
   if (is_regular && !force)
@@ -1704,12 +1708,13 @@ agent_delete_key (ctrl_t ctrl, const char *desc_text,
  * Shadow key is created by an S-expression public key in PKBUF and
  * card's SERIALNO and the IDSTRING.  With FORCE passed as true an
  * existing key with the given GRIP will get overwritten. If
- * DISPSERIALNO is not NULL the human readable s/n will also be
- * recorded in the key file.   */
+ * REALLYFORCE is also true, even a private key will be overwritten by
+ * a shadown key.  If DISPSERIALNO is not NULL the human readable s/n
+ * will also be recorded in the key file.  */
 gpg_error_t
 agent_write_shadow_key (const unsigned char *grip,
                         const char *serialno, const char *keyid,
-                        const unsigned char *pkbuf, int force,
+                        const unsigned char *pkbuf, int force, int reallyforce,
                         const char *dispserialno)
 {
   gpg_error_t err;
@@ -1737,7 +1742,7 @@ agent_write_shadow_key (const unsigned char *grip,
     }
 
   len = gcry_sexp_canon_len (shdkey, 0, NULL, NULL);
-  err = agent_write_private_key (grip, shdkey, len, force,
+  err = agent_write_private_key (grip, shdkey, len, force, reallyforce,
                                  serialno, keyid, dispserialno, 0);
   xfree (shdkey);
   if (err)

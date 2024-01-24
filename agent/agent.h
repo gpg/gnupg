@@ -422,7 +422,8 @@ void start_command_handler_ssh (ctrl_t, gnupg_fd_t);
 gpg_error_t agent_modify_description (const char *in, const char *comment,
                                       const gcry_sexp_t key, char **result);
 int agent_write_private_key (const unsigned char *grip,
-                             const void *buffer, size_t length, int force,
+                             const void *buffer, size_t length,
+                             int force, int reallyforce,
                              const char *serialno, const char *keyref,
                              const char *dispserialno, time_t timestamp);
 gpg_error_t agent_key_from_file (ctrl_t ctrl,
@@ -548,6 +549,7 @@ gpg_error_t s2k_hash_passphrase (const char *passphrase, int hashalgo,
 gpg_error_t agent_write_shadow_key (const unsigned char *grip,
                                     const char *serialno, const char *keyid,
                                     const unsigned char *pkbuf, int force,
+                                    int reallyforce,
                                     const char *dispserialno);
 
 
@@ -628,7 +630,8 @@ void agent_card_killscd (void);
 
 
 /*-- learncard.c --*/
-int agent_handle_learn (ctrl_t ctrl, int send, void *assuan_context, int force);
+int agent_handle_learn (ctrl_t ctrl, int send, void *assuan_context,
+                        int force, int reallyforce);
 
 
 /*-- cvt-openpgp.c --*/
