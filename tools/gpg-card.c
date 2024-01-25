@@ -1397,11 +1397,12 @@ cmd_checkkeys (card_info_t callerinfo, char *argstr)
 
   if (!callerinfo)
     return print_help
-      ("CHECKKEYS [--ondisk] [--delete-clear-copy]\n\n"
+      ("CHECKKEYS [--ondisk] [--delete-clear-copy] [--delete-protected-copy]"
+       "\n\n"
        "Print a list of keys on all inserted cards.  With --ondisk only\n"
        "keys are listed which also have a copy on disk.  Missing shadow\n"
-       "keys are created. With --delete-clear, copies of keys also stored\n"
-       "on disk without any protection will be deleted.\n"
+       "keys are created. With --delete-clear-copy, copies of keys also\n"
+       "stored on disk without any protection will be deleted.\n"
        , 0);
 
 
@@ -1461,11 +1462,13 @@ cmd_checkkeys (card_info_t callerinfo, char *argstr)
               scd_readkey (kinfo->keyref, 1, NULL);
               err = scd_havekey_info (kinfo->grip, &infostr);
             }
-          if (err)
+          if (err && gpg_err_code (err) != GPG_ERR_NOT_FOUND)
             log_error ("Error getting infos for a key: %s\n",
                        gpg_strerror (err));
 
-          if (opt_ondisk && infostr && !strcmp (infostr, "shadowed"))
+          if (gpg_err_code (err) == GPG_ERR_NOT_FOUND)
+            ; /* does not make sense to show this.  */
+          else if (opt_ondisk && infostr && !strcmp (infostr, "shadowed"))
             ; /* Don't print this one.  */
           else
             {
