@@ -1,5 +1,9 @@
-Noteworthy changes in version 2.4.4 (unreleased)
+Noteworthy changes in version 2.4.4 (2024-01-25)
 ------------------------------------------------
+
+  * gpg: Do not keep an unprotected smartcard backup key on disk.  See
+    https://gnupg.org/blog/20240125-smartcard-backup-key.html for a
+    security advisory.  [T6944]
 
   * gpg: Allow to specify seconds since Epoch beyond 2038 on 32-bit
     platforms.  [T6736]
@@ -10,10 +14,13 @@ Noteworthy changes in version 2.4.4 (unreleased)
 
   * gpg: Add option --with-v5-fingerprint.  [T6705]
 
-  * gpg: Fix validity of re-imported keys.  [T6399]
+  * gpg: Add sub-option ignore-attributes to --import-options.
+    [rGd4976e35d2]
 
   * gpg: Add --list-filter properties sig_expires/sig_expires_d.
     [rGbf662d0f93af]
+
+  * gpg: Fix validity of re-imported keys.  [T6399]
 
   * gpg: Report BEGIN_ status before examining the input.  [T6481]
 
