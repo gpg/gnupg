@@ -5,13 +5,13 @@
 # Yoshihiro Kajiki <kajiki@ylug.org>, 1999.
 # Takashi P.KATOH, 2002.
 # NIIBE Yutaka <gniibe@fsij.org>, 2013, 2014, 2015, 2016, 2017, 2018, 2019,
-# 2020, 2021, 2022, 2023.
+# 2020, 2021, 2022, 2023, 2024.
 #
 msgid ""
 msgstr ""
 "Project-Id-Version: gnupg 2.4.3\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"PO-Revision-Date: 2023-11-20 10:50+0900\n"
+"PO-Revision-Date: 2024-01-25 09:06+0900\n"
 "Last-Translator: NIIBE Yutaka <gniibe@fsij.org>\n"
 "Language-Team: none\n"
 "Language: ja\n"
@@ -8728,6 +8728,9 @@ msgstr "証明書をデータオブジェクトに保管します"
 
 msgid "store a private key to a data object"
 msgstr "プライベート鍵をデータオブジェクトに保管する"
+
+msgid "run various checks on the keys"
+msgstr "鍵に対して様々なチェックを実行する"
 
 msgid "Yubikey management commands"
 msgstr "Yubikey管理コマンド"
