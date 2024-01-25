@@ -762,8 +762,8 @@ msgstr ""
 
 #, c-format
 msgid ""
-"Do you really want to delete the key identified by keygrip%%0A  %s%%0A  %%C"
-"%%0A?"
+"Do you really want to delete the key identified by keygrip%%0A  %s%%0A  "
+"%%C%%0A?"
 msgstr ""
 "%%0A  %s%%0A  %%C%%0A anahtar maşası tarafından tanımlanan anahtarı silmek "
 "istediğnizden emin misiniz?"
@@ -1800,12 +1800,12 @@ msgid "using cipher %s.%s\n"
 msgstr "%s.%s şifrelemesi kullanılıyor\n"
 
 #, c-format
-msgid "'%s' already compressed\n"
-msgstr "'%s' halihazırda sıkıştırılmış\n"
-
-#, c-format
 msgid "WARNING: '%s' is an empty file\n"
 msgstr "UYARI: '%s', boş bir dosya\n"
+
+#, c-format
+msgid "'%s' already compressed\n"
+msgstr "'%s' halihazırda sıkıştırılmış\n"
 
 #, c-format
 msgid "digest algorithm '%s' may not be used in %s mode\n"
@@ -8909,6 +8909,9 @@ msgstr "bir veri nesnesine bir sertifika depola"
 
 msgid "store a private key to a data object"
 msgstr "bir veri nesnesine bir özel anahtar depola"
+
+msgid "run various checks on the keys"
+msgstr ""
 
 msgid "Yubikey management commands"
 msgstr "Yubikey yönetim konsolu"

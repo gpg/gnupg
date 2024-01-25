@@ -786,8 +786,8 @@ msgstr "Vyžádáno použití klíče%%0A  %s%%0A  %s%%0APřejete si to povolit?
 
 #, c-format
 msgid ""
-"Do you really want to delete the key identified by keygrip%%0A  %s%%0A  %%C"
-"%%0A?"
+"Do you really want to delete the key identified by keygrip%%0A  %s%%0A  "
+"%%C%%0A?"
 msgstr ""
 "Opravdu chcete smazat klíč určený pomocí keygripu%%0A  %s%%0A  %%C%%0A?"
 
@@ -1832,12 +1832,12 @@ msgid "using cipher %s.%s\n"
 msgstr "použití šifry %s.%s\n"
 
 #, c-format
-msgid "'%s' already compressed\n"
-msgstr "„%s“ je již zkomprimován\n"
-
-#, c-format
 msgid "WARNING: '%s' is an empty file\n"
 msgstr "POZOR: soubor „%s“ je prázdný\n"
+
+#, c-format
+msgid "'%s' already compressed\n"
+msgstr "„%s“ je již zkomprimován\n"
 
 #, c-format
 msgid "digest algorithm '%s' may not be used in %s mode\n"
@@ -8974,6 +8974,9 @@ msgstr "uloží certifikát do datového objektu"
 msgid "store a private key to a data object"
 msgstr "uloží soukromý klíč do datového objektu"
 
+msgid "run various checks on the keys"
+msgstr ""
+
 msgid "Yubikey management commands"
 msgstr "Příkazy pro správu Yubikey"
 
@@ -10568,8 +10571,8 @@ msgstr "spravuje historii příkazů"
 #~ "\n"
 #~ "Note that the examples given above for levels 2 and 3 are *only* "
 #~ "examples.\n"
-#~ "In the end, it is up to you to decide just what \"casual\" and \"extensive"
-#~ "\"\n"
+#~ "In the end, it is up to you to decide just what \"casual\" and "
+#~ "\"extensive\"\n"
 #~ "mean to you when you sign other keys.\n"
 #~ "\n"
 #~ "If you don't know what the right answer is, answer \"0\"."
@@ -10616,8 +10619,8 @@ msgstr "spravuje historii příkazů"
 #~ "Answer \"yes\" if you really want to delete this user ID.\n"
 #~ "All certificates are then also lost!"
 #~ msgstr ""
-#~ "Pokud opravdu chcete smazat tento identifikátor uživatele, odpovězte \"ano"
-#~ "\".\n"
+#~ "Pokud opravdu chcete smazat tento identifikátor uživatele, odpovězte "
+#~ "\"ano\".\n"
 #~ "Všechny certifikáty budou také ztraceny!"
 
 #~ msgid "Answer \"yes\" if it is okay to delete the subkey"

@@ -881,8 +881,28 @@ msgid "waiting for process %d to terminate failed: %s\n"
 msgstr "falha ao aguardar pelo encerramento do processo %d: %s\n"
 
 #, c-format
-msgid "waiting for process to terminate failed: ec=%d\n"
-msgstr "falha ao esperar que o processo terminasse: ec=%d\n"
+msgid "error running '%s': probably not installed\n"
+msgstr ""
+
+#, fuzzy, c-format
+#| msgid "error accessing '%s': http status %u\n"
+msgid "error running '%s': exit status %d\n"
+msgstr "erro ao aceder '%s': status http %u\n"
+
+#, fuzzy, c-format
+#| msgid "error opening '%s': %s\n"
+msgid "error running '%s': terminated\n"
+msgstr "erro ao abrir '%s': %s\n"
+
+#, fuzzy, c-format
+#| msgid "waiting for process %d to terminate failed: %s\n"
+msgid "waiting for processes to terminate failed: %s\n"
+msgstr "falha ao aguardar pelo encerramento do processo %d: %s\n"
+
+#, fuzzy, c-format
+#| msgid "error getting list of cards: %s\n"
+msgid "error getting exit code of process %d: %s\n"
+msgstr "erro ao obter a lista de cartões: %s\n"
 
 #, c-format
 msgid "can't connect to '%s': %s\n"
@@ -8968,8 +8988,15 @@ msgstr "armazenar um certificado em um objeto de dados"
 msgid "store a private key to a data object"
 msgstr "armazenar uma chave privada em um objeto de dados"
 
+msgid "run various checks on the keys"
+msgstr ""
+
 msgid "Yubikey management commands"
 msgstr "comandos de gerir uma Yubikey"
 
 msgid "manage the command history"
 msgstr "gerir o histórico de comandos"
+
+#, c-format
+#~ msgid "waiting for process to terminate failed: ec=%d\n"
+#~ msgstr "falha ao esperar que o processo terminasse: ec=%d\n"

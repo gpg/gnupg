@@ -170,14 +170,15 @@ msgid ""
 "Please enter the passphrase to protect the imported object within the %s "
 "system."
 msgstr ""
-"Proszę wprowadzić hasło do zabezpieczenia importowanego obiektu w systemie %s."
+"Proszę wprowadzić hasło do zabezpieczenia importowanego obiektu w systemie "
+"%s."
 
 msgid ""
 "This key (or subkey) is not protected with a passphrase.  Please enter a new "
 "passphrase to export it."
 msgstr ""
-"Ten klucz (lub podklucz) nie jest zabezpieczony hasłem. Proszę wprowadzić nowe "
-"hasło, aby go wyeksportować."
+"Ten klucz (lub podklucz) nie jest zabezpieczony hasłem. Proszę wprowadzić "
+"nowe hasło, aby go wyeksportować."
 
 #, c-format
 msgid "ssh keys greater than %d bits are not supported\n"
@@ -221,8 +222,8 @@ msgid ""
 "Please enter a passphrase to protect the received secret key%%0A   %s%%0A   "
 "%s%%0Awithin gpg-agent's key storage"
 msgstr ""
-"Proszę wprowadzić hasło do zabezpieczenia odebranego klucza tajnego%%0A   %s"
-"%%0A   %s%%0Aw miejscu przechowywania kluczy gpg-agenta"
+"Proszę wprowadzić hasło do zabezpieczenia odebranego klucza tajnego%%0A   "
+"%s%%0A   %s%%0Aw miejscu przechowywania kluczy gpg-agenta"
 
 #, c-format
 msgid "failed to create stream from socket: %s\n"
@@ -714,8 +715,8 @@ msgid ""
 "Please verify that the certificate identified as:%%0A  \"%s\"%%0Ahas the "
 "fingerprint:%%0A  %s"
 msgstr ""
-"Proszę sprawdzić, że certyfikat zidentyfikowany jako:%%0a  „%s”%%0Ama "
-"odcisk:%%0A  %s"
+"Proszę sprawdzić, że certyfikat zidentyfikowany jako:%%0a  „%s”%%0Ama odcisk:"
+"%%0A  %s"
 
 #. TRANSLATORS: "Correct" is the label of a button and intended
 #. to be hit if the fingerprint matches the one of the CA.  The
@@ -752,8 +753,8 @@ msgstr "Zażądano użycia klucza%%0A  %s%%0A  %s%%0ACzy zezwolić na to?"
 
 #, c-format
 msgid ""
-"Do you really want to delete the key identified by keygrip%%0A  %s%%0A  %%C"
-"%%0A?"
+"Do you really want to delete the key identified by keygrip%%0A  %s%%0A  "
+"%%C%%0A?"
 msgstr ""
 "Czy na pewno usunąć klucz identyfikowany przez uchwyt%%0A  %s%%0A  %%C%%0A?"
 
@@ -1797,12 +1798,12 @@ msgid "using cipher %s.%s\n"
 msgstr "szyfrem %s.%s\n"
 
 #, c-format
-msgid "'%s' already compressed\n"
-msgstr "„%s” już jest skompresowany\n"
-
-#, c-format
 msgid "WARNING: '%s' is an empty file\n"
 msgstr "OSTRZEŻENIE: plik „%s” jest pusty\n"
+
+#, c-format
+msgid "'%s' already compressed\n"
+msgstr "„%s” już jest skompresowany\n"
 
 #, c-format
 msgid "digest algorithm '%s' may not be used in %s mode\n"
@@ -2216,8 +2217,7 @@ msgstr "w definicji grupy „%s” brak znaku „=”\n"
 
 #, c-format
 msgid "WARNING: unsafe ownership on homedir '%s'\n"
-msgstr ""
-"OSTRZEŻENIE: niebezpieczne prawa własności do katalogu domowego „%s”\n"
+msgstr "OSTRZEŻENIE: niebezpieczne prawa własności do katalogu domowego „%s”\n"
 
 #, c-format
 msgid "WARNING: unsafe ownership on configuration file '%s'\n"
@@ -2316,7 +2316,8 @@ msgid "show revoked and expired subkeys in key listings"
 msgstr "pokazywanie unieważnionych i wygasłych podkluczy na listach kluczy"
 
 msgid "show signatures with invalid algorithms during signature listings"
-msgstr "pokazywanie podpisów z niepoprawnymi algorytmami przy wypisywaniu podpisów"
+msgstr ""
+"pokazywanie podpisów z niepoprawnymi algorytmami przy wypisywaniu podpisów"
 
 msgid "show the keyring name in key listings"
 msgstr "pokazywanie nazwy zbioru kluczy na listach kluczy"
@@ -3536,7 +3537,8 @@ msgstr "Dostępne są podklucze tajne.\n"
 
 msgid ""
 "Note: the local copy of the secret key will only be deleted with \"save\".\n"
-msgstr "Uwaga: kopia lokalna klucza tajnego będzie usunięta tylko z \"save\".\n"
+msgstr ""
+"Uwaga: kopia lokalna klucza tajnego będzie usunięta tylko z \"save\".\n"
 
 msgid "Need the secret key to do this.\n"
 msgstr "Do wykonania tej operacji potrzebny jest klucz tajny.\n"
@@ -4483,8 +4485,7 @@ msgstr "tworzenie mimo to\n"
 #, c-format
 msgid "Note: Use \"%s %s\" for a full featured key generation dialog.\n"
 msgstr ""
-"Uwaga: pełną funkcjonalność generowania klucza można uzyskać przez „%s "
-"%s”.\n"
+"Uwaga: pełną funkcjonalność generowania klucza można uzyskać przez „%s %s”.\n"
 
 #, c-format
 msgid "Key generation canceled.\n"
@@ -4827,7 +4828,9 @@ msgstr "błąd odszyfrowywania: %s\n"
 
 #, c-format
 msgid "operation forced to fail due to unfulfilled compliance rules\n"
-msgstr "wymuszono niepowodzenie operacji ze względu na niespełnione zasady zgodności\n"
+msgstr ""
+"wymuszono niepowodzenie operacji ze względu na niespełnione zasady "
+"zgodności\n"
 
 #, c-format
 msgid "Note: sender requested \"for-your-eyes-only\"\n"
@@ -4839,8 +4842,7 @@ msgstr "pierwotna nazwa pliku='%.*s'\n"
 
 #, c-format
 msgid "standalone revocation - use \"gpg --import\" to apply\n"
-msgstr ""
-"osobny certyfikat unieważnienia - użyj „gpg --import” aby go wczytać\n"
+msgstr "osobny certyfikat unieważnienia - użyj „gpg --import” aby go wczytać\n"
 
 #, c-format
 msgid "no signature found\n"
@@ -5020,15 +5022,13 @@ msgstr ""
 
 #, c-format
 msgid "%s:%u: \"%s\" is obsolete in this file - it only has effect in %s\n"
-msgstr ""
-"%s:%u: „%s” jest przestarzałe w tym pliku - ma znaczenie tylko w %s\n"
+msgstr "%s:%u: „%s” jest przestarzałe w tym pliku - ma znaczenie tylko w %s\n"
 
 #, c-format
 msgid ""
 "WARNING: \"%s%s\" is an obsolete option - it has no effect except on %s\n"
 msgstr ""
-"OSTRZEŻENIE: „%s%s” jest przestarzałą opcją - nie ma efektu z wyjątkiem "
-"%s\n"
+"OSTRZEŻENIE: „%s%s” jest przestarzałą opcją - nie ma efektu z wyjątkiem %s\n"
 
 msgid "Uncompressed"
 msgstr "Nieskompresowany"
@@ -5132,7 +5132,8 @@ msgid "Do you really want to permanently delete the OpenPGP secret key:"
 msgstr "Czy na pewno trwale usunąć klucz prywatny OpenPGP:"
 
 msgid "Please enter the passphrase to export the secret key with keygrip:"
-msgstr "Proszę wprowadzić hasło do wyeksportowania klucza prywatnego z uchwytem:"
+msgstr ""
+"Proszę wprowadzić hasło do wyeksportowania klucza prywatnego z uchwytem:"
 
 #, c-format
 msgid ""
@@ -5381,7 +5382,9 @@ msgstr "Uwaga: Data ważności tego klucza upłynęła!\n"
 
 #, c-format
 msgid "WARNING: The key's User ID is not certified with a trusted signature!\n"
-msgstr "OSTRZEŻENIE: Identyfikator użytkownika tego klucza nie jest poświadczony zaufanym podpisem!\n"
+msgstr ""
+"OSTRZEŻENIE: Identyfikator użytkownika tego klucza nie jest poświadczony "
+"zaufanym podpisem!\n"
 
 #, c-format
 msgid "WARNING: This key is not certified with a trusted signature!\n"
@@ -6066,8 +6069,7 @@ msgstr[2] "Adres e-mail „%s” jest powiązany z %d kluczami!"
 
 msgid "  Since this binding's policy was 'auto', it has been changed to 'ask'."
 msgstr ""
-"  Ponieważ polityką tego powiązania było „auto”, została zmieniona na „"
-"ask”."
+"  Ponieważ polityką tego powiązania było „auto”, została zmieniona na „ask”."
 
 #, c-format
 msgid ""
@@ -7862,8 +7864,7 @@ msgstr "nieprawidłowy znacznik czasu w „%s”, linia %u\n"
 
 #, c-format
 msgid "WARNING: invalid cache file hash in '%s' line %u\n"
-msgstr ""
-"UWAGA: nieprawidłowy skrót pliku pamięci podręcznej w „%s”, linia %u\n"
+msgstr "UWAGA: nieprawidłowy skrót pliku pamięci podręcznej w „%s”, linia %u\n"
 
 #, c-format
 msgid "detected errors in cache dir file\n"
@@ -7876,8 +7877,8 @@ msgstr "proszę sprawdzić przyczynę i ręcznie usunąć ten plik\n"
 #, c-format
 msgid "failed to create temporary cache dir file '%s': %s\n"
 msgstr ""
-"nie udało się utworzyć pliku tymczasowego katalogu pamięci podręcznej „"
-"%s”: %s\n"
+"nie udało się utworzyć pliku tymczasowego katalogu pamięci podręcznej „%s”: "
+"%s\n"
 
 #, c-format
 msgid "error renaming '%s' to '%s': %s\n"
@@ -9044,6 +9045,9 @@ msgid "store a certificate to a data object"
 msgstr "dodanie certyfikatu do pamięci podręcznej"
 
 msgid "store a private key to a data object"
+msgstr ""
+
+msgid "run various checks on the keys"
 msgstr ""
 
 msgid "Yubikey management commands"
