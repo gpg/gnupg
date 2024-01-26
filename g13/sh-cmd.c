@@ -83,17 +83,17 @@ skip_options (const char *line)
 
 
 /* Check whether the option NAME appears in LINE.  */
-/* static int */
-/* has_option (const char *line, const char *name) */
-/* { */
-/*   const char *s; */
-/*   int n = strlen (name); */
+static int
+has_option (const char *line, const char *name)
+{
+  const char *s;
+  int n = strlen (name);
 
-/*   s = strstr (line, name); */
-/*   if (s && s >= skip_options (line)) */
-/*     return 0; */
-/*   return (s && (s == line || spacep (s-1)) && (!s[n] || spacep (s+n))); */
-/* } */
+  s = strstr (line, name);
+  if (s && s >= skip_options (line))
+    return 0;
+  return (s && (s == line || spacep (s-1)) && (!s[n] || spacep (s+n)));
+}
 
 
 /* Helper to print a message while leaving a command.  */
@@ -431,10 +431,11 @@ cmd_getkeyblob (assuan_context_t ctx, char *line)
 
 
 static const char hlp_mount[] =
-  "MOUNT <type>\n"
+  "MOUNT [--no-mount] <type>\n"
   "\n"
   "Mount an encrypted partition on the current device.\n"
-  "<type> must be \"dm-crypt\" for now.";
+  "<type> must be \"dm-crypt\" for now.  Option --no-mount\n"
+  "stops right before calling the mount command.\n";
 static gpg_error_t
 cmd_mount (assuan_context_t ctx, char *line)
 {
@@ -443,6 +444,9 @@ cmd_mount (assuan_context_t ctx, char *line)
   unsigned char *keyblob = NULL;
   size_t keybloblen;
   tupledesc_t tuples = NULL;
+  int nomount;
+
+  nomount = has_option (line, "--no-mount");
 
   line = skip_options (line);
 
@@ -493,7 +497,7 @@ cmd_mount (assuan_context_t ctx, char *line)
 
   err = sh_dmcrypt_mount_container (ctrl,
                                     ctrl->server_local->devicename,
-                                    tuples);
+                                    tuples, nomount);
 
  leave:
   destroy_tupledesc (tuples);

@@ -779,8 +779,8 @@ msgstr ""
 
 #, fuzzy, c-format
 msgid ""
-"Do you really want to delete the key identified by keygrip%%0A  %s%%0A  %%C"
-"%%0A?"
+"Do you really want to delete the key identified by keygrip%%0A  %s%%0A  "
+"%%C%%0A?"
 msgstr "Anda ingin menghapus kunci terpilih ini? "
 
 #, fuzzy
@@ -1585,11 +1585,11 @@ msgstr "Silakan pilih kunci yang anda inginkan:\n"
 
 #, fuzzy, c-format
 msgid "   (%d) RSA\n"
-msgstr "  (%d) RSA (hanya menandai)\n"
+msgstr "   (%d) RSA (hanya menandai)\n"
 
 #, fuzzy, c-format
 msgid "   (%d) ECC\n"
-msgstr "  (%d) DSA dan ElGamal (baku)\n"
+msgstr "   (%d) DSA dan ElGamal (baku)\n"
 
 msgid "Invalid selection.\n"
 msgstr "Pilihan tidak valid.\n"
@@ -1887,14 +1887,14 @@ msgid "using cipher %s.%s\n"
 msgstr "menggunakan cipher %s\n"
 
 #, fuzzy, c-format
-#| msgid "`%s' already compressed\n"
-msgid "'%s' already compressed\n"
-msgstr "`%s' sudah dikompresi\n"
-
-#, fuzzy, c-format
 #| msgid "WARNING: `%s' is an empty file\n"
 msgid "WARNING: '%s' is an empty file\n"
 msgstr "PERINGATAN: `%s' adalah file kosong\n"
+
+#, fuzzy, c-format
+#| msgid "`%s' already compressed\n"
+msgid "'%s' already compressed\n"
+msgstr "`%s' sudah dikompresi\n"
 
 #, fuzzy, c-format
 msgid "digest algorithm '%s' may not be used in %s mode\n"
@@ -4360,43 +4360,43 @@ msgstr ""
 
 #, fuzzy, c-format
 msgid "   (%d) RSA and RSA%s\n"
-msgstr "  (%d) DSA dan ElGamal (baku)\n"
+msgstr "   (%d) DSA dan ElGamal (baku)\n"
 
 #, fuzzy, c-format
 msgid "   (%d) DSA and Elgamal%s\n"
-msgstr "  (%d) DSA dan ElGamal (baku)\n"
+msgstr "   (%d) DSA dan ElGamal (baku)\n"
 
 #, fuzzy, c-format
 #| msgid "   (%d) DSA (sign only)\n"
 msgid "   (%d) DSA (sign only)%s\n"
-msgstr "  (%d) DSA (hanya menandai)\n"
+msgstr "   (%d) DSA (hanya menandai)\n"
 
 #, fuzzy, c-format
 #| msgid "   (%d) RSA (sign only)\n"
 msgid "   (%d) RSA (sign only)%s\n"
-msgstr "  (%d) RSA (hanya menandai)\n"
+msgstr "   (%d) RSA (hanya menandai)\n"
 
 #, fuzzy, c-format
 msgid "   (%d) Elgamal (encrypt only)%s\n"
-msgstr "  (%d) ElGamal (hanya enkripsi)\n"
+msgstr "   (%d) ElGamal (hanya enkripsi)\n"
 
 #, fuzzy, c-format
 #| msgid "   (%d) RSA (encrypt only)\n"
 msgid "   (%d) RSA (encrypt only)%s\n"
-msgstr "  (%d) RSA (hanya enkripsi)\n"
+msgstr "   (%d) RSA (hanya enkripsi)\n"
 
 #, fuzzy, c-format
 msgid "   (%d) DSA (set your own capabilities)%s\n"
-msgstr "  (%d) RSA (hanya enkripsi)\n"
+msgstr "   (%d) RSA (hanya enkripsi)\n"
 
 #, fuzzy, c-format
 msgid "   (%d) RSA (set your own capabilities)%s\n"
-msgstr "  (%d) RSA (hanya enkripsi)\n"
+msgstr "   (%d) RSA (hanya enkripsi)\n"
 
 #, fuzzy, c-format
 #| msgid "   (%d) ElGamal (sign and encrypt)\n"
 msgid "   (%d) ECC (sign and encrypt)%s\n"
-msgstr "  (%d) ElGamal (tandai dan enkripsi)\n"
+msgstr "   (%d) ElGamal (tandai dan enkripsi)\n"
 
 #, fuzzy
 #| msgid " (default)"
@@ -7461,7 +7461,7 @@ msgstr ""
 
 #, fuzzy, c-format
 msgid "   (%d) Existing key\n"
-msgstr "  (%d) RSA (hanya enkripsi)\n"
+msgstr "   (%d) RSA (hanya enkripsi)\n"
 
 #, c-format
 msgid "   (%d) Existing key from card\n"
@@ -7477,11 +7477,11 @@ msgstr "   (%d) RSA (tandai dan enkripsi)\n"
 
 #, fuzzy, c-format
 msgid "   (%d) sign\n"
-msgstr "  (%d) DSA (hanya menandai)\n"
+msgstr "   (%d) DSA (hanya menandai)\n"
 
 #, fuzzy, c-format
 msgid "   (%d) encrypt\n"
-msgstr "  (%d) RSA (hanya enkripsi)\n"
+msgstr "   (%d) RSA (hanya enkripsi)\n"
 
 msgid "Enter the X.509 subject name: "
 msgstr ""
@@ -9261,6 +9261,9 @@ msgstr "Sertifikat pembatalan tercipta.\n"
 msgid "store a private key to a data object"
 msgstr ""
 
+msgid "run various checks on the keys"
+msgstr ""
+
 msgid "Yubikey management commands"
 msgstr ""
 
@@ -9502,7 +9505,7 @@ msgstr ""
 
 #, fuzzy
 #~ msgid "   (%d) ECC and ECC\n"
-#~ msgstr "  (%d) DSA dan ElGamal (baku)\n"
+#~ msgstr "   (%d) DSA dan ElGamal (baku)\n"
 
 #, fuzzy
 #~ msgid "run without asking a user"
@@ -10418,8 +10421,8 @@ msgstr ""
 #~ "\n"
 #~ "Note that the examples given above for levels 2 and 3 are *only* "
 #~ "examples.\n"
-#~ "In the end, it is up to you to decide just what \"casual\" and \"extensive"
-#~ "\"\n"
+#~ "In the end, it is up to you to decide just what \"casual\" and "
+#~ "\"extensive\"\n"
 #~ "mean to you when you sign other keys.\n"
 #~ "\n"
 #~ "If you don't know what the right answer is, answer \"0\"."
@@ -11140,7 +11143,7 @@ msgstr ""
 
 #, fuzzy
 #~ msgid "   (%d) RSA (auth only)\n"
-#~ msgstr "  (%d) RSA (hanya menandai)\n"
+#~ msgstr "   (%d) RSA (hanya menandai)\n"
 
 #, fuzzy
 #~ msgid "   (%d) RSA (sign and auth)\n"
@@ -11148,11 +11151,11 @@ msgstr ""
 
 #, fuzzy
 #~ msgid "   (%d) RSA (encrypt and auth)\n"
-#~ msgstr "  (%d) RSA (hanya enkripsi)\n"
+#~ msgstr "   (%d) RSA (hanya enkripsi)\n"
 
 #, fuzzy
 #~ msgid "  (%d) RSA (sign, encrypt and auth)\n"
-#~ msgstr "   (%d) RSA (tandai dan enkripsi)\n"
+#~ msgstr "  (%d) RSA (tandai dan enkripsi)\n"
 
 #~ msgid "%s: can't open: %s\n"
 #~ msgstr "%s: tidak dapat membuka: %s\n"

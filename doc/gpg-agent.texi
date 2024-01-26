@@ -623,19 +623,30 @@ are touched.
 
 @anchor{option --enable-ssh-support}
 @item --enable-ssh-support
+@itemx --enable-win32-openssh-support
 @itemx --enable-putty-support
 @opindex enable-ssh-support
+@opindex enable-win32-openssh-support
 @opindex enable-putty-support
 
-The OpenSSH Agent protocol is always enabled, but @command{gpg-agent}
-will only set the @code{SSH_AUTH_SOCK} variable if this flag is given.
+On Unix platforms the OpenSSH Agent protocol is always enabled, but
+@command{gpg-agent} will only set the @code{SSH_AUTH_SOCK} variable if
+the option @option{enable-ssh-support} is given.  Some Linux
+distributions use the presence of this option to decide whether the
+old ssh-agent shall be started.
+
+On Windows support for the native ssh implementation must be enabled
+using the the option @option{enable-win32-openssh-support}.  For using
+gpg-agent as a replacement for PuTTY's Pageant, the option
+@option{enable-putty-support} must be enabled.
 
 In this mode of operation, the agent does not only implement the
 gpg-agent protocol, but also the agent protocol used by OpenSSH
-(through a separate socket).  Consequently, it should be possible to use
-the gpg-agent as a drop-in replacement for the well known ssh-agent.
+(through a separate socket or via Named Pipes) or the protocol used by
+PuTTY.  Consequently, this allows to use the gpg-agent as a drop-in
+replacement for the ssh-agent.
 
-SSH Keys, which are to be used through the agent, need to be added to
+SSH keys, which are to be used through the agent, need to be added to
 the gpg-agent initially through the ssh-add utility.  When a key is
 added, ssh-add will ask for the password of the provided key file and
 send the unprotected key material to the agent; this causes the

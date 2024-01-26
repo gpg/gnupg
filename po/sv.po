@@ -881,8 +881,8 @@ msgstr ""
 #, fuzzy, c-format
 #| msgid "Do you really want to delete the selected keys? (y/N) "
 msgid ""
-"Do you really want to delete the key identified by keygrip%%0A  %s%%0A  %%C"
-"%%0A?"
+"Do you really want to delete the key identified by keygrip%%0A  %s%%0A  "
+"%%C%%0A?"
 msgstr "Vill du verkligen ta bort de valda nycklarna? (j/N) "
 
 #, fuzzy
@@ -2027,14 +2027,14 @@ msgid "using cipher %s.%s\n"
 msgstr "använder %s-chiffer\n"
 
 #, fuzzy, c-format
-#| msgid "`%s' already compressed\n"
-msgid "'%s' already compressed\n"
-msgstr "\"%s\" är redan komprimerad\n"
-
-#, fuzzy, c-format
 #| msgid "WARNING: `%s' is an empty file\n"
 msgid "WARNING: '%s' is an empty file\n"
 msgstr "VARNING: \"%s\" är en tom fil\n"
+
+#, fuzzy, c-format
+#| msgid "`%s' already compressed\n"
+msgid "'%s' already compressed\n"
+msgstr "\"%s\" är redan komprimerad\n"
 
 #, fuzzy, c-format
 #| msgid "you may not use digest algorithm `%s' while in %s mode\n"
@@ -2570,8 +2570,8 @@ msgstr ""
 
 #, fuzzy, c-format
 #| msgid ""
-#| "WARNING: unsafe enclosing directory permissions on configuration file `"
-#| "%s'\n"
+#| "WARNING: unsafe enclosing directory permissions on configuration file "
+#| "`%s'\n"
 msgid ""
 "WARNING: unsafe enclosing directory permissions on configuration file '%s'\n"
 msgstr ""
@@ -4623,27 +4623,27 @@ msgstr ""
 #, fuzzy, c-format
 #| msgid "   (%d) DSA (sign only)\n"
 msgid "  (%d) ECC (sign only)\n"
-msgstr "   (%d) DSA (endast signering)\n"
+msgstr "  (%d) DSA (endast signering)\n"
 
 #, fuzzy, c-format
 #| msgid "   (%d) DSA (set your own capabilities)\n"
 msgid "  (%d) ECC (set your own capabilities)%s\n"
-msgstr "   (%d) DSA (ställ in dina egna förmågor)\n"
+msgstr "  (%d) DSA (ställ in dina egna förmågor)\n"
 
 #, fuzzy, c-format
 #| msgid "   (%d) RSA (encrypt only)\n"
 msgid "  (%d) ECC (encrypt only)%s\n"
-msgstr "   (%d) RSA (endast kryptering)\n"
+msgstr "  (%d) RSA (endast kryptering)\n"
 
 #, fuzzy, c-format
 #| msgid "   (%d) Existing key\n"
 msgid "  (%d) Existing key%s\n"
-msgstr "   (%d) Befintlig nyckel\n"
+msgstr "  (%d) Befintlig nyckel\n"
 
 #, fuzzy, c-format
 #| msgid "   (%d) Existing key from card\n"
 msgid "  (%d) Existing key from card%s\n"
-msgstr "   (%d) Befintlig nyckel från kort\n"
+msgstr "  (%d) Befintlig nyckel från kort\n"
 
 msgid "Enter the keygrip: "
 msgstr "Ange nyckelhashen: "
@@ -9851,6 +9851,9 @@ msgstr "  (certifikat skapat "
 msgid "store a private key to a data object"
 msgstr ""
 
+msgid "run various checks on the keys"
+msgstr ""
+
 msgid "Yubikey management commands"
 msgstr ""
 
@@ -11212,8 +11215,8 @@ msgstr ""
 #~ "\n"
 #~ "Note that the examples given above for levels 2 and 3 are *only* "
 #~ "examples.\n"
-#~ "In the end, it is up to you to decide just what \"casual\" and \"extensive"
-#~ "\"\n"
+#~ "In the end, it is up to you to decide just what \"casual\" and "
+#~ "\"extensive\"\n"
 #~ "mean to you when you sign other keys.\n"
 #~ "\n"
 #~ "If you don't know what the right answer is, answer \"0\"."

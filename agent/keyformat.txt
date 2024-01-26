@@ -155,6 +155,16 @@ This field is for card key.  If given and the value is "yes"
 dialog window when card is not available.  When the value is "no", a
 card operation is refused with GPG_ERR_UNUSABLE_SECKEY error.
 
+*** Backup-info
+This gives information for a backup of the key.  The follwoing fields
+are space delimited:
+
+- Hexified keygrip (uppercase) to make it easy to identify the
+  filename.  When restoring software should make sure that the keygrip
+  matches the one derived from the "Key" field.
+- Backup time in as ISO string.
+- Name of the backup software.
+- Arbitrary information.
 
 * Private Key Format
 ** Unprotected Private Key Format

@@ -737,7 +737,12 @@ gpgsm_verify (ctrl_t ctrl, estream_t in_fp, estream_t data_fp,
       char numbuf[50];
       sprintf (numbuf, "%d", rc );
       gpgsm_status2 (ctrl, STATUS_ERROR, "verify.leave",
-                     numbuf, NULL);
+                     numbuf,
+                     gpg_err_code (rc) == GPG_ERR_EPIPE?
+                     "-- (Broken pipe on input or output)":
+                     gpg_err_code (rc) == GPG_ERR_EOF?
+                     "-- (End of file)" : NULL,
+                     NULL);
     }
 
   return rc;

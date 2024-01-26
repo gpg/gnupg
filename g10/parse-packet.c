@@ -2765,7 +2765,16 @@ parse_key (IOBUF inp, int pkttype, unsigned long pktlen,
 	{
 	  ski->is_protected = 1;
 	  ski->s2k.count = 0;
-	  if (ski->algo == 254 || ski->algo == 255)
+	  if (ski->algo == 253)
+	    {
+              if (list_mode)
+                es_fprintf (listfp,
+                            "\tS2K pseudo algo %d is not yet supported\n",
+                            ski->algo);
+              err = gpg_error (GPG_ERR_NOT_IMPLEMENTED);
+              goto leave;
+            }
+          else if (ski->algo == 254 || ski->algo == 255)
 	    {
               if (pktlen < 3)
 		{

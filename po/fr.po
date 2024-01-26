@@ -246,8 +246,8 @@ msgid ""
 "Please enter a passphrase to protect the received secret key%%0A   %s%%0A   "
 "%s%%0Awithin gpg-agent's key storage"
 msgstr ""
-"Veuillez entrer une phrase secrète pour protéger la clef secrète%%0A   %s"
-"%%0A   %s%%0Areçue dans l'espace de stockage de clefs de gpg-agent"
+"Veuillez entrer une phrase secrète pour protéger la clef secrète%%0A   "
+"%s%%0A   %s%%0Areçue dans l'espace de stockage de clefs de gpg-agent"
 
 #, c-format
 msgid "failed to create stream from socket: %s\n"
@@ -824,8 +824,8 @@ msgstr ""
 #, fuzzy, c-format
 #| msgid "Do you really want to delete the selected keys? (y/N) "
 msgid ""
-"Do you really want to delete the key identified by keygrip%%0A  %s%%0A  %%C"
-"%%0A?"
+"Do you really want to delete the key identified by keygrip%%0A  %s%%0A  "
+"%%C%%0A?"
 msgstr "Voulez-vous vraiment supprimer les clefs sélectionnées ? (o/N) "
 
 msgid "Delete key"
@@ -1932,12 +1932,12 @@ msgid "using cipher %s.%s\n"
 msgstr "utilisation de l'algorithme de chiffrement %s\n"
 
 #, c-format
-msgid "'%s' already compressed\n"
-msgstr "« %s » est déjà compressé\n"
-
-#, c-format
 msgid "WARNING: '%s' is an empty file\n"
 msgstr "Attention : « %s » est un fichier vide\n"
+
+#, c-format
+msgid "'%s' already compressed\n"
+msgstr "« %s » est déjà compressé\n"
 
 #, fuzzy, c-format
 #| msgid "you may not use digest algorithm '%s' while in %s mode\n"
@@ -4465,7 +4465,7 @@ msgstr "  (%d) Clef existante\n"
 #, fuzzy, c-format
 #| msgid "   (%d) Existing key from card\n"
 msgid "  (%d) Existing key from card%s\n"
-msgstr "   (%d) Clef existante sur la carte\n"
+msgstr "  (%d) Clef existante sur la carte\n"
 
 msgid "Enter the keygrip: "
 msgstr "Entrez le keygrip : "
@@ -9514,6 +9514,9 @@ msgstr "ajouter un certificat au cache"
 msgid "store a private key to a data object"
 msgstr ""
 
+msgid "run various checks on the keys"
+msgstr ""
+
 msgid "Yubikey management commands"
 msgstr ""
 
@@ -10997,8 +11000,8 @@ msgstr ""
 #~ "\n"
 #~ "Note that the examples given above for levels 2 and 3 are *only* "
 #~ "examples.\n"
-#~ "In the end, it is up to you to decide just what \"casual\" and \"extensive"
-#~ "\"\n"
+#~ "In the end, it is up to you to decide just what \"casual\" and "
+#~ "\"extensive\"\n"
 #~ "mean to you when you sign other keys.\n"
 #~ "\n"
 #~ "If you don't know what the right answer is, answer \"0\"."

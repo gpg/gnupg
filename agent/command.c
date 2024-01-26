@@ -251,6 +251,9 @@ reset_notify (assuan_context_t ctx, char *line)
 
   clear_nonce_cache (ctrl);
 
+  /* Note that a RESET does not clear the ephemeral store becuase
+   * clients are used to issue a RESET on a connection.  */
+
   return 0;
 }
 
@@ -634,34 +637,65 @@ cmd_marktrusted (assuan_context_t ctx, char *line)
 static const char hlp_havekey[] =
   "HAVEKEY <hexstrings_with_keygrips>\n"
   "HAVEKEY --list[=<limit>]\n"
+  "HAVEKEY --info <hexkeygrip>\n"
   "\n"
   "Return success if at least one of the secret keys with the given\n"
   "keygrips is available.  With --list return all available keygrips\n"
-  "as binary data; with <limit> bail out at this number of keygrips";
+  "as binary data; with <limit> bail out at this number of keygrips.\n"
+  "In --info mode check just one keygrip.";
 static gpg_error_t
 cmd_havekey (assuan_context_t ctx, char *line)
 {
-  ctrl_t ctrl;
+  ctrl_t ctrl = assuan_get_pointer (ctx);
   gpg_error_t err;
   unsigned char grip[20];
   char *p;
-  int list_mode;  /* Less than 0 for no limit.  */
+  int list_mode = 0;  /* Less than 0 for no limit.  */
+  int info_mode = 0;
   int counter;
-  char *dirname;
-  gnupg_dir_t dir;
+  char *dirname = NULL;
+  gnupg_dir_t dir = NULL;
   gnupg_dirent_t dir_entry;
   char hexgrip[41];
   struct card_key_info_s *keyinfo_on_cards, *l;
 
-  if (has_option_name (line, "--list"))
+  if (has_option (line, "--info"))
+    info_mode = 1;
+  else if (has_option_name (line, "--list"))
     {
       if ((p = option_value (line, "--list")))
 	list_mode = atoi (p);
       else
 	list_mode = -1;
     }
-  else
-    list_mode = 0;
+
+  line = skip_options (line);
+
+  if (info_mode)
+    {
+      int keytype;
+      const char *infostring;
+
+      err = parse_keygrip (ctx, line, grip);
+      if (err)
+        goto leave;
+
+      err = agent_key_info_from_file (ctrl, grip, &keytype, NULL, NULL);
+      if (err)
+        goto leave;
+
+      switch (keytype)
+        {
+        case PRIVATE_KEY_CLEAR:
+        case PRIVATE_KEY_OPENPGP_NONE: infostring = "clear";       break;
+        case PRIVATE_KEY_PROTECTED:    infostring = "protected";   break;
+        case PRIVATE_KEY_SHADOWED:     infostring = "shadowed";    break;
+        default:                       infostring = "unknown";    break;
+        }
+
+      err = agent_write_status (ctrl, "KEYFILEINFO", infostring, NULL);
+      goto leave;
+    }
 
 
   if (!list_mode)
@@ -672,7 +706,7 @@ cmd_havekey (assuan_context_t ctx, char *line)
           if (err)
             return err;
 
-          if (!agent_key_available (grip))
+          if (!agent_key_available (ctrl, grip))
             return 0; /* Found.  */
 
           while (*line && *line != ' ' && *line != '\t')
@@ -690,7 +724,6 @@ cmd_havekey (assuan_context_t ctx, char *line)
   /* List mode.  */
   dir = NULL;
   dirname = NULL;
-  ctrl = assuan_get_pointer (ctx);
 
   if (ctrl->restricted)
     {
@@ -1083,26 +1116,27 @@ cmd_genkey (assuan_context_t ctx, char *line)
 {
   ctrl_t ctrl = assuan_get_pointer (ctx);
   int rc;
-  int no_protection;
   unsigned char *value = NULL;
   size_t valuelen;
   unsigned char *newpasswd = NULL;
   membuf_t outbuf;
   char *cache_nonce = NULL;
   char *passwd_nonce = NULL;
-  int opt_preset;
   int opt_inq_passwd;
   size_t n;
   char *p, *pend;
   const char *s;
   time_t opt_timestamp;
   int c;
+  unsigned int flags = 0;
 
   if (ctrl->restricted)
     return leave_cmd (ctx, gpg_error (GPG_ERR_FORBIDDEN));
 
-  no_protection = has_option (line, "--no-protection");
-  opt_preset = has_option (line, "--preset");
+  if (has_option (line, "--no-protection"))
+    flags |= GENKEY_FLAG_NO_PROTECTION;
+  if (has_option (line, "--preset"))
+    flags |= GENKEY_FLAG_PRESET;
   opt_inq_passwd = has_option (line, "--inq-passwd");
   passwd_nonce = option_value (line, "--passwd-nonce");
   if (passwd_nonce)
@@ -1157,7 +1191,7 @@ cmd_genkey (assuan_context_t ctx, char *line)
 
   /* If requested, ask for the password to be used for the key.  If
      this is not used the regular Pinentry mechanism is used.  */
-  if (opt_inq_passwd && !no_protection)
+  if (opt_inq_passwd && !(flags & GENKEY_FLAG_NO_PROTECTION))
     {
       /* (N is used as a dummy) */
       assuan_begin_confidential (ctx);
@@ -1170,16 +1204,17 @@ cmd_genkey (assuan_context_t ctx, char *line)
           /* Empty password given - switch to no-protection mode.  */
           xfree (newpasswd);
           newpasswd = NULL;
-          no_protection = 1;
+          flags |= GENKEY_FLAG_NO_PROTECTION;
         }
 
     }
   else if (passwd_nonce)
     newpasswd = agent_get_cache (ctrl, passwd_nonce, CACHE_MODE_NONCE);
 
-  rc = agent_genkey (ctrl, cache_nonce, opt_timestamp,
-                     (char*)value, valuelen, no_protection,
-                     newpasswd, opt_preset, &outbuf);
+
+  rc = agent_genkey (ctrl, flags, cache_nonce, opt_timestamp,
+                     (char*)value, valuelen,
+                     newpasswd, &outbuf);
 
  leave:
   if (newpasswd)
@@ -1283,7 +1318,7 @@ cmd_keyattr (assuan_context_t ctx, char *line)
           if (!err)
             err = nvc_set_private_key (keymeta, s_key);
           if (!err)
-            err = agent_update_private_key (grip, keymeta);
+            err = agent_update_private_key (ctrl, grip, keymeta);
         }
 
       nvc_release (keymeta);
@@ -1293,6 +1328,8 @@ cmd_keyattr (assuan_context_t ctx, char *line)
  leave:
   return leave_cmd (ctx, err);
 }
+
+
 
 static const char hlp_readkey[] =
   "READKEY [--no-data] [--format=ssh] <hexstring_with_keygrip>\n"
@@ -1356,7 +1393,7 @@ cmd_readkey (assuan_context_t ctx, char *line)
           goto leave;
         }
 
-      if (agent_key_available (grip))
+      if (!ctrl->ephemeral_mode && agent_key_available (ctrl, grip))
         {
           /* (Shadow)-key is not available in our key storage.  */
           char *dispserialno;
@@ -1364,7 +1401,7 @@ cmd_readkey (assuan_context_t ctx, char *line)
 
           bin2hex (grip, 20, hexgrip);
           agent_card_getattr (ctrl, "$DISPSERIALNO", &dispserialno, hexgrip);
-          rc = agent_write_shadow_key (grip, serialno, keyid, pkbuf, 0,
+          rc = agent_write_shadow_key (ctrl, grip, serialno, keyid, pkbuf, 0,
                                        dispserialno);
           xfree (dispserialno);
           if (rc)
@@ -2900,7 +2937,7 @@ cmd_import_key (assuan_context_t ctx, char *line)
     }
   else
     {
-      if (!force && !agent_key_available (grip))
+      if (!force && !agent_key_available (ctrl, grip))
         err = gpg_error (GPG_ERR_EEXIST);
       else
         {
@@ -2922,11 +2959,11 @@ cmd_import_key (assuan_context_t ctx, char *line)
       err = agent_protect (key, passphrase, &finalkey, &finalkeylen,
                            ctrl->s2k_count);
       if (!err)
-        err = agent_write_private_key (grip, finalkey, finalkeylen, force,
+        err = agent_write_private_key (ctrl, grip, finalkey, finalkeylen, force,
                                        NULL, NULL, NULL, opt_timestamp);
     }
   else
-    err = agent_write_private_key (grip, key, realkeylen, force,
+    err = agent_write_private_key (ctrl, grip, key, realkeylen, force,
                                    NULL, NULL, NULL, opt_timestamp);
 
  leave:
@@ -2945,7 +2982,8 @@ cmd_import_key (assuan_context_t ctx, char *line)
 
 
 static const char hlp_export_key[] =
-  "EXPORT_KEY [--cache-nonce=<nonce>] [--openpgp|--mode1003] <hexkeygrip>\n"
+  "EXPORT_KEY [--cache-nonce=<nonce>] \\\n"
+  "           [--openpgp|--mode1003] <hexkeygrip>\n"
   "\n"
   "Export a secret key from the key store.  The key will be encrypted\n"
   "using the current session's key wrapping key (cf. command KEYWRAP_KEY)\n"
@@ -2953,8 +2991,8 @@ static const char hlp_export_key[] =
   "prior to using this command.  The function takes the keygrip as argument.\n"
   "\n"
   "If --openpgp is used, the secret key material will be exported in RFC 4880\n"
-  "compatible passphrase-protected form.  If --mode1003 is use the secret key\n"
-  "is exported as s-expression as storred locally.  Without those options,\n"
+  "compatible passphrase-protected form.  In --mode1003 the secret key\n"
+  "is exported as s-expression as stored locally.  Without those options,\n"
   "the secret key material will be exported in the clear (after prompting\n"
   "the user to unlock it, if needed).\n";
 static gpg_error_t
@@ -3011,7 +3049,7 @@ cmd_export_key (assuan_context_t ctx, char *line)
   if (err)
     goto leave;
 
-  if (agent_key_available (grip))
+  if (agent_key_available (ctrl, grip))
     {
       err = gpg_error (GPG_ERR_NO_SECKEY);
       goto leave;
@@ -3223,9 +3261,9 @@ cmd_keytocard (assuan_context_t ctx, char *line)
   if (err)
     goto leave;
 
-  if (agent_key_available (grip))
+  if (agent_key_available (ctrl, grip))
     {
-      err =gpg_error (GPG_ERR_NO_SECKEY);
+      err = gpg_error (GPG_ERR_NO_SECKEY);
       goto leave;
     }
 
@@ -3543,7 +3581,7 @@ cmd_keytotpm (assuan_context_t ctx, char *line)
   if (err)
     goto leave;
 
-  if (agent_key_available (grip))
+  if (agent_key_available (ctrl, grip))
     {
       err =gpg_error (GPG_ERR_NO_SECKEY);
       goto leave;
@@ -3835,6 +3873,7 @@ static const char hlp_getinfo[] =
   "  getenv NAME     - Return value of envvar NAME.\n"
   "  connections     - Return number of active connections.\n"
   "  jent_active     - Returns OK if Libgcrypt's JENT is active.\n"
+  "  ephemeral       - Returns OK if the connection is in ephemeral mode.\n"
   "  restricted      - Returns OK if the connection is in restricted mode.\n"
   "  cmd_has_option CMD OPT\n"
   "                  - Returns OK if command CMD has option OPT.\n";
@@ -3887,6 +3926,10 @@ cmd_getinfo (assuan_context_t ctx, char *line)
 
       snprintf (numbuf, sizeof numbuf, "%lu", get_standard_s2k_count ());
       rc = assuan_send_data (ctx, numbuf, strlen (numbuf));
+    }
+  else if (!strcmp (line, "ephemeral"))
+    {
+      rc = ctrl->ephemeral_mode? 0 : gpg_error (GPG_ERR_FALSE);
     }
   else if (!strcmp (line, "restricted"))
     {
@@ -4043,6 +4086,10 @@ option_handler (assuan_context_t ctx, const char *key, const char *value)
          version the caller is aware of.  */
       ctrl->server_local->allow_fully_canceled =
         gnupg_compare_version (value, "2.1.0");
+    }
+  else if (!strcmp (key, "ephemeral"))
+    {
+      ctrl->ephemeral_mode = *value? atoi (value) : 0;
     }
   else if (ctrl->restricted)
     {

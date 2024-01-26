@@ -99,8 +99,11 @@ EXTRA_DIST = $(XTESTS) $(KEYS) $(CERTS) $(TEST_FILES) \
              samplekeys/opensc-test.p12 \
              samplekeys/t5793-openssl.pfx \
              samplekeys/t5793-test.pfx \
+             samplekeys/t6752-ov-user-ff.p12 \
              samplekeys/edward.tester@demo.gnupg.com.p12 \
 	     samplekeys/nistp256-openssl-self-signed.p12 \
+             samplekeys/credential_private_encrypted_AES256.p12 \
+             samplekeys/credential_private_encrypted_3DES.p12 \
              samplemsgs/pwri-sample.cbc.p7m \
              samplemsgs/pwri-sample.cbc-2.p7m \
              samplemsgs/pwri-sample.gcm.p7m \

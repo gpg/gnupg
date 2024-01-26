@@ -777,8 +777,8 @@ msgstr ""
 
 #, fuzzy, c-format
 msgid ""
-"Do you really want to delete the key identified by keygrip%%0A  %s%%0A  %%C"
-"%%0A?"
+"Do you really want to delete the key identified by keygrip%%0A  %s%%0A  "
+"%%C%%0A?"
 msgstr "Σίγουρα θέλετε να διαγραφούν τα επιλεγμένα κλειδιά; "
 
 #, fuzzy
@@ -1886,14 +1886,14 @@ msgid "using cipher %s.%s\n"
 msgstr "χρήση του κρυπταλγόριθμου: %s\n"
 
 #, fuzzy, c-format
-#| msgid "`%s' already compressed\n"
-msgid "'%s' already compressed\n"
-msgstr "`%s' ήδη συμπιέστηκε\n"
-
-#, fuzzy, c-format
 #| msgid "WARNING: `%s' is an empty file\n"
 msgid "WARNING: '%s' is an empty file\n"
 msgstr "ΠΡΟΕΙΔΟΠΟΙΗΣΗ: `%s' είναι ένα άδειο αρχείο\n"
+
+#, fuzzy, c-format
+#| msgid "`%s' already compressed\n"
+msgid "'%s' already compressed\n"
+msgstr "`%s' ήδη συμπιέστηκε\n"
 
 #, fuzzy, c-format
 msgid "digest algorithm '%s' may not be used in %s mode\n"
@@ -4431,24 +4431,24 @@ msgstr " (προκαθορισμένο)"
 #, fuzzy, c-format
 #| msgid "   (%d) DSA (sign only)\n"
 msgid "  (%d) ECC (sign only)\n"
-msgstr "   (%d) DSA (για υπογραφή μόνο)\n"
+msgstr "  (%d) DSA (για υπογραφή μόνο)\n"
 
 #, fuzzy, c-format
 msgid "  (%d) ECC (set your own capabilities)%s\n"
-msgstr "   (%d) RSA (για κρυπτογράφηση μόνο)\n"
+msgstr "  (%d) RSA (για κρυπτογράφηση μόνο)\n"
 
 #, fuzzy, c-format
 #| msgid "   (%d) RSA (encrypt only)\n"
 msgid "  (%d) ECC (encrypt only)%s\n"
-msgstr "   (%d) RSA (για κρυπτογράφηση μόνο)\n"
+msgstr "  (%d) RSA (για κρυπτογράφηση μόνο)\n"
 
 #, fuzzy, c-format
 msgid "  (%d) Existing key%s\n"
-msgstr "   (%d) RSA (για κρυπτογράφηση μόνο)\n"
+msgstr "  (%d) RSA (για κρυπτογράφηση μόνο)\n"
 
 #, fuzzy, c-format
 msgid "  (%d) Existing key from card%s\n"
-msgstr "   (%d) RSA (για κρυπτογράφηση μόνο)\n"
+msgstr "  (%d) RSA (για κρυπτογράφηση μόνο)\n"
 
 #, fuzzy
 msgid "Enter the keygrip: "
@@ -9320,6 +9320,9 @@ msgstr "Πιστοποιητικό ανάκλησης δημιουργήθηκε
 msgid "store a private key to a data object"
 msgstr ""
 
+msgid "run various checks on the keys"
+msgstr ""
+
 msgid "Yubikey management commands"
 msgstr ""
 
@@ -10489,8 +10492,8 @@ msgstr ""
 #~ "\n"
 #~ "Note that the examples given above for levels 2 and 3 are *only* "
 #~ "examples.\n"
-#~ "In the end, it is up to you to decide just what \"casual\" and \"extensive"
-#~ "\"\n"
+#~ "In the end, it is up to you to decide just what \"casual\" and "
+#~ "\"extensive\"\n"
 #~ "mean to you when you sign other keys.\n"
 #~ "\n"
 #~ "If you don't know what the right answer is, answer \"0\"."
@@ -11225,7 +11228,7 @@ msgstr ""
 
 #, fuzzy
 #~ msgid "  (%d) RSA (sign, encrypt and auth)\n"
-#~ msgstr "   (%d) RSA (υπογραφή και κρυπτογράφηση)\n"
+#~ msgstr "  (%d) RSA (υπογραφή και κρυπτογράφηση)\n"
 
 #~ msgid "%s: can't open: %s\n"
 #~ msgstr "%s: αδυναμία πρόσβασης του: %s\n"

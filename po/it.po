@@ -225,8 +225,8 @@ msgid ""
 "Please enter a passphrase to protect the received secret key%%0A   %s%%0A   "
 "%s%%0Awithin gpg-agent's key storage"
 msgstr ""
-"Immettere una passphrase per proteggere la chiave segreta ricevuta%%0A %s"
-"%%0A %s%%0A all'interno dell'archivio chiavi dell'agente gpg"
+"Immettere una passphrase per proteggere la chiave segreta ricevuta%%0A "
+"%s%%0A %s%%0A all'interno dell'archivio chiavi dell'agente gpg"
 
 #, c-format
 msgid "failed to create stream from socket: %s\n"
@@ -771,8 +771,8 @@ msgstr ""
 
 #, c-format
 msgid ""
-"Do you really want to delete the key identified by keygrip%%0A  %s%%0A  %%C"
-"%%0A?"
+"Do you really want to delete the key identified by keygrip%%0A  %s%%0A  "
+"%%C%%0A?"
 msgstr ""
 "Si desidera eliminare la chiave identificata da keygrip%%0A %s%%0A %%C%%0A?"
 
@@ -1829,12 +1829,12 @@ msgid "using cipher %s.%s\n"
 msgstr "utilizzando il cifrario %s.%s\n"
 
 #, c-format
-msgid "'%s' already compressed\n"
-msgstr "'%s' già compresso\n"
-
-#, c-format
 msgid "WARNING: '%s' is an empty file\n"
 msgstr "AVVISO: '%s' è un file vuoto\n"
+
+#, c-format
+msgid "'%s' already compressed\n"
+msgstr "'%s' già compresso\n"
 
 #, c-format
 msgid "digest algorithm '%s' may not be used in %s mode\n"
@@ -4228,7 +4228,7 @@ msgstr " *predefinito*"
 
 #, c-format
 msgid "  (%d) ECC (sign only)\n"
-msgstr "   (%d) DSA (firma solo)\n"
+msgstr "  (%d) DSA (firma solo)\n"
 
 #, c-format
 msgid "  (%d) ECC (set your own capabilities)%s\n"
@@ -7286,7 +7286,7 @@ msgstr ""
 
 #, c-format
 msgid "   (%d) Existing key\n"
-msgstr "  (%d) Chiave esistente\n"
+msgstr "   (%d) Chiave esistente\n"
 
 #, c-format
 msgid "   (%d) Existing key from card\n"
@@ -7298,7 +7298,7 @@ msgstr "Azioni possibili per una chiave %s: \n"
 
 #, c-format
 msgid "   (%d) sign, encrypt\n"
-msgstr "    (%d) segno, cifra\n"
+msgstr "   (%d) segno, cifra\n"
 
 #, c-format
 msgid "   (%d) sign\n"
@@ -9068,6 +9068,9 @@ msgstr "archiviare un certificato in un oggetto dati"
 
 msgid "store a private key to a data object"
 msgstr "archiviare una chiave privata in un oggetto dati"
+
+msgid "run various checks on the keys"
+msgstr ""
 
 msgid "Yubikey management commands"
 msgstr "Comandi di gestione Yubikey"

@@ -191,7 +191,7 @@ endif
 
 
 gen_start_date = 2011-12-01T06:00:00
-.PHONY: gen-ChangeLog
+.PHONY: gen-ChangeLog stowinstall speedo
 gen-ChangeLog:
 	if test -e $(top_srcdir)/.git; then				\
 	  (cd $(top_srcdir) &&                      			\
@@ -206,6 +206,11 @@ gen-ChangeLog:
 
 stowinstall:
 	$(MAKE) $(AM_MAKEFLAGS) install prefix=/usr/local/stow/gnupg
+
+
+speedo:
+	$(MAKE) -f $(top_srcdir)/build-aux/speedo.mk native SELFCHECK=0
+
 
 TESTS_ENVIRONMENT = \
 	LC_ALL=C \

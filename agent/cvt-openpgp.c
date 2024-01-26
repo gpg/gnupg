@@ -969,7 +969,7 @@ convert_from_openpgp_main (ctrl_t ctrl, gcry_sexp_t s_pgp, int dontcare_exist,
   if (err)
     goto leave;
 
-  if (!dontcare_exist && !from_native && !agent_key_available (grip))
+  if (!dontcare_exist && !from_native && !agent_key_available (ctrl, grip))
     {
       err = gpg_error (GPG_ERR_EEXIST);
       goto leave;
@@ -1147,14 +1147,16 @@ convert_from_openpgp_native (ctrl_t ctrl,
           if (!agent_protect (*r_key, passphrase,
                               &protectedkey, &protectedkeylen,
                               ctrl->s2k_count))
-            agent_write_private_key (grip, protectedkey, protectedkeylen, 1,
-                                     NULL, NULL, NULL, 0);
+            agent_write_private_key (ctrl, grip,
+                                     protectedkey,
+                                     protectedkeylen,
+                                     1, NULL, NULL, NULL, 0);
           xfree (protectedkey);
         }
       else
         {
           /* Empty passphrase: write key without protection.  */
-          agent_write_private_key (grip,
+          agent_write_private_key (ctrl, grip,
                                    *r_key,
                                    gcry_sexp_canon_len (*r_key, 0, NULL,NULL),
                                    1, NULL, NULL, NULL, 0);

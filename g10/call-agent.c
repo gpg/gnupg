@@ -2227,7 +2227,14 @@ keyinfo_status_cb (void *opaque, const char *line)
 
 
 /* Ask the agent whether a secret key for the given public key is
-   available.  Returns 0 if not available.  Bigger value is preferred.  */
+ * available.  Returns 0 if not available.  Bigger value is preferred.
+ * Will never return a value less than 0.   Defined return values are:
+ *  0 := No key or error
+ *  1 := Key available
+ *  2 := Key available on a smartcard
+ *  3 := Key available and passphrase cached
+ *  4 := Key available on current smartcard
+ */
 int
 agent_probe_secret_key (ctrl_t ctrl, PKT_public_key *pk)
 {
@@ -2241,11 +2248,11 @@ agent_probe_secret_key (ctrl_t ctrl, PKT_public_key *pk)
 
   err = start_agent (ctrl, 0);
   if (err)
-    return err;
+    return 0;
 
   err = hexkeygrip_from_pk (pk, &hexgrip);
   if (err)
-    return err;
+    return 0;
 
   snprintf (line, sizeof line, "KEYINFO %s", hexgrip);
   xfree (hexgrip);
@@ -3233,6 +3240,45 @@ agent_passwd (ctrl_t ctrl, const char *hexkeygrip, const char *desc, int verify,
   err = assuan_transact (agent_ctx, line, NULL, NULL,
                          default_inq_cb, &dfltparm,
                          cache_nonce_status_cb, &cn_parm);
+  return err;
+}
+
+
+/* Enable or disable the ephemeral mode.  In ephemeral mode keys are
+ * created,searched and used in a per-session key store and not in the
+ * on-disk file.  Set ENABLE to 1 to enable this mode, to 0 to disable
+ * this mode and to -1 to only query the current mode.  If R_PREVIOUS
+ * is given the previously used state of the ephemeral mode is stored
+ * at that address.  */
+gpg_error_t
+agent_set_ephemeral_mode (ctrl_t ctrl, int enable, int *r_previous)
+{
+  gpg_error_t err;
+
+  err = start_agent (ctrl, 0);
+  if (err)
+    goto leave;
+
+  if (r_previous)
+    {
+      err = assuan_transact (agent_ctx, "GETINFO ephemeral",
+                             NULL, NULL, NULL, NULL, NULL, NULL);
+      if (!err)
+        *r_previous = 1;
+      else if (gpg_err_code (err) == GPG_ERR_FALSE)
+        *r_previous = 0;
+      else
+        goto leave;
+    }
+
+  /* Skip setting if we are only querying or if the mode is already set. */
+  if (enable == -1 || (r_previous && !!*r_previous == !!enable))
+    err = 0;
+  else
+    err = assuan_transact (agent_ctx,
+                           enable? "OPTION ephemeral=1" : "OPTION ephemeral=0",
+                           NULL, NULL, NULL, NULL, NULL, NULL);
+ leave:
   return err;
 }
 

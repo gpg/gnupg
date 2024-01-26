@@ -810,8 +810,8 @@ msgstr ""
 
 #, fuzzy, c-format
 msgid ""
-"Do you really want to delete the key identified by keygrip%%0A  %s%%0A  %%C"
-"%%0A?"
+"Do you really want to delete the key identified by keygrip%%0A  %s%%0A  "
+"%%C%%0A?"
 msgstr "Realment voleu eliminar les claus seleccionades? "
 
 #, fuzzy
@@ -1954,14 +1954,14 @@ msgid "using cipher %s.%s\n"
 msgstr "Ha fallat el procés de signatura: %s\n"
 
 #, fuzzy, c-format
-#| msgid "`%s' already compressed\n"
-msgid "'%s' already compressed\n"
-msgstr "«%s» ja està comprimida\n"
-
-#, fuzzy, c-format
 #| msgid "WARNING: `%s' is an empty file\n"
 msgid "WARNING: '%s' is an empty file\n"
 msgstr "AVÍS: «%s» és un fitxer buit\n"
+
+#, fuzzy, c-format
+#| msgid "`%s' already compressed\n"
+msgid "'%s' already compressed\n"
+msgstr "«%s» ja està comprimida\n"
 
 #, fuzzy, c-format
 msgid "digest algorithm '%s' may not be used in %s mode\n"
@@ -4535,24 +4535,24 @@ msgstr " (predeterminat)"
 #, fuzzy, c-format
 #| msgid "   (%d) DSA (sign only)\n"
 msgid "  (%d) ECC (sign only)\n"
-msgstr "   (%d) DSA (només signar)\n"
+msgstr "  (%d) DSA (només signar)\n"
 
 #, fuzzy, c-format
 msgid "  (%d) ECC (set your own capabilities)%s\n"
-msgstr "   (%d) DSA (només signar)\n"
+msgstr "  (%d) DSA (només signar)\n"
 
 #, fuzzy, c-format
 #| msgid "   (%d) RSA (encrypt only)\n"
 msgid "  (%d) ECC (encrypt only)%s\n"
-msgstr "   (%d) RSA (només xifrar)\n"
+msgstr "  (%d) RSA (només xifrar)\n"
 
 #, fuzzy, c-format
 msgid "  (%d) Existing key%s\n"
-msgstr "   (%d) RSA (només xifrar)\n"
+msgstr "  (%d) RSA (només xifrar)\n"
 
 #, fuzzy, c-format
 msgid "  (%d) Existing key from card%s\n"
-msgstr "   (%d) RSA (només xifrar)\n"
+msgstr "  (%d) RSA (només xifrar)\n"
 
 #, fuzzy
 msgid "Enter the keygrip: "
@@ -9496,6 +9496,9 @@ msgstr "S'ha creat el certificat de revocació.\n"
 msgid "store a private key to a data object"
 msgstr ""
 
+msgid "run various checks on the keys"
+msgstr ""
+
 msgid "Yubikey management commands"
 msgstr ""
 
@@ -10682,8 +10685,8 @@ msgstr ""
 #~ "\n"
 #~ "Note that the examples given above for levels 2 and 3 are *only* "
 #~ "examples.\n"
-#~ "In the end, it is up to you to decide just what \"casual\" and \"extensive"
-#~ "\"\n"
+#~ "In the end, it is up to you to decide just what \"casual\" and "
+#~ "\"extensive\"\n"
 #~ "mean to you when you sign other keys.\n"
 #~ "\n"
 #~ "If you don't know what the right answer is, answer \"0\"."

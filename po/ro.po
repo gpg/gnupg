@@ -792,8 +792,8 @@ msgstr ""
 #, fuzzy, c-format
 #| msgid "Do you really want to delete the selected keys? (y/N) "
 msgid ""
-"Do you really want to delete the key identified by keygrip%%0A  %s%%0A  %%C"
-"%%0A?"
+"Do you really want to delete the key identified by keygrip%%0A  %s%%0A  "
+"%%C%%0A?"
 msgstr "Doriţi într-adevăr să ştergeţi cheile selectate? (d/N) "
 
 #, fuzzy
@@ -1909,14 +1909,14 @@ msgid "using cipher %s.%s\n"
 msgstr "folosesc cifrul %s\n"
 
 #, fuzzy, c-format
-#| msgid "`%s' already compressed\n"
-msgid "'%s' already compressed\n"
-msgstr "`%s' deja compresat\n"
-
-#, fuzzy, c-format
 #| msgid "WARNING: `%s' is an empty file\n"
 msgid "WARNING: '%s' is an empty file\n"
 msgstr "AVERTISMENT: `%s' este un fişier gol\n"
+
+#, fuzzy, c-format
+#| msgid "`%s' already compressed\n"
+msgid "'%s' already compressed\n"
+msgstr "`%s' deja compresat\n"
 
 #, fuzzy, c-format
 #| msgid "you may not use digest algorithm `%s' while in %s mode\n"
@@ -2449,8 +2449,8 @@ msgstr ""
 
 #, fuzzy, c-format
 #| msgid ""
-#| "WARNING: unsafe enclosing directory permissions on configuration file `"
-#| "%s'\n"
+#| "WARNING: unsafe enclosing directory permissions on configuration file "
+#| "`%s'\n"
 msgid ""
 "WARNING: unsafe enclosing directory permissions on configuration file '%s'\n"
 msgstr ""
@@ -3236,8 +3236,8 @@ msgstr "cheia %s: nici un ID utilizator pentru semnătură\n"
 #, c-format
 msgid "key %s: unsupported public key algorithm on user ID \"%s\"\n"
 msgstr ""
-"cheia %s: algoritm cu cheie publică nesuportat pentru ID-ul utilizator \"%s"
-"\"\n"
+"cheia %s: algoritm cu cheie publică nesuportat pentru ID-ul utilizator "
+"\"%s\"\n"
 
 #, c-format
 msgid "key %s: invalid self-signature on user ID \"%s\"\n"
@@ -4464,17 +4464,17 @@ msgstr "(implicit)"
 #, fuzzy, c-format
 #| msgid "   (%d) DSA (sign only)\n"
 msgid "  (%d) ECC (sign only)\n"
-msgstr "   (%d) DSA (numai semnare)\n"
+msgstr "  (%d) DSA (numai semnare)\n"
 
 #, fuzzy, c-format
 #| msgid "   (%d) DSA (set your own capabilities)\n"
 msgid "  (%d) ECC (set your own capabilities)%s\n"
-msgstr "   (%d) DSA (setează singur capabilităţile)\n"
+msgstr "  (%d) DSA (setează singur capabilităţile)\n"
 
 #, fuzzy, c-format
 #| msgid "   (%d) RSA (encrypt only)\n"
 msgid "  (%d) ECC (encrypt only)%s\n"
-msgstr "   (%d) RSA (numai cifrare)\n"
+msgstr "  (%d) RSA (numai cifrare)\n"
 
 #, fuzzy, c-format
 msgid "  (%d) Existing key%s\n"
@@ -9406,6 +9406,9 @@ msgstr "Certificat de revocare creat.\n"
 msgid "store a private key to a data object"
 msgstr ""
 
+msgid "run various checks on the keys"
+msgstr ""
+
 msgid "Yubikey management commands"
 msgstr ""
 
@@ -10620,8 +10623,8 @@ msgstr ""
 #~ "\n"
 #~ "Note that the examples given above for levels 2 and 3 are *only* "
 #~ "examples.\n"
-#~ "In the end, it is up to you to decide just what \"casual\" and \"extensive"
-#~ "\"\n"
+#~ "In the end, it is up to you to decide just what \"casual\" and "
+#~ "\"extensive\"\n"
 #~ "mean to you when you sign other keys.\n"
 #~ "\n"
 #~ "If you don't know what the right answer is, answer \"0\"."
@@ -11539,8 +11542,8 @@ msgstr ""
 #~ "crea\n"
 #~ "o cheie sigură pentru semnături: acest program face acest lucru, dar "
 #~ "alte\n"
-#~ "implementări OpenPGP ar putea să nu înţeleagă varianta de semnare"
-#~ "+cifrare.\n"
+#~ "implementări OpenPGP ar putea să nu înţeleagă varianta de "
+#~ "semnare+cifrare.\n"
 #~ "\n"
 #~ "Prima cheie (primară) trebuie să fie întotdeauna capabilă de semnare;\n"
 #~ "acesta este motivul pentru care cheia ElGamal nu este disponibilă în\n"

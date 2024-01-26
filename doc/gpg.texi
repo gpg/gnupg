@@ -638,12 +638,11 @@ The @option{--dearmor} command can also be used to dearmor PEM armors.
 
 @item --unwrap
 @opindex unwrap
-This command is similar to @option{--decrypt} with the difference that the
-output is not the usual plaintext but the original message with the
-encryption layer removed.  Thus the output will be an OpenPGP data
-structure which often means a signed OpenPGP message.  Note that this
-option may or may not remove a compression layer which is often found
-beneath the encryption layer.
+This option modifies the command @option{--decrypt} to output the
+original message with the encryption layer removed.  Thus the output
+will be an OpenPGP data structure which often means a signed OpenPGP
+message.  Note that this option may or may not remove a compression
+layer which is often found beneath the encryption layer.
 
 @item --tofu-policy @{auto|good|unknown|bad|ask@}  @var{keys}
 @opindex tofu-policy
@@ -2579,6 +2578,10 @@ opposite meaning. The options are:
   also not imported.  Note that when using this option along with
   import-clean it suppresses the final clean step after merging the
   imported key into the existing key.
+
+  @item ignore-attributes
+  Ignore all attribute user IDs (photo IDs) and their signatures while
+  importing a key.
 
   @item repair-keys
   After import, fix various problems with the
@@ -4637,10 +4640,11 @@ in the @option{--edit-key} menu.
 
 @item  Revoker: @var{algo}:@var{fpr} [sensitive]
 Add a designated revoker to the generated key.  Algo is the public key
-algorithm of the designated revoker (i.e., RSA=1, DSA=17, etc.)
-@var{fpr} is the fingerprint of the designated revoker.  The optional
-@samp{sensitive} flag marks the designated revoker as sensitive
-information.  Only v4 keys may be designated revokers.
+algorithm of the designated revoker (i.e. RSA=1, DSA=17, etc.)
+@var{fpr} is the fingerprint of the designated revoker.  @var{fpr} may
+not contain spaces or colons.  The optional @samp{sensitive} flag
+marks the designated revoker as sensitive information.  Only v4 and v5
+keys may be designated revokers.
 
 @item Keyserver: @var{string}
 This is an optional parameter that specifies the preferred keyserver

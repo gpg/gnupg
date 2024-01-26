@@ -779,8 +779,8 @@ msgstr ""
 
 #, fuzzy, c-format
 msgid ""
-"Do you really want to delete the key identified by keygrip%%0A  %s%%0A  %%C"
-"%%0A?"
+"Do you really want to delete the key identified by keygrip%%0A  %s%%0A  "
+"%%C%%0A?"
 msgstr "¿Seguro de que quere borra-las chaves seleccionadas? "
 
 #, fuzzy
@@ -1890,14 +1890,14 @@ msgid "using cipher %s.%s\n"
 msgstr "fallou a sinatura: %s\n"
 
 #, fuzzy, c-format
-#| msgid "`%s' already compressed\n"
-msgid "'%s' already compressed\n"
-msgstr "`%s' xa está comprimido\n"
-
-#, fuzzy, c-format
 #| msgid "WARNING: `%s' is an empty file\n"
 msgid "WARNING: '%s' is an empty file\n"
 msgstr "AVISO: `%s' é un ficheiro baleiro\n"
+
+#, fuzzy, c-format
+#| msgid "`%s' already compressed\n"
+msgid "'%s' already compressed\n"
+msgstr "`%s' xa está comprimido\n"
 
 #, fuzzy, c-format
 msgid "digest algorithm '%s' may not be used in %s mode\n"
@@ -3173,8 +3173,8 @@ msgstr "chave %08lX: non hai ID de usuario para a sinatura\n"
 #, fuzzy, c-format
 msgid "key %s: unsupported public key algorithm on user ID \"%s\"\n"
 msgstr ""
-"chave %08lX: algoritmo de chave pública non soportado no ID de usuario \"%s"
-"\"\n"
+"chave %08lX: algoritmo de chave pública non soportado no ID de usuario "
+"\"%s\"\n"
 
 #, fuzzy, c-format
 msgid "key %s: invalid self-signature on user ID \"%s\"\n"
@@ -4427,24 +4427,24 @@ msgstr " (por defecto)"
 #, fuzzy, c-format
 #| msgid "   (%d) DSA (sign only)\n"
 msgid "  (%d) ECC (sign only)\n"
-msgstr "   (%d) DSA (só asinar)\n"
+msgstr "  (%d) DSA (só asinar)\n"
 
 #, fuzzy, c-format
 msgid "  (%d) ECC (set your own capabilities)%s\n"
-msgstr "   (%d) RSA (só cifrar)\n"
+msgstr "  (%d) RSA (só cifrar)\n"
 
 #, fuzzy, c-format
 #| msgid "   (%d) RSA (encrypt only)\n"
 msgid "  (%d) ECC (encrypt only)%s\n"
-msgstr "   (%d) RSA (só cifrar)\n"
+msgstr "  (%d) RSA (só cifrar)\n"
 
 #, fuzzy, c-format
 msgid "  (%d) Existing key%s\n"
-msgstr "   (%d) RSA (só cifrar)\n"
+msgstr "  (%d) RSA (só cifrar)\n"
 
 #, fuzzy, c-format
 msgid "  (%d) Existing key from card%s\n"
-msgstr "   (%d) RSA (só cifrar)\n"
+msgstr "  (%d) RSA (só cifrar)\n"
 
 #, fuzzy
 msgid "Enter the keygrip: "
@@ -9315,6 +9315,9 @@ msgstr "Creouse o certificado de revocación.\n"
 msgid "store a private key to a data object"
 msgstr ""
 
+msgid "run various checks on the keys"
+msgstr ""
+
 msgid "Yubikey management commands"
 msgstr ""
 
@@ -10302,8 +10305,8 @@ msgstr ""
 
 #~ msgid "the trustdb is corrupted; please run \"gpg --fix-trustdb\".\n"
 #~ msgstr ""
-#~ "a base de datos de confianza está corrompida; execute \"gpg --fix-trustdb"
-#~ "\".\n"
+#~ "a base de datos de confianza está corrompida; execute \"gpg --fix-"
+#~ "trustdb\".\n"
 
 #~ msgid "Please report bugs to <gnupg-bugs@gnu.org>.\n"
 #~ msgstr ""
@@ -10483,8 +10486,8 @@ msgstr ""
 #~ "\n"
 #~ "Note that the examples given above for levels 2 and 3 are *only* "
 #~ "examples.\n"
-#~ "In the end, it is up to you to decide just what \"casual\" and \"extensive"
-#~ "\"\n"
+#~ "In the end, it is up to you to decide just what \"casual\" and "
+#~ "\"extensive\"\n"
 #~ "mean to you when you sign other keys.\n"
 #~ "\n"
 #~ "If you don't know what the right answer is, answer \"0\"."
@@ -11216,7 +11219,7 @@ msgstr ""
 
 #, fuzzy
 #~ msgid "  (%d) RSA (sign, encrypt and auth)\n"
-#~ msgstr "   (%d) RSA (asinar e cifrar)\n"
+#~ msgstr "  (%d) RSA (asinar e cifrar)\n"
 
 #~ msgid "%s: can't open: %s\n"
 #~ msgstr "%s: non se pode abrir: %s\n"

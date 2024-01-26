@@ -783,8 +783,8 @@ msgstr ""
 #, fuzzy, c-format
 #| msgid "Do you really want to delete the selected keys? (y/N) "
 msgid ""
-"Do you really want to delete the key identified by keygrip%%0A  %s%%0A  %%C"
-"%%0A?"
+"Do you really want to delete the key identified by keygrip%%0A  %s%%0A  "
+"%%C%%0A?"
 msgstr "你真的想要刪除所選的金鑰嗎? (y/N) "
 
 msgid "Delete key"
@@ -1869,12 +1869,12 @@ msgid "using cipher %s.%s\n"
 msgstr "正在使用 %s 編密法\n"
 
 #, c-format
-msgid "'%s' already compressed\n"
-msgstr "'%s' 已經被壓縮了\n"
-
-#, c-format
 msgid "WARNING: '%s' is an empty file\n"
 msgstr "警告: '%s' 是個空檔案\n"
+
+#, c-format
+msgid "'%s' already compressed\n"
+msgstr "'%s' 已經被壓縮了\n"
 
 #, fuzzy, c-format
 #| msgid "you may not use digest algorithm '%s' while in %s mode\n"
@@ -4293,27 +4293,27 @@ msgstr ""
 
 #, c-format
 msgid "  (%d) ECC (sign only)\n"
-msgstr "   (%d) ECC (僅能用於簽署)\n"
+msgstr "  (%d) ECC (僅能用於簽署)\n"
 
 #, fuzzy, c-format
 #| msgid "  (%d) ECC (set your own capabilities)\n"
 msgid "  (%d) ECC (set your own capabilities)%s\n"
-msgstr "   (%d) ECC (你能自己設定性能)\n"
+msgstr "  (%d) ECC (你能自己設定性能)\n"
 
 #, fuzzy, c-format
 #| msgid "  (%d) ECC (encrypt only)\n"
 msgid "  (%d) ECC (encrypt only)%s\n"
-msgstr "   (%d) ECC (僅能用於加密)\n"
+msgstr "  (%d) ECC (僅能用於加密)\n"
 
 #, fuzzy, c-format
 #| msgid "  (%d) Existing key\n"
 msgid "  (%d) Existing key%s\n"
-msgstr "   (%d) 現有的金鑰\n"
+msgstr "  (%d) 現有的金鑰\n"
 
 #, fuzzy, c-format
 #| msgid "   (%d) Existing key from card\n"
 msgid "  (%d) Existing key from card%s\n"
-msgstr "   (%d) 卡片上現存的金鑰\n"
+msgstr "  (%d) 卡片上現存的金鑰\n"
 
 msgid "Enter the keygrip: "
 msgstr "請輸入金鑰鑰柄: "
@@ -9046,6 +9046,9 @@ msgid "store a certificate to a data object"
 msgstr "加入憑證至快取"
 
 msgid "store a private key to a data object"
+msgstr ""
+
+msgid "run various checks on the keys"
 msgstr ""
 
 msgid "Yubikey management commands"

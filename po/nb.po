@@ -237,8 +237,8 @@ msgid ""
 "Please enter a passphrase to protect the received secret key%%0A   %s%%0A   "
 "%s%%0Awithin gpg-agent's key storage"
 msgstr ""
-"Skriv inn passordfrase som skal brukes til å beskytte mottatt hemmelig nøkkel"
-"%%0A   %s%%0A   %s%%0Ai nøkkellageret for gpg-agent"
+"Skriv inn passordfrase som skal brukes til å beskytte mottatt hemmelig "
+"nøkkel%%0A   %s%%0A   %s%%0Ai nøkkellageret for gpg-agent"
 
 #, c-format
 msgid "failed to create stream from socket: %s\n"
@@ -782,8 +782,8 @@ msgstr ""
 
 #, c-format
 msgid ""
-"Do you really want to delete the key identified by keygrip%%0A  %s%%0A  %%C"
-"%%0A?"
+"Do you really want to delete the key identified by keygrip%%0A  %s%%0A  "
+"%%C%%0A?"
 msgstr ""
 "Er du sikker på at du vil slette nøkkel med nøkkelgrep%%0A  %s%%0A  %%C%%0A?"
 
@@ -1859,12 +1859,12 @@ msgid "using cipher %s.%s\n"
 msgstr "bruker krypteringsmetode %s\n"
 
 #, c-format
-msgid "'%s' already compressed\n"
-msgstr "«%s» er allerede komprimert\n"
-
-#, c-format
 msgid "WARNING: '%s' is an empty file\n"
 msgstr "ADVARSEL: «%s» er en tom fil\n"
+
+#, c-format
+msgid "'%s' already compressed\n"
+msgstr "«%s» er allerede komprimert\n"
 
 #, c-format
 msgid "digest algorithm '%s' may not be used in %s mode\n"
@@ -4282,7 +4282,7 @@ msgstr "  (%d) Nøkkel\n"
 #, fuzzy, c-format
 #| msgid "   (%d) Existing key from card\n"
 msgid "  (%d) Existing key from card%s\n"
-msgstr "   (%d) Nøkkel fra kort\n"
+msgstr "  (%d) Nøkkel fra kort\n"
 
 msgid "Enter the keygrip: "
 msgstr "Skriv inn nøkkelgrep: "
@@ -9044,6 +9044,9 @@ msgid "store a certificate to a data object"
 msgstr "legg til sertifikat i hurtiglager"
 
 msgid "store a private key to a data object"
+msgstr ""
+
+msgid "run various checks on the keys"
 msgstr ""
 
 msgid "Yubikey management commands"

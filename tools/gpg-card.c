@@ -582,13 +582,14 @@ print_shax_fpr (estream_t fp, const unsigned char *fpr, unsigned int fprlen)
 
 /* Print the keygrip GRP.  */
 static void
-print_keygrip (estream_t fp, const unsigned char *grp)
+print_keygrip (estream_t fp, const unsigned char *grp, int with_lf)
 {
   int i;
 
   for (i=0; i < 20 ; i++, grp++)
     tty_fprintf (fp, "%02X", *grp);
-  tty_fprintf (fp, "\n");
+  if (with_lf)
+    tty_fprintf (fp, "\n");
 }
 
 
@@ -700,7 +701,7 @@ list_one_kinfo (card_info_t info, key_info_t kinfo,
           goto leave;
         }
 
-      print_keygrip (fp, kinfo->grip);
+      print_keygrip (fp, kinfo->grip, 1);
       tty_fprintf (fp, "      keyref .....: %s", kinfo->keyref);
       if (kinfo->usage)
         {
@@ -1372,6 +1373,137 @@ cmd_list (card_info_t info, char *argstr)
 
  leave:
   free_strlist (cards);
+  return err;
+}
+
+
+
+/* The CHECKKEYS command. */
+static gpg_error_t
+cmd_checkkeys (card_info_t callerinfo, char *argstr)
+{
+  gpg_error_t err;
+  estream_t fp = opt.interactive? NULL : es_stdout;
+  strlist_t cards = NULL;
+  strlist_t sl;
+  int opt_ondisk;
+  int opt_delete_clear;
+  int opt_delete_protected;
+  int delete_count = 0;
+  struct card_info_s info_buffer = { 0 };
+  card_info_t info = &info_buffer;
+  key_info_t kinfo;
+
+
+  if (!callerinfo)
+    return print_help
+      ("CHECKKEYS [--ondisk] [--delete-clear-copy] [--delete-protected-copy]"
+       "\n\n"
+       "Print a list of keys on all inserted cards.  With --ondisk only\n"
+       "keys are listed which also have a copy on disk.  Missing shadow\n"
+       "keys are created. With --delete-clear-copy, copies of keys also\n"
+       "stored on disk without any protection will be deleted.\n"
+       , 0);
+
+
+  opt_ondisk = has_leading_option (argstr, "--ondisk");
+  opt_delete_clear = has_leading_option (argstr, "--delete-clear-copy");
+  opt_delete_protected = has_leading_option (argstr, "--delete-protected-copy");
+  argstr = skip_options (argstr);
+
+  if (*argstr)
+    {
+      /* No args expected  */
+      err = gpg_error (GPG_ERR_INV_ARG);
+      goto leave;
+    }
+
+  if (!callerinfo->serialno)
+    {
+      /* This is probably the first call We need to send a SERIALNO
+       * command to scdaemon so that our session knows all cards.  */
+      err = scd_serialno (NULL, NULL);
+      if (err)
+        goto leave;
+    }
+
+  /* Get the list of all cards.  */
+  err = scd_cardlist (&cards);
+  if (err)
+    goto leave;
+
+  /* Loop over all cards.  We use our own info buffer here. */
+  for (sl = cards; sl; sl = sl->next)
+    {
+      err = scd_switchcard (sl->d);
+      if (err)
+        {
+          log_error ("Error switching to card %s: %s\n",
+                     sl->d, gpg_strerror (err));
+          continue;
+        }
+      release_card_info (info);
+      err = scd_learn (info, 0);
+      if (err)
+        {
+          log_error ("Error getting infos from card %s: %s\n",
+                     sl->d, gpg_strerror (err));
+          continue;
+        }
+
+      for (kinfo = info->kinfo; kinfo; kinfo = kinfo->next)
+        {
+          char *infostr;
+
+          err = scd_havekey_info (kinfo->grip, &infostr);
+          if (gpg_err_code (err) == GPG_ERR_NOT_FOUND)
+            {
+              /* Create a shadow key and try again.  */
+              scd_readkey (kinfo->keyref, 1, NULL);
+              err = scd_havekey_info (kinfo->grip, &infostr);
+            }
+          if (err && gpg_err_code (err) != GPG_ERR_NOT_FOUND)
+            log_error ("Error getting infos for a key: %s\n",
+                       gpg_strerror (err));
+
+          if (gpg_err_code (err) == GPG_ERR_NOT_FOUND)
+            ; /* does not make sense to show this.  */
+          else if (opt_ondisk && infostr && !strcmp (infostr, "shadowed"))
+            ; /* Don't print this one.  */
+          else
+            {
+              tty_fprintf (fp, "%s %s ",
+                           nullnone (info->serialno),
+                           app_type_string (info->apptype));
+              print_keygrip (fp, kinfo->grip, 0);
+              tty_fprintf (fp, " %s %s\n",
+                           kinfo->keyref, infostr? infostr: "error");
+            }
+          if (infostr
+              && ((opt_delete_clear && !strcmp (infostr, "clear"))
+                  || (opt_delete_protected && !strcmp (infostr, "protected"))))
+            {
+              err = scd_delete_key (kinfo->grip, 0);
+              if (err)
+                log_error ("Error deleting a key copy: %s\n",
+                           gpg_strerror (err));
+              else
+                delete_count++;
+            }
+          xfree (infostr);
+        }
+    }
+  es_fflush (es_stdout);
+  if (delete_count)
+    log_info ("Number of deleted key copies: %d\n", delete_count);
+
+  err = 0;
+
+ leave:
+  release_card_info (info);
+  free_strlist (cards);
+  /* Better reset to the original card.  */
+  scd_learn (callerinfo, 0);
   return err;
 }
 
@@ -3728,6 +3860,7 @@ enum cmdids
     cmdFORCESIG, cmdGENERATE, cmdPASSWD, cmdPRIVATEDO, cmdWRITECERT,
     cmdREADCERT, cmdWRITEKEY,  cmdUNBLOCK, cmdFACTRST, cmdKDFSETUP,
     cmdUIF, cmdAUTH, cmdYUBIKEY, cmdAPDU, cmdGPG, cmdGPGSM, cmdHISTORY,
+    cmdCHECKKEYS,
     cmdINVCMD
   };
 
@@ -3767,6 +3900,7 @@ static struct
   { "readcert",  cmdREADCERT,   N_("read a certificate from a data object")},
   { "writecert", cmdWRITECERT,  N_("store a certificate to a data object")},
   { "writekey",  cmdWRITEKEY,   N_("store a private key to a data object")},
+  { "checkkeys", cmdCHECKKEYS,  N_("run various checks on the keys")},
   { "yubikey",   cmdYUBIKEY,    N_("Yubikey management commands")},
   { "gpg",       cmdGPG,        NULL},
   { "gpgsm",     cmdGPGSM,      NULL},
@@ -3903,6 +4037,7 @@ dispatch_command (card_info_t info, const char *orig_command)
     case cmdGPG:          err = cmd_gpg (info, argstr, 0); break;
     case cmdGPGSM:        err = cmd_gpg (info, argstr, 1); break;
     case cmdHISTORY:      err = 0; break; /* Only used in interactive mode.  */
+    case cmdCHECKKEYS:    err = cmd_checkkeys (info, argstr); break;
 
     case cmdINVCMD:
     default:
@@ -4162,6 +4297,7 @@ interactive_loop (void)
         case cmdGPG:       err = cmd_gpg (info, argstr, 0); break;
         case cmdGPGSM:     err = cmd_gpg (info, argstr, 1); break;
         case cmdHISTORY:   err = cmd_history (info, argstr); break;
+        case cmdCHECKKEYS: err = cmd_checkkeys (info, argstr); break;
 
         case cmdINVCMD:
         default:

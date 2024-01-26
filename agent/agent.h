@@ -225,6 +225,17 @@ typedef struct ssh_control_file_s *ssh_control_file_t;
 /* Forward reference for local definitions in call-scd.c.  */
 struct daemon_local_s;
 
+/* Object to hold ephemeral secret keys.  */
+struct ephemeral_private_key_s
+{
+  struct ephemeral_private_key_s *next;
+  unsigned char grip[KEYGRIP_LEN];
+  unsigned char *keybuf;  /* Canon-s-exp with the private key (malloced). */
+  size_t keybuflen;
+};
+typedef struct ephemeral_private_key_s *ephemeral_private_key_t;
+
+
 /* Collection of data per session (aka connection). */
 struct server_control_s
 {
@@ -245,6 +256,12 @@ struct server_control_s
 
   /* Private data of the daemon (call-XXX.c). */
   struct daemon_local_s *d_local[DAEMON_MAX_TYPE];
+
+  /* Linked list with ephemeral stored private keys.  */
+  ephemeral_private_key_t ephemeral_keys;
+
+  /* If set functions will lookup keys in the ephemeral_keys list.  */
+  int ephemeral_mode;
 
   /* Environment settings for the connection.  */
   session_env_t session_env;
@@ -453,7 +470,8 @@ void start_command_handler_ssh (ctrl_t, gnupg_fd_t);
 /*-- findkey.c --*/
 gpg_error_t agent_modify_description (const char *in, const char *comment,
                                       const gcry_sexp_t key, char **result);
-gpg_error_t agent_write_private_key (const unsigned char *grip,
+gpg_error_t agent_write_private_key (ctrl_t ctrl,
+                                     const unsigned char *grip,
                                      const void *buffer, size_t length,
                                      int force,
                                      const char *serialno, const char *keyref,
@@ -478,7 +496,7 @@ gpg_error_t agent_ssh_key_from_file (ctrl_t ctrl,
                                      gcry_sexp_t *result, int *r_order);
 int agent_pk_get_algo (gcry_sexp_t s_key);
 int agent_is_tpm2_key(gcry_sexp_t s_key);
-int agent_key_available (const unsigned char *grip);
+int agent_key_available (ctrl_t ctrl, const unsigned char *grip);
 gpg_error_t agent_key_info_from_file (ctrl_t ctrl, const unsigned char *grip,
                                       int *r_keytype,
                                       unsigned char **r_shadow_info,
@@ -486,7 +504,8 @@ gpg_error_t agent_key_info_from_file (ctrl_t ctrl, const unsigned char *grip,
 gpg_error_t agent_delete_key (ctrl_t ctrl, const char *desc_text,
                               const unsigned char *grip,
                               int force, int only_stubs);
-gpg_error_t agent_update_private_key (const unsigned char *grip, nvc_t pk);
+gpg_error_t agent_update_private_key (ctrl_t ctrl,
+                                      const unsigned char *grip, nvc_t pk);
 
 /*-- call-pinentry.c --*/
 void initialize_module_call_pinentry (void);
@@ -542,15 +561,21 @@ gpg_error_t agent_pkdecrypt (ctrl_t ctrl, const char *desc_text,
 #define CHECK_CONSTRAINTS_NOT_EMPTY  1
 #define CHECK_CONSTRAINTS_NEW_SYMKEY 2
 
+#define GENKEY_FLAG_NO_PROTECTION 1
+#define GENKEY_FLAG_PRESET        2
+
+void clear_ephemeral_keys (ctrl_t ctrl);
+
 int check_passphrase_constraints (ctrl_t ctrl, const char *pw,
                                   unsigned int flags,
 				  char **failed_constraint);
 gpg_error_t agent_ask_new_passphrase (ctrl_t ctrl, const char *prompt,
                                       char **r_passphrase);
-int agent_genkey (ctrl_t ctrl, const char *cache_nonce, time_t timestamp,
+int agent_genkey (ctrl_t ctrl, unsigned int flags,
+                  const char *cache_nonce, time_t timestamp,
                   const char *keyparam, size_t keyparmlen,
-                  int no_protection, const char *override_passphrase,
-                  int preset, membuf_t *outbuf);
+                  const char *override_passphrase,
+                  membuf_t *outbuf);
 gpg_error_t agent_protect_and_store (ctrl_t ctrl, gcry_sexp_t s_skey,
                                      char **passphrase_addr);
 
@@ -588,7 +613,7 @@ gpg_error_t s2k_hash_passphrase (const char *passphrase, int hashalgo,
                                  const unsigned char *s2ksalt,
                                  unsigned int s2kcount,
                                  unsigned char *key, size_t keylen);
-gpg_error_t agent_write_shadow_key (const unsigned char *grip,
+gpg_error_t agent_write_shadow_key (ctrl_t ctrl, const unsigned char *grip,
                                     const char *serialno, const char *keyid,
                                     const unsigned char *pkbuf, int force,
                                     const char *dispserialno);

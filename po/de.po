@@ -9,7 +9,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnupg-2.4.1\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"PO-Revision-Date: 2023-05-30 13:46+0200\n"
+"PO-Revision-Date: 2024-01-24 14:05+0100\n"
 "Last-Translator: Werner Koch <wk@gnupg.org>\n"
 "Language-Team: German\n"
 "Language: de\n"
@@ -230,8 +230,9 @@ msgid ""
 "Please enter a passphrase to protect the received secret key%%0A   %s%%0A   "
 "%s%%0Awithin gpg-agent's key storage"
 msgstr ""
-"Bitte geben Sie ein Passwort ein, um den empfangenen geheimen Schlüssel"
-"%%0A   %s%%0A  %s%%0Aim Schlüsselspeicher des Gpg-Agenten zu schützen."
+"Bitte geben Sie ein Passwort ein, um den empfangenen geheimen "
+"Schlüssel%%0A   %s%%0A  %s%%0Aim Schlüsselspeicher des Gpg-Agenten zu "
+"schützen."
 
 #, c-format
 msgid "failed to create stream from socket: %s\n"
@@ -710,9 +711,9 @@ msgid ""
 "Do you ultimately trust%%0A  \"%s\"%%0Ato correctly certify user "
 "certificates?"
 msgstr ""
-"Wenn Sie vollständiges Vertrauen haben, daß%%0A  \"%s"
-"\"%%0ABenutzerzertifikate verläßlich zertifiziert, so antworten Sie mit \"Ja"
-"\"."
+"Wenn Sie vollständiges Vertrauen haben, daß%%0A  "
+"\"%s\"%%0ABenutzerzertifikate verläßlich zertifiziert, so antworten Sie mit "
+"\"Ja\"."
 
 msgid "Yes"
 msgstr "Ja"
@@ -776,8 +777,8 @@ msgstr ""
 
 #, c-format
 msgid ""
-"Do you really want to delete the key identified by keygrip%%0A  %s%%0A  %%C"
-"%%0A?"
+"Do you really want to delete the key identified by keygrip%%0A  %s%%0A  "
+"%%C%%0A?"
 msgstr ""
 "Möchten Sie den Schlüssel mit dem \"Keygrip\"%%0A  %s%%0A  %%C%%0Awirklich "
 "entfernen?"
@@ -1838,12 +1839,12 @@ msgid "using cipher %s.%s\n"
 msgstr "benutze Cipher %s.%s\n"
 
 #, c-format
-msgid "'%s' already compressed\n"
-msgstr "`%s' ist bereits komprimiert\n"
-
-#, c-format
 msgid "WARNING: '%s' is an empty file\n"
 msgstr "WARNUNG: '%s' ist eine leere Datei.\n"
+
+#, c-format
+msgid "'%s' already compressed\n"
+msgstr "`%s' ist bereits komprimiert\n"
 
 #, c-format
 msgid "digest algorithm '%s' may not be used in %s mode\n"
@@ -4245,11 +4246,11 @@ msgstr "  (%d) ECC (nur verschlüsseln)%s\n"
 
 #, c-format
 msgid "  (%d) Existing key%s\n"
-msgstr "   (%d) Vorhandener Schlüssel%s\n"
+msgstr "  (%d) Vorhandener Schlüssel%s\n"
 
 #, c-format
 msgid "  (%d) Existing key from card%s\n"
-msgstr "   (%d) Vorhandener Schlüssel auf der Karte%s\n"
+msgstr "  (%d) Vorhandener Schlüssel auf der Karte%s\n"
 
 msgid "Enter the keygrip: "
 msgstr "Geben Sie den \"Keygrip\" ein: "
@@ -9106,6 +9107,9 @@ msgstr "Ein Zertifikat in einem Datenobjekt speichern"
 msgid "store a private key to a data object"
 msgstr "Privaten Schlüssel in einem Datenobjekt speichern"
 
+msgid "run various checks on the keys"
+msgstr "Die Schlüssel verschiedener Prüfungen unterziehen"
+
 msgid "Yubikey management commands"
 msgstr "Verwaltungskommandos für Yubikeys"
 
@@ -9406,7 +9410,7 @@ msgstr "Verwaltung der Kommandohistorie"
 #~ msgstr "Werte das Vertrauen zu Signaturen durch gültige PKA-Daten auf"
 
 #~ msgid "   (%d) ECC and ECC\n"
-#~ msgstr "  (%d) ECC und ECC\n"
+#~ msgstr "   (%d) ECC und ECC\n"
 
 #~ msgid "honor the PKA record set on a key when retrieving keys"
 #~ msgstr "Die im Schlüssel enthaltenen PKA-Daten beim Schlüsselholen beachten"
@@ -10484,8 +10488,8 @@ msgstr "Verwaltung der Kommandohistorie"
 
 #~ msgid "the trustdb is corrupted; please run \"gpg --fix-trustdb\".\n"
 #~ msgstr ""
-#~ "Die \"Trust\"-Datenbank ist beschädigt; verwenden Sie \"gpg --fix-trustdb"
-#~ "\".\n"
+#~ "Die \"Trust\"-Datenbank ist beschädigt; verwenden Sie \"gpg --fix-"
+#~ "trustdb\".\n"
 
 #~ msgid "Please report bugs to <"
 #~ msgstr "Fehlerberichte bitte an <"
@@ -10710,8 +10714,8 @@ msgstr "Verwaltung der Kommandohistorie"
 #~ "\n"
 #~ "Note that the examples given above for levels 2 and 3 are *only* "
 #~ "examples.\n"
-#~ "In the end, it is up to you to decide just what \"casual\" and \"extensive"
-#~ "\"\n"
+#~ "In the end, it is up to you to decide just what \"casual\" and "
+#~ "\"extensive\"\n"
 #~ "mean to you when you sign other keys.\n"
 #~ "\n"
 #~ "If you don't know what the right answer is, answer \"0\"."

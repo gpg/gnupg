@@ -221,8 +221,8 @@ msgid ""
 "Please enter a passphrase to protect the received secret key%%0A   %s%%0A   "
 "%s%%0Awithin gpg-agent's key storage"
 msgstr ""
-"请输入一个密码，以便于在 gpg-agent 的密钥存储中保护接收到的私钥 %%0A   %s"
-"%%0A   %s%%0A"
+"请输入一个密码，以便于在 gpg-agent 的密钥存储中保护接收到的私钥 %%0A   "
+"%s%%0A   %s%%0A"
 
 #, c-format
 msgid "failed to create stream from socket: %s\n"
@@ -742,8 +742,8 @@ msgstr "请求使用密钥%%0A  %s%%0A  %s%%0A您想要允许这一请求吗？"
 
 #, c-format
 msgid ""
-"Do you really want to delete the key identified by keygrip%%0A  %s%%0A  %%C"
-"%%0A?"
+"Do you really want to delete the key identified by keygrip%%0A  %s%%0A  "
+"%%C%%0A?"
 msgstr ""
 "您真的想要删除这个被以下的 keygrip 所标识的密钥吗 %%0A  %s%%0A  %%C%%0A？"
 
@@ -1775,12 +1775,12 @@ msgid "using cipher %s.%s\n"
 msgstr "使用加密 %s.%s\n"
 
 #, c-format
-msgid "'%s' already compressed\n"
-msgstr "‘%s’已被压缩\n"
-
-#, c-format
 msgid "WARNING: '%s' is an empty file\n"
 msgstr "警告：‘%s’是一个空文件\n"
+
+#, c-format
+msgid "'%s' already compressed\n"
+msgstr "‘%s’已被压缩\n"
 
 #, c-format
 msgid "digest algorithm '%s' may not be used in %s mode\n"
@@ -8665,6 +8665,9 @@ msgstr "储存一个证书到数据对象"
 
 msgid "store a private key to a data object"
 msgstr "储存私钥到数据对象"
+
+msgid "run various checks on the keys"
+msgstr ""
 
 msgid "Yubikey management commands"
 msgstr "Yubikey 管理命令"

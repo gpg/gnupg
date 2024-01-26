@@ -2009,8 +2009,9 @@ parse_def_secret_key (ctrl_t ctrl)
     {
       gpg_error_t err;
       KEYDB_SEARCH_DESC desc;
-      KBNODE kb;
-      KBNODE node;
+      kbnode_t kb;
+      kbnode_t node;
+      int any_revoked, any_expired, any_disabled;
 
       err = classify_user_id (t->d, &desc, 1);
       if (err)
@@ -2053,6 +2054,7 @@ parse_def_secret_key (ctrl_t ctrl)
 
       merge_selfsigs (ctrl, kb);
 
+      any_revoked = any_expired = any_disabled = 0;
       err = gpg_error (GPG_ERR_NO_SECKEY);
       node = kb;
       do
@@ -2062,6 +2064,7 @@ parse_def_secret_key (ctrl_t ctrl)
           /* Check if the key is valid.  */
           if (pk->flags.revoked)
             {
+              any_revoked = 1;
               if (DBG_LOOKUP)
                 log_debug ("not using %s as default key, %s",
                            keystr_from_pk (pk), "revoked");
@@ -2069,6 +2072,7 @@ parse_def_secret_key (ctrl_t ctrl)
             }
           if (pk->has_expired)
             {
+              any_expired = 1;
               if (DBG_LOOKUP)
                 log_debug ("not using %s as default key, %s",
                            keystr_from_pk (pk), "expired");
@@ -2076,6 +2080,7 @@ parse_def_secret_key (ctrl_t ctrl)
             }
           if (pk_is_disabled (pk))
             {
+              any_disabled = 1;
               if (DBG_LOOKUP)
                 log_debug ("not using %s as default key, %s",
                            keystr_from_pk (pk), "disabled");
@@ -2096,9 +2101,22 @@ parse_def_secret_key (ctrl_t ctrl)
         {
           if (! warned && ! opt.quiet)
             {
+              gpg_err_code_t ec;
+
+              /* Try to get a better error than no secret key if we
+               * only know that the public key is not usable.  */
+              if (any_revoked)
+                ec = GPG_ERR_CERT_REVOKED;
+              else if (any_expired)
+                ec = GPG_ERR_KEY_EXPIRED;
+              else if (any_disabled)
+                ec = GPG_ERR_KEY_DISABLED;
+              else
+                ec = GPG_ERR_NO_SECKEY;
+
               log_info (_("Warning: not using '%s' as default key: %s\n"),
-                        t->d, gpg_strerror (GPG_ERR_NO_SECKEY));
-              print_reported_error (err, GPG_ERR_NO_SECKEY);
+                        t->d, gpg_strerror (ec));
+              print_reported_error (err, ec);
             }
         }
       else
@@ -3769,6 +3787,13 @@ finish_lookup (kbnode_t keyblock, unsigned int req_usage, int want_exact,
                 {
                   if (DBG_LOOKUP)
                     log_debug ("\tno secret key\n");
+                  continue;
+                }
+
+              if (secret_key_avail < last_secret_key_avail)
+                {
+                  if (DBG_LOOKUP)
+                    log_debug ("\tskipping secret key with lower avail\n");
                   continue;
                 }
 

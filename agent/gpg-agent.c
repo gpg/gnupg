@@ -364,7 +364,7 @@ static int putty_support;
 
 /* Path to the pipe, which handles requests from Win32-OpenSSH.  */
 static const char *win32_openssh_support;
-#define W32_DEFAILT_AGENT_PIPE_NAME "\\\\.\\pipe\\openssh-ssh-agent"
+#define W32_DEFAULT_AGENT_PIPE_NAME "\\\\.\\pipe\\openssh-ssh-agent"
 #endif /*HAVE_W32_SYSTEM*/
 
 /* The list of open file descriptors at startup.  Note that this list
@@ -1307,7 +1307,7 @@ main (int argc, char **argv)
           if (pargs.r_type)
             win32_openssh_support = pargs.r.ret_str;
           else
-            win32_openssh_support = W32_DEFAILT_AGENT_PIPE_NAME;
+            win32_openssh_support = W32_DEFAULT_AGENT_PIPE_NAME;
 #        endif
           break;
 
@@ -2002,6 +2002,7 @@ agent_deinit_default_ctrl (ctrl_t ctrl)
 {
   unregister_progress_cb ();
   session_env_release (ctrl->session_env);
+  clear_ephemeral_keys (ctrl);
 
   xfree (ctrl->digest.data);
   ctrl->digest.data = NULL;

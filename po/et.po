@@ -774,8 +774,8 @@ msgstr ""
 
 #, fuzzy, c-format
 msgid ""
-"Do you really want to delete the key identified by keygrip%%0A  %s%%0A  %%C"
-"%%0A?"
+"Do you really want to delete the key identified by keygrip%%0A  %s%%0A  "
+"%%C%%0A?"
 msgstr "Kas te tõesti soovite valitud võtmeid kustutada? "
 
 #, fuzzy
@@ -1880,14 +1880,14 @@ msgid "using cipher %s.%s\n"
 msgstr "kasutan šiffrit %s\n"
 
 #, fuzzy, c-format
-#| msgid "`%s' already compressed\n"
-msgid "'%s' already compressed\n"
-msgstr "`%s' on juba pakitud\n"
-
-#, fuzzy, c-format
 #| msgid "WARNING: `%s' is an empty file\n"
 msgid "WARNING: '%s' is an empty file\n"
 msgstr "HOIATUS: `%s' on tühi fail\n"
+
+#, fuzzy, c-format
+#| msgid "`%s' already compressed\n"
+msgid "'%s' already compressed\n"
+msgstr "`%s' on juba pakitud\n"
 
 #, fuzzy, c-format
 msgid "digest algorithm '%s' may not be used in %s mode\n"
@@ -4391,24 +4391,24 @@ msgstr " (vaikimisi)"
 #, fuzzy, c-format
 #| msgid "   (%d) DSA (sign only)\n"
 msgid "  (%d) ECC (sign only)\n"
-msgstr "   (%d) DSA (ainult allkirjastamiseks)\n"
+msgstr "  (%d) DSA (ainult allkirjastamiseks)\n"
 
 #, fuzzy, c-format
 msgid "  (%d) ECC (set your own capabilities)%s\n"
-msgstr "   (%d) RSA (ainult krüpteerimiseks)\n"
+msgstr "  (%d) RSA (ainult krüpteerimiseks)\n"
 
 #, fuzzy, c-format
 #| msgid "   (%d) RSA (encrypt only)\n"
 msgid "  (%d) ECC (encrypt only)%s\n"
-msgstr "   (%d) RSA (ainult krüpteerimiseks)\n"
+msgstr "  (%d) RSA (ainult krüpteerimiseks)\n"
 
 #, fuzzy, c-format
 msgid "  (%d) Existing key%s\n"
-msgstr "   (%d) RSA (ainult krüpteerimiseks)\n"
+msgstr "  (%d) RSA (ainult krüpteerimiseks)\n"
 
 #, fuzzy, c-format
 msgid "  (%d) Existing key from card%s\n"
-msgstr "   (%d) RSA (ainult krüpteerimiseks)\n"
+msgstr "  (%d) RSA (ainult krüpteerimiseks)\n"
 
 #, fuzzy
 msgid "Enter the keygrip: "
@@ -9235,6 +9235,9 @@ msgstr "Tühistamise sertifikaat on loodud.\n"
 msgid "store a private key to a data object"
 msgstr ""
 
+msgid "run various checks on the keys"
+msgstr ""
+
 msgid "Yubikey management commands"
 msgstr ""
 
@@ -10276,8 +10279,8 @@ msgstr ""
 
 #~ msgid "If you want to use this untrusted key anyway, answer \"yes\"."
 #~ msgstr ""
-#~ "Kui te ikkagi soovite kasutada seda mitteusaldatavat võtit, vastake \"jah"
-#~ "\"."
+#~ "Kui te ikkagi soovite kasutada seda mitteusaldatavat võtit, vastake "
+#~ "\"jah\"."
 
 #~ msgid ""
 #~ "Enter the user ID of the addressee to whom you want to send the message."
@@ -10373,8 +10376,8 @@ msgstr ""
 #~ "\n"
 #~ "Note that the examples given above for levels 2 and 3 are *only* "
 #~ "examples.\n"
-#~ "In the end, it is up to you to decide just what \"casual\" and \"extensive"
-#~ "\"\n"
+#~ "In the end, it is up to you to decide just what \"casual\" and "
+#~ "\"extensive\"\n"
 #~ "mean to you when you sign other keys.\n"
 #~ "\n"
 #~ "If you don't know what the right answer is, answer \"0\"."
@@ -11089,7 +11092,7 @@ msgstr ""
 
 #, fuzzy
 #~ msgid "  (%d) RSA (sign, encrypt and auth)\n"
-#~ msgstr "   (%d) RSA (allkirjastamiseks ja krüptimiseks)\n"
+#~ msgstr "  (%d) RSA (allkirjastamiseks ja krüptimiseks)\n"
 
 #~ msgid "%s: can't open: %s\n"
 #~ msgstr "%s: ei õnnestu avada: %s\n"

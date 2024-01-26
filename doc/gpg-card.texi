@@ -316,6 +316,40 @@ Write a private key object identified by @var{keygrip} to the card
 under the id @var{keyref}.  Option @option{--force} allows overwriting
 an existing key.
 
+@item CHECKKEYS [--ondisk] [--delete-clear-copy] [--delete-protected-copy]
+@opindex checkkeys
+Print a list of keys noticed on all inserted cards.  With
+@option{--ondisk} only smartcard keys with a copy on disk are listed.
+With @option{--delete-clear-copy} copies of smartcard keys stored on
+disk without any protection will be deleted.  With
+@option{--delete-protected-copy} password protected copies of
+smartcard keys stored on disk will be deleted.
+
+This command creates missing shadow keys.  The delete options print
+the status of the keys before they are deleted.
+
+The format of the output is:
+@table @var
+@item Serial number
+A hex-string with the serial number of the card.
+@item Type
+This gives the type of the card's application.  For example "OpenPGP"
+or "PIV".
+@item Keygrip
+A hex-string identifying a key.
+@item Keyref
+The application slot where the key is stored on the card.  For example
+"OpenPGP.1"
+@item Status
+The status of the key.  The most common value is "shadowed" for a key
+where only the public key along with the card's serial number is
+stored on the disk.  The value "clear" indicates that a copy of the
+card's key is stored unprotected on disk.  The value "protected"
+indicated that a copy of the car's key is stored on disk but is
+protected by a password.  The value "error" may also be shown if there
+was a problem reading information from the card.
+@end table
+
 @item YUBIKEY @var{cmd} @var{args}
 @opindex yubikey
 Various commands pertaining to Yubikey tokens with @var{cmd} being:

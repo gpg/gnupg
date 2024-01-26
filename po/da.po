@@ -259,8 +259,8 @@ msgid ""
 "Please enter a passphrase to protect the received secret key%%0A   %s%%0A   "
 "%s%%0Awithin gpg-agent's key storage"
 msgstr ""
-"Indtast venligst en adgangsfrase for at beskytte den modtaget hemmelige nøgle"
-"%%0A   %s%%0A   %s%%0Ainden i gpg-agentens nøglelager"
+"Indtast venligst en adgangsfrase for at beskytte den modtaget hemmelige "
+"nøgle%%0A   %s%%0A   %s%%0Ainden i gpg-agentens nøglelager"
 
 #, c-format
 msgid "failed to create stream from socket: %s\n"
@@ -868,8 +868,8 @@ msgstr ""
 #, fuzzy, c-format
 #| msgid "Do you really want to delete the selected keys? (y/N) "
 msgid ""
-"Do you really want to delete the key identified by keygrip%%0A  %s%%0A  %%C"
-"%%0A?"
+"Do you really want to delete the key identified by keygrip%%0A  %s%%0A  "
+"%%C%%0A?"
 msgstr "Vil du virkelig slette de valgte nøgler? (j/N) "
 
 #, fuzzy
@@ -1996,14 +1996,14 @@ msgid "using cipher %s.%s\n"
 msgstr "bruger chiffer %s\n"
 
 #, fuzzy, c-format
-#| msgid "`%s' already compressed\n"
-msgid "'%s' already compressed\n"
-msgstr "»%s« allerede komprimeret\n"
-
-#, fuzzy, c-format
 #| msgid "WARNING: `%s' is an empty file\n"
 msgid "WARNING: '%s' is an empty file\n"
 msgstr "ADVARSEL: »%s« er en tom fil\n"
+
+#, fuzzy, c-format
+#| msgid "`%s' already compressed\n"
+msgid "'%s' already compressed\n"
+msgstr "»%s« allerede komprimeret\n"
 
 #, fuzzy, c-format
 #| msgid "you may not use digest algorithm `%s' while in %s mode\n"
@@ -2527,8 +2527,8 @@ msgstr "ADVARSEL: Usikre indelukkede mapperettigheder på hjemmemappe »%s«\n"
 
 #, fuzzy, c-format
 #| msgid ""
-#| "WARNING: unsafe enclosing directory permissions on configuration file `"
-#| "%s'\n"
+#| "WARNING: unsafe enclosing directory permissions on configuration file "
+#| "`%s'\n"
 msgid ""
 "WARNING: unsafe enclosing directory permissions on configuration file '%s'\n"
 msgstr ""
@@ -4553,27 +4553,27 @@ msgstr ""
 #, fuzzy, c-format
 #| msgid "   (%d) DSA (sign only)\n"
 msgid "  (%d) ECC (sign only)\n"
-msgstr "   (%d) DSA (kun underskriv)\n"
+msgstr "  (%d) DSA (kun underskriv)\n"
 
 #, fuzzy, c-format
 #| msgid "   (%d) DSA (set your own capabilities)\n"
 msgid "  (%d) ECC (set your own capabilities)%s\n"
-msgstr "   (%d) DSA (angiv dine egne evner)\n"
+msgstr "  (%d) DSA (angiv dine egne evner)\n"
 
 #, fuzzy, c-format
 #| msgid "   (%d) RSA (encrypt only)\n"
 msgid "  (%d) ECC (encrypt only)%s\n"
-msgstr "   (%d) RSA (kun krypter)\n"
+msgstr "  (%d) RSA (kun krypter)\n"
 
 #, fuzzy, c-format
 #| msgid "   (%d) Existing key\n"
 msgid "  (%d) Existing key%s\n"
-msgstr "   (%d) Eksisterende nøgle\n"
+msgstr "  (%d) Eksisterende nøgle\n"
 
 #, fuzzy, c-format
 #| msgid "   (%d) Existing key from card\n"
 msgid "  (%d) Existing key from card%s\n"
-msgstr "   (%d) Eksisterende nøgle fra kort\n"
+msgstr "  (%d) Eksisterende nøgle fra kort\n"
 
 # key grip
 # chiefly  ( US ) See also grip the person in charge of moving and setting up camera
@@ -9709,6 +9709,9 @@ msgid "store a certificate to a data object"
 msgstr "  (certifkat oprettet den "
 
 msgid "store a private key to a data object"
+msgstr ""
+
+msgid "run various checks on the keys"
 msgstr ""
 
 msgid "Yubikey management commands"

@@ -444,8 +444,9 @@ do_sign (ctrl_t ctrl, PKT_public_key *pksk, PKT_signature *sig,
       goto leave;
     }
 
-  /* Check compliance.  */
-  if (! gnupg_digest_is_allowed (opt.compliance, 1, mdalgo))
+  /* Check compliance but always allow for key revocations. */
+  if (!IS_KEY_REV (sig)
+      && ! gnupg_digest_is_allowed (opt.compliance, 1, mdalgo))
     {
       log_error (_("digest algorithm '%s' may not be used in %s mode\n"),
 		 gcry_md_algo_name (mdalgo),
@@ -454,9 +455,10 @@ do_sign (ctrl_t ctrl, PKT_public_key *pksk, PKT_signature *sig,
       goto leave;
     }
 
-  if (! gnupg_pk_is_allowed (opt.compliance, PK_USE_SIGNING,
-                             pksk->pubkey_algo, 0,
-                             pksk->pkey, nbits_from_pk (pksk), NULL))
+  if (!IS_KEY_REV (sig)
+      && ! gnupg_pk_is_allowed (opt.compliance, PK_USE_SIGNING,
+                                pksk->pubkey_algo, 0,
+                                pksk->pkey, nbits_from_pk (pksk), NULL))
     {
       log_error (_("key %s may not be used for signing in %s mode\n"),
                  keystr_from_pk (pksk),

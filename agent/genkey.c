@@ -30,14 +30,36 @@
 #include "../common/exechelp.h"
 #include "../common/sysutils.h"
 
-static int
-store_key (gcry_sexp_t private, const char *passphrase, int force,
+
+void
+clear_ephemeral_keys (ctrl_t ctrl)
+{
+  while (ctrl->ephemeral_keys)
+    {
+      ephemeral_private_key_t next = ctrl->ephemeral_keys->next;
+      if (ctrl->ephemeral_keys->keybuf)
+        {
+          wipememory (ctrl->ephemeral_keys->keybuf,
+                      ctrl->ephemeral_keys->keybuflen);
+          xfree (ctrl->ephemeral_keys->keybuf);
+        }
+      xfree (ctrl->ephemeral_keys);
+      ctrl->ephemeral_keys = next;
+    }
+}
+
+
+/* Store the key either to a file, or in ctrl->ephemeral_mode in the
+ * session data.  */
+static gpg_error_t
+store_key (ctrl_t ctrl, gcry_sexp_t private,
+           const char *passphrase, int force,
            unsigned long s2k_count, time_t timestamp)
 {
-  int rc;
+  gpg_error_t err;
   unsigned char *buf;
   size_t len;
-  unsigned char grip[20];
+  unsigned char grip[KEYGRIP_LEN];
 
   if ( !gcry_pk_get_keygrip (private, grip) )
     {
@@ -49,7 +71,10 @@ store_key (gcry_sexp_t private, const char *passphrase, int force,
   log_assert (len);
   buf = gcry_malloc_secure (len);
   if (!buf)
-      return out_of_core ();
+    {
+      err = gpg_error_from_syserror ();
+      goto leave;
+    }
   len = gcry_sexp_sprint (private, GCRYSEXP_FMT_CANON, buf, len);
   log_assert (len);
 
@@ -57,20 +82,56 @@ store_key (gcry_sexp_t private, const char *passphrase, int force,
     {
       unsigned char *p;
 
-      rc = agent_protect (buf, passphrase, &p, &len, s2k_count);
-      if (rc)
-        {
-          xfree (buf);
-          return rc;
-        }
+      err = agent_protect (buf, passphrase, &p, &len, s2k_count);
+      if (err)
+        goto leave;
       xfree (buf);
       buf = p;
     }
 
-  rc = agent_write_private_key (grip, buf, len, force,
-                                NULL, NULL, NULL, timestamp);
+  if (ctrl->ephemeral_mode)
+    {
+      ephemeral_private_key_t ek;
+
+      for (ek = ctrl->ephemeral_keys; ek; ek = ek->next)
+        if (!memcmp (ek->grip, grip, KEYGRIP_LEN))
+          break;
+      if (!ek)
+        {
+          ek = xtrycalloc (1, sizeof *ek);
+          if (!ek)
+            {
+              err = gpg_error_from_syserror ();
+              goto leave;
+            }
+          memcpy (ek->grip, grip, KEYGRIP_LEN);
+          ek->next = ctrl->ephemeral_keys;
+          ctrl->ephemeral_keys = ek;
+        }
+      if (ek->keybuf)
+        {
+          wipememory (ek->keybuf, ek->keybuflen);
+          xfree (ek->keybuf);
+        }
+      ek->keybuf = buf;
+      buf = NULL;
+      ek->keybuflen = len;
+    }
+  else
+    err = agent_write_private_key (ctrl, grip, buf, len, force,
+                                   NULL, NULL, NULL, timestamp);
+
+  if (!err)
+    {
+      char hexgrip[2*KEYGRIP_LEN+1];
+
+      bin2hex (grip, KEYGRIP_LEN, hexgrip);
+      agent_write_status (ctrl, "KEYGRIP", hexgrip, NULL);
+    }
+
+ leave:
   xfree (buf);
-  return rc;
+  return err;
 }
 
 
@@ -458,16 +519,19 @@ agent_ask_new_passphrase (ctrl_t ctrl, const char *prompt,
 
 
 /* Generate a new keypair according to the parameters given in
-   KEYPARAM.  If CACHE_NONCE is given first try to lookup a passphrase
-   using the cache nonce.  If NO_PROTECTION is true the key will not
-   be protected by a passphrase.  If OVERRIDE_PASSPHRASE is true that
-   passphrase will be used for the new key.  If TIMESTAMP is not zero
-   it will be recorded as creation date of the key (unless extended
-   format is disabled) . */
+ * KEYPARAM.  If CACHE_NONCE is given first try to lookup a passphrase
+ * using the cache nonce.  If NO_PROTECTION is true the key will not
+ * be protected by a passphrase.  If OVERRIDE_PASSPHRASE is true that
+ * passphrase will be used for the new key.  If TIMESTAMP is not zero
+ * it will be recorded as creation date of the key (unless extended
+ * format is disabled).  In ctrl_ephemeral_mode the key is stored in
+ * the session data and an identifier is returned using a status
+ * line.  */
 int
-agent_genkey (ctrl_t ctrl, const char *cache_nonce, time_t timestamp,
-              const char *keyparam, size_t keyparamlen, int no_protection,
-              const char *override_passphrase, int preset, membuf_t *outbuf)
+agent_genkey (ctrl_t ctrl, unsigned int flags,
+              const char *cache_nonce, time_t timestamp,
+              const char *keyparam, size_t keyparamlen,
+              const char *override_passphrase, membuf_t *outbuf)
 {
   gcry_sexp_t s_keyparam, s_key, s_private, s_public;
   char *passphrase_buffer = NULL;
@@ -486,7 +550,7 @@ agent_genkey (ctrl_t ctrl, const char *cache_nonce, time_t timestamp,
   /* Get the passphrase now, cause key generation may take a while. */
   if (override_passphrase)
     passphrase = override_passphrase;
-  else if (no_protection || !cache_nonce)
+  else if ((flags & GENKEY_FLAG_NO_PROTECTION) || !cache_nonce)
     passphrase = NULL;
   else
     {
@@ -494,8 +558,8 @@ agent_genkey (ctrl_t ctrl, const char *cache_nonce, time_t timestamp,
       passphrase = passphrase_buffer;
     }
 
-  if (passphrase || no_protection)
-    ;
+  if (passphrase || (flags & GENKEY_FLAG_NO_PROTECTION))
+    ; /* No need to ask for a passphrase.  */
   else
     {
       rc = agent_ask_new_passphrase (ctrl,
@@ -540,11 +604,14 @@ agent_genkey (ctrl_t ctrl, const char *cache_nonce, time_t timestamp,
   gcry_sexp_release (s_key); s_key = NULL;
 
   /* store the secret key */
-  if (DBG_CRYPTO)
-    log_debug ("storing private key\n");
-  rc = store_key (s_private, passphrase, 0, ctrl->s2k_count, timestamp);
-  if (!rc)
+  if (opt.verbose)
+    log_info ("storing %sprivate key\n",
+               ctrl->ephemeral_mode?"ephemeral ":"");
+  rc = store_key (ctrl, s_private, passphrase, 0, ctrl->s2k_count, timestamp);
+  if (!rc && !ctrl->ephemeral_mode)
     {
+      /* FIXME: or does it make sense to also cache passphrases in
+       * ephemeral mode using a dedicated cache?  */
       if (!cache_nonce)
         {
           char tmpbuf[12];
@@ -552,21 +619,23 @@ agent_genkey (ctrl_t ctrl, const char *cache_nonce, time_t timestamp,
           cache_nonce = bin2hex (tmpbuf, 12, NULL);
         }
       if (cache_nonce
-          && !no_protection
+          && !(flags & GENKEY_FLAG_NO_PROTECTION)
           && !agent_put_cache (ctrl, cache_nonce, CACHE_MODE_NONCE,
                                passphrase, ctrl->cache_ttl_opt_preset))
         agent_write_status (ctrl, "CACHE_NONCE", cache_nonce, NULL);
-      if (preset && !no_protection)
-	{
-	  unsigned char grip[20];
-	  char hexgrip[40+1];
-	  if (gcry_pk_get_keygrip (s_private, grip))
-	    {
-	      bin2hex(grip, 20, hexgrip);
-	      rc = agent_put_cache (ctrl, hexgrip, CACHE_MODE_ANY, passphrase,
+      if ((flags & GENKEY_FLAG_PRESET)
+          && !(flags & GENKEY_FLAG_NO_PROTECTION))
+        {
+          unsigned char grip[20];
+          char hexgrip[40+1];
+          if (gcry_pk_get_keygrip (s_private, grip))
+            {
+              bin2hex(grip, 20, hexgrip);
+              rc = agent_put_cache (ctrl, hexgrip,
+                                    CACHE_MODE_ANY, passphrase,
                                     ctrl->cache_ttl_opt_preset);
-	    }
-	}
+            }
+        }
     }
   xfree (passphrase_buffer);
   passphrase_buffer = NULL;
@@ -615,7 +684,8 @@ agent_protect_and_store (ctrl_t ctrl, gcry_sexp_t s_skey,
   if (passphrase_addr && *passphrase_addr)
     {
       /* Take an empty string as request not to protect the key.  */
-      err = store_key (s_skey, **passphrase_addr? *passphrase_addr:NULL, 1,
+      err = store_key (ctrl, s_skey,
+                       **passphrase_addr? *passphrase_addr:NULL, 1,
                        ctrl->s2k_count, 0);
     }
   else
@@ -631,7 +701,7 @@ agent_protect_and_store (ctrl_t ctrl, gcry_sexp_t s_skey,
                                       L_("Please enter the new passphrase"),
                                       &pass);
       if (!err)
-        err = store_key (s_skey, pass, 1, ctrl->s2k_count, 0);
+        err = store_key (ctrl, s_skey, pass, 1, ctrl->s2k_count, 0);
       if (!err && passphrase_addr)
         *passphrase_addr = pass;
       else

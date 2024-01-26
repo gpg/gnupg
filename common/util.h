@@ -366,7 +366,7 @@ gpg_error_t b64decode (const char *string, const char *title,
 /*-- Simple replacement functions. */
 
 /* We use the gnupg_ttyname macro to be safe not to run into conflicts
-   which an extisting but broken ttyname.  */
+   with an existing but broken ttyname.  */
 #if !defined(HAVE_TTYNAME) || defined(HAVE_BROKEN_TTYNAME)
 # define gnupg_ttyname(n) _gnupg_ttyname ((n))
 /* Systems without ttyname (W32) will merely return NULL. */

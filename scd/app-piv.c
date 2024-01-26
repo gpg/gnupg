@@ -1,5 +1,5 @@
 /* app-piv.c - The OpenPGP card application.
- * Copyright (C) 2019, 2020 g10 Code GmbH
+ * Copyright (C) 2019, 2020, 2024 g10 Code GmbH
  *
  * This file is part of GnuPG.
  *
@@ -3642,6 +3642,7 @@ app_select_piv (app_t app)
   size_t aptlen;
   const unsigned char *s;
   size_t n;
+  void *relptr1 = NULL;
 
   /* Note that we select using the AID without the 2 octet version
    * number.  This allows for better reporting of future specs.  We
@@ -3667,7 +3668,21 @@ app_select_piv (app_t app)
 
   s = find_tlv (apt, aptlen, 0x4F, &n);
   /* Some cards (new Yubikey) return only the PIX, while others
-   * (old Yubikey, PivApplet) return the RID+PIX. */
+   * (old Yubikey, PivApplet) return the RID+PIX.
+   * Sample APTs:
+   *   Yubikey 5.4.3: 6111 4f06 000010000100 7907 4f05 a000000308
+   *   SCE7.0-G-F-P : 610f 4f06 001000010000 7905 a000000308
+   */
+  if (app->card->cardtype == CARDTYPE_SCE7
+      && s && apt && aptlen == 17
+      && !memcmp (apt, ("\x61\x0f\x4f\x06\x00\x10\x00\x01"
+                        "\x00\x00\x79\x05\xa0\x00\x00\x03\x08"), aptlen))
+    {
+      if (opt.verbose)
+        log_info ("piv: assuming G&D SCE7.0-G-F-P\n");
+      app->appversion = 0x0100;  /* Let's assume this.  */
+      goto apt_checked;
+    }
   if (!s || !((n == 6 && !memcmp (s, piv_aid+5, 4))
               || (n == 11 && !memcmp (s, piv_aid, 9))))
     {
@@ -3702,6 +3717,7 @@ app_select_piv (app_t app)
       goto leave;
     }
 
+ apt_checked:
   app->app_local = xtrycalloc (1, sizeof *app->app_local);
   if (!app->app_local)
     {
@@ -3712,6 +3728,41 @@ app_select_piv (app_t app)
   if (app->card->cardtype == CARDTYPE_YUBIKEY)
     app->app_local->flags.yubikey = 1;
 
+  /* If we don't have a s/n construct it from the CHUID.  */
+  if (!APP_CARD(app)->serialno)
+    {
+      unsigned char *chuid;
+      size_t chuidlen;
+
+      relptr1 = get_one_do (app, 0x5FC102, &chuid, &chuidlen, NULL);
+      if (!relptr1)
+        log_error ("piv: CHUID not found\n");
+      else
+        {
+          s = find_tlv (chuid, chuidlen, 0x34, &n);
+          if (!s || n != 16)
+            {
+              log_error ("piv: Card UUID %s in CHUID\n",
+                         s? "invalid":"missing");
+              if (opt.debug && s)
+                log_printhex (s, n, "got");
+            }
+          else
+            {
+              APP_CARD(app)->serialno = xtrymalloc (n);
+              if (!APP_CARD(app)->serialno)
+                {
+                  err = gpg_error_from_syserror ();
+                  goto leave;
+                }
+              memcpy (APP_CARD(app)->serialno, s, n);
+              APP_CARD(app)->serialnolen = n;
+              err = app_munge_serialno (APP_CARD(app));
+              if (err)
+                goto leave;
+            }
+        }
+    }
 
   /* FIXME: Parse the optional and conditional DOs in the APT.  */
 
@@ -3739,6 +3790,7 @@ app_select_piv (app_t app)
 
 
 leave:
+  xfree (relptr1);
   xfree (apt);
   if (err)
     do_deinit (app);

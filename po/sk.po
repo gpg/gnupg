@@ -779,8 +779,8 @@ msgstr ""
 
 #, fuzzy, c-format
 msgid ""
-"Do you really want to delete the key identified by keygrip%%0A  %s%%0A  %%C"
-"%%0A?"
+"Do you really want to delete the key identified by keygrip%%0A  %s%%0A  "
+"%%C%%0A?"
 msgstr "Skutočne chcete zmazať vybrané kľúče? "
 
 #, fuzzy
@@ -1887,14 +1887,14 @@ msgid "using cipher %s.%s\n"
 msgstr "použitá šifra %s\n"
 
 #, fuzzy, c-format
-#| msgid "`%s' already compressed\n"
-msgid "'%s' already compressed\n"
-msgstr "`%s' je už skomprimovaný\n"
-
-#, fuzzy, c-format
 #| msgid "WARNING: `%s' is an empty file\n"
 msgid "WARNING: '%s' is an empty file\n"
 msgstr "VAROVANIE: súbor `%s' je prázdny\n"
+
+#, fuzzy, c-format
+#| msgid "`%s' already compressed\n"
+msgid "'%s' already compressed\n"
+msgstr "`%s' je už skomprimovaný\n"
 
 #, fuzzy, c-format
 msgid "digest algorithm '%s' may not be used in %s mode\n"
@@ -3180,8 +3180,8 @@ msgstr "kľúč %08lX: neexistuje id užívateľa pre podpis\n"
 #, fuzzy, c-format
 msgid "key %s: unsupported public key algorithm on user ID \"%s\"\n"
 msgstr ""
-"kľúč %08lX: nepodporovaný algoritmus verejného kľúča u užívateľského id \"%s"
-"\"\n"
+"kľúč %08lX: nepodporovaný algoritmus verejného kľúča u užívateľského id "
+"\"%s\"\n"
 
 #, fuzzy, c-format
 msgid "key %s: invalid self-signature on user ID \"%s\"\n"
@@ -4417,24 +4417,24 @@ msgstr "dešifrovať dáta (implicitne)"
 #, fuzzy, c-format
 #| msgid "   (%d) DSA (sign only)\n"
 msgid "  (%d) ECC (sign only)\n"
-msgstr "   (%d) DSA (len na podpis)\n"
+msgstr "  (%d) DSA (len na podpis)\n"
 
 #, fuzzy, c-format
 msgid "  (%d) ECC (set your own capabilities)%s\n"
-msgstr "   (%d) RSA (len na šifrovanie)\n"
+msgstr "  (%d) RSA (len na šifrovanie)\n"
 
 #, fuzzy, c-format
 #| msgid "   (%d) RSA (encrypt only)\n"
 msgid "  (%d) ECC (encrypt only)%s\n"
-msgstr "   (%d) RSA (len na šifrovanie)\n"
+msgstr "  (%d) RSA (len na šifrovanie)\n"
 
 #, fuzzy, c-format
 msgid "  (%d) Existing key%s\n"
-msgstr "   (%d) RSA (len na šifrovanie)\n"
+msgstr "  (%d) RSA (len na šifrovanie)\n"
 
 #, fuzzy, c-format
 msgid "  (%d) Existing key from card%s\n"
-msgstr "   (%d) RSA (len na šifrovanie)\n"
+msgstr "  (%d) RSA (len na šifrovanie)\n"
 
 #, fuzzy
 msgid "Enter the keygrip: "
@@ -9295,6 +9295,9 @@ msgstr "Revokačný certifikát bol vytvorený.\n"
 msgid "store a private key to a data object"
 msgstr ""
 
+msgid "run various checks on the keys"
+msgstr ""
+
 msgid "Yubikey management commands"
 msgstr ""
 
@@ -10452,8 +10455,8 @@ msgstr ""
 #~ "\n"
 #~ "Note that the examples given above for levels 2 and 3 are *only* "
 #~ "examples.\n"
-#~ "In the end, it is up to you to decide just what \"casual\" and \"extensive"
-#~ "\"\n"
+#~ "In the end, it is up to you to decide just what \"casual\" and "
+#~ "\"extensive\"\n"
 #~ "mean to you when you sign other keys.\n"
 #~ "\n"
 #~ "If you don't know what the right answer is, answer \"0\"."
@@ -10496,8 +10499,8 @@ msgstr ""
 #, fuzzy
 #~ msgid "Answer \"yes\" if you want to sign ALL the user IDs"
 #~ msgstr ""
-#~ "Pokiaľ chcete podpísať VŠETKY identifikátory užívateľov, odpovedzte \"ano"
-#~ "\""
+#~ "Pokiaľ chcete podpísať VŠETKY identifikátory užívateľov, odpovedzte "
+#~ "\"ano\""
 
 #~ msgid ""
 #~ "Answer \"yes\" if you really want to delete this user ID.\n"
@@ -11179,7 +11182,7 @@ msgstr ""
 
 #, fuzzy
 #~ msgid "  (%d) RSA (sign, encrypt and auth)\n"
-#~ msgstr "   (%d) RSA (pro šifrování a podpis)\n"
+#~ msgstr "  (%d) RSA (pro šifrování a podpis)\n"
 
 #~ msgid "%s: can't open: %s\n"
 #~ msgstr "%s: nemôžem otvoriť: %s\n"

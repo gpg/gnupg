@@ -408,6 +408,7 @@ EXTERN_UNLESS_MAIN_MODULE int memory_stat_debug_mode;
 #define IMPORT_COLLAPSE_UIDS             (1<<15)
 #define IMPORT_COLLAPSE_SUBKEYS          (1<<16)
 #define IMPORT_BULK                      (1<<17)
+#define IMPORT_IGNORE_ATTRIBUTES         (1<<18)
 
 #define EXPORT_LOCAL_SIGS                (1<<0)
 #define EXPORT_ATTRIBUTES                (1<<1)

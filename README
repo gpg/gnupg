@@ -4,7 +4,7 @@
 
           Copyright 1997-2019 Werner Koch
           Copyright 1998-2021 Free Software Foundation, Inc.
-          Copyright 2003-2023 g10 Code GmbH
+          Copyright 2003-2024 g10 Code GmbH
 
 
 * INTRODUCTION
@@ -40,7 +40,7 @@
 
   Several other standard libraries are also required.  The configure
   script prints diagnostic messages if one of these libraries is not
-  available and a feature will not be available..
+  available and a feature will not be available.
 
   You also need the Pinentry package for most functions of GnuPG;
   however it is not a build requirement.  Pinentry is available at
@@ -80,15 +80,24 @@
 
   to view the directories used by GnuPG.
 
+** Quick build method on Unix
+
   To quickly build all required software without installing it, the
-  Speedo method may be used:
+  Speedo target may be used:
 
-    cd build
-    make -f ../build-aux/speedo.mk  native
+    make -f build-aux/speedo.mk native
 
-  This method downloads all required libraries and does a native build
-  of GnuPG to PLAY/inst/.  GNU make is required and you need to set
-  LD_LIBRARY_PATH to $(pwd)/PLAY/inst/lib to test the binaries.
+  This target downloads all required libraries and does a native build
+  of GnuPG to PLAY/inst/.  GNU make and the patchelf tool are
+  required.  After the build the entire software including all
+  libraries can be installed into an arbitrary location using for
+  example:
+
+    make -f build-aux/speedo.mk install SYSROOT=/usr/local/gnupg24
+    ldconfig -n /usr/local/gnupg24/lib
+
+  and adding /usr/local/gnupg24/bin to PATH.
+
 
 ** Specific build problems on some machines:
 

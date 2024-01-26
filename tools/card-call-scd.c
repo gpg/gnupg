@@ -1530,14 +1530,16 @@ scd_readkey (const char *keyrefstr, int create_shadow, gcry_sexp_t *r_result)
   unsigned char *buf;
   size_t len, buflen;
 
-  *r_result = NULL;
+  if (r_result)
+    *r_result = NULL;
   err = start_agent (0);
   if (err)
     return err;
 
   init_membuf (&data, 1024);
   if (create_shadow)
-    snprintf (line, DIM(line), "READKEY --card -- %s", keyrefstr);
+    snprintf (line, DIM(line), "READKEY %s--card -- %s",
+              r_result? "" : "--no-data ", keyrefstr);
   else
     snprintf (line, DIM(line), "SCD READKEY %s", keyrefstr);
   err = assuan_transact (agent_ctx, line,
@@ -1553,7 +1555,7 @@ scd_readkey (const char *keyrefstr, int create_shadow, gcry_sexp_t *r_result)
   if (!buf)
     return gpg_error_from_syserror ();
 
-  err = gcry_sexp_new (r_result, buf, buflen, 0);
+  err = r_result ? gcry_sexp_new (r_result, buf, buflen, 0) : 0;
   xfree (buf);
 
   return err;
@@ -1768,6 +1770,90 @@ agent_get_s2k_count (void)
 
   return count;
 }
+
+
+
+struct havekey_status_parm_s
+{
+  char *string;
+};
+
+static gpg_error_t
+havekey_status_cb (void *opaque, const char *line)
+{
+  struct havekey_status_parm_s *parm = opaque;
+  const char *s;
+  char *p;
+
+  if ((s = has_leading_keyword (line, "KEYFILEINFO")))
+    {
+      xfree (parm->string);
+      parm->string = xtrystrdup (s);
+      if (!parm->string)
+        return gpg_error_from_syserror ();
+      p = strchr (parm->string, ' ');
+      if (p)
+        *p = 0;
+    }
+
+  return 0;
+}
+
+
+/* Run the HAVEKEY --info command and stores the retrieved string at
+ * R_RESULT.  Caller must free that string.  If an error is returned
+ * R_RESULT is set to NULL.  */
+gpg_error_t
+scd_havekey_info (const unsigned char *grip, char **r_result)
+{
+  gpg_error_t err;
+  char line[ASSUAN_LINELENGTH];
+  struct havekey_status_parm_s parm = {NULL};
+
+  *r_result = NULL;
+
+  err = start_agent (0);
+  if (err)
+    return err;
+
+  snprintf (line, sizeof line, "HAVEKEY --info ");
+  log_assert (ASSUAN_LINELENGTH > strlen(line) + 2*KEYGRIP_LEN + 10);
+  bin2hex (grip, KEYGRIP_LEN, line+strlen(line));
+
+  err = assuan_transact (agent_ctx, line,
+                         NULL, NULL, NULL, NULL,
+                         havekey_status_cb, &parm);
+  if (err)
+    xfree (parm.string);
+  else
+    *r_result = parm.string;
+  return err;
+}
+
+
+/* Run the DELETE_KEY command.  If FORCE is given the user will not be
+ * asked for confirmation.  */
+gpg_error_t
+scd_delete_key (const unsigned char *grip, int force)
+{
+  gpg_error_t err;
+  char line[ASSUAN_LINELENGTH];
+  struct default_inq_parm_s dfltparm = {NULL};
+
+  err = start_agent (0);
+  if (err)
+    return err;
+  dfltparm.ctx = agent_ctx;
+
+  snprintf (line, sizeof line, "DELETE_KEY%s ", force?" --force":"");
+  log_assert (ASSUAN_LINELENGTH > strlen(line) + 2*KEYGRIP_LEN + 10);
+  bin2hex (grip, KEYGRIP_LEN, line+strlen(line));
+
+  err = assuan_transact (agent_ctx, line,
+                         NULL, NULL, default_inq_cb, &dfltparm, NULL, NULL);
+  return err;
+}
+
 
 
 /* Return a malloced string describing the statusword SW.  On error

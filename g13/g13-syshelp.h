@@ -85,7 +85,7 @@ gpg_error_t sh_is_empty_partition (const char *name);
 gpg_error_t sh_dmcrypt_create_container (ctrl_t ctrl, const char *devname,
                                          estream_t devfp);
 gpg_error_t sh_dmcrypt_mount_container (ctrl_t ctrl, const char *devname,
-                                        tupledesc_t keyblob);
+                                        tupledesc_t keyblob, int nomount);
 gpg_error_t sh_dmcrypt_umount_container (ctrl_t ctrl, const char *devname);
 gpg_error_t sh_dmcrypt_suspend_container (ctrl_t ctrl, const char *devname);
 gpg_error_t sh_dmcrypt_resume_container (ctrl_t ctrl, const char *devname,

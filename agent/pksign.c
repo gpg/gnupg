@@ -371,13 +371,14 @@ agent_pksign_do (ctrl_t ctrl, const char *cache_nonce,
               goto leave;
             }
 
-          if (keyref)
+          if (keyref && !ctrl->ephemeral_mode)
             {
               char *dispserialno;
 
               agent_card_getattr (ctrl, "$DISPSERIALNO", &dispserialno,
                                   hexgrip);
-              agent_write_shadow_key (ctrl->keygrip, serialno, keyref, pkbuf,
+              agent_write_shadow_key (ctrl,
+                                      ctrl->keygrip, serialno, keyref, pkbuf,
                                       0, dispserialno);
               xfree (dispserialno);
             }

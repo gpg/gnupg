@@ -112,6 +112,7 @@ strcardtype (cardtype_t t)
     case CARDTYPE_GNUK:        return "gnuk";
     case CARDTYPE_YUBIKEY:     return "yubikey";
     case CARDTYPE_ZEITCONTROL: return "zeitcontrol";
+    case CARDTYPE_SCE7:        return "smartcafe";
     }
   return "?";
 }
@@ -549,6 +550,51 @@ card_reset (card_t card)
   return err;
 }
 
+
+/* Return the card type from (ATR,ATRLEN) or CARDTYPE_GENERIC in case
+ * of error or if the ATR was not found.  If ATR is NULL, SLOT is used
+ * to retrieve the ATR from the reader.  */
+static cardtype_t
+atr_to_cardtype (int slot, const unsigned char *atr, size_t atrlen)
+{
+#define X(a) ((unsigned char const *)(a))
+  static struct
+  {
+    size_t atrlen;
+    unsigned char const *atr;
+    cardtype_t type;
+  } atrlist[] = {
+    { 19, X("\x3b\xf9\x96\x00\x00\x80\x31\xfe"
+            "\x45\x53\x43\x45\x37\x20\x0f\x00\x20\x46\x4e"),
+      CARDTYPE_SCE7 },
+    { 0 }
+  };
+#undef X
+  unsigned char *atrbuf = NULL;
+  cardtype_t cardtype = 0;
+  int i;
+
+  if (atr)
+    {
+      atrbuf = apdu_get_atr (slot, &atrlen);
+      if (!atrbuf)
+        return 0;
+      atr = atrbuf;
+    }
+
+  for (i=0; atrlist[i].atrlen; i++)
+    if (atrlist[i].atrlen == atrlen
+        && !memcmp (atrlist[i].atr, atr, atrlen))
+      {
+        cardtype = atrlist[i].type;
+        break;
+      }
+  xfree (atrbuf);
+  return cardtype;
+}
+
+
+
 static gpg_error_t
 app_new_register (int slot, ctrl_t ctrl, const char *name,
                   int periodical_check_needed)
@@ -666,13 +712,16 @@ app_new_register (int slot, ctrl_t ctrl, const char *name,
                 }
               xfree (buf);
             }
+          else
+            card->cardtype = atr_to_cardtype (slot, NULL, 0);
         }
-      else
+      else  /* Got 3F00 */
         {
           unsigned char *atr;
           size_t atrlen;
 
           /* This is heuristics to identify different implementations.  */
+          /* FIXME: The first two checks are pretty OpenPGP card specific. */
           atr = apdu_get_atr (slot, &atrlen);
           if (atr)
             {
@@ -680,6 +729,8 @@ app_new_register (int slot, ctrl_t ctrl, const char *name,
                 card->cardtype = CARDTYPE_GNUK;
               else if (atrlen == 21 && atr[7] == 0x75)
                 card->cardtype = CARDTYPE_ZEITCONTROL;
+              else
+                card->cardtype = atr_to_cardtype (slot, atr, atrlen);
               xfree (atr);
             }
         }

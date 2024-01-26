@@ -51,4 +51,16 @@ Pass: start
 Cert: 4753a910e0c8b4caa8663ca0e4273a884eb5397d
 Key:  93be89edd11214ab74280d988a665b6beef876c5
 
+Name: credential_private_encrypted_AES256.p12
+Desc: AES256 encrypted P12 file from T6940
+Pass: qeFGds84/Sf0eKkJwcp6
+Cert: 20f65740b4a15bac6d6a299026756088f7604937,cbb4b26f93cfd9715ac9fa43440470df9395571b
+Key:  37eedaaf317edb69029eed79f69dd479fb10bf08
+
+Name: credential_private_encrypted_3DES.p12
+Desc: 3DES encrypted P12 file from T6940
+Pass: qeFGds84/Sf0eKkJwcp6
+Cert: 20f65740b4a15bac6d6a299026756088f7604937,cbb4b26f93cfd9715ac9fa43440470df9395571b
+Key:  37eedaaf317edb69029eed79f69dd479fb10bf08
+
 # eof #

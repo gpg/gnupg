@@ -776,8 +776,8 @@ msgid ""
 "Please verify that the certificate identified as:%%0A  \"%s\"%%0Ahas the "
 "fingerprint:%%0A  %s"
 msgstr ""
-"Por favor verifique que el certificado identificado como:%%0A \"%s"
-"\"%%0Atiene la huella digital:%%0A  %s"
+"Por favor verifique que el certificado identificado como:%%0A "
+"\"%s\"%%0Atiene la huella digital:%%0A  %s"
 
 #. TRANSLATORS: "Correct" is the label of a button and intended
 #. to be hit if the fingerprint matches the one of the CA.  The
@@ -821,8 +821,8 @@ msgstr ""
 
 #, c-format
 msgid ""
-"Do you really want to delete the key identified by keygrip%%0A  %s%%0A  %%C"
-"%%0A?"
+"Do you really want to delete the key identified by keygrip%%0A  %s%%0A  "
+"%%C%%0A?"
 msgstr ""
 "¿De verdad quiere borrar la clave identificada con el keygrip%%0A  %s%%0A  "
 "%%C%%0A?"
@@ -1890,12 +1890,12 @@ msgid "using cipher %s.%s\n"
 msgstr "usando cifrado %s\n"
 
 #, c-format
-msgid "'%s' already compressed\n"
-msgstr "'%s' ya está comprimido\n"
-
-#, c-format
 msgid "WARNING: '%s' is an empty file\n"
 msgstr "ATENCIÓN '%s' es un fichero vacío\n"
+
+#, c-format
+msgid "'%s' already compressed\n"
+msgstr "'%s' ya está comprimido\n"
 
 #, c-format
 msgid "digest algorithm '%s' may not be used in %s mode\n"
@@ -4297,22 +4297,22 @@ msgstr "  (%d) ECC (sólo firmar)\n"
 #, fuzzy, c-format
 #| msgid "  (%d) ECC (set your own capabilities)\n"
 msgid "  (%d) ECC (set your own capabilities)%s\n"
-msgstr "   (%d) ECC (permite elegir capacidades)\n"
+msgstr "  (%d) ECC (permite elegir capacidades)\n"
 
 #, fuzzy, c-format
 #| msgid "  (%d) ECC (encrypt only)\n"
 msgid "  (%d) ECC (encrypt only)%s\n"
-msgstr "   (%d) ECC (sólo cifrar)\n"
+msgstr "  (%d) ECC (sólo cifrar)\n"
 
 #, fuzzy, c-format
 #| msgid "  (%d) Existing key\n"
 msgid "  (%d) Existing key%s\n"
-msgstr "   (%d) Clave existente\n"
+msgstr "  (%d) Clave existente\n"
 
 #, fuzzy, c-format
 #| msgid "   (%d) Existing key from card\n"
 msgid "  (%d) Existing key from card%s\n"
-msgstr "   (%d) Clave existente de la tarjeta\n"
+msgstr "  (%d) Clave existente de la tarjeta\n"
 
 msgid "Enter the keygrip: "
 msgstr "Introduzca keygrip: "
@@ -5704,8 +5704,8 @@ msgstr ""
 "la clave secreta. De cualquier modo, si la clave secreta está disponible,\n"
 "es mejor generar un nuevo certificado de revocación y dar una razón para la "
 "misma\n"
-"Para más detalles, lee la descripción de la orden gpg \"--generate-revocation"
-"\"\n"
+"Para más detalles, lee la descripción de la orden gpg \"--generate-"
+"revocation\"\n"
 "en el manual GnuPG."
 
 msgid ""
@@ -9157,6 +9157,9 @@ msgstr "añadir un certificado a la cache"
 msgid "store a private key to a data object"
 msgstr ""
 
+msgid "run various checks on the keys"
+msgstr ""
+
 msgid "Yubikey management commands"
 msgstr ""
 
@@ -10532,8 +10535,8 @@ msgstr ""
 #~ "\n"
 #~ "Note that the examples given above for levels 2 and 3 are *only* "
 #~ "examples.\n"
-#~ "In the end, it is up to you to decide just what \"casual\" and \"extensive"
-#~ "\"\n"
+#~ "In the end, it is up to you to decide just what \"casual\" and "
+#~ "\"extensive\"\n"
 #~ "mean to you when you sign other keys.\n"
 #~ "\n"
 #~ "If you don't know what the right answer is, answer \"0\"."
@@ -10572,8 +10575,8 @@ msgstr ""
 #~ "      al poseedor de la clave.\n"
 #~ "\n"
 #~ "Observe que los ejemplos dados en los niveles 2 y 3 son *solo* ejemplos.\n"
-#~ "En definitiva, usted decide lo que significa \"informal\" y \"exhaustivo"
-#~ "\"\n"
+#~ "En definitiva, usted decide lo que significa \"informal\" y "
+#~ "\"exhaustivo\"\n"
 #~ "para usted cuando firma las claves de otros.\n"
 #~ "\n"
 #~ "Si no sabe qué contestar, conteste \"0\"."

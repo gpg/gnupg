@@ -1905,6 +1905,7 @@ keyedit_menu (ctrl_t ctrl, const char *username, strlist_t locusr,
 	    PACKET *pkt;
 	    IOBUF a;
             struct parse_packet_ctx_s parsectx;
+            int lastmode;
 
             if (!*arg_string)
 	      {
@@ -1959,17 +1960,28 @@ keyedit_menu (ctrl_t ctrl, const char *username, strlist_t locusr,
 	    xfree (fname);
 	    node = new_kbnode (pkt);
 
-            /* Transfer it to gpg-agent which handles secret keys.  */
-            err = transfer_secret_keys (ctrl, NULL, node, 1, 1, 0);
-
-            /* Treat the pkt as a public key.  */
-            pkt->pkttype = PKT_PUBLIC_KEY;
-
-            /* Ask gpg-agent to store the secret key to card.  */
-            if (card_store_subkey (node, 0, NULL))
+            err = agent_set_ephemeral_mode (ctrl, 1, &lastmode);
+            if (err)
+              log_error ("error switching to ephemeral mode: %s\n",
+                         gpg_strerror (err));
+            else
               {
-                redisplay = 1;
-                sec_shadowing = 1;
+                /* Transfer it to gpg-agent which handles secret keys.  */
+                err = transfer_secret_keys (ctrl, NULL, node, 1, 1, 0);
+                if (!err)
+                  {
+                    /* Treat the pkt as a public key.  */
+                    pkt->pkttype = PKT_PUBLIC_KEY;
+
+                    /* Ask gpg-agent to store the secret key to card.  */
+                    if (card_store_subkey (node, 0, NULL))
+                      {
+                        redisplay = 1;
+                        sec_shadowing = 1;
+                      }
+                  }
+                if (!lastmode && agent_set_ephemeral_mode (ctrl, 0, NULL))
+                  log_error ("error clearing the ephemeral mode\n");
               }
             release_kbnode (node);
           }
@@ -3212,7 +3224,7 @@ keyedit_quick_addkey (ctrl_t ctrl, const char *fpr, const char *algostr,
   /* We require a fingerprint because only this uniquely identifies a
    * key and may thus be used to select a key for unattended subkey
    * creation.  */
-  if (find_by_primary_fpr (ctrl, fpr, &keyblock, &kdbhd))
+  if ((err=find_by_primary_fpr (ctrl, fpr, &keyblock, &kdbhd)))
     goto leave;
 
   if (fix_keyblock (ctrl, &keyblock))
@@ -3224,6 +3236,7 @@ keyedit_quick_addkey (ctrl_t ctrl, const char *fpr, const char *algostr,
       if (!opt.verbose)
         show_key_with_all_names (ctrl, es_stdout, keyblock, 0, 0, 0, 0, 0, 1);
       log_error ("%s%s", _("Key is revoked."), "\n");
+      err = gpg_error (GPG_ERR_CERT_REVOKED);
       goto leave;
     }
 
@@ -3247,6 +3260,8 @@ keyedit_quick_addkey (ctrl_t ctrl, const char *fpr, const char *algostr,
     log_info (_("Key not changed so no update needed.\n"));
 
  leave:
+  if (err)
+    write_status_error ("keyedit.addkey", err);
   release_kbnode (keyblock);
   keydb_release (kdbhd);
 }
@@ -3274,7 +3289,7 @@ keyedit_quick_addadsk (ctrl_t ctrl, const char *fpr, const char *adskfpr)
   /* We require a fingerprint because only this uniquely identifies a
    * key and may thus be used to select a key for unattended adsk
    * adding. */
-  if (find_by_primary_fpr (ctrl, fpr, &keyblock, &kdbhd))
+  if ((err = find_by_primary_fpr (ctrl, fpr, &keyblock, &kdbhd)))
     goto leave;
 
   if (fix_keyblock (ctrl, &keyblock))
@@ -3286,6 +3301,7 @@ keyedit_quick_addadsk (ctrl_t ctrl, const char *fpr, const char *adskfpr)
       if (!opt.verbose)
         show_key_with_all_names (ctrl, es_stdout, keyblock, 0, 0, 0, 0, 0, 1);
       log_error ("%s%s", _("Key is revoked."), "\n");
+      err = gpg_error (GPG_ERR_CERT_REVOKED);
       goto leave;
     }
 
@@ -3310,6 +3326,8 @@ keyedit_quick_addadsk (ctrl_t ctrl, const char *fpr, const char *adskfpr)
     }
 
  leave:
+  if (err)
+    write_status_error ("keyedit.addadsk", err);
   release_kbnode (keyblock);
   keydb_release (kdbhd);
 }
@@ -3318,7 +3336,7 @@ keyedit_quick_addadsk (ctrl_t ctrl, const char *fpr, const char *adskfpr)
 /* Unattended expiration setting function for the main key.  If
  * SUBKEYFPRS is not NULL and SUBKEYSFPRS[0] is neither NULL, it is
  * expected to be an array of fingerprints for subkeys to change. It
- * may also be an array which just one item "*" to indicate that all
+ * may also be an array with only the item "*" to indicate that all
  * keys shall be set to that expiration date.
  */
 void

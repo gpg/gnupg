@@ -86,30 +86,31 @@ enum cmd_and_opt_values
 /* The list of commands and options. */
 static gpgrt_opt_t opts[] =
   {
-    { 300, NULL, 0, N_("@Commands:\n ") },
+    ARGPARSE_group (300, N_("@Commands:\n ")),
 
-    { aListComponents, "list-components", 256, N_("list all components") },
-    { aCheckPrograms, "check-programs", 256, N_("check all programs") },
-    { aListOptions, "list-options", 256, N_("|COMPONENT|list options") },
-    { aChangeOptions, "change-options", 256, N_("|COMPONENT|change options") },
-    { aCheckOptions, "check-options", 256, N_("|COMPONENT|check options") },
-    { aApplyDefaults, "apply-defaults", 256,
-      N_("apply global default values") },
-    { aApplyProfile, "apply-profile", 256,
-      N_("|FILE|update configuration files using FILE") },
-    { aListDirs, "list-dirs", 256,
-      N_("get the configuration directories for @GPGCONF@") },
-    { aListConfig,   "list-config", 256,
-      N_("list global configuration file") },
-    { aCheckConfig,   "check-config", 256,
-      N_("check global configuration file") },
-    { aQuerySWDB,     "query-swdb", 256,
-      N_("query the software version database") },
-    { aReload,        "reload", 256, N_("reload all or a given component")},
-    { aLaunch,        "launch", 256, N_("launch a given component")},
-    { aKill,          "kill", 256,   N_("kill a given component")},
-    { aCreateSocketDir, "create-socketdir", 256, "@"},
-    { aRemoveSocketDir, "remove-socketdir", 256, "@"},
+    ARGPARSE_c (aListComponents, "list-components", N_("list all components")),
+    ARGPARSE_c (aCheckPrograms, "check-programs", N_("check all programs")),
+    ARGPARSE_c (aListOptions, "list-options", N_("|COMPONENT|list options")),
+    ARGPARSE_c (aChangeOptions, "change-options",
+                N_("|COMPONENT|change options")),
+    ARGPARSE_c (aCheckOptions, "check-options", N_("|COMPONENT|check options")),
+    ARGPARSE_c (aApplyDefaults, "apply-defaults",
+                N_("apply global default values")),
+    ARGPARSE_c (aApplyProfile, "apply-profile",
+                N_("|FILE|update configuration files using FILE")),
+    ARGPARSE_c (aListDirs, "list-dirs",
+                N_("get the configuration directories for @GPGCONF@")),
+    ARGPARSE_c (aListConfig, "list-config",
+                N_("list global configuration file")),
+    ARGPARSE_c (aCheckConfig, "check-config",
+                N_("check global configuration file")),
+    ARGPARSE_c (aQuerySWDB, "query-swdb",
+                N_("query the software version database")),
+    ARGPARSE_c (aReload, "reload", N_("reload all or a given component")),
+    ARGPARSE_c (aLaunch, "launch", N_("launch a given component")),
+    ARGPARSE_c (aKill, "kill", N_("kill a given component")),
+    ARGPARSE_c (aCreateSocketDir, "create-socketdir", "@"),
+    ARGPARSE_c (aRemoveSocketDir, "remove-socketdir", "@"),
     ARGPARSE_c (aShowVersions, "show-versions", ""),
     ARGPARSE_c (aShowConfigs,  "show-configs", ""),
     /* hidden commands: for debugging */
@@ -117,24 +118,25 @@ static gpgrt_opt_t opts[] =
     ARGPARSE_c (aDotlockLock, "lock", "@"),
     ARGPARSE_c (aDotlockUnlock, "unlock", "@"),
 
-    { 301, NULL, 0, N_("@\nOptions:\n ") },
+    ARGPARSE_header (NULL, N_("@\nOptions:\n ")),
 
-    { oOutput, "output",    2, N_("use as output file") },
-    { oVerbose, "verbose",  0, N_("verbose") },
-    { oQuiet, "quiet",      0, N_("quiet") },
-    { oDryRun, "dry-run",   0, N_("do not make any changes") },
-    { oRuntime, "runtime",  0, N_("activate changes at runtime, if possible") },
+    ARGPARSE_s_s (oOutput, "output", N_("use as output file")),
+    ARGPARSE_s_n (oVerbose, "verbose", N_("verbose")),
+    ARGPARSE_s_n (oQuiet, "quiet", N_("quiet")),
+    ARGPARSE_s_n (oDryRun, "dry-run", N_("do not make any changes")),
+    ARGPARSE_s_n (oRuntime, "runtime",
+                  N_("activate changes at runtime, if possible")),
     ARGPARSE_s_i (oStatusFD, "status-fd",
                   N_("|FD|write status info to this FD")),
     /* hidden options */
-    { oHomedir, "homedir", 2, "@" },
-    { oBuilddir, "build-prefix", 2, "@" },
-    { oNull, "null", 0, "@" },
-    { oNoVerbose, "no-verbose",  0, "@"},
+    ARGPARSE_s_s (oHomedir, "homedir", "@"),
+    ARGPARSE_s_s (oBuilddir, "build-prefix", "@"),
+    ARGPARSE_s_n (oNull, "null", "@"),
+    ARGPARSE_s_n (oNoVerbose, "no-verbose", "@"),
     ARGPARSE_s_n (oShowSocket, "show-socket", "@"),
     ARGPARSE_s_s (oChUid, "chuid", "@"),
 
-    ARGPARSE_end(),
+    ARGPARSE_end ()
   };
 
 
@@ -1072,12 +1074,12 @@ main (int argc, char **argv)
 #if !defined(HAVE_W32_SYSTEM)
       if (!fname)
 	{
-	  es_fprintf (es_stderr, "usage: %s [options] lock|unlock NAME",
-                      GPGCONF_NAME);
+	  es_fprintf (es_stderr, "usage: %s --%slock NAME",
+                      GPGCONF_NAME, cmd==aDotlockUnlock?"un":"");
 	  es_putc ('\n', es_stderr);
-	  es_fputs (_("Need one NAME argument"), es_stderr);
+	  es_fputs ("Need name of file protected by the lock", es_stderr);
 	  es_putc ('\n', es_stderr);
-	  gpgconf_failure (GPG_ERR_USER_2);
+	  gpgconf_failure (GPG_ERR_SYNTAX);
 	}
       else
 	{
@@ -1151,10 +1153,12 @@ get_revision_from_blurb (const char *blurb, int *r_len)
 static void
 show_version_gnupg (estream_t fp, const char *prefix)
 {
-  char *fname, *p;
+  char *fname, *p, *p0;
   size_t n;
   estream_t verfp;
-  char line[100];
+  char *line = NULL;
+  size_t line_len = 0;
+  ssize_t length;
 
   es_fprintf (fp, "%s%sGnuPG %s (%s)\n%s%s\n", prefix, *prefix?"":"* ",
               gpgrt_strusage (13), BUILD_REVISION, prefix, gpgrt_strusage (17));
@@ -1173,20 +1177,46 @@ show_version_gnupg (estream_t fp, const char *prefix)
           verfp = es_fopen (fname, "r");
           if (!verfp)
             es_fprintf (fp, "%s[VERSION file not found]\n", prefix);
-          else if (!es_fgets (line, sizeof line, verfp))
-            es_fprintf (fp, "%s[VERSION file is empty]\n", prefix);
           else
             {
-              trim_spaces (line);
-              for (p=line; *p; p++)
-                if (*p < ' ' || *p > '~' || *p == '[')
-                  *p = '?';
-              es_fprintf (fp, "%s%s\n", prefix, line);
+              int lnr = 0;
+
+              p0 = NULL;
+              while ((length = es_read_line (verfp, &line, &line_len, NULL))>0)
+                {
+                  lnr++;
+                  trim_spaces (line);
+                  if (lnr == 1 && *line != '[')
+                    {
+                      /* Old file format where we look only at the
+                       * first line.  */
+                      p0 = line;
+                      break;
+                    }
+                  else if (!strncmp (line, "version=", 8))
+                    {
+                      p0 = line + 8;
+                      break;
+                    }
+                }
+              if (length < 0 || es_ferror (verfp))
+                es_fprintf (fp, "%s[VERSION file read error]\n", prefix);
+              else if (p0)
+                {
+                  for (p=p0; *p; p++)
+                    if (*p < ' ' || *p > '~' || *p == '[')
+                      *p = '?';
+                  es_fprintf (fp, "%s%s\n", prefix, p0);
+                }
+              else
+                es_fprintf (fp, "%s[VERSION file is empty]\n", prefix);
+
+              es_fclose (verfp);
             }
-          es_fclose (verfp);
         }
       xfree (fname);
     }
+  xfree (line);
 
 #ifdef HAVE_W32_SYSTEM
   {

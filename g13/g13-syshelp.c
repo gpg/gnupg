@@ -583,7 +583,7 @@ g13_syshelp_i_know_what_i_am_doing (void)
   if (gnupg_access (fname, F_OK))
     {
       log_info ("*******************************************************\n");
-      log_info ("* The G13 support for DM-Crypt is new and not matured.\n");
+      log_info ("* The G13 support for DM-Crypt is not yet widely used.\n");
       log_info ("* Bugs or improper use may delete all your disks!\n");
       log_info ("* To confirm that you are ware of this risk, create\n");
       log_info ("* the file '%s'.\n", fname);

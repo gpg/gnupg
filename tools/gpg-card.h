@@ -246,6 +246,8 @@ gpg_error_t scd_cardlist (strlist_t *result);
 gpg_error_t scd_applist (strlist_t *result, int all);
 gpg_error_t scd_change_pin (const char *pinref, int reset_mode, int nullpin);
 gpg_error_t scd_checkpin (const char *serialno);
+gpg_error_t scd_havekey_info (const unsigned char *grip, char **r_result);
+gpg_error_t scd_delete_key (const unsigned char *grip, int force);
 
 unsigned long agent_get_s2k_count (void);
 

@@ -260,7 +260,7 @@ ecdh_encrypt (DEK dek, gcry_sexp_t s_pkey, gcry_sexp_t *r_encval)
       encr_algo_str = "1.3.132.1.11.2";
       wrap_algo_str = "2.16.840.1.101.3.4.1.25";
       hash_algo     = GCRY_MD_SHA384;
-      cipher_algo   = GCRY_CIPHER_AES256;
+      cipher_algo   = GCRY_CIPHER_AES192;
       keylen        = 24;
     }
   else

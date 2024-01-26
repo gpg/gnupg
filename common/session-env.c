@@ -84,9 +84,10 @@ static struct
                                       modules (eg "xim").  */
   { "INSIDE_EMACS" },            /* Set by Emacs before running a
                                     process.  */
-  { "PINENTRY_USER_DATA", "pinentry-user-data"}
+  { "PINENTRY_USER_DATA", "pinentry-user-data"},
                                  /* Used for communication with
                                     non-standard Pinentries.  */
+  { "PINENTRY_GEOM_HINT" }       /* Used to pass window information. */
 };
 
 
