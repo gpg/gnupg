@@ -550,7 +550,7 @@ gnupg_spawn_process (const char *pgmname, const char *argv[],
     nullhd[1] = ((flags & GNUPG_SPAWN_KEEP_STDOUT)?
                  GetStdHandle (STD_OUTPUT_HANDLE) : w32_open_null (1));
   if (errpipe[1] == INVALID_HANDLE_VALUE)
-    nullhd[2] = ((flags & GNUPG_SPAWN_KEEP_STDOUT)?
+    nullhd[2] = ((flags & GNUPG_SPAWN_KEEP_STDERR)?
                  GetStdHandle (STD_ERROR_HANDLE) : w32_open_null (1));
 
   /* Start the process.  Note that we can't run the PREEXEC function
