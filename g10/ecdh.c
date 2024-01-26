@@ -142,7 +142,7 @@ extract_secret_x (byte **r_secret_x,
    master key fingerprint".  For v5 key, it is considered "adequate"
    (in terms of NIST SP 800 56A, see 5.8.2 FixedInfo) to use the first
    20 octets of its 32 octets fingerprint.  */
-static gpg_error_t
+gpg_error_t
 build_kdf_params (unsigned char kdf_params[256], size_t *r_size,
                   gcry_mpi_t *pkey, const byte pk_fp[MAX_FINGERPRINT_LEN])
 {

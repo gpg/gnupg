@@ -157,3 +157,169 @@ agent_pkdecrypt (ctrl_t ctrl, const char *desc_text,
   xfree (shadow_info);
   return err;
 }
+
+static void
+reverse_buffer (unsigned char *buffer, unsigned int length)
+{
+  unsigned int tmp, i;
+
+  for (i=0; i < length/2; i++)
+    {
+      tmp = buffer[i];
+      buffer[i] = buffer[length-1-i];
+      buffer[length-1-i] = tmp;
+    }
+}
+
+gpg_error_t
+agent_kem_decap (ctrl_t ctrl, const char *desc_text,
+                 const unsigned char *ciphertext, size_t ciphertextlen,
+                 membuf_t *outbuf,
+                 const unsigned char *option, size_t optionlen)
+{
+  gcry_sexp_t s_skey = NULL, s_cipher = NULL;
+  unsigned char *shadow_info = NULL;
+  gpg_error_t err = 0;
+  int no_shadow_info = 0;
+
+  if (!ctrl->have_keygrip)
+    {
+      log_error ("speculative decryption not yet supported\n");
+      err = gpg_error (GPG_ERR_NO_SECKEY);
+      goto leave;
+    }
+
+  err = gcry_sexp_sscan (&s_cipher, NULL, (char*)ciphertext, ciphertextlen);
+  if (err)
+    {
+      log_error ("failed to convert ciphertext: %s\n", gpg_strerror (err));
+      err = gpg_error (GPG_ERR_INV_DATA);
+      goto leave;
+    }
+
+  if (DBG_CRYPTO)
+    {
+      log_printhex (ctrl->keygrip, 20, "keygrip:");
+      log_printhex (ciphertext, ciphertextlen, "cipher: ");
+    }
+  err = agent_key_from_file (ctrl, NULL, desc_text,
+                             NULL, &shadow_info,
+                             CACHE_MODE_NORMAL, NULL, &s_skey, NULL, NULL);
+  if (gpg_err_code (err) == GPG_ERR_NO_SECKEY)
+    no_shadow_info = 1;
+  else if (err)
+    {
+      log_error ("failed to read the secret key\n");
+      goto leave;
+    }
+
+  if (shadow_info || no_shadow_info)
+    { /* divert operation to the smartcard */
+      err = gpg_error (GPG_ERR_NO_SECKEY);
+      goto leave;
+    }
+  else
+    { /* No smartcard, but a private key */
+      unsigned int nbits;
+      gcry_mpi_t seckey_mpi;
+      gcry_mpi_t ephemkey_mpi;
+      gcry_mpi_t encrypted_sessionkey_mpi;
+      const unsigned char *p;
+      size_t len;
+      unsigned char seckey[32];
+      size_t seckeylen;
+      const unsigned char *ephemkey;
+      size_t ephemkeylen;
+      const unsigned char *encrypted_sessionkey;
+      size_t encrypted_sessionkey_len;
+      unsigned char kekkey[32];    /* FIXME */
+      size_t kekkeylen;
+      gcry_cipher_hd_t hd;
+      unsigned char sessionkey_encoded[256];
+      size_t sessionkey_encoded_len;
+
+
+      gcry_sexp_extract_param (s_skey, NULL, "/d", &seckey_mpi, NULL);
+      gcry_sexp_extract_param (s_cipher, NULL, "/e/s",
+                               &ephemkey_mpi,
+                               &encrypted_sessionkey_mpi, NULL);
+
+      p = gcry_mpi_get_opaque (seckey_mpi, &nbits);
+      len = (nbits+7)/8;
+      memset (seckey, 0, 32);
+      memcpy (seckey + 32 - len, p, len);
+      seckeylen = 32;
+      reverse_buffer (seckey, seckeylen);
+
+      ephemkey = gcry_mpi_get_opaque (ephemkey_mpi, &nbits);
+      ephemkeylen = (nbits+7)/8;
+      /* Remove the 0x40 prefix*/
+      ephemkey++;
+      ephemkeylen--;
+      encrypted_sessionkey = gcry_mpi_get_opaque (encrypted_sessionkey_mpi, &nbits);
+      encrypted_sessionkey_len = (nbits+7)/8;
+      /*FIXME make sure the lengths are all correct.  */
+
+      encrypted_sessionkey_len--;
+      if (encrypted_sessionkey[0] != encrypted_sessionkey_len)
+        {
+          err = GPG_ERR_INV_DATA;
+          goto leave;
+        }
+
+      encrypted_sessionkey++;
+
+      /*FIXME: check the internal of optional to determine the KEK-algo and KEKKEYLEN.  */
+      kekkeylen = 16;
+
+      err = gcry_kem_decap (GCRY_KEM_PGP_X25519,
+                            seckey, seckeylen,
+                            ephemkey, ephemkeylen,
+                            kekkey, kekkeylen,
+                            option, optionlen);
+
+      mpi_release (seckey_mpi);
+      mpi_release (ephemkey_mpi);
+
+      if (DBG_CRYPTO)
+        {
+          log_printhex (kekkey, kekkeylen, "KEK key: ");
+        }
+
+      /*FIXME*/
+      err = gcry_cipher_open (&hd, GCRY_CIPHER_AES, GCRY_CIPHER_MODE_AESWRAP, 0);
+      if (err)
+        {
+          log_error ("ecdh failed to initialize AESWRAP: %s\n",
+                     gpg_strerror (err));
+          mpi_release (encrypted_sessionkey_mpi);
+          goto leave;
+        }
+
+      err = gcry_cipher_setkey (hd, kekkey, kekkeylen);
+
+      sessionkey_encoded_len = encrypted_sessionkey_len - 8;
+      gcry_cipher_decrypt (hd, sessionkey_encoded, sessionkey_encoded_len,
+                           encrypted_sessionkey, encrypted_sessionkey_len);
+      gcry_cipher_close (hd);
+
+      mpi_release (encrypted_sessionkey_mpi);
+
+      if (err)
+        {
+          log_error ("KEM decap failed: %s\n", gpg_strerror (err));
+          goto leave;
+        }
+
+      put_membuf_printf (outbuf, "(5:value%u:", (unsigned int)sessionkey_encoded_len);
+      put_membuf (outbuf, sessionkey_encoded, sessionkey_encoded_len);
+      put_membuf (outbuf, ")", 2);
+    }
+
+
+ leave:
+  gcry_sexp_release (s_skey);
+  gcry_sexp_release (s_cipher);
+  xfree (shadow_info);
+  return err;
+}

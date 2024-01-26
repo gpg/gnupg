@@ -1010,10 +1010,12 @@ cmd_pksign (assuan_context_t ctx, char *line)
 
 
 static const char hlp_pkdecrypt[] =
-  "PKDECRYPT [<options>]\n"
+  "PKDECRYPT [--kem]\n"
   "\n"
   "Perform the actual decrypt operation.  Input is not\n"
-  "sensitive to eavesdropping.";
+  "sensitive to eavesdropping.\n"
+  "If the --kem option is used, decryption is done with the KEM,\n"
+  "inquiring upper-layer option, when needed.";
 static gpg_error_t
 cmd_pkdecrypt (assuan_context_t ctx, char *line)
 {
@@ -1022,22 +1024,35 @@ cmd_pkdecrypt (assuan_context_t ctx, char *line)
   unsigned char *value;
   size_t valuelen;
   membuf_t outbuf;
-  int padding;
+  int padding = -1;
+  int is_kem;
+  unsigned char *option = NULL;
+  size_t optionlen = 0;
 
-  (void)line;
+  is_kem = has_option (line, "--kem");
 
   /* First inquire the data to decrypt */
   rc = print_assuan_status (ctx, "INQUIRE_MAXLEN", "%u", MAXLEN_CIPHERTEXT);
   if (!rc)
     rc = assuan_inquire (ctx, "CIPHERTEXT",
-			&value, &valuelen, MAXLEN_CIPHERTEXT);
+                         &value, &valuelen, MAXLEN_CIPHERTEXT);
+  if (!rc && is_kem)
+    rc = assuan_inquire (ctx, "OPTION",
+                         &option, &optionlen, MAXLEN_CIPHERTEXT); /* FIXME for maxlen? */
   if (rc)
     return rc;
 
   init_membuf (&outbuf, 512);
 
-  rc = agent_pkdecrypt (ctrl, ctrl->server_local->keydesc,
-                        value, valuelen, &outbuf, &padding);
+  if (is_kem)
+    {
+      rc = agent_kem_decap (ctrl, ctrl->server_local->keydesc,
+                            value, valuelen, &outbuf, option, optionlen);
+      xfree (option);
+    }
+  else
+    rc = agent_pkdecrypt (ctrl, ctrl->server_local->keydesc,
+                          value, valuelen, &outbuf, &padding);
   xfree (value);
   if (rc)
     clear_outbuf (&outbuf);

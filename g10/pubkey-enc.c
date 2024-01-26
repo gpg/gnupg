@@ -244,13 +244,48 @@ get_it (ctrl_t ctrl,
     goto leave;
 
   if (sk->pubkey_algo == PUBKEY_ALGO_ECDH)
-    fingerprint_from_pk (sk, fp, NULL);
+    {
+      int with_ecdh_cv25519;
+
+      fingerprint_from_pk (sk, fp, NULL);
+      with_ecdh_cv25519 = openpgp_oid_is_cv25519 (sk->pkey[0]);
+
+      if (with_ecdh_cv25519)
+        {
+          unsigned char kdf_params[256];
+          size_t kdf_params_size;
+
+          log_info ("ECDH KEM\n");
+
+          build_kdf_params (kdf_params, &kdf_params_size,
+                            sk->pkey, fp);
+
+          log_printhex (kdf_params, kdf_params_size, "KDF (option):");
+          log_printsexp ("sexp data:", s_data);
+
+          /* Do PKDECRYPT with --kem.  */
+          desc = gpg_format_keydesc (ctrl, sk, FORMAT_KEYDESC_NORMAL, 1);
+          err = agent_pkdecrypt (NULL, keygrip,
+                                 desc, sk->keyid, sk->main_keyid, sk->pubkey_algo,
+                                 s_data, &frame, &nframe, &padding,
+                                 1, kdf_params, kdf_params_size);
+          xfree (desc);
+          gcry_sexp_release (s_data);
+
+          log_printhex (frame, nframe, "DEK frame:");
+          if (err)
+            goto leave;
+
+          goto decryption_done;
+        }
+    }
 
   /* Decrypt. */
   desc = gpg_format_keydesc (ctrl, sk, FORMAT_KEYDESC_NORMAL, 1);
   err = agent_pkdecrypt (NULL, keygrip,
                          desc, sk->keyid, sk->main_keyid, sk->pubkey_algo,
-                         s_data, &frame, &nframe, &padding);
+                         s_data, &frame, &nframe, &padding,
+                         0, NULL, 0);
   xfree (desc);
   gcry_sexp_release (s_data);
   if (err)
@@ -292,6 +327,8 @@ get_it (ctrl_t ctrl,
       mpi_release (decoded);
       if (err)
         goto leave;
+
+ decryption_done:
 
       /* Now the frame are the bytes decrypted but padded session key.  */
       if (!nframe || nframe <= 8

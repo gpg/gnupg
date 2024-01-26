@@ -75,6 +75,8 @@ struct cipher_parm_s
   assuan_context_t ctx;
   unsigned char *ciphertext;
   size_t ciphertextlen;
+  const unsigned char *option;
+  size_t optionlen;
 };
 
 struct writecert_parm_s
@@ -2748,6 +2750,13 @@ inq_ciphertext_cb (void *opaque, const char *line)
                              parm->ciphertext, parm->ciphertextlen);
       assuan_end_confidential (parm->ctx);
     }
+  else if (has_leading_keyword (line, "OPTION"))
+    {
+      assuan_begin_confidential (parm->ctx);
+      rc = assuan_send_data (parm->dflt->ctx,
+                             parm->option, parm->optionlen);
+      assuan_end_confidential (parm->ctx);
+    }
   else
     rc = default_inq_cb (parm->dflt, line);
 
@@ -2782,7 +2791,8 @@ gpg_error_t
 agent_pkdecrypt (ctrl_t ctrl, const char *keygrip, const char *desc,
                  u32 *keyid, u32 *mainkeyid, int pubkey_algo,
                  gcry_sexp_t s_ciphertext,
-                 unsigned char **r_buf, size_t *r_buflen, int *r_padding)
+                 unsigned char **r_buf, size_t *r_buflen, int *r_padding,
+                 int use_kem, const unsigned char *option, size_t optionlen)
 {
   gpg_error_t err;
   char line[ASSUAN_LINELENGTH];
@@ -2837,7 +2847,10 @@ agent_pkdecrypt (ctrl_t ctrl, const char *keygrip, const char *desc,
     err = make_canon_sexp (s_ciphertext, &parm.ciphertext, &parm.ciphertextlen);
     if (err)
       return err;
-    err = assuan_transact (agent_ctx, "PKDECRYPT",
+    parm.option = option;
+    parm.optionlen = optionlen;
+    snprintf (line, sizeof line, "PKDECRYPT%s", use_kem? " --kem" : "");
+    err = assuan_transact (agent_ctx, line,
                            put_membuf_cb, &data,
                            inq_ciphertext_cb, &parm,
                            padding_info_cb, r_padding);

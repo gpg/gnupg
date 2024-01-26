@@ -471,6 +471,7 @@ pk_encrypt (pubkey_algo_t algo, gcry_mpi_t *resarr, gcry_mpi_t data,
           int kdf_encr_algo;
           gcry_cipher_hd_t hd;
 
+          /*FIXME use build_kdf_params! */
           oid = gcry_mpi_get_opaque (pkey[0], &nbits);
           oidlen = (nbits + 7) / 8;
 

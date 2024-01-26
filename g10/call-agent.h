@@ -219,7 +219,8 @@ gpg_error_t agent_pkdecrypt (ctrl_t ctrl, const char *keygrip, const char *desc,
                              u32 *keyid, u32 *mainkeyid, int pubkey_algo,
                              gcry_sexp_t s_ciphertext,
                              unsigned char **r_buf, size_t *r_buflen,
-                             int *r_padding);
+                             int *r_padding, int use_kem,
+                             const unsigned char *option, size_t optionlen);
 
 /* Retrieve a key encryption key.  */
 gpg_error_t agent_keywrap_key (ctrl_t ctrl, int forexport,
