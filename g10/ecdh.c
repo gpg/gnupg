@@ -524,8 +524,7 @@ pk_ecdh_decrypt (gcry_mpi_t *r_result, const byte sk_fp[MAX_FINGERPRINT_LEN],
   size_t nbytes;
   byte *data_buf;
   int data_buf_size;
-  byte *in;
-  const void *p;
+  const unsigned char *p;
   unsigned int nbits;
 
   *r_result = NULL;
@@ -546,7 +545,10 @@ pk_ecdh_decrypt (gcry_mpi_t *r_result, const byte sk_fp[MAX_FINGERPRINT_LEN],
       return gpg_error (GPG_ERR_BAD_DATA);
     }
 
-  data_buf = xtrymalloc_secure( 1 + 2*data_buf_size + 8);
+  /* The first octet is for length.  It's longer than the result
+     because of one additional block of AESWRAP.   */
+  data_buf_size -= 1 + 8;
+  data_buf = xtrymalloc_secure (data_buf_size);
   if (!data_buf)
     {
       err = gpg_error_from_syserror ();
@@ -560,22 +562,18 @@ pk_ecdh_decrypt (gcry_mpi_t *r_result, const byte sk_fp[MAX_FINGERPRINT_LEN],
       gcry_cipher_close (hd);
       return gpg_error (GPG_ERR_BAD_MPI);
     }
-  memcpy (data_buf, p, nbytes);
-  if (data_buf[0] != nbytes-1)
+  if (p[0] != nbytes-1)
     {
       log_error ("ecdh inconsistent size\n");
       xfree (data_buf);
       gcry_cipher_close (hd);
       return gpg_error (GPG_ERR_BAD_MPI);
     }
-  in = data_buf+data_buf_size;
-  data_buf_size = data_buf[0];
 
   if (DBG_CRYPTO)
-    log_printhex (data_buf+1, data_buf_size, "ecdh decrypting :");
+    log_printhex (p+1, nbytes-1, "ecdh decrypting :");
 
-  err = gcry_cipher_decrypt (hd, in, data_buf_size, data_buf+1,
-                             data_buf_size);
+  err = gcry_cipher_decrypt (hd, data_buf, data_buf_size, p+1, nbytes-1);
   gcry_cipher_close (hd);
   if (err)
     {
@@ -585,10 +583,8 @@ pk_ecdh_decrypt (gcry_mpi_t *r_result, const byte sk_fp[MAX_FINGERPRINT_LEN],
       return err;
     }
 
-  data_buf_size -= 8;
-
   if (DBG_CRYPTO)
-    log_printhex (in, data_buf_size, "ecdh decrypted to :");
+    log_printhex (data_buf, data_buf_size, "ecdh decrypted to :");
 
   /* Padding is removed later.  */
   /* if (in[data_buf_size-1] > 8 ) */
@@ -598,7 +594,8 @@ pk_ecdh_decrypt (gcry_mpi_t *r_result, const byte sk_fp[MAX_FINGERPRINT_LEN],
   /*     return gpg_error (GPG_ERR_BAD_KEY); */
   /*   } */
 
-  err = gcry_mpi_scan (r_result, GCRYMPI_FMT_USG, in, data_buf_size, NULL);
+  err = gcry_mpi_scan (r_result, GCRYMPI_FMT_USG, data_buf,
+                       data_buf_size, NULL);
   xfree (data_buf);
   if (err)
     {
