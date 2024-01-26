@@ -2086,6 +2086,7 @@ crl_parse_insert (ctrl_t ctrl, ksba_crl_t crl,
 
             err = validate_cert_chain (ctrl, crlissuer_cert, NULL,
                                        (VALIDATE_FLAG_TRUST_CONFIG
+                                        | VALIDATE_FLAG_TRUST_SYSTEM
                                         | VALIDATE_FLAG_CRL
                                         | VALIDATE_FLAG_RECURSIVE),
                                        r_trust_anchor);
