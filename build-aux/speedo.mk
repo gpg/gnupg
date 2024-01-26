@@ -238,7 +238,7 @@ PATCHELF := $(shell patchelf --version 2>/dev/null >/dev/null || echo "echo plea
 
 # Read signing information from ~/.gnupg-autogen.rc
 define READ_AUTOGEN_template
-$(1) = $$(shell grep '^$(1)=' $$$$HOME/.gnupg-autogen.rc|cut -d= -f2)
+$(1) = $$(shell grep '^[[:blank:]]*$(1)[[:blank:]]*=' $$$$HOME/.gnupg-autogen.rc|cut -d= -f2|xargs)
 endef
 $(eval $(call READ_AUTOGEN_template,AUTHENTICODE_SIGNHOST))
 $(eval $(call READ_AUTOGEN_template,AUTHENTICODE_TOOL))
