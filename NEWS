@@ -1,8 +1,29 @@
 Noteworthy changes in version 2.2.43 (unreleased)
 -------------------------------------------------
 
+  * gpg: Do not keep an unprotected smartcard backup key on disk.  See
+    https://gnupg.org/blog/20240125-smartcard-backup-key.html for a
+    security advisory.  [T6944]
+
+  * gpg: Allow to create revocations even with non-compliant algos.
+    [rG89c7eccba5]
+
   * dirmngr: Avoid starting a second instance on Windows via GPGME
     based launching.  [T6833]
+
+  * dirmngr: Trust system's root CAs for checking CRL issuers.  [T6963]
+
+  * scd: Fix corner case bug when changing to a shorter PIN with KDF
+    enabled.  [T6843]
+
+  * gpgtar: Fix conveying of status lines from gpg when using stderr
+    as status fd on Windows.  [T6961]
+
+  * gpgconf: Fix -X command for the new VERSION file format.  [T6918]
+
+
+  Release-info: https://dev.gnupg.org/T6849
+
 
 
 Noteworthy changes in version 2.2.42 (2023-11-28)
