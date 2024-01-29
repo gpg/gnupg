@@ -2899,24 +2899,6 @@ done with @code{--with-colons}.
 
 @table @gnupgtabopt
 
-@item -t, --textmode
-@itemx --no-textmode
-@opindex textmode
-Treat input files as text and store them in the OpenPGP canonical text
-form with standard "CRLF" line endings. This also sets the necessary
-flags to inform the recipient that the encrypted or signed data is text
-and may need its line endings converted back to whatever the local
-system uses. This option is useful when communicating between two
-platforms that have different line ending conventions (UNIX-like to Mac,
-Mac to Windows, etc). @option{--no-textmode} disables this option, and
-is the default.
-
-@item --force-v3-sigs
-@itemx --no-force-v3-sigs
-@item --force-v4-certs
-@itemx --no-force-v4-certs
-These options are obsolete and have no effect since GnuPG 2.1.
-
 @item --force-ocb
 @itemx --force-aead
 @opindex force-ocb
@@ -3890,6 +3872,25 @@ all on Windows.
 @subsection Deprecated options
 
 @table @gnupgtabopt
+
+@item -t, --textmode
+@itemx --no-textmode
+@opindex textmode
+Treat input files as text and store them in the OpenPGP canonical text
+form with standard "CRLF" line endings. This also sets the necessary
+flags to inform the recipient that the encrypted or signed data is text
+and may need its line endings converted back to whatever the local
+system uses. This option was useful when communicating between two
+platforms with different line ending conventions (UNIX-like to Mac,
+Mac to Windows, etc). @option{--no-textmode} disables this option, and
+is the default.  Note that this is a legacy option which should not
+anymore be used by any modern software.
+
+@item --force-v3-sigs
+@itemx --no-force-v3-sigs
+@item --force-v4-certs
+@itemx --no-force-v4-certs
+These options are obsolete and have no effect since GnuPG 2.1.
 
 @item --show-photos
 @itemx --no-show-photos
