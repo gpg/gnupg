@@ -99,7 +99,7 @@ suite.
 This envvar gives the root directory of the build tree.  See
 tests/gpgconf.ctl.in for the way we tell the GnuPG components this
 location.  Note that we can't use that envvar directly because this
-would allow user scripts and other software to accidently mess up the
+would allow user scripts and other software to accidentally mess up the
 used components.
 **** argv[0]
 run-tests.scm depends on being able to re-exec gpgscm.  It uses

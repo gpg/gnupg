@@ -716,7 +716,7 @@ inserted smartcard, the special string ``card'' can be used for
 will figure them out and creates an OpenPGP key consisting of the
 usual primary key and one subkey.  This works only with certain
 smartcards.  Note that the interactive @option{--full-gen-key} command
-allows to do the same but with greater flexibility in the selection of
+allows one to do the same but with greater flexibility in the selection of
 the smartcard keys.
 
 Note that it is possible to create a primary key and a subkey using
@@ -1947,20 +1947,20 @@ list.  The default is "local,wkd".
 
   @item ntds
   Locate the key using the Active Directory (Windows only).  This
-  method also allows to search by fingerprint using the command
+  method also allows one to search by fingerprint using the command
   @option{--locate-external-key}.  Note that this mechanism is
   actually a shortcut for the mechanism @samp{keyserver} but using
   "ldap:///" as the keyserver.
 
   @item keyserver
-  Locate a key using a keyserver.  This method also allows to search
+  Locate a key using a keyserver.  This method also allows one to search
   by fingerprint using the command @option{--locate-external-key} if
   any of the configured keyservers is an LDAP server.
 
   @item keyserver-URL
   In addition, a keyserver URL as used in the @command{dirmngr}
   configuration may be used here to query that particular keyserver.
-  This method also allows to search by fingerprint using the command
+  This method also allows one to search by fingerprint using the command
   @option{--locate-external-key} if the URL specifies an LDAP server.
 
   @item local
@@ -3151,7 +3151,7 @@ Prompt before overwriting any files.
 Set compatibility flags to work around problems due to non-compliant
 keys or data.  The @var{flags} are given as a comma separated
 list of flag names and are OR-ed together.  The special flag "none"
-clears the list and allows to start over with an empty list.  To get a
+clears the list and allows one to start over with an empty list.  To get a
 list of available flags the sole word "help" can be used.
 
 @item --debug-level @var{level}
@@ -3207,7 +3207,7 @@ and may thus be changed or removed at any time without notice.
 
 @item --debug-allow-large-chunks
 @opindex debug-allow-large-chunks
-To facilitate software tests and experiments this option allows to
+To facilitate software tests and experiments this option allows one to
 specify a limit of up to 4 EiB (@code{--chunk-size 62}).
 
 @item --debug-ignore-expiration
@@ -3646,7 +3646,7 @@ not need to be listed explicitly.
 @opindex allow-weak-key-signatures
 To avoid a minor risk of collision attacks on third-party key
 signatures made using SHA-1, those key signatures are considered
-invalid.  This options allows to override this restriction.
+invalid.  This options allows one to override this restriction.
 
 @item --override-compliance-check
 This was a temporary introduced option and has no more effect.
@@ -4111,7 +4111,7 @@ Operation is further controlled by a few environment variables:
 
   @item GNUPG_EXEC_DEBUG_FLAGS
   @efindex GNUPG_EXEC_DEBUG_FLAGS
-  This variable allows to enable diagnostics for process management.
+  This variable allows one to enable diagnostics for process management.
   A numeric decimal value is expected.  Bit 0 enables general
   diagnostics, bit 1 enables certain warnings on Windows.
 

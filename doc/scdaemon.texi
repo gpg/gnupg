@@ -309,7 +309,7 @@ with lower priority should be used by default.
 
 @item --application-priority @var{namelist}
 @opindex application-priority
-This option allows to change the order in which applications of a card
+This option allows one to change the order in which applications of a card
 a tried if no specific application was requested.  @var{namelist} is a
 space or comma delimited list of application names.  Unknown names are
 simply skipped.  Applications not mentioned in the list are put in the

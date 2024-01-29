@@ -402,7 +402,7 @@ nullnone (const char *s)
  * success returns 0 and stores the number of bytes read at R_BUFLEN
  * and the address of a newly allocated buffer at R_BUFFER.  A
  * complementary nul byte is always appended to the data but not
- * counted; this allows to pass NULL for R-BUFFER and consider the
+ * counted; this allows one to pass NULL for R-BUFFER and consider the
  * returned data as a string. */
 static gpg_error_t
 get_data_from_file (const char *fname, char **r_buffer, size_t *r_buflen)

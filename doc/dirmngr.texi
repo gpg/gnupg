@@ -172,7 +172,7 @@ socket.
 Set compatibility flags to work around certain problems or to emulate
 bugs.  The @var{flags} are given as a comma separated list of flag
 names and are OR-ed together.  The special flag "none" clears the list
-and allows to start over with an empty list.  To get a list of
+and allows one to start over with an empty list.  To get a list of
 available flags the sole word "help" can be used.
 
 @item --faked-system-time @var{epoch}

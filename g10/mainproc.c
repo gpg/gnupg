@@ -898,7 +898,7 @@ proc_encrypted (CTX c, PACKET *pkt)
    * encrypted packet.  */
   literals_seen++;
 
-  /* The --require-compliance option allows to simplify decryption in
+  /* The --require-compliance option allows one to simplify decryption in
    * de-vs compliance mode by just looking at the exit status.  */
   if (opt.flags.require_compliance
       && opt.compliance == CO_DE_VS

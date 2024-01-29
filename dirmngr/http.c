@@ -2882,7 +2882,7 @@ send_request (ctrl_t ctrl,
 
   if (proxy && proxy->is_http_proxy)
     {
-      use_http_proxy = 1;  /* We want to use a proxy for the conenction.  */
+      use_http_proxy = 1;  /* We want to use a proxy for the connection.  */
       err = connect_server (ctrl,
                             *proxy->uri->host ? proxy->uri->host : "localhost",
                             proxy->uri->port ? proxy->uri->port : 80,
@@ -4411,7 +4411,7 @@ same_host_p (parsed_uri_t a, parsed_uri_t b)
     }
 
   /* Also consider hosts the same if they differ only in a subdomain;
-   * in both direction.  This allows to have redirection between the
+   * in both direction.  This allows one to have redirection between the
    * WKD advanced and direct lookup methods. */
   for (i=0; i < DIM (subdomains); i++)
     {
