@@ -234,20 +234,16 @@ do_hash_public_key (gcry_md_hd_t md, PKT_public_key *pk, int use_v5)
   if (use_v5)
     {
       gcry_md_putc ( md, 0x9a );     /* ctb */
-      gcry_md_putc ( md, n >> 24 );  /* 4 byte length header */
+      gcry_md_putc ( md, n >> 24 );  /* 4 byte length header (upper bits) */
       gcry_md_putc ( md, n >> 16 );
-      gcry_md_putc ( md, n >>  8 );
-      gcry_md_putc ( md, n       );
-      /* Note that the next byte may either be 4 or 5.  */
-      gcry_md_putc ( md, pk->version );
     }
   else
     {
       gcry_md_putc ( md, 0x99 );     /* ctb */
-      gcry_md_putc ( md, n >> 8 );   /* 2 byte length header */
-      gcry_md_putc ( md, n );
-      gcry_md_putc ( md, pk->version );
     }
+  gcry_md_putc ( md, n >> 8 );       /* lower bits of the length header.  */
+  gcry_md_putc ( md, n );
+  gcry_md_putc ( md, pk->version );
   gcry_md_putc ( md, pk->timestamp >> 24 );
   gcry_md_putc ( md, pk->timestamp >> 16 );
   gcry_md_putc ( md, pk->timestamp >>  8 );
@@ -255,7 +251,7 @@ do_hash_public_key (gcry_md_hd_t md, PKT_public_key *pk, int use_v5)
 
   gcry_md_putc ( md, pk->pubkey_algo );
 
-  if (use_v5)
+  if (use_v5) /* Hash the 32 bit length */
     {
       n -= 10;
       gcry_md_putc ( md, n >> 24 );
