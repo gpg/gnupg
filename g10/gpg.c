@@ -753,7 +753,7 @@ static gpgrt_opt_t opts[] = {
   ARGPARSE_s_n (oNoEscapeFrom, "no-escape-from-lines", "@"),
   ARGPARSE_s_n (oMimemode, "mimemode", "@"),
   ARGPARSE_s_n (oTextmodeShort, NULL, "@"),
-  ARGPARSE_s_n (oTextmode,   "textmode", N_("use canonical text mode")),
+  ARGPARSE_s_n (oTextmode,   "textmode", "@"),
   ARGPARSE_s_n (oNoTextmode, "no-textmode", "@"),
   ARGPARSE_s_s (oSetFilename, "set-filename", "@"),
   ARGPARSE_s_n (oForYourEyesOnly, "for-your-eyes-only", "@"),
