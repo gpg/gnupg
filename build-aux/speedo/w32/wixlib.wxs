@@ -61,8 +61,11 @@ and then manually edited:
       <Component Id="cmp74961776CCC7B203F500FE261DC12F92" Directory="dirAA72FFDDFA224FB221D53750596B0142" Guid="FBA2569C-554D-4C06-88FC-0FD6541B5B4B">
         <File Id="filB82A767EB9971018C006215A9FDE77EF" KeyPath="yes" Source="$(var.SourceDir)\bin\gpg-connect-agent.exe"/>
       </Component>
-      <Component Id="cmp74961776CCC7B203F500FE261DC12F94" Directory="dirAA72FFDDFA224FB221D53750596B0144" Guid="FBA2569C-554D-4C06-88FC-0FD6541B5B4C">
+      <Component Id="cmp74961776CCC7B203F500FE261DC12F94" Directory="dirAA72FFDDFA224FB221D53750596B0142" Guid="FBA2569C-554D-4C06-88FC-0FD6541B5B4C">
         <File Id="filB82A767EB9971018C006215A9FDE77F1" KeyPath="yes" Source="$(var.SourceDir)\bin\gpg-card.exe"/>
+      </Component>
+      <Component Id="cmp74961776CCC7B203F500FE261DC12F95" Directory="dirAA72FFDDFA224FB221D53750596B0142" Guid="3134BF55-46AF-4B76-A535-DC1EDDB0DBFD">
+        <File Id="filB82A767EB9971018C006215A9FDE77F2" KeyPath="yes" Source="$(var.SourceDir)\libexec\keyboxd.exe"/>
       </Component>
       <Component Id="cmp6C1FB70721B208E33DB24296B93AB93F" Directory="dirAA72FFDDFA224FB221D53750596B0142" Guid="FE29D2AA-3151-4421-B8C0-355F69F267A1">
         <File Id="fil563D2C0464DCE7ECADE6E15C0FC65821" KeyPath="yes" Source="$(var.SourceDir)\libexec\gpg-preset-passphrase.exe"/>
