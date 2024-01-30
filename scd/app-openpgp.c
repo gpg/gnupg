@@ -3306,6 +3306,7 @@ do_change_pin (app_t app, ctrl_t ctrl,  const char *chvnostr,
   char *pinvalue = NULL;
   int reset_mode = !!(flags & APP_CHANGE_FLAG_RESET);
   int set_resetcode = 0;
+  int use_resetcode = 0;
   pininfo_t pininfo;
   int use_pinpad = 0;
   int minlen = 6;
@@ -3458,7 +3459,7 @@ do_change_pin (app_t app, ctrl_t ctrl,  const char *chvnostr,
             }
 
           rc = pincb (pincb_arg,
-                      _("||Please enter the Reset Code for the card"),
+                      _("|R|Please enter the Reset Code for the card"),
                       &resetcode);
           if (rc)
             {
@@ -3473,13 +3474,14 @@ do_change_pin (app_t app, ctrl_t ctrl,  const char *chvnostr,
               rc = gpg_error (GPG_ERR_BAD_RESET_CODE);
               goto leave;
             }
+          use_resetcode = 1;
         }
       else
         {
           rc = gpg_error (GPG_ERR_INV_ID);
           goto leave;
         }
-    }
+    } /* End version 2 cards.  */
 
   if (chvno == 3)
     app->did_chv3 = 0;
@@ -3508,6 +3510,17 @@ do_change_pin (app_t app, ctrl_t ctrl,  const char *chvnostr,
             {
               log_error (_("Reset Code is too short; minimum length is %d\n"), 8);
               rc = gpg_error (GPG_ERR_BAD_RESET_CODE);
+              goto leave;
+            }
+        }
+      else if (use_resetcode)
+        {
+          minlen = 6; /* Reset from the RC value to the PIN value.  */
+          if (strlen (pinvalue) < minlen)
+            {
+              log_info (_("PIN for CHV%d is too short;"
+                          " minimum length is %d\n"), 1, minlen);
+              rc = gpg_error (GPG_ERR_BAD_PIN);
               goto leave;
             }
         }
