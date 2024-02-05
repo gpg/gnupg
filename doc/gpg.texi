@@ -1290,19 +1290,22 @@ are usually found in the option file.
 
 @item --default-key @var{name}
 @opindex default-key
-Use @var{name} as the default key to sign with. If this option is not
-used, the default key is the first key found in the secret keyring.
-Note that @option{-u} or @option{--local-user} overrides this option.
-This option may be given multiple times.  In this case, the last key
-for which a secret key is available is used.  If there is no secret
-key available for any of the specified values, GnuPG will not emit an
-error message but continue as if this option wasn't given.
+Use @var{name} as the default key to sign with.  It is suggested to
+use a fingerprint or at least a long keyID for @var{name}.  If this
+option is not used, the default key is the first key found in the
+secret keyring.  Note that @option{-u} or @option{--local-user}
+overrides this option.  This option may be given multiple times.  In
+this case, the last key for which a secret key is available is used.
+If there is no secret key available for any of the specified values,
+GnuPG will not emit an error message but continue as if this option
+wasn't given.
+
 
 @item --default-recipient @var{name}
 @opindex default-recipient
 Use @var{name} as default recipient if option @option{--recipient} is
 not used and don't ask if this is a valid one. @var{name} must be
-non-empty.
+non-empty and it is suggested to use a fingerprint for @var{name}.
 
 @item --default-recipient-self
 @opindex default-recipient-self
@@ -2336,19 +2339,21 @@ the key in this file is fully valid.
 @opindex encrypt-to
 Same as @option{--recipient} but this one is intended for use in the
 options file and may be used with your own user-id as an
-"encrypt-to-self". These keys are only used when there are other
-recipients given either by use of @option{--recipient} or by the asked
-user id.  No trust checking is performed for these user ids and even
-disabled keys can be used.
+"encrypt-to-self".  It is suggested to use a fingerprint or at least a
+long keyID for @var{name}.  These keys are only used when there are
+other recipients given either by use of @option{--recipient} or by the
+asked user id.  No trust checking is performed for these user ids and
+even disabled keys can be used.
 
 @item --hidden-encrypt-to @var{name}
 @opindex hidden-encrypt-to
-Same as @option{--hidden-recipient} but this one is intended for use in the
-options file and may be used with your own user-id as a hidden
-"encrypt-to-self". These keys are only used when there are other
-recipients given either by use of @option{--recipient} or by the asked user id.
-No trust checking is performed for these user ids and even disabled
-keys can be used.
+Same as @option{--hidden-recipient} but this one is intended for use
+in the options file and may be used with your own user-id as a hidden
+"encrypt-to-self".  It is suggested to use a fingerprint or at least a
+long keyID for @var{name}.  These keys are only used when there are
+other recipients given either by use of @option{--recipient} or by the
+asked user id.  No trust checking is performed for these user ids and
+even disabled keys can be used.
 
 @item --no-encrypt-to
 @opindex no-encrypt-to
