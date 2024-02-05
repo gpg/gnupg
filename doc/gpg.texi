@@ -3360,8 +3360,22 @@ to display the message. This option overrides @option{--set-filename}.
 @itemx --no-use-embedded-filename
 @opindex use-embedded-filename
 Try to create a file with a name as embedded in the data. This can be
-a dangerous option as it enables overwriting files.  Defaults to no.
+a dangerous option as it enables overwriting files by giving the
+sender control on how to store files.  Defaults to no.
 Note that the option @option{--output} overrides this option.
+
+A better approach than using this option is to decrypt to a temporary
+filename and then rename that file to the embedded file name after
+checking that the embedded filename is harmless.  When using the
+@option{--status-fd} option gpg tells the filename as part of the
+PLAINTEXT status message.  If the filename is important, the use of
+@command{gpgtar} is another option because gpgtar will never overwrite
+a file but decrypt the files to a new directory.
+
+Note also that unless a modern version 5 signature is used the
+embedded filename is not part of the signed data.
+
+
 
 @item --cipher-algo @var{name}
 @opindex cipher-algo
