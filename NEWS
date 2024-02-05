@@ -8,6 +8,8 @@ Noteworthy changes in version 2.2.43 (unreleased)
   * gpg: Allow to create revocations even with non-compliant algos.
     [rG89c7eccba5]
 
+  * gpgsm: Allow PKCS#12 decryption with a longer salt value.  [T6757]
+
   * dirmngr: Avoid starting a second instance on Windows via GPGME
     based launching.  [T6833]
 
