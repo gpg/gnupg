@@ -677,7 +677,7 @@ parse_bag_encrypted_data (struct p12_parse_ctx_s *ctx, tlv_parser_t tlv)
   const unsigned char *data;
   size_t datalen;
   int intval;
-  char salt[20];
+  char salt[32];
   size_t saltlen;
   char iv[16];
   unsigned int iter;
