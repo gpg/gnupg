@@ -140,6 +140,10 @@ This option enables a mode in which filenames of the form
 @file{-&n}, where n is a non-negative decimal number,
 refer to the file descriptor n and not to a file with that name.
 
+@item --assert-pubkey-algo @var{algolist}
+@opindex assert-pubkey-algo
+This option works in the same way as described for @command{gpg}.
+
 @end table
 
 @mansect return value
@@ -190,4 +194,3 @@ The default keyring with the allowed keys.
 @mansect see also
 @command{gpg}(1)
 @include see-also-note.texi
-

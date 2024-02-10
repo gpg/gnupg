@@ -241,6 +241,10 @@ struct
    * modify to be uppercase if they represent a fingerrint */
   strlist_t assert_signer_list;
 
+  /* A single string with the comma delimited args from
+   * --assert-pubkey_algo.  */
+  char *assert_pubkey_algos;
+
   struct
   {
     /* If set, require an 0x19 backsig to be present on signatures

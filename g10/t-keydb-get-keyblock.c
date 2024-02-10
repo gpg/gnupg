@@ -67,12 +67,3 @@ do_test (int argc, char *argv[])
   release_kbnode (kb1);
   xfree (ctrl);
 }
-
-int assert_signer_true = 0;
-
-void
-check_assert_signer_list (const char *mainpkhex, const char *pkhex)
-{
-  (void)mainpkhex;
-  (void)pkhex;
-}

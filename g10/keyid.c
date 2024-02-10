@@ -140,6 +140,130 @@ pubkey_string (PKT_public_key *pk, char *buffer, size_t bufsize)
 }
 
 
+/* Helper for compare_pubkey_string.  This skips leading spaces,
+ * commas and optional condition operators and returns a pointer to
+ * the first non-space character or NULL in case of an error.  The
+ * length of a prefix consisting of letters is then returned ar PFXLEN
+ * and the value of the number (e.g. 384 for "brainpoolP384r1") at
+ * NUMBER.  R_LENGTH receives the entire length of the algorithm name
+ * which is terminated by a space, nul, or a comma.  If R_CONDITION is
+ * not NULL, 0 is stored for a leading "=", 1 for a ">", 2 for a ">=",
+ * -1 for a "<", and -2 for a "<=".  If R_CONDITION is NULL no
+ * condition prefix is allowed.  */
+static const char *
+parse_one_algo_string (const char *str, size_t *pfxlen, unsigned int *number,
+                       size_t *r_length, int *r_condition)
+{
+  int condition = 0;
+  const char *result;
+
+  while (spacep (str) || *str ==',')
+    str++;
+  if (!r_condition)
+    ;
+  else if (*str == '>' && str[1] == '=')
+    condition = 2, str += 2;
+  else if (*str == '>' )
+    condition = 1, str += 1;
+  else if (*str == '<' && str[1] == '=')
+    condition = -2, str += 2;
+  else if (*str == '<')
+    condition = -1, str += 1;
+  else if (*str == '=')  /* Default.  */
+    str += 1;
+
+  if (!alphap (str))
+    return NULL;  /* Error.  */
+
+  *pfxlen = 1;
+  for (result = str++; alphap (str); str++)
+    ++*pfxlen;
+  while (*str == '-' || *str == '+')
+    str++;
+  *number = atoi (str);
+  while (*str && !spacep (str) && *str != ',')
+    str++;
+
+  *r_length = str - result;
+  if (r_condition)
+    *r_condition = condition;
+  return result;
+}
+
+/* Helper for compare_pubkey_string.  If BPARSED is set to 0 on
+ * return, an error in ASTR or BSTR was found and further checks are
+ * not possible.  */
+static int
+compare_pubkey_string_part (const char *astr, const char *bstr_arg,
+                            size_t *bparsed)
+{
+  const char *bstr = bstr_arg;
+  size_t alen, apfxlen, blen, bpfxlen;
+  unsigned int anumber, bnumber;
+  int condition;
+
+  *bparsed = 0;
+  astr = parse_one_algo_string (astr, &apfxlen, &anumber, &alen, &condition);
+  if (!astr)
+    return 0;  /* Invalid algorithm name.  */
+  bstr = parse_one_algo_string (bstr, &bpfxlen, &bnumber, &blen, &condition);
+  if (!bstr)
+    return 0;  /* Invalid algorithm name.  */
+  *bparsed = blen + (bstr - bstr_arg);
+  if (apfxlen != bpfxlen || ascii_strncasecmp (astr, bstr, apfxlen))
+    return 0;  /* false.  */
+  switch (condition)
+    {
+    case 2: return anumber >= bnumber;
+    case 1: return anumber > bnumber;
+    case -1: return anumber < bnumber;
+    case -2: return anumber <= bnumber;
+    }
+
+  return alen == blen && !ascii_strncasecmp (astr, bstr, alen);
+}
+
+
+/* Check whether ASTR matches the constraints given by BSTR.  ASTR may
+ * be any algo string like "rsa2048", "ed25519" and BSTR may be a
+ * constraint which is in the simplest case just another algo string.
+ * BSTR may have more that one string in which case they are comma
+ * separated and any match will return true.  It is possible to prefix
+ * BSTR with ">", ">=", "<=", or "<".  That prefix operator is applied
+ * to the number part of the algorithm, i.e. the first sequence of
+ * digits found before end-of-string or a comma.  Examples:
+ *
+ * | ASTR     | BSTR                 | result |
+ * |----------+----------------------+--------|
+ * | rsa2048  | rsa2048              | true   |
+ * | rsa2048  | >=rsa2048            | true   |
+ * | rsa2048  | >rsa2048             | false  |
+ * | ed25519  | >rsa1024             | false  |
+ * | ed25519  | ed25519              | true   |
+ * | nistp384 | >nistp256            | true   |
+ * | nistp521 | >=rsa3072, >nistp384 | true   |
+ */
+int
+compare_pubkey_string (const char *astr, const char *bstr)
+{
+  size_t bparsed;
+  int result;
+
+  while (*bstr)
+    {
+      result = compare_pubkey_string_part (astr, bstr, &bparsed);
+      if (result)
+        return 1;
+      if (!bparsed)
+        return 0; /* Syntax error in ASTR or BSTR.  */
+      bstr += bparsed;
+    }
+
+  return 0;
+}
+
+
+
 /* Hash a public key and allow to specify the to be used format.
  * Note that if the v5 format is requested for a v4 key, a 0x04 as
  * version is hashed instead of the 0x05. */

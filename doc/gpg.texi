@@ -1917,6 +1917,29 @@ is guaranteed to return with an exit code of 0 if and only if a
 signature has been encountered, is valid, and the key matches one of
 the fingerprints given by this option.
 
+@item --assert-pubkey-algo @var{algolist}
+@opindex assert-pubkey-algo
+During data signature verification this options checks whether the
+used public key algorithm matches the algorithms given by
+@var{algolist}.  This option can be given multiple times to
+concatenate more algorithms to the list; the delimiter of the list are
+either commas or spaces.
+
+The algorithm names given in the list may either be verbatim names
+like "ed25519" with an optional leading single equal sign, or being
+prefixed with ">", ">=", "<=", or "<".  That prefix operator is
+applied to the number part of the algorithm name; for example 2048 in
+"rsa2048" or 384 in "brainpoolP384r1".  If the the leading non-digits
+in the name matches, the prefix operator is used to compare the number
+part, a trailing suffix is ignored in this case.  For example an
+algorithm list ">rsa3000, >=brainpool384r1, =ed25519" allows RSA
+signatures with more that 3000 bits, Brainpool curves 384 and 512,
+and the ed25519 algorithm.
+
+With this option gpg (and also gpgv) is guaranteed to return with an
+exit code of 0 if and only if all valid signatures on data are made
+using a matching algorithm from the given list.
+
 
 @item --auto-key-locate @var{mechanisms}
 @itemx --no-auto-key-locate

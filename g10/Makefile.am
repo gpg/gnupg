@@ -183,7 +183,7 @@ gpgv_LDFLAGS =
 
 
 t_common_ldadd =
-module_tests = t-rmd160 t-keydb t-keydb-get-keyblock t-stutter
+module_tests = t-rmd160 t-keydb t-keydb-get-keyblock t-stutter t-keyid
 t_rmd160_SOURCES = t-rmd160.c rmd160.c
 t_rmd160_LDADD = $(t_common_ldadd)
 t_keydb_SOURCES = t-keydb.c test-stubs.c $(common_source)
@@ -199,6 +199,10 @@ t_stutter_SOURCES = t-stutter.c test-stubs.c \
 	      $(common_source)
 t_stutter_LDADD = $(LDADD) $(LIBGCRYPT_LIBS) \
 	      $(LIBASSUAN_LIBS) $(NPTH_LIBS) $(GPG_ERROR_LIBS) $(NETLIBS) \
+	      $(LIBICONV) $(t_common_ldadd)
+t_keyid_SOURCES = t-keyid.c test-stubs.c $(common_source)
+t_keyid_LDADD = $(LDADD) $(LIBGCRYPT_LIBS) \
+              $(LIBASSUAN_LIBS) $(NPTH_LIBS) $(GPG_ERROR_LIBS) $(NETLIBS) \
 	      $(LIBICONV) $(t_common_ldadd)
 
 
