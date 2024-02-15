@@ -2362,7 +2362,6 @@ run_gnutls_handshake (http_t hd, const char *server)
  * NULL, decode the string and use this as input from teh server.  On
  * success the final output token is stored at PROXY->OUTTOKEN and
  * OUTTOKLEN.  IF the authentication succeeded OUTTOKLEN is zero. */
-#ifdef USE_TLS
 static gpg_error_t
 proxy_get_token (proxy_info_t proxy, const char *inputstring)
 {
@@ -2530,11 +2529,9 @@ proxy_get_token (proxy_info_t proxy, const char *inputstring)
 
 #endif /*!HAVE_W32_SYSTEM*/
 }
-#endif /*USE_TLS*/
 
 
 /* Use the CONNECT method to proxy our TLS stream.  */
-#ifdef USE_TLS
 static gpg_error_t
 run_proxy_connect (http_t hd, proxy_info_t proxy,
                    const char *httphost, const char *server,
@@ -2586,7 +2583,7 @@ run_proxy_connect (http_t hd, proxy_info_t proxy,
   hd->keep_alive = !auth_basic; /* We may need to send more requests.  */
 
   if (opt_debug || (hd->flags & HTTP_FLAG_LOG_RESP))
-    log_debug_with_string (request, "http.c:proxy:request:");
+    log_debug_string (request, "http.c:proxy:request:");
 
   if (!hd->fp_write)
     {
@@ -2743,7 +2740,6 @@ run_proxy_connect (http_t hd, proxy_info_t proxy,
   xfree (tmpstr);
   return err;
 }
-#endif /*USE_TLS*/
 
 
 /* Make a request string using a standard proxy.  On success the
@@ -2903,7 +2899,6 @@ send_request (ctrl_t ctrl,
       goto leave;
     }
 
-#if USE_TLS
   if (use_http_proxy && hd->uri->use_tls)
     {
       err = run_proxy_connect (hd, proxy, httphost, server, port);
@@ -2915,7 +2910,6 @@ send_request (ctrl_t ctrl,
        * clear the flag to indicate this.  */
       use_http_proxy = 0;
     }
-#endif	/* USE_TLS */
 
 #if HTTP_USE_NTBTLS
   err = run_ntbtls_handshake (hd);
