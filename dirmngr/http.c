@@ -2498,9 +2498,7 @@ proxy_get_token (proxy_info_t proxy, const char *inputstring)
 }
 
 
-
 /* Use the CONNECT method to proxy our TLS stream.  */
-#ifdef USE_TLS
 static gpg_error_t
 run_proxy_connect (http_t hd, proxy_info_t proxy,
                    const char *httphost, const char *server,
@@ -2709,7 +2707,6 @@ run_proxy_connect (http_t hd, proxy_info_t proxy,
   xfree (tmpstr);
   return err;
 }
-#endif /*USE_TLS*/
 
 
 /* Make a request string using a standard proxy.  On success the
@@ -2866,7 +2863,6 @@ send_request (http_t hd, const char *httphost, const char *auth,
       goto leave;
     }
 
-#if USE_TLS
   if (use_http_proxy && hd->uri->use_tls)
     {
       err = run_proxy_connect (hd, proxy, httphost, server, port);
@@ -2878,7 +2874,6 @@ send_request (http_t hd, const char *httphost, const char *auth,
        * clear the flag to indicate this.  */
       use_http_proxy = 0;
     }
-#endif	/* USE_TLS */
 
 #if HTTP_USE_NTBTLS
   err = run_ntbtls_handshake (hd);
