@@ -100,7 +100,8 @@ static unsigned int any_cert_of_class;
 
 
 #ifdef HAVE_W32_SYSTEM
-/* We load some functions dynamically.  Provide typedefs for tehse
+#include <wincrypt.h>
+/* We load some functions dynamically.  Provide typedefs for these
  * functions.  */
 typedef HCERTSTORE (WINAPI *CERTOPENSYSTEMSTORE)
   (HCRYPTPROV hProv, LPCSTR szSubsystemProtocol);

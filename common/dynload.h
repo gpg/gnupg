@@ -34,12 +34,15 @@
 #ifndef __MINGW32__
 # include <dlfcn.h>
 #else
-# include <errhandlingapi.h>
-# include <handleapi.h>
-# include <libloaderapi.h>
+# ifdef HAVE_WINSOCK2_H
+#  include <winsock2.h>
+# endif
+# include <windows.h>
 # include "utf8conv.h"
 # include "mischelp.h"
-# define RTLD_LAZY 0
+# ifndef RTLD_LAZY
+#  define RTLD_LAZY 0
+# endif
 
 static inline void *
 dlopen (const char *name, int flag)

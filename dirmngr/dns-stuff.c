@@ -34,6 +34,7 @@
 # define WIN32_LEAN_AND_MEAN
 # ifdef HAVE_WINSOCK2_H
 #  include <winsock2.h>
+#  include <ws2tcpip.h>
 # endif
 # include <windows.h>
 # include <iphlpapi.h>

@@ -37,6 +37,7 @@
 #  include <winsock2.h>
 # endif
 # include <windows.h>
+# include <wctype.h>
 #endif
 
 #include <gcrypt.h>
