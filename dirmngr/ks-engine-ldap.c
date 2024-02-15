@@ -31,6 +31,8 @@
 #  define WINVER 0x0500  /* Same as in common/sysutils.c */
 # endif
 # include <winsock2.h>
+# include <winldap.h>
+# include <winber.h>
 # include <sddl.h>
 #endif
 
