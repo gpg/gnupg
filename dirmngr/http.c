@@ -2520,6 +2520,7 @@ run_proxy_connect (http_t hd, proxy_info_t proxy,
    * RFC-4559 - SPNEGO-based Kerberos and NTLM HTTP Authentication
    */
   auth_basic = !!proxy->uri->auth;
+  hd->keep_alive = 0;
 
   /* For basic authentication we need to send just one request.  */
   if (auth_basic
@@ -2541,13 +2542,12 @@ run_proxy_connect (http_t hd, proxy_info_t proxy,
                          httphost ? httphost : server,
                          port,
                          authhdr ? authhdr : "",
-                         auth_basic? "" : "Connection: keep-alive\r\n");
+                         hd->keep_alive? "Connection: keep-alive\r\n" : "");
   if (!request)
     {
       err = gpg_error_from_syserror ();
       goto leave;
     }
-  hd->keep_alive = !auth_basic; /* We may need to send more requests.  */
 
   if (opt_debug || (hd->flags & HTTP_FLAG_LOG_RESP))
     log_debug_with_string (request, "http.c:proxy:request:");
@@ -2573,16 +2573,6 @@ run_proxy_connect (http_t hd, proxy_info_t proxy,
   err = http_wait_response (hd);
   if (err)
     goto leave;
-
-  {
-    unsigned long count = 0;
-
-    while (es_getc (hd->fp_read) != EOF)
-      count++;
-    if (opt_debug)
-      log_debug ("http.c:proxy_connect: skipped %lu bytes of response-body\n",
-                 count);
-  }
 
   /* Reset state.  */
   es_clearerr (hd->fp_read);
