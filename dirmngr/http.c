@@ -2520,7 +2520,7 @@ run_proxy_connect (http_t hd, proxy_info_t proxy,
    * RFC-4559 - SPNEGO-based Kerberos and NTLM HTTP Authentication
    */
   auth_basic = !!proxy->uri->auth;
-  hd->keep_alive = 0;
+  hd->keep_alive = !auth_basic; /* We may need to send more requests.  */
 
   /* For basic authentication we need to send just one request.  */
   if (auth_basic
@@ -2684,6 +2684,14 @@ run_proxy_connect (http_t hd, proxy_info_t proxy,
     }
 
  leave:
+  if (hd->keep_alive)
+    {
+      es_fclose (hd->fp_write);
+      hd->fp_write = NULL;
+      /* The close has released the cookie and thus we better set it
+       * to NULL.  */
+      hd->write_cookie = NULL;
+    }
   /* Restore flags, destroy stream, reset state.  */
   hd->flags = saved_flags;
   es_fclose (hd->fp_read);
