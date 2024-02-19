@@ -4704,7 +4704,7 @@ do_getattr (app_t app, ctrl_t ctrl, const char *name)
 
       /* We return the ID of the first private key capable of the
        * requested action.  If any gpgusage flag has been set for the
-       * card we consult the gpgusage flags and not the regualr usage
+       * card we consult the gpgusage flags and not the regular usage
        * flags.
        */
       /* FIXME: This changed: Note that we do not yet return
