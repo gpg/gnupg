@@ -520,6 +520,9 @@ struct app_local_s
   /* Information on all useful certificates. */
   cdf_object_t useful_certificate_info;
 
+  /* Counter to make object ids of certificates unique.  */
+  unsigned int cdf_dup_counter;
+
   /* Information on all public keys. */
   prkdf_object_t public_key_info;
 
@@ -2419,6 +2422,22 @@ read_ef_pukdf (app_t app, unsigned short fid, pukdf_object_t *result)
 }
 
 
+/* Return true id CDFLIST has the given object id.  */
+static int
+objid_in_cdflist_p (cdf_object_t cdflist,
+                    const unsigned char *objid, size_t objidlen)
+{
+  cdf_object_t cdf;
+
+  if (!objid || !objidlen)
+    return 0;
+  for (cdf = cdflist; cdf; cdf = cdf->next)
+    if (cdf->objidlen == objidlen && !memcmp (cdf->objid, objid, objidlen))
+      return 1;
+  return 0;
+}
+
+
 /* Read and parse the Certificate Directory Files identified by FID.
    On success a newlist of CDF object gets stored at RESULT and the
    caller is then responsible of releasing this list.  On error a
@@ -2464,6 +2483,7 @@ read_ef_cdf (app_t app, unsigned short fid, int cdftype, cdf_object_t *result)
       unsigned long ul;
       const unsigned char *objid;
       size_t objidlen;
+      int objidextralen;
 
       err = parse_ber_header (&p, &n, &class, &tag, &constructed,
                               &ndef, &objlen, &hdrlen);
@@ -2588,8 +2608,19 @@ read_ef_cdf (app_t app, unsigned short fid, int cdftype, cdf_object_t *result)
           label = NULL;
         }
 
-      cdf->objidlen = objidlen;
-      cdf->objid = xtrymalloc (objidlen);
+      /* Card's have been found in the wild which do not have unique
+       * IDs for their certificate objects.  If we detect this we
+       * append a counter to the ID.  */
+      objidextralen =
+        (objid_in_cdflist_p (cdflist, objid, objidlen)
+         || objid_in_cdflist_p (app->app_local->certificate_info,
+                                objid, objidlen)
+         || objid_in_cdflist_p (app->app_local->trusted_certificate_info,
+                                objid, objidlen)
+         || objid_in_cdflist_p (app->app_local->useful_certificate_info,
+                                objid, objidlen));
+      cdf->objidlen = objidlen + objidextralen;
+      cdf->objid = xtrymalloc (objidlen + objidextralen);
       if (!cdf->objid)
         {
           err = gpg_error_from_syserror ();
@@ -2597,6 +2628,16 @@ read_ef_cdf (app_t app, unsigned short fid, int cdftype, cdf_object_t *result)
           goto leave;
         }
       memcpy (cdf->objid, objid, objidlen);
+      if (objidextralen)
+        {
+          if (app->app_local->cdf_dup_counter == 255)
+            {
+              log_error ("p15: too many duplicate certificate ids\n");
+              err = gpg_error (GPG_ERR_TOO_MANY);
+              goto parse_error;
+            }
+          cdf->objid[objidlen] = ++app->app_local->cdf_dup_counter;
+        }
 
       cdf->pathlen = objlen/2;
       for (i=0; i < cdf->pathlen; i++, pp += 2, nn -= 2)
@@ -3664,6 +3705,7 @@ read_p15_info (app_t app)
   log_assert (!app->app_local->certificate_info);
   log_assert (!app->app_local->trusted_certificate_info);
   log_assert (!app->app_local->useful_certificate_info);
+  app->app_local->cdf_dup_counter = 0;
   err = read_ef_cdf (app, app->app_local->odf.certificates, 'c',
                      &app->app_local->certificate_info);
   if (!err || gpg_err_code (err) == GPG_ERR_NO_DATA)
