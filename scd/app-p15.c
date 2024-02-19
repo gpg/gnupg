@@ -5829,9 +5829,8 @@ do_sign (app_t app, ctrl_t ctrl, const char *keyidstr, int hashalgo,
     {
       if (prkdf->is_ecc)
         {
-          /* Not implemented due to lacking test hardware. */
-          log_info ("Note: ECC is not yet implemented for DTRUST 4 cards\n");
-          err = gpg_error (GPG_ERR_UNSUPPORTED_ALGORITHM);
+          err = iso7816_manage_security_env (app_get_slot (app),
+                                             0xf3, 0x21, NULL, 0);
         }
       else
         {
@@ -6090,9 +6089,8 @@ do_decipher (app_t app, ctrl_t ctrl, const char *keyidstr,
     {
       if (prkdf->is_ecc)
         {
-          /* Not implemented due to lacking test hardware. */
-          log_info ("Note: ECC is not yet implemented for DTRUST 4 cards\n");
-          err = gpg_error (GPG_ERR_UNSUPPORTED_ALGORITHM);
+          err = iso7816_manage_security_env (app_get_slot (app),
+                                             0xF3, 0x39, NULL, 0);
         }
       else
         {
