@@ -4936,7 +4936,8 @@ do_getattr (app_t app, ctrl_t ctrl, const char *name)
             }
           else
             {
-              if (prkdf->usageflags.decrypt || prkdf->usageflags.unwrap)
+              if (prkdf->usageflags.decrypt || prkdf->usageflags.unwrap
+                  || prkdf->usageflags.derive)
                 break;
             }
         }
