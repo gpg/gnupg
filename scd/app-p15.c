@@ -305,7 +305,7 @@ struct prkdf_object_s
   keyaccess_flags_t accessflags;
 
   /* Extended key usage flags.  Only used if .valid is set.  This
-   * information is computed from an associated certificate15.  */
+   * information is computed from an associated certificate.  */
   struct {
     unsigned int valid:1;
     unsigned int sign:1;
@@ -4214,7 +4214,8 @@ set_usage_string (char usage[5], prkdf_object_t prkdf)
           && (!prkdf->extusage.valid || prkdf->extusage.sign))
         usage[usagelen++] = 'c';
       if ((prkdf->usageflags.decrypt
-           || prkdf->usageflags.unwrap)
+           || prkdf->usageflags.unwrap
+           || prkdf->usageflags.derive)
           && (!prkdf->extusage.valid || prkdf->extusage.encr))
         usage[usagelen++] = 'e';
       if ((prkdf->usageflags.sign
@@ -4683,7 +4684,8 @@ do_getattr (app_t app, ctrl_t ctrl, const char *name)
               if ((name[1] == 'A' && (prkdf->usageflags.sign
                                       || prkdf->usageflags.sign_recover))
                   || (name[1] == 'E' && (prkdf->usageflags.decrypt
-                                         || prkdf->usageflags.unwrap))
+                                         || prkdf->usageflags.unwrap
+                                         || prkdf->usageflags.derive))
                   || (name[1] == 'S' && (prkdf->usageflags.sign
                                          || prkdf->usageflags.sign_recover)))
                 break;
@@ -5927,7 +5929,8 @@ do_auth (app_t app, ctrl_t ctrl, const char *keyidstr,
   err = prkdf_object_from_keyidstr (app, keyidstr, &prkdf);
   if (err)
     return err;
-  if (!(prkdf->usageflags.sign || prkdf->gpgusage.auth))
+  if (!(prkdf->usageflags.sign || prkdf->usageflags.sign_recover
+        || prkdf->gpgusage.auth))
     {
       log_error ("p15: key %s may not be used for authentication\n", keyidstr);
       return gpg_error (GPG_ERR_WRONG_KEY_USAGE);
@@ -5970,6 +5973,7 @@ do_decipher (app_t app, ctrl_t ctrl, const char *keyidstr,
     return err;
   if (!(prkdf->usageflags.decrypt
         || prkdf->usageflags.unwrap
+        || prkdf->usageflags.derive
         || prkdf->gpgusage.encr     ))
     {
       log_error ("p15: key %s may not be used for decryption\n", keyidstr);
@@ -5979,17 +5983,18 @@ do_decipher (app_t app, ctrl_t ctrl, const char *keyidstr,
   /* Find the authentication object to this private key object. */
   if (!prkdf->authid)
     {
-      log_error ("p15: no authentication object defined for %s\n", keyidstr);
-      /* fixme: we might want to go ahead and do without PIN
-         verification. */
-      return gpg_error (GPG_ERR_UNSUPPORTED_OPERATION);
+      log_info ("p15: no authentication object defined for %s\n", keyidstr);
+      aodf = NULL;
     }
-  for (aodf = app->app_local->auth_object_info; aodf; aodf = aodf->next)
-    if (aodf->objidlen == prkdf->authidlen
-        && !memcmp (aodf->objid, prkdf->authid, prkdf->authidlen))
-      break;
-  if (!aodf)
-    log_info ("p15: no authentication for %s needed\n", keyidstr);
+  else
+    {
+      for (aodf = app->app_local->auth_object_info; aodf; aodf = aodf->next)
+        if (aodf->objidlen == prkdf->authidlen
+            && !memcmp (aodf->objid, prkdf->authid, prkdf->authidlen))
+          break;
+      if (!aodf)
+        log_info ("p15: no authentication for %s needed\n", keyidstr);
+    }
 
   /* We need some more info about the key - get the keygrip to
    * populate these fields.  */
@@ -6274,7 +6279,8 @@ do_with_keygrip (app_t app, ctrl_t ctrl, int action,
             }
           else if (capability == GCRY_PK_USAGE_ENCR)
             {
-              if (!(prkdf->usageflags.decrypt || prkdf->usageflags.unwrap))
+              if (!(prkdf->usageflags.decrypt || prkdf->usageflags.unwrap
+                    || prkdf->usageflags.derive))
                 continue;
             }
           else if (capability == GCRY_PK_USAGE_AUTH)
