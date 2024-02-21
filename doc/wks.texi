@@ -136,6 +136,8 @@ The command @option{--print-wkd-url} prints the URLs used to fetch the
 key for the given user-ids from WKD.  The meanwhile preferred format
 with sub-domains is used here.
 
+All commands may also be given without the two leading dashes.
+
 @mansect options
 @noindent
 @command{gpg-wks-client} understands these options:
