@@ -167,11 +167,12 @@ described here.
 
     The value is quoted like a C string to avoid control characters
     (the colon is quoted =\x3a=).  For a "pub" record this field is
-    not used on --fixed-list-mode.  A UAT record puts the attribute
+    not used on --fixed-list-mode.  A "uat" record puts the attribute
     subpacket count here, a space, and then the total attribute
     subpacket size.  In gpgsm the issuer name comes here.  The FPR and FP2
     records store the fingerprints here.  The fingerprint of a
-    revocation key is stored here.
+    revocation key is also stored here.  A "grp" records puts the
+    keygrip here.
 
 *** Field 11 - Signature class
 
@@ -184,6 +185,9 @@ described here.
 
     "rev" and "rvs" may be followed by a comma and a 2 digit hexnumber
     with the revocation reason.
+
+    In a "grp" record the second keygrip for combined algorithms is
+    given here.
 
 *** Field 12 - Key capabilities
 
@@ -243,7 +247,8 @@ described here.
 *** Field 17 - Curve name
 
     For pub, sub, sec, ssb, crt, and crs records this field is used
-    for the ECC curve name.
+    for the ECC curve name.  For combined algorithms the first and the
+    second algorithm name, delimited by a '+', are put here.
 
 *** Field 18 - Compliance flags
 
