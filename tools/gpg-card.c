@@ -220,9 +220,15 @@ parse_arguments (gpgrt_argparse_t *pargs, gpgrt_opt_t *popts)
             }
           break;
 
-        case oGpgProgram:   opt.gpg_program = pargs->r.ret_str; break;
-        case oGpgsmProgram: opt.gpgsm_program = pargs->r.ret_str; break;
-        case oAgentProgram: opt.agent_program = pargs->r.ret_str; break;
+        case oGpgProgram:
+          opt.gpg_program = make_filename (pargs->r.ret_str, NULL);
+          break;
+        case oGpgsmProgram:
+          opt.gpgsm_program = make_filename (pargs->r.ret_str, NULL);
+          break;
+        case oAgentProgram:
+          opt.agent_program = make_filename (pargs->r.ret_str, NULL);
+          break;
 
         case oStatusFD:
           gnupg_set_status_fd (translate_sys2libc_fd_int (pargs->r.ret_int, 1));

@@ -3592,9 +3592,18 @@ main (int argc, char **argv)
           case oPersonalCompressPreferences:
 	    pers_compress_list=pargs.r.ret_str;
 	    break;
-          case oAgentProgram: opt.agent_program = pargs.r.ret_str;  break;
-          case oKeyboxdProgram: opt.keyboxd_program = pargs.r.ret_str;  break;
-          case oDirmngrProgram: opt.dirmngr_program = pargs.r.ret_str; break;
+          case oAgentProgram:
+            xfree (opt.agent_program);
+            opt.agent_program = make_filename (pargs.r.ret_str, NULL);
+            break;
+          case oKeyboxdProgram:
+            xfree (opt.keyboxd_program);
+            opt.keyboxd_program = make_filename (pargs.r.ret_str, NULL);
+            break;
+          case oDirmngrProgram:
+            xfree (opt.dirmngr_program);
+            opt.dirmngr_program = make_filename (pargs.r.ret_str, NULL);
+            break;
 	  case oDisableDirmngr: opt.disable_dirmngr = 1;  break;
           case oWeakDigest:
 	    additional_weak_digest(pargs.r.ret_str);

@@ -34,9 +34,9 @@ struct
   unsigned int debug;
   int quiet;
   int with_colons;
-  const char *gpg_program;
-  const char *gpgsm_program;
-  const char *agent_program;
+  char *gpg_program;
+  char *gpgsm_program;
+  char *agent_program;
   int autostart;
 
   int no_key_lookup;  /* Assume --no-key-lookup for "list".  */

@@ -126,9 +126,9 @@ struct
   int marginals_needed;
   int completes_needed;
   int max_cert_depth;
-  const char *agent_program;
-  const char *keyboxd_program;
-  const char *dirmngr_program;
+  char *agent_program;
+  char *keyboxd_program;
+  char *dirmngr_program;
   int disable_dirmngr;
 
   const char *def_new_key_algo;

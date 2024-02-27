@@ -240,16 +240,16 @@ parse_arguments (gpgrt_argparse_t *pargs, gpgrt_opt_t *popts)
           break;
 
         case oGpgProgram:
-          opt.gpg_program = pargs->r.ret_str;
+          opt.gpg_program = make_filename (pargs->r.ret_str, NULL);
           break;
         case oDirectory:
-          opt.directory = pargs->r.ret_str;
+          opt.directory = make_filename (pargs->r.ret_str, NULL);
           break;
         case oSend:
           opt.use_sendmail = 1;
           break;
         case oOutput:
-          opt.output = pargs->r.ret_str;
+          opt.output = make_filename (pargs->r.ret_str, NULL);
           break;
         case oFakeSubmissionAddr:
           fake_submission_addr = pargs->r.ret_str;
@@ -1787,6 +1787,8 @@ process_confirmation_request (estream_t msg, const char *mainfpr)
       log_info ("no encryption key found - sending response in the clear\n");
       err = send_confirmation_response (sender, address, nonce, 0, NULL);
     }
+  if (!err)
+    log_info ("response sent to '%s' for '%s'\n", sender, address);
 
  leave:
   nvc_release (nvc);
