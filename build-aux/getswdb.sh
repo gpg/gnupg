@@ -34,6 +34,7 @@ Options:
     --skip-download    Assume download has already been done.
     --skip-verify      Do not check signatures
     --skip-selfcheck   Do not check GnuPG version
+                       (default if not used in the GnuPG tree)
     --find-sha1sum     Print the name of the sha1sum utility
     --find-sha256sum   Print the name of the sha256sum utility
     --help             Print this help.
@@ -114,15 +115,36 @@ if [ ${find_sha256sum} = yes ]; then
 fi
 
 
+if [ $skip_verify = no ]; then
+  if [ ! -f "$distsigkey" ]; then
+     distsigkey="/usr/local/share/gnupg/distsigkey.gpg"
+     if [ ! -f "$distsigkey" ]; then
+       distsigkey="/usr/share/gnupg/distsigkey.gpg"
+       if [ ! -f "$distsigkey" ]; then
+         echo "no keyring with release keys found!" >&2
+         exit 1
+       fi
+     fi
+     echo "using release keys from $distsigkey" >&2
+     skip_selfcheck=yes
+  fi
+fi
+
+
 # Get GnuPG version from VERSION file.  For a GIT checkout this means
 # that ./autogen.sh must have been run first.  For a regular tarball
 # VERSION is always available.
-if [ ! -f "$srcdir/../VERSION" ]; then
+if [ $skip_selfcheck = no ]; then
+  if [ ! -f "$srcdir/../VERSION" ]; then
     echo "VERSION file missing - run autogen.sh first." >&2
     exit 1
+   fi
+  version=$(cat "$srcdir/../VERSION")
+else
+  version="0.0.0"
 fi
-version=$(cat "$srcdir/../VERSION")
 version_num=$(echo "$version" | cvtver)
+
 
 if [ $skip_verify = no ]; then
   if ! $GPGV --version >/dev/null 2>/dev/null ; then
