@@ -242,6 +242,7 @@ reset_notify (assuan_context_t ctx, char *line)
 
   memset (ctrl->keygrip, 0, 20);
   ctrl->have_keygrip = 0;
+  ctrl->have_keygrip1 = 0;
   ctrl->digest.valuelen = 0;
   xfree (ctrl->digest.data);
   ctrl->digest.data = NULL;
@@ -763,8 +764,8 @@ cmd_havekey (assuan_context_t ctx, char *line)
 
 
 static const char hlp_sigkey[] =
-  "SIGKEY <hexstring_with_keygrip>\n"
-  "SETKEY <hexstring_with_keygrip>\n"
+  "SIGKEY [--another] <hexstring_with_keygrip>\n"
+  "SETKEY [--another] <hexstring_with_keygrip>\n"
   "\n"
   "Set the  key used for a sign or decrypt operation.";
 static gpg_error_t
@@ -772,11 +773,17 @@ cmd_sigkey (assuan_context_t ctx, char *line)
 {
   int rc;
   ctrl_t ctrl = assuan_get_pointer (ctx);
+  int opt_another;
 
-  rc = parse_keygrip (ctx, line, ctrl->keygrip);
+  opt_another = has_option (line, "--another");
+
+  rc = parse_keygrip (ctx, line, opt_another? ctrl->keygrip1 : ctrl->keygrip);
   if (rc)
     return rc;
-  ctrl->have_keygrip = 1;
+  if (opt_another)
+    ctrl->have_keygrip1 = 1;
+  else
+    ctrl->have_keygrip = 1;
   return 0;
 }
 
