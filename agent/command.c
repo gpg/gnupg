@@ -1282,9 +1282,6 @@ cmd_keyinfo (assuan_context_t ctx, char *line)
   char hexgrip[41];
   int disabled, ttl, confirm, is_ssh;
 
-  if (ctrl->restricted)
-    return leave_cmd (ctx, gpg_error (GPG_ERR_FORBIDDEN));
-
   if (has_option (line, "--ssh-list"))
     list_mode = 2;
   else
@@ -1332,6 +1329,9 @@ cmd_keyinfo (assuan_context_t ctx, char *line)
     {
       char *dirname;
       gnupg_dirent_t dir_entry;
+
+      if (ctrl->restricted)
+        return leave_cmd (ctx, gpg_error (GPG_ERR_FORBIDDEN));
 
       dirname = make_filename_try (gnupg_homedir (),
                                    GNUPG_PRIVATE_KEYS_DIR, NULL);
