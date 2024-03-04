@@ -39,16 +39,14 @@
 #include "tofu.h"
 #include "key-clean.h"
 
-static void write_record (ctrl_t ctrl, TRUSTREC *rec);
-static void do_sync(void);
 
 
 typedef struct key_item **KeyHashTable; /* see new_key_hash_table() */
 
 /*
- * Structure to keep track of keys, this is used as an array wherre
- * the item right after the last one has a keyblock set to NULL.
- * Maybe we can drop this thing and replace it by key_item
+ * Structure to keep track of keys, this is used as an array where the
+ * item right after the last one has a keyblock set to NULL.  Maybe we
+ * can drop this thing and replace it by key_item
  */
 struct key_array
 {
@@ -65,12 +63,22 @@ static struct
   int no_trustdb;
 } trustdb_args;
 
+
 /* Some globals.  */
-static struct key_item *user_utk_list; /* temp. used to store --trusted-keys */
 static struct key_item *utk_list;      /* all ultimately trusted keys */
 
+/* A list used to temporary store trusted keys and a flag indicated
+ * whether any --trusted-key option has been seen. */
+static struct key_item *trusted_key_list;
+static int any_trusted_key_seen;
+
+/* Flag whether a trustdb check is pending.  */
 static int pending_check_trustdb;
 
+
+
+static void write_record (ctrl_t ctrl, TRUSTREC *rec);
+static void do_sync (void);
 static int validate_keys (ctrl_t ctrl, int interactive);
 
 
@@ -200,11 +208,19 @@ tdb_register_trusted_keyid (u32 *keyid)
   k = new_key_item ();
   k->kid[0] = keyid[0];
   k->kid[1] = keyid[1];
-  k->next = user_utk_list;
-  user_utk_list = k;
+  k->next = trusted_key_list;
+  trusted_key_list = k;
 }
 
 
+/* This is called for the option --trusted-key to register these keys
+ * for later syncing them into the trustdb.  The special value "none"
+ * may be used to indicate that there is a trusted-key option but no
+ * key shall be inserted for it.  This "none" value is helpful to
+ * distinguish between changing the gpg.conf from a trusted-key to no
+ * trusted-key options at all.  Simply not specify the option would
+ * not allow to distinguish this case from the --no-options case as
+ * used for certain calls of gpg for example by gpg-wks-client.  */
 void
 tdb_register_trusted_key (const char *string)
 {
@@ -212,6 +228,9 @@ tdb_register_trusted_key (const char *string)
   KEYDB_SEARCH_DESC desc;
   u32 kid[2];
 
+  any_trusted_key_seen = 1;
+  if (!strcmp (string, "none"))
+    return;
   err = classify_user_id (string, &desc, 1);
   if (!err)
     {
@@ -333,13 +352,14 @@ verify_own_keys (ctrl_t ctrl)
           fprlen = (!fpr[16] && !fpr[17] && !fpr[18] && !fpr[19])? 16:20;
           keyid_from_fingerprint (ctrl, fpr, fprlen, kid);
           if (!add_utk (kid))
-            log_info(_("key %s occurs more than once in the trustdb\n"),
-                     keystr(kid));
-          else if ((rec.r.trust.flags & 1))
+            log_info (_("key %s occurs more than once in the trustdb\n"),
+                      keystr(kid));
+          else if ((rec.r.trust.flags & 1)
+                   && any_trusted_key_seen)
             {
               /* Record marked as inserted via --trusted-key.  Is this
                * still the case?  */
-              for (k2 = user_utk_list; k2; k2 = k2->next)
+              for (k2 = trusted_key_list; k2; k2 = k2->next)
                 if (k2->kid[0] == kid[0] && k2->kid[1] == kid[1])
                   break;
               if (!k2) /* No - clear the flag.  */
@@ -363,7 +383,7 @@ verify_own_keys (ctrl_t ctrl)
     }
 
   /* Put any --trusted-key keys into the trustdb */
-  for (k = user_utk_list; k; k = k->next)
+  for (k = trusted_key_list; k; k = k->next)
     {
       if ( add_utk (k->kid) )
         { /* not yet in trustDB as ultimately trusted */
@@ -388,9 +408,9 @@ verify_own_keys (ctrl_t ctrl)
         }
     }
 
-  /* release the helper table table */
-  release_key_items (user_utk_list);
-  user_utk_list = NULL;
+  /* Release the helper table.  */
+  release_key_items (trusted_key_list);
+  trusted_key_list = NULL;
   return;
 }
 
