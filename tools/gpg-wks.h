@@ -40,6 +40,7 @@ struct
   int with_colons;
   int no_autostart;
   int add_revocs;
+  int realclean;
   char *output;
   char *gpg_program;
   char *directory;

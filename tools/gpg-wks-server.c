@@ -308,7 +308,7 @@ main (int argc, char **argv)
 
   /* Set defaults for non given options.  */
   if (!opt.gpg_program)
-    opt.gpg_program = gnupg_module_name (GNUPG_MODULE_NAME_GPG);
+    opt.gpg_program = xstrdup (gnupg_module_name (GNUPG_MODULE_NAME_GPG));
 
   if (!opt.directory)
     opt.directory = "/var/lib/gnupg/wks";

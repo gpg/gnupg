@@ -78,6 +78,7 @@ enum cmd_and_opt_values
     oNoAutostart,
     oAddRevocs,
     oNoAddRevocs,
+    oRealClean,
 
     oDummy
   };
@@ -121,8 +122,9 @@ static gpgrt_opt_t opts[] = {
   ARGPARSE_s_n (oWithColons, "with-colons", "@"),
   ARGPARSE_s_s (oBlacklist, "blacklist", "@"),
   ARGPARSE_s_s (oDirectory, "directory", "@"),
-  ARGPARSE_s_n (oAddRevocs, "add-revocs", "add revocation certificates"),
+  ARGPARSE_s_n (oAddRevocs, "add-revocs", "@"),
   ARGPARSE_s_n (oNoAddRevocs, "no-add-revocs", "do not add revocation certificates"),
+  ARGPARSE_s_n (oRealClean, "realclean", "remove most key signatures"),
 
   ARGPARSE_s_s (oFakeSubmissionAddr, "fake-submission-addr", "@"),
 
@@ -273,6 +275,10 @@ parse_arguments (gpgrt_argparse_t *pargs, gpgrt_opt_t *popts)
           opt.add_revocs = 0;
           break;
 
+        case oRealClean:
+          opt.realclean = 1;
+          break;
+
 	case aSupported:
 	case aCreate:
 	case aReceive:
@@ -358,7 +364,7 @@ main (int argc, char **argv)
 
   /* Set defaults for non given options.  */
   if (!opt.gpg_program)
-    opt.gpg_program = gnupg_module_name (GNUPG_MODULE_NAME_GPG);
+    opt.gpg_program = xstrdup (gnupg_module_name (GNUPG_MODULE_NAME_GPG));
 
   if (!opt.directory)
     opt.directory = "openpgpkey";
