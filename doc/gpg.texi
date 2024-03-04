@@ -1776,7 +1776,9 @@ useful if you don't want to keep your secret keys (or one of them)
 online but still want to be able to check the validity of a given
 recipient's or signator's key.  If the given key is not locally
 available but an LDAP keyserver is configured the missing key is
-imported from that server.
+imported from that server.  The value "none" is explicitly allowed to
+distinguish between the use of any trusted-key option and no use of
+this option at all (e.g. due to the @option{--no-options} option).
 
 @item --add-desig-revoker [sensitive:]@var{fingerprint}
 @opindex add-desig-revoker
