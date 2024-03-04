@@ -541,7 +541,7 @@ gpg_error_t agent_pksign (ctrl_t ctrl, const char *cache_nonce,
 gpg_error_t agent_pkdecrypt (ctrl_t ctrl, const char *desc_text,
                              const unsigned char *ciphertext, size_t ciphertextlen,
                              membuf_t *outbuf, int *r_padding);
-gpg_error_t agent_kem_decap (ctrl_t ctrl, const char *desc_text,
+gpg_error_t agent_kem_decap (ctrl_t ctrl, const char *desc_text, int kemid,
                              const unsigned char *ciphertext, size_t ciphertextlen,
                              membuf_t *outbuf,
                              const unsigned char *option, size_t optionlen);

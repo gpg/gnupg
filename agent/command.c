@@ -1017,12 +1017,13 @@ cmd_pksign (assuan_context_t ctx, char *line)
 
 
 static const char hlp_pkdecrypt[] =
-  "PKDECRYPT [--kem]\n"
+  "PKDECRYPT [--kem[=<kemid>]\n"
   "\n"
   "Perform the actual decrypt operation.  Input is not\n"
   "sensitive to eavesdropping.\n"
   "If the --kem option is used, decryption is done with the KEM,\n"
-  "inquiring upper-layer option, when needed.";
+  "inquiring upper-layer option, when needed.  KEMID can be\n"
+  "specified with --kem option; valid value is: PGP, or CMS.";
 static gpg_error_t
 cmd_pkdecrypt (assuan_context_t ctx, char *line)
 {
@@ -1032,18 +1033,28 @@ cmd_pkdecrypt (assuan_context_t ctx, char *line)
   size_t valuelen;
   membuf_t outbuf;
   int padding = -1;
-  int is_kem;
   unsigned char *option = NULL;
   size_t optionlen = 0;
+  const char *p;
+  int kemid = -1;
 
-  is_kem = has_option (line, "--kem");
+  p = has_option_name (line, "--kem");
+  if (p)
+    {
+      kemid = 0;
+      if (*p++ == '=')
+        {
+          if (strcmp (p, "PGP"))
+            kemid = 1;
+        }
+    }
 
   /* First inquire the data to decrypt */
   rc = print_assuan_status (ctx, "INQUIRE_MAXLEN", "%u", MAXLEN_CIPHERTEXT);
   if (!rc)
     rc = assuan_inquire (ctx, "CIPHERTEXT",
                          &value, &valuelen, MAXLEN_CIPHERTEXT);
-  if (!rc && is_kem)
+  if (!rc && kemid >= 0)
     rc = assuan_inquire (ctx, "OPTION",
                          &option, &optionlen, MAXLEN_CIPHERTEXT); /* FIXME for maxlen? */
   if (rc)
@@ -1051,15 +1062,15 @@ cmd_pkdecrypt (assuan_context_t ctx, char *line)
 
   init_membuf (&outbuf, 512);
 
-  if (is_kem)
+  if (kemid < 0)
+    rc = agent_pkdecrypt (ctrl, ctrl->server_local->keydesc,
+                          value, valuelen, &outbuf, &padding);
+  else
     {
-      rc = agent_kem_decap (ctrl, ctrl->server_local->keydesc,
+      rc = agent_kem_decap (ctrl, ctrl->server_local->keydesc, kemid,
                             value, valuelen, &outbuf, option, optionlen);
       xfree (option);
     }
-  else
-    rc = agent_pkdecrypt (ctrl, ctrl->server_local->keydesc,
-                          value, valuelen, &outbuf, &padding);
   xfree (value);
   if (rc)
     clear_outbuf (&outbuf);

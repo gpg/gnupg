@@ -172,7 +172,7 @@ reverse_buffer (unsigned char *buffer, unsigned int length)
 }
 
 gpg_error_t
-agent_kem_decap (ctrl_t ctrl, const char *desc_text,
+agent_kem_decap (ctrl_t ctrl, const char *desc_text, int kemid,
                  const unsigned char *ciphertext, size_t ciphertextlen,
                  membuf_t *outbuf,
                  const unsigned char *option, size_t optionlen)
@@ -181,6 +181,8 @@ agent_kem_decap (ctrl_t ctrl, const char *desc_text,
   unsigned char *shadow_info = NULL;
   gpg_error_t err = 0;
   int no_shadow_info = 0;
+
+  /* IMPLEMENT: check ctrl->have_keygrip1, kem_decap, and call key combiner */
 
   if (!ctrl->have_keygrip)
     {
