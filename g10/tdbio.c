@@ -1864,13 +1864,21 @@ cmp_trec_fpr ( const void *fpr, const TRUSTREC *rec )
  * Return: 0 if found, GPG_ERR_NOT_FOUND, or another error code.
  */
 gpg_error_t
-tdbio_search_trust_byfpr (ctrl_t ctrl, const byte *fingerprint, TRUSTREC *rec)
+tdbio_search_trust_byfpr (ctrl_t ctrl, const byte *fpr, unsigned int fprlen,
+                          TRUSTREC *rec)
 {
   int rc;
+  byte fingerprint[20];
+
+  if (fprlen != 20)
+    {
+      fpr20_from_fpr (fpr, fprlen, fingerprint);
+      fpr = fingerprint;
+    }
 
   /* Locate the trust record using the hash table */
-  rc = lookup_hashtable (get_trusthashrec (ctrl), fingerprint, 20,
-                         cmp_trec_fpr, fingerprint, rec );
+  rc = lookup_hashtable (get_trusthashrec (ctrl), fpr, 20,
+                         cmp_trec_fpr, fpr, rec);
   return rc;
 }
 
@@ -1887,7 +1895,7 @@ tdbio_search_trust_bypk (ctrl_t ctrl, PKT_public_key *pk, TRUSTREC *rec)
   byte fingerprint[20];
 
   fpr20_from_pk (pk, fingerprint);
-  return tdbio_search_trust_byfpr (ctrl, fingerprint, rec);
+  return tdbio_search_trust_byfpr (ctrl, fingerprint, 20, rec);
 }
 
 

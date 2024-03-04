@@ -129,6 +129,8 @@ parse_export_options(char *str,unsigned int *options,int noisy)
        N_("export revocation keys marked as \"sensitive\"")},
       {"export-clean",EXPORT_CLEAN,NULL,
        N_("remove unusable parts from key during export")},
+      {"export-realclean",EXPORT_MINIMAL|EXPORT_REALCLEAN|EXPORT_CLEAN,NULL,
+       NULL},
       {"export-minimal",EXPORT_MINIMAL|EXPORT_CLEAN,NULL,
        N_("remove as much as possible from key during export")},
 
@@ -166,7 +168,7 @@ parse_export_options(char *str,unsigned int *options,int noisy)
     {
       *options |= (EXPORT_LOCAL_SIGS | EXPORT_ATTRIBUTES
                    | EXPORT_SENSITIVE_REVKEYS);
-      *options &= ~(EXPORT_CLEAN | EXPORT_MINIMAL
+      *options &= ~(EXPORT_CLEAN | EXPORT_MINIMAL | EXPORT_REALCLEAN
                     | EXPORT_DANE_FORMAT);
     }
 
@@ -643,7 +645,7 @@ canon_pk_algo (enum gcry_pk_algos algo)
 }
 
 
-/* Take an s-expression wit the public and private key and change the
+/* Take an s-expression with the public and private key and change the
  * parameter array in PK to include the secret parameters.  */
 static gpg_error_t
 secret_key_to_mode1003 (gcry_sexp_t s_key, PKT_public_key *pk)
@@ -2366,8 +2368,7 @@ do_export_stream (ctrl_t ctrl, iobuf_t out, strlist_t users, int secret,
       if ((options & EXPORT_CLEAN))
         {
           merge_keys_and_selfsig (ctrl, keyblock);
-          clean_all_uids (ctrl, keyblock, opt.verbose,
-                          (options&EXPORT_MINIMAL), NULL, NULL);
+          clean_all_uids (ctrl, keyblock, opt.verbose, options, NULL, NULL);
           clean_all_subkeys (ctrl, keyblock, opt.verbose,
                              (options&EXPORT_MINIMAL)? KEY_CLEAN_ALL
                              /**/                    : KEY_CLEAN_AUTHENCR,

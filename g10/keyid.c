@@ -1051,6 +1051,32 @@ v5_fingerprint_from_pk (PKT_public_key *pk, byte *array, size_t *ret_len)
 
 
 /*
+ * This is the core of fpr20_from_pk which directly takes a
+ * fingerprint and its length instead of the public key.  See below
+ * for details.
+ */
+void
+fpr20_from_fpr (const byte *fpr, unsigned int fprlen, byte array[20])
+{
+  if (fprlen >= 32)            /* v5 fingerprint (or larger) */
+    {
+      memcpy (array +  0, fpr + 20, 4);
+      memcpy (array +  4, fpr + 24, 4);
+      memcpy (array +  8, fpr + 28, 4);
+      memcpy (array + 12, fpr +  0, 4); /* kid[0] */
+      memcpy (array + 16, fpr +  4, 4); /* kid[1] */
+    }
+  else if (fprlen == 20)       /* v4 fingerprint */
+    memcpy (array, fpr, 20);
+  else                         /* v3 or too short: fill up with zeroes.  */
+    {
+      memset (array, 0, 20);
+      memcpy (array, fpr, fprlen);
+    }
+}
+
+
+/*
  * Get FPR20 for the given PK/SK into ARRAY.
  *
  * FPR20 is special form of fingerprint of length 20 for the record of
@@ -1066,19 +1092,7 @@ fpr20_from_pk (PKT_public_key *pk, byte array[20])
   if (!pk->fprlen)
     compute_fingerprint (pk);
 
-  if (!array)
-    array = xmalloc (pk->fprlen);
-
-  if (pk->fprlen == 32)         /* v5 fingerprint */
-    {
-      memcpy (array +  0, pk->fpr + 20, 4);
-      memcpy (array +  4, pk->fpr + 24, 4);
-      memcpy (array +  8, pk->fpr + 28, 4);
-      memcpy (array + 12, pk->fpr +  0, 4); /* kid[0] */
-      memcpy (array + 16, pk->fpr +  4, 4); /* kid[1] */
-    }
-  else                          /* v4 fingerprint */
-    memcpy (array, pk->fpr, 20);
+  fpr20_from_fpr (pk->fpr, pk->fprlen, array);
 }
 
 

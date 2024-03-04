@@ -2081,7 +2081,9 @@ import_one_real (ctrl_t ctrl,
     {
       merge_keys_and_selfsig (ctrl, keyblock);
       clean_all_uids (ctrl, keyblock,
-                      opt.verbose, (options&IMPORT_MINIMAL), NULL, NULL);
+                      opt.verbose,
+                      (options&IMPORT_MINIMAL)? EXPORT_MINIMAL : 0,
+                      NULL, NULL);
       clean_all_subkeys (ctrl, keyblock, opt.verbose, KEY_CLEAN_NONE,
                          NULL, NULL);
     }
@@ -2233,7 +2235,8 @@ import_one_real (ctrl_t ctrl,
       if ((options & IMPORT_CLEAN))
         {
           merge_keys_and_selfsig (ctrl, keyblock);
-          clean_all_uids (ctrl, keyblock, opt.verbose, (options&IMPORT_MINIMAL),
+          clean_all_uids (ctrl, keyblock, opt.verbose,
+                          (options&IMPORT_MINIMAL)? EXPORT_MINIMAL : 0,
                           &n_uids_cleaned,&n_sigs_cleaned);
           clean_all_subkeys (ctrl, keyblock, opt.verbose, KEY_CLEAN_NONE,
                              NULL, NULL);
@@ -2331,7 +2334,7 @@ import_one_real (ctrl_t ctrl,
         {
           merge_keys_and_selfsig (ctrl, keyblock_orig);
           clean_all_uids (ctrl, keyblock_orig, opt.verbose,
-                          (options&IMPORT_MINIMAL),
+                          (options&IMPORT_MINIMAL)? EXPORT_MINIMAL : 0,
                           &n_uids_cleaned,&n_sigs_cleaned);
           clean_all_subkeys (ctrl, keyblock_orig, opt.verbose, KEY_CLEAN_NONE,
                              NULL, NULL);

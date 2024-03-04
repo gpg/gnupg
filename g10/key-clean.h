@@ -40,9 +40,10 @@ void mark_usable_uid_certs (ctrl_t ctrl, kbnode_t keyblock, kbnode_t uidnode,
                             u32 curtime, u32 *next_expire);
 
 void clean_one_uid (ctrl_t ctrl, kbnode_t keyblock, kbnode_t uidnode,
-                    int noisy, int self_only,
+                    int noisy, unsigned int options,
                     int *uids_cleaned, int *sigs_cleaned);
-void clean_all_uids (ctrl_t ctrl, kbnode_t keyblock, int noisy, int self_only,
+void clean_all_uids (ctrl_t ctrl, kbnode_t keyblock,
+                     int noisy, unsigned int options,
                      int *uids_cleaned,int *sigs_cleaned);
 void clean_all_subkeys (ctrl_t ctrl, kbnode_t keyblock,
                         int noisy, int clean_level,
