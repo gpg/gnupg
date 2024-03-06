@@ -1586,7 +1586,7 @@ sign_symencrypt_file (ctrl_t ctrl, const char *fname, strlist_t locusr)
   compress_filter_context_t zfx;
   md_filter_context_t mfx;
   md_thd_filter_context_t mfx2 = NULL;
-  gcry_md_hd_t md;
+  gcry_md_hd_t md = NULL;
   text_filter_context_t tfx;
   cipher_filter_context_t cfx;
   iobuf_t inp = NULL;
