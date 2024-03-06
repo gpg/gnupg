@@ -67,6 +67,9 @@ struct
                                        want to use. */
   unsigned long card_timeout; /* Disconnect after N seconds of inactivity.  */
   int debug_allow_pin_logging; /* Allow PINs in debug output.  */
+
+  /* Compatibility flags (COMPAT_FLAG_xxxx).  */
+  unsigned int compat_flags;
 } opt;
 
 
@@ -91,6 +94,11 @@ struct
 #define DBG_CARD    (opt.debug & DBG_CARD_VALUE)
 #define DBG_CARD_IO (opt.debug & DBG_CARD_IO_VALUE)
 #define DBG_READER  (opt.debug & DBG_READER_VALUE)
+
+
+#define COMPAT_CCID_NO_AUTO_DETACH 1
+
+
 
 struct server_local_s;
 struct card_ctx_s;

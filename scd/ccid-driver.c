@@ -1779,6 +1779,20 @@ ccid_open_usb_reader (const char *spec_reader_name,
 #ifdef USE_NPTH
   npth_unprotect ();
 #endif
+  if (!(opt.compat_flags & COMPAT_CCID_NO_AUTO_DETACH))
+    {
+      rc = libusb_set_auto_detach_kernel_driver (idev, 1);
+      if (rc)
+        {
+#ifdef USE_NPTH
+          npth_protect ();
+#endif
+          DEBUGOUT_1 ("note: set_auto_detach_kernel_driver failed: %d\n", rc);
+#ifdef USE_NPTH
+          npth_unprotect ();
+#endif
+        }
+    }
   rc = libusb_claim_interface (idev, ifc_no);
   if (rc)
     {
