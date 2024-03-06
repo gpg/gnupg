@@ -1919,7 +1919,7 @@ domain_matches_mbox (const char *domain, const char *mbox)
  * so that for a key with
  *    uid: Joe Someone <joe@example.org>
  *    uid: Joe <joe@example.org>
- * only the news user id (and thus its self-signature) is used.
+ * only the newest user id (and thus its self-signature) is used.
  * UIDLIST is nodified to set all MBOX fields to NULL for a processed
  * user id.  FPR is the fingerprint of the key.
  */
