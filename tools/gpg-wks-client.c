@@ -2026,7 +2026,7 @@ mirror_one_key (estream_t key)
         continue; /* No mail box or already processed.  */
       if (uid->expired)
         continue;
-      if (!domain_matches_mbox (domain, uid->mbox))
+      if (*domain && !domain_matches_mbox (domain, uid->mbox))
         continue; /* We don't want this one.  */
       if (is_in_blacklist (uid->mbox))
         continue;

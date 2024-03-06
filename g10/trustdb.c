@@ -72,7 +72,7 @@ static struct key_item *utk_list;      /* all ultimately trusted keys */
 static struct key_item *trusted_key_list;
 static int any_trusted_key_seen;
 
-/* Flag whether a trustdb chekc is pending.  */
+/* Flag whether a trustdb check is pending.  */
 static int pending_check_trustdb;
 
 
