@@ -1805,7 +1805,10 @@ ccid_open_usb_reader (const char *spec_reader_name,
     }
 
   /* Submit SET_INTERFACE control transfer which can reset the device.  */
-  rc = libusb_set_interface_alt_setting (idev, ifc_no, set_no);
+  if ((*handle)->id_vendor == VENDOR_ACR && (*handle)->id_product == ACR_122U)
+    rc = 0;  /* Not supported by this reader.  */
+  else
+    rc = libusb_set_interface_alt_setting (idev, ifc_no, set_no);
   if (rc)
     {
 #ifdef USE_NPTH
@@ -1820,6 +1823,7 @@ ccid_open_usb_reader (const char *spec_reader_name,
   npth_protect ();
 #endif
 
+  /* Perform any vendor specific intialization.  */
   rc = ccid_vendor_specific_init (*handle);
 
  leave:

@@ -70,6 +70,7 @@ enum {
   VENDOR_FSIJ   = 0x234b,
   VENDOR_VASCO  = 0x1a44,
   VENDOR_NXP    = 0x1fc9,
+  VENDOR_ACR    = 0x072f
 };
 
 
@@ -88,6 +89,7 @@ enum {
 #define VEGA_ALPHA      0x0008
 #define CYBERJACK_GO    0x0504
 #define CRYPTOUCAN      0x81e6
+#define ACR_122U        0x2200    /* NFC Reader */
 
 #endif /*CCID_DRIVER_INCLUDE_USB_IDS*/
 
