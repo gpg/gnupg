@@ -1,6 +1,44 @@
-Noteworthy changes in version 2.4.5 (unreleased)
+Noteworthy changes in version 2.4.5 (2024-03-07)
 ------------------------------------------------
 
+  * gpg,gpgv: New option --assert-pubkey-algo.  [T6946]
+
+  * gpg: Emit status lines for errors in the compression layer.
+    [T6977]
+
+  * gpg: Fix invocation with --trusted-keys and --no-options.  [T7025]
+
+  * gpgsm: Allow for a longer salt in PKCS#12 files.  [T6757]
+
+  * gpgtar: Make --status-fd=2 work on Windows.  [T6961]
+
+  * scd: Support for the ACR-122U NFC reader.  [rG1682ca9f01]
+
+  * scd: Suport D-TRUST ECC cards.  [T7000,T7001]
+
+  * scd: Allow auto detaching of kernel drivers; can be disabled with
+    the new compatibility-flag ccid-no-auto-detach.  [rGa1ea3b13e0]
+
+  * scd: Allow setting a PIN length of 6 also with a reset code for
+    openpgp cards.  [T6843]
+
+  * agent: Allow GET_PASSPHRASE in restricted mode.  [rGadf4db6e20]
+
+  * dirmngr: Trust system's root CAs for checking CRL issuers.
+    [T6963]
+
+  * dirmngr: Fix regression in 2.4.4 in fetching keys via hkps.
+    [T6997]
+
+  * gpg-wks-client: Make option --mirror work properly w/o specifying
+    domains.  [rG37cc255e49]
+
+  * g13,gpg-wks-client: Allow command style options as in "g13 mount
+    foo".  [rGa09157ccb2]
+
+  * Allow tilde expansion for the foo-program options.  [T7017]
+
+  * Make the getswdb.sh tool usable outside the GnuPG tree.
 
   Release-info: https://dev.gnupg.org/T6960
 
