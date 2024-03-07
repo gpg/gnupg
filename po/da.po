@@ -2334,9 +2334,6 @@ msgstr "opret ascii-pansrede uddata"
 msgid "|FILE|write output to FILE"
 msgstr "|FILE|skriv resultat til FIL"
 
-msgid "use canonical text mode"
-msgstr "brug kanonisk teksttilstand"
-
 msgid "|N|set compress level to N (0 disables)"
 msgstr "|N|sæt komprimeringsniveauet til N (0 deaktiverer)"
 
@@ -7175,7 +7172,9 @@ msgstr "adgang til administratorkommandoer er ikke konfigureret\n"
 msgid "||Please enter the PIN"
 msgstr "||Indtast venligst PIN'en"
 
-msgid "||Please enter the Reset Code for the card"
+#, fuzzy
+#| msgid "||Please enter the Reset Code for the card"
+msgid "|R|Please enter the Reset Code for the card"
 msgstr "||Indtast venligst nulstillingskoden for kortet"
 
 #, c-format
@@ -9719,6 +9718,9 @@ msgstr ""
 
 msgid "manage the command history"
 msgstr ""
+
+#~ msgid "use canonical text mode"
+#~ msgstr "brug kanonisk teksttilstand"
 
 #, fuzzy
 #~| msgid "selected digest algorithm is invalid\n"

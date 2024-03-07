@@ -2189,9 +2189,6 @@ msgstr "建立以 ASCII 封裝過的輸出"
 msgid "|FILE|write output to FILE"
 msgstr "|檔案|將輸出寫入至指定檔案"
 
-msgid "use canonical text mode"
-msgstr "使用標準的文字模式"
-
 msgid "|N|set compress level to N (0 disables)"
 msgstr "|N|設定壓縮等級為 N (0 表示不壓縮)"
 
@@ -6778,7 +6775,9 @@ msgstr "管理者指令存取權限尚未組態\n"
 msgid "||Please enter the PIN"
 msgstr "||請輸入個人識別碼 (PIN)"
 
-msgid "||Please enter the Reset Code for the card"
+#, fuzzy
+#| msgid "||Please enter the Reset Code for the card"
+msgid "|R|Please enter the Reset Code for the card"
 msgstr "||請輸入卡片的重設碼"
 
 #, c-format
@@ -9056,6 +9055,9 @@ msgstr ""
 
 msgid "manage the command history"
 msgstr ""
+
+#~ msgid "use canonical text mode"
+#~ msgstr "使用標準的文字模式"
 
 #, fuzzy
 #~| msgid "selected digest algorithm is invalid\n"

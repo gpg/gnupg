@@ -2231,9 +2231,6 @@ msgstr "vytvor výstup zakódovaný pomocou ASCII"
 msgid "|FILE|write output to FILE"
 msgstr "|SÚBOR|nahrať rozširujúci modul SÚBOR"
 
-msgid "use canonical text mode"
-msgstr "použiť kánonický textový mód"
-
 #, fuzzy
 msgid "|N|set compress level to N (0 disables)"
 msgstr ""
@@ -6969,7 +6966,7 @@ msgid "||Please enter the PIN"
 msgstr "zmeniť heslo"
 
 #, fuzzy
-msgid "||Please enter the Reset Code for the card"
+msgid "|R|Please enter the Reset Code for the card"
 msgstr "Prosím výberte dôvod na revokáciu:\n"
 
 #, c-format
@@ -9303,6 +9300,9 @@ msgstr ""
 
 msgid "manage the command history"
 msgstr ""
+
+#~ msgid "use canonical text mode"
+#~ msgstr "použiť kánonický textový mód"
 
 #, fuzzy
 #~| msgid "selected digest algorithm is invalid\n"

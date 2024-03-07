@@ -2075,9 +2075,6 @@ msgstr "创建 ASCII 字符封装的输出"
 msgid "|FILE|write output to FILE"
 msgstr "|FILE|写输出到 FILE"
 
-msgid "use canonical text mode"
-msgstr "使用规范的文本模式"
-
 msgid "|N|set compress level to N (0 disables)"
 msgstr "|N|设置压缩等级为 N （0 为禁用）"
 
@@ -6435,7 +6432,9 @@ msgstr "未配置到管理员命令的访问\n"
 msgid "||Please enter the PIN"
 msgstr "||请输入 PIN"
 
-msgid "||Please enter the Reset Code for the card"
+#, fuzzy
+#| msgid "||Please enter the Reset Code for the card"
+msgid "|R|Please enter the Reset Code for the card"
 msgstr "||请输入卡片的重置码"
 
 #, c-format
@@ -8674,6 +8673,9 @@ msgstr "Yubikey 管理命令"
 
 msgid "manage the command history"
 msgstr "管理命令历史记录"
+
+#~ msgid "use canonical text mode"
+#~ msgstr "使用规范的文本模式"
 
 #~ msgid "continuing verification anyway due to option %s\n"
 #~ msgstr "由于 %s 选项，验证仍在继续中\n"

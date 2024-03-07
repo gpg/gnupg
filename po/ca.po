@@ -2303,9 +2303,6 @@ msgstr "crea eixida amb armadura ascii"
 msgid "|FILE|write output to FILE"
 msgstr "|FITXER|carrega el mòdul d'extensió especificat"
 
-msgid "use canonical text mode"
-msgstr "usa el mode de text canònic"
-
 #, fuzzy
 msgid "|N|set compress level to N (0 disables)"
 msgstr "|N|nivell de compressió N (0 no comprimeix)"
@@ -7132,7 +7129,7 @@ msgid "||Please enter the PIN"
 msgstr "canvia la contrasenya"
 
 #, fuzzy
-msgid "||Please enter the Reset Code for the card"
+msgid "|R|Please enter the Reset Code for the card"
 msgstr "Seleccioneu la raó de la revocació:\n"
 
 #, c-format
@@ -9504,6 +9501,9 @@ msgstr ""
 
 msgid "manage the command history"
 msgstr ""
+
+#~ msgid "use canonical text mode"
+#~ msgstr "usa el mode de text canònic"
 
 #, fuzzy
 #~| msgid "selected digest algorithm is invalid\n"

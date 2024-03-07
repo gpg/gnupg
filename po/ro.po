@@ -2248,9 +2248,6 @@ msgstr "crează ieşire în armură ascii"
 msgid "|FILE|write output to FILE"
 msgstr "|FIŞIER|încarcă modulul extensie FIŞIER"
 
-msgid "use canonical text mode"
-msgstr "foloseşte modul text canonic"
-
 #, fuzzy
 msgid "|N|set compress level to N (0 disables)"
 msgstr "|N|setează nivel de compresie N (0 deactivează)"
@@ -7056,7 +7053,7 @@ msgid "||Please enter the PIN"
 msgstr "||Vă rugăm introduceţi PIN%%0A[semnături făcute: %lu]"
 
 #, fuzzy
-msgid "||Please enter the Reset Code for the card"
+msgid "|R|Please enter the Reset Code for the card"
 msgstr "||Vă rugăm introduceţi PIN%%0A[semnături făcute: %lu]"
 
 #, fuzzy, c-format
@@ -9414,6 +9411,9 @@ msgstr ""
 
 msgid "manage the command history"
 msgstr ""
+
+#~ msgid "use canonical text mode"
+#~ msgstr "foloseşte modul text canonic"
 
 #, fuzzy
 #~| msgid "selected digest algorithm is invalid\n"

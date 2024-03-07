@@ -2179,9 +2179,6 @@ msgstr "створити дані у форматі ASCII"
 msgid "|FILE|write output to FILE"
 msgstr "|FILE|записати дані до вказаного файла"
 
-msgid "use canonical text mode"
-msgstr "використовувати канонічний текстовий режим"
-
 msgid "|N|set compress level to N (0 disables)"
 msgstr "|N|встановити рівень стиснення (0 — вимкнути)"
 
@@ -6937,7 +6934,9 @@ msgstr "доступ до адміністративних команд не н�
 msgid "||Please enter the PIN"
 msgstr "||Вкажіть пінкод"
 
-msgid "||Please enter the Reset Code for the card"
+#, fuzzy
+#| msgid "||Please enter the Reset Code for the card"
+msgid "|R|Please enter the Reset Code for the card"
 msgstr "||Вкажіть код скидання коду картки"
 
 #, c-format
@@ -9248,6 +9247,9 @@ msgstr ""
 
 msgid "manage the command history"
 msgstr ""
+
+#~ msgid "use canonical text mode"
+#~ msgstr "використовувати канонічний текстовий режим"
 
 #, fuzzy
 #~| msgid "selected digest algorithm is invalid\n"

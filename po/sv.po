@@ -2369,9 +2369,6 @@ msgstr "skapa utdata med ett ascii-skal"
 msgid "|FILE|write output to FILE"
 msgstr "|FIL|skriv utdata till FIL"
 
-msgid "use canonical text mode"
-msgstr "använd \"ursprunglig text\"-läget"
-
 msgid "|N|set compress level to N (0 disables)"
 msgstr "|N|ställ in komprimeringsnivån till N (0 för att inaktivera)"
 
@@ -7294,7 +7291,9 @@ msgstr "åtkomst till administrationskommandon är inte konfigurerat\n"
 msgid "||Please enter the PIN"
 msgstr "||Ange PIN-koden"
 
-msgid "||Please enter the Reset Code for the card"
+#, fuzzy
+#| msgid "||Please enter the Reset Code for the card"
+msgid "|R|Please enter the Reset Code for the card"
 msgstr "||Ange nollställningskoden för kortet"
 
 #, c-format
@@ -9859,6 +9858,9 @@ msgstr ""
 
 msgid "manage the command history"
 msgstr ""
+
+#~ msgid "use canonical text mode"
+#~ msgstr "använd \"ursprunglig text\"-läget"
 
 #, fuzzy
 #~| msgid "selected digest algorithm is invalid\n"

@@ -2101,9 +2101,6 @@ msgstr "ascii zırhlı çıktı oluştur"
 msgid "|FILE|write output to FILE"
 msgstr "|FILE|çıktıyı FILE'a yaz"
 
-msgid "use canonical text mode"
-msgstr "kurallı metin kipini kullan"
-
 msgid "|N|set compress level to N (0 disables)"
 msgstr "|N|sıkıştırma düzeyini N olarak ayarla (0 devre dışı bırakır)"
 
@@ -6666,7 +6663,9 @@ msgstr "yönetici komutlarına erişim yapılandırılmamış\n"
 msgid "||Please enter the PIN"
 msgstr "||Lütfen PIN'i giriniz"
 
-msgid "||Please enter the Reset Code for the card"
+#, fuzzy
+#| msgid "||Please enter the Reset Code for the card"
+msgid "|R|Please enter the Reset Code for the card"
 msgstr "||Lütfen kart için Sıfırlama Kodunu giriniz"
 
 #, c-format
@@ -8918,3 +8917,6 @@ msgstr "Yubikey yönetim konsolu"
 
 msgid "manage the command history"
 msgstr "komut geçmişini yönet"
+
+#~ msgid "use canonical text mode"
+#~ msgstr "kurallı metin kipini kullan"

@@ -2132,9 +2132,6 @@ msgstr "vytvořit výstup zapsaný v ASCII"
 msgid "|FILE|write output to FILE"
 msgstr "|SOUBOR|zapsat výstup do SOUBORU"
 
-msgid "use canonical text mode"
-msgstr "použít kanonický textový režim"
-
 msgid "|N|set compress level to N (0 disables)"
 msgstr "|N|nastavit úroveň komprese na N (0 – žádná)"
 
@@ -6707,7 +6704,9 @@ msgstr "přístup k příkazům správce není nakonfigurován\n"
 msgid "||Please enter the PIN"
 msgstr "||Prosím, zadejte PIN"
 
-msgid "||Please enter the Reset Code for the card"
+#, fuzzy
+#| msgid "||Please enter the Reset Code for the card"
+msgid "|R|Please enter the Reset Code for the card"
 msgstr "||Prosím, zadejte resetační kód karty"
 
 #, c-format
@@ -8982,6 +8981,9 @@ msgstr "Příkazy pro správu Yubikey"
 
 msgid "manage the command history"
 msgstr "spravuje historii příkazů"
+
+#~ msgid "use canonical text mode"
+#~ msgstr "použít kanonický textový režim"
 
 #~ msgid "selected AEAD algorithm is invalid\n"
 #~ msgstr "vybraný algoritmus AEAD je neplatný\n"
