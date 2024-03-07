@@ -171,6 +171,302 @@ reverse_buffer (unsigned char *buffer, unsigned int length)
     }
 }
 
+static gpg_error_t
+agent_hybrid_kem_decap (ctrl_t ctrl, const char *desc_text, int kemid,
+                        gcry_sexp_t s_cipher, membuf_t *outbuf)
+{
+  gcry_sexp_t s_skey0 = NULL;
+  gcry_sexp_t s_skey1 = NULL;
+  unsigned char *shadow_info = NULL;
+  gpg_error_t err = 0;
+  int no_shadow_info = 0;
+
+  unsigned int nbits;
+  const unsigned char *p;
+  size_t len;
+
+  gcry_mpi_t encrypted_sessionkey_mpi;
+  const unsigned char *encrypted_sessionkey;
+  size_t encrypted_sessionkey_len;
+
+  gcry_mpi_t ecc_sk_mpi;
+  unsigned char ecc_sk[32];
+  gcry_mpi_t ecc_pk_mpi;
+  unsigned char ecc_pk[32];
+  gcry_mpi_t ecc_ct_mpi;
+  const unsigned char *ecc_ct;
+  size_t ecc_ct_len;
+  unsigned char ecc_ecdh[32];
+  unsigned char ecc_ss[32];
+
+  gcry_mpi_t mlkem_sk_mpi;
+  gcry_mpi_t mlkem_ct_mpi;
+  const unsigned char *mlkem_sk;
+  const unsigned char *mlkem_ct;
+  unsigned char mlkem_ss[GCRY_KEM_MLKEM768_SHARED_LEN];
+
+  gcry_buffer_t iov[13];
+  unsigned char head136[2];
+  unsigned char headK[2];
+  const unsigned char pad[95] = { 0 };
+  unsigned char right_encode_L[3];
+
+  unsigned char kekkey[16];
+  size_t kekkeylen = 16;        /* AES, perhaps */
+
+  gcry_cipher_hd_t hd;
+  unsigned char sessionkey_encoded[256];
+  size_t sessionkey_encoded_len;
+  const unsigned char fixedinfo[1] = { 105 };
+
+  (void)kemid; /* For now, only PGP.  */
+  /*
+    (enc-val(pqc(s%m)(e%m)(k%m))))
+  */
+  err = agent_key_from_file (ctrl, NULL, desc_text,
+                             NULL, &shadow_info,
+                             CACHE_MODE_NORMAL, NULL, &s_skey0, NULL, NULL);
+  if (gpg_err_code (err) == GPG_ERR_NO_SECKEY)
+    no_shadow_info = 1;
+  else if (err)
+    {
+      log_error ("failed to read the secret key\n");
+      goto leave;
+    }
+
+  if (shadow_info || no_shadow_info)
+    { /* divert operation to the smartcard */
+      err = gpg_error (GPG_ERR_NO_SECKEY); /* Not implemented yet.  */
+      goto leave;
+    }
+
+  err = agent_key_from_file (ctrl, NULL, desc_text,
+                             NULL, &shadow_info,
+                             CACHE_MODE_NORMAL, NULL, &s_skey1, NULL, NULL);
+  if (gpg_err_code (err) == GPG_ERR_NO_SECKEY)
+    no_shadow_info = 1;
+  else if (err)
+    {
+      log_error ("failed to read the secret key\n");
+      goto leave;
+    }
+
+  if (shadow_info || no_shadow_info)
+    { /* divert operation to the smartcard */
+      err = gpg_error (GPG_ERR_NO_SECKEY); /* Not implemented yet.  */
+      goto leave;
+    }
+
+  /* No smartcard, but private keys */
+
+
+  gcry_sexp_extract_param (s_cipher, NULL, "/e/k/s",
+                           &ecc_ct_mpi,
+                           &mlkem_ct_mpi,
+                           &encrypted_sessionkey_mpi, NULL);
+
+  encrypted_sessionkey = gcry_mpi_get_opaque (encrypted_sessionkey_mpi, &nbits);
+  encrypted_sessionkey_len = (nbits+7)/8;
+  encrypted_sessionkey_len--;
+  if (encrypted_sessionkey[0] != encrypted_sessionkey_len)
+    {
+      err = GPG_ERR_INV_DATA;
+      goto leave;
+    }
+  encrypted_sessionkey++;
+
+  /* Fistly, ECC.  */
+  gcry_sexp_extract_param (s_skey0, NULL, "/q/d",
+                           &ecc_pk_mpi, &ecc_sk_mpi, NULL);
+  p = gcry_mpi_get_opaque (ecc_pk_mpi, &nbits);
+  len = (nbits+7)/8;
+  memcpy (ecc_pk, p+1, 32);
+  p = gcry_mpi_get_opaque (ecc_sk_mpi, &nbits);
+  len = (nbits+7)/8;
+  memset (ecc_sk, 0, 32);
+  memcpy (ecc_sk + 32 - len, p, len);
+  reverse_buffer (ecc_sk, 32);
+  mpi_release (ecc_pk_mpi);
+  mpi_release (ecc_sk_mpi);
+
+  ecc_ct = gcry_mpi_get_opaque (ecc_ct_mpi, &nbits);
+  ecc_ct_len = (nbits+7)/8;
+  /* Remove the 0x40 prefix*/
+  ecc_ct++;
+  ecc_ct_len--;
+  /*FIXME make sure the lengths are all correct.  */
+  /*FIXME: check the internal of optional to determine the KEK-algo and KEKKEYLEN.  */
+  err = gcry_kem_decap (GCRY_KEM_RAW_X25519,
+                        ecc_sk, 32,
+                        ecc_ct, ecc_ct_len,
+                        ecc_ecdh, 32,
+                        NULL, 0);
+  mpi_release (ecc_ct_mpi);
+
+  iov[0].data = ecc_ecdh;
+  iov[0].off = 0;
+  iov[0].len = 32;
+  iov[1].data = (unsigned char *)ecc_ct;
+  iov[1].off = 0;
+  iov[1].len = 32;
+  iov[2].data = ecc_pk;
+  iov[2].off = 0;
+  iov[2].len = 32;
+  gcry_md_hash_buffers (GCRY_MD_SHA3_256, 0, ecc_ss, iov, 3);
+
+  /* Secondly, ML-KEM */
+  gcry_sexp_extract_param (s_skey1, NULL, "/s", &mlkem_sk_mpi, NULL);
+  mlkem_sk = gcry_mpi_get_opaque (mlkem_sk_mpi, &nbits);
+  len = (nbits+7)/8;
+
+  mlkem_ct = gcry_mpi_get_opaque (mlkem_ct_mpi, &nbits);
+  len = (nbits+7)/8;
+  err = gcry_kem_decap (GCRY_KEM_MLKEM768,
+                        mlkem_sk, GCRY_KEM_MLKEM768_SECKEY_LEN,
+                        mlkem_ct, GCRY_KEM_MLKEM768_ENCAPS_LEN,
+                        mlkem_ss, GCRY_KEM_MLKEM768_SHARED_LEN,
+                        NULL, 0);
+
+  mpi_release (mlkem_sk_mpi);
+  mpi_release (mlkem_ct_mpi);
+
+  /* Then, combine two shared secrets into one */
+
+  //   multiKeyCombine(eccKeyShare, eccCipherText,
+  //                   mlkemKeyShare, mlkemCipherText,
+  //                   fixedInfo, oBits)
+  //
+  //   Input:
+  //   eccKeyShare     - the ECC key share encoded as an octet string
+  //   eccCipherText   - the ECC ciphertext encoded as an octet string
+  //   mlkemKeyShare   - the ML-KEM key share encoded as an octet string
+  //   mlkemCipherText - the ML-KEM ciphertext encoded as an octet string
+  //   fixedInfo       - the fixed information octet string
+  //   oBits           - the size of the output keying material in bits
+  //
+  //   Constants:
+  //   domSeparation       - the UTF-8 encoding of the string
+  //                         "OpenPGPCompositeKeyDerivationFunction"
+  //   counter             - the 4 byte value 00 00 00 01
+  //   customizationString - the UTF-8 encoding of the string "KDF"
+  //
+  //  eccData = eccKeyShare || eccCipherText
+  //    mlkemData = mlkemKeyShare || mlkemCipherText
+  //    encData = counter || eccData || mlkemData || fixedInfo
+  //
+  //    KEK = KMAC256(domSeparation, encData, oBits, customizationString)
+  //    return KEK
+  //
+  // fixedInfo = algID (105 for ML-KEM-768-x25519kem)
+  //
+  // KMAC256(K,X,L,S):
+  // newX = bytepad(encode_string(K), 136) || X || right_encode(L)
+  // cSHAKE256(newX,L,"KMAC",S)
+  len = 4 + 32 + 32 + GCRY_KEM_MLKEM768_SHARED_LEN + GCRY_KEM_MLKEM768_ENCAPS_LEN;
+
+  iov[0].data = "KMAC";
+  iov[0].off = 0;
+  iov[0].len = 4;
+
+  iov[1].data = "KDF";
+  iov[1].off = 0;
+  iov[1].len = 3;
+
+  head136[0] = 1;
+  head136[1] = 136;
+  iov[2].data = head136;
+  iov[2].off = 0;
+  iov[2].len = 2;
+
+  headK[0] = 1;
+  headK[1] = 37;
+  iov[3].data = headK;
+  iov[3].off = 0;
+  iov[3].len = 2;
+
+  iov[4].data = "OpenPGPCompositeKeyDerivationFunction";
+  iov[4].off = 0;
+  iov[4].len = 37;
+
+  iov[5].data = (unsigned char *)pad;
+  iov[5].off = 0;
+  iov[5].len = sizeof (pad);
+
+  iov[6].data = "\x00\x00\x00\x01"; /* Counter */
+  iov[6].off = 0;
+  iov[6].len = 4;
+
+  iov[7].data = ecc_ss;
+  iov[7].off = 0;
+  iov[7].len = 32;
+
+  iov[8].data = (unsigned char *)ecc_ct;
+  iov[8].off = 0;
+  iov[8].len = 32;
+
+  iov[9].data = mlkem_ss;
+  iov[9].off = 0;
+  iov[9].len = GCRY_KEM_MLKEM768_SHARED_LEN;
+
+  iov[10].data = (unsigned char *)mlkem_ct;
+  iov[10].off = 0;
+  iov[10].len = GCRY_KEM_MLKEM768_ENCAPS_LEN;
+
+  iov[11].data = (unsigned char *)fixedinfo;
+  iov[11].off = 0;
+  iov[11].len = 1;
+
+  right_encode_L[0] = (kekkeylen * 8);
+  right_encode_L[1] = 1;
+  iov[12].data = right_encode_L;
+  iov[12].off = 0;
+  iov[12].len = 2;
+
+  gcry_md_hash_buffers_extract (GCRY_MD_CSHAKE256, 0, kekkey, kekkeylen,
+                                iov, DIM (iov));
+
+  if (DBG_CRYPTO)
+    {
+      log_printhex (kekkey, kekkeylen, "KEK key: ");
+    }
+
+  /*FIXME: KEK may be AES256, for example */
+  err = gcry_cipher_open (&hd, GCRY_CIPHER_AES, GCRY_CIPHER_MODE_AESWRAP, 0);
+  if (err)
+    {
+      log_error ("ecdh failed to initialize AESWRAP: %s\n",
+                 gpg_strerror (err));
+      mpi_release (encrypted_sessionkey_mpi);
+      goto leave;
+    }
+
+  err = gcry_cipher_setkey (hd, kekkey, kekkeylen);
+
+  sessionkey_encoded_len = encrypted_sessionkey_len - 8;
+  gcry_cipher_decrypt (hd, sessionkey_encoded, sessionkey_encoded_len,
+                       encrypted_sessionkey, encrypted_sessionkey_len);
+  gcry_cipher_close (hd);
+
+  mpi_release (encrypted_sessionkey_mpi);
+
+  if (err)
+    {
+      log_error ("KEM decap failed: %s\n", gpg_strerror (err));
+      goto leave;
+    }
+
+  put_membuf_printf (outbuf, "(5:value%u:", (unsigned int)sessionkey_encoded_len);
+  put_membuf (outbuf, sessionkey_encoded, sessionkey_encoded_len);
+  put_membuf (outbuf, ")", 2);
+
+ leave:
+  gcry_sexp_release (s_skey0);
+  gcry_sexp_release (s_skey1);
+  xfree (shadow_info);
+  return err;
+}
+
+
 gpg_error_t
 agent_kem_decap (ctrl_t ctrl, const char *desc_text, int kemid,
                  const unsigned char *ciphertext, size_t ciphertextlen,
@@ -181,8 +477,6 @@ agent_kem_decap (ctrl_t ctrl, const char *desc_text, int kemid,
   unsigned char *shadow_info = NULL;
   gpg_error_t err = 0;
   int no_shadow_info = 0;
-
-  /* IMPLEMENT: check ctrl->have_keygrip1, kem_decap, and call key combiner */
 
   if (!ctrl->have_keygrip)
     {
@@ -204,6 +498,13 @@ agent_kem_decap (ctrl_t ctrl, const char *desc_text, int kemid,
       log_printhex (ctrl->keygrip, 20, "keygrip:");
       log_printhex (ciphertext, ciphertextlen, "cipher: ");
     }
+
+  if (ctrl->have_keygrip1)
+    {
+      err = agent_hybrid_kem_decap (ctrl, desc_text, kemid, s_cipher, outbuf);
+      goto leave;
+    }
+
   err = agent_key_from_file (ctrl, NULL, desc_text,
                              NULL, &shadow_info,
                              CACHE_MODE_NORMAL, NULL, &s_skey, NULL, NULL);
@@ -217,7 +518,7 @@ agent_kem_decap (ctrl_t ctrl, const char *desc_text, int kemid,
 
   if (shadow_info || no_shadow_info)
     { /* divert operation to the smartcard */
-      err = gpg_error (GPG_ERR_NO_SECKEY);
+      err = gpg_error (GPG_ERR_NO_SECKEY); /* Not implemented yet.  */
       goto leave;
     }
   else
