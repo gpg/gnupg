@@ -211,8 +211,8 @@ agent_hybrid_kem_decap (ctrl_t ctrl, const char *desc_text, int kemid,
   const unsigned char pad[95] = { 0 };
   unsigned char right_encode_L[3];
 
-  unsigned char kekkey[16];
-  size_t kekkeylen = 16;        /* AES, perhaps */
+  unsigned char kekkey[32];
+  size_t kekkeylen = 32;        /* AES-256 is mandatory */
 
   gcry_cipher_hd_t hd;
   unsigned char sessionkey_encoded[256];
@@ -416,11 +416,12 @@ agent_hybrid_kem_decap (ctrl_t ctrl, const char *desc_text, int kemid,
   iov[11].off = 0;
   iov[11].len = 1;
 
-  right_encode_L[0] = (kekkeylen * 8);
-  right_encode_L[1] = 1;
+  right_encode_L[0] = (kekkeylen * 8) >> 8;
+  right_encode_L[1] = (kekkeylen * 8) & 0xff;
+  right_encode_L[2] = 2;
   iov[12].data = right_encode_L;
   iov[12].off = 0;
-  iov[12].len = 2;
+  iov[12].len = 3;
 
   gcry_md_hash_buffers_extract (GCRY_MD_CSHAKE256, 0, kekkey, kekkeylen,
                                 iov, DIM (iov));
@@ -430,8 +431,8 @@ agent_hybrid_kem_decap (ctrl_t ctrl, const char *desc_text, int kemid,
       log_printhex (kekkey, kekkeylen, "KEK key: ");
     }
 
-  /*FIXME: KEK may be AES256, for example */
-  err = gcry_cipher_open (&hd, GCRY_CIPHER_AES, GCRY_CIPHER_MODE_AESWRAP, 0);
+  err = gcry_cipher_open (&hd, GCRY_CIPHER_AES256,
+                          GCRY_CIPHER_MODE_AESWRAP, 0);
   if (err)
     {
       log_error ("ecdh failed to initialize AESWRAP: %s\n",
