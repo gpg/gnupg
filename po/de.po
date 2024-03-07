@@ -9,7 +9,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnupg-2.4.1\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"PO-Revision-Date: 2024-01-24 14:05+0100\n"
+"PO-Revision-Date: 2024-03-07 13:56+0100\n"
 "Last-Translator: Werner Koch <wk@gnupg.org>\n"
 "Language-Team: German\n"
 "Language: de\n"
@@ -2141,9 +2141,6 @@ msgstr "Ausgabe mit ASCII-Hülle versehen"
 
 msgid "|FILE|write output to FILE"
 msgstr "|DATEI|Ausgabe auf DATEI schreiben"
-
-msgid "use canonical text mode"
-msgstr "Textmodus benutzen"
 
 msgid "|N|set compress level to N (0 disables)"
 msgstr "|N|Kompressionsstufe auf N setzen (0=keine)"
@@ -6801,8 +6798,8 @@ msgstr "Zugriff auf Admin-Befehle ist nicht eingerichtet\n"
 msgid "||Please enter the PIN"
 msgstr "||Bitte die PIN eingeben"
 
-msgid "||Please enter the Reset Code for the card"
-msgstr "Bitte geben Sie den Rückstellcode für diese Karte ein"
+msgid "|R|Please enter the Reset Code for the card"
+msgstr "|R|Bitte geben Sie den Rückstellcode für diese Karte ein"
 
 #, c-format
 msgid "Reset Code is too short; minimum length is %d\n"
@@ -9116,6 +9113,9 @@ msgstr "Verwaltungskommandos für Yubikeys"
 msgid "manage the command history"
 msgstr "Verwaltung der Kommandohistorie"
 
+#~ msgid "use canonical text mode"
+#~ msgstr "Textmodus benutzen"
+
 #~ msgid "continuing verification anyway due to option %s\n"
 #~ msgstr "Die Prüfung wird aufgrund der Option %s weiter durchgeführt\n"
 
@@ -9298,7 +9298,6 @@ msgstr "Verwaltung der Kommandohistorie"
 #~ msgid "ldapserver missing"
 #~ msgstr "LDAP Server fehlt"
 
-#, fuzzy
 #~ msgid "Suggest a random passphrase."
 #~ msgstr "Ein zufälliges Passwort vorschlagen"
 

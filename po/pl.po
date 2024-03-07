@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnupg-2.4.4\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"PO-Revision-Date: 2024-01-28 15:45+0100\n"
+"PO-Revision-Date: 2024-03-07 14:00+0100\n"
 "Last-Translator: Jakub Bogusz <qboosh@pld-linux.org>\n"
 "Language-Team: Polish <translation-team-pl@lists.sourceforge.net>\n"
 "Language: pl\n"
@@ -1326,7 +1326,9 @@ msgstr "brak działającego dirmngr w tej sesji\n"
 
 #, c-format
 msgid "keyserver option \"honor-keyserver-url\" may not be used in Tor mode\n"
-msgstr "opcja serwera kluczy „honor-keyserver-url” nie może być używana w trybie Tor\n"
+msgstr ""
+"opcja serwera kluczy „honor-keyserver-url” nie może być używana w trybie "
+"Tor\n"
 
 msgid "WKD uses a cached result"
 msgstr "WKD używa zapamiętanego wyniku"
@@ -2088,9 +2090,6 @@ msgstr "opakowanie ASCII pliku wynikowego"
 
 msgid "|FILE|write output to FILE"
 msgstr "|PLIK|zapis wyjścia do PLIKU"
-
-msgid "use canonical text mode"
-msgstr "kanoniczny format tekstowy"
 
 msgid "|N|set compress level to N (0 disables)"
 msgstr "|N|ustawienie poziomu kompresji N (0 - bez)"
@@ -5324,7 +5323,8 @@ msgstr "klucz „%s” nie pasuje do żadnego identyfikatora użytkownika\n"
 
 #, c-format
 msgid "option %s given but no matching User ID found\n"
-msgstr "podano opcję %s, ale nie znaleziono pasującego identyfikatora użytkownika\n"
+msgstr ""
+"podano opcję %s, ale nie znaleziono pasującego identyfikatora użytkownika\n"
 
 #, c-format
 msgid "WARNING: This key has been revoked by its designated revoker!\n"
@@ -6496,7 +6496,8 @@ msgstr "nie można otworzyć fd %d: %s\n"
 
 #, c-format
 msgid "WARNING: encrypting without integrity protection is dangerous\n"
-msgstr "OSTRZEŻENIE: szyfrowanie bez ochrony przed manipulacją jest niebezpieczne\n"
+msgstr ""
+"OSTRZEŻENIE: szyfrowanie bez ochrony przed manipulacją jest niebezpieczne\n"
 
 #, c-format
 msgid "Hint: Do not use option %s\n"
@@ -6742,8 +6743,8 @@ msgstr "dostęp do poleceń administratora nie został skonfigurowany\n"
 msgid "||Please enter the PIN"
 msgstr "||Proszę wpisać PIN"
 
-msgid "||Please enter the Reset Code for the card"
-msgstr "||Proszę wprowadzić kod resetujący dla karty"
+msgid "|R|Please enter the Reset Code for the card"
+msgstr "|R|Proszę wprowadzić kod resetujący dla karty"
 
 #, c-format
 msgid "Reset Code is too short; minimum length is %d\n"
@@ -8972,7 +8973,9 @@ msgstr "Wykryto kartę %s nr %s\n"
 
 #, c-format
 msgid "User Interaction Flag is set to \"%s\" - can't change\n"
-msgstr "Flaga interakcji użytkownika (UIF) jest ustawiona na „%s” - nie można zmienić\n"
+msgstr ""
+"Flaga interakcji użytkownika (UIF) jest ustawiona na „%s” - nie można "
+"zmienić\n"
 
 #, c-format
 msgid ""
@@ -9015,3 +9018,6 @@ msgstr "polecenia zarządzające kluczami Yubikey"
 
 msgid "manage the command history"
 msgstr "zarządzanie historią poleceń"
+
+#~ msgid "use canonical text mode"
+#~ msgstr "kanoniczny format tekstowy"

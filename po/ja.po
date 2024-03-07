@@ -11,7 +11,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnupg 2.4.3\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"PO-Revision-Date: 2024-01-25 09:06+0900\n"
+"PO-Revision-Date: 2024-03-07 13:59+0100\n"
 "Last-Translator: NIIBE Yutaka <gniibe@fsij.org>\n"
 "Language-Team: none\n"
 "Language: ja\n"
@@ -2085,9 +2085,6 @@ msgstr "ASCII形式の外装を作成"
 
 msgid "|FILE|write output to FILE"
 msgstr "|FILE|出力をFILEに書き出す"
-
-msgid "use canonical text mode"
-msgstr "正準テキスト・モードを使用"
 
 msgid "|N|set compress level to N (0 disables)"
 msgstr "|N|圧縮レベルをNに設定 (0は非圧縮)"
@@ -6484,8 +6481,8 @@ msgstr "管理コマンドへのアクセスが設定されていません\n"
 msgid "||Please enter the PIN"
 msgstr "||PINを入力してください"
 
-msgid "||Please enter the Reset Code for the card"
-msgstr "||カードのリセット・コードを入力してください"
+msgid "|R|Please enter the Reset Code for the card"
+msgstr "|R|カードのリセット・コードを入力してください"
 
 #, c-format
 msgid "Reset Code is too short; minimum length is %d\n"
@@ -8737,6 +8734,9 @@ msgstr "Yubikey管理コマンド"
 
 msgid "manage the command history"
 msgstr "コマンド履歴を管理する"
+
+#~ msgid "use canonical text mode"
+#~ msgstr "正準テキスト・モードを使用"
 
 #~ msgid "continuing verification anyway due to option %s\n"
 #~ msgstr "オプション %sのため、検証を続けます\n"
