@@ -315,9 +315,9 @@ main (int argc, char **argv)
 
   /* Set defaults for non given options.  */
   if (!opt.gpg_program)
-    opt.gpg_program = gnupg_module_name (GNUPG_MODULE_NAME_GPG);
+    opt.gpg_program = xstrdup (gnupg_module_name (GNUPG_MODULE_NAME_GPG));
   if (!opt.gpgsm_program)
-    opt.gpgsm_program = gnupg_module_name (GNUPG_MODULE_NAME_GPGSM);
+    opt.gpgsm_program = xstrdup (gnupg_module_name (GNUPG_MODULE_NAME_GPGSM));
 
   /* Now build the list of commands.  We guess the size of the array
    * by assuming each item is a complete command.  Obviously this will
