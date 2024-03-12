@@ -78,6 +78,7 @@ enum cmd_and_opt_values
     oNoAutostart,
     oAddRevocs,
     oNoAddRevocs,
+    oRealClean,
 
     oDummy
   };
@@ -121,8 +122,9 @@ static gpgrt_opt_t opts[] = {
   ARGPARSE_s_n (oWithColons, "with-colons", "@"),
   ARGPARSE_s_s (oBlacklist, "blacklist", "@"),
   ARGPARSE_s_s (oDirectory, "directory", "@"),
-  ARGPARSE_s_n (oAddRevocs, "add-revocs", "add revocation certificates"),
+  ARGPARSE_s_n (oAddRevocs, "add-revocs", "@"),
   ARGPARSE_s_n (oNoAddRevocs, "no-add-revocs", "do not add revocation certificates"),
+  ARGPARSE_s_n (oRealClean, "realclean", "remove most key signatures"),
 
   ARGPARSE_s_s (oFakeSubmissionAddr, "fake-submission-addr", "@"),
 
@@ -154,7 +156,7 @@ static char **blacklist_array;
 static size_t blacklist_array_len;
 
 
-static void wrong_args (const char *text) GPGRT_ATTR_NORETURN;
+static void wrong_args (const char *t1, const char *t2) GPGRT_ATTR_NORETURN;
 static void add_blacklist (const char *fname);
 static gpg_error_t proc_userid_from_stdin (gpg_error_t (*func)(const char *),
                                            const char *text);
@@ -204,10 +206,15 @@ my_strusage( int level )
 
 
 static void
-wrong_args (const char *text)
+wrong_args (const char *text, const char *text2)
 {
-  es_fprintf (es_stderr, _("usage: %s [options] %s\n"),
-              gpgrt_strusage (11), text);
+#if GPGRT_VERSION_NUMBER >= 0x013000 /* >= 1.48 */
+  /* Skip the leading dashes if build with command support.  */
+  if (text[0] == '-' && text[1] == '-' && text[2])
+    text += 2;
+#endif
+  es_fprintf (es_stderr, _("usage: %s %s [options] %s\n"),
+              gpgrt_strusage (11), text, text2);
   exit (2);
 }
 
@@ -235,16 +242,16 @@ parse_arguments (gpgrt_argparse_t *pargs, gpgrt_opt_t *popts)
           break;
 
         case oGpgProgram:
-          opt.gpg_program = pargs->r.ret_str;
+          opt.gpg_program = make_filename (pargs->r.ret_str, NULL);
           break;
         case oDirectory:
-          opt.directory = pargs->r.ret_str;
+          opt.directory = make_filename (pargs->r.ret_str, NULL);
           break;
         case oSend:
           opt.use_sendmail = 1;
           break;
         case oOutput:
-          opt.output = pargs->r.ret_str;
+          opt.output = make_filename (pargs->r.ret_str, NULL);
           break;
         case oFakeSubmissionAddr:
           fake_submission_addr = pargs->r.ret_str;
@@ -266,6 +273,10 @@ parse_arguments (gpgrt_argparse_t *pargs, gpgrt_opt_t *popts)
           break;
         case oNoAddRevocs:
           opt.add_revocs = 0;
+          break;
+
+        case oRealClean:
+          opt.realclean = 1;
           break;
 
 	case aSupported:
@@ -315,6 +326,9 @@ main (int argc, char **argv)
   pargs.argc  = &argc;
   pargs.argv  = &argv;
   pargs.flags = ARGPARSE_FLAG_KEEP;
+#if GPGRT_VERSION_NUMBER >= 0x013000 /* >= 1.48 */
+  pargs.flags |= ARGPARSE_FLAG_COMMAND;
+#endif
   cmd = parse_arguments (&pargs, opts);
   gpgrt_argparse (NULL, &pargs, NULL);
 
@@ -350,7 +364,7 @@ main (int argc, char **argv)
 
   /* Set defaults for non given options.  */
   if (!opt.gpg_program)
-    opt.gpg_program = gnupg_module_name (GNUPG_MODULE_NAME_GPG);
+    opt.gpg_program = xstrdup (gnupg_module_name (GNUPG_MODULE_NAME_GPG));
 
   if (!opt.directory)
     opt.directory = "openpgpkey";
@@ -394,7 +408,7 @@ main (int argc, char **argv)
       else
         {
           if (argc != 1)
-            wrong_args ("--supported DOMAIN");
+            wrong_args ("--supported", "DOMAIN");
           err = command_supported (argv[0]);
           if (err && gpg_err_code (err) != GPG_ERR_FALSE)
             log_error ("checking support failed: %s\n", gpg_strerror (err));
@@ -403,7 +417,7 @@ main (int argc, char **argv)
 
     case aCreate:
       if (argc != 2)
-        wrong_args ("--create FINGERPRINT USER-ID");
+        wrong_args ("--create", "FINGERPRINT USER-ID");
       err = command_create (argv[0], argv[1]);
       if (err)
         log_error ("creating request failed: %s\n", gpg_strerror (err));
@@ -411,7 +425,7 @@ main (int argc, char **argv)
 
     case aReceive:
       if (argc)
-        wrong_args ("--receive < MIME-DATA");
+        wrong_args ("--receive", "< MIME-DATA");
       err = wks_receive (es_stdin, command_receive_cb, NULL);
       if (err)
         log_error ("processing mail failed: %s\n", gpg_strerror (err));
@@ -419,7 +433,7 @@ main (int argc, char **argv)
 
     case aRead:
       if (argc)
-        wrong_args ("--read < WKS-DATA");
+        wrong_args ("--read", "< WKS-DATA");
       err = read_confirmation_request (es_stdin);
       if (err)
         log_error ("processing mail failed: %s\n", gpg_strerror (err));
@@ -427,7 +441,7 @@ main (int argc, char **argv)
 
     case aCheck:
       if (argc != 1)
-        wrong_args ("--check USER-ID");
+        wrong_args ("--check", "USER-ID");
       err = command_check (argv[0]);
       break;
 
@@ -444,12 +458,12 @@ main (int argc, char **argv)
       else if (argc == 2)
         err = wks_cmd_install_key (*argv, argv[1]);
       else
-        wrong_args ("--install-key [FILE|FINGERPRINT USER-ID]");
+        wrong_args ("--install-key", "[FILE|FINGERPRINT USER-ID]");
       break;
 
     case aRemoveKey:
       if (argc != 1)
-        wrong_args ("--remove-key USER-ID");
+        wrong_args ("--remove-key", "USER-ID");
       err = wks_cmd_remove_key (*argv);
       break;
 
@@ -1779,6 +1793,8 @@ process_confirmation_request (estream_t msg, const char *mainfpr)
       log_info ("no encryption key found - sending response in the clear\n");
       err = send_confirmation_response (sender, address, nonce, 0, NULL);
     }
+  if (!err)
+    log_info ("response sent to '%s' for '%s'\n", sender, address);
 
  leave:
   nvc_release (nvc);
@@ -1903,7 +1919,7 @@ domain_matches_mbox (const char *domain, const char *mbox)
  * so that for a key with
  *    uid: Joe Someone <joe@example.org>
  *    uid: Joe <joe@example.org>
- * only the news user id (and thus its self-signature) is used.
+ * only the newest user id (and thus its self-signature) is used.
  * UIDLIST is nodified to set all MBOX fields to NULL for a processed
  * user id.  FPR is the fingerprint of the key.
  */
@@ -2010,7 +2026,7 @@ mirror_one_key (estream_t key)
         continue; /* No mail box or already processed.  */
       if (uid->expired)
         continue;
-      if (!domain_matches_mbox (domain, uid->mbox))
+      if (*domain && !domain_matches_mbox (domain, uid->mbox))
         continue; /* We don't want this one.  */
       if (is_in_blacklist (uid->mbox))
         continue;

@@ -1613,7 +1613,7 @@ verify_pin (app_t app, int pwid, const char *desc,
   memset (&pininfo, 0, sizeof pininfo);
   pininfo.fixedlen = -1;
 
-  /* FIXME: TCOS allows to read the min. and max. values - do this.  */
+  /* FIXME: TCOS allows one to read the min. and max. values - do this.  */
   if (app->appversion == 15)
     {
       if (app->app_local->active_nks_app == NKS_APP_NKS && pwid == 0x03)

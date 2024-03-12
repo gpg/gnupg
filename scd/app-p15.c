@@ -305,7 +305,7 @@ struct prkdf_object_s
   keyaccess_flags_t accessflags;
 
   /* Extended key usage flags.  Only used if .valid is set.  This
-   * information is computed from an associated certificate15.  */
+   * information is computed from an associated certificate.  */
   struct {
     unsigned int valid:1;
     unsigned int sign:1;
@@ -519,6 +519,9 @@ struct app_local_s
   cdf_object_t trusted_certificate_info;
   /* Information on all useful certificates. */
   cdf_object_t useful_certificate_info;
+
+  /* Counter to make object ids of certificates unique.  */
+  unsigned int cdf_dup_counter;
 
   /* Information on all public keys. */
   prkdf_object_t public_key_info;
@@ -2419,6 +2422,22 @@ read_ef_pukdf (app_t app, unsigned short fid, pukdf_object_t *result)
 }
 
 
+/* Return true id CDFLIST has the given object id.  */
+static int
+objid_in_cdflist_p (cdf_object_t cdflist,
+                    const unsigned char *objid, size_t objidlen)
+{
+  cdf_object_t cdf;
+
+  if (!objid || !objidlen)
+    return 0;
+  for (cdf = cdflist; cdf; cdf = cdf->next)
+    if (cdf->objidlen == objidlen && !memcmp (cdf->objid, objid, objidlen))
+      return 1;
+  return 0;
+}
+
+
 /* Read and parse the Certificate Directory Files identified by FID.
    On success a newlist of CDF object gets stored at RESULT and the
    caller is then responsible of releasing this list.  On error a
@@ -2464,6 +2483,7 @@ read_ef_cdf (app_t app, unsigned short fid, int cdftype, cdf_object_t *result)
       unsigned long ul;
       const unsigned char *objid;
       size_t objidlen;
+      int objidextralen;
 
       err = parse_ber_header (&p, &n, &class, &tag, &constructed,
                               &ndef, &objlen, &hdrlen);
@@ -2588,8 +2608,19 @@ read_ef_cdf (app_t app, unsigned short fid, int cdftype, cdf_object_t *result)
           label = NULL;
         }
 
-      cdf->objidlen = objidlen;
-      cdf->objid = xtrymalloc (objidlen);
+      /* Card's have been found in the wild which do not have unique
+       * IDs for their certificate objects.  If we detect this we
+       * append a counter to the ID.  */
+      objidextralen =
+        (objid_in_cdflist_p (cdflist, objid, objidlen)
+         || objid_in_cdflist_p (app->app_local->certificate_info,
+                                objid, objidlen)
+         || objid_in_cdflist_p (app->app_local->trusted_certificate_info,
+                                objid, objidlen)
+         || objid_in_cdflist_p (app->app_local->useful_certificate_info,
+                                objid, objidlen));
+      cdf->objidlen = objidlen + objidextralen;
+      cdf->objid = xtrymalloc (objidlen + objidextralen);
       if (!cdf->objid)
         {
           err = gpg_error_from_syserror ();
@@ -2597,6 +2628,16 @@ read_ef_cdf (app_t app, unsigned short fid, int cdftype, cdf_object_t *result)
           goto leave;
         }
       memcpy (cdf->objid, objid, objidlen);
+      if (objidextralen)
+        {
+          if (app->app_local->cdf_dup_counter == 255)
+            {
+              log_error ("p15: too many duplicate certificate ids\n");
+              err = gpg_error (GPG_ERR_TOO_MANY);
+              goto parse_error;
+            }
+          cdf->objid[objidlen] = ++app->app_local->cdf_dup_counter;
+        }
 
       cdf->pathlen = objlen/2;
       for (i=0; i < cdf->pathlen; i++, pp += 2, nn -= 2)
@@ -3664,6 +3705,7 @@ read_p15_info (app_t app)
   log_assert (!app->app_local->certificate_info);
   log_assert (!app->app_local->trusted_certificate_info);
   log_assert (!app->app_local->useful_certificate_info);
+  app->app_local->cdf_dup_counter = 0;
   err = read_ef_cdf (app, app->app_local->odf.certificates, 'c',
                      &app->app_local->certificate_info);
   if (!err || gpg_err_code (err) == GPG_ERR_NO_DATA)
@@ -4214,7 +4256,8 @@ set_usage_string (char usage[5], prkdf_object_t prkdf)
           && (!prkdf->extusage.valid || prkdf->extusage.sign))
         usage[usagelen++] = 'c';
       if ((prkdf->usageflags.decrypt
-           || prkdf->usageflags.unwrap)
+           || prkdf->usageflags.unwrap
+           || prkdf->usageflags.derive)
           && (!prkdf->extusage.valid || prkdf->extusage.encr))
         usage[usagelen++] = 'e';
       if ((prkdf->usageflags.sign
@@ -4661,7 +4704,7 @@ do_getattr (app_t app, ctrl_t ctrl, const char *name)
 
       /* We return the ID of the first private key capable of the
        * requested action.  If any gpgusage flag has been set for the
-       * card we consult the gpgusage flags and not the regualr usage
+       * card we consult the gpgusage flags and not the regular usage
        * flags.
        */
       /* FIXME: This changed: Note that we do not yet return
@@ -4683,7 +4726,8 @@ do_getattr (app_t app, ctrl_t ctrl, const char *name)
               if ((name[1] == 'A' && (prkdf->usageflags.sign
                                       || prkdf->usageflags.sign_recover))
                   || (name[1] == 'E' && (prkdf->usageflags.decrypt
-                                         || prkdf->usageflags.unwrap))
+                                         || prkdf->usageflags.unwrap
+                                         || prkdf->usageflags.derive))
                   || (name[1] == 'S' && (prkdf->usageflags.sign
                                          || prkdf->usageflags.sign_recover)))
                 break;
@@ -4892,7 +4936,8 @@ do_getattr (app_t app, ctrl_t ctrl, const char *name)
             }
           else
             {
-              if (prkdf->usageflags.decrypt || prkdf->usageflags.unwrap)
+              if (prkdf->usageflags.decrypt || prkdf->usageflags.unwrap
+                  || prkdf->usageflags.derive)
                 break;
             }
         }
@@ -5784,9 +5829,8 @@ do_sign (app_t app, ctrl_t ctrl, const char *keyidstr, int hashalgo,
     {
       if (prkdf->is_ecc)
         {
-          /* Not implemented due to lacking test hardware. */
-          log_info ("Note: ECC is not yet implemented for DTRUST 4 cards\n");
-          err = gpg_error (GPG_ERR_UNSUPPORTED_ALGORITHM);
+          err = iso7816_manage_security_env (app_get_slot (app),
+                                             0xf3, 0x21, NULL, 0);
         }
       else
         {
@@ -5927,7 +5971,8 @@ do_auth (app_t app, ctrl_t ctrl, const char *keyidstr,
   err = prkdf_object_from_keyidstr (app, keyidstr, &prkdf);
   if (err)
     return err;
-  if (!(prkdf->usageflags.sign || prkdf->gpgusage.auth))
+  if (!(prkdf->usageflags.sign || prkdf->usageflags.sign_recover
+        || prkdf->gpgusage.auth))
     {
       log_error ("p15: key %s may not be used for authentication\n", keyidstr);
       return gpg_error (GPG_ERR_WRONG_KEY_USAGE);
@@ -5970,6 +6015,7 @@ do_decipher (app_t app, ctrl_t ctrl, const char *keyidstr,
     return err;
   if (!(prkdf->usageflags.decrypt
         || prkdf->usageflags.unwrap
+        || prkdf->usageflags.derive
         || prkdf->gpgusage.encr     ))
     {
       log_error ("p15: key %s may not be used for decryption\n", keyidstr);
@@ -5979,17 +6025,18 @@ do_decipher (app_t app, ctrl_t ctrl, const char *keyidstr,
   /* Find the authentication object to this private key object. */
   if (!prkdf->authid)
     {
-      log_error ("p15: no authentication object defined for %s\n", keyidstr);
-      /* fixme: we might want to go ahead and do without PIN
-         verification. */
-      return gpg_error (GPG_ERR_UNSUPPORTED_OPERATION);
+      log_info ("p15: no authentication object defined for %s\n", keyidstr);
+      aodf = NULL;
     }
-  for (aodf = app->app_local->auth_object_info; aodf; aodf = aodf->next)
-    if (aodf->objidlen == prkdf->authidlen
-        && !memcmp (aodf->objid, prkdf->authid, prkdf->authidlen))
-      break;
-  if (!aodf)
-    log_info ("p15: no authentication for %s needed\n", keyidstr);
+  else
+    {
+      for (aodf = app->app_local->auth_object_info; aodf; aodf = aodf->next)
+        if (aodf->objidlen == prkdf->authidlen
+            && !memcmp (aodf->objid, prkdf->authid, prkdf->authidlen))
+          break;
+      if (!aodf)
+        log_info ("p15: no authentication for %s needed\n", keyidstr);
+    }
 
   /* We need some more info about the key - get the keygrip to
    * populate these fields.  */
@@ -6042,9 +6089,8 @@ do_decipher (app_t app, ctrl_t ctrl, const char *keyidstr,
     {
       if (prkdf->is_ecc)
         {
-          /* Not implemented due to lacking test hardware. */
-          log_info ("Note: ECC is not yet implemented for DTRUST 4 cards\n");
-          err = gpg_error (GPG_ERR_UNSUPPORTED_ALGORITHM);
+          err = iso7816_manage_security_env (app_get_slot (app),
+                                             0xF3, 0x39, NULL, 0);
         }
       else
         {
@@ -6274,7 +6320,8 @@ do_with_keygrip (app_t app, ctrl_t ctrl, int action,
             }
           else if (capability == GCRY_PK_USAGE_ENCR)
             {
-              if (!(prkdf->usageflags.decrypt || prkdf->usageflags.unwrap))
+              if (!(prkdf->usageflags.decrypt || prkdf->usageflags.unwrap
+                    || prkdf->usageflags.derive))
                 continue;
             }
           else if (capability == GCRY_PK_USAGE_AUTH)

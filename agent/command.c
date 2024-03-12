@@ -1988,9 +1988,6 @@ cmd_get_passphrase (assuan_context_t ctx, char *line)
   struct pin_entry_info_s *pi2 = NULL;
   int is_generated;
 
-  if (ctrl->restricted)
-    return leave_cmd (ctx, gpg_error (GPG_ERR_FORBIDDEN));
-
   opt_data = has_option (line, "--data");
   opt_check = has_option (line, "--check");
   opt_no_ask = has_option (line, "--no-ask");
@@ -2039,7 +2036,9 @@ cmd_get_passphrase (assuan_context_t ctx, char *line)
   if (!desc)
     return set_error (GPG_ERR_ASS_PARAMETER, "no description given");
 
-  if (!strcmp (cacheid, "X"))
+  /* The only limitation in restricted mode is that we don't consider
+   * the cache.  */
+  if (ctrl->restricted || !strcmp (cacheid, "X"))
     cacheid = NULL;
   if (!strcmp (errtext, "X"))
     errtext = NULL;
@@ -2121,7 +2120,7 @@ cmd_get_passphrase (assuan_context_t ctx, char *line)
           entry_errtext = NULL;
           is_generated = !!(pi->status & PINENTRY_STATUS_PASSWORD_GENERATED);
 
-          /* We don't allow an empty passpharse in this mode.  */
+          /* We don't allow an empty passphrase in this mode.  */
           if (!is_generated
               && check_passphrase_constraints (ctrl, pi->pin,
                                                pi->constraints_flags,

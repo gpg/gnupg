@@ -2227,9 +2227,6 @@ msgstr "ciptakan output ascii"
 msgid "|FILE|write output to FILE"
 msgstr "|FILE|muat modul ekstensi FILE"
 
-msgid "use canonical text mode"
-msgstr "gunakan mode teks kanonikal"
-
 #, fuzzy
 msgid "|N|set compress level to N (0 disables)"
 msgstr "|N|set tingkat kompresi N (0 tidak ada)"
@@ -6942,7 +6939,7 @@ msgid "||Please enter the PIN"
 msgstr "ubah passphrase"
 
 #, fuzzy
-msgid "||Please enter the Reset Code for the card"
+msgid "|R|Please enter the Reset Code for the card"
 msgstr "Silakan pilih alasan untuk pembatalan:\n"
 
 #, c-format
@@ -9269,6 +9266,9 @@ msgstr ""
 
 msgid "manage the command history"
 msgstr ""
+
+#~ msgid "use canonical text mode"
+#~ msgstr "gunakan mode teks kanonikal"
 
 #, fuzzy
 #~| msgid "selected digest algorithm is invalid\n"

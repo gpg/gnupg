@@ -451,6 +451,7 @@ enum cmd_and_opt_values
     oCompatibilityFlags,
     oAddDesigRevoker,
     oAssertSigner,
+    oAssertPubkeyAlgo,
     oKbxBufferSize,
 
     oNoop
@@ -715,6 +716,7 @@ static gpgrt_opt_t opts[] = {
 #endif
   ARGPARSE_s_s (oAddDesigRevoker, "add-desig-revoker", "@"),
   ARGPARSE_s_s (oAssertSigner,    "assert-signer", "@"),
+  ARGPARSE_s_s (oAssertPubkeyAlgo,"assert-pubkey-algo", "@"),
 
   ARGPARSE_header ("Input", N_("Options controlling the input")),
 
@@ -753,7 +755,7 @@ static gpgrt_opt_t opts[] = {
   ARGPARSE_s_n (oNoEscapeFrom, "no-escape-from-lines", "@"),
   ARGPARSE_s_n (oMimemode, "mimemode", "@"),
   ARGPARSE_s_n (oTextmodeShort, NULL, "@"),
-  ARGPARSE_s_n (oTextmode,   "textmode", N_("use canonical text mode")),
+  ARGPARSE_s_n (oTextmode,   "textmode", "@"),
   ARGPARSE_s_n (oNoTextmode, "no-textmode", "@"),
   ARGPARSE_s_s (oSetFilename, "set-filename", "@"),
   ARGPARSE_s_n (oForYourEyesOnly, "for-your-eyes-only", "@"),
@@ -1045,9 +1047,12 @@ static struct compatibility_flags_s compatibility_flags [] =
 
 /* Can be set to true to force gpg to return with EXIT_FAILURE.  */
 int g10_errors_seen = 0;
-/* If opt.assert_signer_list is used and this variabale is not true
+/* If opt.assert_signer_list is used and this variable is not true
  * gpg will be forced to return EXIT_FAILURE.  */
 int assert_signer_true = 0;
+/* If opt.assert_pubkey_algo is used and this variable is not true
+ * gpg will be forced to return EXIT_FAILURE.  */
+int assert_pubkey_algo_false = 0;
 
 
 static int utf8_strings =
@@ -3584,9 +3589,18 @@ main (int argc, char **argv)
           case oPersonalCompressPreferences:
 	    pers_compress_list=pargs.r.ret_str;
 	    break;
-          case oAgentProgram: opt.agent_program = pargs.r.ret_str;  break;
-          case oKeyboxdProgram: opt.keyboxd_program = pargs.r.ret_str;  break;
-          case oDirmngrProgram: opt.dirmngr_program = pargs.r.ret_str; break;
+          case oAgentProgram:
+            xfree (opt.agent_program);
+            opt.agent_program = make_filename (pargs.r.ret_str, NULL);
+            break;
+          case oKeyboxdProgram:
+            xfree (opt.keyboxd_program);
+            opt.keyboxd_program = make_filename (pargs.r.ret_str, NULL);
+            break;
+          case oDirmngrProgram:
+            xfree (opt.dirmngr_program);
+            opt.dirmngr_program = make_filename (pargs.r.ret_str, NULL);
+            break;
 	  case oDisableDirmngr: opt.disable_dirmngr = 1;  break;
           case oWeakDigest:
 	    additional_weak_digest(pargs.r.ret_str);
@@ -3765,6 +3779,18 @@ main (int argc, char **argv)
 
           case oAssertSigner:
             add_to_strlist (&opt.assert_signer_list, pargs.r.ret_str);
+	    break;
+
+          case oAssertPubkeyAlgo:
+            if (!opt.assert_pubkey_algos)
+              opt.assert_pubkey_algos = xstrdup (pargs.r.ret_str);
+            else
+              {
+                char *tmp = opt.assert_pubkey_algos;
+                opt.assert_pubkey_algos = xstrconcat (tmp, ",",
+                                                      pargs.r.ret_str, NULL);
+                xfree (tmp);
+              }
 	    break;
 
           case oKbxBufferSize:
@@ -5471,6 +5497,17 @@ emergency_cleanup (void)
 void
 g10_exit( int rc )
 {
+  if (rc)
+    ;
+  else if (log_get_errorcount(0))
+    rc = 2;
+  else if (g10_errors_seen)
+    rc = 1;
+  else if (opt.assert_signer_list && !assert_signer_true)
+    rc = 1;
+  else if (opt.assert_pubkey_algos && assert_pubkey_algo_false)
+    rc = 1;
+
   /* If we had an error but not printed an error message, do it now.
    * Note that write_status_failure will never print a second failure
    * status line. */
@@ -5494,15 +5531,6 @@ g10_exit( int rc )
 
   gnupg_block_all_signals ();
   emergency_cleanup ();
-
-  if (rc)
-    ;
-  else if (log_get_errorcount(0))
-    rc = 2;
-  else if (g10_errors_seen)
-    rc = 1;
-  else if (opt.assert_signer_list && !assert_signer_true)
-    rc = 1;
 
   exit (rc);
 }

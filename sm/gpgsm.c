@@ -1330,8 +1330,19 @@ main ( int argc, char **argv)
 
         case oHomedir: gnupg_set_homedir (pargs.r.ret_str); break;
         case oChUid: break;  /* Command line only (see above).  */
-        case oAgentProgram: opt.agent_program = pargs.r.ret_str;  break;
-        case oKeyboxdProgram: opt.keyboxd_program = pargs.r.ret_str;  break;
+
+        case oAgentProgram:
+          xfree (opt.agent_program);
+          opt.agent_program = make_filename (pargs.r.ret_str, NULL);
+          break;
+        case oKeyboxdProgram:
+          xfree (opt.keyboxd_program);
+          opt.keyboxd_program = make_filename (pargs.r.ret_str, NULL);
+          break;
+        case oDirmngrProgram:
+          xfree (opt.dirmngr_program);
+          opt.dirmngr_program = make_filename (pargs.r.ret_str, NULL);
+          break;
 
         case oDisplay:
           set_opt_session_env ("DISPLAY", pargs.r.ret_str);
@@ -1349,7 +1360,6 @@ main ( int argc, char **argv)
         case oLCctype: opt.lc_ctype = xstrdup (pargs.r.ret_str); break;
         case oLCmessages: opt.lc_messages = xstrdup (pargs.r.ret_str); break;
 
-        case oDirmngrProgram: opt.dirmngr_program = pargs.r.ret_str;  break;
         case oDisableDirmngr: opt.disable_dirmngr = 1;  break;
         case oPreferSystemDirmngr: /* Obsolete */; break;
         case oProtectToolProgram:

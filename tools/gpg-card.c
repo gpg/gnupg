@@ -220,9 +220,15 @@ parse_arguments (gpgrt_argparse_t *pargs, gpgrt_opt_t *popts)
             }
           break;
 
-        case oGpgProgram:   opt.gpg_program = pargs->r.ret_str; break;
-        case oGpgsmProgram: opt.gpgsm_program = pargs->r.ret_str; break;
-        case oAgentProgram: opt.agent_program = pargs->r.ret_str; break;
+        case oGpgProgram:
+          opt.gpg_program = make_filename (pargs->r.ret_str, NULL);
+          break;
+        case oGpgsmProgram:
+          opt.gpgsm_program = make_filename (pargs->r.ret_str, NULL);
+          break;
+        case oAgentProgram:
+          opt.agent_program = make_filename (pargs->r.ret_str, NULL);
+          break;
 
         case oStatusFD:
           gnupg_set_status_fd (translate_sys2libc_fd_int (pargs->r.ret_int, 1));
@@ -402,7 +408,7 @@ nullnone (const char *s)
  * success returns 0 and stores the number of bytes read at R_BUFLEN
  * and the address of a newly allocated buffer at R_BUFFER.  A
  * complementary nul byte is always appended to the data but not
- * counted; this allows to pass NULL for R-BUFFER and consider the
+ * counted; this allows one to pass NULL for R-BUFFER and consider the
  * returned data as a string. */
 static gpg_error_t
 get_data_from_file (const char *fname, char **r_buffer, size_t *r_buflen)

@@ -40,9 +40,10 @@ struct
   int with_colons;
   int no_autostart;
   int add_revocs;
-  const char *output;
-  const char *gpg_program;
-  const char *directory;
+  int realclean;
+  char *output;
+  char *gpg_program;
+  char *directory;
   const char *default_from;
   strlist_t extra_headers;
 } opt;

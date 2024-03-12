@@ -43,6 +43,9 @@
 #include "call-agent.h"
 
 int g10_errors_seen;
+int assert_signer_true = 0;
+int assert_pubkey_algo_false = 0;
+
 
 
 void
@@ -579,4 +582,19 @@ impex_filter_getval (void *cookie, const char *propname)
   (void)cookie;
   (void)propname;
   return NULL;
+}
+
+
+void
+check_assert_signer_list (const char *mainpkhex, const char *pkhex)
+{
+  (void)mainpkhex;
+  (void)pkhex;
+}
+
+void
+check_assert_pubkey_algo (const char *algostr, const char *pkhex)
+{
+  (void)algostr;
+  (void)pkhex;
 }

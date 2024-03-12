@@ -298,6 +298,23 @@ static int send_escape_cmd (ccid_driver_t handle, const unsigned char *data,
                             size_t resultmax, size_t *resultlen);
 
 
+static void
+my_npth_unprotect (void)
+{
+#ifdef USE_NPTH
+  npth_unprotect ();
+#endif
+}
+
+static void
+my_npth_protect (void)
+{
+#ifdef USE_NPTH
+  npth_protect ();
+#endif
+}
+
+
 static int
 map_libusb_error (int usberr)
 {
@@ -984,31 +1001,23 @@ get_escaped_usb_string (libusb_device_handle *idev, int idx,
   /* First get the list of supported languages and use the first one.
      If we do don't find it we try to use English.  Note that this is
      all in a 2 bute Unicode encoding using little endian. */
-#ifdef USE_NPTH
-  npth_unprotect ();
-#endif
+  my_npth_unprotect ();
   rc = libusb_control_transfer (idev, LIBUSB_ENDPOINT_IN,
                                 LIBUSB_REQUEST_GET_DESCRIPTOR,
                                 (LIBUSB_DT_STRING << 8), 0,
                                 buf, sizeof buf, 1000 /* ms timeout */);
-#ifdef USE_NPTH
-  npth_protect ();
-#endif
+  my_npth_protect ();
   if (rc < 4)
     langid = 0x0409; /* English.  */
   else
     langid = (buf[3] << 8) | buf[2];
 
-#ifdef USE_NPTH
-  npth_unprotect ();
-#endif
+  my_npth_unprotect ();
   rc = libusb_control_transfer (idev, LIBUSB_ENDPOINT_IN,
                                 LIBUSB_REQUEST_GET_DESCRIPTOR,
                                 (LIBUSB_DT_STRING << 8) + idx, langid,
                                 buf, sizeof buf, 1000 /* ms timeout */);
-#ifdef USE_NPTH
-  npth_protect ();
-#endif
+  my_npth_protect ();
   if (rc < 2 || buf[1] != LIBUSB_DT_STRING)
     return NULL; /* Error or not a string. */
   len = buf[0];
@@ -1345,13 +1354,9 @@ ccid_vendor_specific_setup (ccid_driver_t handle)
 {
   if (handle->id_vendor == VENDOR_SCM && handle->id_product == SCM_SPR532)
     {
-#ifdef USE_NPTH
-      npth_unprotect ();
-#endif
+      my_npth_unprotect ();
       libusb_clear_halt (handle->idev, handle->ep_intr);
-#ifdef USE_NPTH
-      npth_protect ();
-#endif
+      my_npth_protect ();
     }
   return 0;
 }
@@ -1660,13 +1665,9 @@ ccid_usb_thread (void *arg)
 
   while (ccid_usb_thread_is_alive)
     {
-#ifdef USE_NPTH
-      npth_unprotect ();
-#endif
+      my_npth_unprotect ();
       libusb_handle_events_completed (ctx, NULL);
-#ifdef USE_NPTH
-      npth_protect ();
-#endif
+      my_npth_protect ();
     }
 
   return NULL;
@@ -1776,36 +1777,42 @@ ccid_open_usb_reader (const char *spec_reader_name,
       goto leave;
     }
 
-#ifdef USE_NPTH
-  npth_unprotect ();
-#endif
+  my_npth_unprotect ();
+  if (!(opt.compat_flags & COMPAT_CCID_NO_AUTO_DETACH))
+    {
+      rc = libusb_set_auto_detach_kernel_driver (idev, 1);
+      if (rc)
+        {
+          my_npth_protect ();
+          DEBUGOUT_1 ("note: set_auto_detach_kernel_driver failed: %d\n", rc);
+          my_npth_unprotect ();
+        }
+    }
   rc = libusb_claim_interface (idev, ifc_no);
   if (rc)
     {
-#ifdef USE_NPTH
-      npth_protect ();
-#endif
+      my_npth_protect ();
       DEBUGOUT_1 ("usb_claim_interface failed: %d\n", rc);
       rc = map_libusb_error (rc);
       goto leave;
     }
 
   /* Submit SET_INTERFACE control transfer which can reset the device.  */
-  rc = libusb_set_interface_alt_setting (idev, ifc_no, set_no);
+  if ((*handle)->id_vendor == VENDOR_ACR && (*handle)->id_product == ACR_122U)
+    rc = 0;  /* Not supported by this reader.  */
+  else
+    rc = libusb_set_interface_alt_setting (idev, ifc_no, set_no);
   if (rc)
     {
-#ifdef USE_NPTH
-      npth_protect ();
-#endif
+      my_npth_protect ();
       DEBUGOUT_1 ("usb_set_interface_alt_setting failed: %d\n", rc);
       rc = map_libusb_error (rc);
       goto leave;
     }
 
-#ifdef USE_NPTH
-  npth_protect ();
-#endif
+  my_npth_protect ();
 
+  /* Perform any vendor specific intialization.  */
   rc = ccid_vendor_specific_init (*handle);
 
  leave:
@@ -1939,13 +1946,9 @@ do_close_reader (ccid_driver_t handle)
             while (!handle->powered_off)
               {
                 DEBUGOUT ("libusb_handle_events_completed\n");
-#ifdef USE_NPTH
-                npth_unprotect ();
-#endif
+                my_npth_unprotect ();
                 libusb_handle_events_completed (NULL, &handle->powered_off);
-#ifdef USE_NPTH
-                npth_protect ();
-#endif
+                my_npth_protect ();
               }
         }
 
@@ -2076,15 +2079,11 @@ bulk_out (ccid_driver_t handle, unsigned char *msg, size_t msglen,
         }
     }
 
-#ifdef USE_NPTH
-  npth_unprotect ();
-#endif
+  my_npth_unprotect ();
   rc = libusb_bulk_transfer (handle->idev, handle->ep_bulk_out,
                              msg, msglen, &transferred,
                              5000 /* ms timeout */);
-#ifdef USE_NPTH
-  npth_protect ();
-#endif
+  my_npth_protect ();
   if (rc == 0 && transferred == msglen)
     return 0;
 
@@ -2124,14 +2123,10 @@ bulk_in (ccid_driver_t handle, unsigned char *buffer, size_t length,
   memset (buffer, 0, length);
  retry:
 
-#ifdef USE_NPTH
-  npth_unprotect ();
-#endif
+  my_npth_unprotect ();
   rc = libusb_bulk_transfer (handle->idev, handle->ep_bulk_in,
                              buffer, length, &msglen, bwi*timeout);
-#ifdef USE_NPTH
-  npth_protect ();
-#endif
+  my_npth_protect ();
   if (rc)
     {
       DEBUGOUT_1 ("usb_bulk_read error: %s\n", libusb_error_name (rc));
@@ -2280,9 +2275,7 @@ abort_cmd (ccid_driver_t handle, int seqno, int init)
   /* Send the abort command to the control pipe.  Note that we don't
      need to keep track of sent abort commands because there should
      never be another thread using the same slot concurrently.  */
-#ifdef USE_NPTH
-  npth_unprotect ();
-#endif
+  my_npth_unprotect ();
   rc = libusb_control_transfer (handle->idev,
                                 0x21,/* bmRequestType: host-to-device,
                                         class specific, to interface.  */
@@ -2291,9 +2284,7 @@ abort_cmd (ccid_driver_t handle, int seqno, int init)
                                 handle->ifc_no,
                                 dummybuf, 0,
                                 1000 /* ms timeout */);
-#ifdef USE_NPTH
-  npth_protect ();
-#endif
+  my_npth_protect ();
   if (rc)
     {
       DEBUGOUT_1 ("usb_control_msg error: %s\n", libusb_error_name (rc));
@@ -2319,15 +2310,11 @@ abort_cmd (ccid_driver_t handle, int seqno, int init)
       msglen = 10;
       set_msg_len (msg, 0);
 
-#ifdef USE_NPTH
-      npth_unprotect ();
-#endif
+      my_npth_unprotect ();
       rc = libusb_bulk_transfer (handle->idev, handle->ep_bulk_out,
                                  msg, msglen, &transferred,
                                  init? 100: 5000 /* ms timeout */);
-#ifdef USE_NPTH
-      npth_protect ();
-#endif
+      my_npth_protect ();
       if (rc == 0 && transferred == msglen)
         rc = 0;
       else if (rc)
@@ -2337,15 +2324,11 @@ abort_cmd (ccid_driver_t handle, int seqno, int init)
       if (rc)
         return map_libusb_error (rc);
 
-#ifdef USE_NPTH
-      npth_unprotect ();
-#endif
+      my_npth_unprotect ();
       rc = libusb_bulk_transfer (handle->idev, handle->ep_bulk_in,
                                  msg, sizeof msg, &msglen,
                                  init? 100: 5000 /*ms timeout*/);
-#ifdef USE_NPTH
-      npth_protect ();
-#endif
+      my_npth_protect ();
       if (rc)
         {
           DEBUGOUT_1 ("usb_bulk_read error in abort_cmd: %s\n",
@@ -2559,14 +2542,10 @@ ccid_slot_status (ccid_driver_t handle, int *statusbits, int on_wire)
       if (!retries)
         {
           DEBUGOUT ("USB: CALLING USB_CLEAR_HALT\n");
-#ifdef USE_NPTH
-          npth_unprotect ();
-#endif
+          my_npth_unprotect ();
           libusb_clear_halt (handle->idev, handle->ep_bulk_in);
           libusb_clear_halt (handle->idev, handle->ep_bulk_out);
-#ifdef USE_NPTH
-          npth_protect ();
-#endif
+          my_npth_protect ();
         }
       else
         DEBUGOUT ("USB: RETRYING bulk_in AGAIN\n");
@@ -3335,13 +3314,9 @@ ccid_transceive (ccid_driver_t handle,
 
       if (tpdulen < 4)
         {
-#ifdef USE_NPTH
-          npth_unprotect ();
-#endif
+          my_npth_unprotect ();
           libusb_clear_halt (handle->idev, handle->ep_bulk_in);
-#ifdef USE_NPTH
-          npth_protect ();
-#endif
+          my_npth_protect ();
           return CCID_DRIVER_ERR_ABORTED;
         }
 
@@ -3793,13 +3768,9 @@ ccid_transceive_secure (ccid_driver_t handle,
 
   if (tpdulen < 4)
     {
-#ifdef USE_NPTH
-      npth_unprotect ();
-#endif
+      my_npth_unprotect ();
       libusb_clear_halt (handle->idev, handle->ep_bulk_in);
-#ifdef USE_NPTH
-      npth_protect ();
-#endif
+      my_npth_protect ();
       return CCID_DRIVER_ERR_ABORTED;
     }
   if (debug_level > 1)

@@ -126,9 +126,9 @@ struct
   int marginals_needed;
   int completes_needed;
   int max_cert_depth;
-  const char *agent_program;
-  const char *keyboxd_program;
-  const char *dirmngr_program;
+  char *agent_program;
+  char *keyboxd_program;
+  char *dirmngr_program;
   int disable_dirmngr;
 
   const char *def_new_key_algo;
@@ -240,6 +240,10 @@ struct
   /* The list of --assert-signer option values.  Note: The values are
    * modify to be uppercase if they represent a fingerrint */
   strlist_t assert_signer_list;
+
+  /* A single string with the comma delimited args from
+   * --assert-pubkey_algo.  */
+  char *assert_pubkey_algos;
 
   struct
   {
@@ -414,12 +418,13 @@ EXTERN_UNLESS_MAIN_MODULE int memory_stat_debug_mode;
 #define EXPORT_ATTRIBUTES                (1<<1)
 #define EXPORT_SENSITIVE_REVKEYS         (1<<2)
 #define EXPORT_RESET_SUBKEY_PASSWD       (1<<3)
-#define EXPORT_MINIMAL                   (1<<4)
-#define EXPORT_CLEAN                     (1<<5)
+#define EXPORT_MINIMAL                   (1<<5)
+#define EXPORT_CLEAN                     (1<<6)
 #define EXPORT_DANE_FORMAT               (1<<7)
 #define EXPORT_BACKUP                    (1<<10)
 #define EXPORT_REVOCS                    (1<<11)
 #define EXPORT_MODE1003                  (1<<12)
+#define EXPORT_REALCLEAN                 (1<<13)
 
 #define LIST_SHOW_PHOTOS                 (1<<0)
 #define LIST_SHOW_POLICY_URLS            (1<<1)

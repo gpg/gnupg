@@ -126,9 +126,9 @@ struct
   int quiet;		/* Be extra quiet.  */
   int autostart;        /* Start the server if not running.  */
   const char *homedir;  /* Configuration directory name */
-  const char *agent_program;    /* Value of --agent-program.    */
-  const char *dirmngr_program;  /* Value of --dirmngr-program.  */
-  const char *keyboxd_program;  /* Value of --keyboxd-program.  */
+  char *agent_program;    /* Value of --agent-program.    */
+  char *dirmngr_program;  /* Value of --dirmngr-program.  */
+  char *keyboxd_program;  /* Value of --keyboxd-program.  */
   int hex;              /* Print data lines in hex format. */
   int decode;           /* Decode received data lines.  */
   int use_dirmngr;      /* Use the dirmngr and not gpg-agent.  */
@@ -1269,9 +1269,15 @@ main (int argc, char **argv)
         case oVerbose:   opt.verbose++; break;
         case oNoVerbose: opt.verbose = 0; break;
         case oHomedir:   gnupg_set_homedir (pargs.r.ret_str); break;
-        case oAgentProgram: opt.agent_program = pargs.r.ret_str;  break;
-        case oDirmngrProgram: opt.dirmngr_program = pargs.r.ret_str;  break;
-        case oKeyboxdProgram: opt.keyboxd_program = pargs.r.ret_str;  break;
+        case oAgentProgram:
+          opt.agent_program = make_filename (pargs.r.ret_str, NULL);
+          break;
+        case oDirmngrProgram:
+          opt.dirmngr_program = make_filename (pargs.r.ret_str, NULL);
+          break;
+        case oKeyboxdProgram:
+          opt.keyboxd_program = make_filename (pargs.r.ret_str, NULL);
+          break;
         case oNoAutostart:    opt.autostart = 0; break;
         case oNoHistory: opt.no_history = 1; break;
         case oHex:       opt.hex = 1; break;

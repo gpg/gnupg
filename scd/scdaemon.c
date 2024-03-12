@@ -104,6 +104,7 @@ enum cmd_and_opt_values
   oDisableApplication,
   oApplicationPriority,
   oEnablePinpadVarlen,
+  oCompatibilityFlags,
   oListenBacklog
 };
 
@@ -172,6 +173,7 @@ static gpgrt_opt_t opts[] = {
   ARGPARSE_s_s (oDisableApplication, "disable-application", "@"),
   ARGPARSE_s_s (oApplicationPriority, "application-priority",
                 N_("|LIST|change the application priority to LIST")),
+  ARGPARSE_s_s (oCompatibilityFlags, "compatibility-flags", "@"),
   ARGPARSE_s_i (oListenBacklog, "listen-backlog", "@"),
 
 
@@ -200,6 +202,14 @@ static struct debug_flags_s debug_flags [] =
     { DBG_CARD_IO_VALUE, "cardio"  },
     { DBG_READER_VALUE , "reader"  },
     { DBG_APP_VALUE    , "app"     },
+    { 0, NULL }
+  };
+
+
+/* The list of compatibility flags.  */
+static struct compatibility_flags_s compatibility_flags [] =
+  {
+    { COMPAT_CCID_NO_AUTO_DETACH, "ccid-no-auto-detach" },
     { 0, NULL }
   };
 
@@ -627,6 +637,15 @@ main (int argc, char **argv )
           break;
 
         case oEnablePinpadVarlen: opt.enable_pinpad_varlen = 1; break;
+
+        case oCompatibilityFlags:
+          if (parse_compatibility_flags (pargs.r.ret_str, &opt.compat_flags,
+                                         compatibility_flags))
+            {
+              pargs.r_opt = ARGPARSE_INVALID_ARG;
+              pargs.err = ARGPARSE_PRINT_WARNING;
+            }
+          break;
 
         case oListenBacklog:
           listen_backlog = pargs.r.ret_int;

@@ -3325,7 +3325,7 @@ dirmngr_status_help (ctrl_t ctrl, const char *text)
 
 
 /* Print a help status line using a printf like format.  The function
- * splits text at LFs.  With CTRL beeing NULL, the function behaves
+ * splits text at LFs.  With CTRL being NULL, the function behaves
  * like log_info.  */
 gpg_error_t
 dirmngr_status_helpf (ctrl_t ctrl, const char *format, ...)

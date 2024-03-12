@@ -876,6 +876,7 @@ parse_rereadable_options (gpgrt_argparse_t *pargs, int reread)
       opt.debug = 0;
       opt.no_grab = 1;
       opt.debug_pinentry = 0;
+      xfree (opt.pinentry_program);
       opt.pinentry_program = NULL;
       opt.pinentry_touch_file = NULL;
       xfree (opt.pinentry_invisible_char);
@@ -936,7 +937,10 @@ parse_rereadable_options (gpgrt_argparse_t *pargs, int reread)
     case oNoGrab: opt.no_grab |= 1; break;
     case oGrab: opt.no_grab |= 2; break;
 
-    case oPinentryProgram: opt.pinentry_program = pargs->r.ret_str; break;
+    case oPinentryProgram:
+      xfree (opt.pinentry_program);
+      opt.pinentry_program = make_filename_try (pargs->r.ret_str, NULL);
+      break;
     case oPinentryTouchFile: opt.pinentry_touch_file = pargs->r.ret_str; break;
     case oPinentryInvisibleChar:
       xfree (opt.pinentry_invisible_char);

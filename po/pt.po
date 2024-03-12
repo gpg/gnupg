@@ -2157,9 +2157,6 @@ msgstr "criar saída blindada ASCII"
 msgid "|FILE|write output to FILE"
 msgstr "|FILE|escrever saída em FILE"
 
-msgid "use canonical text mode"
-msgstr "usar modo de texto canónico"
-
 msgid "|N|set compress level to N (0 disables)"
 msgstr "|N|definir nível de compressão para N (0 desabilita)"
 
@@ -6726,7 +6723,9 @@ msgstr "o acesso aos comandos admin não está configurado\n"
 msgid "||Please enter the PIN"
 msgstr "||Introduza o PIN"
 
-msgid "||Please enter the Reset Code for the card"
+#, fuzzy
+#| msgid "||Please enter the Reset Code for the card"
+msgid "|R|Please enter the Reset Code for the card"
 msgstr "||Introduza o Código de Reset do cartão"
 
 #, c-format
@@ -8996,6 +8995,9 @@ msgstr "comandos de gerir uma Yubikey"
 
 msgid "manage the command history"
 msgstr "gerir o histórico de comandos"
+
+#~ msgid "use canonical text mode"
+#~ msgstr "usar modo de texto canónico"
 
 #, c-format
 #~ msgid "waiting for process to terminate failed: ec=%d\n"

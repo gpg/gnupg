@@ -145,6 +145,130 @@ pubkey_string (PKT_public_key *pk, char *buffer, size_t bufsize)
 }
 
 
+/* Helper for compare_pubkey_string.  This skips leading spaces,
+ * commas and optional condition operators and returns a pointer to
+ * the first non-space character or NULL in case of an error.  The
+ * length of a prefix consisting of letters is then returned ar PFXLEN
+ * and the value of the number (e.g. 384 for "brainpoolP384r1") at
+ * NUMBER.  R_LENGTH receives the entire length of the algorithm name
+ * which is terminated by a space, nul, or a comma.  If R_CONDITION is
+ * not NULL, 0 is stored for a leading "=", 1 for a ">", 2 for a ">=",
+ * -1 for a "<", and -2 for a "<=".  If R_CONDITION is NULL no
+ * condition prefix is allowed.  */
+static const char *
+parse_one_algo_string (const char *str, size_t *pfxlen, unsigned int *number,
+                       size_t *r_length, int *r_condition)
+{
+  int condition = 0;
+  const char *result;
+
+  while (spacep (str) || *str ==',')
+    str++;
+  if (!r_condition)
+    ;
+  else if (*str == '>' && str[1] == '=')
+    condition = 2, str += 2;
+  else if (*str == '>' )
+    condition = 1, str += 1;
+  else if (*str == '<' && str[1] == '=')
+    condition = -2, str += 2;
+  else if (*str == '<')
+    condition = -1, str += 1;
+  else if (*str == '=')  /* Default.  */
+    str += 1;
+
+  if (!alphap (str))
+    return NULL;  /* Error.  */
+
+  *pfxlen = 1;
+  for (result = str++; alphap (str); str++)
+    ++*pfxlen;
+  while (*str == '-' || *str == '+')
+    str++;
+  *number = atoi (str);
+  while (*str && !spacep (str) && *str != ',')
+    str++;
+
+  *r_length = str - result;
+  if (r_condition)
+    *r_condition = condition;
+  return result;
+}
+
+/* Helper for compare_pubkey_string.  If BPARSED is set to 0 on
+ * return, an error in ASTR or BSTR was found and further checks are
+ * not possible.  */
+static int
+compare_pubkey_string_part (const char *astr, const char *bstr_arg,
+                            size_t *bparsed)
+{
+  const char *bstr = bstr_arg;
+  size_t alen, apfxlen, blen, bpfxlen;
+  unsigned int anumber, bnumber;
+  int condition;
+
+  *bparsed = 0;
+  astr = parse_one_algo_string (astr, &apfxlen, &anumber, &alen, &condition);
+  if (!astr)
+    return 0;  /* Invalid algorithm name.  */
+  bstr = parse_one_algo_string (bstr, &bpfxlen, &bnumber, &blen, &condition);
+  if (!bstr)
+    return 0;  /* Invalid algorithm name.  */
+  *bparsed = blen + (bstr - bstr_arg);
+  if (apfxlen != bpfxlen || ascii_strncasecmp (astr, bstr, apfxlen))
+    return 0;  /* false.  */
+  switch (condition)
+    {
+    case 2: return anumber >= bnumber;
+    case 1: return anumber > bnumber;
+    case -1: return anumber < bnumber;
+    case -2: return anumber <= bnumber;
+    }
+
+  return alen == blen && !ascii_strncasecmp (astr, bstr, alen);
+}
+
+
+/* Check whether ASTR matches the constraints given by BSTR.  ASTR may
+ * be any algo string like "rsa2048", "ed25519" and BSTR may be a
+ * constraint which is in the simplest case just another algo string.
+ * BSTR may have more that one string in which case they are comma
+ * separated and any match will return true.  It is possible to prefix
+ * BSTR with ">", ">=", "<=", or "<".  That prefix operator is applied
+ * to the number part of the algorithm, i.e. the first sequence of
+ * digits found before end-of-string or a comma.  Examples:
+ *
+ * | ASTR     | BSTR                 | result |
+ * |----------+----------------------+--------|
+ * | rsa2048  | rsa2048              | true   |
+ * | rsa2048  | >=rsa2048            | true   |
+ * | rsa2048  | >rsa2048             | false  |
+ * | ed25519  | >rsa1024             | false  |
+ * | ed25519  | ed25519              | true   |
+ * | nistp384 | >nistp256            | true   |
+ * | nistp521 | >=rsa3072, >nistp384 | true   |
+ */
+int
+compare_pubkey_string (const char *astr, const char *bstr)
+{
+  size_t bparsed;
+  int result;
+
+  while (*bstr)
+    {
+      result = compare_pubkey_string_part (astr, bstr, &bparsed);
+      if (result)
+        return 1;
+      if (!bparsed)
+        return 0; /* Syntax error in ASTR or BSTR.  */
+      bstr += bparsed;
+    }
+
+  return 0;
+}
+
+
+
 /* Hash a public key and allow to specify the to be used format.
  * Note that if the v5 format is requested for a v4 key, a 0x04 as
  * version is hashed instead of the 0x05. */
@@ -239,20 +363,16 @@ do_hash_public_key (gcry_md_hd_t md, PKT_public_key *pk, int use_v5)
   if (use_v5)
     {
       gcry_md_putc ( md, 0x9a );     /* ctb */
-      gcry_md_putc ( md, n >> 24 );  /* 4 byte length header */
+      gcry_md_putc ( md, n >> 24 );  /* 4 byte length header (upper bits) */
       gcry_md_putc ( md, n >> 16 );
-      gcry_md_putc ( md, n >>  8 );
-      gcry_md_putc ( md, n       );
-      /* Note that the next byte may either be 4 or 5.  */
-      gcry_md_putc ( md, pk->version );
     }
   else
     {
       gcry_md_putc ( md, 0x99 );     /* ctb */
-      gcry_md_putc ( md, n >> 8 );   /* 2 byte length header */
-      gcry_md_putc ( md, n );
-      gcry_md_putc ( md, pk->version );
     }
+  gcry_md_putc ( md, n >> 8 );       /* lower bits of the length header.  */
+  gcry_md_putc ( md, n );
+  gcry_md_putc ( md, pk->version );
   gcry_md_putc ( md, pk->timestamp >> 24 );
   gcry_md_putc ( md, pk->timestamp >> 16 );
   gcry_md_putc ( md, pk->timestamp >>  8 );
@@ -260,7 +380,7 @@ do_hash_public_key (gcry_md_hd_t md, PKT_public_key *pk, int use_v5)
 
   gcry_md_putc ( md, pk->pubkey_algo );
 
-  if (use_v5)
+  if (use_v5) /* Hash the 32 bit length */
     {
       n -= 10;
       gcry_md_putc ( md, n >> 24 );
@@ -936,6 +1056,32 @@ v5_fingerprint_from_pk (PKT_public_key *pk, byte *array, size_t *ret_len)
 
 
 /*
+ * This is the core of fpr20_from_pk which directly takes a
+ * fingerprint and its length instead of the public key.  See below
+ * for details.
+ */
+void
+fpr20_from_fpr (const byte *fpr, unsigned int fprlen, byte array[20])
+{
+  if (fprlen >= 32)            /* v5 fingerprint (or larger) */
+    {
+      memcpy (array +  0, fpr + 20, 4);
+      memcpy (array +  4, fpr + 24, 4);
+      memcpy (array +  8, fpr + 28, 4);
+      memcpy (array + 12, fpr +  0, 4); /* kid[0] */
+      memcpy (array + 16, fpr +  4, 4); /* kid[1] */
+    }
+  else if (fprlen == 20)       /* v4 fingerprint */
+    memcpy (array, fpr, 20);
+  else                         /* v3 or too short: fill up with zeroes.  */
+    {
+      memset (array, 0, 20);
+      memcpy (array, fpr, fprlen);
+    }
+}
+
+
+/*
  * Get FPR20 for the given PK/SK into ARRAY.
  *
  * FPR20 is special form of fingerprint of length 20 for the record of
@@ -951,19 +1097,7 @@ fpr20_from_pk (PKT_public_key *pk, byte array[20])
   if (!pk->fprlen)
     compute_fingerprint (pk);
 
-  if (!array)
-    array = xmalloc (pk->fprlen);
-
-  if (pk->fprlen == 32)         /* v5 fingerprint */
-    {
-      memcpy (array +  0, pk->fpr + 20, 4);
-      memcpy (array +  4, pk->fpr + 24, 4);
-      memcpy (array +  8, pk->fpr + 28, 4);
-      memcpy (array + 12, pk->fpr +  0, 4); /* kid[0] */
-      memcpy (array + 16, pk->fpr +  4, 4); /* kid[1] */
-    }
-  else                          /* v4 fingerprint */
-    memcpy (array, pk->fpr, 20);
+  fpr20_from_fpr (pk->fpr, pk->fprlen, array);
 }
 
 

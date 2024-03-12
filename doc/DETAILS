@@ -532,6 +532,12 @@ pkd:0:1024:B665B1435F4C2 .... FF26ABB:
     --assert-signer is used.  The fingerprint is printed with
     uppercase hex digits.
 
+*** ASSERT_PUBKEY_ALGO <fingerprint> <state> <algostr>
+    This is emitted when option --assert-pubkey-algo is used and the
+    signing algorithms is accepted according to that list if state is
+    1 or denied if state is 0.  The fingerprint is printed with
+    uppercase hex digits.
+
 *** SIG_ID  <radix64_string>  <sig_creation_date>  <sig-timestamp>
     This is emitted only for signatures of class 0 or 1 which have
     been verified okay.  The string is a signature id and may be used

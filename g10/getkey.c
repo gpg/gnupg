@@ -1921,7 +1921,7 @@ get_pubkey_byfprint_fast (ctrl_t ctrl, PKT_public_key * pk,
  * R_HD may be NULL.  If LOCK is set the handle has been opend in
  * locked mode and keydb_disable_caching () has been called.  On error
  * R_KEYBLOCK is set to NULL but R_HD must be released by the caller;
- * it may have a value of NULL, though.  This allows to do an insert
+ * it may have a value of NULL, though.  This allows one to do an insert
  * operation on a locked keydb handle.  */
 gpg_error_t
 get_keyblock_byfprint_fast (ctrl_t ctrl,

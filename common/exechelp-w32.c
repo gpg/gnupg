@@ -437,12 +437,14 @@ check_syscall_func (void)
     }
 }
 
+
 static void
 pre_syscall (void)
 {
   if (pre_syscall_func)
     pre_syscall_func ();
 }
+
 
 static void
 post_syscall (void)
@@ -579,7 +581,7 @@ spawn_detached (const char *pgmname, char *cmdline,
                           cr_flags,      /* Creation flags.  */
                           NULL,          /* Environment.  */
                           NULL,          /* Use current drive/directory.  */
-                          (STARTUPINFOW *)&si,           /* Startup information. */
+                          (STARTUPINFOW *)&si,    /* Startup information. */
                           &pi            /* Returns process information.  */
                           );
   if (!ret)

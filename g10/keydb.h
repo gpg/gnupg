@@ -487,6 +487,7 @@ const char *key_origin_string (int origin);
 /*-- keyid.c --*/
 int pubkey_letter( int algo );
 char *pubkey_string (PKT_public_key *pk, char *buffer, size_t bufsize);
+int compare_pubkey_string (const char *astr, const char *bstr);
 #define PUBKEY_STRING_SIZE 32
 u32 v3_keyid (gcry_mpi_t a, u32 *ki);
 void hash_public_key( gcry_md_hd_t md, PKT_public_key *pk );
@@ -572,6 +573,7 @@ const char *colon_expirestr_from_sig (PKT_signature *sig);
 byte *fingerprint_from_pk( PKT_public_key *pk, byte *buf, size_t *ret_len );
 byte *v5_fingerprint_from_pk (PKT_public_key *pk, byte *array, size_t *ret_len);
 void fpr20_from_pk (PKT_public_key *pk, byte array[20]);
+void fpr20_from_fpr (const byte *fpr, unsigned int fprlen, byte array[20]);
 char *hexfingerprint (PKT_public_key *pk, char *buffer, size_t buflen);
 char *v5hexfingerprint (PKT_public_key *pk, char *buffer, size_t buflen);
 char *format_hexfingerprint (const char *fingerprint,

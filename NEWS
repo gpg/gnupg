@@ -1,6 +1,51 @@
 Noteworthy changes in version 2.5.0 (unreleased)
 ------------------------------------------------
 
+  Changes also found in 2.4.5:
+
+Noteworthy changes in version 2.4.5 (2024-03-07)
+------------------------------------------------
+
+  * gpg,gpgv: New option --assert-pubkey-algo.  [T6946]
+
+  * gpg: Emit status lines for errors in the compression layer.
+    [T6977]
+
+  * gpg: Fix invocation with --trusted-keys and --no-options.  [T7025]
+
+  * gpgsm: Allow for a longer salt in PKCS#12 files.  [T6757]
+
+  * gpgtar: Make --status-fd=2 work on Windows.  [T6961]
+
+  * scd: Support for the ACR-122U NFC reader.  [rG1682ca9f01]
+
+  * scd: Suport D-TRUST ECC cards.  [T7000,T7001]
+
+  * scd: Allow auto detaching of kernel drivers; can be disabled with
+    the new compatibility-flag ccid-no-auto-detach.  [rGa1ea3b13e0]
+
+  * scd: Allow setting a PIN length of 6 also with a reset code for
+    openpgp cards.  [T6843]
+
+  * agent: Allow GET_PASSPHRASE in restricted mode.  [rGadf4db6e20]
+
+  * dirmngr: Trust system's root CAs for checking CRL issuers.
+    [T6963]
+
+  * dirmngr: Fix regression in 2.4.4 in fetching keys via hkps.
+    [T6997]
+
+  * gpg-wks-client: Make option --mirror work properly w/o specifying
+    domains.  [rG37cc255e49]
+
+  * g13,gpg-wks-client: Allow command style options as in "g13 mount
+    foo".  [rGa09157ccb2]
+
+  * Allow tilde expansion for the foo-program options.  [T7017]
+
+  * Make the getswdb.sh tool usable outside the GnuPG tree.
+
+
   Changes also found in 2.4.4:
 
   * gpg: Do not keep an unprotected smartcard backup key on disk.  See
@@ -178,6 +223,7 @@ Noteworthy changes in version 2.5.0 (unreleased)
 Release dates of 2.4 versions
 -----------------------------
 
+Version 2.4.5 (2024-03-07) https://dev.gnupg.org/T6960
 Version 2.4.4 (2024-01-25) https://dev.gnupg.org/T6578
 Version 2.4.3 (2023-07-04) https://dev.gnupg.org/T6509
 Version 2.4.2 (2023-05-30) https://dev.gnupg.org/T6506
@@ -1392,7 +1438,7 @@ Noteworthy changes in version 2.3.0 (2021-04-07)
   Changes also found in 2.2.12:
 
   * tools: New commands --install-key and --remove-key for
-    gpg-wks-client.  This allows to prepare a Web Key Directory on a
+    gpg-wks-client.  This allows one to prepare a Web Key Directory on a
     local file system for later upload to a web server.
 
   * gpg: New --list-option "show-only-fpr-mbox".  This makes the use
@@ -1436,7 +1482,7 @@ Noteworthy changes in version 2.3.0 (2021-04-07)
     query.
 
   * gpg: Do not store the TOFU trust model in the trustdb.  This
-    allows to enable or disable a TOFO model without triggering a
+    allows one to enable or disable a TOFO model without triggering a
     trustdb rebuild.  [#4134]
 
   * scd: Fix cases of "Bad PIN" after using "forcesig".  [#4177]
@@ -1855,7 +1901,7 @@ Noteworthy changes in version 2.1.23 (2017-08-09)
     to your gpg.conf.
 
   * agent: Option --no-grab is now the default.  The new option --grab
-    allows to revert this.
+    allows one to revert this.
 
   * gpg: New import option "show-only".
 
@@ -2985,7 +3031,7 @@ Noteworthy changes in version 2.1.0 (2014-11-06)
  * gpg: Allow use of Brainpool curves.
 
  * gpg: Accepts a space separated fingerprint as user ID.  This
-   allows to copy and paste the fingerprint from the key listing.
+   allows one to copy and paste the fingerprint from the key listing.
 
  * gpg: The hash algorithm is now printed for signature records in key
    listings.
@@ -3765,7 +3811,7 @@ Noteworthy changes in version 1.9.10 (2004-07-22)
 
  * Fixed a serious bug in the checking of trusted root certificates.
 
- * New configure option --enable-agent-pnly allows to build and
+ * New configure option --enable-agent-only allows one to build and
    install just the agent.
 
  * Fixed a problem with the log file handling.
@@ -4160,7 +4206,7 @@ Noteworthy changes in version 1.1.92 (2002-09-11)
       extension specified with --load-extension are checked, along
       with their enclosing directories.
 
-    * The configure option --with-static-rnd=auto allows to build gpg
+    * The configure option --with-static-rnd=auto allows one to build gpg
       with all available entropy gathering modules included.  At
       runtime the best usable one will be selected from the list
       linux, egd, unix.  This is also the default for systems lacking
@@ -4543,7 +4589,7 @@ Noteworthy changes in version 1.0.2 (2000-07-12)
     * New command --export-secret-subkeys which outputs the
       the _primary_ key with it's secret parts deleted.  This is
       useful for automated decryption/signature creation as it
-      allows to keep the real secret primary key offline and
+      allows one to keep the real secret primary key offline and
       thereby protecting the key certificates and allowing to
       create revocations for the subkeys.  See the FAQ for a
       procedure to install such secret keys.

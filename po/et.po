@@ -2223,9 +2223,6 @@ msgstr "loo ascii pakendis väljund"
 msgid "|FILE|write output to FILE"
 msgstr "|FAIL|lae laiendusmoodul FAIL"
 
-msgid "use canonical text mode"
-msgstr "kasuta kanoonilist tekstimoodi"
-
 #, fuzzy
 msgid "|N|set compress level to N (0 disables)"
 msgstr "|N|määra pakkimise tase N (0 blokeerib)"
@@ -6917,7 +6914,7 @@ msgid "||Please enter the PIN"
 msgstr "muuda parooli"
 
 #, fuzzy
-msgid "||Please enter the Reset Code for the card"
+msgid "|R|Please enter the Reset Code for the card"
 msgstr "Palun valige tühistamise põhjus:\n"
 
 #, c-format
@@ -9243,6 +9240,9 @@ msgstr ""
 
 msgid "manage the command history"
 msgstr ""
+
+#~ msgid "use canonical text mode"
+#~ msgstr "kasuta kanoonilist tekstimoodi"
 
 #, fuzzy
 #~| msgid "selected digest algorithm is invalid\n"

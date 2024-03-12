@@ -2135,9 +2135,6 @@ msgstr "crea un output ascii con armatura"
 msgid "|FILE|write output to FILE"
 msgstr "|FILE|scrittura dell'output in FILE"
 
-msgid "use canonical text mode"
-msgstr "usa il modo testo canonico"
-
 msgid "|N|set compress level to N (0 disables)"
 msgstr "|N|Impostare il livello di compressione su N (0 disabilita)"
 
@@ -6762,7 +6759,9 @@ msgstr "l'accesso ai comandi di amministrazione non è configurato\n"
 msgid "||Please enter the PIN"
 msgstr "||Inserisci il PIN"
 
-msgid "||Please enter the Reset Code for the card"
+#, fuzzy
+#| msgid "||Please enter the Reset Code for the card"
+msgid "|R|Please enter the Reset Code for the card"
 msgstr "||Inserisci il Codice reset per la carta"
 
 #, c-format
@@ -9077,6 +9076,9 @@ msgstr "Comandi di gestione Yubikey"
 
 msgid "manage the command history"
 msgstr "gestire la cronologia dei comandi"
+
+#~ msgid "use canonical text mode"
+#~ msgstr "usa il modo testo canonico"
 
 #~ msgid "selected AEAD algorithm is invalid\n"
 #~ msgstr "l'algoritmo AEAD selezionato non è valido\n"

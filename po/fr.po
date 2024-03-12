@@ -2260,9 +2260,6 @@ msgstr "créer une sortie ASCII avec armure"
 msgid "|FILE|write output to FILE"
 msgstr "|FICHIER|écrire la sortie dans le FICHIER"
 
-msgid "use canonical text mode"
-msgstr "utiliser le mode texte canonique"
-
 msgid "|N|set compress level to N (0 disables)"
 msgstr "|N|niveau de compression N (0 désactive)"
 
@@ -7116,7 +7113,9 @@ msgstr "l'accès aux commandes d'administration n'est pas configuré\n"
 msgid "||Please enter the PIN"
 msgstr "||Veuillez entrer le code personnel"
 
-msgid "||Please enter the Reset Code for the card"
+#, fuzzy
+#| msgid "||Please enter the Reset Code for the card"
+msgid "|R|Please enter the Reset Code for the card"
 msgstr "||Veuillez entrer le code de réinitialisation pour la carte"
 
 #, c-format
@@ -9522,6 +9521,9 @@ msgstr ""
 
 msgid "manage the command history"
 msgstr ""
+
+#~ msgid "use canonical text mode"
+#~ msgstr "utiliser le mode texte canonique"
 
 #, fuzzy
 #~| msgid "selected digest algorithm is invalid\n"

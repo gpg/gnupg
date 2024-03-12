@@ -400,7 +400,7 @@ expected in the current GnuPG home directory.  This command is usually
 not required because GnuPG is able to detect and remove stale lock
 files.  Before using the command make sure that the file protected by
 the lock file is actually not in use.  The lock command may be used to
-lock an accidently removed lock file.  Note that the commands have no
+lock an accidentally removed lock file.  Note that the commands have no
 effect on Windows because the mere existence of a lock file does not
 mean that the lock is active.
 

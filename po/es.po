@@ -2201,9 +2201,6 @@ msgstr "crea una salida ascii con armadura"
 msgid "|FILE|write output to FILE"
 msgstr "|FILE|volcar salida en FICHERO"
 
-msgid "use canonical text mode"
-msgstr "usa modo de texto canónico"
-
 msgid "|N|set compress level to N (0 disables)"
 msgstr "|N|nivel de compresión N (0 desactiva)"
 
@@ -6848,7 +6845,9 @@ msgstr "el acceso a órdenes de administrador no está configurado\n"
 msgid "||Please enter the PIN"
 msgstr "||Por favor introduzca PIN"
 
-msgid "||Please enter the Reset Code for the card"
+#, fuzzy
+#| msgid "||Please enter the Reset Code for the card"
+msgid "|R|Please enter the Reset Code for the card"
 msgstr "||Por favor introduzca Código de Reinicio de la tarjeta"
 
 #, c-format
@@ -9165,6 +9164,9 @@ msgstr ""
 
 msgid "manage the command history"
 msgstr ""
+
+#~ msgid "use canonical text mode"
+#~ msgstr "usa modo de texto canónico"
 
 #, fuzzy
 #~| msgid "selected digest algorithm is invalid\n"

@@ -68,6 +68,7 @@ enum cmd_and_opt_values {
   oWeakDigest,
   oEnableSpecialFilenames,
   oDebug,
+  oAssertPubkeyAlgo,
   aTest
 };
 
@@ -91,6 +92,7 @@ static gpgrt_opt_t opts[] = {
                 N_("|ALGO|reject signatures made with ALGO")),
   ARGPARSE_s_n (oEnableSpecialFilenames, "enable-special-filenames", "@"),
   ARGPARSE_s_s (oDebug, "debug", "@"),
+  ARGPARSE_s_s (oAssertPubkeyAlgo,"assert-pubkey-algo", "@"),
 
   ARGPARSE_end ()
 };
@@ -119,6 +121,7 @@ static struct debug_flags_s debug_flags [] =
 
 int g10_errors_seen = 0;
 int assert_signer_true = 0;
+int assert_pubkey_algo_false = 0;
 
 static char *
 make_libversion (const char *libname, const char *(*getfnc)(const char*))
@@ -251,6 +254,19 @@ main( int argc, char **argv )
         case oEnableSpecialFilenames:
           enable_special_filenames ();
           break;
+
+        case oAssertPubkeyAlgo:
+          if (!opt.assert_pubkey_algos)
+            opt.assert_pubkey_algos = xstrdup (pargs.r.ret_str);
+          else
+            {
+              char *tmp = opt.assert_pubkey_algos;
+              opt.assert_pubkey_algos = xstrconcat (tmp, ",",
+                                                    pargs.r.ret_str, NULL);
+              xfree (tmp);
+            }
+          break;
+
         default : pargs.err = ARGPARSE_PRINT_ERROR; break;
 	}
     }
@@ -288,10 +304,18 @@ main( int argc, char **argv )
 
 
 void
-g10_exit( int rc )
+g10_exit (int rc)
 {
-  rc = rc? rc : log_get_errorcount(0)? 2 : g10_errors_seen? 1 : 0;
-  exit(rc );
+  if (rc)
+    ;
+  else if (log_get_errorcount(0))
+    rc = 2;
+  else if (g10_errors_seen)
+    rc = 1;
+  else if (opt.assert_pubkey_algos && assert_pubkey_algo_false)
+    rc = 1;
+
+  exit (rc);
 }
 
 

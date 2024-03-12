@@ -247,8 +247,8 @@ release:
          mkopt=""; \
 	 if [ -n "$$CUSTOM_SWDB" ]; then \
             mkopt="CUSTOM_SWB=1"; \
-	    x=$$(grep '^OVERRIDE_TARBALLS=' \
-                 $$HOME/.gnupg-autogen.rc|cut -d= -f2);\
+	    x=$$(grep '^[[:blank:]]*OVERRIDE_TARBALLS[[:blank:]]*=' \
+                 $$HOME/.gnupg-autogen.rc|cut -d= -f2|xargs);\
 	    if [ -f "$$x/swdb.lst" ]; then \
 	      echo "/* Copying swdb.lst from the overrides directory */"; \
               cp "$$x/swdb.lst" . ; \
@@ -275,13 +275,15 @@ release:
 sign-release:
 	 +(set -e; \
 	  test $$(pwd | sed 's,.*/,,') = dist || cd dist; \
-	  x=$$(grep '^RELEASE_ARCHIVE=' $$HOME/.gnupg-autogen.rc|cut -d= -f2);\
+	  x=$$(grep '^[[:blank:]]*RELEASE_ARCHIVE[[:blank:]]*=' \
+                    $$HOME/.gnupg-autogen.rc|cut -d= -f2|xargs);\
           if [ -z "$$x" ]; then \
              echo "error: RELEASE_ARCHIVE missing in ~/.gnupg-autogen.rc">&2; \
              exit 2;\
           fi;\
           myarchive="$$x/$(RELEASE_ARCHIVE_SUFFIX)";\
-	  x=$$(grep '^RELEASE_SIGNKEY=' $$HOME/.gnupg-autogen.rc|cut -d= -f2);\
+	  x=$$(grep '^[[:blank:]]*RELEASE_SIGNKEY[[:blank:]]*=' \
+                     $$HOME/.gnupg-autogen.rc|cut -d= -f2|xargs);\
           if [ -z "$$x" ]; then \
              echo "error: RELEASE_SIGNKEY missing in ~/.gnupg-autogen.rc">&2; \
              exit 2;\

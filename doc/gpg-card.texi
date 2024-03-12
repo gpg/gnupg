@@ -226,7 +226,7 @@ OpenPGP or X.509 keys.
 @item LOGIN [--clear] [< @var{file}]
 @opindex login
 Set the login data object of OpenPGP cards.  If @var{file} is given
-the data is is read from that file.  This allows to store binary data
+the data is is read from that file.  This allows one to store binary data
 in the login field.  The option @option{--clear} deletes the login
 data object.
 

@@ -2362,7 +2362,6 @@ run_gnutls_handshake (http_t hd, const char *server)
  * NULL, decode the string and use this as input from teh server.  On
  * success the final output token is stored at PROXY->OUTTOKEN and
  * OUTTOKLEN.  IF the authentication succeeded OUTTOKLEN is zero. */
-#ifdef USE_TLS
 static gpg_error_t
 proxy_get_token (proxy_info_t proxy, const char *inputstring)
 {
@@ -2530,11 +2529,9 @@ proxy_get_token (proxy_info_t proxy, const char *inputstring)
 
 #endif /*!HAVE_W32_SYSTEM*/
 }
-#endif /*USE_TLS*/
 
 
 /* Use the CONNECT method to proxy our TLS stream.  */
-#ifdef USE_TLS
 static gpg_error_t
 run_proxy_connect (http_t hd, proxy_info_t proxy,
                    const char *httphost, const char *server,
@@ -2556,6 +2553,7 @@ run_proxy_connect (http_t hd, proxy_info_t proxy,
    * RFC-4559 - SPNEGO-based Kerberos and NTLM HTTP Authentication
    */
   auth_basic = !!proxy->uri->auth;
+  hd->keep_alive = !auth_basic; /* We may need to send more requests.  */
 
   /* For basic authentication we need to send just one request.  */
   if (auth_basic
@@ -2577,16 +2575,15 @@ run_proxy_connect (http_t hd, proxy_info_t proxy,
                          httphost ? httphost : server,
                          port,
                          authhdr ? authhdr : "",
-                         auth_basic? "" : "Connection: keep-alive\r\n");
+                         hd->keep_alive? "Connection: keep-alive\r\n" : "");
   if (!request)
     {
       err = gpg_error_from_syserror ();
       goto leave;
     }
-  hd->keep_alive = !auth_basic; /* We may need to send more requests.  */
 
   if (opt_debug || (hd->flags & HTTP_FLAG_LOG_RESP))
-    log_debug_with_string (request, "http.c:proxy:request:");
+    log_debug_string (request, "http.c:proxy:request:");
 
   if (!hd->fp_write)
     {
@@ -2609,16 +2606,6 @@ run_proxy_connect (http_t hd, proxy_info_t proxy,
   err = http_wait_response (hd);
   if (err)
     goto leave;
-
-  {
-    unsigned long count = 0;
-
-    while (es_getc (hd->fp_read) != EOF)
-      count++;
-    if (opt_debug)
-      log_debug ("http.c:proxy_connect: skipped %lu bytes of response-body\n",
-                 count);
-  }
 
   /* Reset state.  */
   es_clearerr (hd->fp_read);
@@ -2730,6 +2717,14 @@ run_proxy_connect (http_t hd, proxy_info_t proxy,
     }
 
  leave:
+  if (hd->keep_alive)
+    {
+      es_fclose (hd->fp_write);
+      hd->fp_write = NULL;
+      /* The close has released the cookie and thus we better set it
+       * to NULL.  */
+      hd->write_cookie = NULL;
+    }
   /* Restore flags, destroy stream, reset state.  */
   hd->flags = saved_flags;
   es_fclose (hd->fp_read);
@@ -2743,7 +2738,6 @@ run_proxy_connect (http_t hd, proxy_info_t proxy,
   xfree (tmpstr);
   return err;
 }
-#endif /*USE_TLS*/
 
 
 /* Make a request string using a standard proxy.  On success the
@@ -2882,7 +2876,7 @@ send_request (ctrl_t ctrl,
 
   if (proxy && proxy->is_http_proxy)
     {
-      use_http_proxy = 1;  /* We want to use a proxy for the conenction.  */
+      use_http_proxy = 1;  /* We want to use a proxy for the connection.  */
       err = connect_server (ctrl,
                             *proxy->uri->host ? proxy->uri->host : "localhost",
                             proxy->uri->port ? proxy->uri->port : 80,
@@ -2903,7 +2897,6 @@ send_request (ctrl_t ctrl,
       goto leave;
     }
 
-#if USE_TLS
   if (use_http_proxy && hd->uri->use_tls)
     {
       err = run_proxy_connect (hd, proxy, httphost, server, port);
@@ -2915,7 +2908,6 @@ send_request (ctrl_t ctrl,
        * clear the flag to indicate this.  */
       use_http_proxy = 0;
     }
-#endif	/* USE_TLS */
 
 #if HTTP_USE_NTBTLS
   err = run_ntbtls_handshake (hd);
@@ -4411,7 +4403,7 @@ same_host_p (parsed_uri_t a, parsed_uri_t b)
     }
 
   /* Also consider hosts the same if they differ only in a subdomain;
-   * in both direction.  This allows to have redirection between the
+   * in both direction.  This allows one to have redirection between the
    * WKD advanced and direct lookup methods. */
   for (i=0; i < DIM (subdomains); i++)
     {

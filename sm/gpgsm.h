@@ -60,16 +60,16 @@ struct
   int use_keyboxd;  /* Use the external keyboxd as storage backend.  */
 
   const char *config_filename; /* Name of the used config file. */
-  const char *agent_program;
+  char *agent_program;
 
-  const char *keyboxd_program;
+  char *keyboxd_program;
 
   session_env_t session_env;
   char *lc_ctype;
   char *lc_messages;
 
   int autostart;
-  const char *dirmngr_program;
+  char *dirmngr_program;
   int disable_dirmngr;        /* Do not do any dirmngr calls.  */
   const char *protect_tool_program;
   char *outfile;    /* name of output file */

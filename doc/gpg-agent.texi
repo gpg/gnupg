@@ -302,7 +302,7 @@ debugging.
 @item --steal-socket
 @opindex steal-socket
 In @option{--daemon} mode, gpg-agent detects an already running
-gpg-agent and does not allow to start a new instance. This option can
+gpg-agent and does not allow one to start a new instance. This option can
 be used to override this check: the new gpg-agent process will try to
 take over the communication sockets from the already running process
 and start anyway.  This option should in general not be used.
@@ -643,7 +643,7 @@ gpg-agent as a replacement for PuTTY's Pageant, the option
 In this mode of operation, the agent does not only implement the
 gpg-agent protocol, but also the agent protocol used by OpenSSH
 (through a separate socket or via Named Pipes) or the protocol used by
-PuTTY.  Consequently, this allows to use the gpg-agent as a drop-in
+PuTTY.  Consequently, this allows one to use the gpg-agent as a drop-in
 replacement for the ssh-agent.
 
 SSH keys, which are to be used through the agent, need to be added to
@@ -693,7 +693,7 @@ The order in which keys are presented to ssh are:
 @item Negative Use-for-ssh values
       If a key file has the attribute "Use-for-ssh" and its value is
       negative, these keys are presented first to ssh.  The negative
-      values are capped at -999 with -999 beeing lower ranked than -1.
+      values are capped at -999 with -999 being lower ranked than -1.
       These values can be used to prefer on-disk keys over keys taken
       from active cards.
 

@@ -335,7 +335,7 @@ check_assert_signer_list (const char *mainpkhex, const char *pkhex)
               assert_signer_true = 1;
               write_status_text (STATUS_ASSERT_SIGNER, item->d);
               if (!opt.quiet)
-                log_info ("signer '%s' matched\n", item->d);
+                log_info ("asserted signer '%s'\n", item->d);
               goto leave;
             }
         }
@@ -390,7 +390,7 @@ check_assert_signer_list (const char *mainpkhex, const char *pkhex)
                   assert_signer_true = 1;
                   write_status_text (STATUS_ASSERT_SIGNER, p);
                   if (!opt.quiet)
-                    log_info ("signer '%s' matched '%s', line %d\n",
+                    log_info ("asserted signer '%s' (%s:%d)\n",
                               p, fname, lnr);
                   goto leave;
                 }
@@ -406,4 +406,33 @@ check_assert_signer_list (const char *mainpkhex, const char *pkhex)
 
  leave:
   es_fclose (fp);
+}
+
+
+/* This function shall be called with the signer's public key
+ * algorithm ALGOSTR iff a signature is fully valid.  If the option
+ * --assert-pubkey-algo is active the functions checks whether the
+ * signing key's algo is valid according to that list; in this case a
+ * global flag is set.  */
+void
+check_assert_pubkey_algo (const char *algostr, const char *pkhex)
+{
+  if (!opt.assert_pubkey_algos)
+    return;  /* Nothing to do.  */
+
+  if (compare_pubkey_string (algostr, opt.assert_pubkey_algos))
+    {
+      write_status_strings (STATUS_ASSERT_PUBKEY_ALGO,
+                            pkhex, " 1 ", algostr, NULL);
+      if (!opt.quiet)
+        log_info ("asserted signer '%s' with algo %s\n", pkhex, algostr);
+    }
+  else
+    {
+      if (!opt.quiet)
+        log_info ("denied signer '%s' with algo %s\n", pkhex, algostr);
+      assert_pubkey_algo_false = 1;
+      write_status_strings (STATUS_ASSERT_PUBKEY_ALGO,
+                            pkhex, " 0 ", algostr, NULL);
+    }
 }

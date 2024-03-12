@@ -190,7 +190,11 @@ import_ownertrust (ctrl_t ctrl, const char *fname )
 	while (fprlen < MAX_FINGERPRINT_LEN)
 	    fpr[fprlen++] = 0;
 
-	rc = tdbio_search_trust_byfpr (ctrl, fpr, &rec);
+        /* FIXME: The intention is to save the special fpr20 as used
+         * in the trustdb here.  However, the above conversions seems
+         * not to be aware of this.  Or why does it allow up to
+         * MAX_FINGERPRINT_LEN ?  */
+	rc = tdbio_search_trust_byfpr (ctrl, fpr, 20, &rec);
 	if( !rc ) { /* found: update */
 	    if (rec.r.trust.ownertrust != otrust)
               {

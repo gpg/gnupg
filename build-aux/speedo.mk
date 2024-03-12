@@ -51,9 +51,12 @@
 # # This is greped by the Makefile.
 # RELEASE_ARCHIVE=foo@somehost:tarball-archive
 #
-# # The key used to sign the released sources.
+# # The key used to sign the GnuPG sources.
 # # This is greped by the Makefile.
 # RELEASE_SIGNKEY=6DAA6E64A76D2840571B4902528897B826403ADA
+#
+# # The key used to sign the VERSION files of some MSI installers.
+# VERSION_SIGNKEY=02F38DFF731FF97CB039A1DA549E695E905BA208
 #
 # # For signing Windows binaries we need to employ a Windows machine.
 # # We connect to this machine via ssh and take the connection
@@ -73,6 +76,9 @@
 # # The name of the signtool as used on Windows.
 # # This is greped by the Makefile.
 # AUTHENTICODE_TOOL="C:\Program Files (x86)\Windows Kits\10\bin\signtool.exe"
+#
+# # The URL for the timestamping service
+# AUTHENTICODE_TSURL=http://rfc3161timestamp.globalsign.com/advanced
 #
 # # To use osslsigncode the follwing entries are required and
 # # an empty string must be given for AUTHENTICODE_SIGNHOST.
@@ -238,10 +244,11 @@ PATCHELF := $(shell patchelf --version 2>/dev/null >/dev/null || echo "echo plea
 
 # Read signing information from ~/.gnupg-autogen.rc
 define READ_AUTOGEN_template
-$(1) = $$(shell grep '^$(1)=' $$$$HOME/.gnupg-autogen.rc|cut -d= -f2)
+$(1) = $$(shell grep '^[[:blank:]]*$(1)[[:blank:]]*=' $$$$HOME/.gnupg-autogen.rc|cut -d= -f2|xargs)
 endef
 $(eval $(call READ_AUTOGEN_template,AUTHENTICODE_SIGNHOST))
 $(eval $(call READ_AUTOGEN_template,AUTHENTICODE_TOOL))
+$(eval $(call READ_AUTOGEN_template,AUTHENTICODE_TSURL))
 $(eval $(call READ_AUTOGEN_template,AUTHENTICODE_KEY))
 $(eval $(call READ_AUTOGEN_template,AUTHENTICODE_CERTS))
 $(eval $(call READ_AUTOGEN_template,OSSLSIGNCODE))
@@ -1350,7 +1357,7 @@ define AUTHENTICODE_sign
      scp $(1) "$(AUTHENTICODE_SIGNHOST):a.exe" ;\
      ssh "$(AUTHENTICODE_SIGNHOST)" '$(AUTHENTICODE_TOOL)' sign \
         /a /n '"g10 Code GmbH"' \
-        /tr 'http://rfc3161timestamp.globalsign.com/advanced' /td sha256 \
+        /tr '$(AUTHENTICODE_TSURL)' /td sha256 \
         /fd sha256 /du https://gnupg.org a.exe ;\
      scp "$(AUTHENTICODE_SIGNHOST):a.exe" $(2);\
      echo "speedo: signed file is '$(2)'" ;\
@@ -1361,13 +1368,13 @@ define AUTHENTICODE_sign
        -pkcs11module $(SCUTEMODULE) \
        -certs $(AUTHENTICODE_CERTS) \
        -h sha256 -n GnuPG -i https://gnupg.org \
-       -ts http://rfc3161timestamp.globalsign.com/advanced \
+       -ts $(AUTHENTICODE_TSURL) \
        -in $(1) -out $(2).tmp ; mv $(2).tmp $(2) ; \
    elif [ -e "$(AUTHENTICODE_KEY)" ]; then \
      echo "speedo: Signing using key $(AUTHENTICODE_KEY)";\
      osslsigncode sign -certs $(AUTHENTICODE_CERTS) \
        -pkcs12 $(AUTHENTICODE_KEY) -askpass \
-       -ts "http://timestamp.globalsign.com/scripts/timstamp.dll" \
+       -ts "$(AUTHENTICODE_TSURL)" \
        -h sha256 -n GnuPG -i https://gnupg.org \
        -in $(1) -out $(2) ;\
    else \

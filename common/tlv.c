@@ -152,7 +152,7 @@ find_tlv_unchecked (const unsigned char *buffer, size_t length,
 /* ASN.1 BER parser: Parse BUFFER of length SIZE and return the tag
  * and the length part from the TLV triplet.  Update BUFFER and SIZE
  * on success.  Note that this function does not check that the value
- * fits into the provided buffer; this allows to work on the TL part
+ * fits into the provided buffer; this allows one to work on the TL part
  * of a TLV. */
 gpg_error_t
 parse_ber_header (unsigned char const **buffer, size_t *size,

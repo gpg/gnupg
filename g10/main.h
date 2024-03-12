@@ -84,6 +84,7 @@ struct weakhash
 /*-- gpg.c --*/
 extern int g10_errors_seen;
 extern int assert_signer_true;
+extern int assert_pubkey_algo_false;
 
 #if __GNUC__ > 2 || (__GNUC__ == 2 && __GNUC_MINOR__ >= 5 )
   void g10_exit(int rc) __attribute__ ((__noreturn__));
@@ -495,6 +496,7 @@ int verify_files (ctrl_t ctrl, int nfiles, char **files );
 int gpg_verify (ctrl_t ctrl, gnupg_fd_t sig_fd, gnupg_fd_t data_fd,
                 estream_t out_fp);
 void check_assert_signer_list (const char *mainpkhex, const char *pkhex);
+void check_assert_pubkey_algo (const char *algostr, const char *pkhex);
 
 /*-- decrypt.c --*/
 int decrypt_message (ctrl_t ctrl, const char *filename );

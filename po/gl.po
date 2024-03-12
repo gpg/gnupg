@@ -2231,9 +2231,6 @@ msgstr "crear saída con armadura en ascii"
 msgid "|FILE|write output to FILE"
 msgstr "|FICHEIRO|carga-lo módulo de extensión FICHEIRO"
 
-msgid "use canonical text mode"
-msgstr "usar modo de texto canónico"
-
 #, fuzzy
 msgid "|N|set compress level to N (0 disables)"
 msgstr "|N|axusta-lo nivel de compresión a N (0 desactiva)"
@@ -6981,7 +6978,7 @@ msgid "||Please enter the PIN"
 msgstr "cambia-lo contrasinal"
 
 #, fuzzy
-msgid "||Please enter the Reset Code for the card"
+msgid "|R|Please enter the Reset Code for the card"
 msgstr "Por favor, escolla o motivo da revocación:\n"
 
 #, c-format
@@ -9323,6 +9320,9 @@ msgstr ""
 
 msgid "manage the command history"
 msgstr ""
+
+#~ msgid "use canonical text mode"
+#~ msgstr "usar modo de texto canónico"
 
 #, fuzzy
 #~| msgid "selected digest algorithm is invalid\n"

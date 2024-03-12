@@ -70,7 +70,7 @@ static int menu_adduid (ctrl_t ctrl, kbnode_t keyblock,
                         int photo, const char *photo_name, const char *uidstr);
 static void menu_deluid (KBNODE pub_keyblock);
 static int menu_delsig (ctrl_t ctrl, kbnode_t pub_keyblock);
-static int menu_clean (ctrl_t ctrl, kbnode_t keyblock, int self_only);
+static int menu_clean (ctrl_t ctrl, kbnode_t keyblock, unsigned int options);
 static void menu_delkey (KBNODE pub_keyblock);
 static int menu_addrevoker (ctrl_t ctrl, kbnode_t pub_keyblock, int sensitive);
 static int menu_addadsk (ctrl_t ctrl, kbnode_t pub_keyblock,
@@ -2258,7 +2258,7 @@ keyedit_menu (ctrl_t ctrl, const char *username, strlist_t locusr,
 	  break;
 
 	case cmdMINIMIZE:
-	  if (menu_clean (ctrl, keyblock, 1))
+	  if (menu_clean (ctrl, keyblock, EXPORT_MINIMAL))
 	    redisplay = modified = 1;
 	  break;
 
@@ -4543,11 +4543,13 @@ menu_delsig (ctrl_t ctrl, kbnode_t pub_keyblock)
 }
 
 
+/* Note: OPTIONS are from the EXPORT_* set. */
 static int
-menu_clean (ctrl_t ctrl, kbnode_t keyblock, int self_only)
+menu_clean (ctrl_t ctrl, kbnode_t keyblock, unsigned int options)
 {
   KBNODE uidnode;
-  int modified = 0, select_all = !count_selected_uids (keyblock);
+  int modified = 0;
+  int select_all = !count_selected_uids (keyblock);
 
   for (uidnode = keyblock->next;
        uidnode && uidnode->pkt->pkttype != PKT_PUBLIC_SUBKEY;
@@ -4561,8 +4563,8 @@ menu_clean (ctrl_t ctrl, kbnode_t keyblock, int self_only)
 				       uidnode->pkt->pkt.user_id->len,
 				       0);
 
-	  clean_one_uid (ctrl, keyblock, uidnode, opt.verbose, self_only, &uids,
-			 &sigs);
+	  clean_one_uid (ctrl, keyblock, uidnode, opt.verbose, options,
+                         &uids, &sigs);
 	  if (uids)
 	    {
 	      const char *reason;
@@ -4587,7 +4589,7 @@ menu_clean (ctrl_t ctrl, kbnode_t keyblock, int self_only)
 	    }
 	  else
 	    {
-	      tty_printf (self_only == 1 ?
+	      tty_printf ((options & EXPORT_MINIMAL)?
 			  _("User ID \"%s\": already minimized\n") :
 			  _("User ID \"%s\": already clean\n"), user);
 	    }

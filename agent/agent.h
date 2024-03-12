@@ -86,8 +86,8 @@ struct
   /* Enable pinentry debugging (--debug 1024 should also be used).  */
   int debug_pinentry;
 
-  /* Filename of the program to start as pinentry.  */
-  const char *pinentry_program;
+  /* Filename of the program to start as pinentry (malloced).  */
+  char *pinentry_program;
 
   /* Filename of the program to handle daemon tasks.  */
   const char *daemon_program[DAEMON_MAX_TYPE];

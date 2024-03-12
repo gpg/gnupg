@@ -461,7 +461,7 @@ main (int argc, char **argv)
   if (!tcp && argc == 1)
     ;
   else if (tcp && (argc == 1 || argc == 2))
-    ; /* Option --tcp optionally allows to also read from a socket. */
+    ; /* Option --tcp optionally allows one to also read from a socket. */
   else if (!tcp && !argc)
     {
       /* No args given - figure out the socket using gpgconf.  We also

@@ -91,6 +91,7 @@ mark_usable_uid_certs (ctrl_t ctrl, kbnode_t keyblock, kbnode_t uidnode,
           continue;
         }
       node->flag |= 1<<NF_CONSIDER;
+
     }
   /* Reset the remaining flags. */
   for (; node; node = node->next)
@@ -215,9 +216,22 @@ mark_usable_uid_certs (ctrl_t ctrl, kbnode_t keyblock, kbnode_t uidnode,
 }
 
 
+/* Return true if the signature at NODE has is from a key specified by
+ * the --trusted-key option and is exportable.  */
+static int
+is_trusted_key_sig (kbnode_t node)
+{
+  if (!node->pkt->pkt.signature->flags.exportable)
+    return 0;
+  /* Not yet implemented.  */
+  return 0;
+}
+
+
+/* Note: OPTIONS are from the EXPORT_* set. */
 static int
 clean_sigs_from_uid (ctrl_t ctrl, kbnode_t keyblock, kbnode_t uidnode,
-                     int noisy, int self_only)
+                     int noisy, unsigned int options)
 {
   int deleted = 0;
   kbnode_t node;
@@ -256,8 +270,15 @@ clean_sigs_from_uid (ctrl_t ctrl, kbnode_t keyblock, kbnode_t uidnode,
     {
       int keep;
 
-      keep = self_only? (node->pkt->pkt.signature->keyid[0] == keyid[0]
-                         && node->pkt->pkt.signature->keyid[1] == keyid[1]) : 1;
+      if ((options & EXPORT_REALCLEAN))
+        keep = ((node->pkt->pkt.signature->keyid[0] == keyid[0]
+                 && node->pkt->pkt.signature->keyid[1] == keyid[1])
+                || is_trusted_key_sig (node));
+      else if ((options & EXPORT_MINIMAL))
+        keep = (node->pkt->pkt.signature->keyid[0] == keyid[0]
+                && node->pkt->pkt.signature->keyid[1] == keyid[1]);
+      else
+        keep = 1;
 
       /* Keep usable uid sigs ... */
       if ((node->flag & (1<<NF_USABLE)) && keep)
@@ -364,10 +385,12 @@ clean_uid_from_key (kbnode_t keyblock, kbnode_t uidnode, int noisy)
 }
 
 
-/* Needs to be called after a merge_keys_and_selfsig() */
+/* Needs to be called after a merge_keys_and_selfsig().
+ * Note: OPTIONS are from the EXPORT_* set.  */
 void
 clean_one_uid (ctrl_t ctrl, kbnode_t keyblock, kbnode_t uidnode,
-               int noisy, int self_only, int *uids_cleaned, int *sigs_cleaned)
+               int noisy, unsigned int options,
+               int *uids_cleaned, int *sigs_cleaned)
 {
   int dummy = 0;
 
@@ -386,15 +409,15 @@ clean_one_uid (ctrl_t ctrl, kbnode_t keyblock, kbnode_t uidnode,
   *uids_cleaned += clean_uid_from_key (keyblock, uidnode, noisy);
   if (!uidnode->pkt->pkt.user_id->flags.compacted)
     *sigs_cleaned += clean_sigs_from_uid (ctrl, keyblock, uidnode,
-                                          noisy, self_only);
+                                          noisy, options);
 }
 
 
 /* NB: This function marks the deleted nodes only and the caller is
  * responsible to skip or remove them.  Needs to be called after a
- * merge_keys_and_selfsig().  */
+ * merge_keys_and_selfsig.  Note: OPTIONS are from the EXPORT_* set. */
 void
-clean_all_uids (ctrl_t ctrl, kbnode_t keyblock, int noisy, int self_only,
+clean_all_uids (ctrl_t ctrl, kbnode_t keyblock, int noisy, unsigned int options,
                 int *uids_cleaned, int *sigs_cleaned)
 {
   kbnode_t node;
@@ -405,7 +428,7 @@ clean_all_uids (ctrl_t ctrl, kbnode_t keyblock, int noisy, int self_only,
        node = node->next)
     {
       if (node->pkt->pkttype == PKT_USER_ID)
-        clean_one_uid (ctrl, keyblock, node, noisy, self_only,
+        clean_one_uid (ctrl, keyblock, node, noisy, options,
                        uids_cleaned, sigs_cleaned);
     }
 

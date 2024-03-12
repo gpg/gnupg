@@ -2215,9 +2215,6 @@ msgstr "krei eligon en askia kiraso"
 msgid "|FILE|write output to FILE"
 msgstr "|DOSIERO|legi aldonan bibliotekon DOSIERO"
 
-msgid "use canonical text mode"
-msgstr "uzi tekstan reĝimon"
-
 #, fuzzy
 msgid "|N|set compress level to N (0 disables)"
 msgstr "|N|difini densig-nivelon N (0=nenia)"
@@ -6906,7 +6903,7 @@ msgid "||Please enter the PIN"
 msgstr "ŝanĝi la pasfrazon"
 
 #, fuzzy
-msgid "||Please enter the Reset Code for the card"
+msgid "|R|Please enter the Reset Code for the card"
 msgstr "Kialo por revoko: "
 
 #, c-format
@@ -9239,6 +9236,9 @@ msgstr ""
 
 msgid "manage the command history"
 msgstr ""
+
+#~ msgid "use canonical text mode"
+#~ msgstr "uzi tekstan reĝimon"
 
 #, fuzzy
 #~| msgid "selected digest algorithm is invalid\n"

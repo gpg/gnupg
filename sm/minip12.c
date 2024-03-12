@@ -677,7 +677,7 @@ parse_bag_encrypted_data (struct p12_parse_ctx_s *ctx, tlv_parser_t tlv)
   const unsigned char *data;
   size_t datalen;
   int intval;
-  char salt[20];
+  char salt[32];
   size_t saltlen;
   char iv[16];
   unsigned int iter;
@@ -1945,43 +1945,46 @@ p12_parse (const unsigned char *buffer, size_t length, const char *pw,
     }
 
   where = "pfx";
-  if (tlv_next (tlv))
+  if ((err = tlv_next (tlv)))
     goto bailout;
-  if (tlv_expect_sequence (tlv))
+  if ((err = tlv_expect_sequence (tlv)))
     goto bailout;
 
   where = "pfxVersion";
-  if (tlv_next (tlv))
+  if ((err = tlv_next (tlv)))
     goto bailout;
-  if (tlv_expect_integer (tlv, &intval) || intval != 3)
+  if ((err = tlv_expect_integer (tlv, &intval)) || intval != 3)
     goto bailout;
 
   where = "authSave";
-  if (tlv_next (tlv))
+  if ((err = tlv_next (tlv)))
     goto bailout;
-  if (tlv_expect_sequence (tlv))
+  if ((err = tlv_expect_sequence (tlv)))
     goto bailout;
 
-  if (tlv_next (tlv))
+  if ((err = tlv_next (tlv)))
     goto bailout;
-  if (tlv_expect_object_id (tlv, &oid, &oidlen))
+  if ((err = tlv_expect_object_id (tlv, &oid, &oidlen)))
     goto bailout;
   if (oidlen != DIM(oid_data) || memcmp (oid, oid_data, DIM(oid_data)))
+    {
+      err = gpg_error (GPG_ERR_INV_OBJ);
+      goto bailout;
+    }
+
+  if ((err = tlv_next (tlv)))
+    goto bailout;
+  if ((err = tlv_expect_context_tag (tlv, &intval)) || intval != 0 )
     goto bailout;
 
-  if (tlv_next (tlv))
+  if ((err = tlv_next (tlv)))
     goto bailout;
-  if (tlv_expect_context_tag (tlv, &intval) || intval != 0 )
-    goto bailout;
-
-  if (tlv_next (tlv))
-    goto bailout;
-  if (tlv_expect_octet_string (tlv, 1, NULL, NULL))
+  if ((err = tlv_expect_octet_string (tlv, 1, NULL, NULL)))
     goto bailout;
 
   if (tlv_peek (tlv, CLASS_UNIVERSAL, TAG_OCTET_STRING))
     {
-      if (tlv_next (tlv))
+      if ((err = tlv_next (tlv)))
         goto bailout;
       err = tlv_expect_octet_string (tlv, 1, NULL, NULL);
       if (err)
@@ -1989,9 +1992,9 @@ p12_parse (const unsigned char *buffer, size_t length, const char *pw,
     }
 
   where = "bags";
-  if (tlv_next (tlv))
+  if ((err = tlv_next (tlv)))
     goto bailout;
-  if (tlv_expect_sequence (tlv))
+  if ((err = tlv_expect_sequence (tlv)))
     goto bailout;
 
   startlevel = tlv_parser_level (tlv);
@@ -2000,12 +2003,12 @@ p12_parse (const unsigned char *buffer, size_t length, const char *pw,
     {
       where = "bag-sequence";
       tlv_parser_dump_state (where, NULL, tlv);
-      if (tlv_expect_sequence (tlv))
+      if ((err = tlv_expect_sequence (tlv)))
         goto bailout;
 
-      if (tlv_next (tlv))
+      if ((err = tlv_next (tlv)))
         goto bailout;
-      if (tlv_expect_object_id (tlv, &oid, &oidlen))
+      if ((err = tlv_expect_object_id (tlv, &oid, &oidlen)))
         goto bailout;
 
       if (oidlen == DIM(oid_encryptedData)

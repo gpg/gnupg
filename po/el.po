@@ -2232,9 +2232,6 @@ msgstr "δημιουργία ascii θωρακισμένης εξόδου"
 msgid "|FILE|write output to FILE"
 msgstr "|ΑΡΧΕΙΟ|φόρτωμα του αρθρώματος επέκτασης ΑΡΧΕΙΟ"
 
-msgid "use canonical text mode"
-msgstr "χρήση κανονικής κατάστασης κειμένου"
-
 #, fuzzy
 msgid "|N|set compress level to N (0 disables)"
 msgstr "|N|καθορισμός επιπέδου συμπίεσης N (0 απενεργοποιεί)"
@@ -6997,7 +6994,7 @@ msgid "||Please enter the PIN"
 msgstr "αλλαγή της φράσης κλειδί"
 
 #, fuzzy
-msgid "||Please enter the Reset Code for the card"
+msgid "|R|Please enter the Reset Code for the card"
 msgstr "Παρακαλώ επιλέξτε την αιτία για την ανάκληση:\n"
 
 #, c-format
@@ -9328,6 +9325,9 @@ msgstr ""
 
 msgid "manage the command history"
 msgstr ""
+
+#~ msgid "use canonical text mode"
+#~ msgstr "χρήση κανονικής κατάστασης κειμένου"
 
 #, fuzzy
 #~| msgid "selected digest algorithm is invalid\n"

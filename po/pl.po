@@ -2,13 +2,13 @@
 # Copyright (C) 1998, 1999, 2000, 2001, 2002,
 #               2007 Free Software Foundation, Inc.
 # Janusz A. Urbanowicz <alex@bofh.net.pl>, 1999, 2000, 2001, 2002, 2003-2004
-# Jakub Bogusz <qboosh@pld-linux.org>, 2003-2023.
+# Jakub Bogusz <qboosh@pld-linux.org>, 2003-2024.
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: gnupg-2.4.3\n"
+"Project-Id-Version: gnupg-2.4.4\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"PO-Revision-Date: 2023-10-20 21:29+0200\n"
+"PO-Revision-Date: 2024-03-07 14:00+0100\n"
 "Last-Translator: Jakub Bogusz <qboosh@pld-linux.org>\n"
 "Language-Team: Polish <translation-team-pl@lists.sourceforge.net>\n"
 "Language: pl\n"
@@ -923,43 +923,35 @@ msgstr "OSTRZEŻENIE: „%s%s” jest przestarzałą opcją - nie ma efektu\n"
 msgid "unknown debug flag '%s' ignored\n"
 msgstr "nieznana flaga diagnostyczna „%s” zignorowana\n"
 
-#, fuzzy, c-format
-#| msgid "waiting for the %s to come up ... (%ds)\n"
+#, c-format
 msgid "waiting for the dirmngr to come up ... (%ds)\n"
-msgstr "oczekiwanie na uruchomienie procesu %s... (%ds)\n"
+msgstr "oczekiwanie na uruchomienie procesu dirmngr... (%ds)\n"
 
-#, fuzzy, c-format
-#| msgid "waiting for the %s to come up ... (%ds)\n"
+#, c-format
 msgid "waiting for the keyboxd to come up ... (%ds)\n"
-msgstr "oczekiwanie na uruchomienie procesu %s... (%ds)\n"
+msgstr "oczekiwanie na uruchomienie procesu keyboxd... (%ds)\n"
 
-#, fuzzy, c-format
-#| msgid "waiting for the %s to come up ... (%ds)\n"
+#, c-format
 msgid "waiting for the agent to come up ... (%ds)\n"
-msgstr "oczekiwanie na uruchomienie procesu %s... (%ds)\n"
+msgstr "oczekiwanie na uruchomienie procesu agenta... (%ds)\n"
 
-#, fuzzy, c-format
-#| msgid "connection to %s established\n"
+#, c-format
 msgid "connection to the dirmngr established\n"
-msgstr "ustanowiono połączenie z procesem %s\n"
+msgstr "ustanowiono połączenie z procesem dirmngr\n"
 
-#, fuzzy, c-format
-#| msgid "connection to %s established\n"
+#, c-format
 msgid "connection to the keyboxd established\n"
-msgstr "ustanowiono połączenie z procesem %s\n"
+msgstr "ustanowiono połączenie z procesem keyboxd\n"
 
-#, fuzzy, c-format
-#| msgid "connection to %s established\n"
+#, c-format
 msgid "connection to the agent established\n"
-msgstr "ustanowiono połączenie z procesem %s\n"
+msgstr "ustanowiono połączenie z procesem agenta\n"
 
-#, fuzzy, c-format
-#| msgid "no running Dirmngr - starting '%s'\n"
+#, c-format
 msgid "no running %s - starting '%s'\n"
-msgstr "Dirmngr nie działa - uruchamianie „%s”\n"
+msgstr "brak działającego %s - uruchamianie „%s”\n"
 
-#, fuzzy, c-format
-#| msgid "connection to agent is in restricted mode\n"
+#, c-format
 msgid "connection to the agent is in restricted mode\n"
 msgstr "połączenie z agentem jest w trybie ograniczonym\n"
 
@@ -1332,10 +1324,11 @@ msgstr "problem z agentem: %s\n"
 msgid "no dirmngr running in this session\n"
 msgstr "brak działającego dirmngr w tej sesji\n"
 
-#, fuzzy, c-format
-#| msgid "keyserver option \"%s\" may not be used in %s mode\n"
+#, c-format
 msgid "keyserver option \"honor-keyserver-url\" may not be used in Tor mode\n"
-msgstr "opcja serwera kluczy „%s” nie może być używana w trybie %s\n"
+msgstr ""
+"opcja serwera kluczy „honor-keyserver-url” nie może być używana w trybie "
+"Tor\n"
 
 msgid "WKD uses a cached result"
 msgstr "WKD używa zapamiętanego wyniku"
@@ -1402,7 +1395,7 @@ msgstr "wymuszono"
 
 #, c-format
 msgid "Please try command \"%s\" if the listing does not look correct\n"
-msgstr "Proszę spróbować polecenia ,,%s'', jeśli lista nie wygląda poprawnie\n"
+msgstr "Proszę spróbować polecenia „%s”, jeśli lista nie wygląda poprawnie\n"
 
 msgid "Error: Only plain ASCII is currently allowed.\n"
 msgstr "Błąd: aktualnie dopuszczalne jest tylko czyste ASCII.\n"
@@ -1768,14 +1761,13 @@ msgstr ""
 "OSTRZEŻENIE: wymuszone użycie szyfru %s (%d) kłóci się z ustawieniami "
 "adresata\n"
 
-#, fuzzy, c-format
-#| msgid "cipher algorithm '%s' may not be used in %s mode\n"
+#, c-format
 msgid "cipher algorithm '%s' may not be used for encryption\n"
-msgstr "szyfr „%s” nie może być używany w trybie %s\n"
+msgstr "algorytm szyfru „%s” nie może być używany do szyfrowania\n"
 
 #, c-format
 msgid "(use option \"%s\" to override)\n"
-msgstr ""
+msgstr "(opcją „%s” można to obejść)\n"
 
 #, c-format
 msgid "cipher algorithm '%s' may not be used in %s mode\n"
@@ -1821,17 +1813,15 @@ msgstr ""
 "OSTRZEŻENIE: wymuszone użycie kompresji %s (%d) kłóci się z ustawieniami "
 "adresata\n"
 
-#, fuzzy, c-format
-#| msgid "%s/%s encrypted for: \"%s\"\n"
+#, c-format
 msgid "%s/%s.%s encrypted for: \"%s\"\n"
-msgstr "%s/%s zaszyfrowany dla: „%s”\n"
+msgstr "%s/%s.%s zaszyfrowany dla: „%s”\n"
 
 #, c-format
 msgid "option '%s' may not be used in %s mode\n"
 msgstr "opcja „%s” nie może być używana w trybie %s\n"
 
-#, fuzzy, c-format
-#| msgid "%s encrypted data\n"
+#, c-format
 msgid "%s encrypted data\n"
 msgstr "dane zaszyfrowano za pomocą %s\n"
 
@@ -2100,9 +2090,6 @@ msgstr "opakowanie ASCII pliku wynikowego"
 
 msgid "|FILE|write output to FILE"
 msgstr "|PLIK|zapis wyjścia do PLIKU"
-
-msgid "use canonical text mode"
-msgstr "kanoniczny format tekstowy"
 
 msgid "|N|set compress level to N (0 disables)"
 msgstr "|N|ustawienie poziomu kompresji N (0 - bez)"
@@ -2798,12 +2785,11 @@ msgstr ""
 
 #, c-format
 msgid "         \"%s\": preference for cipher algorithm %s\n"
-msgstr "         „%s”: preferowany szyfr %s\n"
+msgstr "         „%s”: preferowany algorytm szyfru %s\n"
 
-#, fuzzy, c-format
-#| msgid "         \"%s\": preference for cipher algorithm %s\n"
+#, c-format
 msgid "         \"%s\": preference for AEAD algorithm %s\n"
-msgstr "         „%s”: preferowany szyfr %s\n"
+msgstr "         „%s”: preferowany algorytm AEAD %s\n"
 
 #, c-format
 msgid "         \"%s\": preference for digest algorithm %s\n"
@@ -3905,7 +3891,7 @@ msgstr "Czy podano odcisk podklucza?\n"
 
 #, c-format
 msgid "key \"%s\" is already on this keyblock\n"
-msgstr "klucz ,,%s'' jest już w tym bloku kluczy\n"
+msgstr "klucz „%s” jest już w tym bloku kluczy\n"
 
 msgid ""
 "Are you sure you want to change the expiration time for multiple subkeys? (y/"
@@ -4154,77 +4140,64 @@ msgstr "   (%c) Przełączenie możliwości uwierzytelniania\n"
 msgid "   (%c) Finished\n"
 msgstr "   (%c) Zakończenie\n"
 
-#, fuzzy, c-format
-#| msgid "   (%d) RSA and RSA (default)\n"
+#, c-format
 msgid "   (%d) RSA and RSA%s\n"
-msgstr "   (%d) RSA i RSA (domyślne)\n"
+msgstr "   (%d) RSA i RSA%s\n"
 
-#, fuzzy, c-format
-#| msgid "   (%d) DSA and Elgamal\n"
+#, c-format
 msgid "   (%d) DSA and Elgamal%s\n"
-msgstr "   (%d) DSA i Elgamala\n"
+msgstr "   (%d) DSA i Elgamala%s\n"
 
-#, fuzzy, c-format
-#| msgid "   (%d) DSA (sign only)\n"
+#, c-format
 msgid "   (%d) DSA (sign only)%s\n"
-msgstr "   (%d) DSA (tylko do podpisywania)\n"
+msgstr "   (%d) DSA (tylko do podpisywania)%s\n"
 
-#, fuzzy, c-format
-#| msgid "   (%d) RSA (sign only)\n"
+#, c-format
 msgid "   (%d) RSA (sign only)%s\n"
-msgstr "   (%d) RSA (tylko do podpisywania)\n"
+msgstr "   (%d) RSA (tylko do podpisywania)%s\n"
 
-#, fuzzy, c-format
-#| msgid "   (%d) Elgamal (encrypt only)\n"
+#, c-format
 msgid "   (%d) Elgamal (encrypt only)%s\n"
-msgstr "   (%d) Elgamala (tylko do szyfrowania)\n"
+msgstr "   (%d) Elgamala (tylko do szyfrowania)%s\n"
 
-#, fuzzy, c-format
-#| msgid "   (%d) RSA (encrypt only)\n"
+#, c-format
 msgid "   (%d) RSA (encrypt only)%s\n"
-msgstr "   (%d) RSA (tylko do szyfrowania)\n"
+msgstr "   (%d) RSA (tylko do szyfrowania)%s\n"
 
-#, fuzzy, c-format
-#| msgid "   (%d) DSA (set your own capabilities)\n"
+#, c-format
 msgid "   (%d) DSA (set your own capabilities)%s\n"
-msgstr "   (%d) DSA (możliwości do ustawienia)\n"
+msgstr "   (%d) DSA (możliwości do ustawienia)%s\n"
 
-#, fuzzy, c-format
-#| msgid "   (%d) RSA (set your own capabilities)\n"
+#, c-format
 msgid "   (%d) RSA (set your own capabilities)%s\n"
-msgstr "   (%d) RSA (możliwości do ustawienia)\n"
+msgstr "   (%d) RSA (możliwości do ustawienia)%s\n"
 
-#, fuzzy, c-format
-#| msgid "   (%d) sign, encrypt\n"
+#, c-format
 msgid "   (%d) ECC (sign and encrypt)%s\n"
-msgstr "   (%d) podpisywanie, szyfrowanie\n"
+msgstr "   (%d) ECC (podpisywanie i szyfrowanie)%s\n"
 
 msgid " *default*"
-msgstr ""
+msgstr " *domyślne*"
 
 #, c-format
 msgid "  (%d) ECC (sign only)\n"
 msgstr "  (%d) ECC (tylko do podpisywania)\n"
 
-#, fuzzy, c-format
-#| msgid "  (%d) ECC (set your own capabilities)\n"
+#, c-format
 msgid "  (%d) ECC (set your own capabilities)%s\n"
-msgstr "  (%d) ECC (możliwości do ustawienia)\n"
+msgstr "  (%d) ECC (możliwości do ustawienia)%s\n"
 
-#, fuzzy, c-format
-#| msgid "  (%d) ECC (encrypt only)\n"
+#, c-format
 msgid "  (%d) ECC (encrypt only)%s\n"
-msgstr "  (%d) ECC (tylko do szyfrowania)\n"
+msgstr "  (%d) ECC (tylko do szyfrowania)%s\n"
 
-#, fuzzy, c-format
-#| msgid "  (%d) Existing key\n"
+#, c-format
 msgid "  (%d) Existing key%s\n"
-msgstr "  (%d) Istniejący klucz\n"
+msgstr "  (%d) Istniejący klucz%s\n"
 
-#, fuzzy, c-format
-#| msgid "  (%d) Existing key from card\n"
+#, c-format
 msgid "  (%d) Existing key from card%s\n"
-msgstr "  (%d) Istniejący klucz z karty\n"
+msgstr "  (%d) Istniejący klucz z karty%s\n"
 
 msgid "Enter the keygrip: "
 msgstr "Uchwyt klucza: "
@@ -5336,25 +5309,22 @@ msgstr ""
 "OSTRZEŻENIE: ten klucz mógł zostać unieważniony\n"
 "             (brak klucza unieważniającego aby to sprawdzić)\n"
 
-#, fuzzy, c-format
-#| msgid "user ID: \"%s\"\n"
+#, c-format
 msgid "checking User ID \"%s\"\n"
-msgstr "identyfikator użytkownika: „%s”\n"
+msgstr "sprawdzanie identyfikatora użytkownika: „%s”\n"
 
-#, fuzzy, c-format
-#| msgid "option '%s' given, but option '%s' not given\n"
+#, c-format
 msgid "option %s given but issuer \"%s\" does not match\n"
-msgstr "podano opcję „%s”, ale nie podano opcji „%s”\n"
+msgstr "podano opcję %s, ale wystawca „%s” nie pasuje\n"
 
-#, fuzzy, c-format
-#| msgid "key %s: doesn't match our copy\n"
+#, c-format
 msgid "issuer \"%s\" does not match any User ID\n"
-msgstr "klucz %s: nie zgadza się z lokalną kopią\n"
+msgstr "klucz „%s” nie pasuje do żadnego identyfikatora użytkownika\n"
 
-#, fuzzy, c-format
-#| msgid "option '%s' given, but option '%s' not given\n"
+#, c-format
 msgid "option %s given but no matching User ID found\n"
-msgstr "podano opcję „%s”, ale nie podano opcji „%s”\n"
+msgstr ""
+"podano opcję %s, ale nie znaleziono pasującego identyfikatora użytkownika\n"
 
 #, c-format
 msgid "WARNING: This key has been revoked by its designated revoker!\n"
@@ -6524,15 +6494,14 @@ msgstr "linia wejścia %u zbyt długa lub brak znaku LF\n"
 msgid "can't open fd %d: %s\n"
 msgstr "nie można otworzyć fd %d: %s\n"
 
-#, fuzzy, c-format
-#| msgid "WARNING: message was not integrity protected\n"
+#, c-format
 msgid "WARNING: encrypting without integrity protection is dangerous\n"
-msgstr "OSTRZEŻENIE: wiadomość nie była zabezpieczona przed manipulacją\n"
+msgstr ""
+"OSTRZEŻENIE: szyfrowanie bez ochrony przed manipulacją jest niebezpieczne\n"
 
-#, fuzzy, c-format
-#| msgid "ambiguous option '%s'\n"
+#, c-format
 msgid "Hint: Do not use option %s\n"
-msgstr "niejednoznaczna opcja „%s”\n"
+msgstr "Podpowiedź: nie używać opcji %s\n"
 
 msgid "set debugging flags"
 msgstr "ustawienie flag diagnostycznych"
@@ -6774,8 +6743,8 @@ msgstr "dostęp do poleceń administratora nie został skonfigurowany\n"
 msgid "||Please enter the PIN"
 msgstr "||Proszę wpisać PIN"
 
-msgid "||Please enter the Reset Code for the card"
-msgstr "||Proszę wprowadzić kod resetujący dla karty"
+msgid "|R|Please enter the Reset Code for the card"
+msgstr "|R|Proszę wprowadzić kod resetujący dla karty"
 
 #, c-format
 msgid "Reset Code is too short; minimum length is %d\n"
@@ -8553,7 +8522,7 @@ msgstr "%s:%u: podano hasło bez użytkownika\n"
 
 #, c-format
 msgid "%s:%u: ignoring unknown flag '%s'\n"
-msgstr "%s:%u: zignorowano nieznaną flagę ,,%s''\n"
+msgstr "%s:%u: zignorowano nieznaną flagę „%s”\n"
 
 #, c-format
 msgid "%s:%u: skipping this line\n"
@@ -8986,489 +8955,69 @@ msgstr ""
 "Składnia: gpg-check-pattern [opcje] plik-wzorców\n"
 "Sprawdzanie hasła ze standardowego wejścia względem pliku wzorców\n"
 
-#, fuzzy, c-format
-#| msgid "Note: keys are already stored on the card!\n"
+#, c-format
 msgid "Note: key %s is already stored on the card!\n"
-msgstr "Uwaga: klucze są już zapisane na karcie!\n"
+msgstr "Uwaga: klucz %s jest już zapisany na karcie!\n"
 
-#, fuzzy, c-format
-#| msgid "Note: keys are already stored on the card!\n"
+#, c-format
 msgid "Note: Keys are already stored on the card!\n"
 msgstr "Uwaga: klucze są już zapisane na karcie!\n"
 
-#, fuzzy, c-format
-#| msgid "Replace existing keys? (y/N) "
+#, c-format
 msgid "Replace existing key %s ? (y/N) "
-msgstr "Zastąpić istniejące klucze? (t/N) "
+msgstr "Zastąpić istniejące klucz %s? (t/N) "
 
-#, fuzzy, c-format
-#| msgid "OpenPGP card no. %s detected\n"
+#, c-format
 msgid "%s card no. %s detected\n"
-msgstr "Wykryto kartę OpenPGP nr %s\n"
+msgstr "Wykryto kartę %s nr %s\n"
 
 #, c-format
 msgid "User Interaction Flag is set to \"%s\" - can't change\n"
 msgstr ""
+"Flaga interakcji użytkownika (UIF) jest ustawiona na „%s” - nie można "
+"zmienić\n"
 
 #, c-format
 msgid ""
 "Warning: Setting the User Interaction Flag to \"%s\"\n"
 "         can only be reverted using a factory reset!\n"
 msgstr ""
+"Uwaga: ustawienie flagi interakcji użytkownika (UIF) na „%s”\n"
+"       może być odwrócone tylko przez reset do ustawień fabrycznych!\n"
 
 #, c-format
 msgid "Please use \"uif --yes %d %s\"\n"
-msgstr ""
+msgstr "Proszę użyć „uif --yes %d %s”\n"
 
-#, fuzzy
-#| msgid "add a certificate to the cache"
 msgid "authenticate to the card"
-msgstr "dodanie certyfikatu do pamięci podręcznej"
+msgstr "uwierzytelnienie względem karty"
 
 msgid "send a reset to the card daemon"
-msgstr ""
+msgstr "wysłanie resetu do demona kart"
 
 msgid "setup KDF for PIN authentication"
 msgstr "ustawienie KDF do uwierzytelniania PIN-em"
 
 msgid "change a private data object"
-msgstr ""
+msgstr "zmiana obiektu danych prywatnych"
 
-#, fuzzy
-#| msgid "add a certificate to the cache"
 msgid "read a certificate from a data object"
-msgstr "dodanie certyfikatu do pamięci podręcznej"
+msgstr "odczyt certyfikatu z obiektu danych"
 
-#, fuzzy
-#| msgid "add a certificate to the cache"
 msgid "store a certificate to a data object"
-msgstr "dodanie certyfikatu do pamięci podręcznej"
+msgstr "zapis certyfikatu w obiekcie danych"
 
 msgid "store a private key to a data object"
-msgstr ""
+msgstr "zapis klucza prywatnego w obiekcie danych"
 
 msgid "run various checks on the keys"
-msgstr ""
+msgstr "wykonanie różnych sprawdzeń kluczy"
 
 msgid "Yubikey management commands"
-msgstr ""
+msgstr "polecenia zarządzające kluczami Yubikey"
 
 msgid "manage the command history"
-msgstr ""
+msgstr "zarządzanie historią poleceń"
 
-#, fuzzy
-#~| msgid "selected digest algorithm is invalid\n"
-#~ msgid "selected AEAD algorithm is invalid\n"
-#~ msgstr "wybrany algorytm skrótów wiadomości jest niepoprawny\n"
-
-#, fuzzy
-#~| msgid "invalid personal cipher preferences\n"
-#~ msgid "invalid personal AEAD preferences\n"
-#~ msgstr "niewłaściwe ustawienia szyfrów\n"
-
-#, fuzzy
-#~| msgid "cipher algorithm '%s' may not be used in %s mode\n"
-#~ msgid "AEAD algorithm '%s' may not be used in %s mode\n"
-#~ msgstr "szyfr „%s” nie może być używany w trybie %s\n"
-
-#~ msgid "forcing symmetric cipher %s (%d) violates recipient preferences\n"
-#~ msgstr "wymuszone użycie szyfru %s (%d) kłóci się z ustawieniami adresata\n"
-
-#~ msgid "error writing to temporary file: %s\n"
-#~ msgstr "błąd zapisu do pliku tymczasowego: %s\n"
-
-#~ msgid "run in supervised mode"
-#~ msgstr "uruchomienie w trybie dozorowanym"
-
-#~ msgid "Name may not start with a digit\n"
-#~ msgstr "Imię lub nazwisko nie może zaczynać się od cyfry\n"
-
-#~ msgid "Name must be at least 5 characters long\n"
-#~ msgstr "Imię i nazwisko muszą mieć co najmniej 5 znaków długości.\n"
-
-#~ msgid "Configuration for Keyservers"
-#~ msgstr "Konfiguracja dla serwerów kluczy"
-
-#~ msgid "Configuration of LDAP servers to use"
-#~ msgstr "Konfiguracja używanych serwerów LDAP"
-
-#~ msgid "selfsigned certificate has a BAD signature"
-#~ msgstr "certyfikat z własnym podpisem ma BŁĘDNY podpis"
-
-#~ msgid "requesting key %s from %s server %s\n"
-#~ msgstr "zapytanie o klucz %s z serwera %s %s\n"
-
-#~ msgid "%s:%u: no hostname given\n"
-#~ msgstr "%s:%u: nie podano nazwy hosta\n"
-
-#~ msgid "could not parse keyserver\n"
-#~ msgstr "niezrozumiały adres serwera kluczy\n"
-
-#~ msgid "return all values in a record oriented format"
-#~ msgstr "zwrócenie wszystkich wartości w formacie rekordu"
-
-#~ msgid "|NAME|ignore host part and connect through NAME"
-#~ msgstr "|NAZWA|zignorowanie części z hostem i połączenie poprzez NAZWĘ"
-
-#~ msgid "|NAME|connect to host NAME"
-#~ msgstr "|NAZWA|połączenie z hostem NAZWA"
-
-#~ msgid "|N|connect to port N"
-#~ msgstr "|N|połączenie z portem N"
-
-#~ msgid "|NAME|use user NAME for authentication"
-#~ msgstr "|NAZWA|użycie NAZWY użytkownika do uwierzytelnienia"
-
-#~ msgid "|PASS|use password PASS for authentication"
-#~ msgstr "|HASŁO|użycie HASŁA do uwierzytelnienia"
-
-#~ msgid "take password from $DIRMNGR_LDAP_PASS"
-#~ msgstr "pobranie hasła z $DIRMNGR_LDAP_PASS"
-
-#~ msgid "|STRING|query DN STRING"
-#~ msgstr "|ŁAŃCUCH|ŁAŃCUCH zapytania DN"
-
-#~ msgid "|STRING|use STRING as filter expression"
-#~ msgstr "|ŁAŃCUCH|użycie ŁAŃCUCHA jako wyrażenia filtra"
-
-#~ msgid "|STRING|return the attribute STRING"
-#~ msgstr "|ŁAŃCUCH|zwrócenie atrybutu ŁAŃCUCH"
-
-#~ msgid "Usage: dirmngr_ldap [options] [URL] (-h for help)\n"
-#~ msgstr "Składnia: dirmngr_ldap [opcje] [URL] (-h wyświetla pomoc)\n"
-
-#~ msgid ""
-#~ "Syntax: dirmngr_ldap [options] [URL]\n"
-#~ "Internal LDAP helper for Dirmngr\n"
-#~ "Interface and options may change without notice\n"
-#~ msgstr ""
-#~ "Składnia: dirmngr_ldap [opcje] [URL]\n"
-#~ "Wewnętrzny program pomocniczy LDAP dla Dirmngr\n"
-#~ "Interfejs i opcje mogą się zmienić bez uprzedzenia\n"
-
-#~ msgid "invalid port number %d\n"
-#~ msgstr "błędny numer portu %d\n"
-
-#~ msgid "scanning result for attribute '%s'\n"
-#~ msgstr "przeszukiwanie wyniku pod kątem atrybutu „%s”\n"
-
-#~ msgid "error writing to stdout: %s\n"
-#~ msgstr "błąd zapisu na standardowe wyjście: %s\n"
-
-#~ msgid "          available attribute '%s'\n"
-#~ msgstr "          dostępny atrybut „%s”\n"
-
-#~ msgid "attribute '%s' not found\n"
-#~ msgstr "nie znaleziono atrybutu „%s”\n"
-
-#~ msgid "found attribute '%s'\n"
-#~ msgstr "znaleziono atrybut „%s”\n"
-
-#~ msgid "processing url '%s'\n"
-#~ msgstr "przetwarzanie URL-a „%s”\n"
-
-#~ msgid "          user '%s'\n"
-#~ msgstr "          użytkownik „%s”\n"
-
-#~ msgid "          pass '%s'\n"
-#~ msgstr "          hasło „%s”\n"
-
-#~ msgid "          host '%s'\n"
-#~ msgstr "          host „%s”\n"
-
-#~ msgid "          port %d\n"
-#~ msgstr "          port %d\n"
-
-#~ msgid "            DN '%s'\n"
-#~ msgstr "            DN „%s”\n"
-
-#~ msgid "        filter '%s'\n"
-#~ msgstr "        filtr „%s”\n"
-
-#~ msgid "          attr '%s'\n"
-#~ msgstr "          atrybut „%s”\n"
-
-#~ msgid "no host name in '%s'\n"
-#~ msgstr "brak nazwy hosta w „%s”\n"
-
-#~ msgid "no attribute given for query '%s'\n"
-#~ msgstr "nie podano atrybutu dla zapytania „%s”\n"
-
-#~ msgid "WARNING: using first attribute only\n"
-#~ msgstr "OSTRZEŻENIE: użyto tylko pierwszego atrybutu\n"
-
-#~ msgid "LDAP init to '%s:%d' failed: %s\n"
-#~ msgstr "nie udało się zainicjować LDAP na „%s:%d”: %s\n"
-
-#, fuzzy
-#~| msgid "LDAP init to '%s:%d' failed: %s\n"
-#~ msgid "LDAP init to '%s' failed: %s\n"
-#~ msgstr "nie udało się zainicjować LDAP na „%s:%d”: %s\n"
-
-#, fuzzy
-#~| msgid "LDAP init to '%s:%d' failed: %s\n"
-#~ msgid "LDAP init to '%s' done\n"
-#~ msgstr "nie udało się zainicjować LDAP na „%s:%d”: %s\n"
-
-#~ msgid "binding to '%s:%d' failed: %s\n"
-#~ msgstr "dowiązanie do „%s:%d” nie powiodło się: %s\n"
-
-#~ msgid "searching '%s' failed: %s\n"
-#~ msgstr "szukanie „%s” nie powiodło się: %s\n"
-
-#~ msgid "start_cert_fetch: invalid pattern '%s'\n"
-#~ msgstr "start_cert_fetch: błędny wzorzec „%s”\n"
-
-#~ msgid "ldapserver missing"
-#~ msgstr "brak pola ldapserver"
-
-#, fuzzy
-#~| msgid "change a passphrase"
-#~ msgid "Suggest a random passphrase."
-#~ msgstr "zmiana hasła"
-
-#~ msgid "detected card with S/N: %s\n"
-#~ msgstr "wykryto kartę o numerze seryjnym: %s\n"
-
-#~ msgid "no authentication key for ssh on card: %s\n"
-#~ msgstr "nie znaleziono klucza uwierzytelniającego dla ssh na karcie: %s\n"
-
-#~ msgid "Please remove the current card and insert the one with serial number"
-#~ msgstr "Proszę wyjąć obecną kartę i włożyć kartę z numerem seryjnym"
-
-#~ msgid "use a log file for the server"
-#~ msgstr "użycie pliku loga dla serwera"
-
-#~ msgid "no running gpg-agent - starting '%s'\n"
-#~ msgstr "gpg-agent nie działa - uruchamianie „%s”\n"
-
-#~ msgid "argument not expected"
-#~ msgstr "nieoczekiwany argument"
-
-#~ msgid "read error"
-#~ msgstr "błąd odczytu"
-
-#~ msgid "keyword too long"
-#~ msgstr "słowo kluczowe zbyt długie"
-
-#~ msgid "missing argument"
-#~ msgstr "brak argumentu"
-
-#~ msgid "invalid argument"
-#~ msgstr "niepoprawny argument"
-
-#~ msgid "invalid command"
-#~ msgstr "błędne polecenie"
-
-#~ msgid "invalid alias definition"
-#~ msgstr "błędna definicja aliasu"
-
-#~ msgid "out of core"
-#~ msgstr "brak pamięci"
-
-#, fuzzy
-#~| msgid "invalid command"
-#~ msgid "invalid meta command"
-#~ msgstr "błędne polecenie"
-
-#, fuzzy
-#~| msgid "unknown command '%s'\n"
-#~ msgid "unknown meta command"
-#~ msgstr "nieznane polecenie „%s”\n"
-
-#, fuzzy
-#~| msgid "unexpected armor: "
-#~ msgid "unexpected meta command"
-#~ msgstr "nieoczekiwane opakowanie: "
-
-#~ msgid "invalid option"
-#~ msgstr "błędna opcja"
-
-#~ msgid "missing argument for option \"%.50s\"\n"
-#~ msgstr "brak argumentu dla opcji „%.50s”\n"
-
-#~ msgid "option \"%.50s\" does not expect an argument\n"
-#~ msgstr "opcja „%.50s” nie może mieć argumentów\n"
-
-#~ msgid "invalid command \"%.50s\"\n"
-#~ msgstr "błędne polecenie „%.50s”\n"
-
-#~ msgid "option \"%.50s\" is ambiguous\n"
-#~ msgstr "opcja „%.50s” jest niejednoznaczna\n"
-
-#~ msgid "command \"%.50s\" is ambiguous\n"
-#~ msgstr "polecenie „%.50s” jest niejednoznaczne\n"
-
-#~ msgid "invalid option \"%.50s\"\n"
-#~ msgstr "błędna opcja „%.50s”\n"
-
-#~ msgid "Note: no default option file '%s'\n"
-#~ msgstr "Uwaga: brak domyślnego pliku opcji „%s”\n"
-
-#~ msgid "option file '%s': %s\n"
-#~ msgstr "plik opcji „%s”: %s\n"
-
-#~ msgid "unable to execute program '%s': %s\n"
-#~ msgstr "nie można uruchomić programu „%s”: %s\n"
-
-#~ msgid "unable to execute external program\n"
-#~ msgstr "nie można uruchomić zewnętrznego programu\n"
-
-#~ msgid "unable to read external program response: %s\n"
-#~ msgstr "nie można odczytać odpowiedzi programu zewnętrznego: %s\n"
-
-#~ msgid "validate signatures with PKA data"
-#~ msgstr "sprawdzanie podpisów z danymi PKA"
-
-#~ msgid "elevate the trust of signatures with valid PKA data"
-#~ msgstr "zwiększenie zaufania podpisów z poprawnymi danymi PKA"
-
-#~ msgid "   (%d) ECC and ECC\n"
-#~ msgstr "   (%d) ECC i ECC\n"
-
-#~ msgid "honor the PKA record set on a key when retrieving keys"
-#~ msgstr "honorowanie rekordu PKA ustawionego w kluczu przy pobieraniu kluczy"
-
-#~ msgid "Note: Verified signer's address is '%s'\n"
-#~ msgstr "Uwaga: Sprawdzony adres pospisującego to „%s”\n"
-
-#~ msgid "Note: Signer's address '%s' does not match DNS entry\n"
-#~ msgstr "Uwaga: Adres podpisującego „%s” nie pasuje do wpisu DNS\n"
-
-#~ msgid "trustlevel adjusted to FULL due to valid PKA info\n"
-#~ msgstr ""
-#~ "poziom zaufania poprawiony na PEŁNY ze względu na poprawne informacje "
-#~ "PKA\n"
-
-#~ msgid "trustlevel adjusted to NEVER due to bad PKA info\n"
-#~ msgstr ""
-#~ "poziom zaufania poprawiony na ŻADEN ze względu na błędne informacje PKA\n"
-
-#~ msgid "|FILE|write a server mode log to FILE"
-#~ msgstr "|PLIK|zapisanie logów trybu serwerowego do PLIKU"
-
-#~ msgid "run without asking a user"
-#~ msgstr "działanie bez pytania użytkownika"
-
-#~ msgid "allow PKA lookups (DNS requests)"
-#~ msgstr "zezwolenie na wyszukiwania PKA (żądania DNS)"
-
-#~ msgid "Options controlling the format of the output"
-#~ msgstr "Opcje sterujące formatem wyjścia"
-
-#~ msgid "Options controlling the use of Tor"
-#~ msgstr "Opcje sterujące użyciem Tora"
-
-#~ msgid "LDAP server list"
-#~ msgstr "lista serwerów LDAP"
-
-#~ msgid "Note: old default options file '%s' ignored\n"
-#~ msgstr "Uwaga: stary domyślny plik opcji „%s” został zignorowany\n"
-
-#~ msgid ""
-#~ "@\n"
-#~ "Commands:\n"
-#~ " "
-#~ msgstr ""
-#~ "@\n"
-#~ "Polecenia:\n"
-#~ " "
-
-#~ msgid "decryption modus"
-#~ msgstr "tryb rozszyfrowywania"
-
-#~ msgid "encryption modus"
-#~ msgstr "tryb szyfrowania"
-
-#~ msgid "tool class (confucius)"
-#~ msgstr "klasa narzędzia (confucius)"
-
-#~ msgid "program filename"
-#~ msgstr "nazwa programu"
-
-#~ msgid "secret key file (required)"
-#~ msgstr "plik klucza tajnego (wymagany)"
-
-#~ msgid "input file name (default stdin)"
-#~ msgstr "nazwa pliku wejściowego (domyślnie standardowe wejście)"
-
-#~ msgid "Usage: symcryptrun [options] (-h for help)"
-#~ msgstr "Składnia: symcryptrun [opcje] (-h wyświetla pomoc)"
-
-#~ msgid ""
-#~ "Syntax: symcryptrun --class CLASS --program PROGRAM --keyfile KEYFILE "
-#~ "[options...] COMMAND [inputfile]\n"
-#~ "Call a simple symmetric encryption tool\n"
-#~ msgstr ""
-#~ "Składnia: symcryptrun --class KLASA --program PROGRAM --keyfile "
-#~ "PLIK_KLUCZA [opcje...] POLECENIE [plik-weściowy]\n"
-#~ "Wywołanie prostego narzędzia do szyfrowania symetrycznego\n"
-
-#~ msgid "%s on %s aborted with status %i\n"
-#~ msgstr "%s na %s przerwany ze stanem %i\n"
-
-#~ msgid "%s on %s failed with status %i\n"
-#~ msgstr "%s na %s nie powiódł się ze stanem %i\n"
-
-#~ msgid "can't create temporary directory '%s': %s\n"
-#~ msgstr "nie można utworzyć katalogu tymczasowego „%s”: %s\n"
-
-#~ msgid "could not open %s for writing: %s\n"
-#~ msgstr "nie udało się otworzyć %s do zapisu: %s\n"
-
-#~ msgid "error closing %s: %s\n"
-#~ msgstr "błąd zamykania %s: %s\n"
-
-#~ msgid "no --program option provided\n"
-#~ msgstr "nie podano opcji --program\n"
-
-#~ msgid "only --decrypt and --encrypt are supported\n"
-#~ msgstr "obsługiwane są tylko --decrypt i --encrypt\n"
-
-#~ msgid "no --keyfile option provided\n"
-#~ msgstr "nie podano opcji --keyfile\n"
-
-#~ msgid "cannot allocate args vector\n"
-#~ msgstr "nie można przydzielić wektora args\n"
-
-#~ msgid "could not create pipe: %s\n"
-#~ msgstr "nie udało się utworzyć potoku: %s\n"
-
-#~ msgid "could not create pty: %s\n"
-#~ msgstr "nie udało się utworzyć pty: %s\n"
-
-#~ msgid "could not fork: %s\n"
-#~ msgstr "nie udało się wykonać fork: %s\n"
-
-#~ msgid "execv failed: %s\n"
-#~ msgstr "execv nie powiodło się: %s\n"
-
-#~ msgid "select failed: %s\n"
-#~ msgstr "select nie powiodło się: %s\n"
-
-#~ msgid "read failed: %s\n"
-#~ msgstr "odczyt nie powiódł się: %s\n"
-
-#~ msgid "pty read failed: %s\n"
-#~ msgstr "odczyt pty nie powiódł się: %s\n"
-
-#~ msgid "waitpid failed: %s\n"
-#~ msgstr "waitpid nie powiodło się: %s\n"
-
-#~ msgid "child aborted with status %i\n"
-#~ msgstr "potomek został przerwany ze stanem %i\n"
-
-#~ msgid "cannot allocate infile string: %s\n"
-#~ msgstr "nie można przydzielić łańcucha pliku wejściowego: %s\n"
-
-#~ msgid "cannot allocate outfile string: %s\n"
-#~ msgstr "nie można przydzielić łańcucha pliku wyjściowego: %s\n"
-
-#~ msgid "either %s or %s must be given\n"
-#~ msgstr "musi być podane %s lub %s\n"
-
-#~ msgid "no class provided\n"
-#~ msgstr "nie podano klasy\n"
-
-#~ msgid "class %s is not supported\n"
-#~ msgstr "klasa %s nie jest obsługiwana\n"
+#~ msgid "use canonical text mode"
+#~ msgstr "kanoniczny format tekstowy"

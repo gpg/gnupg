@@ -607,7 +607,7 @@ interrogate_ldap_dn (LDAP *ldap_conn, const char *basedn_search,
  * including whether to use TLS and the username and password (see
  * ldap_parse_uri for a description of the various fields).  Be
  * default a PGP keyserver is assumed; if GENERIC is true a generic
- * ldap conenction is instead established.
+ * ldap connection is instead established.
  *
  * Returns: The ldap connection handle in *LDAP_CONNP, R_BASEDN is set
  * to the base DN for the PGP key space, several flags will be stored

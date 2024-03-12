@@ -53,7 +53,11 @@ init_compress( compress_filter_context_t *zfx, bz_stream *bzs )
     }
 
   if((rc=BZ2_bzCompressInit(bzs,level,0,0))!=BZ_OK)
-    log_fatal("bz2lib problem: %d\n",rc);
+    {
+      log_error ("bz2lib problem: %d\n",rc);
+      write_status_error ("bzip2.init", gpg_error (GPG_ERR_INTERNAL));
+      g10_exit (2);
+    }
 
   zfx->outbufsize = 8192;
   zfx->outbuf = xmalloc( zfx->outbufsize );
@@ -80,7 +84,11 @@ do_compress(compress_filter_context_t *zfx, bz_stream *bzs, int flush, IOBUF a)
       if( zrc == BZ_STREAM_END && flush == BZ_FINISH )
 	;
       else if( zrc != BZ_RUN_OK && zrc != BZ_FINISH_OK )
-	log_fatal("bz2lib deflate problem: rc=%d\n", zrc );
+        {
+          log_error ("bz2lib deflate problem: rc=%d\n", zrc );
+          write_status_error ("bzip2.deflate", gpg_error (GPG_ERR_INTERNAL));
+          g10_exit (2);
+        }
 
       n = zfx->outbufsize - bzs->avail_out;
       if( DBG_FILTER )
@@ -91,7 +99,7 @@ do_compress(compress_filter_context_t *zfx, bz_stream *bzs, int flush, IOBUF a)
 
       if( (rc=iobuf_write( a, zfx->outbuf, n )) )
 	{
-	  log_debug("bzCompress: iobuf_write failed\n");
+	  log_error ("bzCompress: iobuf_write failed\n");
 	  return rc;
 	}
     }
@@ -106,7 +114,11 @@ init_uncompress( compress_filter_context_t *zfx, bz_stream *bzs )
   int rc;
 
   if((rc=BZ2_bzDecompressInit(bzs,0,opt.bz2_decompress_lowmem))!=BZ_OK)
-    log_fatal("bz2lib problem: %d\n",rc);
+    {
+      log_error ("bz2lib problem: %d\n",rc);
+      write_status_error ("bzip2.init.un", gpg_error (GPG_ERR_INTERNAL));
+      g10_exit (2);
+    }
 
   zfx->inbufsize = 2048;
   zfx->inbuf = xmalloc( zfx->inbufsize );
@@ -159,7 +171,11 @@ do_uncompress( compress_filter_context_t *zfx, bz_stream *bzs,
       if( zrc == BZ_STREAM_END )
 	rc = -1; /* eof */
       else if( zrc != BZ_OK && zrc != BZ_PARAM_ERROR )
-	log_fatal("bz2lib inflate problem: rc=%d\n", zrc );
+        {
+          log_error ("bz2lib inflate problem: rc=%d\n", zrc );
+          write_status_error ("bzip2.inflate", gpg_error (GPG_ERR_BAD_DATA));
+          g10_exit (2);
+        }
       else if (zrc == BZ_OK && eofseen
                && !bzs->avail_in && bzs->avail_out > 0)
         {
