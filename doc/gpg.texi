@@ -1410,6 +1410,12 @@ give the opposite meaning.  The options are:
   Show all, IETF standard, or user-defined signature notations in the
   @option{--check-signatures} listings. Defaults to no.
 
+  @item show-x509-notations
+  @opindex list-options:show-x509-notations
+  Print X.509 certificates embedded in key signatures as PEM data.
+  This is intended for debugging and the output format may change
+  without notice.
+
   @item show-keyserver-urls
   @opindex list-options:show-keyserver-urls
   Show any preferred keyserver URL in the

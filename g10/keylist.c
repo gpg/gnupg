@@ -1171,6 +1171,36 @@ dump_attribs (const PKT_user_id *uid, PKT_public_key *pk)
 }
 
 
+
+static void
+print_x509_notations (struct notation *nots)
+{
+  gpg_error_t err;
+  gpgrt_b64state_t state;
+
+  for (; nots; nots = nots->next)
+    {
+      state = gpgrt_b64enc_start (es_stdout, "CERTIFICATE");
+      if (!state)
+        {
+          err = gpg_err_code_from_syserror ();
+          goto b64fail;
+        }
+      err = gpgrt_b64enc_write (state, nots->bdat, nots->blen);
+      if (err)
+        goto b64fail;
+      err = gpgrt_b64enc_finish (state);
+      if (err)
+        goto b64fail;
+    }
+  return;
+
+ b64fail:
+  log_error ("error writing base64 encoded notation: %s\n", gpg_strerror (err));
+  gpgrt_b64enc_finish (state);
+}
+
+
 /* Order two signatures.  We first order by keyid and then by creation
  * time.  */
 int
@@ -1278,19 +1308,18 @@ list_signature_print (ctrl_t ctrl, kbnode_t keyblock, kbnode_t node,
 	      sigrc = ' ';
 	    }
 
-	  if (sig->sig_class == 0x20 || sig->sig_class == 0x28
-	      || sig->sig_class == 0x30)
+	  if (IS_KEY_REV (sig) || IS_SUBKEY_REV (sig) || IS_UID_REV (sig))
             {
               sigstr = "rev";
               reason_code = get_revocation_reason (sig, &reason_text,
                                                    &reason_comment,
                                                    &reason_commentlen);
             }
-	  else if ((sig->sig_class & ~3) == 0x10)
+	  else if (IS_UID_SIG (sig))
 	    sigstr = "sig";
-	  else if (sig->sig_class == 0x18)
+	  else if (IS_SUBKEY_SIG (sig))
 	    sigstr = "sig";
-	  else if (sig->sig_class == 0x1F)
+	  else if (IS_KEY_SIG (sig))
 	    sigstr = "sig";
 	  else
 	    {
@@ -1337,13 +1366,27 @@ list_signature_print (ctrl_t ctrl, kbnode_t keyblock, kbnode_t node,
 	    show_policy_url (sig, 3, 0);
 
 	  if (sig->flags.notation && (opt.list_options & LIST_SHOW_NOTATIONS))
-	    show_notation (sig, 3, 0,
-			   ((opt.
-			     list_options & LIST_SHOW_STD_NOTATIONS) ? 1 : 0)
-			   +
-			   ((opt.
-			     list_options & LIST_SHOW_USER_NOTATIONS) ? 2 :
-			    0));
+            show_notation (sig, 3, 0,
+                           ((opt.
+                             list_options & LIST_SHOW_STD_NOTATIONS) ? 1 : 0)
+                           +
+                             ((opt.
+                               list_options & LIST_SHOW_USER_NOTATIONS) ? 2 :
+                              0));
+
+	  if (sig->flags.notation
+              && (opt.list_options & LIST_SHOW_X509_NOTATIONS))
+            {
+              struct notation *nots;
+
+              if ((IS_KEY_SIG (sig) || IS_SUBKEY_SIG (sig))
+                  && (nots = search_sig_notations (sig,
+                                                   "x509certificate@pgp.com")))
+                {
+                  print_x509_notations (nots);
+                  free_notation (nots);
+                }
+            }
 
 	  if (sig->flags.pref_ks
 	      && (opt.list_options & LIST_SHOW_KEYSERVER_URLS))
@@ -1599,7 +1642,7 @@ list_keyblock_print (ctrl_t ctrl, kbnode_t keyblock, int secret, int fpr,
           if (opt.with_key_screening)
             print_pk_screening (pk2, 0);
 	}
-      else if (opt.list_sigs
+      else if ((opt.list_sigs || (opt.list_options & LIST_SHOW_X509_NOTATIONS))
 	       && node->pkt->pkttype == PKT_SIGNATURE && !skip_sigs)
 	{
           kbnode_t n;

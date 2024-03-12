@@ -2086,6 +2086,7 @@ parse_list_options(char *str)
        NULL},
       {"show-user-notations",LIST_SHOW_USER_NOTATIONS,NULL,
        N_("show user-supplied notations during signature listings")},
+      {"show-x509-notations",LIST_SHOW_X509_NOTATIONS,NULL, NULL },
       {"show-keyserver-urls",LIST_SHOW_KEYSERVER_URLS,NULL,
        N_("show preferred keyserver URLs during signature listings")},
       {"show-uid-validity",LIST_SHOW_UID_VALIDITY,NULL,

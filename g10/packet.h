@@ -602,8 +602,8 @@ struct notation
   /* Sometimes we want to %-expand the value.  In these cases, we save
      that transformed value here.  */
   char *altvalue;
-  /* If the notation is not human readable, then the value is stored
-     here.  */
+  /* If the notation is not human readable or the function does not
+     want to distinguish that, then the value is stored here.  */
   unsigned char *bdat;
   /* The amount of data stored in BDAT.
 
@@ -877,7 +877,8 @@ struct notation *string_to_notation(const char *string,int is_utf8);
 struct notation *blob_to_notation(const char *name,
                                   const char *data, size_t len);
 struct notation *sig_to_notation(PKT_signature *sig);
-void free_notation(struct notation *notation);
+struct notation *search_sig_notations (PKT_signature *sig, const char *name);
+void free_notation (struct notation *notation);
 
 /*-- free-packet.c --*/
 void free_symkey_enc( PKT_symkey_enc *enc );

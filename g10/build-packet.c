@@ -1748,6 +1748,72 @@ sig_to_notation(PKT_signature *sig)
   return list;
 }
 
+
+/* Return a list of notation data matching NAME.  The caller needs to
+ * to free the list using free_notation.  Other than sig_to_notation
+ * this function does not return the notation in human readable format
+ * but always returns the raw data.  The human readable flag is set
+ * anyway set but .value is always NULL.  */
+struct notation *
+search_sig_notations (PKT_signature *sig, const char *name)
+{
+  const byte *p;
+  size_t len;
+  int seq = 0;
+  int crit;
+  notation_t list = NULL;
+
+  while((p=enum_sig_subpkt (sig, 1, SIGSUBPKT_NOTATION, &len, &seq, &crit)))
+    {
+      int n1,n2;
+      struct notation *n=NULL;
+
+      if (len < 8)
+	{
+	  log_info (_("WARNING: invalid notation data found\n"));
+	  continue;
+	}
+
+      /* name length.  */
+      n1=(p[4]<<8)|p[5];
+      /* value length.  */
+      n2=(p[6]<<8)|p[7];
+
+      if (8 + n1 + n2 != len)
+	{
+	  log_info (_("WARNING: invalid notation data found\n"));
+	  continue;
+	}
+
+      if (!name)
+        ; /* Return everything.  */
+      else if (n1 != strlen (name) || memcmp (p+8, name, n1))
+        continue; /* Not the requested name.  */
+
+
+      n = xmalloc_clear (sizeof *n);
+      n->name = xmalloc (n1+1);
+
+      memcpy (n->name,p + 8, n1);
+      n->name[n1]='\0';
+
+      /* In any case append a Nul. */
+      n->bdat = xmalloc (n2+1);
+      memcpy (n->bdat, p + 8 + n1, n2);
+      n->bdat[n2] = '\0';
+      n->blen = n2;
+      n->flags.human = !!(p[0] & 0x80);
+
+      n->flags.critical = crit;
+
+      n->next = list;
+      list = n;
+    }
+
+  return list;
+}
+
+
 /* Release the resources associated with the *list* of notations.  To
    release a single notation, make sure that notation->next is
    NULL.  */
