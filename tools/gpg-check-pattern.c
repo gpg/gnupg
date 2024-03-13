@@ -286,7 +286,7 @@ read_file (const char *fname, size_t *r_length)
 
       buflen = st.st_size;
       buf = xmalloc (buflen+1);
-      if (es_fread (buf, buflen, 1, fp) != 1)
+      if (buflen && es_fread (buf, buflen, 1, fp) != 1)
         {
           log_error ("error reading '%s': %s\n", fname, strerror (errno));
           es_fclose (fp);
