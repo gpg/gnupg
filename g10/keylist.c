@@ -1172,15 +1172,36 @@ dump_attribs (const PKT_user_id *uid, PKT_public_key *pk)
 
 
 
+/* If PK is given the output is written to a new file instead of
+ * stdout.  */
 static void
-print_x509_notations (struct notation *nots)
+print_x509_notations (struct notation *nots, PKT_public_key *pk)
 {
   gpg_error_t err;
-  gpgrt_b64state_t state;
+  gpgrt_b64state_t state = NULL;
+  char hexfpr[2*4 + 1 + 2*MAX_FINGERPRINT_LEN+4+1];
+  char sha1[20];
+  estream_t fp;
 
   for (; nots; nots = nots->next)
     {
-      state = gpgrt_b64enc_start (es_stdout, "CERTIFICATE");
+      if (pk)
+        {
+          gcry_md_hash_buffer (GCRY_MD_SHA1, sha1, nots->bdat, nots->blen);
+          bin2hex (sha1+16, 4, hexfpr);
+          hexfpr[2*4] = '-';
+          hexfingerprint (pk, hexfpr + 2*4+1, 2*MAX_FINGERPRINT_LEN);
+          strcat (hexfpr, ".pem");
+          fp = es_fopen (hexfpr, "w");
+          if (!fp)
+            {
+              err = gpg_err_code_from_syserror ();
+              goto b64fail;
+            }
+        }
+      else
+        fp = es_stdout;
+      state = gpgrt_b64enc_start (fp, "CERTIFICATE");
       if (!state)
         {
           err = gpg_err_code_from_syserror ();
@@ -1192,12 +1213,19 @@ print_x509_notations (struct notation *nots)
       err = gpgrt_b64enc_finish (state);
       if (err)
         goto b64fail;
+      if (fp != es_stdout)
+        {
+          es_fclose (fp);
+          fp = NULL;
+        }
     }
   return;
 
  b64fail:
   log_error ("error writing base64 encoded notation: %s\n", gpg_strerror (err));
   gpgrt_b64enc_finish (state);
+  if (fp && fp != es_stdout)
+    gpgrt_fcancel (fp);
 }
 
 
@@ -1250,7 +1278,7 @@ cmp_signodes (const void *av, const void *bv)
  * NODFLG_MARK_B to indicate self-signatures.  */
 static void
 list_signature_print (ctrl_t ctrl, kbnode_t keyblock, kbnode_t node,
-                      struct keylist_context *listctx)
+                      struct keylist_context *listctx, PKT_public_key *lastpk)
 {
           /* (extra indentation to keep the diff history short)  */
 	  PKT_signature *sig = node->pkt->pkt.signature;
@@ -1375,7 +1403,8 @@ list_signature_print (ctrl_t ctrl, kbnode_t keyblock, kbnode_t node,
                               0));
 
 	  if (sig->flags.notation
-              && (opt.list_options & LIST_SHOW_X509_NOTATIONS))
+              && (opt.list_options
+                  & (LIST_SHOW_X509_NOTATIONS|LIST_STORE_X509_NOTATIONS)))
             {
               struct notation *nots;
 
@@ -1383,7 +1412,10 @@ list_signature_print (ctrl_t ctrl, kbnode_t keyblock, kbnode_t node,
                   && (nots = search_sig_notations (sig,
                                                    "x509certificate@pgp.com")))
                 {
-                  print_x509_notations (nots);
+                  if ((opt.list_options & LIST_STORE_X509_NOTATIONS))
+                    print_x509_notations (nots, lastpk);
+                  else
+                    print_x509_notations (nots, NULL);
                   free_notation (nots);
                 }
             }
@@ -1437,6 +1469,7 @@ list_keyblock_print (ctrl_t ctrl, kbnode_t keyblock, int secret, int fpr,
   int rc;
   kbnode_t node;
   PKT_public_key *pk;
+  PKT_public_key *lastpk;
   u32 *mainkid;
   int skip_sigs = 0;
   char *hexgrip = NULL;
@@ -1453,6 +1486,7 @@ list_keyblock_print (ctrl_t ctrl, kbnode_t keyblock, int secret, int fpr,
 
   pk = node->pkt->pkt.public_key;
   mainkid = pk_keyid (pk);
+  lastpk = pk;
 
   if (secret || opt.with_keygrip)
     {
@@ -1601,6 +1635,7 @@ list_keyblock_print (ctrl_t ctrl, kbnode_t keyblock, int secret, int fpr,
 	{
 	  PKT_public_key *pk2 = node->pkt->pkt.public_key;
 
+          lastpk = pk2;
 	  if ((pk2->flags.revoked || pk2->has_expired)
 	      && !(opt.list_options & LIST_SHOW_UNUSABLE_SUBKEYS))
 	    {
@@ -1642,7 +1677,9 @@ list_keyblock_print (ctrl_t ctrl, kbnode_t keyblock, int secret, int fpr,
           if (opt.with_key_screening)
             print_pk_screening (pk2, 0);
 	}
-      else if ((opt.list_sigs || (opt.list_options & LIST_SHOW_X509_NOTATIONS))
+      else if ((opt.list_sigs
+                || (opt.list_options
+                    & (LIST_SHOW_X509_NOTATIONS|LIST_STORE_X509_NOTATIONS)))
 	       && node->pkt->pkttype == PKT_SIGNATURE && !skip_sigs)
 	{
           kbnode_t n;
@@ -1670,7 +1707,8 @@ list_keyblock_print (ctrl_t ctrl, kbnode_t keyblock, int secret, int fpr,
             qsort (sigarray, sigcount, sizeof *sigarray, cmp_signodes);
 
           for (idx=0; idx < sigcount; idx++)
-            list_signature_print (ctrl, keyblock, sigarray[idx], listctx);
+            list_signature_print (ctrl, keyblock, sigarray[idx], listctx,
+                                  lastpk);
           xfree (sigarray);
 	}
     }

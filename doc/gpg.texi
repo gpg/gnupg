@@ -1416,6 +1416,12 @@ give the opposite meaning.  The options are:
   This is intended for debugging and the output format may change
   without notice.
 
+  @item store-x509-notations
+  @opindex list-options:store-x509-notations
+  Store X.509 certificates embedded in key signatures as PEM data
+  files.  The filename consists the 4 byte key ID of the certificate,
+  a dash, the fingerprint of the key or subkey, and the suffix ".pem".
+
   @item show-keyserver-urls
   @opindex list-options:show-keyserver-urls
   Show any preferred keyserver URL in the
