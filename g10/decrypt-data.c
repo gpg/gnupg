@@ -206,6 +206,7 @@ aead_checktag (decode_filter_ctx_t dfx, int final, const void *tagbuf)
     {
       log_error ("gcry_cipher_checktag%s failed: %s\n",
                  final? " (final)":"", gpg_strerror (err));
+      write_status_error ("aead_checktag", err);
       return err;
     }
   if (DBG_FILTER)
