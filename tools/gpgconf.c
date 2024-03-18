@@ -247,10 +247,10 @@ gpgconf_write_status (int no, const char *format, ...)
 
 
 static void
-list_dirs (estream_t fp, char **names, int special)
+list_dirs (estream_t fp, char **names, int show_config_mode)
 {
   static struct {
-    const char *name;
+    const char *name; /* If NULL only a file check will be done.  */
     const char *(*fnc)(void);
     const char *extra;
   } list[] = {
@@ -266,12 +266,13 @@ list_dirs (estream_t fp, char **names, int special)
     { "agent-extra-socket", gnupg_socketdir,  GPG_AGENT_EXTRA_SOCK_NAME },
     { "agent-browser-socket",gnupg_socketdir, GPG_AGENT_BROWSER_SOCK_NAME },
     { "agent-socket",       gnupg_socketdir,  GPG_AGENT_SOCK_NAME },
+    { NULL,                 gnupg_socketdir,  "S.uiserver" },
     { "homedir",            gnupg_homedir,    NULL }
   };
   int idx, j;
   char *tmp;
   const char *s;
-
+  gpg_error_t err;
 
   for (idx = 0; idx < DIM (list); idx++)
     {
@@ -283,7 +284,10 @@ list_dirs (estream_t fp, char **names, int special)
         }
       else
         tmp = NULL;
-      if (!names)
+
+      if (!list[idx].name)
+        ;
+      else if (!names)
         es_fprintf (fp, "%s:%s\n", list[idx].name, gc_percent_escape (s));
       else
         {
@@ -293,6 +297,23 @@ list_dirs (estream_t fp, char **names, int special)
                 es_fputs (s, fp);
                 es_putc (opt.null? '\0':'\n', fp);
               }
+        }
+
+      /* In show config mode check that the socket files are accessible.  */
+      if (list[idx].extra && show_config_mode)
+        {
+          estream_t tmpfp;
+
+          tmpfp = es_fopen (s, "rb");
+          if (tmpfp)
+            es_fclose (tmpfp);  /* All fine - we can read that file.  */
+          else if ((err=gpg_error_from_syserror ()) == GPG_ERR_ENOENT
+                   || err == GPG_ERR_ENXIO)
+            ; /* No such file/ No such device or address - this is okay.  */
+          else
+            es_fprintf (fp,
+                        "### Warning: error reading existing file '%s': %s\n",
+                        s, gpg_strerror (err));
         }
 
       xfree (tmp);
@@ -325,7 +346,7 @@ list_dirs (estream_t fp, char **names, int special)
         }
 
       es_fflush (fp);
-      if (special)
+      if (show_config_mode)
         es_fprintf (fp, "\n"
                     "### Note: homedir taken from registry key %s%s\\%s:%s\n"
                     "\n",
@@ -343,7 +364,7 @@ list_dirs (estream_t fp, char **names, int special)
     {
       xfree (tmp);
       es_fflush (fp);
-      if (special)
+      if (show_config_mode)
         es_fprintf (fp, "\n"
                     "### Note: registry key %s without value in HKCU or HKLM\n"
                     "\n", GNUPG_REGISTRY_DIR);
@@ -353,7 +374,7 @@ list_dirs (estream_t fp, char **names, int special)
     }
 
 #else /*!HAVE_W32_SYSTEM*/
-  (void)special;
+  (void)show_config_mode;
 #endif /*!HAVE_W32_SYSTEM*/
 }
 
@@ -1235,7 +1256,7 @@ show_versions (estream_t fp)
 
 /* Copy data from file SRC to DST.  Returns 0 on success or an error
  * code on failure.  If LISTP is not NULL, that strlist is updated
- * with the variabale or registry key names detected.  Flag bit 0
+ * with the variable or registry key names detected.  Flag bit 0
  * indicates a registry entry.  */
 static gpg_error_t
 my_copy_file (estream_t src, estream_t dst, strlist_t *listp)
