@@ -8,12 +8,25 @@ Noteworthy changes in version 2.2.43 (unreleased)
   * gpg: Allow to create revocations even with non-compliant algos.
     [rG89c7eccba5]
 
+  * gpg: Fix mixed invocation with --trusted-keys and --no-options.
+    [T7025]
+
+  * gpg: Make sure a DECRYPTION_OKAY is never issued for a bad OCB
+    tag.  [T7042]
+
   * gpgsm: Allow PKCS#12 decryption with a longer salt value.  [T6757]
+
+  * agent: Allow simple KEYINFO command in restricted mode.  [T7003]
+
+  * agent: Consider an empty pattern file as valid. [rG509d0f76ce]
 
   * dirmngr: Avoid starting a second instance on Windows via GPGME
     based launching.  [T6833]
 
   * dirmngr: Trust system's root CAs for checking CRL issuers.  [T6963]
+
+  * dirmngr: Fix the regression in 2.2.42 of use of proxy for TLS
+    connection.  [T6997]
 
   * scd: Fix corner case bug when changing to a shorter PIN with KDF
     enabled.  [T6843]
@@ -23,6 +36,7 @@ Noteworthy changes in version 2.2.43 (unreleased)
 
   * gpgconf: Fix -X command for the new VERSION file format.  [T6918]
 
+  * wks: Make gpg-wks-client --mirror work w/o args.
 
   Release-info: https://dev.gnupg.org/T6849
 
