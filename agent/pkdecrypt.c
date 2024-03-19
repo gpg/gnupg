@@ -241,7 +241,7 @@ agent_hybrid_kem_decap (ctrl_t ctrl, const char *desc_text, int kemid,
     }
 
   err = agent_key_from_file (ctrl, NULL, desc_text,
-                             NULL, &shadow_info,
+                             ctrl->keygrip1, &shadow_info,
                              CACHE_MODE_NORMAL, NULL, &s_skey1, NULL, NULL);
   if (gpg_err_code (err) == GPG_ERR_NO_SECKEY)
     no_shadow_info = 1;
@@ -291,9 +291,6 @@ agent_hybrid_kem_decap (ctrl_t ctrl, const char *desc_text, int kemid,
 
   ecc_ct = gcry_mpi_get_opaque (ecc_ct_mpi, &nbits);
   ecc_ct_len = (nbits+7)/8;
-  /* Remove the 0x40 prefix*/
-  ecc_ct++;
-  ecc_ct_len--;
   /*FIXME make sure the lengths are all correct.  */
   /*FIXME: check the internal of optional to determine the KEK-algo and KEKKEYLEN.  */
   err = gcry_kem_decap (GCRY_KEM_RAW_X25519,

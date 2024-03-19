@@ -776,6 +776,7 @@ cmd_sigkey (assuan_context_t ctx, char *line)
   int opt_another;
 
   opt_another = has_option (line, "--another");
+  line = skip_options (line);
 
   rc = parse_keygrip (ctx, line, opt_another? ctrl->keygrip1 : ctrl->keygrip);
   if (rc)
