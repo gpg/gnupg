@@ -207,8 +207,8 @@ agent_hybrid_kem_decap (ctrl_t ctrl, const char *desc_text, int kemid,
 
   gcry_buffer_t iov[13];
   unsigned char head136[2];
-  unsigned char headK[2];
-  const unsigned char pad[95] = { 0 };
+  unsigned char headK[3];
+  const unsigned char pad[94] = { 0 };
   unsigned char right_encode_L[3];
 
   unsigned char kekkey[32];
@@ -280,7 +280,7 @@ agent_hybrid_kem_decap (ctrl_t ctrl, const char *desc_text, int kemid,
                            &ecc_pk_mpi, &ecc_sk_mpi, NULL);
   p = gcry_mpi_get_opaque (ecc_pk_mpi, &nbits);
   len = (nbits+7)/8;
-  memcpy (ecc_pk, p+1, 32);
+  memcpy (ecc_pk, p+1, 32);     /* Remove 0x40 prefix */
   p = gcry_mpi_get_opaque (ecc_sk_mpi, &nbits);
   len = (nbits+7)/8;
   memset (ecc_sk, 0, 32);
@@ -298,7 +298,7 @@ agent_hybrid_kem_decap (ctrl_t ctrl, const char *desc_text, int kemid,
                         ecc_ct, ecc_ct_len,
                         ecc_ecdh, 32,
                         NULL, 0);
-  mpi_release (ecc_ct_mpi);
+  log_printhex (ecc_ecdh, 32, "ecc ECDH: ");
 
   iov[0].data = ecc_ecdh;
   iov[0].off = 0;
@@ -310,6 +310,7 @@ agent_hybrid_kem_decap (ctrl_t ctrl, const char *desc_text, int kemid,
   iov[2].off = 0;
   iov[2].len = 32;
   gcry_md_hash_buffers (GCRY_MD_SHA3_256, 0, ecc_ss, iov, 3);
+  log_printhex (ecc_ss, 32, "eccKeyShare: ");
 
   /* Secondly, ML-KEM */
   gcry_sexp_extract_param (s_skey1, NULL, "/s", &mlkem_sk_mpi, NULL);
@@ -325,8 +326,8 @@ agent_hybrid_kem_decap (ctrl_t ctrl, const char *desc_text, int kemid,
                         NULL, 0);
 
   mpi_release (mlkem_sk_mpi);
-  mpi_release (mlkem_ct_mpi);
 
+  log_printhex (mlkem_ss, GCRY_KEM_MLKEM768_SHARED_LEN, "mlkemKeyShare: ");
   /* Then, combine two shared secrets into one */
 
   //   multiKeyCombine(eccKeyShare, eccCipherText,
@@ -347,12 +348,12 @@ agent_hybrid_kem_decap (ctrl_t ctrl, const char *desc_text, int kemid,
   //   counter             - the 4 byte value 00 00 00 01
   //   customizationString - the UTF-8 encoding of the string "KDF"
   //
-  //  eccData = eccKeyShare || eccCipherText
-  //    mlkemData = mlkemKeyShare || mlkemCipherText
-  //    encData = counter || eccData || mlkemData || fixedInfo
+  //      eccData = eccKeyShare || eccCipherText
+  //      mlkemData = mlkemKeyShare || mlkemCipherText
+  //   encData = counter || eccData || mlkemData || fixedInfo
   //
-  //    KEK = KMAC256(domSeparation, encData, oBits, customizationString)
-  //    return KEK
+  //   KEK = KMAC256(domSeparation, encData, oBits, customizationString)
+  //   return KEK
   //
   // fixedInfo = algID (105 for ML-KEM-768-x25519kem)
   //
@@ -375,11 +376,12 @@ agent_hybrid_kem_decap (ctrl_t ctrl, const char *desc_text, int kemid,
   iov[2].off = 0;
   iov[2].len = 2;
 
-  headK[0] = 1;
-  headK[1] = 37;
+  headK[0] = 2;
+  headK[1] = (37*8)>>8;
+  headK[2] = (37*8)&0xff;
   iov[3].data = headK;
   iov[3].off = 0;
-  iov[3].len = 2;
+  iov[3].len = 3;
 
   iov[4].data = "OpenPGPCompositeKeyDerivationFunction";
   iov[4].off = 0;
@@ -420,9 +422,11 @@ agent_hybrid_kem_decap (ctrl_t ctrl, const char *desc_text, int kemid,
   iov[12].off = 0;
   iov[12].len = 3;
 
-  gcry_md_hash_buffers_extract (GCRY_MD_CSHAKE256, 0, kekkey, kekkeylen,
-                                iov, DIM (iov));
+  mpi_release (ecc_ct_mpi);
+  mpi_release (mlkem_ct_mpi);
 
+  gcry_md_hash_buffers_extract (GCRY_MD_CSHAKE256, 0, kekkey, kekkeylen,
+                                iov, 13);
   if (DBG_CRYPTO)
     {
       log_printhex (kekkey, kekkeylen, "KEK key: ");
