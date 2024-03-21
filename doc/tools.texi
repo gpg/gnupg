@@ -1151,7 +1151,8 @@ More fields may be added in future to the output.
 
   Under Windows this file is used to install GnuPG as a portable
   application.  An empty file named @file{gpgconf.ctl} is expected in
-  the same directory as the tool @file{gpgconf.exe}.  The root of the
+  the same directory as the tool @file{gpgconf.exe} or the file must
+  have a keyword @code{portable} with the value true.  The root of the
   installation is then that directory; or, if @file{gpgconf.exe} has
   been installed directly below a directory named @file{bin}, its parent
   directory.  You also need to make sure that the following directories
