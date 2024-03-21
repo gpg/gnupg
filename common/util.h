@@ -244,6 +244,7 @@ void gnupg_set_homedir (const char *newdir);
 void gnupg_maybe_make_homedir (const char *fname, int quiet);
 const char *gnupg_homedir (void);
 int gnupg_default_homedir_p (void);
+const char *gnupg_registry_dir (void);
 const char *gnupg_daemon_rootdir (void);
 const char *gnupg_socketdir (void);
 const char *gnupg_sysconfdir (void);

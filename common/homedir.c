@@ -1,7 +1,7 @@
 /* homedir.c - Setup the home directory.
  * Copyright (C) 2004, 2006, 2007, 2010 Free Software Foundation, Inc.
  * Copyright (C) 2013, 2016 Werner Koch
- * Copyright (C) 2021 g10 Code GmbH
+ * Copyright (C) 2021, 2024 g10 Code GmbH
  *
  * This file is part of GnuPG.
  *
@@ -102,6 +102,7 @@ static struct
   unsigned int empty:1;   /* The file is empty except for comments.      */
   unsigned int valid:1;   /* The entries in gpgconf.ctl are valid.       */
   unsigned int portable:1;/* Windows portable installation.              */
+  char *gnupg;            /* The "gnupg" directory part.  */
   char *rootdir;          /* rootdir or NULL        */
   char *sysconfdir;       /* sysconfdir or NULL     */
   char *socketdir;        /* socketdir or NULL      */
@@ -134,6 +135,87 @@ static byte w32_bin_is_bin;
 static const char *w32_rootdir (void);
 #endif
 
+/* Return the name of the gnupg dir.  This is usually "gnupg".  */
+static const char *
+my_gnupg_dirname (void)
+{
+  if (gpgconf_ctl.valid && gpgconf_ctl.gnupg)
+    return gpgconf_ctl.gnupg;
+  return "gnupg";
+}
+
+/* Return the hardwired home directory which is not anymore so
+ * hardwired because it may now be modified using the gpgconf.ctl
+ * "gnupg" keyword.  */
+static const char *
+my_fixed_default_homedir (void)
+{
+  if (gpgconf_ctl.valid && gpgconf_ctl.gnupg)
+    {
+      static char *name;
+      char *p;
+
+      if (!name)
+        {
+          name = xmalloc (strlen (GNUPG_DEFAULT_HOMEDIR)
+                          + strlen (gpgconf_ctl.gnupg) + 1);
+          strcpy (name, GNUPG_DEFAULT_HOMEDIR);
+          p = strrchr (name, '/');
+          if (p)
+            p++;
+          else
+            p = name;
+          if (*p == '.')
+            p++; /* Keep a leading dot.  */
+          strcpy (p, gpgconf_ctl.gnupg);
+          gpgrt_annotate_leaked_object (name);
+        }
+      return name;
+    }
+  return GNUPG_DEFAULT_HOMEDIR;
+}
+
+
+
+/* Under Windows we need to modify the standard registry key with the
+ * "gnupg" keyword from a gpgconf.ctl.  */
+#ifdef HAVE_W32_SYSTEM
+const char *
+gnupg_registry_dir (void)
+{
+  if (gpgconf_ctl.valid && gpgconf_ctl.gnupg)
+    {
+      static char *name;
+      char *p;
+
+      if (!name)
+        {
+          name = xmalloc (strlen (GNUPG_REGISTRY_DIR)
+                          + strlen (gpgconf_ctl.gnupg) + 1);
+          strcpy (name, GNUPG_REGISTRY_DIR);
+          p = strrchr (name, '\\');
+          if (p)
+            p++;
+          else
+            p = name;
+          strcpy (p, gpgconf_ctl.gnupg);
+          if (!strncmp (p, "gnupg", 5))
+            {
+              /* Registry keys are case-insensitive and we use a
+               * capitalized version of gnupg by default.  So, if the
+               * new value starts with "gnupg" we apply the usual
+               * capitalization for this first part.  */
+              p[0] = 'G';
+              p[3] = 'P';
+              p[4] = 'G';
+            }
+          gpgrt_annotate_leaked_object (name);
+        }
+      return name;
+    }
+  return GNUPG_REGISTRY_DIR;
+}
+#endif /*HAVE_W32_SYSTEM*/
 
 
 /* This is a helper function to load and call a Windows function from
@@ -339,7 +421,7 @@ standard_homedir (void)
                                       NULL, 0);
           if (path)
             {
-              dir = xstrconcat (path, "\\gnupg", NULL);
+              dir = xstrconcat (path, "\\", my_gnupg_dirname (), NULL);
               xfree (path);
               gpgrt_annotate_leaked_object (dir);
 
@@ -350,12 +432,12 @@ standard_homedir (void)
 
             }
           else
-            dir = GNUPG_DEFAULT_HOMEDIR;
+            dir = my_fixed_default_homedir ();
         }
     }
   return dir;
 #else/*!HAVE_W32_SYSTEM*/
-  return GNUPG_DEFAULT_HOMEDIR;
+  return my_fixed_default_homedir ();
 #endif /*!HAVE_W32_SYSTEM*/
 }
 
@@ -389,7 +471,7 @@ default_homedir (void)
                * warning if the homedir has been taken from the
                * registry.  */
               tmp = read_w32_registry_string (NULL,
-                                              GNUPG_REGISTRY_DIR,
+                                              gnupg_registry_dir (),
                                               "HomeDir");
               if (tmp && !*tmp)
                 {
@@ -414,7 +496,7 @@ default_homedir (void)
 #endif /*HAVE_W32_SYSTEM*/
 
   if (!dir || !*dir)
-    dir = GNUPG_DEFAULT_HOMEDIR;
+    dir = my_fixed_default_homedir ();
   else
     {
       char *p;
@@ -470,6 +552,7 @@ parse_gpgconf_ctl (const char *fname)
   const char *name;
   int anyitem = 0;
   int ignoreall = 0;
+  char *gnupgval = NULL;
   char *rootdir = NULL;
   char *sysconfdir = NULL;
   char *socketdir = NULL;
@@ -500,6 +583,7 @@ parse_gpgconf_ctl (const char *fname)
     {
       static const char *names[] =
         {
+          "gnupg",
           "rootdir",
           "sysconfdir",
           "socketdir",
@@ -555,6 +639,11 @@ parse_gpgconf_ctl (const char *fname)
             ignoreall = 1; /* No, this file shall be ignored.  */
           xfree (p);
         }
+      else if (!strcmp (name, "gnupg"))
+        {
+          xfree (gnupgval);
+          gnupgval = p;
+        }
       else if (!strcmp (name, "sysconfdir"))
         {
           xfree (sysconfdir);
@@ -589,6 +678,13 @@ parse_gpgconf_ctl (const char *fname)
 
   if (ignoreall)
     ; /* Forced error.  Note that .found is still set.  */
+  else if (gnupgval && (!*gnupgval || strpbrk (gnupgval, "/\\")))
+    {
+      /* We don't allow a slash or backslash in the value because our
+       * code assumes this is a single directory name.  */
+      log_info ("invalid %s '%s' specified in gpgconf.ctl\n",
+                "gnupg", gnupgval);
+    }
   else if (rootdir && (!*rootdir || *rootdir != '/'))
     {
       log_info ("invalid %s '%s' specified in gpgconf.ctl\n",
@@ -606,6 +702,12 @@ parse_gpgconf_ctl (const char *fname)
     }
   else
     {
+      if (gnupgval)
+        {
+          gpgconf_ctl.gnupg = gnupgval;
+          gpgrt_annotate_leaked_object (gpgconf_ctl.gnupg);
+          /* log_info ("want gnupg '%s'\n", dir); */
+        }
       if (rootdir)
         {
           while (*rootdir && rootdir[strlen (rootdir)-1] == '/')
@@ -637,9 +739,11 @@ parse_gpgconf_ctl (const char *fname)
   if (!gpgconf_ctl.valid)
     {
       /* Error reading some entries - clear them all.  */
+      xfree (gnupgval);
       xfree (rootdir);
       xfree (sysconfdir);
       xfree (socketdir);
+      gpgconf_ctl.gnupg = NULL;
       gpgconf_ctl.rootdir = NULL;
       gpgconf_ctl.sysconfdir = NULL;
       gpgconf_ctl.socketdir = NULL;
@@ -1031,7 +1135,7 @@ _gnupg_socketdir_internal (int skip_checks, unsigned *r_info)
 
   if (w32_portable_app)
     {
-      name = xstrconcat (w32_rootdir (), DIRSEP_S, "gnupg", NULL);
+      name = xstrconcat (w32_rootdir (), DIRSEP_S, my_gnupg_dirname (), NULL);
     }
   else
     {
@@ -1042,7 +1146,7 @@ _gnupg_socketdir_internal (int skip_checks, unsigned *r_info)
                                   NULL, 0);
       if (path)
         {
-          name = xstrconcat (path, "\\gnupg", NULL);
+          name = xstrconcat (path, "\\", my_gnupg_dirname (), NULL);
           xfree (path);
           if (gnupg_access (name, F_OK))
             gnupg_mkdir (name, "-rwx");
@@ -1150,10 +1254,11 @@ _gnupg_socketdir_internal (int skip_checks, unsigned *r_info)
   };
   int i;
   struct stat sb;
-  char prefixbuffer[19 + 1 + 20 + 6 + 1];
+  char prefixbuffer[256];
   const char *prefix;
   const char *s;
   char *name = NULL;
+  const char *gnupgname = my_gnupg_dirname ();
 
   *r_info = 0;
 
@@ -1192,12 +1297,13 @@ _gnupg_socketdir_internal (int skip_checks, unsigned *r_info)
             goto leave;
         }
 
-      if (strlen (prefix) + 7 >= sizeof prefixbuffer)
+      if (strlen (prefix) + strlen (gnupgname) + 2 >= sizeof prefixbuffer)
         {
           *r_info |= 1; /* Ooops: Buffer too short to append "/gnupg".  */
           goto leave;
         }
-      strcat (prefixbuffer, "/gnupg");
+      strcat (prefixbuffer, "/");
+      strcat (prefixbuffer, gnupgname);
     }
 
   /* Check whether the gnupg sub directory (or the specified diretory)
@@ -1352,11 +1458,8 @@ gnupg_sysconfdir (void)
 
   if (!name)
     {
-      const char *s1, *s2;
-      s1 = w32_commondir ();
-      s2 = DIRSEP_S "etc" DIRSEP_S "gnupg";
-      name = xmalloc (strlen (s1) + strlen (s2) + 1);
-      strcpy (stpcpy (name, s1), s2);
+      name = xstrconcat (w32_commondir (), DIRSEP_S, "etc", DIRSEP_S,
+                         my_gnupg_dirname (), NULL);
       gpgrt_annotate_leaked_object (name);
     }
   return name;

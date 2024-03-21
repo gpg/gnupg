@@ -1159,6 +1159,13 @@ More fields may be added in future to the output.
   exist and are writable: @file{ROOT/home} for the GnuPG home and
   @file{ROOT@value{LOCALCACHEDIR}} for internal cache files.
 
+  On both platforms the keyword @code{gnupg} can be used to change the
+  standard home directory.  For example a value of "gnupg-vsd" will
+  change the default home directory on unix from @file{~/.gnupg} to
+  @file{~/.gnupg-vsd}.  The socket directory is changed accordingly
+  unless the @code{socketdir} keyword has been used.  On Windows the
+  Registry keys are modified as well.
+
 
 @item /etc/gnupg/gpgconf.conf
 @cindex gpgconf.conf

@@ -315,7 +315,7 @@ list_dirs (estream_t fp, char **names, int special)
 
 #ifdef HAVE_W32_SYSTEM
   tmp = read_w32_registry_string (NULL,
-                                  GNUPG_REGISTRY_DIR,
+                                  gnupg_registry_dir (),
                                   "HomeDir");
   if (tmp)
     {
@@ -324,14 +324,14 @@ list_dirs (estream_t fp, char **names, int special)
 
       xfree (tmp);
       if ((tmp = read_w32_registry_string ("HKEY_CURRENT_USER",
-                                           GNUPG_REGISTRY_DIR,
+                                           gnupg_registry_dir (),
                                            "HomeDir")))
         {
           xfree (tmp);
           hkcu = 1;
         }
       if ((tmp = read_w32_registry_string ("HKEY_LOCAL_MACHINE",
-                                           GNUPG_REGISTRY_DIR,
+                                           gnupg_registry_dir (),
                                            "HomeDir")))
         {
           xfree (tmp);
@@ -344,15 +344,15 @@ list_dirs (estream_t fp, char **names, int special)
                     "### Note: homedir taken from registry key %s%s\\%s:%s\n"
                     "\n",
                     hkcu?"HKCU":"", hklm?"HKLM":"",
-                    GNUPG_REGISTRY_DIR, "HomeDir");
+                    gnupg_registry_dir (), "HomeDir");
       else
         log_info ("Warning: homedir taken from registry key (%s:%s) in%s%s\n",
-                  GNUPG_REGISTRY_DIR, "HomeDir",
+                  gnupg_registry_dir (), "HomeDir",
                   hkcu?" HKCU":"",
                   hklm?" HKLM":"");
     }
   else if ((tmp = read_w32_registry_string (NULL,
-                                            GNUPG_REGISTRY_DIR,
+                                            gnupg_registry_dir (),
                                             NULL)))
     {
       xfree (tmp);
@@ -360,10 +360,10 @@ list_dirs (estream_t fp, char **names, int special)
       if (special)
         es_fprintf (fp, "\n"
                     "### Note: registry %s without value in HKCU or HKLM\n"
-                    "\n", GNUPG_REGISTRY_DIR);
+                    "\n", gnupg_registry_dir ());
       else
         log_info ("Warning: registry key (%s) without value in HKCU or HKLM\n",
-                  GNUPG_REGISTRY_DIR);
+                  gnupg_registry_dir ());
     }
 
 #else /*!HAVE_W32_SYSTEM*/
@@ -1456,13 +1456,14 @@ show_other_registry_entries (estream_t outfp)
   static struct {
     int group;
     const char *name;
+    unsigned int prependregkey:1;
   } names[] =
   {
     { 1, "HKLM\\Software\\Gpg4win:Install Directory" },
     { 1, "HKLM\\Software\\Gpg4win:Desktop-Version" },
     { 1, "HKLM\\Software\\Gpg4win:VS-Desktop-Version" },
-    { 1, "\\" GNUPG_REGISTRY_DIR ":HomeDir" },
-    { 1, "\\" GNUPG_REGISTRY_DIR ":DefaultLogFile" },
+    { 1, ":HomeDir", 1 },
+    { 1, ":DefaultLogFile", 1 },
     { 2, "\\Software\\Microsoft\\Office\\Outlook\\Addins\\GNU.GpgOL"
       ":LoadBehavior" },
     { 2, "HKCU\\Software\\Microsoft\\Office\\16.0\\Outlook\\Options\\Mail:"
@@ -1505,6 +1506,13 @@ show_other_registry_entries (estream_t outfp)
         {
           xfree (namebuf);
           namebuf = xstrconcat ("\\Software\\GNU\\GpgOL", ":",
+                                names[idx].name, NULL);
+          name = namebuf;
+        }
+      else if (names[idx].prependregkey)
+        {
+          xfree (namebuf);
+          namebuf = xstrconcat ("\\", gnupg_registry_dir (),
                                 names[idx].name, NULL);
           name = namebuf;
         }
