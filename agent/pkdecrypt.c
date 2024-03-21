@@ -274,6 +274,9 @@ agent_hybrid_kem_decap (ctrl_t ctrl, const char *desc_text, int kemid,
       goto leave;
     }
   encrypted_sessionkey++;
+  /* skip sym algo */
+  encrypted_sessionkey_len--;
+  encrypted_sessionkey++;
 
   /* Fistly, ECC.  */
   gcry_sexp_extract_param (s_skey0, NULL, "/q/d",
@@ -298,7 +301,6 @@ agent_hybrid_kem_decap (ctrl_t ctrl, const char *desc_text, int kemid,
                         ecc_ct, ecc_ct_len,
                         ecc_ecdh, 32,
                         NULL, 0);
-  log_printhex (ecc_ecdh, 32, "ecc ECDH: ");
 
   iov[0].data = ecc_ecdh;
   iov[0].off = 0;
@@ -310,7 +312,6 @@ agent_hybrid_kem_decap (ctrl_t ctrl, const char *desc_text, int kemid,
   iov[2].off = 0;
   iov[2].len = 32;
   gcry_md_hash_buffers (GCRY_MD_SHA3_256, 0, ecc_ss, iov, 3);
-  log_printhex (ecc_ss, 32, "eccKeyShare: ");
 
   /* Secondly, ML-KEM */
   gcry_sexp_extract_param (s_skey1, NULL, "/s", &mlkem_sk_mpi, NULL);
@@ -327,7 +328,6 @@ agent_hybrid_kem_decap (ctrl_t ctrl, const char *desc_text, int kemid,
 
   mpi_release (mlkem_sk_mpi);
 
-  log_printhex (mlkem_ss, GCRY_KEM_MLKEM768_SHARED_LEN, "mlkemKeyShare: ");
   /* Then, combine two shared secrets into one */
 
   //   multiKeyCombine(eccKeyShare, eccCipherText,
@@ -360,7 +360,6 @@ agent_hybrid_kem_decap (ctrl_t ctrl, const char *desc_text, int kemid,
   // KMAC256(K,X,L,S):
   // newX = bytepad(encode_string(K), 136) || X || right_encode(L)
   // cSHAKE256(newX,L,"KMAC",S)
-  len = 4 + 32 + 32 + GCRY_KEM_MLKEM768_SHARED_LEN + GCRY_KEM_MLKEM768_ENCAPS_LEN;
 
   iov[0].data = "KMAC";
   iov[0].off = 0;
@@ -422,11 +421,11 @@ agent_hybrid_kem_decap (ctrl_t ctrl, const char *desc_text, int kemid,
   iov[12].off = 0;
   iov[12].len = 3;
 
+  err = gcry_md_hash_buffers_extract (GCRY_MD_CSHAKE256, 0, kekkey, kekkeylen,
+                                      iov, 13);
   mpi_release (ecc_ct_mpi);
   mpi_release (mlkem_ct_mpi);
 
-  gcry_md_hash_buffers_extract (GCRY_MD_CSHAKE256, 0, kekkey, kekkeylen,
-                                iov, 13);
   if (DBG_CRYPTO)
     {
       log_printhex (kekkey, kekkeylen, "KEK key: ");
@@ -445,8 +444,8 @@ agent_hybrid_kem_decap (ctrl_t ctrl, const char *desc_text, int kemid,
   err = gcry_cipher_setkey (hd, kekkey, kekkeylen);
 
   sessionkey_encoded_len = encrypted_sessionkey_len - 8;
-  gcry_cipher_decrypt (hd, sessionkey_encoded, sessionkey_encoded_len,
-                       encrypted_sessionkey, encrypted_sessionkey_len);
+  err = gcry_cipher_decrypt (hd, sessionkey_encoded, sessionkey_encoded_len,
+                             encrypted_sessionkey, encrypted_sessionkey_len);
   gcry_cipher_close (hd);
 
   mpi_release (encrypted_sessionkey_mpi);
