@@ -113,6 +113,8 @@ static int allow_special_filenames;
 #ifdef HAVE_W32_SYSTEM
 /* State of gnupg_inhibit_set_foregound_window.  */
 static int inhibit_set_foregound_window;
+/* Disable the use of _open_osfhandle.  */
+static int no_translate_sys2libc_fd;
 #endif
 
 
@@ -351,6 +353,16 @@ enable_special_filenames (void)
 }
 
 
+/* Disable the use use of _open_osfhandle on Windows.  */
+void
+disable_translate_sys2libc_fd (void)
+{
+#ifdef HAVE_W32_SYSTEM
+  no_translate_sys2libc_fd = 1;
+#endif
+}
+
+
 /* Return a string which is used as a kind of process ID.  */
 const byte *
 get_session_marker (size_t *rlen)
@@ -537,10 +549,10 @@ gnupg_usleep (unsigned int usecs)
    different from the libc file descriptors (like open). This function
    translates system file handles to libc file handles.  FOR_WRITE
    gives the direction of the handle.  */
-int
+#if defined(HAVE_W32_SYSTEM)
+static int
 translate_sys2libc_fd (gnupg_fd_t fd, int for_write)
 {
-#if defined(HAVE_W32_SYSTEM)
   int x;
 
   if (fd == GNUPG_INVALID_FD)
@@ -552,11 +564,9 @@ translate_sys2libc_fd (gnupg_fd_t fd, int for_write)
   if (x == -1)
     log_error ("failed to translate osfhandle %p\n", (void *) fd);
   return x;
-#else /*!HAVE_W32_SYSTEM */
-  (void)for_write;
-  return fd;
-#endif
 }
+#endif /*!HAVE_W32_SYSTEM */
+
 
 /* This is the same as translate_sys2libc_fd but takes an integer
    which is assumed to be such an system handle.   */
@@ -564,7 +574,7 @@ int
 translate_sys2libc_fd_int (int fd, int for_write)
 {
 #ifdef HAVE_W32_SYSTEM
-  if (fd <= 2)
+  if (fd <= 2 || no_translate_sys2libc_fd)
     return fd;	/* Do not do this for stdin, stdout, and stderr.  */
 
   return translate_sys2libc_fd ((void*)(intptr_t)fd, for_write);

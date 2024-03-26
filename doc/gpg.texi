@@ -3856,6 +3856,12 @@ This option enables a mode in which filenames of the form
 @file{-&n}, where n is a non-negative decimal number,
 refer to the file descriptor n and not to a file with that name.
 
+@item --disable-fd-translation
+@opindex disable-fd-translation
+This option changes the behaviour for all following options to expect
+libc file descriptors instead of HANDLE values on the command line.
+The option has an effect only on Windows.
+
 @item --no-expensive-trust-checks
 @opindex no-expensive-trust-checks
 Experimental use only.

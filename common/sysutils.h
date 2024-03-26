@@ -75,12 +75,13 @@ void trap_unaligned (void);
 int  disable_core_dumps (void);
 int  enable_core_dumps (void);
 void enable_special_filenames (void);
+void disable_translate_sys2libc_fd (void);
+
 const unsigned char *get_session_marker (size_t *rlen);
 unsigned int get_uint_nonce (void);
 /*int check_permissions (const char *path,int extension,int checkonly);*/
 void gnupg_sleep (unsigned int seconds);
 void gnupg_usleep (unsigned int usecs);
-int translate_sys2libc_fd (gnupg_fd_t fd, int for_write);
 int translate_sys2libc_fd_int (int fd, int for_write);
 gpg_error_t gnupg_parse_fdstr (const char *fdstr, es_syshd_t *r_syshd);
 int check_special_filename (const char *fname, int for_write, int notranslate);

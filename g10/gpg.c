@@ -354,6 +354,7 @@ enum cmd_and_opt_values
     oAllowSecretKeyImport,
     oAllowOldCipherAlgos,
     oEnableSpecialFilenames,
+    oDisableFdTranslation,
     oNoLiteral,
     oSetFilesize,
     oHonorHttpProxy,
@@ -880,7 +881,6 @@ static gpgrt_opt_t opts[] = {
   ARGPARSE_s_n (oAllowOldCipherAlgos, "allow-old-cipher-algos", "@"),
   ARGPARSE_s_s (oWeakDigest, "weak-digest","@"),
   ARGPARSE_s_s (oVerifyOptions, "verify-options", "@"),
-  ARGPARSE_s_n (oEnableSpecialFilenames, "enable-special-filenames", "@"),
   ARGPARSE_s_n (oNoRandomSeedFile,  "no-random-seed-file", "@"),
   ARGPARSE_s_n (oNoSigCache,         "no-sig-cache", "@"),
   ARGPARSE_s_n (oIgnoreTimeConflict, "ignore-time-conflict", "@"),
@@ -912,6 +912,8 @@ static gpgrt_opt_t opts[] = {
   ARGPARSE_s_i (oPassphraseRepeat,"passphrase-repeat", "@"),
   ARGPARSE_s_s (oPinentryMode,    "pinentry-mode", "@"),
   ARGPARSE_s_n (oForceSignKey,    "force-sign-key", "@"),
+  ARGPARSE_s_n (oEnableSpecialFilenames, "enable-special-filenames", "@"),
+  ARGPARSE_s_n (oDisableFdTranslation, "disable-fd-translation", "@"),
 
   ARGPARSE_header (NULL, N_("Other options")),
 
@@ -3561,6 +3563,10 @@ main (int argc, char **argv)
 
           case oEnableSpecialFilenames:
             enable_special_filenames ();
+            break;
+
+          case oDisableFdTranslation:
+            disable_translate_sys2libc_fd ();
             break;
 
           case oNoExpensiveTrustChecks: opt.no_expensive_trust_checks=1; break;

@@ -117,6 +117,7 @@ enum cmd_and_opt_values {
   oLogTime,
 
   oEnableSpecialFilenames,
+  oDisableFdTranslation,
 
   oAgentProgram,
   oDisplay,
@@ -428,6 +429,7 @@ static gpgrt_opt_t opts[] = {
   ARGPARSE_s_n (oAnswerNo,  "no",  N_("assume no on most questions")),
   ARGPARSE_s_i (oStatusFD, "status-fd", N_("|FD|write status info to this FD")),
   ARGPARSE_s_n (oEnableSpecialFilenames, "enable-special-filenames", "@"),
+  ARGPARSE_s_n (oDisableFdTranslation, "disable-fd-translation", "@"),
   ARGPARSE_s_i (oPassphraseFD,    "passphrase-fd", "@"),
   ARGPARSE_s_s (oPinentryMode,    "pinentry-mode", "@"),
 
@@ -1459,6 +1461,10 @@ main ( int argc, char **argv)
 
         case oEnableSpecialFilenames:
           enable_special_filenames ();
+          break;
+
+        case oDisableFdTranslation:
+          disable_translate_sys2libc_fd ();
           break;
 
         case oValidationModel: parse_validation_model (pargs.r.ret_str); break;

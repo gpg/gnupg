@@ -770,6 +770,18 @@ list of flag names and are OR-ed together.  The special flag "none"
 clears the list and allows one to start over with an empty list.  To get a
 list of available flags the sole word "help" can be used.
 
+@item --enable-special-filenames
+@opindex enable-special-filenames
+This option enables a mode in which filenames of the form
+@file{-&n}, where n is a non-negative decimal number,
+refer to the file descriptor n and not to a file with that name.
+
+@item --disable-fd-translation
+@opindex disable-fd-translation
+This option changes the behaviour for all following options to expect
+libc file descriptors instead of HANDLE values on the command line.
+The option has an effect only on Windows.
+
 @item --debug-level @var{level}
 @opindex debug-level
 Select the debug level for investigating problems. @var{level} may be
