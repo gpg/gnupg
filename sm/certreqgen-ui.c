@@ -388,6 +388,11 @@ gpgsm_gencertreq_tty (ctrl_t ctrl, estream_t output_stream)
   tty_printf (_(" (optional; end with an empty line):\n"));
   ask_mb_lines (&mb_uri, "Name-URI: ");
 
+  /* Extensions */
+  tty_printf (_("Enter extensions"));
+  tty_printf (_(" (optional; end with an empty line):\n"));
+  ask_mb_lines (&mb_uri, "Extension: ");
+
 
   /* Want a self-signed certificate?  */
   selfsigned = tty_get_answer_is_yes

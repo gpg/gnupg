@@ -49,6 +49,11 @@
      Signing-Key: 68A638998DFABAC510EA645CE34F9686B2EDF7EA
      %commit
 
+   Commnn extensions:
+     ExtKeyUsage: clientAuth (suggested) serverAuth (suggested)
+     -> 2.5.29.37 n 301406082B0601050507030206082B06010505070301
+
+
 */
 
 
