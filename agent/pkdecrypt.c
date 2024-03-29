@@ -205,11 +205,7 @@ agent_hybrid_kem_decap (ctrl_t ctrl, const char *desc_text, int kemid,
   const unsigned char *mlkem_ct;
   unsigned char mlkem_ss[GCRY_KEM_MLKEM768_SHARED_LEN];
 
-  gcry_buffer_t iov[13];
-  unsigned char head136[2];
-  unsigned char headK[3];
-  const unsigned char pad[94] = { 0 };
-  unsigned char right_encode_L[3];
+  gcry_buffer_t iov[6];
 
   unsigned char kekkey[32];
   size_t kekkeylen = 32;        /* AES-256 is mandatory */
@@ -361,68 +357,34 @@ agent_hybrid_kem_decap (ctrl_t ctrl, const char *desc_text, int kemid,
   // newX = bytepad(encode_string(K), 136) || X || right_encode(L)
   // cSHAKE256(newX,L,"KMAC",S)
 
-  iov[0].data = "KMAC";
+  iov[0].data = "\x00\x00\x00\x01"; /* Counter */
   iov[0].off = 0;
   iov[0].len = 4;
 
-  iov[1].data = "KDF";
+  iov[1].data = ecc_ss;
   iov[1].off = 0;
-  iov[1].len = 3;
+  iov[1].len = 32;
 
-  head136[0] = 1;
-  head136[1] = 136;
-  iov[2].data = head136;
+  iov[2].data = (unsigned char *)ecc_ct;
   iov[2].off = 0;
-  iov[2].len = 2;
+  iov[2].len = 32;
 
-  headK[0] = 2;
-  headK[1] = (37*8)>>8;
-  headK[2] = (37*8)&0xff;
-  iov[3].data = headK;
+  iov[3].data = mlkem_ss;
   iov[3].off = 0;
-  iov[3].len = 3;
+  iov[3].len = GCRY_KEM_MLKEM768_SHARED_LEN;
 
-  iov[4].data = "OpenPGPCompositeKeyDerivationFunction";
+  iov[4].data = (unsigned char *)mlkem_ct;
   iov[4].off = 0;
-  iov[4].len = 37;
+  iov[4].len = GCRY_KEM_MLKEM768_ENCAPS_LEN;
 
-  iov[5].data = (unsigned char *)pad;
+  iov[5].data = (unsigned char *)fixedinfo;
   iov[5].off = 0;
-  iov[5].len = sizeof (pad);
+  iov[5].len = 1;
 
-  iov[6].data = "\x00\x00\x00\x01"; /* Counter */
-  iov[6].off = 0;
-  iov[6].len = 4;
+  err = compute_kmac256 (kekkey, kekkeylen,
+                         "OpenPGPCompositeKeyDerivationFunction", 37,
+                         "KDF", 3, iov, 6);
 
-  iov[7].data = ecc_ss;
-  iov[7].off = 0;
-  iov[7].len = 32;
-
-  iov[8].data = (unsigned char *)ecc_ct;
-  iov[8].off = 0;
-  iov[8].len = 32;
-
-  iov[9].data = mlkem_ss;
-  iov[9].off = 0;
-  iov[9].len = GCRY_KEM_MLKEM768_SHARED_LEN;
-
-  iov[10].data = (unsigned char *)mlkem_ct;
-  iov[10].off = 0;
-  iov[10].len = GCRY_KEM_MLKEM768_ENCAPS_LEN;
-
-  iov[11].data = (unsigned char *)fixedinfo;
-  iov[11].off = 0;
-  iov[11].len = 1;
-
-  right_encode_L[0] = (kekkeylen * 8) >> 8;
-  right_encode_L[1] = (kekkeylen * 8) & 0xff;
-  right_encode_L[2] = 2;
-  iov[12].data = right_encode_L;
-  iov[12].off = 0;
-  iov[12].len = 3;
-
-  err = gcry_md_hash_buffers_extract (GCRY_MD_CSHAKE256, 0, kekkey, kekkeylen,
-                                      iov, 13);
   mpi_release (ecc_ct_mpi);
   mpi_release (mlkem_ct_mpi);
 
