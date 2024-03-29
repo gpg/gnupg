@@ -299,6 +299,12 @@ char *gnupg_get_help_string (const char *key, int only_current_locale);
 /*-- localename.c --*/
 const char *gnupg_messages_locale_name (void);
 
+/*-- kmac.c --*/
+gpg_error_t compute_kmac256 (void *digest, size_t digestlen,
+                             const void *key, size_t keylen,
+                             const void *custom, size_t customlen,
+                             gcry_buffer_t *data_iov, int data_iovlen);
+
 /*-- miscellaneous.c --*/
 
 /* This function is called at startup to tell libgcrypt to use our own
