@@ -288,8 +288,11 @@ struct server_control_s
     unsigned int raw_value: 1;
     unsigned int is_pss: 1;    /* DATA holds PSS formated data.  */
   } digest;
+  unsigned int have_keygrip:  1;
+  unsigned int have_keygrip1: 1;
   unsigned char keygrip[20];
-  int have_keygrip;
+  unsigned char keygrip1[20]; /* Another keygrip for hybrid crypto.  */
+
 
   /* A flag to enable a hack to send the PKAUTH command instead of the
      PKSIGN command to the scdaemon.  */
