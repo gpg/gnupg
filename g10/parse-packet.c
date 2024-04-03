@@ -188,13 +188,21 @@ mpi_read (iobuf_t inp, unsigned int *ret_nread, int secure)
 }
 
 
-/* Read an octet string of length NBYTES from INP and return it at
- * R_DATA.  On error return an error code and store NULL at R_DATA.
- * PKTLEN shall give the current lenhgth of the packt and is updated
- * with each read. If SECURE is true, the integer is stored in secure
- * memory (allocated using gcry_xmalloc_secure).  */
+/* If NLENGTH is zero read an octet string of length NBYTES from INP
+ * and return it at R_DATA.
+ *
+ * If NLENGTH is either 1, 2, or 4 and NLENGTH is zero read an
+ * NLENGTH-octet count and use this count number octets from INP and
+ * return it at R_DATA.
+ *
+ * On error return an error code and store NULL at R_DATA.  PKTLEN
+ * shall give the current length of the packet and is updated with
+ * each read. If SECURE is true, the integer is stored in secure
+ * memory (allocated using gcry_xmalloc_secure).
+ */
 static gpg_error_t
-read_octet_string (iobuf_t inp, unsigned long *pktlen, unsigned int nbytes,
+read_octet_string (iobuf_t inp, unsigned long *pktlen,
+                   unsigned int nlength, unsigned int nbytes,
                    int secure, gcry_mpi_t *r_data)
 {
   gpg_error_t err;
@@ -204,12 +212,48 @@ read_octet_string (iobuf_t inp, unsigned long *pktlen, unsigned int nbytes,
 
   *r_data = NULL;
 
-  if (nbytes*8 > MAX_EXTERN_MPI_BITS)
+  if ((nbytes && nlength)
+      || (!nbytes && !(nlength == 1 || nlength == 2 || nlength == 4)))
+    {
+      err = gpg_error (GPG_ERR_INV_ARG);
+      goto leave;
+    }
+
+  if (nlength)
+    {
+      for (i = 0; i < nlength; i++)
+        {
+          if (!*pktlen)
+            {
+              err = gpg_error (GPG_ERR_INV_PACKET);
+              goto leave;
+            }
+          c = iobuf_readbyte (inp);
+          if (c < 0)
+            {
+              err =  gpg_error (GPG_ERR_INV_PACKET);
+              goto leave;
+            }
+          --*pktlen;
+          nbytes <<= 8;
+          nbytes |= c;
+        }
+
+      if (!nbytes)
+        {
+          err =  gpg_error (GPG_ERR_INV_PACKET);
+          goto leave;
+        }
+    }
+
+  if (nbytes*8 > (nbytes==4? MAX_EXTERN_KEYPARM_BITS:MAX_EXTERN_MPI_BITS)
+      || (nbytes*8 < nbytes))
     {
       log_error ("octet string too large (%u octets)\n", nbytes);
       err = gpg_error (GPG_ERR_TOO_LARGE);
       goto leave;
     }
+
   if (nbytes > *pktlen)
     {
       log_error ("octet string larger than packet (%u octets)\n", nbytes);
@@ -1408,7 +1452,6 @@ parse_pubkeyenc (IOBUF inp, int pkttype, unsigned long pktlen,
   int i, ndata;
   unsigned int n;
   PKT_pubkey_enc *k;
-  int is_ky1024 = 0;
 
   k = packet->pkt.pubkey_enc = xmalloc_clear (sizeof *packet->pkt.pubkey_enc);
   if (pktlen < 12)
@@ -1467,23 +1510,19 @@ parse_pubkeyenc (IOBUF inp, int pkttype, unsigned long pktlen,
       if (rc)
         goto leave;
     }
-  else if (k->pubkey_algo == PUBKEY_ALGO_KY768_25519
-           || (is_ky1024 = (k->pubkey_algo == PUBKEY_ALGO_KY1024_448)))
+  else if (k->pubkey_algo == PUBKEY_ALGO_KYBER)
     {
       log_assert (ndata == 4);
       /* Get the ephemeral public key.  */
-      n = is_ky1024? 56 : 32;
-      rc = read_octet_string (inp, &pktlen, n, 0, k->data + 0);
+      rc = read_octet_string (inp, &pktlen, 4, 0, 0, k->data + 0);
       if (rc)
         goto leave;
       /* Get the Kyber ciphertext.  */
-      n = is_ky1024? 1568 : 1088;
-      rc = read_octet_string (inp, &pktlen, n, 0, k->data + 1);
+      rc = read_octet_string (inp, &pktlen, 4, 0, 0, k->data + 1);
       if (rc)
         goto leave;
       /* Get the algorithm id.  */
-      n = 1;
-      rc = read_octet_string (inp, &pktlen, n, 0, k->data + 2);
+      rc = read_octet_string (inp, &pktlen, 0, 1, 0, k->data + 2);
       if (rc)
         goto leave;
       /* Get the wrapped symmetric key.  */
@@ -2681,17 +2720,25 @@ parse_key (IOBUF inp, int pkttype, unsigned long pktlen,
         {
           if (    (algorithm == PUBKEY_ALGO_ECDSA && (i == 0))
                || (algorithm == PUBKEY_ALGO_EDDSA && (i == 0))
-               || (algorithm == PUBKEY_ALGO_ECDH  && (i == 0 || i == 2)))
+               || (algorithm == PUBKEY_ALGO_ECDH  && (i == 0 || i == 2))
+               || (algorithm == PUBKEY_ALGO_KYBER && (i == 0)))
             {
               /* Read the OID (i==0) or the KDF params (i==2).  */
 	      err = read_sized_octet_string (inp, &pktlen, pk->pkey+i);
             }
+          else if (algorithm == PUBKEY_ALGO_KYBER && i == 2)
+            {
+              /* Read the four-octet count prefixed Kyber public key.  */
+	      err = read_octet_string (inp, &pktlen, 4, 0, 0, pk->pkey+i);
+            }
           else
             {
+              /* Read MPI or SOS.  */
               unsigned int n = pktlen;
               if (algorithm == PUBKEY_ALGO_ECDSA
                   || algorithm == PUBKEY_ALGO_EDDSA
-                  || algorithm == PUBKEY_ALGO_ECDH)
+                  || algorithm == PUBKEY_ALGO_ECDH
+                  || algorithm == PUBKEY_ALGO_KYBER)
                 pk->pkey[i] = sos_read (inp, &n, 0);
               else
                 pk->pkey[i] = mpi_read (inp, &n, 0);
@@ -2707,7 +2754,8 @@ parse_key (IOBUF inp, int pkttype, unsigned long pktlen,
               mpi_print (listfp, pk->pkey[i], mpi_print_mode);
               if ((algorithm == PUBKEY_ALGO_ECDSA
                    || algorithm == PUBKEY_ALGO_EDDSA
-                   || algorithm == PUBKEY_ALGO_ECDH) && i==0)
+                   || algorithm == PUBKEY_ALGO_ECDH
+                   || algorithm == PUBKEY_ALGO_KYBER) && i==0)
                 {
                   char *curve = openpgp_oid_to_str (pk->pkey[0]);
                   const char *name = openpgp_oid_to_curve (curve, 0);
@@ -3044,21 +3092,32 @@ parse_key (IOBUF inp, int pkttype, unsigned long pktlen,
           /* Not encrypted.  */
 	  for (i = npkey; i < nskey; i++)
 	    {
-              unsigned int n;
 
               if (pktlen < 2) /* At least two bytes for the length.  */
                 {
                   err = gpg_error (GPG_ERR_INV_PACKET);
                   goto leave;
                 }
-              n = pktlen;
-              if (algorithm == PUBKEY_ALGO_ECDSA
-                  || algorithm == PUBKEY_ALGO_EDDSA
-                  || algorithm == PUBKEY_ALGO_ECDH)
-                pk->pkey[i] = sos_read (inp, &n, 0);
+              if (algorithm == PUBKEY_ALGO_KYBER && i == npkey+1)
+                {
+                  err = read_octet_string (inp, &pktlen, 4, 0, 1, pk->pkey+i);
+                  if (err)
+                    goto leave;
+                }
               else
-                pk->pkey[i] = mpi_read (inp, &n, 0);
-              pktlen -= n;
+                {
+                  unsigned int n = pktlen;
+
+                  if (algorithm == PUBKEY_ALGO_ECDSA
+                      || algorithm == PUBKEY_ALGO_EDDSA
+                      || algorithm == PUBKEY_ALGO_ECDH
+                      || algorithm == PUBKEY_ALGO_KYBER)
+                    pk->pkey[i] = sos_read (inp, &n, 0);
+                  else
+                    pk->pkey[i] = mpi_read (inp, &n, 0);
+                  pktlen -= n;
+                }
+
               if (list_mode)
                 {
                   es_fprintf (listfp, "\tskey[%d]: ", i);

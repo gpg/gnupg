@@ -156,11 +156,11 @@ build_kdf_params (unsigned char kdf_params[256], size_t *r_size,
     return gpg_error_from_syserror ();
 
   /* variable-length field 1, curve name OID */
-  err = gpg_mpi_write_nohdr (obuf, pkey[0]);
+  err = gpg_mpi_write_opaque_nohdr (obuf, pkey[0]);
   /* fixed-length field 2 */
   iobuf_put (obuf, PUBKEY_ALGO_ECDH);
   /* variable-length field 3, KDF params */
-  err = (err ? err : gpg_mpi_write_nohdr (obuf, pkey[2]));
+  err = (err ? err : gpg_mpi_write_opaque_nohdr (obuf, pkey[2]));
   /* fixed-length field 4 */
   iobuf_write (obuf, "Anonymous Sender    ", 20);
   /* fixed-length field 5, recipient fp (or first 20 octets of fp) */

@@ -41,6 +41,10 @@
 /* Number of bits we accept when reading or writing MPIs. */
 #define MAX_EXTERN_MPI_BITS 16384
 
+/* Number of bytes we accept when reading four-octet count prefixed
+ * key parameters.  Needs to fit as a positive number into an int. */
+#define MAX_EXTERN_KEYPARM_BITS (32768*8)
+
 /* The maximum length of a binary fingerprints.  This is used to
  * provide a static buffer and will be increased if we need to support
  * longer fingerprints.  Warning: At some places we have some

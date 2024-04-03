@@ -433,7 +433,7 @@ sos_write (iobuf_t out, gcry_mpi_t a, unsigned int *r_nwritten)
  * Write an opaque string to the output stream without length info.
  */
 gpg_error_t
-gpg_mpi_write_nohdr (iobuf_t out, gcry_mpi_t a)
+gpg_mpi_write_opaque_nohdr (iobuf_t out, gcry_mpi_t a)
 {
   int rc;
 
@@ -449,6 +449,45 @@ gpg_mpi_write_nohdr (iobuf_t out, gcry_mpi_t a)
     rc = gpg_error (GPG_ERR_BAD_MPI);
 
   return rc;
+}
+
+
+/*
+ * Write an opaque MPI string with a four-byte octet count to the
+ * output stream.  If R_NWRITTEN is not NULL the number of written
+ * bytes is stored there.  OUT may be NULL in which case only
+ * R_NWRITTEN is updated and error checking is done.
+ */
+gpg_error_t
+gpg_mpi_write_opaque_32 (iobuf_t out, gcry_mpi_t a, unsigned int *r_nwritten)
+{
+  gpg_error_t err;
+
+  if (gcry_mpi_get_flag (a, GCRYMPI_FLAG_OPAQUE))
+    {
+      unsigned int nbits, nbytes;
+      const void *p;
+
+      p = gcry_mpi_get_opaque (a, &nbits);
+      nbytes = (nbits + 7)/8;
+      if (out)
+        {
+          write_32 (out, nbytes);
+          err = p ? iobuf_write (out, p, nbytes) : 0;
+        }
+      else
+        err = 0;
+      if (r_nwritten)
+        *r_nwritten = 4 + (p? nbytes : 0);
+    }
+  else
+    {
+      err = gpg_error (GPG_ERR_BAD_MPI);
+      if (r_nwritten)
+        *r_nwritten = 0;
+    }
+
+  return err;
 }
 
 
@@ -639,8 +678,14 @@ do_key (iobuf_t out, int ctb, PKT_public_key *pk)
     {
       if (   (pk->pubkey_algo == PUBKEY_ALGO_ECDSA && (i == 0))
           || (pk->pubkey_algo == PUBKEY_ALGO_EDDSA && (i == 0))
-          || (pk->pubkey_algo == PUBKEY_ALGO_ECDH  && (i == 0 || i == 2)))
-        err = gpg_mpi_write_nohdr (a, pk->pkey[i]);
+          || (pk->pubkey_algo == PUBKEY_ALGO_ECDH  && (i == 0 || i == 2))
+          || (pk->pubkey_algo == PUBKEY_ALGO_KYBER && (i == 0)))
+        err = gpg_mpi_write_opaque_nohdr (a, pk->pkey[i]);
+      else if (pk->pubkey_algo == PUBKEY_ALGO_KYBER && i == 2)
+        {
+          /* Write a four-octet count prefixed Kyber public key.  */
+          err = gpg_mpi_write_opaque_32 (a, pk->pkey[2], NULL);
+        }
       else if (pk->pubkey_algo == PUBKEY_ALGO_ECDSA
                || pk->pubkey_algo == PUBKEY_ALGO_EDDSA
                || pk->pubkey_algo == PUBKEY_ALGO_ECDH)
@@ -779,9 +824,15 @@ do_key (iobuf_t out, int ctb, PKT_public_key *pk)
 
               for (j=i; j < nskey; j++ )
                 {
-                  if (pk->pubkey_algo == PUBKEY_ALGO_ECDSA
-                      || pk->pubkey_algo == PUBKEY_ALGO_EDDSA
-                      || pk->pubkey_algo == PUBKEY_ALGO_ECDH)
+                  if (pk->pubkey_algo == PUBKEY_ALGO_KYBER && j == 4)
+                    {
+                      if ((err=gpg_mpi_write_opaque_32 (NULL,pk->pkey[j], &n)))
+                        goto leave;
+                    }
+                  else if (pk->pubkey_algo == PUBKEY_ALGO_ECDSA
+                           || pk->pubkey_algo == PUBKEY_ALGO_EDDSA
+                           || pk->pubkey_algo == PUBKEY_ALGO_ECDH
+                           || pk->pubkey_algo == PUBKEY_ALGO_KYBER)
                     {
                       if ((err = sos_write (NULL, pk->pkey[j], &n)))
                         goto leave;
@@ -798,16 +849,26 @@ do_key (iobuf_t out, int ctb, PKT_public_key *pk)
             }
 
           for ( ; i < nskey; i++ )
-            if (pk->pubkey_algo == PUBKEY_ALGO_ECDSA
-                || pk->pubkey_algo == PUBKEY_ALGO_EDDSA
-                || pk->pubkey_algo == PUBKEY_ALGO_ECDH)
-              {
-                if ((err = sos_write (a, pk->pkey[i], NULL)))
-                  goto leave;
-              }
-            else
-              if ((err = gpg_mpi_write (a, pk->pkey[i], NULL)))
-                goto leave;
+            {
+              if (pk->pubkey_algo == PUBKEY_ALGO_KYBER && i == 4)
+                {
+                  err = gpg_mpi_write_opaque_32 (a, pk->pkey[i], NULL);
+                  if (err)
+                    goto leave;
+                }
+              else if (pk->pubkey_algo == PUBKEY_ALGO_ECDSA
+                       || pk->pubkey_algo == PUBKEY_ALGO_EDDSA
+                       || pk->pubkey_algo == PUBKEY_ALGO_ECDH)
+                {
+                  if ((err = sos_write (a, pk->pkey[i], NULL)))
+                    goto leave;
+                }
+              else
+                {
+                  if ((err = gpg_mpi_write (a, pk->pkey[i], NULL)))
+                    goto leave;
+                }
+            }
 
           write_16 (a, ski->csum );
         }
@@ -922,7 +983,7 @@ do_pubkey_enc( IOBUF out, int ctb, PKT_pubkey_enc *enc )
   for (i=0; i < n && !rc ; i++ )
     {
       if (enc->pubkey_algo == PUBKEY_ALGO_ECDH && i == 1)
-        rc = gpg_mpi_write_nohdr (a, enc->data[i]);
+        rc = gpg_mpi_write_opaque_nohdr (a, enc->data[i]);
       else if (enc->pubkey_algo == PUBKEY_ALGO_ECDH)
         rc = sos_write (a, enc->data[i], NULL);
       else
