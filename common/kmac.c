@@ -42,6 +42,7 @@ compute_kmac256 (void *digest, size_t digestlen,
                  const void *custom, size_t customlen,
                  gcry_buffer_t *data_iov, int data_iovlen)
 {
+#if GCRYPT_VERSION_NUMBER >= 0x010b00
   gpg_error_t err;
   gcry_buffer_t iov[20];
   const unsigned char headPAD[2] = { 1, KECCAK512_BLOCKSIZE };
@@ -129,4 +130,7 @@ compute_kmac256 (void *digest, size_t digestlen,
   err = gcry_md_hash_buffers_ext (GCRY_MD_CSHAKE256, 0,
                                   digest, digestlen, iov, iovcnt);
   return err;
+#else
+  return gpg_error (GPG_ERR_NOT_IMPLEMENTED);
+#endif
 }
