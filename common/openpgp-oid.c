@@ -43,23 +43,30 @@ static struct {
   const char *oidstr; /* IETF formatted OID.  */
   unsigned int nbits; /* Nominal bit length of the curve.  */
   const char *alias;  /* NULL or alternative name of the curve.  */
+  const char *abbr;   /* NULL or abbreviated name of the curve.  */
   int pubkey_algo;    /* Required OpenPGP algo or 0 for ECDSA/ECDH.  */
 } oidtable[] = {
 
-  { "Curve25519", "1.3.6.1.4.1.3029.1.5.1", 255, "cv25519", PUBKEY_ALGO_ECDH },
-  { "Ed25519",    "1.3.6.1.4.1.11591.15.1", 255, "ed25519", PUBKEY_ALGO_EDDSA },
-  { "Curve25519", "1.3.101.110",            255, "cv25519", PUBKEY_ALGO_ECDH },
-  { "Ed25519",    "1.3.101.112",            255, "ed25519", PUBKEY_ALGO_EDDSA },
-  { "X448",       "1.3.101.111",            448, "cv448",   PUBKEY_ALGO_ECDH },
-  { "Ed448",      "1.3.101.113",            456, "ed448",   PUBKEY_ALGO_EDDSA },
+  { "Curve25519", "1.3.6.1.4.1.3029.1.5.1", 255, "cv25519", NULL,
+    PUBKEY_ALGO_ECDH },
+  { "Ed25519",    "1.3.6.1.4.1.11591.15.1", 255, "ed25519", NULL,
+    PUBKEY_ALGO_EDDSA },
+  { "Curve25519", "1.3.101.110",            255, "cv25519", NULL,
+    PUBKEY_ALGO_ECDH },
+  { "Ed25519",    "1.3.101.112",            255, "ed25519", NULL,
+    PUBKEY_ALGO_EDDSA },
+  { "X448",       "1.3.101.111",            448, "cv448",   NULL,
+    PUBKEY_ALGO_ECDH },
+  { "Ed448",      "1.3.101.113",            456, "ed448",   NULL,
+    PUBKEY_ALGO_EDDSA },
 
   { "NIST P-256",      "1.2.840.10045.3.1.7",    256, "nistp256" },
   { "NIST P-384",      "1.3.132.0.34",           384, "nistp384" },
   { "NIST P-521",      "1.3.132.0.35",           521, "nistp521" },
 
-  { "brainpoolP256r1", "1.3.36.3.3.2.8.1.1.7",   256 },
-  { "brainpoolP384r1", "1.3.36.3.3.2.8.1.1.11",  384 },
-  { "brainpoolP512r1", "1.3.36.3.3.2.8.1.1.13",  512 },
+  { "brainpoolP256r1", "1.3.36.3.3.2.8.1.1.7",   256, NULL, "bp256" },
+  { "brainpoolP384r1", "1.3.36.3.3.2.8.1.1.11",  384, NULL, "bp384" },
+  { "brainpoolP512r1", "1.3.36.3.3.2.8.1.1.13",  512, NULL, "bp512" },
 
   { "secp256k1",       "1.3.132.0.10",           256 },
 
@@ -477,10 +484,20 @@ openpgp_curve_to_oid (const char *name, unsigned int *r_nbits, int *r_algo)
 
 
 /* Map an OpenPGP OID to the Libgcrypt curve name.  Returns NULL for
- * unknown curve names.  Unless CANON is set we prefer an alias name
- * here which is more suitable for printing.  */
+ * unknown curve names.  MODE defines which version of the curve name
+ * is returned.  For example:
+ *
+ * |                  OID | mode=0          | mode=1          | mode=2   |
+ * |----------------------+-----------------+-----------------+----------|
+ * |  1.2.840.10045.3.1.7 | nistp256        | NIST P-256      | nistp256 |
+ * | 1.3.36.3.3.2.8.1.1.7 | brainpoolP256r1 | brainpoolP256r1 | bp256    |
+ *
+ * Thus mode 0 returns the name as commonly used gpg, mode 1 returns
+ * the canonical name, and mode 2 prefers an abbreviated name over the
+ * commonly used name.
+ */
 const char *
-openpgp_oid_to_curve (const char *oidstr, int canon)
+openpgp_oid_to_curve (const char *oidstr, int mode)
 {
   int i;
 
@@ -489,7 +506,15 @@ openpgp_oid_to_curve (const char *oidstr, int canon)
 
   for (i=0; oidtable[i].name; i++)
     if (!strcmp (oidtable[i].oidstr, oidstr))
-      return !canon && oidtable[i].alias? oidtable[i].alias : oidtable[i].name;
+      {
+        if (mode == 2)
+          {
+            if (oidtable[i].abbr)
+              return oidtable[i].abbr;
+            mode = 0; /* No abbreviation - fallback to mode 0.  */
+          }
+        return !mode && oidtable[i].alias? oidtable[i].alias : oidtable[i].name;
+      }
 
   return NULL;
 }
