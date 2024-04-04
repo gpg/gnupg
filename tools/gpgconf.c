@@ -274,6 +274,8 @@ list_dirs (estream_t fp, char **names, int show_config_mode)
   const char *s;
   gpg_error_t err;
 
+  if (show_config_mode)
+    es_fprintf (fp, "#+begin_example\n");
   for (idx = 0; idx < DIM (list); idx++)
     {
       s = list[idx].fnc ();
@@ -288,12 +290,15 @@ list_dirs (estream_t fp, char **names, int show_config_mode)
       if (!list[idx].name)
         ;
       else if (!names)
-        es_fprintf (fp, "%s:%s\n", list[idx].name, gc_percent_escape (s));
+        es_fprintf (fp, "%s%s:%s\n", show_config_mode? "  ":"",
+                    list[idx].name, gc_percent_escape (s));
       else
         {
           for (j=0; names[j]; j++)
             if (!strcmp (names[j], list[idx].name))
               {
+                if (show_config_mode)
+                  es_fputs ("  ", fp);
                 es_fputs (s, fp);
                 es_putc (opt.null? '\0':'\n', fp);
               }
@@ -312,12 +317,14 @@ list_dirs (estream_t fp, char **names, int show_config_mode)
             ; /* No such file/ No such device or address - this is okay.  */
           else
             es_fprintf (fp,
-                        "### Warning: error reading existing file '%s': %s\n",
+                        "# Warning: error reading existing file '%s': %s\n",
                         s, gpg_strerror (err));
         }
 
       xfree (tmp);
     }
+  if (show_config_mode)
+    es_fprintf (fp, "#+end_example\n");
 
 
 #ifdef HAVE_W32_SYSTEM
@@ -348,7 +355,7 @@ list_dirs (estream_t fp, char **names, int show_config_mode)
       es_fflush (fp);
       if (show_config_mode)
         es_fprintf (fp, "\n"
-                    "### Note: homedir taken from registry key %s%s\\%s:%s\n"
+                    "Note: homedir taken from registry key %s%s\\%s:%s\n"
                     "\n",
                     hkcu?" HKCU":"", hklm?" HKLM":"",
                     GNUPG_REGISTRY_DIR, "HomeDir");
@@ -366,7 +373,7 @@ list_dirs (estream_t fp, char **names, int show_config_mode)
       es_fflush (fp);
       if (show_config_mode)
         es_fprintf (fp, "\n"
-                    "### Note: registry key %s without value in HKCU or HKLM\n"
+                    "Note: registry key %s without value in HKCU or HKLM\n"
                     "\n", GNUPG_REGISTRY_DIR);
       else
         log_info ("Warning: registry key (%s) without value in HKCU or HKLM\n",
@@ -1078,7 +1085,7 @@ show_version_gnupg (estream_t fp, const char *prefix)
               strusage (13), BUILD_REVISION, prefix, strusage (17));
 
   /* Show the GnuPG VS-Desktop version in --show-configs mode  */
-  if (prefix && *prefix == '#')
+  if (prefix && *prefix)
     {
       fname = make_filename (gnupg_bindir (), NULL);
       n = strlen (fname);
@@ -1269,7 +1276,14 @@ my_copy_file (estream_t src, estream_t dst, strlist_t *listp)
 
   while ((length = es_read_line (src, &line, &line_len, NULL)) > 0)
     {
-      /* Strip newline and carriage return, if present.  */
+      /* Prefix each line with two spaces but use a comma if the line
+       * starts with a special org-mode character.  */
+      if (*line == '*' || (*line == '#' && line[1] == '+'))
+        es_fputc (',', dst);
+      else
+        es_fputc (' ', dst);
+      es_fputc (' ', dst);
+
       written = gpgrt_fwrite (line, 1, length, dst);
       if (written != length)
 	return gpg_error_from_syserror ();
@@ -1337,21 +1351,19 @@ show_configs_one_file (const char *fname, int global, estream_t outfp,
   if (!fp)
     {
       err = gpg_error_from_syserror ();
-      es_fprintf (outfp, "###\n### %s config \"%s\": %s\n###\n",
-                  global? "global":"local", fname,
-                  (gpg_err_code (err) == GPG_ERR_ENOENT)?
-                  "not installed" : gpg_strerror (err));
+      if (gpg_err_code (err) != GPG_ERR_ENOENT)
+        es_fprintf (outfp, "** %s config \"%s\": %s\n",
+                    global? "global":"local", fname, gpg_strerror (err));
     }
   else
     {
-      es_fprintf (outfp, "###\n### %s config \"%s\"\n###\n",
+      es_fprintf (outfp, "** %s config \"%s\"\n#+begin_src\n",
                   global? "global":"local", fname);
-      es_fprintf (outfp, CUTLINE_FMT, "start");
       err = my_copy_file (fp, outfp, listp);
+      es_fprintf (outfp, "\n#+end_src\n");
       if (err)
-        log_error ("error copying file \"%s\": %s\n",
+        log_error ("Error copying file \"%s\": %s\n",
                    fname, gpg_strerror (err));
-      es_fprintf (outfp, CUTLINE_FMT, "end--");
       es_fclose (fp);
     }
 }
@@ -1427,7 +1439,7 @@ show_other_registry_entries (estream_t outfp)
       if (names[idx].group != group)
         {
           group = names[idx].group;
-          es_fprintf (outfp, "###\n### %s related:\n",
+          es_fprintf (outfp, "\n%s related:\n",
                       group == 1 ? "GnuPG Desktop" :
                       group == 2 ? "Outlook" :
                       group == 3 ? "\\Software\\GNU\\GpgOL"
@@ -1435,16 +1447,15 @@ show_other_registry_entries (estream_t outfp)
         }
 
       if (group == 3)
-        es_fprintf (outfp, "### %s=%s%s\n", names[idx].name, value,
+        es_fprintf (outfp, "  %s=%s%s\n", names[idx].name, value,
                     from_hklm? " [hklm]":"");
       else
-        es_fprintf (outfp, "### %s\n###   ->%s<-%s\n", name, value,
+        es_fprintf (outfp, "  %s\n    ->%s<-%s\n", name, value,
                     from_hklm? " [hklm]":"");
 
       xfree (value);
     }
 
-  es_fprintf (outfp, "###\n");
   xfree (namebuf);
 }
 
@@ -1495,10 +1506,10 @@ show_registry_entries_from_file (estream_t outfp)
       if (!any)
         {
           any = 1;
-          es_fprintf (outfp, "### Taken from gpgconf.rnames:\n");
+          es_fprintf (outfp, "Taken from gpgconf.rnames:\n");
         }
 
-      es_fprintf (outfp, "### %s\n###   ->%s<-%s\n", line, value,
+      es_fprintf (outfp, "  %s\n    ->%s<-%s\n", line, value,
                   from_hklm? " [hklm]":"");
 
     }
@@ -1509,8 +1520,6 @@ show_registry_entries_from_file (estream_t outfp)
     }
 
  leave:
-  if (any)
-    es_fprintf (outfp, "###\n");
   xfree (value);
   xfree (line);
   es_fclose (fp);
@@ -1537,17 +1546,21 @@ show_configs (estream_t outfp)
   gnupg_dir_t dir;
   gnupg_dirent_t dir_entry;
   size_t n;
-  int any;
+  int any, anywarn;
   strlist_t list = NULL;
   strlist_t sl;
   const char *s;
+  int got_gpgconfconf = 0;
 
-  es_fprintf (outfp, "### Dump of all standard config files\n");
-  show_version_gnupg (outfp, "### ");
-  es_fprintf (outfp, "### Libgcrypt %s\n", gcry_check_version (NULL));
-  es_fprintf (outfp, "### GpgRT %s\n", gpg_error_check_version (NULL));
+  es_fprintf (outfp, "# gpgconf -X invoked %s%*s-*- org -*-\n\n",
+              isotimestamp (time (NULL)), 28, "");
+  es_fprintf (outfp, "* General information\n");
+  es_fprintf (outfp, "** Versions\n");
+  show_version_gnupg (outfp, "  ");
+  es_fprintf (outfp, "  Libgcrypt %s\n", gcry_check_version (NULL));
+  es_fprintf (outfp, "  GpgRT %s\n", gpg_error_check_version (NULL));
 #ifdef HAVE_W32_SYSTEM
-  es_fprintf (outfp, "### Codepages:");
+  es_fprintf (outfp, "  Codepages:");
   if (GetConsoleCP () != GetConsoleOutputCP ())
     es_fprintf (outfp, " %u/%u", GetConsoleCP (), GetConsoleOutputCP ());
   else
@@ -1555,19 +1568,23 @@ show_configs (estream_t outfp)
   es_fprintf (outfp, " %u", GetACP ());
   es_fprintf (outfp, " %u\n", GetOEMCP ());
 #endif
-  es_fprintf (outfp, "###\n\n");
+  es_fprintf (outfp, "\n\n");
 
+  es_fprintf (outfp, "** Directories\n");
   list_dirs (outfp, NULL, 1);
   es_fprintf (outfp, "\n");
 
+  es_fprintf (outfp, "** Environment\n#+begin_example\n");
   for (idx=0; idx < DIM(envvars); idx++)
     if ((s = getenv (envvars[idx])))
       es_fprintf (outfp, "%s=%s\n", envvars[idx], s);
-  es_fprintf (outfp, "\n");
+  es_fprintf (outfp, "#+end_example\n");
 
+  es_fprintf (outfp, "* Config files\n");
   fname = make_filename (gnupg_sysconfdir (), "gpgconf.conf", NULL);
   if (!gnupg_access (fname, F_OK))
     {
+      got_gpgconfconf = 1;
       show_configs_one_file (fname, 1, outfp, &list);
       es_fprintf (outfp, "\n");
     }
@@ -1585,6 +1602,7 @@ show_configs (estream_t outfp)
     }
 
   /* Print the encountered registry values and envvars.  */
+  es_fprintf (outfp, "* Other info\n");
   if (list)
     {
       any = 0;
@@ -1595,20 +1613,21 @@ show_configs (estream_t outfp)
               {
                 any = 1;
                 es_fprintf (outfp,
-                            "###\n"
-                            "### List of encountered environment variables:\n");
+                            "** List of encountered environment variables\n"
+                            "#+begin_example\n");
               }
             if ((s = getenv (sl->d)))
-              es_fprintf (outfp, "### %-12s ->%s<-\n", sl->d, s);
+              es_fprintf (outfp, "   %-12s ->%s<-\n", sl->d, s);
             else
-              es_fprintf (outfp, "### %-12s [not set]\n", sl->d);
+              es_fprintf (outfp, "   %-12s [not set]\n", sl->d);
           }
       if (any)
-        es_fprintf (outfp, "###\n");
+        es_fprintf (outfp, "#+end_example\n");
     }
 
 #ifdef HAVE_W32_SYSTEM
-  es_fprintf (outfp, "###\n### Registry entries:\n");
+  es_fprintf (outfp, "** Registry entries\n");
+  es_fprintf (outfp, "#+begin_example\n");
   any = 0;
   if (list)
     {
@@ -1621,23 +1640,32 @@ show_configs (estream_t outfp)
             if (!any)
               {
                 any = 1;
-                es_fprintf (outfp, "###\n### Encountered in config files:\n");
+                es_fprintf (outfp, "Encountered in config files:\n");
               }
             if ((p = read_w32_reg_string (sl->d, &from_hklm)))
-              es_fprintf (outfp, "### %s ->%s<-%s\n", sl->d, p,
+              es_fprintf (outfp, "  %s ->%s<-%s\n", sl->d, p,
                           from_hklm? " [hklm]":"");
             else
-              es_fprintf (outfp, "### %s [not set]\n", sl->d);
+              es_fprintf (outfp, "  %s [not set]\n", sl->d);
             xfree (p);
           }
     }
-  if (!any)
-    es_fprintf (outfp, "###\n");
   show_other_registry_entries (outfp);
   show_registry_entries_from_file (outfp);
+  es_fprintf (outfp, "#+end_example\n");
 #endif /*HAVE_W32_SYSTEM*/
 
   free_strlist (list);
+
+  /* Additional warning.  */
+  anywarn = 0;
+  if (got_gpgconfconf)
+    {
+      anywarn = 1;
+      es_fprintf (outfp, "* Warnings\n");
+      es_fprintf (outfp,
+                  "- Legacy config file \"gpgconf.conf\" found\n");
+    }
 
   /* Check for uncommon files in the home directory.  */
   dir = gnupg_opendir (gnupg_homedir ());
@@ -1659,19 +1687,22 @@ show_configs (estream_t outfp)
               && dir_entry->d_name[n] == '-'
               && ascii_strncasecmp (dir_entry->d_name, "gpg.conf-1", 10))
             {
+              if (!anywarn)
+                {
+                  anywarn = 1;
+                  es_fprintf (outfp, "* Warnings\n");
+                }
               if (!any)
                 {
                   any = 1;
                   es_fprintf (outfp,
-                              "###\n"
-                              "### Warning: suspicious files in \"%s\":\n",
+                              "- Suspicious files in \"%s\":\n",
                               gnupg_homedir ());
                 }
-              es_fprintf (outfp, "### %s\n", dir_entry->d_name);
+              es_fprintf (outfp, "  - %s\n", dir_entry->d_name);
             }
         }
     }
-  if (any)
-    es_fprintf (outfp, "###\n");
   gnupg_closedir (dir);
+  es_fprintf (outfp, "# eof #\n");
 }
