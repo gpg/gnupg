@@ -2177,6 +2177,9 @@ print_key_flags(int flags)
 
   if(flags&PUBKEY_USAGE_AUTH)
     tty_printf("%s ",_("Authenticate"));
+
+  if(flags&PUBKEY_USAGE_RENC)
+    tty_printf("%s ", "RENC");
 }
 
 
@@ -2209,10 +2212,14 @@ ask_key_flags_with_mask (int algo, int subkey, unsigned int current,
       togglers = "11223300";
     }
 
+  /* restrict the mask to the actual useful bits.  */
+
   /* Mask the possible usage flags.  This is for example used for a
    * card based key.  For ECDH we need to allows additional usages if
-   * they are provided. */
+   * they are provided.  RENC is not directly poissible here but see
+   * below for a workaround. */
   possible = (openpgp_pk_algo_usage (algo) & mask);
+  possible &= ~PUBKEY_USAGE_RENC;
   if (algo == PUBKEY_ALGO_ECDH)
     possible |= (current & (PUBKEY_USAGE_ENC
                             |PUBKEY_USAGE_CERT
@@ -2280,6 +2287,12 @@ ask_key_flags_with_mask (int algo, int subkey, unsigned int current,
                      will be set anyway.  This is for folks who
                      want to experiment with a cert-only primary key.  */
                   current |= PUBKEY_USAGE_CERT;
+                }
+              else if ((*s == 'r' || *s == 'R') && (possible&PUBKEY_USAGE_ENC))
+                {
+                  /* Allow to set RENC or an encryption capable key.
+                   * This is on purpose not shown in the menu.  */
+                  current |= PUBKEY_USAGE_RENC;
                 }
             }
           break;
