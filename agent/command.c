@@ -1458,7 +1458,9 @@ cmd_readkey (assuan_context_t ctx, char *line)
         goto leave;
 
       rc = agent_public_key_from_file (ctrl, grip, &s_pkey);
-      if (!rc)
+      if (rc)
+        goto leave;
+      else
         {
           if (opt_format_ssh)
             {
