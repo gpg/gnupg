@@ -560,6 +560,18 @@ gpg_error_t agent_pkdecrypt (ctrl_t ctrl, const char *desc_text,
                              const unsigned char *ciphertext, size_t ciphertextlen,
                              membuf_t *outbuf, int *r_padding);
 
+enum kemid
+  {
+    KEM_PQC_PGP,
+    KEM_PGP,
+    KEM_CMS,
+  };
+
+gpg_error_t agent_kem_decrypt (ctrl_t ctrl, const char *desc_text, int kemid,
+                               const unsigned char *ct, size_t ctlen,
+                               const unsigned char *option, size_t optionlen,
+                               membuf_t *outbuf);
+
 /*-- genkey.c --*/
 #define CHECK_CONSTRAINTS_NOT_EMPTY  1
 #define CHECK_CONSTRAINTS_NEW_SYMKEY 2
