@@ -1,7 +1,7 @@
 /* keygen.c - Generate a key pair
  * Copyright (C) 1998-2007, 2009-2011  Free Software Foundation, Inc.
  * Copyright (C) 2014, 2015, 2016, 2017, 2018  Werner Koch
- * Copyright (C) 2020 g10 Code GmbH
+ * Copyright (C) 2020, 2024 g10 Code GmbH
  *
  * This file is part of GnuPG.
  *
@@ -1501,10 +1501,24 @@ do_create_from_keygrip (ctrl_t ctrl, int algo,
   PACKET *pkt;
   PKT_public_key *pk;
   gcry_sexp_t s_key;
+  gcry_sexp_t s_key2 = NULL;
   const char *algoelem;
+  char *hexkeygrip_buffer = NULL;
+  char *hexkeygrip2 = NULL;
 
   if (hexkeygrip[0] == '&')
     hexkeygrip++;
+  if (strchr (hexkeygrip, ','))
+    {
+      hexkeygrip_buffer = xtrystrdup (hexkeygrip);
+      if (!hexkeygrip_buffer)
+        return gpg_error_from_syserror ();
+      hexkeygrip = hexkeygrip_buffer;
+      hexkeygrip2 = strchr (hexkeygrip_buffer, ',');
+      if (hexkeygrip2)
+        *hexkeygrip2++ = 0;
+    }
+
 
   switch (algo)
     {
@@ -1514,16 +1528,21 @@ do_create_from_keygrip (ctrl_t ctrl, int algo,
     case PUBKEY_ALGO_ECDH:
     case PUBKEY_ALGO_ECDSA:     algoelem = ""; break;
     case PUBKEY_ALGO_EDDSA:     algoelem = ""; break;
-    default: return gpg_error (GPG_ERR_INTERNAL);
+    case PUBKEY_ALGO_KYBER:     algoelem = ""; break;
+    default:
+      xfree (hexkeygrip_buffer);
+      return gpg_error (GPG_ERR_INTERNAL);
     }
-
 
   /* Ask the agent for the public key matching HEXKEYGRIP.  */
   if (cardkey)
     {
       err = agent_scd_readkey (ctrl, hexkeygrip, &s_key, NULL);
       if (err)
-        return err;
+        {
+          xfree (hexkeygrip_buffer);
+          return err;
+        }
     }
   else
     {
@@ -1531,16 +1550,41 @@ do_create_from_keygrip (ctrl_t ctrl, int algo,
 
       err = agent_readkey (ctrl, 0, hexkeygrip, &public);
       if (err)
-        return err;
+        {
+          xfree (hexkeygrip_buffer);
+          return err;
+        }
       err = gcry_sexp_sscan (&s_key, NULL, public,
                                gcry_sexp_canon_len (public, 0, NULL, NULL));
       xfree (public);
       if (err)
-        return err;
+        {
+          xfree (hexkeygrip_buffer);
+          return err;
+        }
+      if (hexkeygrip2)
+        {
+          err = agent_readkey (ctrl, 0, hexkeygrip2, &public);
+          if (err)
+            {
+              gcry_sexp_release (s_key);
+              xfree (hexkeygrip_buffer);
+              return err;
+            }
+          err = gcry_sexp_sscan (&s_key2, NULL, public,
+                                 gcry_sexp_canon_len (public, 0, NULL, NULL));
+          xfree (public);
+          if (err)
+            {
+              gcry_sexp_release (s_key);
+              xfree (hexkeygrip_buffer);
+              return err;
+            }
+        }
     }
 
-  /* For X448 we force the use of v5 packets.  */
-  if (curve_is_448 (s_key))
+  /* For X448 and Kyber we force the use of v5 packets.  */
+  if (curve_is_448 (s_key) || algo == PUBKEY_ALGO_KYBER)
     *keygen_flags |= KEYGEN_FLAG_CREATE_V5_KEY;
 
   /* Build a public key packet.  */
@@ -1549,6 +1593,8 @@ do_create_from_keygrip (ctrl_t ctrl, int algo,
     {
       err = gpg_error_from_syserror ();
       gcry_sexp_release (s_key);
+      gcry_sexp_release (s_key2);
+      xfree (hexkeygrip_buffer);
       return err;
     }
 
@@ -1558,7 +1604,9 @@ do_create_from_keygrip (ctrl_t ctrl, int algo,
     pk->expiredate = pk->timestamp + expireval;
   pk->pubkey_algo = algo;
 
-  if (algo == PUBKEY_ALGO_ECDSA
+  if (algo == PUBKEY_ALGO_KYBER)
+    err = ecckey_from_sexp (pk->pkey, s_key, s_key2, algo);
+  else if (algo == PUBKEY_ALGO_ECDSA
       || algo == PUBKEY_ALGO_EDDSA
       || algo == PUBKEY_ALGO_ECDH )
     err = ecckey_from_sexp (pk->pkey, s_key, NULL, algo);
@@ -1568,16 +1616,20 @@ do_create_from_keygrip (ctrl_t ctrl, int algo,
     {
       log_error ("key_from_sexp failed: %s\n", gpg_strerror (err) );
       gcry_sexp_release (s_key);
+      gcry_sexp_release (s_key2);
       free_public_key (pk);
+      xfree (hexkeygrip_buffer);
       return err;
     }
   gcry_sexp_release (s_key);
+  gcry_sexp_release (s_key2);
 
   pkt = xtrycalloc (1, sizeof *pkt);
   if (!pkt)
     {
       err = gpg_error_from_syserror ();
       free_public_key (pk);
+      xfree (hexkeygrip_buffer);
       return err;
     }
 
@@ -1585,6 +1637,7 @@ do_create_from_keygrip (ctrl_t ctrl, int algo,
   pkt->pkt.public_key = pk;
   add_kbnode (pub_root, new_kbnode (pkt));
 
+  xfree (hexkeygrip_buffer);
   return 0;
 }
 
@@ -2479,7 +2532,26 @@ ask_algo (ctrl_t ctrl, int addmode, int *r_subkey_algo, unsigned int *r_usage,
                   continue;
                 }
 
-              if (strlen (answer) != 40 &&
+              if (strlen (answer) == 40+1+40 && answer[40]==',')
+                {
+                  int algo1, algo2;
+
+                  answer[40] = 0;
+                  algo1 = check_keygrip (ctrl, answer);
+                  algo2 = check_keygrip (ctrl, answer+41);
+                  answer[40] = ',';
+                  if (algo1 == PUBKEY_ALGO_ECDH && algo2 == PUBKEY_ALGO_KYBER)
+                    {
+                      algo = PUBKEY_ALGO_KYBER;
+                      break;
+                    }
+                  else if (!algo1 || !algo2)
+                    tty_printf (_("No key with this keygrip\n"));
+                  else
+                    tty_printf ("Invalid combination for dual algo (%d,%d)\n",
+                                algo1, algo2);
+                }
+              else if (strlen (answer) != 40 &&
                        !(answer[0] == '&' && strlen (answer+1) == 40))
                 tty_printf
                   (_("Not a valid keygrip (expecting 40 hex digits)\n"));
