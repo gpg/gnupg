@@ -1075,13 +1075,14 @@ cmd_pkdecrypt (assuan_context_t ctx, char *line)
   if (p)
     {
       kemid = KEM_PQC_PGP;
-      if (*p++ == '=')
+      if (*p == '=')
         {
-          if (strcmp (p, "PQC-PGP"))
+          p++;
+          if (!strcmp (p, "PQC-PGP"))
             kemid = KEM_PQC_PGP;
-          else if (strcmp (p, "PGP"))
+          else if (!strcmp (p, "PGP"))
             kemid = KEM_PGP;
-          else if (strcmp (p, "CMS"))
+          else if (!strcmp (p, "CMS"))
             kemid = KEM_CMS;
           else
             return set_error (GPG_ERR_ASS_PARAMETER, "invalid KEM algorithm");

@@ -188,6 +188,7 @@ static gpg_error_t
 agent_hybrid_pgp_kem_decrypt (ctrl_t ctrl, const char *desc_text,
                               gcry_sexp_t s_cipher, membuf_t *outbuf)
 {
+#if GCRYPT_VERSION_NUMBER >= 0x010b00
   gcry_sexp_t s_skey0 = NULL;
   gcry_sexp_t s_skey1 = NULL;
   unsigned char *shadow_info = NULL;
@@ -408,6 +409,9 @@ agent_hybrid_pgp_kem_decrypt (ctrl_t ctrl, const char *desc_text,
   gcry_sexp_release (s_skey0);
   gcry_sexp_release (s_skey1);
   return err;
+#else
+  return gpg_error (GPG_ERR_NOT_IMPLEMENTED);
+#endif
 }
 
 /* DECRYPT the encrypted stuff (like encrypted session key) in
