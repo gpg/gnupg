@@ -2319,8 +2319,9 @@ agent_probe_any_secret_key (ctrl_t ctrl, kbnode_t keyblock)
         }
       if (err)
         {
-          log_info ("problem with fast path key listing: %s - ignored\n",
-                    gpg_strerror (err));
+          if (!opt.quiet)
+            log_info ("problem with fast path key listing: %s - ignored\n",
+                      gpg_strerror (err));
           err = 0;
         }
       /* We want to do this only once.  */
