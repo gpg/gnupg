@@ -1293,16 +1293,22 @@ format_hexfingerprint (const char *fingerprint, char *buffer, size_t buflen)
 
 
 /* Return the so called KEYGRIP which is the SHA-1 hash of the public
-   key parameters expressed as an canonical encoded S-Exp.  ARRAY must
-   be 20 bytes long.  Returns 0 on success or an error code.  */
+ * key parameters expressed as an canonical encoded S-Exp.  ARRAY must
+ * be 20 bytes long.  Returns 0 on success or an error code.  If
+ * GET_SECOND Is one and PK has dual algorithm, the keygrip of the
+ * second algorithm is return; GPG_ERR_FALSE is returned if the algo
+ * is not a dual algorithm.  */
 gpg_error_t
-keygrip_from_pk (PKT_public_key *pk, unsigned char *array)
+keygrip_from_pk (PKT_public_key *pk, unsigned char *array, int get_second)
 {
   gpg_error_t err;
   gcry_sexp_t s_pkey;
 
   if (DBG_PACKET)
-    log_debug ("get_keygrip for public key\n");
+    log_debug ("get_keygrip for public key%s\n", get_second?" (second)":"");
+
+  if (get_second && pk->pubkey_algo != PUBKEY_ALGO_KYBER)
+    return gpg_error (GPG_ERR_FALSE);
 
   switch (pk->pubkey_algo)
     {
@@ -1351,14 +1357,30 @@ keygrip_from_pk (PKT_public_key *pk, unsigned char *array)
       break;
 
     case PUBKEY_ALGO_KYBER:
-      {
-        char tmpname[15];
+      if (get_second)
+        {
+          char tmpname[15];
 
-        snprintf (tmpname, sizeof tmpname, "kyber%u", nbits_from_pk (pk));
-        err = gcry_sexp_build (&s_pkey, NULL,
-                               "(public-key(%s(p%m)))",
-                               tmpname, pk->pkey[2]);
-      }
+          snprintf (tmpname, sizeof tmpname, "kyber%u", nbits_from_pk (pk));
+          err = gcry_sexp_build (&s_pkey, NULL,
+                                 "(public-key(%s(p%m)))",
+                                 tmpname, pk->pkey[2]);
+        }
+      else
+        {
+          char *curve = openpgp_oid_to_str (pk->pkey[0]);
+          if (!curve)
+            err = gpg_error_from_syserror ();
+          else
+            {
+              err = gcry_sexp_build (&s_pkey, NULL,
+                           openpgp_oid_is_cv25519 (pk->pkey[0])
+                           ? "(public-key(ecc(curve%s)(flags djb-tweak)(q%m)))"
+                           : "(public-key(ecc(curve%s)(q%m)))",
+                           curve, pk->pkey[1]);
+              xfree (curve);
+            }
+        }
       break;
 
     default:
@@ -1393,26 +1415,45 @@ keygrip_from_pk (PKT_public_key *pk, unsigned char *array)
 
 
 /* Store an allocated buffer with the keygrip of PK encoded as a
-   hexstring at r_GRIP.  Returns 0 on success.  */
+ * hexstring at r_GRIP.  Returns 0 on success.  For dual algorithms
+ * the keygrips are delimited by a comma. */
 gpg_error_t
 hexkeygrip_from_pk (PKT_public_key *pk, char **r_grip)
 {
   gpg_error_t err;
+  char *buf;
   unsigned char grip[KEYGRIP_LEN];
+  unsigned char grip2[KEYGRIP_LEN];
 
   *r_grip = NULL;
-  err = keygrip_from_pk (pk, grip);
+  err = keygrip_from_pk (pk, grip, 0);
   if (!err)
     {
-      char * buf = xtrymalloc (KEYGRIP_LEN * 2 + 1);
-      if (!buf)
-        err = gpg_error_from_syserror ();
-      else
+      if (pk->pubkey_algo == PUBKEY_ALGO_KYBER)
         {
-          bin2hex (grip, KEYGRIP_LEN, buf);
-          *r_grip = buf;
+          err = keygrip_from_pk (pk, grip2, 1);
+          if (err)
+            goto leave;
+          buf = xtrymalloc (2 * KEYGRIP_LEN * 2 + 1 + 1);
         }
+      else
+        buf = xtrymalloc (KEYGRIP_LEN * 2 + 1);
+
+      if (!buf)
+        {
+          err = gpg_error_from_syserror ();
+          goto leave;
+        }
+
+      bin2hex (grip, KEYGRIP_LEN, buf);
+      if (pk->pubkey_algo == PUBKEY_ALGO_KYBER)
+        {
+          buf[2*KEYGRIP_LEN] = ',';
+          bin2hex (grip2, KEYGRIP_LEN, buf+2*KEYGRIP_LEN+1);
+        }
+      *r_grip = buf;
     }
+ leave:
   return err;
 }
 

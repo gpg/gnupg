@@ -1080,6 +1080,12 @@ agent_keytotpm (ctrl_t ctrl, const char *hexgrip)
 
   snprintf(line, DIM(line), "KEYTOTPM %s\n", hexgrip);
 
+  if (strchr (hexgrip, ','))
+    {
+      log_error ("storing a part of a dual key is not yet supported\n");
+      return gpg_error (GPG_ERR_NOT_IMPLEMENTED);
+    }
+
   rc = start_agent (ctrl, 0);
   if (rc)
     return rc;
@@ -1108,6 +1114,13 @@ agent_keytocard (const char *hexgrip, int keyno, int force,
   struct default_inq_parm_s parm;
 
   memset (&parm, 0, sizeof parm);
+
+  if (strchr (hexgrip, ','))
+    {
+      log_error ("storing a part of a dual key is not yet supported\n");
+      return gpg_error (GPG_ERR_NOT_IMPLEMENTED);
+    }
+
 
   snprintf (line, DIM(line), "KEYTOCARD %s%s %s OPENPGP.%d %s%s%s",
             force?"--force ": "", hexgrip, serialno, keyno, timestamp,
@@ -2240,9 +2253,9 @@ agent_probe_secret_key (ctrl_t ctrl, PKT_public_key *pk)
 {
   gpg_error_t err;
   char line[ASSUAN_LINELENGTH];
-  char *hexgrip;
-
+  char *hexgrip, *p;
   struct keyinfo_data_parm_s keyinfo;
+  int result, result2;
 
   memset (&keyinfo, 0, sizeof keyinfo);
 
@@ -2253,27 +2266,63 @@ agent_probe_secret_key (ctrl_t ctrl, PKT_public_key *pk)
   err = hexkeygrip_from_pk (pk, &hexgrip);
   if (err)
     return 0;
+  if ((p=strchr (hexgrip, ',')))
+    *p++ = 0;
 
   snprintf (line, sizeof line, "KEYINFO %s", hexgrip);
-  xfree (hexgrip);
 
   err = assuan_transact (agent_ctx, line, NULL, NULL, NULL, NULL,
                          keyinfo_status_cb, &keyinfo);
   xfree (keyinfo.serialno);
   if (err)
-    return 0;
+    result = 0;
+  else if (keyinfo.card_available)
+    result = 4;
+  else if (keyinfo.passphrase_cached)
+    result = 3;
+  else if (keyinfo.is_smartcard)
+    result = 2;
+  else
+    result = 1;
 
-  if (keyinfo.card_available)
-    return 4;
+  if (!p)
+    {
+      xfree (hexgrip);
+      return result;  /* Not a dual algo - we are ready.  */
+    }
 
-  if (keyinfo.passphrase_cached)
-    return 3;
+  /* Now check the second keygrip.  */
+  memset (&keyinfo, 0, sizeof keyinfo);
+  snprintf (line, sizeof line, "KEYINFO %s", p);
 
-  if (keyinfo.is_smartcard)
-    return 2;
+  err = assuan_transact (agent_ctx, line, NULL, NULL, NULL, NULL,
+                         keyinfo_status_cb, &keyinfo);
+  xfree (keyinfo.serialno);
+  if (err)
+    result2 = 0;
+  else if (keyinfo.card_available)
+    result2 = 4;
+  else if (keyinfo.passphrase_cached)
+    result2 = 3;
+  else if (keyinfo.is_smartcard)
+    result2 = 2;
+  else
+    result2 = 1;
 
-  return 1;
+  xfree (hexgrip);
+
+  if (result == result2)
+    return result;  /* Both keys have the same status.  */
+  else if (!result && result2)
+    return 0;       /* Only first key available - return no key.  */
+  else if (result && !result2)
+    return 0;       /* Only second key not availabale - return no key.  */
+  else if (result == 4 || result == 2)
+    return result;  /* First key on card - don't care where the second is.  */
+  else
+    return result;
 }
+
 
 /* Ask the agent whether a secret key is available for any of the
    keys (primary or sub) in KEYBLOCK.  Returns 0 if available.  */
@@ -2286,6 +2335,8 @@ agent_probe_any_secret_key (ctrl_t ctrl, kbnode_t keyblock)
   kbnode_t kbctx, node;
   int nkeys;  /* (always zero in secret_keygrips mode)  */
   unsigned char grip[KEYGRIP_LEN];
+  unsigned char grip2[KEYGRIP_LEN];
+  int grip2_valid;
   const unsigned char *s;
   unsigned int n;
 
@@ -2320,8 +2371,9 @@ agent_probe_any_secret_key (ctrl_t ctrl, kbnode_t keyblock)
         }
       if (err)
         {
-          log_info ("problem with fast path key listing: %s - ignored\n",
-                    gpg_strerror (err));
+          if (opt.quiet)
+            log_info ("problem with fast path key listing: %s - ignored\n",
+                      gpg_strerror (err));
           err = 0;
         }
       /* We want to do this only once.  */
@@ -2340,14 +2392,21 @@ agent_probe_any_secret_key (ctrl_t ctrl, kbnode_t keyblock)
         if (ctrl && ctrl->secret_keygrips)
           {
             /* We got an array with all secret keygrips.  Check this.  */
-            err = keygrip_from_pk (node->pkt->pkt.public_key, grip);
+            err = keygrip_from_pk (node->pkt->pkt.public_key, grip, 0);
             if (err)
               return err;
+            err = keygrip_from_pk (node->pkt->pkt.public_key, grip2, 1);
+            if (err && gpg_err_code (err) != GPG_ERR_FALSE)
+              return err;
+            grip2_valid = !err;
+
             for (s=ctrl->secret_keygrips, n = 0;
                  n < ctrl->secret_keygrips_len;
                  s += 20, n += 20)
               {
                 if (!memcmp (s, grip, 20))
+                  return 0;
+                if (grip2_valid && !memcmp (s, grip2, 20))
                   return 0;
               }
             err = gpg_error (GPG_ERR_NO_SECKEY);
@@ -2355,7 +2414,8 @@ agent_probe_any_secret_key (ctrl_t ctrl, kbnode_t keyblock)
           }
         else
           {
-            if (nkeys && ((p - line) + 41) > (ASSUAN_LINELENGTH - 2))
+            if (nkeys
+                && ((p - line) + 4*KEYGRIP_LEN+1+1) > (ASSUAN_LINELENGTH - 2))
               {
                 err = assuan_transact (agent_ctx, line,
                                        NULL, NULL, NULL, NULL, NULL, NULL);
@@ -2365,13 +2425,24 @@ agent_probe_any_secret_key (ctrl_t ctrl, kbnode_t keyblock)
                 nkeys = 0;
               }
 
-            err = keygrip_from_pk (node->pkt->pkt.public_key, grip);
+            err = keygrip_from_pk (node->pkt->pkt.public_key, grip, 0);
             if (err)
               return err;
             *p++ = ' ';
             bin2hex (grip, 20, p);
             p += 40;
             nkeys++;
+
+            err = keygrip_from_pk (node->pkt->pkt.public_key, grip2, 1);
+            if (err && gpg_err_code (err) != GPG_ERR_FALSE)
+              return err;
+            if (!err)  /* Add the second keygrip from dual algos.  */
+              {
+                *p++ = ' ';
+                bin2hex (grip2, 20, p);
+                p += 40;
+                nkeys++;
+              }
           }
       }
 
@@ -2398,6 +2469,7 @@ agent_get_keyinfo (ctrl_t ctrl, const char *hexkeygrip,
   gpg_error_t err;
   char line[ASSUAN_LINELENGTH];
   struct keyinfo_data_parm_s keyinfo;
+  char *s;
 
   memset (&keyinfo, 0,sizeof keyinfo);
 
@@ -2407,10 +2479,20 @@ agent_get_keyinfo (ctrl_t ctrl, const char *hexkeygrip,
   if (err)
     return err;
 
-  if (!hexkeygrip || strlen (hexkeygrip) != 40)
+  /* FIXME: Support dual keys.  Maybe under the assumption that the
+   *        first key might be on a card.  */
+  if (!hexkeygrip)
+    return gpg_error (GPG_ERR_INV_VALUE);
+  s = strchr (hexkeygrip, ',');
+  if (!s)
+    s = hexkeygrip + strlen (hexkeygrip);
+  if (s - hexkeygrip != 40)
     return gpg_error (GPG_ERR_INV_VALUE);
 
-  snprintf (line, DIM(line), "KEYINFO %s", hexkeygrip);
+  /* Note that for a dual algo we only get info for the first key.
+   * FIXME: We need to see how we can show the status of the second
+   * key in a key listing. */
+  snprintf (line, DIM(line), "KEYINFO %.40s", hexkeygrip);
 
   err = assuan_transact (agent_ctx, line, NULL, NULL, NULL, NULL,
                          keyinfo_status_cb, &keyinfo);
@@ -3174,6 +3256,7 @@ agent_delete_key (ctrl_t ctrl, const char *hexkeygrip, const char *desc,
         return err;
     }
 
+  /* FIXME: Shall we add support to DELETE_KEY for dual keys?  */
   snprintf (line, DIM(line), "DELETE_KEY%s %s",
             force? " --force":"", hexkeygrip);
   err = assuan_transact (agent_ctx, line, NULL, NULL,

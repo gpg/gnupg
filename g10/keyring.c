@@ -1148,7 +1148,7 @@ keyring_search (KEYRING_HANDLE hd, KEYDB_SEARCH_DESC *desc,
           if (need_keyid)
             keyid_from_pk (pk, aki);
           if (need_grip)
-            keygrip_from_pk (pk, grip);
+            keygrip_from_pk (pk, grip, 0);
 
           if (use_key_present_hash
               && !key_present_hash_ready

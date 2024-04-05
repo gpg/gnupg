@@ -1103,6 +1103,7 @@ change_passphrase (ctrl_t ctrl, kbnode_t keyblock)
           err = hexkeygrip_from_pk (pk, &hexgrip);
           if (err)
             goto leave;
+          /* FIXME: Handle dual keys.  */
           err = agent_get_keyinfo (ctrl, hexgrip, &serialno, NULL);
           if (!err && serialno)
             ; /* Key on card.  */

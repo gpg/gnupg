@@ -1961,6 +1961,11 @@ do_export_one_keyblock (ctrl_t ctrl, kbnode_t keyblock, u32 *keyid,
               err = 0;
               continue;
             }
+          if (strchr (hexgrip, ','))
+            {
+              log_error ("exporting a secret dual key is not yet supported\n");
+              return gpg_error (GPG_ERR_NOT_IMPLEMENTED);
+            }
 
           xfree (serialno);
           serialno = NULL;

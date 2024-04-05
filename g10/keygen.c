@@ -6308,6 +6308,8 @@ generate_subkeypair (ctrl_t ctrl, kbnode_t keyblock, const char *algostr,
   err = hexkeygrip_from_pk (pri_psk, &hexgrip);
   if (err)
     goto leave;
+  /* FIXME: Right now the primary key won't be a dual key.  But this
+   *        will change */
   if (agent_get_keyinfo (NULL, hexgrip, &serialno, NULL))
     {
       if (interactive)
