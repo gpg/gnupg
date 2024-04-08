@@ -279,7 +279,8 @@ blob_cmp_fpr (KEYBOXBLOB blob, const unsigned char *fpr, unsigned int fprlen)
 }
 
 
-/* Helper for has_short_kid and has_long_kid.  */
+/* Helper for has_short_kid and has_long_kid.  This function is called
+ * with FPROFF 12 and FPRLEN 4 or with FPROFF 12 and FPRLEN 8.  */
 static int
 blob_cmp_fpr_part (KEYBOXBLOB blob, const unsigned char *fpr,
                    int fproff, int fprlen)
@@ -288,7 +289,8 @@ blob_cmp_fpr_part (KEYBOXBLOB blob, const unsigned char *fpr,
   size_t length;
   size_t pos, off;
   size_t nkeys, keyinfolen;
-  int idx, fpr32, storedfprlen;
+  int idx;
+  int fpr32;    /* Set if this blob stores all fingerprints as 32 bytes. */
 
   buffer = _keybox_get_blob_image (blob, &length);
   if (length < 40)
@@ -307,13 +309,24 @@ blob_cmp_fpr_part (KEYBOXBLOB blob, const unsigned char *fpr,
   for (idx=0; idx < nkeys; idx++)
     {
       off = pos + idx*keyinfolen;
-      if (fpr32)
-        storedfprlen = (get16 (buffer + off + 32) & 0x80)? 32:20;
+      if (!fpr32)
+        {
+          /* Blob has only 20 fingerprints - use the FPROFF.    */
+          if (!memcmp (buffer + off + fproff, fpr, fprlen))
+            return idx+1; /* found */
+        }
+      else if ((buffer[off + 32 + 1] & 0x80))
+        {
+          /* This (sub)key has a 32 byte fpr -> use 0 as offset. */
+          if (!memcmp (buffer + off, fpr, fprlen))
+            return idx+1; /* found */
+        }
       else
-        storedfprlen = 20;
-      if ((fpr32 || storedfprlen == fproff + fprlen)
-          && !memcmp (buffer + off + fproff, fpr, fprlen))
-        return idx+1; /* found */
+        {
+          /* This (sub)key has a 20 byte fpr -> use the FPROFF  */
+          if (!memcmp (buffer + off + fproff, fpr, fprlen))
+            return idx+1; /* found */
+        }
     }
   return 0; /* not found */
 }
@@ -683,43 +696,30 @@ blob_x509_has_grip (KEYBOXBLOB blob, const unsigned char *grip)
 static inline int
 has_short_kid (KEYBOXBLOB blob, u32 lkid)
 {
-  const unsigned char *buffer;
   size_t length;
-  int fpr32;
   unsigned char buf[4];
 
-  buffer = _keybox_get_blob_image (blob, &length);
+  _keybox_get_blob_image (blob, &length);
   if (length < 48)
     return 0; /* blob too short */
-  fpr32 = buffer[5] == 2;
-  if (fpr32 && length < 56)
-    return 0; /* blob to short */
 
   buf[0] = lkid >> 24;
   buf[1] = lkid >> 16;
   buf[2] = lkid >> 8;
   buf[3] = lkid;
 
-  if (fpr32 && (get16 (buffer + 20 + 32) & 0x80))
-    return blob_cmp_fpr_part (blob, buf, 0, 4);
-  else
-    return blob_cmp_fpr_part (blob, buf, 16, 4);
+  return blob_cmp_fpr_part (blob, buf, 16, 4);
 }
 
 static inline int
 has_long_kid (KEYBOXBLOB blob, u32 mkid, u32 lkid)
 {
-  const unsigned char *buffer;
   size_t length;
-  int fpr32;
   unsigned char buf[8];
 
-  buffer = _keybox_get_blob_image (blob, &length);
+  _keybox_get_blob_image (blob, &length);
   if (length < 48)
     return 0; /* blob too short */
-  fpr32 = buffer[5] == 2;
-  if (fpr32 && length < 56)
-    return 0; /* blob to short */
 
   buf[0] = mkid >> 24;
   buf[1] = mkid >> 16;
@@ -730,10 +730,7 @@ has_long_kid (KEYBOXBLOB blob, u32 mkid, u32 lkid)
   buf[6] = lkid >> 8;
   buf[7] = lkid;
 
-  if (fpr32 && (get16 (buffer + 20 + 32) & 0x80))
-    return blob_cmp_fpr_part (blob, buf, 0, 8);
-  else
-    return blob_cmp_fpr_part (blob, buf, 12, 8);
+  return blob_cmp_fpr_part (blob, buf, 12, 8);
 }
 
 static inline int
