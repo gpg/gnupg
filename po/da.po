@@ -7012,7 +7012,9 @@ msgstr "adgang til administratorkommandoer er ikke konfigureret\n"
 msgid "||Please enter the PIN"
 msgstr "||Indtast venligst PIN'en"
 
-msgid "||Please enter the Reset Code for the card"
+#, fuzzy
+#| msgid "||Please enter the Reset Code for the card"
+msgid "|R|Please enter the Reset Code for the card"
 msgstr "||Indtast venligst nulstillingskoden for kortet"
 
 #, c-format

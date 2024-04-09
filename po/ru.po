@@ -13,7 +13,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: GnuPG 2.2.0\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"PO-Revision-Date: 2021-10-12 08:13+0200\n"
+"PO-Revision-Date: 2024-04-09 13:35+0200\n"
 "Last-Translator: Ineiev <ineiev@gnu.org>\n"
 "Language-Team: Russian <gnupg-ru@gnupg.org>\n"
 "Language: ru\n"
@@ -6632,8 +6632,8 @@ msgstr "доступ к командам управления не настро�
 msgid "||Please enter the PIN"
 msgstr "||Введите PIN"
 
-msgid "||Please enter the Reset Code for the card"
-msgstr "||Введите код сброса для карты"
+msgid "|R|Please enter the Reset Code for the card"
+msgstr "|R|Введите код сброса для карты"
 
 #, c-format
 msgid "Reset Code is too short; minimum length is %d\n"

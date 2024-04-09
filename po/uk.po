@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: GNU gnupg 2.1.0\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"PO-Revision-Date: 2020-08-31 11:54+0300\n"
+"PO-Revision-Date: 2024-04-09 13:34+0200\n"
 "Last-Translator: Yuri Chornoivan <yurchor@ukr.net>\n"
 "Language-Team: Ukrainian <kde-i18n-uk@kde.org>\n"
 "Language: uk\n"
@@ -6754,8 +6754,9 @@ msgstr "доступ до адміністративних команд не н�
 msgid "||Please enter the PIN"
 msgstr "||Вкажіть пінкод"
 
-msgid "||Please enter the Reset Code for the card"
-msgstr "||Вкажіть код скидання коду картки"
+#, fuzzy
+msgid "|R|Please enter the Reset Code for the card"
+msgstr "|R|Вкажіть код скидання коду картки"
 
 #, c-format
 msgid "Reset Code is too short; minimum length is %d\n"

@@ -6832,7 +6832,7 @@ msgid "||Please enter the PIN"
 msgstr "jelszóváltoztatás"
 
 #, fuzzy
-msgid "||Please enter the Reset Code for the card"
+msgid "|R|Please enter the Reset Code for the card"
 msgstr "Kérem, válassza ki a visszavonás okát:\n"
 
 #, c-format

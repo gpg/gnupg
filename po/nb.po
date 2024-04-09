@@ -6588,7 +6588,9 @@ msgstr "tilgang til admin-kommandoer er ikke konfigurert\n"
 msgid "||Please enter the PIN"
 msgstr "||Skriv inn PIN-kode"
 
-msgid "||Please enter the Reset Code for the card"
+#, fuzzy
+#| msgid "||Please enter the Reset Code for the card"
+msgid "|R|Please enter the Reset Code for the card"
 msgstr "||Skriv inn tilbakestillingskode for kortet"
 
 #, c-format

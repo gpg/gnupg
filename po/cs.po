@@ -6656,7 +6656,9 @@ msgstr "přístup k příkazům správce není nakonfigurován\n"
 msgid "||Please enter the PIN"
 msgstr "||Prosím vložte PIN"
 
-msgid "||Please enter the Reset Code for the card"
+#, fuzzy
+#| msgid "||Please enter the Reset Code for the card"
+msgid "|R|Please enter the Reset Code for the card"
 msgstr "||Prosím, zadejte resetační kód karty"
 
 #, c-format

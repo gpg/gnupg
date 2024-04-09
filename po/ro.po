@@ -6924,7 +6924,7 @@ msgid "||Please enter the PIN"
 msgstr "||Vă rugăm introduceţi PIN%%0A[semnături făcute: %lu]"
 
 #, fuzzy
-msgid "||Please enter the Reset Code for the card"
+msgid "|R|Please enter the Reset Code for the card"
 msgstr "||Vă rugăm introduceţi PIN%%0A[semnături făcute: %lu]"
 
 #, fuzzy, c-format
