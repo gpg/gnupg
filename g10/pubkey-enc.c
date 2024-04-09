@@ -117,6 +117,7 @@ get_session_key (ctrl_t ctrl, struct pubkey_enc_list *list, DEK *dek)
         {
           if (!(k->pubkey_algo == PUBKEY_ALGO_ELGAMAL_E
                 || k->pubkey_algo == PUBKEY_ALGO_ECDH
+                || k->pubkey_algo == PUBKEY_ALGO_KYBER
                 || k->pubkey_algo == PUBKEY_ALGO_RSA
                 || k->pubkey_algo == PUBKEY_ALGO_RSA_E
                 || k->pubkey_algo == PUBKEY_ALGO_ELGAMAL))
@@ -237,6 +238,16 @@ get_it (ctrl_t ctrl,
         err = gcry_sexp_build (&s_data, NULL, "(enc-val(ecdh(s%m)(e%m)))",
                                enc->data[1], enc->data[0]);
     }
+  else if (sk->pubkey_algo == PUBKEY_ALGO_KYBER)
+    {
+      if (!enc->data[0] || !enc->data[1] || !enc->data[2] || !enc->data[3])
+        err = gpg_error (GPG_ERR_BAD_MPI);
+      else
+        err = gcry_sexp_build (&s_data, NULL,
+                               "(enc-val(pqc(e%m)(k%m)(s%m)(fixed-info%s)))",
+                               enc->data[0], enc->data[1], enc->data[3],
+                               "\x1d" /*PUBKEY_ALGO_KYBER*/);
+    }
   else
     err = gpg_error (GPG_ERR_BUG);
 
@@ -249,7 +260,6 @@ get_it (ctrl_t ctrl,
   /* Decrypt. */
   desc = gpg_format_keydesc (ctrl, sk, FORMAT_KEYDESC_NORMAL, 1);
 
-  /*FIXME: Support dual keys.  */
   err = agent_pkdecrypt (NULL, keygrip,
                          desc, sk->keyid, sk->main_keyid, sk->pubkey_algo,
                          s_data, &frame, &nframe, &padding);

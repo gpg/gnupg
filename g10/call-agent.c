@@ -2878,6 +2878,7 @@ agent_pkdecrypt (ctrl_t ctrl, const char *keygrip, const char *desc,
   membuf_t data;
   size_t n, len;
   char *p, *buf, *endp;
+  const char *keygrip2 = NULL;
   struct default_inq_parm_s dfltparm;
 
   memset (&dfltparm, 0, sizeof dfltparm);
@@ -2886,12 +2887,25 @@ agent_pkdecrypt (ctrl_t ctrl, const char *keygrip, const char *desc,
   dfltparm.keyinfo.mainkeyid   = mainkeyid;
   dfltparm.keyinfo.pubkey_algo = pubkey_algo;
 
-  if (!keygrip || strlen(keygrip) != 40
-      || !s_ciphertext || !r_buf || !r_buflen || !r_padding)
+  if (!keygrip || !s_ciphertext || !r_buf || !r_buflen || !r_padding)
     return gpg_error (GPG_ERR_INV_VALUE);
 
   *r_buf = NULL;
   *r_padding = -1;
+
+  /* Parse the keygrip in case of a dual algo.  */
+  keygrip2 = strchr (keygrip, ',');
+  if (!keygrip2)
+    keygrip2 = keygrip + strlen (keygrip);
+  if (keygrip2 - keygrip != 40)
+    return gpg_error (GPG_ERR_INV_VALUE);
+  if (*keygrip2)
+    {
+      keygrip2++;
+      if (strlen (keygrip2) != 40)
+        return gpg_error (GPG_ERR_INV_VALUE);
+    }
+
 
   err = start_agent (ctrl, 0);
   if (err)
@@ -2903,10 +2917,18 @@ agent_pkdecrypt (ctrl_t ctrl, const char *keygrip, const char *desc,
   if (err)
     return err;
 
-  snprintf (line, sizeof line, "SETKEY %s", keygrip);
+  snprintf (line, sizeof line, "SETKEY %.40s", keygrip);
   err = assuan_transact (agent_ctx, line, NULL, NULL, NULL, NULL, NULL, NULL);
   if (err)
     return err;
+
+  if (*keygrip2)
+    {
+      snprintf (line, sizeof line, "SETKEY --another %.40s", keygrip2);
+      err = assuan_transact (agent_ctx, line, NULL, NULL,NULL,NULL,NULL,NULL);
+      if (err)
+        return err;
+    }
 
   if (desc)
     {
@@ -2926,7 +2948,8 @@ agent_pkdecrypt (ctrl_t ctrl, const char *keygrip, const char *desc,
     err = make_canon_sexp (s_ciphertext, &parm.ciphertext, &parm.ciphertextlen);
     if (err)
       return err;
-    err = assuan_transact (agent_ctx, "PKDECRYPT",
+    err = assuan_transact (agent_ctx,
+                           *keygrip2? "PKDECRYPT --kem=PQC-PGP":"PKDECRYPT",
                            put_membuf_cb, &data,
                            inq_ciphertext_cb, &parm,
                            padding_info_cb, r_padding);

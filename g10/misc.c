@@ -750,6 +750,8 @@ openpgp_pk_test_algo2 (pubkey_algo_t algo, unsigned int use)
         ga = GCRY_PK_ELG;
       break;
 
+    case PUBKEY_ALGO_KYBER:     ga = GCRY_PK_KEM; break;
+
     default:
       break;
     }

@@ -537,7 +537,7 @@ pk_ecdh_decrypt (gcry_mpi_t *r_result, const byte sk_fp[MAX_FINGERPRINT_LEN],
   nbytes = (nbits+7)/8;
 
   data_buf_size = nbytes;
-  if ((data_buf_size & 7) != 1)
+  if ((data_buf_size & 7) != 1 || data_buf_size <= 1 + 8)
     {
       log_error ("can't use a shared secret of %d bytes for ecdh\n",
                  data_buf_size);

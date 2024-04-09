@@ -1444,6 +1444,7 @@ parse_symkeyenc (IOBUF inp, int pkttype, unsigned long pktlen,
 }
 
 
+/* Parse a public key encrypted packet (Tag 1).  */
 static int
 parse_pubkeyenc (IOBUF inp, int pkttype, unsigned long pktlen,
 		 PACKET * packet)
@@ -1514,9 +1515,14 @@ parse_pubkeyenc (IOBUF inp, int pkttype, unsigned long pktlen,
     {
       log_assert (ndata == 4);
       /* Get the ephemeral public key.  */
-      rc = read_octet_string (inp, &pktlen, 4, 0, 0, k->data + 0);
-      if (rc)
-        goto leave;
+      n = pktlen;
+      k->data[0] = sos_read (inp, &n, 0);
+      pktlen -= n;
+      if (!k->data[0])
+        {
+          rc = gpg_error (GPG_ERR_INV_PACKET);
+          goto leave;
+        }
       /* Get the Kyber ciphertext.  */
       rc = read_octet_string (inp, &pktlen, 4, 0, 0, k->data + 1);
       if (rc)

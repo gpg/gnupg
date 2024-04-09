@@ -336,17 +336,24 @@ do_hash_public_key (gcry_md_hd_t md, PKT_public_key *pk, int use_v5)
             {
               /* Ugly: We need to re-construct the wire format of the
                * key parameter.  It would be easier to use a second
-               * second index for pp and nn which could bump
-               * independet of i.  */
+               * index for pp and nn which we could bump independet of
+               * i.  */
               const char *p;
 
               p = gcry_mpi_get_opaque (pk->pkey[i], &nbits);
-              pp[i] = xmalloc ((nbits+7)/8 + 1);
+              nn[i] = (nbits+7)/8;
+              pp[i] = xmalloc (4 + nn[i] + 1);
               if (p)
-                memcpy (pp[i], p, (nbits+7)/8);
+                {
+                  pp[i][0] = nn[i] >> 24;
+                  pp[i][1] = nn[i] >> 16;
+                  pp[i][2] = nn[i] >> 8;
+                  pp[i][3] = nn[i];
+                  memcpy (pp[i] + 4 , p, nn[i]);
+                  nn[i] += 4;
+                }
               else
                 pp[i] = NULL;
-              nn[i] = (nbits+7)/8;
               n += nn[i];
             }
           else if (gcry_mpi_get_flag (pk->pkey[i], GCRYMPI_FLAG_OPAQUE))

@@ -143,6 +143,8 @@ release_list( CTX c )
 
       mpi_release (c->pkenc_list->data[0]);
       mpi_release (c->pkenc_list->data[1]);
+      mpi_release (c->pkenc_list->data[2]);
+      mpi_release (c->pkenc_list->data[3]);
       xfree (c->pkenc_list);
       c->pkenc_list = tmp;
     }
@@ -527,11 +529,13 @@ proc_pubkey_enc (CTX c, PACKET *pkt)
       x->keyid[1] = enc->keyid[1];
       x->pubkey_algo = enc->pubkey_algo;
       x->result = -1;
-      x->data[0] = x->data[1] = NULL;
+      x->data[0] = x->data[1] = x->data[2] = x->data[3] = NULL;
       if (enc->data[0])
         {
           x->data[0] = mpi_copy (enc->data[0]);
           x->data[1] = mpi_copy (enc->data[1]);
+          x->data[2] = mpi_copy (enc->data[2]);
+          x->data[3] = mpi_copy (enc->data[3]);
         }
       x->next = c->pkenc_list;
       c->pkenc_list = x;
