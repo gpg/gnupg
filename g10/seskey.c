@@ -92,7 +92,9 @@ encode_session_key (int openpgp_pk_algo, DEK *dek, unsigned int nbits)
 
   /* Shortcut for ECDH.  It's padding is minimal to simply make the
      output be a multiple of 8 bytes.  */
-  if (openpgp_pk_algo == PUBKEY_ALGO_ECDH)
+  /* FIXME: We use the ECDH also for Kyber for now.  */
+  if (openpgp_pk_algo == PUBKEY_ALGO_ECDH
+      || openpgp_pk_algo == PUBKEY_ALGO_KYBER)
     {
       /* Pad to 8 byte granularity; the padding byte is the number of
        * padded bytes.

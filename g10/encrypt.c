@@ -758,7 +758,7 @@ write_symkey_enc (STRING2KEY *symkey_s2k, aead_algo_t aead_algo,
  * Encrypt the file with the given userids (or ask if none is
  * supplied).  Either FILENAME or FILEFD must be given, but not both.
  * The caller may provide a checked list of public keys in
- * PROVIDED_PKS; if not the function builds a list of keys on its own.
+ * PROVIDED_KEYS; if not the function builds a list of keys on its own.
  *
  * Note that FILEFD is currently only used by cmd_encrypt in the
  * not yet finished server.c.

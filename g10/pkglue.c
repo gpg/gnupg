@@ -480,6 +480,11 @@ pk_encrypt (pubkey_algo_t algo, gcry_mpi_t *resarr, gcry_mpi_t data,
           gcry_mpi_release (k);
         }
     }
+  else if (algo == PUBKEY_ALGO_KYBER)
+    {
+      log_debug ("Implement Kyber encryption\n");
+      rc = gpg_error (GPG_ERR_NOT_IMPLEMENTED);
+    }
   else
     rc = gpg_error (GPG_ERR_PUBKEY_ALGO);
 

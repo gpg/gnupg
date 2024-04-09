@@ -599,7 +599,9 @@ openpgp_is_curve_supported (const char *name, int *r_algo,
     {
       if ((!ascii_strcasecmp (name, oidtable[idx].name)
            || (oidtable[idx].alias
-               && !ascii_strcasecmp (name, (oidtable[idx].alias))))
+               && !ascii_strcasecmp (name, (oidtable[idx].alias)))
+           || (oidtable[idx].abbr
+               && !ascii_strcasecmp (name, (oidtable[idx].abbr))))
           && curve_supported_p (oidtable[idx].name))
         {
           if (r_algo)
