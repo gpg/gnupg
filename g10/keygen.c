@@ -1319,7 +1319,7 @@ curve_is_448 (gcry_sexp_t sexp)
  * parameters for dual algorithm (e.g. Kyber).  */
 static gpg_error_t
 ecckey_from_sexp (gcry_mpi_t *array, gcry_sexp_t sexp,
-                  gcry_sexp_t sexp2, int algo)
+                  gcry_sexp_t sexp2, int algo, int pkversion)
 {
   gpg_error_t err;
   gcry_sexp_t list, l2;
@@ -1362,6 +1362,10 @@ ecckey_from_sexp (gcry_mpi_t *array, gcry_sexp_t sexp,
       err = gpg_error (GPG_ERR_INV_OBJ);
       goto leave;
     }
+  /* For v5 keys we prefer the modern OID for cv25519.  */
+  if (pkversion > 4 && !strcmp (oidstr, "1.3.6.1.4.1.3029.1.5.1"))
+    oidstr = "1.3.101.110";
+
   err = openpgp_oid_from_str (oidstr, &array[0]);
   if (err)
     goto leave;
@@ -1605,11 +1609,11 @@ do_create_from_keygrip (ctrl_t ctrl, int algo,
   pk->pubkey_algo = algo;
 
   if (algo == PUBKEY_ALGO_KYBER)
-    err = ecckey_from_sexp (pk->pkey, s_key, s_key2, algo);
+    err = ecckey_from_sexp (pk->pkey, s_key, s_key2, algo, pk->version);
   else if (algo == PUBKEY_ALGO_ECDSA
       || algo == PUBKEY_ALGO_EDDSA
       || algo == PUBKEY_ALGO_ECDH )
-    err = ecckey_from_sexp (pk->pkey, s_key, NULL, algo);
+    err = ecckey_from_sexp (pk->pkey, s_key, NULL, algo, pk->version);
   else
     err = key_from_sexp (pk->pkey, s_key, "public-key", algoelem);
   if (err)
@@ -1716,11 +1720,11 @@ common_gen (const char *keyparms, const char *keyparms2,
   pk->pubkey_algo = algo;
 
   if (algo == PUBKEY_ALGO_KYBER)
-    err = ecckey_from_sexp (pk->pkey, s_key, s_key2, algo);
+    err = ecckey_from_sexp (pk->pkey, s_key, s_key2, algo, pk->version);
   else if (algo == PUBKEY_ALGO_ECDSA
            || algo == PUBKEY_ALGO_EDDSA
            || algo == PUBKEY_ALGO_ECDH )
-    err = ecckey_from_sexp (pk->pkey, s_key, NULL, algo);
+    err = ecckey_from_sexp (pk->pkey, s_key, NULL, algo, pk->version);
   else
     err = key_from_sexp (pk->pkey, s_key, "public-key", algoelem);
   if (err)
@@ -3682,7 +3686,8 @@ parse_key_parameter_part (ctrl_t ctrl,
             return gpg_error (GPG_ERR_INV_VALUE);
         }
     }
-  else if (!ascii_strcasecmp (string, "kyber"))
+  else if (!ascii_strcasecmp (string, "kyber")
+           || !ascii_strcasecmp (string, "kyber768"))
     {
       /* Get the curve and check that it can technically be used
        * (i.e. everything except the EdXXXX curves.  */
@@ -3691,6 +3696,35 @@ parse_key_parameter_part (ctrl_t ctrl,
         return gpg_error (GPG_ERR_UNKNOWN_CURVE);
       algo = PUBKEY_ALGO_KYBER;
       size = 768;
+      is_pqc = 1;
+    }
+  else if (!ascii_strcasecmp (string, "kyber1024"))
+    {
+      /* Get the curve and check that it can technically be used
+       * (i.e. everything except the EdXXXX curves.  */
+      curve = openpgp_is_curve_supported ("brainpoolP512r1", &algo, NULL);
+      if (!curve || algo == PUBKEY_ALGO_EDDSA)
+        return gpg_error (GPG_ERR_UNKNOWN_CURVE);
+      algo = PUBKEY_ALGO_KYBER;
+      size = 1024;
+      is_pqc = 1;
+    }
+  else if (!ascii_strncasecmp (string,    "ky768_", 6)
+           || !ascii_strncasecmp (string, "ky1024_", 7)
+           || !ascii_strncasecmp (string, "kyber768_", 9)
+           || !ascii_strncasecmp (string, "kyber1024_", 10)
+           )
+    {
+      /* Get the curve and check that it can technically be used
+       * (i.e. everything except the EdXXXX curves.  */
+      s = strchr (string, '_');
+      log_assert (s);
+      s++;
+      curve = openpgp_is_curve_supported (s, &algo, NULL);
+      if (!curve || algo == PUBKEY_ALGO_EDDSA)
+        return gpg_error (GPG_ERR_UNKNOWN_CURVE);
+      algo = PUBKEY_ALGO_KYBER;
+      size = strstr (string, "768_")? 768 : 1024;
       is_pqc = 1;
     }
   else if (!ascii_strcasecmp (string, "dil3"))
@@ -6734,12 +6768,14 @@ gen_card_key (int keyno, int algo, int is_primary, kbnode_t pub_root,
   if (curve_is_448 (s_key))
     *keygen_flags |= KEYGEN_FLAG_CREATE_V5_KEY;
 
+  pk->version = (*keygen_flags & KEYGEN_FLAG_CREATE_V5_KEY)? 5 : 4;
+
   if (algo == PUBKEY_ALGO_RSA)
     err = key_from_sexp (pk->pkey, s_key, "public-key", "ne");
   else if (algo == PUBKEY_ALGO_ECDSA
            || algo == PUBKEY_ALGO_EDDSA
            || algo == PUBKEY_ALGO_ECDH )
-    err = ecckey_from_sexp (pk->pkey, s_key, NULL, algo);
+    err = ecckey_from_sexp (pk->pkey, s_key, NULL, algo, pk->version);
   else
     err = gpg_error (GPG_ERR_PUBKEY_ALGO);
   gcry_sexp_release (s_key);
@@ -6752,7 +6788,6 @@ gen_card_key (int keyno, int algo, int is_primary, kbnode_t pub_root,
     }
 
   pk->timestamp = *timestamp;
-  pk->version = (*keygen_flags & KEYGEN_FLAG_CREATE_V5_KEY)? 5 : 4;
   if (expireval)
     pk->expiredate = pk->timestamp + expireval;
   pk->pubkey_algo = algo;
