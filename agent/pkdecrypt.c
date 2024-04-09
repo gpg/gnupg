@@ -177,12 +177,13 @@ reverse_buffer (unsigned char *buffer, unsigned int length)
    First keygrip is for ECC, second keygrip is for PQC.  CIPHERTEXT
    should follow the format of:
 
-	(enc-val(pqc(s%m)(e%m)(k%m))))
-        s: encrypted session key
+	(enc-val(pqc(e%m)(k%m)(s%m)(fixed-info&)))
         e: ECDH ciphertext
         k: ML-KEM ciphertext
+        s: encrypted session key
+        fixed-info: A buffer with the fixed info.
 
-   FIXME: For now, possibile keys on smartcard are not supported.
+   FIXME: For now, possible keys on smartcards are not supported.
   */
 static gpg_error_t
 agent_hybrid_pgp_kem_decrypt (ctrl_t ctrl, const char *desc_text,
@@ -226,7 +227,9 @@ agent_hybrid_pgp_kem_decrypt (ctrl_t ctrl, const char *desc_text,
   gcry_cipher_hd_t hd;
   unsigned char sessionkey[256];
   size_t sessionkey_len;
-  const unsigned char fixedinfo[1] = { 105 };
+
+
+  memset (iov, 0, sizeof iov);
 
   err = agent_key_from_file (ctrl, NULL, desc_text,
                              ctrl->keygrip, &shadow_info,
@@ -248,33 +251,44 @@ agent_hybrid_pgp_kem_decrypt (ctrl_t ctrl, const char *desc_text,
 
   /* Here assumes no smartcard, but private keys */
 
-  gcry_sexp_extract_param (s_cipher, NULL, "/e/k/s",
-                           &ecc_ct_mpi,
-                           &mlkem_ct_mpi,
-                           &encrypted_sessionkey_mpi, NULL);
+  /* Note that we put the fixed-info already here into IOV[5].  Take
+   * care not to clear anymore.  */
+  err = gcry_sexp_extract_param (s_cipher, NULL, "/eks&'fixed-info'",
+                                 &ecc_ct_mpi,
+                                 &mlkem_ct_mpi,
+                                 &encrypted_sessionkey_mpi,
+                                 iov+5,  NULL);
+  if (err)
+    goto leave;
 
   encrypted_sessionkey = gcry_mpi_get_opaque (encrypted_sessionkey_mpi, &nbits);
   encrypted_sessionkey_len = (nbits+7)/8;
+
+  if (encrypted_sessionkey_len < 1+1+8)
+    {
+      /* Fixme: This is a basic check but we should better test
+       *         against the expected length and something which
+       *         is required to avoid an underflow.  */
+      err = gpg_error (GPG_ERR_INV_DATA);
+      goto leave;
+    }
   encrypted_sessionkey_len--;
 
   if (encrypted_sessionkey[0] != encrypted_sessionkey_len)
     {
-      err = GPG_ERR_INV_DATA;
+      err = gpg_error (GPG_ERR_INV_DATA);
       goto leave;
     }
   encrypted_sessionkey++;       /* Skip the length.  */
 
-  if (encrypted_sessionkey[0] != CIPHER_ALGO_AES256)
-    {
-      err = GPG_ERR_INV_DATA;
-      goto leave;
-    }
-  encrypted_sessionkey_len--;
-  encrypted_sessionkey++;       /* Skip the sym algo */
 
-  /* Fistly, ECC part.  FIXME: For now, we assume X25519.  */
-  gcry_sexp_extract_param (s_skey0, NULL, "/q/d",
-                           &ecc_pk_mpi, &ecc_sk_mpi, NULL);
+  /* Fistly, ECC part.  FIXME: For now, we assume X25519.  We need to
+   *                           take that info from s_key0  */
+  err = gcry_sexp_extract_param (s_skey0, NULL, "/q/d",
+                                 &ecc_pk_mpi, &ecc_sk_mpi, NULL);
+  if (err)
+    goto leave;
+
   p = gcry_mpi_get_opaque (ecc_pk_mpi, &nbits);
   len = (nbits+7)/8;
   memcpy (ecc_pk, p+1, 32);     /* Remove the 0x40 prefix */
@@ -359,9 +373,7 @@ agent_hybrid_pgp_kem_decrypt (ctrl_t ctrl, const char *desc_text,
   iov[4].off = 0;
   iov[4].len = GCRY_KEM_MLKEM768_ENCAPS_LEN;
 
-  iov[5].data = (unsigned char *)fixedinfo;
-  iov[5].off = 0;
-  iov[5].len = 1;
+  /* Note: iov[5] has already been filled.  */
 
   err = compute_kmac256 (kekkey, kekkeylen,
                          "OpenPGPCompositeKeyDerivationFunction", 37,
@@ -406,6 +418,7 @@ agent_hybrid_pgp_kem_decrypt (ctrl_t ctrl, const char *desc_text,
   put_membuf (outbuf, ")", 2);
 
  leave:
+  gcry_free (iov[5].data);  /* The fixed-info.  */
   gcry_sexp_release (s_skey0);
   gcry_sexp_release (s_skey1);
   return err;
