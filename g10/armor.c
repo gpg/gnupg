@@ -1031,10 +1031,10 @@ radix64_read( armor_filter_context_t *afx, IOBUF a, size_t *retn,
 	    checkcrc++;
 	    break;
 	}
-        else if (afx->dearmor_state && c == '-'
+        else if (c == '-'
                  && afx->buffer_pos + 8 < afx->buffer_len
                  && !strncmp (afx->buffer, "-----END ", 8)) {
-            break; /* End in --dearmor mode.  */
+            break; /* End in --dearmor mode or No CRC.  */
         }
 	else {
 	    log_error(_("invalid radix64 character %02X skipped\n"), c);
