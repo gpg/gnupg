@@ -233,6 +233,26 @@ keygrip_from_keyparm (int algo, struct keyparm_s *kp, unsigned char *grip)
       }
       break;
 
+    case PUBKEY_ALGO_KYBER:
+      /* There is no space in the BLOB for a second grip, thus for now
+       * we store only the ECC keygrip.  */
+      {
+        char *curve = openpgp_oidbuf_to_str (kp[0].mpi, kp[0].len);
+        if (!curve)
+          err = gpg_error_from_syserror ();
+        else
+          {
+            err = gcry_sexp_build
+              (&s_pkey, NULL,
+               openpgp_oidbuf_is_cv25519 (kp[0].mpi, kp[0].len)
+               ?"(public-key(ecc(curve%s)(flags djb-tweak)(q%b)))"
+               : "(public-key(ecc(curve%s)(q%b)))",
+               curve, kp[1].len, kp[1].mpi);
+            xfree (curve);
+          }
+      }
+      break;
+
     default:
       err = gpg_error (GPG_ERR_PUBKEY_ALGO);
       break;
@@ -273,6 +293,7 @@ parse_key (const unsigned char *data, size_t datalen,
   unsigned char hashbuffer[768];
   gcry_md_hd_t md;
   int is_ecc = 0;
+  int is_kyber = 0;
   int is_v5;
   /* unsigned int pkbytes;  for v5: # of octets of the public key params.  */
   struct keyparm_s keyparm[OPENPGP_MAX_NPKEY];
@@ -331,6 +352,10 @@ parse_key (const unsigned char *data, size_t datalen,
       npkey = 2;
       is_ecc = 1;
       break;
+    case PUBKEY_ALGO_KYBER:
+      npkey = 3;
+      is_kyber = 1;
+      break;
     default: /* Unknown algorithm. */
       return gpg_error (GPG_ERR_UNKNOWN_ALGORITHM);
     }
@@ -345,13 +370,28 @@ parse_key (const unsigned char *data, size_t datalen,
       if (datalen < 2)
         return gpg_error (GPG_ERR_INV_PACKET);
 
-      if (is_ecc && (i == 0 || i == 2))
+      if ((is_ecc && (i == 0 || i == 2))
+          || (is_kyber && i == 0 ))
         {
           nbytes = data[0];
           if (nbytes < 2 || nbytes > 254)
             return gpg_error (GPG_ERR_INV_PACKET);
           nbytes++; /* The size byte itself.  */
           if (datalen < nbytes)
+            return gpg_error (GPG_ERR_INV_PACKET);
+
+          keyparm[i].mpi = data;
+          keyparm[i].len = nbytes;
+        }
+      else if (is_kyber && i == 2)
+        {
+          if (datalen < 4)
+            return gpg_error (GPG_ERR_INV_PACKET);
+          nbytes = ((data[0]<<24)|(data[1]<<16)|(data[2]<<8)|(data[3]));
+          data += 4;
+          datalen -= 4;
+          /* (for the limit see also MAX_EXTERN_MPI_BITS in g10/gpg.h) */
+          if (datalen < nbytes || nbytes > (32768*8))
             return gpg_error (GPG_ERR_INV_PACKET);
 
           keyparm[i].mpi = data;
@@ -378,7 +418,7 @@ parse_key (const unsigned char *data, size_t datalen,
   /* Note: Starting here we need to jump to leave on error. */
 
   /* For non-ECC, make sure the MPIs are unsigned.  */
-  if (!is_ecc)
+  if (!is_ecc && !is_kyber)
     for (i=0; i < npkey; i++)
       {
         if (!keyparm[i].len || (keyparm[i].mpi[0] & 0x80))
@@ -438,7 +478,7 @@ parse_key (const unsigned char *data, size_t datalen,
        */
       if (version == 5)
         {
-          if ( 5 + n < sizeof hashbuffer )
+          if (5 + n < sizeof hashbuffer )
             {
               hashbuffer[0] = 0x9a;     /* CTB */
               hashbuffer[1] = (n >> 24);/* 4 byte length header. */

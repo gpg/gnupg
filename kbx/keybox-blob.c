@@ -96,7 +96,7 @@
              bit 0 = qualified signature (not yet implemented}
              bit 7 = 32 byte fingerprint in use.
       - u16  RFU
-      - b20  keygrip
+      - b20  keygrip  FIXME: Support a second grip.
       - bN   Optional filler up to the specified length of this
              structure.
    - u16  Size of the serial number (may be zero)
