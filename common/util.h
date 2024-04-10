@@ -299,11 +299,18 @@ char *gnupg_get_help_string (const char *key, int only_current_locale);
 /*-- localename.c --*/
 const char *gnupg_messages_locale_name (void);
 
-/*-- kmac.c --*/
-gpg_error_t compute_kmac256 (void *digest, size_t digestlen,
-                             const void *key, size_t keylen,
-                             const void *custom, size_t customlen,
-                             gcry_buffer_t *data_iov, int data_iovlen);
+/*-- kem.c --*/
+gpg_error_t gnupg_ecc_kem_kdf (void *kek, size_t kek_len,
+                               int hashalgo, const void *ecdh, size_t ecdh_len,
+                               const void *ecc_ct, size_t ecc_ct_len,
+                               const void *ecc_pk, size_t ecc_pk_len);
+
+gpg_error_t gnupg_kem_combiner  (void *kek, size_t kek_len,
+                                 const void *ecc_ss, size_t ecc_ss_len,
+                                 const void *ecc_ct, size_t ecc_ct_len,
+                                 const void *mlkem_ss, size_t mlkem_ss_len,
+                                 const void *mlkem_ct, size_t mlkem_ct_len,
+                                 const void *fixedinfo, size_t fixedinfo_len);
 
 /*-- miscellaneous.c --*/
 

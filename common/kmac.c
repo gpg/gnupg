@@ -1,4 +1,4 @@
-/* kmac.c -  Keccak based MAC
+/* kem.c -  KEM helper functions
  * Copyright (C) 2024  g10 Code GmbH.
  *
  * This file is part of GnuPG.
@@ -36,7 +36,7 @@
 #include "mischelp.h"
 
 #define KECCAK512_BLOCKSIZE 136
-gpg_error_t
+static gpg_error_t
 compute_kmac256 (void *digest, size_t digestlen,
                  const void *key, size_t keylen,
                  const void *custom, size_t customlen,
@@ -133,4 +133,77 @@ compute_kmac256 (void *digest, size_t digestlen,
 #else
   return gpg_error (GPG_ERR_NOT_IMPLEMENTED);
 #endif
+}
+
+/* Compute KEK (shared secret) for ECC with HASHALGO, ECDH result,
+   ciphertext in ECC_CT, public key in ECC_PK.  */
+gpg_error_t
+gnupg_ecc_kem_kdf (void *kek, size_t kek_len,
+                   int hashalgo, const void *ecdh, size_t ecdh_len,
+                   const void *ecc_ct, size_t ecc_ct_len,
+                   const void *ecc_pk, size_t ecc_pk_len)
+{
+  gcry_buffer_t iov[3];
+  unsigned int dlen;
+
+  dlen = gcry_md_get_algo_dlen (hashalgo);
+  if (kek_len != dlen)
+    return gpg_error (GPG_ERR_INV_LENGTH);
+
+  memset (iov, 0, sizeof (iov));
+
+  iov[0].data = (unsigned char *)ecdh;
+  iov[0].len = ecdh_len;
+  iov[1].data = (unsigned char *)ecc_ct;
+  iov[1].len = ecc_ct_len;
+  iov[2].data = (unsigned char *)ecc_pk;
+  iov[2].len = ecc_pk_len;
+  gcry_md_hash_buffers (hashalgo, 0, kek, iov, 3);
+
+  return 0;
+}
+
+
+/* domSeperation */
+#define KMAC_KEY "OpenPGPCompositeKeyDerivationFunction"
+
+/* customizationString */
+#define KMAC_CUSTOM "KDF"
+
+/* Compute KEK by combining two KEMs.  */
+gpg_error_t
+gnupg_kem_combiner (void *kek, size_t kek_len,
+                    const void *ecc_ss, size_t ecc_ss_len,
+                    const void *ecc_ct, size_t ecc_ct_len,
+                    const void *mlkem_ss, size_t mlkem_ss_len,
+                    const void *mlkem_ct, size_t mlkem_ct_len,
+                    const void *fixedinfo, size_t fixedinfo_len)
+{
+  gpg_error_t err;
+  gcry_buffer_t iov[6];
+
+  memset (iov, 0, sizeof (iov));
+
+  iov[0].data = "\x00\x00\x00\x01"; /* Counter */
+  iov[0].len = 4;
+
+  iov[1].data = (unsigned char *)ecc_ss;
+  iov[1].len = ecc_ss_len;
+
+  iov[2].data = (unsigned char *)ecc_ct;
+  iov[2].len = ecc_ct_len;
+
+  iov[3].data = (unsigned char *)mlkem_ss;
+  iov[3].len = mlkem_ss_len;
+
+  iov[4].data = (unsigned char *)mlkem_ct;
+  iov[4].len = mlkem_ct_len;
+
+  iov[5].data = (unsigned char *)fixedinfo;
+  iov[5].len = fixedinfo_len;
+
+  err = compute_kmac256 (kek, kek_len,
+                         KMAC_KEY, strlen (KMAC_KEY),
+                         KMAC_CUSTOM, strlen (KMAC_CUSTOM), iov, 6);
+  return err;
 }

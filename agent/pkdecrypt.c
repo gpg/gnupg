@@ -198,30 +198,28 @@ agent_hybrid_pgp_kem_decrypt (ctrl_t ctrl, const char *desc_text,
   const unsigned char *p;
   size_t len;
 
-  gcry_mpi_t encrypted_sessionkey_mpi;
+  gcry_mpi_t encrypted_sessionkey_mpi = NULL;
   const unsigned char *encrypted_sessionkey;
   size_t encrypted_sessionkey_len;
 
-  gcry_mpi_t ecc_sk_mpi;
+  gcry_mpi_t ecc_sk_mpi = NULL;
   unsigned char ecc_sk[32];
-  gcry_mpi_t ecc_pk_mpi;
+  gcry_mpi_t ecc_pk_mpi = NULL;
   unsigned char ecc_pk[32];
-  gcry_mpi_t ecc_ct_mpi;
+  gcry_mpi_t ecc_ct_mpi = NULL;
   const unsigned char *ecc_ct;
   size_t ecc_ct_len;
   unsigned char ecc_ecdh[32];
   unsigned char ecc_ss[32];
 
-  gcry_mpi_t mlkem_sk_mpi;
-  gcry_mpi_t mlkem_ct_mpi;
+  gcry_mpi_t mlkem_sk_mpi = NULL;
+  gcry_mpi_t mlkem_ct_mpi = NULL;
   const unsigned char *mlkem_sk;
   const unsigned char *mlkem_ct;
   unsigned char mlkem_ss[GCRY_KEM_MLKEM768_SHARED_LEN];
 
-  gcry_buffer_t iov[6];
-
-  unsigned char kekkey[32];
-  size_t kekkeylen = 32;        /* AES-256 is mandatory */
+  unsigned char kek[32];
+  size_t kek_len = 32;        /* AES-256 is mandatory */
 
   gcry_cipher_hd_t hd;
   unsigned char sessionkey[256];
@@ -290,6 +288,8 @@ agent_hybrid_pgp_kem_decrypt (ctrl_t ctrl, const char *desc_text,
   reverse_buffer (ecc_sk, 32);
   mpi_release (ecc_pk_mpi);
   mpi_release (ecc_sk_mpi);
+  ecc_pk_mpi = NULL;
+  ecc_sk_mpi = NULL;
 
   ecc_ct = gcry_mpi_get_opaque (ecc_ct_mpi, &nbits);
   ecc_ct_len = (nbits+7)/8;
@@ -302,16 +302,14 @@ agent_hybrid_pgp_kem_decrypt (ctrl_t ctrl, const char *desc_text,
   err = gcry_kem_decap (GCRY_KEM_RAW_X25519, ecc_sk, 32, ecc_ct, ecc_ct_len,
                         ecc_ecdh, 32, NULL, 0);
 
-  iov[0].data = ecc_ecdh;
-  iov[0].off = 0;
-  iov[0].len = 32;
-  iov[1].data = (unsigned char *)ecc_ct;
-  iov[1].off = 0;
-  iov[1].len = 32;
-  iov[2].data = ecc_pk;
-  iov[2].off = 0;
-  iov[2].len = 32;
-  gcry_md_hash_buffers (GCRY_MD_SHA3_256, 0, ecc_ss, iov, 3);
+  if (err)
+    goto leave;
+
+  err = gnupg_ecc_kem_kdf (ecc_ss, 32, GCRY_MD_SHA3_256,
+                           ecc_ecdh, 32, ecc_ct, 32, ecc_pk, 32);
+
+  if (err)
+    goto leave;
 
   /* Secondly, PQC part.  For now, we assume ML-KEM.  */
   gcry_sexp_extract_param (s_skey1, NULL, "/s", &mlkem_sk_mpi, NULL);
@@ -334,45 +332,32 @@ agent_hybrid_pgp_kem_decrypt (ctrl_t ctrl, const char *desc_text,
                         mlkem_ct, GCRY_KEM_MLKEM768_CIPHER_LEN,
                         mlkem_ss, GCRY_KEM_MLKEM768_SHARED_LEN,
                         NULL, 0);
+  if (err)
+    goto leave;
 
   mpi_release (mlkem_sk_mpi);
+  mlkem_sk_mpi = NULL;
 
-  /* Then, combine two shared secrets into one */
-
-  iov[0].data = "\x00\x00\x00\x01"; /* Counter */
-  iov[0].off = 0;
-  iov[0].len = 4;
-
-  iov[1].data = ecc_ss;
-  iov[1].off = 0;
-  iov[1].len = 32;
-
-  iov[2].data = (unsigned char *)ecc_ct;
-  iov[2].off = 0;
-  iov[2].len = 32;
-
-  iov[3].data = mlkem_ss;
-  iov[3].off = 0;
-  iov[3].len = GCRY_KEM_MLKEM768_SHARED_LEN;
-
-  iov[4].data = (unsigned char *)mlkem_ct;
-  iov[4].off = 0;
-  iov[4].len = GCRY_KEM_MLKEM768_ENCAPS_LEN;
-
-  iov[5].data = (unsigned char *)fixedinfo;
-  iov[5].off = 0;
-  iov[5].len = 1;
-
-  err = compute_kmac256 (kekkey, kekkeylen,
-                         "OpenPGPCompositeKeyDerivationFunction", 37,
-                         "KDF", 3, iov, 6);
+  /* Then, combine two shared secrets and ciphertexts into one KEK */
+  err = gnupg_kem_combiner (kek, kek_len,
+                            ecc_ss, 32, ecc_ct, 32,
+                            mlkem_ss, GCRY_KEM_MLKEM768_SHARED_LEN,
+                            mlkem_ct, GCRY_KEM_MLKEM768_CIPHER_LEN,
+                            fixedinfo, 1);
+  if (err)
+    {
+      log_error ("KEM combiner failed: %s\n", gpg_strerror (err));
+      goto leave;
+    }
 
   mpi_release (ecc_ct_mpi);
   mpi_release (mlkem_ct_mpi);
+  ecc_ct_mpi = NULL;
+  mlkem_ct_mpi = NULL;
 
   if (DBG_CRYPTO)
     {
-      log_printhex (kekkey, kekkeylen, "KEK key: ");
+      log_printhex (kek, kek_len, "KEK key: ");
     }
 
   err = gcry_cipher_open (&hd, GCRY_CIPHER_AES256,
@@ -381,11 +366,10 @@ agent_hybrid_pgp_kem_decrypt (ctrl_t ctrl, const char *desc_text,
     {
       log_error ("ecdh failed to initialize AESWRAP: %s\n",
                  gpg_strerror (err));
-      mpi_release (encrypted_sessionkey_mpi);
       goto leave;
     }
 
-  err = gcry_cipher_setkey (hd, kekkey, kekkeylen);
+  err = gcry_cipher_setkey (hd, kek, kek_len);
 
   sessionkey_len = encrypted_sessionkey_len - 8;
   err = gcry_cipher_decrypt (hd, sessionkey, sessionkey_len,
@@ -393,6 +377,7 @@ agent_hybrid_pgp_kem_decrypt (ctrl_t ctrl, const char *desc_text,
   gcry_cipher_close (hd);
 
   mpi_release (encrypted_sessionkey_mpi);
+  encrypted_sessionkey_mpi = NULL;
 
   if (err)
     {
@@ -406,6 +391,12 @@ agent_hybrid_pgp_kem_decrypt (ctrl_t ctrl, const char *desc_text,
   put_membuf (outbuf, ")", 2);
 
  leave:
+  mpi_release (mlkem_sk_mpi);
+  mpi_release (ecc_pk_mpi);
+  mpi_release (ecc_sk_mpi);
+  mpi_release (ecc_ct_mpi);
+  mpi_release (mlkem_ct_mpi);
+  mpi_release (encrypted_sessionkey_mpi);
   gcry_sexp_release (s_skey0);
   gcry_sexp_release (s_skey1);
   return err;
