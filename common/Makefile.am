@@ -98,7 +98,7 @@ common_sources = \
 	comopt.c comopt.h \
 	compliance.c compliance.h \
 	pkscreening.c pkscreening.h \
-	kmac.c
+	kem.c
 
 if HAVE_W32_SYSTEM
 common_sources += w32-reg.c w32-cmdline.c
