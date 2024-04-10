@@ -177,12 +177,13 @@ reverse_buffer (unsigned char *buffer, unsigned int length)
    First keygrip is for ECC, second keygrip is for PQC.  CIPHERTEXT
    should follow the format of:
 
-	(enc-val(pqc(s%m)(e%m)(k%m))))
-        s: encrypted session key
+	(enc-val(pqc(e%m)(k%m)(s%m)(fixed-info&)))
         e: ECDH ciphertext
         k: ML-KEM ciphertext
+        s: encrypted session key
+        fixed-info: A buffer with the fixed info.
 
-   FIXME: For now, possibile keys on smartcard are not supported.
+   FIXME: For now, possible keys on smartcard are not supported.
   */
 static gpg_error_t
 agent_hybrid_pgp_kem_decrypt (ctrl_t ctrl, const char *desc_text,
@@ -224,7 +225,10 @@ agent_hybrid_pgp_kem_decrypt (ctrl_t ctrl, const char *desc_text,
   gcry_cipher_hd_t hd;
   unsigned char sessionkey[256];
   size_t sessionkey_len;
-  const unsigned char fixedinfo[1] = { 105 };
+  gcry_buffer_t fixed_info = { 0, 0, 0, NULL };
+
+  gcry_sexp_t curve = NULL;
+  const char *curve_name;
 
   err = agent_key_from_file (ctrl, NULL, desc_text,
                              ctrl->keygrip, &shadow_info,
@@ -246,33 +250,62 @@ agent_hybrid_pgp_kem_decrypt (ctrl_t ctrl, const char *desc_text,
 
   /* Here assumes no smartcard, but private keys */
 
-  gcry_sexp_extract_param (s_cipher, NULL, "/e/k/s",
+  gcry_sexp_extract_param (s_cipher, NULL, "/eks&'fixed-info'",
                            &ecc_ct_mpi,
                            &mlkem_ct_mpi,
-                           &encrypted_sessionkey_mpi, NULL);
+                           &encrypted_sessionkey_mpi,
+                           &fixed_info, NULL);
+  if (err)
+    goto leave;
 
   encrypted_sessionkey = gcry_mpi_get_opaque (encrypted_sessionkey_mpi, &nbits);
   encrypted_sessionkey_len = (nbits+7)/8;
-  encrypted_sessionkey_len--;
+  if (encrypted_sessionkey_len < 1+1+8)
+    {
+      /* Fixme: This is a basic check but we should better test
+       *         against the expected length and something which
+       *         is required to avoid an underflow.  */
+      err = gpg_error (GPG_ERR_INV_DATA);
+      goto leave;
+    }
 
+  encrypted_sessionkey_len--;
   if (encrypted_sessionkey[0] != encrypted_sessionkey_len)
     {
-      err = GPG_ERR_INV_DATA;
+      err = gpg_error (GPG_ERR_INV_DATA);
       goto leave;
     }
   encrypted_sessionkey++;       /* Skip the length.  */
 
   if (encrypted_sessionkey[0] != CIPHER_ALGO_AES256)
     {
-      err = GPG_ERR_INV_DATA;
+      err = gpg_error (GPG_ERR_INV_DATA);
       goto leave;
     }
+
   encrypted_sessionkey_len--;
   encrypted_sessionkey++;       /* Skip the sym algo */
 
   /* Fistly, ECC part.  FIXME: For now, we assume X25519.  */
-  gcry_sexp_extract_param (s_skey0, NULL, "/q/d",
-                           &ecc_pk_mpi, &ecc_sk_mpi, NULL);
+  curve = gcry_sexp_find_token (s_skey0, "curve", 0);
+  if (!curve)
+    {
+      err = gpg_error (GPG_ERR_BAD_SECKEY);
+      goto leave;
+    }
+
+  curve_name = gcry_sexp_nth_data (curve, 1, &len);
+  if (len != 10 || memcmp (curve_name, "Curve25519", len))
+    {
+      err = gpg_error (GPG_ERR_BAD_SECKEY);
+      goto leave;
+    }
+
+  err = gcry_sexp_extract_param (s_skey0, NULL, "/q/d",
+                                 &ecc_pk_mpi, &ecc_sk_mpi, NULL);
+  if (err)
+    goto leave;
+
   p = gcry_mpi_get_opaque (ecc_pk_mpi, &nbits);
   len = (nbits+7)/8;
   memcpy (ecc_pk, p+1, 32);     /* Remove the 0x40 prefix */
@@ -280,7 +313,7 @@ agent_hybrid_pgp_kem_decrypt (ctrl_t ctrl, const char *desc_text,
   len = (nbits+7)/8;
   if (len > 32)
     {
-      err = GPG_ERR_INV_DATA;
+      err = gpg_error (GPG_ERR_INV_DATA);
       goto leave;
     }
   memset (ecc_sk, 0, 32);
@@ -295,19 +328,17 @@ agent_hybrid_pgp_kem_decrypt (ctrl_t ctrl, const char *desc_text,
   ecc_ct_len = (nbits+7)/8;
   if (ecc_ct_len != 32)
     {
-      err = GPG_ERR_INV_DATA;
+      err = gpg_error (GPG_ERR_INV_DATA);
       goto leave;
     }
 
   err = gcry_kem_decap (GCRY_KEM_RAW_X25519, ecc_sk, 32, ecc_ct, ecc_ct_len,
                         ecc_ecdh, 32, NULL, 0);
-
   if (err)
     goto leave;
 
   err = gnupg_ecc_kem_kdf (ecc_ss, 32, GCRY_MD_SHA3_256,
                            ecc_ecdh, 32, ecc_ct, 32, ecc_pk, 32);
-
   if (err)
     goto leave;
 
@@ -317,14 +348,14 @@ agent_hybrid_pgp_kem_decrypt (ctrl_t ctrl, const char *desc_text,
   len = (nbits+7)/8;
   if (len != GCRY_KEM_MLKEM768_SECKEY_LEN)
     {
-      err = GPG_ERR_INV_DATA;
+      err = gpg_error (GPG_ERR_INV_DATA);
       goto leave;
     }
   mlkem_ct = gcry_mpi_get_opaque (mlkem_ct_mpi, &nbits);
   len = (nbits+7)/8;
   if (len != GCRY_KEM_MLKEM768_CIPHER_LEN)
     {
-      err = GPG_ERR_INV_DATA;
+      err = gpg_error (GPG_ERR_INV_DATA);
       goto leave;
     }
   err = gcry_kem_decap (GCRY_KEM_MLKEM768,
@@ -343,7 +374,7 @@ agent_hybrid_pgp_kem_decrypt (ctrl_t ctrl, const char *desc_text,
                             ecc_ss, 32, ecc_ct, 32,
                             mlkem_ss, GCRY_KEM_MLKEM768_SHARED_LEN,
                             mlkem_ct, GCRY_KEM_MLKEM768_CIPHER_LEN,
-                            fixedinfo, 1);
+                            fixed_info.data, fixed_info.size);
   if (err)
     {
       log_error ("KEM combiner failed: %s\n", gpg_strerror (err));
@@ -397,6 +428,8 @@ agent_hybrid_pgp_kem_decrypt (ctrl_t ctrl, const char *desc_text,
   mpi_release (ecc_ct_mpi);
   mpi_release (mlkem_ct_mpi);
   mpi_release (encrypted_sessionkey_mpi);
+  gcry_free (fixed_info.data);
+  gcry_sexp_release (curve);
   gcry_sexp_release (s_skey0);
   gcry_sexp_release (s_skey1);
   return err;
