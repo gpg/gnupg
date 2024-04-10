@@ -59,7 +59,7 @@ A name must start with a letter and end with a colon.  Valid
 characters are all ASCII letters, numbers and the hyphen.  Comparison
 of names is done case insensitively.  Names may be used several times
 to represent an array of values.  Note that the name "Key" is special
-in that it is madandory must occur only once.
+in that it is mandatory and must occur only once.
 
 *** Values
 Values are UTF-8 encoded strings.  Values can be wrapped at any point,
@@ -156,7 +156,7 @@ dialog window when card is not available.  When the value is "no", a
 card operation is refused with GPG_ERR_UNUSABLE_SECKEY error.
 
 *** Backup-info
-This gives information for a backup of the key.  The follwoing fields
+This gives information for a backup of the key.  The following fields
 are space delimited:
 
 - Hexified keygrip (uppercase) to make it easy to identify the
@@ -345,7 +345,7 @@ The currently defined protection modes are:
 ** Shadowed Private Key Format
 
 To keep track of keys stored on IC cards we use a third format for
-private kyes which are called shadow keys as they are only a reference
+private keys which are called shadow keys as they are only a reference
 to keys stored on a token:
 
 (shadowed-private-key
@@ -395,7 +395,7 @@ This format is used to transfer keys between gpg and gpg-agent.
  * PUBKEYALGO is a Libgcrypt algo name
  * CURVENAME is the name of the curve - only used with ECC.
  * P1 .. PN are the parameters; the public parameters are never encrypted
-   the secrect key parameters are encrypted if the "protection" list is
+   the secret key parameters are encrypted if the "protection" list is
    given.  To make this more explicit each parameter is preceded by a
    flag "_" for cleartext or "e" for encrypted text.
  * CSUM is the deprecated 16 bit checksum as defined by OpenPGP.  This
@@ -404,7 +404,7 @@ This format is used to transfer keys between gpg and gpg-agent.
    the old 16 bit checksum (above) is used and if it is "none" no
    protection at all is used.
  * PROTALGO is a Libgcrypt style cipher algorithm name
- * IV is the initialization verctor.
+ * IV is the initialization vector.
  * S2KMODE is the value from RFC-4880.
  * S2KHASH is a libgcrypt style hash algorithm identifier.
  * S2KSALT is the 8 byte salt
@@ -492,7 +492,7 @@ with "encrypted_octet_string" decoding to:
  (hash sha1 #0102030405060708091011121314151617181920#)
 )
 
-To compute the hash this S-expression (in canoncical format) was
+To compute the hash this S-expression (in canonical format) was
 hashed:
 
    ((desc "List of system passphrases")
