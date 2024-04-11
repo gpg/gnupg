@@ -173,7 +173,7 @@ reverse_buffer (unsigned char *buffer, unsigned int length)
     }
 }
 
-/* For hybrid PGP KEM (ECC+ML-KEM), decrypt CIPHERTEXT using KEM API.
+/* For composite PGP KEM (ECC+ML-KEM), decrypt CIPHERTEXT using KEM API.
    First keygrip is for ECC, second keygrip is for PQC.  CIPHERTEXT
    should follow the format of:
 
@@ -187,8 +187,8 @@ reverse_buffer (unsigned char *buffer, unsigned int length)
    FIXME: For now, possible keys on smartcard are not supported.
   */
 static gpg_error_t
-agent_hybrid_pgp_kem_decrypt (ctrl_t ctrl, const char *desc_text,
-                              gcry_sexp_t s_cipher, membuf_t *outbuf)
+composite_pgp_kem_decrypt (ctrl_t ctrl, const char *desc_text,
+                           gcry_sexp_t s_cipher, membuf_t *outbuf)
 {
 #if GCRYPT_VERSION_NUMBER >= 0x010b00
   gcry_sexp_t s_skey0 = NULL;
@@ -453,7 +453,7 @@ agent_kem_decrypt (ctrl_t ctrl, const char *desc_text, int kemid,
 
   if (!ctrl->have_keygrip1)
     {
-      log_error ("hybrid KEM requires two KEYGRIPs\n");
+      log_error ("Composite KEM requires two KEYGRIPs\n");
       return gpg_error (GPG_ERR_NO_SECKEY);
     }
 
@@ -471,7 +471,7 @@ agent_kem_decrypt (ctrl_t ctrl, const char *desc_text, int kemid,
       log_printhex (ciphertext, ciphertextlen, "cipher: ");
     }
 
-  err = agent_hybrid_pgp_kem_decrypt (ctrl, desc_text, s_cipher, outbuf);
+  err = composite_pgp_kem_decrypt (ctrl, desc_text, s_cipher, outbuf);
 
   gcry_sexp_release (s_cipher);
   return err;
