@@ -2,3 +2,5 @@
 6a80d6f9206eae2c867c45daa5cd3e7d6c6ad114
 # doc: Fix spelling errors found by lintian.
 2ed1f68b48db7b5503045386de0500fddf70077e
+# indent: Re-indent a function
+869d1df270c0ccc3a9f792167b96d678a932b37e
