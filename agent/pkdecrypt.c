@@ -177,7 +177,8 @@ reverse_buffer (unsigned char *buffer, unsigned int length)
    First keygrip is for ECC, second keygrip is for PQC.  CIPHERTEXT
    should follow the format of:
 
-	(enc-val(pqc(e%m)(k%m)(s%m)(fixed-info&)))
+	(enc-val(pqc(c%u)(e%m)(k%m)(s%m)(fixed-info&)))
+        c: cipher identifier (symmetric)
         e: ECDH ciphertext
         k: ML-KEM ciphertext
         s: encrypted session key
@@ -199,6 +200,7 @@ agent_hybrid_pgp_kem_decrypt (ctrl_t ctrl, const char *desc_text,
   const unsigned char *p;
   size_t len;
 
+  int algo;
   gcry_mpi_t encrypted_sessionkey_mpi = NULL;
   const unsigned char *encrypted_sessionkey;
   size_t encrypted_sessionkey_len;
@@ -250,41 +252,20 @@ agent_hybrid_pgp_kem_decrypt (ctrl_t ctrl, const char *desc_text,
 
   /* Here assumes no smartcard, but private keys */
 
-  gcry_sexp_extract_param (s_cipher, NULL, "/eks&'fixed-info'",
-                           &ecc_ct_mpi,
-                           &mlkem_ct_mpi,
-                           &encrypted_sessionkey_mpi,
-                           &fixed_info, NULL);
+  gcry_sexp_extract_param (s_cipher, NULL, "%uc/eks&'fixed-info'",
+                           &algo, &ecc_ct_mpi, &mlkem_ct_mpi,
+                           &encrypted_sessionkey_mpi, &fixed_info, NULL);
   if (err)
     goto leave;
 
+  len = gcry_cipher_get_algo_keylen (algo);
   encrypted_sessionkey = gcry_mpi_get_opaque (encrypted_sessionkey_mpi, &nbits);
   encrypted_sessionkey_len = (nbits+7)/8;
-  if (encrypted_sessionkey_len < 1+1+8)
-    {
-      /* Fixme: This is a basic check but we should better test
-       *         against the expected length and something which
-       *         is required to avoid an underflow.  */
-      err = gpg_error (GPG_ERR_INV_DATA);
-      goto leave;
-    }
-
-  encrypted_sessionkey_len--;
-  if (encrypted_sessionkey[0] != encrypted_sessionkey_len)
+  if (len == 0 || encrypted_sessionkey_len != len + 8)
     {
       err = gpg_error (GPG_ERR_INV_DATA);
       goto leave;
     }
-  encrypted_sessionkey++;       /* Skip the length.  */
-
-  if (encrypted_sessionkey[0] != CIPHER_ALGO_AES256)
-    {
-      err = gpg_error (GPG_ERR_INV_DATA);
-      goto leave;
-    }
-
-  encrypted_sessionkey_len--;
-  encrypted_sessionkey++;       /* Skip the sym algo */
 
   /* Fistly, ECC part.  FIXME: For now, we assume X25519.  */
   curve = gcry_sexp_find_token (s_skey0, "curve", 0);
@@ -301,7 +282,7 @@ agent_hybrid_pgp_kem_decrypt (ctrl_t ctrl, const char *desc_text,
       goto leave;
     }
 
-  err = gcry_sexp_extract_param (s_skey0, NULL, "/q/d",
+  err = gcry_sexp_extract_param (s_skey0, NULL, "/qd",
                                  &ecc_pk_mpi, &ecc_sk_mpi, NULL);
   if (err)
     goto leave;
