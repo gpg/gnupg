@@ -1122,6 +1122,7 @@ write_pubkey_enc (ctrl_t ctrl,
   enc->pubkey_algo = pk->pubkey_algo;
   keyid_from_pk( pk, enc->keyid );
   enc->throw_keyid = throw_keyid;
+  enc->seskey_algo = dek->algo;  /* (Used only by PUBKEY_ALGO_KYBER.) */
 
   /* Okay, what's going on: We have the session key somewhere in
    * the structure DEK and want to encode this session key in an

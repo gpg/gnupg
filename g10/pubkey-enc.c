@@ -194,7 +194,7 @@ get_it (ctrl_t ctrl,
 {
   gpg_error_t err;
   byte *frame = NULL;
-  unsigned int n;
+  unsigned int frameidx;
   size_t nframe;
   u16 csum, csum2;
   int padding;
@@ -240,13 +240,15 @@ get_it (ctrl_t ctrl,
     }
   else if (sk->pubkey_algo == PUBKEY_ALGO_KYBER)
     {
-      if (!enc->data[0] || !enc->data[1] || !enc->data[2] || !enc->data[3])
+      log_debug ("seskey_algo: %d\n", enc->seskey_algo);
+      if (!enc->data[0] || !enc->data[1] || !enc->data[2])
         err = gpg_error (GPG_ERR_BAD_MPI);
       else
         err = gcry_sexp_build (&s_data, NULL,
-                               "(enc-val(pqc(e%m)(k%m)(s%m)(fixed-info%s)))",
-                               enc->data[0], enc->data[1], enc->data[3],
-                               "\x1d" /*PUBKEY_ALGO_KYBER*/);
+                             "(enc-val(pqc(e%m)(k%m)(s%m)(c%d)(fixed-info%s)))",
+                              enc->data[0], enc->data[1], enc->data[2],
+                              enc->seskey_algo,
+                              "\x69");
     }
   else
     err = gpg_error (GPG_ERR_BUG);
@@ -287,9 +289,22 @@ get_it (ctrl_t ctrl,
    */
   if (DBG_CRYPTO)
     log_printhex (frame, nframe, "DEK frame:");
-  n = 0;
+  frameidx = 0;
 
-  if (sk->pubkey_algo == PUBKEY_ALGO_ECDH)
+  if (sk->pubkey_algo == PUBKEY_ALGO_KYBER)
+    {
+      /* We expect a 32 byte session key.  We should not see this
+       * error here because due to the KEM mode the agent_pkdecrypt
+       * should have already failed.  */
+      if (nframe != 32)
+        {
+          err = gpg_error (GPG_ERR_WRONG_SECKEY);
+          goto leave;
+        }
+      dek->keylen = nframe;
+      dek->algo = enc->seskey_algo;
+    }
+  else if (sk->pubkey_algo == PUBKEY_ALGO_ECDH)
     {
       gcry_mpi_t decoded;
 
@@ -313,13 +328,21 @@ get_it (ctrl_t ctrl,
           goto leave;
         }
       nframe -= frame[nframe-1]; /* Remove padding.  */
-      log_assert (!n); /* (used just below) */
+      if (4 > nframe)
+        {
+          err = gpg_error (GPG_ERR_WRONG_SECKEY);
+          goto leave;
+        }
+
+      dek->keylen = nframe - 3;
+      dek->algo = frame[0];
+      frameidx = 1;
     }
   else
     {
       if (padding)
         {
-          if (n + 7 > nframe)
+          if (7 > nframe)
             {
               err = gpg_error (GPG_ERR_WRONG_SECKEY);
               goto leave;
@@ -331,34 +354,38 @@ get_it (ctrl_t ctrl,
            * using a Smartcard we are doing it the right way and
            * therefore we have to skip the zero.  This should be fixed
            * in gpg-agent of course. */
-          if (!frame[n])
-            n++;
+          frameidx = 0;
+          if (!frame[frameidx])
+            frameidx++;
 
-          if (frame[n] == 1 && frame[nframe - 1] == 2)
+          if (frame[frameidx] == 1 && frame[nframe - 1] == 2)
             {
               log_info (_("old encoding of the DEK is not supported\n"));
               err = gpg_error (GPG_ERR_CIPHER_ALGO);
               goto leave;
             }
-          if (frame[n] != 2) /* Something went wrong.  */
+          if (frame[frameidx] != 2) /* Something went wrong.  */
             {
               err = gpg_error (GPG_ERR_WRONG_SECKEY);
               goto leave;
             }
-          for (n++; n < nframe && frame[n]; n++) /* Skip the random bytes.  */
+          /* Skip the random bytes.  */
+          for (frameidx++; frameidx < nframe && frame[frameidx]; frameidx++)
             ;
-          n++; /* Skip the zero byte.  */
+          frameidx++; /* Skip the zero byte.  */
         }
+
+      if (frameidx + 4 > nframe)
+        {
+          err = gpg_error (GPG_ERR_WRONG_SECKEY);
+          goto leave;
+        }
+
+      dek->keylen = nframe - (frameidx + 1) - 2;
+      dek->algo = frame[frameidx++];
     }
 
-  if (n + 4 > nframe)
-    {
-      err = gpg_error (GPG_ERR_WRONG_SECKEY);
-      goto leave;
-    }
-
-  dek->keylen = nframe - (n + 1) - 2;
-  dek->algo = frame[n++];
+  /* Check whether we support the ago.  */
   err = openpgp_cipher_test_algo (dek->algo);
   if (err)
     {
@@ -377,16 +404,21 @@ get_it (ctrl_t ctrl,
       goto leave;
     }
 
-  /* Copy the key to DEK and compare the checksum.  */
-  csum = buf16_to_u16 (frame+nframe-2);
-  memcpy (dek->key, frame + n, dek->keylen);
-  for (csum2 = 0, n = 0; n < dek->keylen; n++)
-    csum2 += dek->key[n];
-  if (csum != csum2)
+  /* Copy the key to DEK and compare the checksum if needed.  */
+  /* We use the frameidx as flag for the need of a checksum.  */
+  memcpy (dek->key, frame + frameidx, dek->keylen);
+  if (frameidx)
     {
-      err = gpg_error (GPG_ERR_WRONG_SECKEY);
-      goto leave;
+      csum = buf16_to_u16 (frame+nframe-2);
+      for (csum2 = 0, frameidx = 0; frameidx < dek->keylen; frameidx++)
+        csum2 += dek->key[frameidx];
+      if (csum != csum2)
+        {
+          err = gpg_error (GPG_ERR_WRONG_SECKEY);
+          goto leave;
+        }
     }
+
   if (DBG_CLOCK)
     log_clock ("decryption ready");
   if (DBG_CRYPTO)

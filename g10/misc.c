@@ -1786,7 +1786,7 @@ pubkey_get_nenc (pubkey_algo_t algo)
     case PUBKEY_ALGO_ECDSA:     return 0;
     case PUBKEY_ALGO_ELGAMAL:   return 2;
     case PUBKEY_ALGO_EDDSA:     return 0;
-    case PUBKEY_ALGO_KYBER:     return 4;
+    case PUBKEY_ALGO_KYBER:     return 3;
     default: return 0;
     }
 }

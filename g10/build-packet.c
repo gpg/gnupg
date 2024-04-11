@@ -982,6 +982,11 @@ do_pubkey_enc( IOBUF out, int ctb, PKT_pubkey_enc *enc )
 
   for (i=0; i < n && !rc ; i++ )
     {
+      /* For Kyber we need to insert the algo before the final data
+       * element because it is not stored in the data array.  */
+      if (enc->pubkey_algo == PUBKEY_ALGO_KYBER && i == 2)
+        iobuf_put (a, enc->seskey_algo);
+
       if (enc->pubkey_algo == PUBKEY_ALGO_ECDH && i == 1)
         rc = gpg_mpi_write_opaque_nohdr (a, enc->data[i]);
       else if (enc->pubkey_algo == PUBKEY_ALGO_ECDH)

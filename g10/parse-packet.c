@@ -1513,7 +1513,7 @@ parse_pubkeyenc (IOBUF inp, int pkttype, unsigned long pktlen,
     }
   else if (k->pubkey_algo == PUBKEY_ALGO_KYBER)
     {
-      log_assert (ndata == 4);
+      log_assert (ndata == 3);
       /* Get the ephemeral public key.  */
       n = pktlen;
       k->data[0] = sos_read (inp, &n, 0);
@@ -1527,12 +1527,16 @@ parse_pubkeyenc (IOBUF inp, int pkttype, unsigned long pktlen,
       rc = read_octet_string (inp, &pktlen, 4, 0, 0, k->data + 1);
       if (rc)
         goto leave;
-      /* Get the algorithm id.  */
-      rc = read_octet_string (inp, &pktlen, 0, 1, 0, k->data + 2);
-      if (rc)
-        goto leave;
-      /* Get the wrapped symmetric key.  */
-      rc = read_sized_octet_string (inp, &pktlen, k->data + 3);
+      /* Get the algorithm id for the session key.  */
+      if (!pktlen)
+        {
+          rc = gpg_error (GPG_ERR_INV_PACKET);
+          goto leave;
+        }
+      k->seskey_algo = iobuf_get_noeof (inp);
+      pktlen--;
+      /* Get the encrypted symmetric key.  */
+      rc = read_octet_string (inp, &pktlen, 1, 0, 0, k->data + 2);
       if (rc)
         goto leave;
     }
@@ -1551,6 +1555,8 @@ parse_pubkeyenc (IOBUF inp, int pkttype, unsigned long pktlen,
     }
   if (list_mode)
     {
+      if (k->seskey_algo)
+        es_fprintf (listfp, "\tsession key algo: %d\n", k->seskey_algo);
       for (i = 0; i < ndata; i++)
         {
           es_fprintf (listfp, "\tdata: ");

@@ -137,6 +137,8 @@ typedef struct {
   byte    version;
   /* The algorithm used for the public key encryption scheme.  */
   byte    pubkey_algo;
+  /* The session key algorithm used by some pubkey algos.  */
+  byte    seskey_algo;
   /* Whether to hide the key id.  This value is not directly
      serialized.  */
   byte    throw_keyid;
@@ -151,6 +153,7 @@ struct pubkey_enc_list
   struct pubkey_enc_list *next;
   u32 keyid[2];
   int pubkey_algo;
+  int seskey_algo;
   int result;
   gcry_mpi_t data[PUBKEY_MAX_NENC];
 };

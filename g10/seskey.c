@@ -86,15 +86,29 @@ encode_session_key (int openpgp_pk_algo, DEK *dek, unsigned int nbits)
   if (DBG_CRYPTO)
     log_debug ("encode_session_key: encoding %d byte DEK", dek->keylen);
 
+  if (openpgp_pk_algo == PUBKEY_ALGO_KYBER)
+    {
+      /* Straightforward encoding w/o extra checksum as used by ECDH.  */
+      nframe = dek->keylen;
+      log_assert (nframe > 4);  /*(for the log_debug)*/
+      frame = xmalloc_secure (nframe);
+      memcpy (frame, dek->key, nframe);
+      if (DBG_CRYPTO)
+        log_debug ("encode_session_key: "
+                   "[%d] %02x  %02x %02x ...  %02x %02x %02x\n",
+                   (int) dek->keylen, frame[0], frame[1], frame[2],
+                   frame[nframe-3], frame[nframe-2], frame[nframe-1]);
+
+      return gcry_mpi_set_opaque (NULL, frame, 8*nframe);
+    }
+
   csum = 0;
   for (p = dek->key, i=0; i < dek->keylen; i++)
     csum += *p++;
 
   /* Shortcut for ECDH.  It's padding is minimal to simply make the
      output be a multiple of 8 bytes.  */
-  /* FIXME: We use the ECDH also for Kyber for now.  */
-  if (openpgp_pk_algo == PUBKEY_ALGO_ECDH
-      || openpgp_pk_algo == PUBKEY_ALGO_KYBER)
+  if (openpgp_pk_algo == PUBKEY_ALGO_ECDH)
     {
       /* Pad to 8 byte granularity; the padding byte is the number of
        * padded bytes.
