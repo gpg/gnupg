@@ -1034,6 +1034,7 @@ static struct debug_flags_s debug_flags [] =
 static struct compatibility_flags_s compatibility_flags [] =
   {
     { COMPAT_PARALLELIZED, "parallelized" },
+    { COMPAT_T7014_OLD,    "t7014-old" },
     { 0, NULL }
   };
 

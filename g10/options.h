@@ -378,9 +378,8 @@ EXTERN_UNLESS_MAIN_MODULE int memory_debug_mode;
 EXTERN_UNLESS_MAIN_MODULE int memory_stat_debug_mode;
 
 /* Compatibility flags */
-#define COMPAT_PARALLELIZED   1
-
-/* #define COMPAT_FOO   2 */
+#define COMPAT_PARALLELIZED   1  /* Use threaded hashing for signatures.  */
+#define COMPAT_T7014_OLD      2  /* Use initial T7014 test data.  */
 
 
 /* Compliance test macors.  */

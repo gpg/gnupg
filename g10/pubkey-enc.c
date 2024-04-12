@@ -240,15 +240,29 @@ get_it (ctrl_t ctrl,
     }
   else if (sk->pubkey_algo == PUBKEY_ALGO_KYBER)
     {
-      log_debug ("seskey_algo: %d\n", enc->seskey_algo);
+      char fixedinfo[1+MAX_FINGERPRINT_LEN];
+      int fixedlen;
+
+      if ((opt.compat_flags & COMPAT_T7014_OLD))
+        {
+          /* Temporary use for tests with original test vectors.  */
+          fixedinfo[0] = 0x69;
+          fixedlen = 1;
+        }
+      else
+        {
+          fixedinfo[0] = enc->seskey_algo;
+          v5_fingerprint_from_pk (sk, fixedinfo+1, NULL);
+          fixedlen = 33;
+        }
+
       if (!enc->data[0] || !enc->data[1] || !enc->data[2])
         err = gpg_error (GPG_ERR_BAD_MPI);
       else
         err = gcry_sexp_build (&s_data, NULL,
-                             "(enc-val(pqc(e%m)(k%m)(s%m)(c%d)(fixed-info%s)))",
-                              enc->data[0], enc->data[1], enc->data[2],
-                              enc->seskey_algo,
-                              "\x69");
+                           "(enc-val(pqc(e%m)(k%m)(s%m)(c%d)(fixed-info%b)))",
+                           enc->data[0], enc->data[1], enc->data[2],
+                           enc->seskey_algo, fixedlen, fixedinfo);
     }
   else
     err = gpg_error (GPG_ERR_BUG);
