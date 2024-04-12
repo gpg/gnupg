@@ -31,8 +31,8 @@ gpg_error_t sexp_extract_param_sos_nlz (gcry_sexp_t sexp, const char *param,
 
 int pk_verify (pubkey_algo_t algo, gcry_mpi_t hash, gcry_mpi_t *data,
                gcry_mpi_t *pkey);
-int pk_encrypt (pubkey_algo_t algo, gcry_mpi_t *resarr, gcry_mpi_t data,
-		PKT_public_key *pk, gcry_mpi_t *pkey);
+gpg_error_t pk_encrypt (PKT_public_key *pk, gcry_mpi_t data,
+                        gcry_mpi_t *resarr);
 int pk_check_secret_key (pubkey_algo_t algo, gcry_mpi_t *skey);
 
 
