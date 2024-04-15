@@ -410,6 +410,10 @@ get_cached_data (app_t app, int tag,
   size_t len;
   struct cache_s *c;
   int exmode;
+  int do_constructed = 0;
+
+  if ((tag < 0x0100 && (tag & 0x20)) || (tag >= 0x0100 && (tag & 0x2000)))
+    do_constructed = 1;
 
   *result = NULL;
   *resultlen = 0;
@@ -452,6 +456,52 @@ get_cached_data (app_t app, int tag,
   err = iso7816_get_data (app_get_slot (app), exmode, tag, &p, &len);
   if (err)
     return err;
+
+  /* When Data Object is constructed, when it comes with its tag and
+     length, remove them before storing it into the cache, because
+     it's redundant and takes space.  This handling also works well
+     with the card implementation which doesn't include its tag and
+     length for the DO value returned by GET DATA.  */
+  if (do_constructed)
+    {
+      if (len && tag < 0x0100 && p[0] == tag)
+        {
+          if (len >= 2 && p[1] < 0x80 && p[1] == len - 2)
+            {
+              len -= 2;
+              memmove (p, p+2, len);
+            }
+          else if (len >= 3 && p[1] == 0x81 && p[2] == len - 3)
+            {
+              len -= 3;
+              memmove (p, p+3, len);
+            }
+          else if (len >= 4 && p[1] == 0x82 && ((p[2] << 8) | p[3]) == len - 4)
+            {
+              len -= 4;
+              memmove (p, p+4, len);
+            }
+        }
+      else if (len >= 2 && tag >= 0x0100 && ((p[0] << 8) | p[1]) == tag)
+        {
+          if (len >= 3 && p[2] < 0x80 && p[2] == len - 2)
+            {
+              len -= 3;
+              memmove (p, p+3, len);
+            }
+          else if (len >= 4 && p[2] == 0x81 && p[3] == len - 3)
+            {
+              len -= 4;
+              memmove (p, p+4, len);
+            }
+          else if (len >= 5 && p[2] == 0x82 && ((p[3] << 8) | p[4]) == len - 4)
+            {
+              len -= 5;
+              memmove (p, p+5, len);
+            }
+        }
+    }
+
   if (len)
     *result = p;
   *resultlen = len;
