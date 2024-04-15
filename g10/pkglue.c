@@ -423,9 +423,214 @@ static gpg_error_t
 do_encrypt_kem (PKT_public_key *pk, gcry_mpi_t data, int seskey_algo,
                 gcry_mpi_t *resarr)
 {
+  gpg_error_t err;
+  int i;
+  unsigned int nbits, n;
+  gcry_sexp_t s_data = NULL;
+  gcry_cipher_hd_t hd = NULL;
 
-  log_debug ("Implement Kyber encryption\n");
-  return gpg_error (GPG_ERR_NOT_IMPLEMENTED);
+  const unsigned char *ecc_pubkey;
+  size_t ecc_pubkey_len;
+  const unsigned char *kyber_pubkey;
+  size_t kyber_pubkey_len;
+  const unsigned char *seskey;
+  size_t seskey_len;
+  unsigned char *enc_seskey = NULL;
+  size_t enc_seskey_len;
+
+  unsigned char ecc_ct[GCRY_KEM_ECC_X25519_ENCAPS_LEN];
+  size_t ecc_ct_len =  GCRY_KEM_ECC_X25519_ENCAPS_LEN;
+  unsigned char ecc_ecdh[GCRY_KEM_RAW_X25519_SHARED_LEN];
+  size_t ecc_ecdh_len =  GCRY_KEM_RAW_X25519_SHARED_LEN;
+  unsigned char ecc_ss[GCRY_KEM_RAW_X25519_SHARED_LEN];
+  size_t ecc_ss_len =  GCRY_KEM_RAW_X25519_SHARED_LEN;
+
+  unsigned char kyber_ct[GCRY_KEM_MLKEM768_ENCAPS_LEN];
+  size_t kyber_ct_len =  GCRY_KEM_MLKEM768_ENCAPS_LEN;
+  unsigned char kyber_ss[GCRY_KEM_MLKEM768_SHARED_LEN];
+  size_t kyber_ss_len =  GCRY_KEM_MLKEM768_SHARED_LEN;
+
+  char fixedinfo[1+MAX_FINGERPRINT_LEN];
+  int fixedlen;
+
+  unsigned char kek[32];  /* AES-256 is mandatory.  */
+  size_t kek_len = 32;
+
+  /* For later error checking we make sure the array is cleared.  */
+  resarr[0] = resarr[1] = resarr[2] = NULL;
+
+  /* As of now we use KEM only for the combined Kyber and thus a
+   * second public key is expected.  Right now we take the keys
+   * directly from the PK->data elements.  */
+
+  /* FIXME: This is only for cv25519 */
+  ecc_pubkey = gcry_mpi_get_opaque (pk->pkey[1], &nbits);
+  ecc_pubkey_len = (nbits+7)/8;
+  if (ecc_pubkey_len != 33)
+    {
+      if (opt.verbose)
+        log_info ("%s: ECC public key length invalid (%zu)\n",
+                  __func__, ecc_pubkey_len);
+      err = gpg_error (GPG_ERR_INV_DATA);
+      goto leave;
+    }
+  ecc_pubkey++;     /* Remove the 0x40 prefix.  */
+  ecc_pubkey_len--;
+  if (DBG_CRYPTO)
+    log_printhex (ecc_pubkey, ecc_pubkey_len, "ECC   pubkey:");
+
+  err = gcry_kem_encap (GCRY_KEM_RAW_X25519,
+                        ecc_pubkey, ecc_pubkey_len,
+                        ecc_ct, ecc_ct_len,
+                        ecc_ecdh, ecc_ecdh_len,
+                        NULL, 0);
+  if (err)
+    {
+      if (opt.verbose)
+        log_info ("%s: gcry_kem_encap for ECC failed\n", __func__);
+      goto leave;
+    }
+  if (DBG_CRYPTO)
+    {
+      log_printhex (ecc_ct, ecc_ct_len, "ECC    ephem:");
+      log_printhex (ecc_ecdh, ecc_ecdh_len, "ECC     ecdh:");
+    }
+  err = gnupg_ecc_kem_kdf (ecc_ss, ecc_ss_len,
+                           GCRY_MD_SHA3_256,
+                           ecc_ecdh, ecc_ecdh_len,
+                           ecc_ct, ecc_ct_len,
+                           ecc_pubkey, ecc_pubkey_len);
+  if (err)
+    {
+      if (opt.verbose)
+        log_info ("%s: kdf for ECC failed\n", __func__);
+      goto leave;
+    }
+  if (DBG_CRYPTO)
+    log_printhex (ecc_ss, ecc_ss_len, "ECC   shared:");
+
+  /* FIXME: This is only for kyber768 */
+  kyber_pubkey = gcry_mpi_get_opaque (pk->pkey[2], &nbits);
+  kyber_pubkey_len = (nbits+7)/8;
+  if (kyber_pubkey_len != GCRY_KEM_MLKEM768_PUBKEY_LEN)
+    {
+      if (opt.verbose)
+            log_info ("%s: Kyber public key length invalid (%zu)\n",
+                      __func__, kyber_pubkey_len);
+      err = gpg_error (GPG_ERR_INV_DATA);
+      goto leave;
+    }
+  if (DBG_CRYPTO)
+    log_printhex (kyber_pubkey, kyber_pubkey_len, "|!trunc|Kyber pubkey:");
+
+  err = gcry_kem_encap (GCRY_KEM_MLKEM768,
+                        kyber_pubkey, kyber_pubkey_len,
+                        kyber_ct, kyber_ct_len,
+                        kyber_ss, kyber_ss_len,
+                        NULL, 0);
+  if (err)
+    {
+      if (opt.verbose)
+        log_info ("%s: gcry_kem_encap for ECC failed\n", __func__);
+      goto leave;
+    }
+
+  if (DBG_CRYPTO)
+    {
+      log_printhex (kyber_ct, kyber_ct_len, "|!trunc|Kyber  ephem:");
+      log_printhex (kyber_ss, kyber_ss_len, "Kyber shared:");
+    }
+
+
+  fixedinfo[0] = seskey_algo;
+  v5_fingerprint_from_pk (pk, fixedinfo+1, NULL);
+  fixedlen = 33;
+
+  err = gnupg_kem_combiner (kek, kek_len,
+                            ecc_ss, ecc_ss_len, ecc_ct, ecc_ct_len,
+                            kyber_ss, kyber_ss_len, kyber_ct, kyber_ct_len,
+                            fixedinfo, fixedlen);
+  if (err)
+    {
+      if (opt.verbose)
+        log_info ("%s: KEM combiner failed\n", __func__);
+      goto leave;
+    }
+  if (DBG_CRYPTO)
+    log_printhex (kek, kek_len, "KEK:");
+
+  err = gcry_cipher_open (&hd, GCRY_CIPHER_AES256,
+                          GCRY_CIPHER_MODE_AESWRAP, 0);
+  if (!err)
+    err = gcry_cipher_setkey (hd, kek, kek_len);
+  if (err)
+    {
+      if (opt.verbose)
+        log_error ("%s: failed to initialize AESWRAP: %s\n", __func__,
+                   gpg_strerror (err));
+      goto leave;
+    }
+
+  err = gcry_sexp_build (&s_data, NULL, "%m", data);
+  if (err)
+    goto leave;
+
+  n = gcry_cipher_get_algo_keylen (seskey_algo);
+  seskey = gcry_mpi_get_opaque (data, &nbits);
+  seskey_len = (nbits+7)/8;
+  if (seskey_len != n)
+    {
+      if (opt.verbose)
+        log_info ("%s: session key length %zu"
+                  " does not match the length for algo %d\n",
+                  __func__, seskey_len, seskey_algo);
+      err = gpg_error (GPG_ERR_INV_DATA);
+      goto leave;
+    }
+  if (DBG_CRYPTO)
+    log_printhex (seskey, seskey_len, "seskey:");
+
+  enc_seskey_len = 1 + seskey_len + 8;
+  enc_seskey = xtrymalloc (enc_seskey_len);
+  if (!enc_seskey || enc_seskey_len > 254)
+    {
+      err = gpg_error_from_syserror ();
+      goto leave;
+    }
+
+  enc_seskey[0] = enc_seskey_len - 1;
+  err = gcry_cipher_encrypt (hd, enc_seskey+1, enc_seskey_len-1,
+                             seskey, seskey_len);
+  if (err)
+    {
+      log_error ("%s: wrapping session key failed\n", __func__);
+      goto leave;
+    }
+  if (DBG_CRYPTO)
+    log_printhex (enc_seskey, enc_seskey_len, "enc_seskey:");
+
+  resarr[0] = gcry_mpi_set_opaque_copy (NULL, ecc_ct, 8 * ecc_ct_len);
+  if (resarr[0])
+    resarr[1] = gcry_mpi_set_opaque_copy (NULL, kyber_ct, 8 * kyber_ct_len);
+  if (resarr[1])
+    resarr[2] = gcry_mpi_set_opaque_copy (NULL, enc_seskey, 8 * enc_seskey_len);
+  if (!resarr[0] || !resarr[1] || !resarr[2])
+    {
+      err = gpg_error_from_syserror ();
+      for (i=0; i < 3; i++)
+        gcry_mpi_release (resarr[i]), resarr[i] = NULL;
+    }
+
+ leave:
+  wipememory (ecc_ct, ecc_ct_len);
+  wipememory (ecc_ecdh, ecc_ecdh_len);
+  wipememory (ecc_ss, ecc_ss_len);
+  wipememory (kyber_ct, kyber_ct_len);
+  wipememory (kyber_ss, kyber_ss_len);
+  wipememory (kek, kek_len);
+  xfree (enc_seskey);
+  gcry_cipher_close (hd);
+  return err;
 }
 
 

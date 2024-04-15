@@ -987,9 +987,14 @@ do_pubkey_enc( IOBUF out, int ctb, PKT_pubkey_enc *enc )
       if (enc->pubkey_algo == PUBKEY_ALGO_KYBER && i == 2)
         iobuf_put (a, enc->seskey_algo);
 
-      if (enc->pubkey_algo == PUBKEY_ALGO_ECDH && i == 1)
+      if (i == 1 && enc->pubkey_algo == PUBKEY_ALGO_ECDH)
         rc = gpg_mpi_write_opaque_nohdr (a, enc->data[i]);
-      else if (enc->pubkey_algo == PUBKEY_ALGO_ECDH)
+      else if (i == 1 && enc->pubkey_algo == PUBKEY_ALGO_KYBER)
+        rc = gpg_mpi_write_opaque_32 (a, enc->data[i], NULL);
+      else if (i == 2 && enc->pubkey_algo == PUBKEY_ALGO_KYBER)
+        rc = gpg_mpi_write_opaque_nohdr (a, enc->data[i]);
+      else if (enc->pubkey_algo == PUBKEY_ALGO_ECDH
+               || enc->pubkey_algo == PUBKEY_ALGO_KYBER)
         rc = sos_write (a, enc->data[i], NULL);
       else
         rc = gpg_mpi_write (a, enc->data[i], NULL);
