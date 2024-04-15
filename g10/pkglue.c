@@ -1,6 +1,7 @@
 /* pkglue.c - public key operations glue code
  * Copyright (C) 2000, 2003, 2010 Free Software Foundation, Inc.
  * Copyright (C) 2014 Werner Koch
+ * Copyright (C) 2024 g10 Code GmbH.
  *
  * This file is part of GnuPG.
  *
@@ -16,6 +17,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, see <https://www.gnu.org/licenses/>.
+ * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
 #include <config.h>
@@ -415,18 +417,120 @@ pk_verify (pubkey_algo_t pkalgo, gcry_mpi_t hash,
 }
 
 
+/* Core of the encryption for KEM algorithms.  See pk_decrypt for a
+ * description of the arguments.  */
+static gpg_error_t
+do_encrypt_kem (PKT_public_key *pk, gcry_mpi_t data, int seskey_algo,
+                gcry_mpi_t *resarr)
+{
+
+  log_debug ("Implement Kyber encryption\n");
+  return gpg_error (GPG_ERR_NOT_IMPLEMENTED);
+}
 
 
-/*
- * Emulate our old PK interface here - sometime in the future we might
- * change the internal design to directly fit to libgcrypt.  PK is is
- * the OpenPGP public key packet, DATA is an MPI with the to be
- * encrypted data, and RESARR receives the encrypted data.  RESARRAY
- * is expected to be an two item array which will be filled with newly
- * allocated MPIs.
- */
-gpg_error_t
-pk_encrypt (PKT_public_key *pk, gcry_mpi_t data, gcry_mpi_t *resarr)
+/* Core of the encryption for the ECDH algorithms.  See pk_decrypt for
+ * a description of the arguments.  */
+static gpg_error_t
+do_encrypt_ecdh (PKT_public_key *pk, gcry_mpi_t data,  gcry_mpi_t *resarr)
+{
+  gcry_mpi_t *pkey   = pk->pkey;
+  gcry_sexp_t s_ciph = NULL;
+  gcry_sexp_t s_data = NULL;
+  gcry_sexp_t s_pkey = NULL;
+  gpg_error_t err;
+  gcry_mpi_t k = NULL;
+  char *curve = NULL;
+  int with_djb_tweak_flag;
+  gcry_mpi_t public = NULL;
+  gcry_mpi_t result = NULL;
+  byte fp[MAX_FINGERPRINT_LEN];
+  byte *shared = NULL;
+  byte *p;
+  size_t nshared;
+  unsigned int nbits;
+
+  err = pk_ecdh_generate_ephemeral_key (pkey, &k);
+  if (err)
+    goto leave;
+
+  curve = openpgp_oid_to_str (pkey[0]);
+  if (!curve)
+    {
+      err = gpg_error_from_syserror ();
+      goto leave;
+    }
+
+  with_djb_tweak_flag = openpgp_oid_is_cv25519 (pkey[0]);
+
+  /* Now use the ephemeral secret to compute the shared point.  */
+  err = gcry_sexp_build (&s_pkey, NULL,
+                         with_djb_tweak_flag ?
+                         "(public-key(ecdh(curve%s)(flags djb-tweak)(q%m)))"
+                         : "(public-key(ecdh(curve%s)(q%m)))",
+                         curve, pkey[1]);
+  if (err)
+    goto leave;
+
+  /* Put K into a simplified S-expression.  */
+  err = gcry_sexp_build (&s_data, NULL, "%m", k);
+  if (err)
+    goto leave;
+
+  /* Run encryption.  */
+  err = gcry_pk_encrypt (&s_ciph, s_data, s_pkey);
+  if (err)
+    goto leave;
+
+  gcry_sexp_release (s_data); s_data = NULL;
+  gcry_sexp_release (s_pkey); s_pkey = NULL;
+
+
+  /* Get the shared point and the ephemeral public key.  */
+  shared = get_data_from_sexp (s_ciph, "s", &nshared);
+  if (!shared)
+    {
+      err = gpg_error_from_syserror ();
+      goto leave;
+    }
+  err = sexp_extract_param_sos (s_ciph, "e", &public);
+  gcry_sexp_release (s_ciph); s_ciph = NULL;
+  if (DBG_CRYPTO)
+    {
+      log_debug ("ECDH ephemeral key:");
+      gcry_mpi_dump (public);
+      log_printf ("\n");
+    }
+
+  fingerprint_from_pk (pk, fp, NULL);
+
+  p = gcry_mpi_get_opaque (data, &nbits);
+  result = NULL;
+  err = pk_ecdh_encrypt_with_shared_point (shared, nshared, fp, p,
+                                           (nbits+7)/8, pkey, &result);
+  if (err)
+    goto leave;
+
+  resarr[0] = public; public = NULL;
+  resarr[1] = result; result = NULL;
+
+ leave:
+  gcry_mpi_release (public);
+  gcry_mpi_release (result);
+  xfree (shared);
+  gcry_sexp_release (s_ciph);
+  gcry_sexp_release (s_data);
+  gcry_sexp_release (s_pkey);
+  xfree (curve);
+  gcry_mpi_release (k);
+  return err;
+}
+
+
+/* Core of the encryption for RSA and Elgamal algorithms.  See
+ * pk_decrypt for a description of the arguments.  */
+static gpg_error_t
+do_encrypt_rsa_elg (PKT_public_key *pk, gcry_mpi_t data, gcry_mpi_t *resarr)
 {
   pubkey_algo_t algo = pk->pubkey_algo;
   gcry_mpi_t *pkey   = pk->pkey;
@@ -435,129 +539,65 @@ pk_encrypt (PKT_public_key *pk, gcry_mpi_t data, gcry_mpi_t *resarr)
   gcry_sexp_t s_pkey = NULL;
   gpg_error_t err;
 
-  /* Make a sexp from pkey.  */
   if (algo == PUBKEY_ALGO_ELGAMAL || algo == PUBKEY_ALGO_ELGAMAL_E)
-    {
-      err = gcry_sexp_build (&s_pkey, NULL,
-			    "(public-key(elg(p%m)(g%m)(y%m)))",
-			    pkey[0], pkey[1], pkey[2]);
-      /* Put DATA into a simplified S-expression.  */
-      if (!err)
-        err = gcry_sexp_build (&s_data, NULL, "%m", data);
-    }
-  else if (algo == PUBKEY_ALGO_RSA || algo == PUBKEY_ALGO_RSA_E)
-    {
-      err = gcry_sexp_build (&s_pkey, NULL,
-			    "(public-key(rsa(n%m)(e%m)))",
-			    pkey[0], pkey[1]);
-      /* Put DATA into a simplified S-expression.  */
-      if (!err)
-        err = gcry_sexp_build (&s_data, NULL, "%m", data);
-    }
-  else if (algo == PUBKEY_ALGO_ECDH)
-    {
-      gcry_mpi_t k;
-
-      err = pk_ecdh_generate_ephemeral_key (pkey, &k);
-      if (!err)
-        {
-          char *curve;
-
-          curve = openpgp_oid_to_str (pkey[0]);
-          if (!curve)
-            err = gpg_error_from_syserror ();
-          else
-            {
-              int with_djb_tweak_flag = openpgp_oid_is_cv25519 (pkey[0]);
-
-              /* Now use the ephemeral secret to compute the shared point.  */
-              err = gcry_sexp_build (&s_pkey, NULL,
-                                    with_djb_tweak_flag ?
-                                    "(public-key(ecdh(curve%s)(flags djb-tweak)(q%m)))"
-                                    : "(public-key(ecdh(curve%s)(q%m)))",
-                                    curve, pkey[1]);
-              xfree (curve);
-              /* Put K into a simplified S-expression.  */
-              if (!err)
-                err = gcry_sexp_build (&s_data, NULL, "%m", k);
-            }
-          gcry_mpi_release (k);
-        }
-    }
-  else if (algo == PUBKEY_ALGO_KYBER)
-    {
-      log_debug ("Implement Kyber encryption\n");
-      err = gpg_error (GPG_ERR_NOT_IMPLEMENTED);
-    }
+    err = gcry_sexp_build (&s_pkey, NULL,
+                           "(public-key(elg(p%m)(g%m)(y%m)))",
+                           pkey[0], pkey[1], pkey[2]);
   else
-    err = gpg_error (GPG_ERR_PUBKEY_ALGO);
-
-  /* Pass it to libgcrypt. */
-  if (!err)
-    err = gcry_pk_encrypt (&s_ciph, s_data, s_pkey);
-
-  gcry_sexp_release (s_data);
-  gcry_sexp_release (s_pkey);
-
+    err = gcry_sexp_build (&s_pkey, NULL,
+                           "(public-key(rsa(n%m)(e%m)))",
+                           pkey[0], pkey[1]);
   if (err)
-    ;
-  else if (algo == PUBKEY_ALGO_ECDH)
-    {
-      gcry_mpi_t public, result;
-      byte fp[MAX_FINGERPRINT_LEN];
-      byte *shared;
-      size_t nshared;
+    goto leave;
 
-      /* Get the shared point and the ephemeral public key.  */
-      shared = get_data_from_sexp (s_ciph, "s", &nshared);
-      if (!shared)
-        {
-          err = gpg_error_from_syserror ();
-          goto leave;
-        }
-      err = sexp_extract_param_sos (s_ciph, "e", &public);
-      gcry_sexp_release (s_ciph);
-      s_ciph = NULL;
-      if (DBG_CRYPTO)
-        {
-          log_debug ("ECDH ephemeral key:");
-          gcry_mpi_dump (public);
-          log_printf ("\n");
-        }
+  err = gcry_sexp_build (&s_data, NULL, "%m", data);
+  if (err)
+    goto leave;
 
-      result = NULL;
-      fingerprint_from_pk (pk, fp, NULL);
+  err = gcry_pk_encrypt (&s_ciph, s_data, s_pkey);
+  if (err)
+    goto leave;
 
-      if (!err)
-        {
-          unsigned int nbits;
-          byte *p = gcry_mpi_get_opaque (data, &nbits);
-          err = pk_ecdh_encrypt_with_shared_point (shared, nshared, fp, p,
-                                                  (nbits+7)/8, pkey, &result);
-        }
-      xfree (shared);
-      if (!err)
-        {
-          resarr[0] = public;
-          resarr[1] = result;
-        }
-      else
-        {
-          gcry_mpi_release (public);
-          gcry_mpi_release (result);
-        }
-    }
-  else /* Elgamal or RSA case.  */
-    { /* Fixme: Add better error handling or make gnupg use
-         S-expressions directly.  */
-      resarr[0] = get_mpi_from_sexp (s_ciph, "a", GCRYMPI_FMT_USG);
-      if (!is_RSA (algo))
-        resarr[1] = get_mpi_from_sexp (s_ciph, "b", GCRYMPI_FMT_USG);
-    }
+  gcry_sexp_release (s_data); s_data = NULL;
+  gcry_sexp_release (s_pkey); s_pkey = NULL;
+
+  resarr[0] = get_mpi_from_sexp (s_ciph, "a", GCRYMPI_FMT_USG);
+  if (!is_RSA (algo))
+    resarr[1] = get_mpi_from_sexp (s_ciph, "b", GCRYMPI_FMT_USG);
 
  leave:
+  gcry_sexp_release (s_data);
+  gcry_sexp_release (s_pkey);
   gcry_sexp_release (s_ciph);
   return err;
+}
+
+
+/*
+ * Emulate our old PK interface here - sometime in the future we might
+ * change the internal design to directly fit to libgcrypt.  PK is is
+ * the OpenPGP public key packet, DATA is an MPI with the to be
+ * encrypted data, and RESARR receives the encrypted data.  RESARRAY
+ * is expected to be an two item array which will be filled with newly
+ * allocated MPIs.  SESKEY_ALGO is required for public key algorithms
+ * which do not encode it in DATA.
+ */
+gpg_error_t
+pk_encrypt (PKT_public_key *pk, gcry_mpi_t data, int seskey_algo,
+            gcry_mpi_t *resarr)
+{
+  pubkey_algo_t algo = pk->pubkey_algo;
+
+  if (algo == PUBKEY_ALGO_KYBER)
+    return do_encrypt_kem (pk, data, seskey_algo, resarr);
+  else if (algo == PUBKEY_ALGO_ECDH)
+    return do_encrypt_ecdh (pk, data, resarr);
+  else if (algo == PUBKEY_ALGO_ELGAMAL || algo == PUBKEY_ALGO_ELGAMAL_E)
+    return do_encrypt_rsa_elg (pk, data, resarr);
+  else if (algo == PUBKEY_ALGO_RSA || algo == PUBKEY_ALGO_RSA_E)
+    return do_encrypt_rsa_elg (pk, data, resarr);
+  else
+    return gpg_error (GPG_ERR_PUBKEY_ALGO);
 }
 
 

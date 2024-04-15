@@ -23,9 +23,10 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * General Public License for more details.
  *
- * You should have received a copies of the GNU General Public License
+ * You should have received copies of the GNU General Public License
  * and the GNU Lesser General Public License along with this program;
  * if not, see <https://www.gnu.org/licenses/>.
+ * SPDX-License-Identifier: (LGPL-3.0-or-later OR GPL-2.0-or-later)
  */
 
 #include <config.h>
@@ -35,7 +36,18 @@
 #include <gcrypt.h>
 #include "mischelp.h"
 
+
+/* domSeperation as per *PGP specs. */
+#define KMAC_KEY "OpenPGPCompositeKeyDerivationFunction"
+
+/* customizationString as per *PGP specs. */
+#define KMAC_CUSTOM "KDF"
+
+/* The blocksize used for Keccak by compute_kmac256.  */
 #define KECCAK512_BLOCKSIZE 136
+
+
+
 static gpg_error_t
 compute_kmac256 (void *digest, size_t digestlen,
                  const void *key, size_t keylen,
@@ -163,14 +175,16 @@ gnupg_ecc_kem_kdf (void *kek, size_t kek_len,
   return 0;
 }
 
-
-/* domSeperation */
-#define KMAC_KEY "OpenPGPCompositeKeyDerivationFunction"
-
-/* customizationString */
-#define KMAC_CUSTOM "KDF"
-
-/* Compute KEK by combining two KEMs.  */
+/* Compute KEK by combining two KEMs.  The caller provides a buffer
+ * KEK allocated with size KEK_LEN which will receive the computed
+ * KEK. (ECC_SS, ECC_SS_LEN) is the shared secret of the first key.
+ * (ECC_CT, ECC_CT_LEN) is the ciphertext of the first key.
+ * (MLKEM_SS, ECC_SS_LEN) is the shared secret of the second key.
+ * (MLKEM_CT, MLKEM_CT_LEN) is the ciphertext of the second key.
+ * (FIXEDINFO, FIXEDINFO_LEN) is an octet string used to bind the KEK
+ * to a the key; for PGP we use the concatenation of the session key's
+ * algorithm id and the v5 fingerprint of the key.
+ */
 gpg_error_t
 gnupg_kem_combiner (void *kek, size_t kek_len,
                     const void *ecc_ss, size_t ecc_ss_len,

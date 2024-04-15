@@ -1138,7 +1138,7 @@ write_pubkey_enc (ctrl_t ctrl,
    * build_packet().  */
   frame = encode_session_key (pk->pubkey_algo, dek,
                               pubkey_nbits (pk->pubkey_algo, pk->pkey));
-  rc = pk_encrypt (pk, frame, enc->data);
+  rc = pk_encrypt (pk, frame, dek->algo, enc->data);
   gcry_mpi_release (frame);
   if (rc)
     log_error ("pubkey_encrypt failed: %s\n", gpg_strerror (rc) );
