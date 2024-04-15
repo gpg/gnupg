@@ -139,7 +139,7 @@ gnupg_pk_is_compliant (enum gnupg_compliance_mode compliance, int algo,
 		       gcry_mpi_t key[], unsigned int keylength,
                        const char *curvename)
 {
-  enum { is_rsa, is_dsa, is_elg, is_ecc } algotype;
+  enum { is_rsa, is_dsa, is_elg, is_ecc, is_kem } algotype;
   int result = 0;
 
   if (! initialized)
@@ -172,6 +172,10 @@ gnupg_pk_is_compliant (enum gnupg_compliance_mode compliance, int algo,
 
     case PUBKEY_ALGO_ELGAMAL:
       return 0; /* Signing with Elgamal is not at all supported.  */
+
+    case PUBKEY_ALGO_KYBER:
+      algotype = is_kem;
+      break;
 
     default: /* Unknown.  */
       return 0;
@@ -225,6 +229,10 @@ gnupg_pk_is_compliant (enum gnupg_compliance_mode compliance, int algo,
                     && (!strcmp (curvename, "brainpoolP256r1")
                         || !strcmp (curvename, "brainpoolP384r1")
                         || !strcmp (curvename, "brainpoolP512r1")));
+          break;
+
+        case is_kem:
+          result = 0;
           break;
 
         default:
