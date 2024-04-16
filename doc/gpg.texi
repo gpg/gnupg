@@ -2893,12 +2893,15 @@ Same as the command @option{--fingerprint} but changes only the format
 of the output and may be used together with another command.
 
 @item --with-subkey-fingerprint
+@itemx --without-subkey-fingerprint
 @opindex with-subkey-fingerprint
+@opindex without-subkey-fingerprint
 If a fingerprint is printed for the primary key, this option forces
 printing of the fingerprint for all subkeys.  This could also be
 achieved by using the @option{--with-fingerprint} twice but by using
-this option along with keyid-format "none" a compact fingerprint is
-printed.
+this option along with the default keyid-format "none" a compact
+fingerprint is printed.  Since version 2.6.0 this option is active by
+default; use the ``without'' variant to disable it.
 
 @item --with-v5-fingerprint
 @opindex with-v5-fingerprint

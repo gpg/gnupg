@@ -206,6 +206,7 @@ enum cmd_and_opt_values
     oWithV5Fingerprint,
     oWithFingerprint,
     oWithSubkeyFingerprint,
+    oWithoutSubkeyFingerprint,
     oWithICAOSpelling,
     oWithKeygrip,
     oWithKeyScreening,
@@ -824,6 +825,7 @@ static gpgrt_opt_t opts[] = {
   ARGPARSE_s_n (oWithFingerprint, "with-fingerprint", "@"),
   ARGPARSE_s_n (oWithSubkeyFingerprint, "with-subkey-fingerprint", "@"),
   ARGPARSE_s_n (oWithSubkeyFingerprint, "with-subkey-fingerprints", "@"),
+  ARGPARSE_s_n (oWithoutSubkeyFingerprint, "without-subkey-fingerprint", "@"),
   ARGPARSE_s_n (oWithICAOSpelling, "with-icao-spelling", "@"),
   ARGPARSE_s_n (oWithKeygrip,     "with-keygrip", "@"),
   ARGPARSE_s_n (oWithKeyScreening,"with-key-screening", "@"),
@@ -2503,6 +2505,7 @@ main (int argc, char **argv)
     opt.passphrase_repeat = 1;
     opt.emit_version = 0;
     opt.weak_digests = NULL;
+    opt.with_subkey_fingerprint = 1;
     opt.compliance = CO_GNUPG;
 
     /* Check special options given on the command line.  */
@@ -2908,6 +2911,9 @@ main (int argc, char **argv)
             break;
 	  case oWithSubkeyFingerprint:
             opt.with_subkey_fingerprint = 1;
+            break;
+	  case oWithoutSubkeyFingerprint:
+            opt.with_subkey_fingerprint = 0;
             break;
 	  case oWithICAOSpelling:
             opt.with_icao_spelling = 1;
