@@ -1,4 +1,4 @@
-Noteworthy changes in version 2.2.43 (unreleased)
+Noteworthy changes in version 2.2.43 (2024-04-16)
 -------------------------------------------------
 
   * gpg: Do not keep an unprotected smartcard backup key on disk.  See
@@ -36,9 +36,10 @@ Noteworthy changes in version 2.2.43 (unreleased)
   * gpgtar: Fix conveying of status lines from gpg when using stderr
     as status fd on Windows.  [T6961]
 
-  * gpgconf: Fix -X command for the new VERSION file format.  [T6918]
+  * gpgconf: Fix -X command for the new VERSION file format and change
+    the output format.  [T6918]
 
-  * wks: Make gpg-wks-client --mirror work w/o args.
+  * wkd: Make gpg-wks-client --mirror work w/o args.
 
   Release-info: https://dev.gnupg.org/T6849
 
