@@ -136,6 +136,7 @@ enum cmd_and_opt_values
     aQuickSetExpire,
     aQuickSetPrimaryUid,
     aQuickUpdatePref,
+    aQuickSetOwnertrust,
     aListConfig,
     aListGcryptConfig,
     aGPGConfList,
@@ -502,6 +503,7 @@ static gpgrt_opt_t opts[] = {
               N_("quickly set a new expiration date")),
   ARGPARSE_c (aQuickSetPrimaryUid,  "quick-set-primary-uid", "@"),
   ARGPARSE_c (aQuickUpdatePref,  "quick-update-pref", "@"),
+  ARGPARSE_c (aQuickSetOwnertrust,  "quick-set-ownertrust", "@"),
   ARGPARSE_c (aFullKeygen,  "full-generate-key" ,
               N_("full featured key pair generation")),
   ARGPARSE_c (aFullKeygen,  "full-gen-key", "@"),
@@ -2717,6 +2719,7 @@ main (int argc, char **argv)
 	  case aQuickSetExpire:
 	  case aQuickSetPrimaryUid:
 	  case aQuickUpdatePref:
+	  case aQuickSetOwnertrust:
 	  case aExportOwnerTrust:
 	  case aImportOwnerTrust:
           case aRebuildKeydbCaches:
@@ -4393,6 +4396,7 @@ main (int argc, char **argv)
       case aQuickRevUid:
       case aQuickSetPrimaryUid:
       case aQuickUpdatePref:
+      case aQuickSetOwnertrust:
       case aFullKeygen:
       case aKeygen:
       case aImport:
@@ -4909,6 +4913,15 @@ main (int argc, char **argv)
           if (argc != 1)
             wrong_args ("--quick-update-pref USER-ID");
           keyedit_quick_update_pref (ctrl, *argv);
+        }
+	break;
+
+      case aQuickSetOwnertrust:
+        {
+          if (argc != 2)
+            wrong_args ("--quick-set-ownertrust USER-ID"
+                        " [enable|disable|full|...]");
+          keyedit_quick_set_ownertrust (ctrl, argv[0], argv[1]);
         }
 	break;
 
