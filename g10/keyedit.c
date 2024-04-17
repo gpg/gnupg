@@ -2755,6 +2755,87 @@ keyedit_quick_update_pref (ctrl_t ctrl, const char *username)
 }
 
 
+/* Unattended updating of the ownertrust or disable/enable state of a key
+ * USERNAME specifies the key.  This is somewhat similar to
+ *      gpg --edit-key <userid> trust save
+ *      gpg --edit-key <userid> disable save
+ *
+ * VALUE is the new trust value which is one of:
+ *    "undefined"  - Ownertrust is set to undefined
+ *    "never"      - Ownertrust is set to never trust
+ *    "marginal"   - Ownertrust is set to marginal trust
+ *    "full"       - Ownertrust is set to full trust
+ *    "ultimate"   - Ownertrust is set to ultimate trust
+ *    "enable"     - The key is re-enabled.
+ *    "disable"    - The key is disabled.
+ * Trust settings do not change the ebable/disable state.
+ */
+void
+keyedit_quick_set_ownertrust (ctrl_t ctrl, const char *username,
+                              const char *value)
+{
+  gpg_error_t err;
+  KEYDB_HANDLE kdbhd = NULL;
+  kbnode_t keyblock = NULL;
+  PKT_public_key *pk;
+  unsigned int trust, newtrust;
+  int x;
+  int maybe_update_trust = 0;
+
+#ifdef HAVE_W32_SYSTEM
+  /* See keyedit_menu for why we need this.  */
+  check_trustdb_stale (ctrl);
+#endif
+
+  /* Search the key; we don't want the whole getkey stuff here.  Note
+   * that we are looking for the public key here.  */
+  err = quick_find_keyblock (ctrl, username, 0, &kdbhd, &keyblock);
+  if (err)
+    goto leave;
+  log_assert (keyblock->pkt->pkttype == PKT_PUBLIC_KEY
+              || keyblock->pkt->pkttype == PKT_SECRET_KEY);
+  pk = keyblock->pkt->pkt.public_key;
+
+  trust = newtrust = get_ownertrust (ctrl, pk);
+
+  if (!ascii_strcasecmp (value, "enable"))
+    newtrust &= ~TRUST_FLAG_DISABLED;
+  else if (!ascii_strcasecmp (value, "disable"))
+    newtrust |= TRUST_FLAG_DISABLED;
+  else if ((x = string_to_trust_value (value)) >= 0)
+    {
+      newtrust = x;
+      newtrust &= TRUST_MASK;
+      newtrust |= (trust & ~TRUST_MASK);
+      maybe_update_trust = 1;
+    }
+  else
+    {
+      err = gpg_error (GPG_ERR_INV_ARG);
+      goto leave;
+    }
+
+  if (trust != newtrust)
+    {
+      update_ownertrust (ctrl, pk, newtrust);
+      if (maybe_update_trust)
+        revalidation_mark (ctrl);
+    }
+  else if (opt.verbose)
+    log_info (_("Key not changed so no update needed.\n"));
+
+ leave:
+  if (err)
+    {
+      log_error (_("setting the ownertrust to '%s' failed: %s\n"),
+                 value, gpg_strerror (err));
+      write_status_error ("keyedit.setownertrust", err);
+    }
+  release_kbnode (keyblock);
+  keydb_release (kdbhd);
+}
+
+
 /* Find a keyblock by fingerprint because only this uniquely
  * identifies a key and may thus be used to select a key for
  * unattended subkey creation os key signing.  */
@@ -2999,7 +3080,7 @@ keyedit_quick_revsig (ctrl_t ctrl, const char *username, const char *sigtorev,
   check_trustdb_stale (ctrl);
 #endif
 
-  /* Search the key; we don't want the whole getkey stuff here.  Noet
+  /* Search the key; we don't want the whole getkey stuff here.  Note
    * that we are looking for the public key here.  */
   err = quick_find_keyblock (ctrl, username, 0, &kdbhd, &keyblock);
   if (err)
