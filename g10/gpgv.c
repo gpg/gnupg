@@ -426,6 +426,14 @@ get_ownertrust (ctrl_t ctrl, PKT_public_key *pk)
   return TRUST_UNKNOWN;
 }
 
+const char *
+get_ownertrust_string (ctrl_t ctrl, PKT_public_key *pk, int no_create)
+{
+  (void)ctrl;
+  (void)pk;
+  (void)no_create;
+  return "";
+}
 
 /* Stubs:
  * Because we only work with trusted keys, it does not make sense to
