@@ -2600,6 +2600,11 @@ print_key_line (ctrl_t ctrl, estream_t fp, PKT_public_key *pk, int secret)
       tty_fprintf (fp, " [%s]", usagestr_from_pk (pk, 0));
     }
 
+  if (pk->flags.primary && (opt.list_options & LIST_SHOW_OWNERTRUST))
+    {
+      tty_fprintf (fp, " [%s]", get_ownertrust_string (ctrl, pk, 0));
+    }
+
   if (pk->flags.revoked)
     {
       tty_fprintf (fp, " [");
@@ -2619,20 +2624,13 @@ print_key_line (ctrl_t ctrl, estream_t fp, PKT_public_key *pk, int secret)
       tty_fprintf (fp, "]");
     }
 
-#if 0
-  /* I need to think about this some more.  It's easy enough to
-     include, but it looks sort of confusing in the listing... */
-  if (opt.list_options & LIST_SHOW_VALIDITY)
-    {
-      int validity = get_validity (ctrl, pk, NULL, NULL, 0);
-      tty_fprintf (fp, " [%s]", trust_value_to_string (validity));
-    }
-#endif
-
   if (pk->pubkey_algo >= 100)
     tty_fprintf (fp, " [experimental algorithm %d]", pk->pubkey_algo);
 
   tty_fprintf (fp, "\n");
+
+  if (pk->flags.primary && pk_is_disabled (pk))
+    es_fprintf (es_stdout, "      *** %s\n", _("This key has been disabled"));
 
   /* if the user hasn't explicitly asked for human-readable
      fingerprints, show compact fpr of primary key: */

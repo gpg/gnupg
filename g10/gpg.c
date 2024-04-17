@@ -2113,6 +2113,8 @@ parse_list_options(char *str)
        N_("show preferences")},
       {"show-pref-verbose", LIST_SHOW_PREF_VERBOSE, NULL,
        N_("show preferences")},
+      {"show-ownertrust", LIST_SHOW_OWNERTRUST, NULL,
+       N_("show ownertrust")},
       {"show-only-fpr-mbox",LIST_SHOW_ONLY_FPR_MBOX, NULL,
        NULL},
       {"sort-sigs", LIST_SORT_SIGS, NULL,

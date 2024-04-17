@@ -155,6 +155,15 @@ get_ownertrust_info (ctrl_t ctrl, PKT_public_key *pk, int no_create)
   return '?';
 }
 
+const char *
+get_ownertrust_string (ctrl_t ctrl, PKT_public_key *pk, int no_create)
+{
+  (void)ctrl;
+  (void)pk;
+  (void)no_create;
+  return "";
+}
+
 unsigned int
 get_ownertrust (ctrl_t ctrl, PKT_public_key *pk)
 {

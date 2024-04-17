@@ -1403,6 +1403,11 @@ give the opposite meaning.  The options are:
   key (@code{E}=encryption, @code{S}=signing, @code{C}=certification,
   @code{A}=authentication).  Defaults to yes.
 
+  @item show-ownertrust
+  @opindex list-options:show-ownertrust
+  Show the ownertrust value for keys also in the standard key
+  listing.  Defaults to no.
+
   @item show-policy-urls
   @opindex list-options:show-policy-urls
   Show policy URLs in the  @option{--check-signatures}
