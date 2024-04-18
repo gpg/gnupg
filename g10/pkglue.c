@@ -417,6 +417,11 @@ pk_verify (pubkey_algo_t pkalgo, gcry_mpi_t hash,
 }
 
 
+#if GCRY_KEM_MLKEM1024_ENCAPS_LEN < GCRY_KEM_MLKEM768_ENCAPS_LEN    \
+    || GCRY_KEM_MLKEM1024_SHARED_LEN < GCRY_KEM_MLKEM768_SHARED_LEN
+# error Bad Kyber constants in Libgcrypt
+#endif
+
 /* Core of the encryption for KEM algorithms.  See pk_decrypt for a
  * description of the arguments.  */
 static gpg_error_t
@@ -428,6 +433,8 @@ do_encrypt_kem (PKT_public_key *pk, gcry_mpi_t data, int seskey_algo,
   unsigned int nbits, n;
   gcry_sexp_t s_data = NULL;
   gcry_cipher_hd_t hd = NULL;
+  char *ecc_oid = NULL;
+  enum gcry_kem_algos kyber_algo, ecc_algo;
 
   const unsigned char *ecc_pubkey;
   size_t ecc_pubkey_len;
@@ -445,10 +452,9 @@ do_encrypt_kem (PKT_public_key *pk, gcry_mpi_t data, int seskey_algo,
   unsigned char ecc_ss[GCRY_KEM_RAW_X25519_SHARED_LEN];
   size_t ecc_ss_len =  GCRY_KEM_RAW_X25519_SHARED_LEN;
 
-  unsigned char kyber_ct[GCRY_KEM_MLKEM768_ENCAPS_LEN];
-  size_t kyber_ct_len =  GCRY_KEM_MLKEM768_ENCAPS_LEN;
-  unsigned char kyber_ss[GCRY_KEM_MLKEM768_SHARED_LEN];
-  size_t kyber_ss_len =  GCRY_KEM_MLKEM768_SHARED_LEN;
+  unsigned char kyber_ct[GCRY_KEM_MLKEM1024_ENCAPS_LEN];
+  unsigned char kyber_ss[GCRY_KEM_MLKEM1024_SHARED_LEN];
+  size_t kyber_ct_len, kyber_ss_len;
 
   char fixedinfo[1+MAX_FINGERPRINT_LEN];
   int fixedlen;
@@ -463,23 +469,48 @@ do_encrypt_kem (PKT_public_key *pk, gcry_mpi_t data, int seskey_algo,
    * second public key is expected.  Right now we take the keys
    * directly from the PK->data elements.  */
 
-  /* FIXME: This is only for cv25519 */
-  ecc_pubkey = gcry_mpi_get_opaque (pk->pkey[1], &nbits);
-  ecc_pubkey_len = (nbits+7)/8;
-  if (ecc_pubkey_len != 33)
+  ecc_oid = openpgp_oid_to_str (pk->pkey[0]);
+  if (!ecc_oid)
+    {
+      err = gpg_error_from_syserror ();
+      log_error ("%s: error getting OID for ECC key\n", __func__);
+      goto leave;
+    }
+  ecc_algo = openpgp_oid_to_kem_algo (ecc_oid);
+  if (ecc_algo == GCRY_KEM_RAW_X25519)
+    {
+      if (!strcmp (ecc_oid, "1.3.6.1.4.1.3029.1.5.1"))
+        log_info ("Warning: "
+                  "legacy OID for cv25519 accepted during develpment\n");
+      ecc_pubkey = gcry_mpi_get_opaque (pk->pkey[1], &nbits);
+      ecc_pubkey_len = (nbits+7)/8;
+      if (ecc_pubkey_len != 33)
+        {
+          if (opt.verbose)
+            log_info ("%s: ECC public key length invalid (%zu)\n",
+                      __func__, ecc_pubkey_len);
+          err = gpg_error (GPG_ERR_INV_DATA);
+          goto leave;
+        }
+      ecc_pubkey++;     /* Remove the 0x40 prefix.  */
+      ecc_pubkey_len--;
+    }
+  else
     {
       if (opt.verbose)
-        log_info ("%s: ECC public key length invalid (%zu)\n",
-                  __func__, ecc_pubkey_len);
+        log_info ("%s: ECC curve %s not supported\n", __func__, ecc_oid);
       err = gpg_error (GPG_ERR_INV_DATA);
       goto leave;
     }
-  ecc_pubkey++;     /* Remove the 0x40 prefix.  */
-  ecc_pubkey_len--;
-  if (DBG_CRYPTO)
-    log_printhex (ecc_pubkey, ecc_pubkey_len, "ECC   pubkey:");
 
-  err = gcry_kem_encap (GCRY_KEM_RAW_X25519,
+
+  if (DBG_CRYPTO)
+    {
+      log_debug ("ECC    curve: %s\n", ecc_oid);
+      log_printhex (ecc_pubkey, ecc_pubkey_len, "ECC   pubkey:");
+    }
+
+  err = gcry_kem_encap (ecc_algo,
                         ecc_pubkey, ecc_pubkey_len,
                         ecc_ct, ecc_ct_len,
                         ecc_ecdh, ecc_ecdh_len,
@@ -487,7 +518,8 @@ do_encrypt_kem (PKT_public_key *pk, gcry_mpi_t data, int seskey_algo,
   if (err)
     {
       if (opt.verbose)
-        log_info ("%s: gcry_kem_encap for ECC failed\n", __func__);
+        log_info ("%s: gcry_kem_encap for ECC (%s) failed\n",
+                  __func__, ecc_oid);
       goto leave;
     }
   if (DBG_CRYPTO)
@@ -509,21 +541,32 @@ do_encrypt_kem (PKT_public_key *pk, gcry_mpi_t data, int seskey_algo,
   if (DBG_CRYPTO)
     log_printhex (ecc_ss, ecc_ss_len, "ECC   shared:");
 
-  /* FIXME: This is only for kyber768 */
   kyber_pubkey = gcry_mpi_get_opaque (pk->pkey[2], &nbits);
   kyber_pubkey_len = (nbits+7)/8;
-  if (kyber_pubkey_len != GCRY_KEM_MLKEM768_PUBKEY_LEN)
+  if (kyber_pubkey_len == GCRY_KEM_MLKEM768_PUBKEY_LEN)
+    {
+      kyber_algo = GCRY_KEM_MLKEM768;
+      kyber_ct_len = GCRY_KEM_MLKEM768_ENCAPS_LEN;
+      kyber_ss_len = GCRY_KEM_MLKEM768_SHARED_LEN;
+    }
+  else if (kyber_pubkey_len == GCRY_KEM_MLKEM1024_PUBKEY_LEN)
+    {
+      kyber_algo = GCRY_KEM_MLKEM1024;
+      kyber_ct_len = GCRY_KEM_MLKEM1024_ENCAPS_LEN;
+      kyber_ss_len = GCRY_KEM_MLKEM1024_SHARED_LEN;
+    }
+  else
     {
       if (opt.verbose)
-            log_info ("%s: Kyber public key length invalid (%zu)\n",
-                      __func__, kyber_pubkey_len);
+        log_info ("%s: Kyber public key length invalid (%zu)\n",
+                  __func__, kyber_pubkey_len);
       err = gpg_error (GPG_ERR_INV_DATA);
       goto leave;
     }
   if (DBG_CRYPTO)
     log_printhex (kyber_pubkey, kyber_pubkey_len, "|!trunc|Kyber pubkey:");
 
-  err = gcry_kem_encap (GCRY_KEM_MLKEM768,
+  err = gcry_kem_encap (kyber_algo,
                         kyber_pubkey, kyber_pubkey_len,
                         kyber_ct, kyber_ct_len,
                         kyber_ss, kyber_ss_len,
@@ -625,11 +668,12 @@ do_encrypt_kem (PKT_public_key *pk, gcry_mpi_t data, int seskey_algo,
   wipememory (ecc_ct, ecc_ct_len);
   wipememory (ecc_ecdh, ecc_ecdh_len);
   wipememory (ecc_ss, ecc_ss_len);
-  wipememory (kyber_ct, kyber_ct_len);
-  wipememory (kyber_ss, kyber_ss_len);
+  wipememory (kyber_ct, sizeof kyber_ct);
+  wipememory (kyber_ss, sizeof kyber_ss);
   wipememory (kek, kek_len);
   xfree (enc_seskey);
   gcry_cipher_close (hd);
+  xfree (ecc_oid);
   return err;
 }
 
