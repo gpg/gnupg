@@ -63,7 +63,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnupg\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"PO-Revision-Date: 2023-11-29 13:11+0000\n"
+"PO-Revision-Date: 2024-04-19 16:10+0100\n"
 "Last-Translator: Daniel Cerqueira <dan.git@brilhante.top>\n"
 "Language-Team: pt <dan.git@brilhante.top>\n"
 "Language: pt\n"
@@ -881,28 +881,8 @@ msgid "waiting for process %d to terminate failed: %s\n"
 msgstr "falha ao aguardar pelo encerramento do processo %d: %s\n"
 
 #, c-format
-msgid "error running '%s': probably not installed\n"
-msgstr ""
-
-#, fuzzy, c-format
-#| msgid "error accessing '%s': http status %u\n"
-msgid "error running '%s': exit status %d\n"
-msgstr "erro ao aceder '%s': status http %u\n"
-
-#, fuzzy, c-format
-#| msgid "error opening '%s': %s\n"
-msgid "error running '%s': terminated\n"
-msgstr "erro ao abrir '%s': %s\n"
-
-#, fuzzy, c-format
-#| msgid "waiting for process %d to terminate failed: %s\n"
-msgid "waiting for processes to terminate failed: %s\n"
-msgstr "falha ao aguardar pelo encerramento do processo %d: %s\n"
-
-#, fuzzy, c-format
-#| msgid "error getting list of cards: %s\n"
-msgid "error getting exit code of process %d: %s\n"
-msgstr "erro ao obter a lista de cartões: %s\n"
+msgid "waiting for process to terminate failed: ec=%d\n"
+msgstr "falha ao esperar que o processo terminasse: ec=%d\n"
 
 #, c-format
 msgid "can't connect to '%s': %s\n"
@@ -2156,6 +2136,9 @@ msgstr "criar saída blindada ASCII"
 
 msgid "|FILE|write output to FILE"
 msgstr "|FILE|escrever saída em FILE"
+
+msgid "use canonical text mode"
+msgstr "usar modo de texto canónico"
 
 msgid "|N|set compress level to N (0 disables)"
 msgstr "|N|definir nível de compressão para N (0 desabilita)"
@@ -4758,7 +4741,7 @@ msgstr "chave pública é %s\n"
 
 #, c-format
 msgid "encrypted with %s key, ID %s, created %s\n"
-msgstr "cifrado com chave %s, ID %s, criado em %s\n"
+msgstr "cifrado com chave %s, ID %s, criada em %s\n"
 
 #, c-format
 msgid "      \"%s\"\n"
@@ -4924,7 +4907,7 @@ msgid "textmode"
 msgstr "modo de texto"
 
 msgid "unknown"
-msgstr "desconhecido"
+msgstr "desconhec."
 
 msgid ", key algorithm "
 msgstr ", algoritmo da chave "
@@ -6723,9 +6706,7 @@ msgstr "o acesso aos comandos admin não está configurado\n"
 msgid "||Please enter the PIN"
 msgstr "||Introduza o PIN"
 
-#, fuzzy
-#| msgid "||Please enter the Reset Code for the card"
-msgid "|R|Please enter the Reset Code for the card"
+msgid "||Please enter the Reset Code for the card"
 msgstr "||Introduza o Código de Reset do cartão"
 
 #, c-format
@@ -8987,18 +8968,8 @@ msgstr "armazenar um certificado em um objeto de dados"
 msgid "store a private key to a data object"
 msgstr "armazenar uma chave privada em um objeto de dados"
 
-msgid "run various checks on the keys"
-msgstr ""
-
 msgid "Yubikey management commands"
 msgstr "comandos de gerir uma Yubikey"
 
 msgid "manage the command history"
 msgstr "gerir o histórico de comandos"
-
-#~ msgid "use canonical text mode"
-#~ msgstr "usar modo de texto canónico"
-
-#, c-format
-#~ msgid "waiting for process to terminate failed: ec=%d\n"
-#~ msgstr "falha ao esperar que o processo terminasse: ec=%d\n"
