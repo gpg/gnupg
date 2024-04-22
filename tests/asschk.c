@@ -656,13 +656,13 @@ expand_line (char *buffer)
 static int
 eval_boolean (const char *cond)
 {
-  int true = 1;
+  int tru = 1;
 
   for ( ; *cond == '!'; cond++)
-    true = !true;
+    tru = !tru;
   if (!*cond || (*cond == '0' && !cond[1]))
-    return !true;
-  return true;
+    return !tru;
+  return tru;
 }
 
 
