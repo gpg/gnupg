@@ -32,6 +32,12 @@
 #include "main.h"
 #include "options.h"
 
+
+/* Maximum buffer sizes required for ECC KEM.  */
+#define ECC_POINT_LEN_MAX (1+2*64)
+#define ECC_HASH_LEN_MAX 64
+
+
 /* FIXME: Better change the function name because mpi_ is used by
    gcrypt macros.  */
 gcry_mpi_t
@@ -444,13 +450,12 @@ do_encrypt_kem (PKT_public_key *pk, gcry_mpi_t data, int seskey_algo,
   size_t seskey_len;
   unsigned char *enc_seskey = NULL;
   size_t enc_seskey_len;
+  int ecc_hash_algo;
 
-  unsigned char ecc_ct[GCRY_KEM_ECC_X25519_ENCAPS_LEN];
-  size_t ecc_ct_len =  GCRY_KEM_ECC_X25519_ENCAPS_LEN;
-  unsigned char ecc_ecdh[GCRY_KEM_RAW_X25519_SHARED_LEN];
-  size_t ecc_ecdh_len =  GCRY_KEM_RAW_X25519_SHARED_LEN;
-  unsigned char ecc_ss[GCRY_KEM_RAW_X25519_SHARED_LEN];
-  size_t ecc_ss_len =  GCRY_KEM_RAW_X25519_SHARED_LEN;
+  unsigned char ecc_ct[ECC_POINT_LEN_MAX];
+  unsigned char ecc_ecdh[ECC_POINT_LEN_MAX];
+  unsigned char ecc_ss[ECC_HASH_LEN_MAX];
+  size_t ecc_ct_len, ecc_ecdh_len, ecc_ss_len;
 
   unsigned char kyber_ct[GCRY_KEM_MLKEM1024_ENCAPS_LEN];
   unsigned char kyber_ss[GCRY_KEM_MLKEM1024_SHARED_LEN];
@@ -484,7 +489,12 @@ do_encrypt_kem (PKT_public_key *pk, gcry_mpi_t data, int seskey_algo,
                   "legacy OID for cv25519 accepted during develpment\n");
       ecc_pubkey = gcry_mpi_get_opaque (pk->pkey[1], &nbits);
       ecc_pubkey_len = (nbits+7)/8;
-      if (ecc_pubkey_len != 33)
+      if (ecc_pubkey_len == 33 && *ecc_pubkey == 0x40)
+        {
+          ecc_pubkey++;     /* Remove the 0x40 prefix.  */
+          ecc_pubkey_len--;
+        }
+      if (ecc_pubkey_len != 32)
         {
           if (opt.verbose)
             log_info ("%s: ECC public key length invalid (%zu)\n",
@@ -492,8 +502,25 @@ do_encrypt_kem (PKT_public_key *pk, gcry_mpi_t data, int seskey_algo,
           err = gpg_error (GPG_ERR_INV_DATA);
           goto leave;
         }
-      ecc_pubkey++;     /* Remove the 0x40 prefix.  */
-      ecc_pubkey_len--;
+      ecc_ct_len = ecc_ecdh_len = 32;
+      ecc_ss_len = 32;
+      ecc_hash_algo = GCRY_MD_SHA3_256;
+    }
+  else if (ecc_algo == GCRY_KEM_RAW_X448)
+    {
+      ecc_pubkey = gcry_mpi_get_opaque (pk->pkey[1], &nbits);
+      ecc_pubkey_len = (nbits+7)/8;
+      if (ecc_pubkey_len != 56)
+        {
+          if (opt.verbose)
+            log_info ("%s: ECC public key length invalid (%zu)\n",
+                      __func__, ecc_pubkey_len);
+          err = gpg_error (GPG_ERR_INV_DATA);
+          goto leave;
+        }
+      ecc_ct_len = ecc_ecdh_len = 56;
+      ecc_ss_len = 64;
+      ecc_hash_algo = GCRY_MD_SHA3_512;
     }
   else
     {
@@ -528,7 +555,7 @@ do_encrypt_kem (PKT_public_key *pk, gcry_mpi_t data, int seskey_algo,
       log_printhex (ecc_ecdh, ecc_ecdh_len, "ECC     ecdh:");
     }
   err = gnupg_ecc_kem_kdf (ecc_ss, ecc_ss_len,
-                           GCRY_MD_SHA3_256,
+                           ecc_hash_algo,
                            ecc_ecdh, ecc_ecdh_len,
                            ecc_ct, ecc_ct_len,
                            ecc_pubkey, ecc_pubkey_len);
@@ -665,9 +692,9 @@ do_encrypt_kem (PKT_public_key *pk, gcry_mpi_t data, int seskey_algo,
     }
 
  leave:
-  wipememory (ecc_ct, ecc_ct_len);
-  wipememory (ecc_ecdh, ecc_ecdh_len);
-  wipememory (ecc_ss, ecc_ss_len);
+  wipememory (ecc_ct, sizeof ecc_ct);
+  wipememory (ecc_ecdh, sizeof ecc_ecdh);
+  wipememory (ecc_ss, sizeof ecc_ss);
   wipememory (kyber_ct, sizeof kyber_ct);
   wipememory (kyber_ss, sizeof kyber_ss);
   wipememory (kek, kek_len);

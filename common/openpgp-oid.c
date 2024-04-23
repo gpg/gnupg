@@ -57,7 +57,7 @@ static struct {
   { "Ed25519",    "1.3.101.112",            255, "ed25519", NULL,
     PUBKEY_ALGO_EDDSA },
   { "X448",       "1.3.101.111",            448, "cv448",   NULL,
-    PUBKEY_ALGO_ECDH },
+    PUBKEY_ALGO_ECDH, GCRY_KEM_RAW_X448 },
   { "Ed448",      "1.3.101.113",            456, "ed448",   NULL,
     PUBKEY_ALGO_EDDSA },
 
