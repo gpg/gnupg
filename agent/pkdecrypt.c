@@ -273,11 +273,15 @@ composite_pgp_kem_decrypt (ctrl_t ctrl, const char *desc_text,
   unsigned char ecc_ecdh[ECC_POINT_LEN_MAX];
   unsigned char ecc_ss[ECC_HASH_LEN_MAX];
 
+  enum gcry_kem_algos mlkem_kem_algo;
   gcry_mpi_t mlkem_sk_mpi = NULL;
   gcry_mpi_t mlkem_ct_mpi = NULL;
   const unsigned char *mlkem_sk;
+  size_t mlkem_sk_len;
   const unsigned char *mlkem_ct;
-  unsigned char mlkem_ss[GCRY_KEM_MLKEM768_SHARED_LEN];
+  size_t mlkem_ct_len;
+  unsigned char mlkem_ss[GCRY_KEM_MLKEM1024_SHARED_LEN];
+  size_t mlkem_ss_len;
 
   unsigned char kek[32];
   size_t kek_len = 32;        /* AES-256 is mandatory */
@@ -453,27 +457,45 @@ composite_pgp_kem_decrypt (ctrl_t ctrl, const char *desc_text,
       goto leave;
     }
   mlkem_sk = gcry_mpi_get_opaque (mlkem_sk_mpi, &nbits);
-  len = (nbits+7)/8;
-  if (len != GCRY_KEM_MLKEM768_SECKEY_LEN)
+  mlkem_sk_len = (nbits+7)/8;
+  if (mlkem_sk_len == GCRY_KEM_MLKEM512_SECKEY_LEN)
+    {
+      mlkem_kem_algo = GCRY_KEM_MLKEM512;
+      mlkem_ss_len   = GCRY_KEM_MLKEM512_SHARED_LEN;
+      mlkem_ct_len   = GCRY_KEM_MLKEM512_CIPHER_LEN;
+    }
+  else if (mlkem_sk_len == GCRY_KEM_MLKEM768_SECKEY_LEN)
+    {
+      mlkem_kem_algo = GCRY_KEM_MLKEM768;
+      mlkem_ss_len   = GCRY_KEM_MLKEM768_SHARED_LEN;
+      mlkem_ct_len   = GCRY_KEM_MLKEM768_CIPHER_LEN;
+    }
+  else if (mlkem_sk_len == GCRY_KEM_MLKEM1024_SECKEY_LEN)
+    {
+      mlkem_kem_algo = GCRY_KEM_MLKEM1024;
+      mlkem_ss_len   = GCRY_KEM_MLKEM1024_SHARED_LEN;
+      mlkem_ct_len   = GCRY_KEM_MLKEM1024_CIPHER_LEN;
+    }
+  else
     {
       if (opt.verbose)
-        log_info ("%s: PQ key length invalid (%zu)\n", __func__, len);
+        log_info ("%s: PQ key length invalid (%zu)\n", __func__, mlkem_sk_len);
       err = gpg_error (GPG_ERR_INV_DATA);
       goto leave;
     }
+
   mlkem_ct = gcry_mpi_get_opaque (mlkem_ct_mpi, &nbits);
   len = (nbits+7)/8;
-  if (len != GCRY_KEM_MLKEM768_CIPHER_LEN)
+  if (len != mlkem_ct_len)
     {
       if (opt.verbose)
-        log_info ("%s: PQ cipher text length invalid (%zu)\n", __func__, len);
+        log_info ("%s: PQ cipher text length invalid (%zu)\n",
+                  __func__, mlkem_ct_len);
       err = gpg_error (GPG_ERR_INV_DATA);
       goto leave;
     }
-  err = gcry_kem_decap (GCRY_KEM_MLKEM768,
-                        mlkem_sk, GCRY_KEM_MLKEM768_SECKEY_LEN,
-                        mlkem_ct, GCRY_KEM_MLKEM768_CIPHER_LEN,
-                        mlkem_ss, GCRY_KEM_MLKEM768_SHARED_LEN,
+  err = gcry_kem_decap (mlkem_kem_algo, mlkem_sk, mlkem_sk_len,
+                        mlkem_ct, mlkem_ct_len, mlkem_ss, mlkem_ss_len,
                         NULL, 0);
   if (err)
     {
@@ -499,8 +521,8 @@ composite_pgp_kem_decrypt (ctrl_t ctrl, const char *desc_text,
     }
 
   mpi_release (ecc_ct_mpi);
-  mpi_release (mlkem_ct_mpi);
   ecc_ct_mpi = NULL;
+  mpi_release (mlkem_ct_mpi);
   mlkem_ct_mpi = NULL;
 
   if (DBG_CRYPTO)
@@ -540,6 +562,13 @@ composite_pgp_kem_decrypt (ctrl_t ctrl, const char *desc_text,
   put_membuf (outbuf, ")", 2);
 
  leave:
+  wipememory (ecc_sk, sizeof ecc_sk);
+  wipememory (ecc_ecdh, sizeof ecc_ecdh);
+  wipememory (ecc_ss, sizeof ecc_ss);
+  wipememory (mlkem_ss, sizeof mlkem_ss);
+  wipememory (kek, sizeof kek);
+  wipememory (sessionkey, sizeof sessionkey);
+
   mpi_release (mlkem_sk_mpi);
   mpi_release (ecc_pk_mpi);
   mpi_release (ecc_sk_mpi);
