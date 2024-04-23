@@ -36,27 +36,6 @@
 #include "iobuf.h"
 #include "i18n.h"
 
-/* Used by libgcrypt for logging.  */
-static void
-my_gcry_logger (void *dummy, int level, const char *fmt, va_list arg_ptr)
-{
-  (void)dummy;
-
-  /* Map the log levels.  */
-  switch (level)
-    {
-    case GCRY_LOG_CONT: level = GPGRT_LOGLVL_CONT; break;
-    case GCRY_LOG_INFO: level = GPGRT_LOGLVL_INFO; break;
-    case GCRY_LOG_WARN: level = GPGRT_LOGLVL_WARN; break;
-    case GCRY_LOG_ERROR:level = GPGRT_LOGLVL_ERROR; break;
-    case GCRY_LOG_FATAL:level = GPGRT_LOGLVL_FATAL; break;
-    case GCRY_LOG_BUG:  level = GPGRT_LOGLVL_BUG; break;
-    case GCRY_LOG_DEBUG:level = GPGRT_LOGLVL_DEBUG; break;
-    default:            level = GPGRT_LOGLVL_ERROR; break;
-    }
-  log_logv (level, fmt, arg_ptr);
-}
-
 
 /* This function is called by libgcrypt on a fatal error.  */
 static void
@@ -100,7 +79,6 @@ my_gcry_outofcore_handler (void *opaque, size_t req_n, unsigned int flags)
 void
 setup_libgcrypt_logging (void)
 {
-  gcry_set_log_handler (my_gcry_logger, NULL);
   gcry_set_fatalerror_handler (my_gcry_fatalerror_handler, NULL);
   gcry_set_outofcore_handler (my_gcry_outofcore_handler, NULL);
 }

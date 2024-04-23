@@ -132,29 +132,6 @@ my_strusage( int level )
 }
 
 
-/* Used by gcry for logging */
-static void
-my_gcry_logger (void *dummy, int level, const char *fmt, va_list arg_ptr)
-{
-  (void)dummy;
-
-  /* Map the log levels.  */
-  switch (level)
-    {
-    case GCRY_LOG_CONT: level = GPGRT_LOGLVL_CONT; break;
-    case GCRY_LOG_INFO: level = GPGRT_LOGLVL_INFO; break;
-    case GCRY_LOG_WARN: level = GPGRT_LOGLVL_WARN; break;
-    case GCRY_LOG_ERROR:level = GPGRT_LOGLVL_ERROR; break;
-    case GCRY_LOG_FATAL:level = GPGRT_LOGLVL_FATAL; break;
-    case GCRY_LOG_BUG:  level = GPGRT_LOGLVL_BUG; break;
-    case GCRY_LOG_DEBUG:level = GPGRT_LOGLVL_DEBUG; break;
-    default:            level = GPGRT_LOGLVL_ERROR; break;
-    }
-  log_logv (level, fmt, arg_ptr);
-}
-
-
-
 /*  static void */
 /*  wrong_args( const char *text ) */
 /*  { */
@@ -480,8 +457,6 @@ main (int argc, char **argv)
   /* Make sure that our subsystems are ready.  */
   i18n_init ();
   init_common_subsystems (&argc, &argv);
-
-  gcry_set_log_handler (my_gcry_logger, NULL);
 
   /*create_dotlock(NULL); register locking cleanup */
 

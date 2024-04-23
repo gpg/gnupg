@@ -137,14 +137,6 @@ gcry_set_fatalerror_handler (gcry_handler_error_t fnc, void *opaque)
 }
 
 void
-gcry_set_log_handler (gcry_handler_log_t f, void *opaque)
-{
-  (void)f;
-  (void)opaque;
-}
-
-
-void
 gcry_create_nonce (void *buffer, size_t length)
 {
   (void)buffer;
