@@ -29,6 +29,75 @@
 #include "agent.h"
 #include "../common/openpgpdefs.h"
 
+
+/* Table with parameters for KEM decryption.  Use get_ecc_parms to
+ * find an entry.  */
+struct ecc_params
+{
+  const char *curve;            /* Canonical name of the curve.  */
+  size_t pubkey_len;            /* Pubkey in the SEXP representation.   */
+  size_t scalar_len;
+  size_t point_len;
+  size_t shared_len;
+  int hash_algo;
+  int algo;
+  int scalar_reverse;
+};
+
+static const struct ecc_params ecc_table[] =
+  {
+    {
+      "Curve25519",
+      33, 32, 32, 32,
+      GCRY_MD_SHA3_256, GCRY_KEM_RAW_X25519,
+      1
+    },
+    {
+      "X448",
+      56, 56, 56, 64,
+      GCRY_MD_SHA3_512, GCRY_KEM_RAW_X448,
+      0
+    },
+    {
+      "brainpoolP256r1",
+      65, 32, 65, 32,
+      GCRY_MD_SHA3_256, GCRY_KEM_RAW_BP256,
+      0
+    },
+    {
+      "brainpoolP384r1",
+      97, 48, 97, 64,
+      GCRY_MD_SHA3_512, GCRY_KEM_RAW_BP384,
+      0
+    },
+    { NULL, 0, 0, 0, 0, 0, 0, 0 }
+};
+
+
+/* Maximum buffer sizes required for ECC KEM.  Keep this aligned to
+ * the ecc_table above.  */
+#define ECC_SCALAR_LEN_MAX 64
+#define ECC_POINT_LEN_MAX (1+2*64)
+#define ECC_HASH_LEN_MAX 64
+
+
+
+/* Return the ECC parameters for CURVE.  CURVE is expected to be the
+ * canonical name.  */
+static const struct ecc_params *
+get_ecc_params (const char *curve)
+{
+  int i;
+
+  for (i = 0; ecc_table[i].curve; i++)
+    if (!strcmp (ecc_table[i].curve, curve))
+      return &ecc_table[i];
+
+  return NULL;
+}
+
+
+
 /* DECRYPT the stuff in ciphertext which is expected to be a S-Exp.
    Try to get the key from CTRL and write the decoded stuff back to
    OUTFP.   The padding information is stored at R_PADDING with -1
@@ -173,62 +242,6 @@ reverse_buffer (unsigned char *buffer, unsigned int length)
     }
 }
 
-struct ecc_params
-{
-  const char *curve;
-  size_t pubkey_len;            /* Pubkey in the SEXP representation.   */
-  size_t scalar_len;
-  size_t point_len;
-  size_t shared_len;
-  int hash_algo;
-  int algo;
-  int scalar_reverse;
-};
-
-static const struct ecc_params ecc_table[] =
-  {
-    {
-      "Curve25519",
-      33, 32, 32, 32,
-      GCRY_MD_SHA3_256, GCRY_KEM_RAW_X25519,
-      1
-    },
-    {
-      "X448",
-      56, 56, 56, 64,
-      GCRY_MD_SHA3_512, GCRY_KEM_RAW_X448,
-      0
-    },
-    {
-      "brainpoolP256r1",
-      65, 32, 65, 32,
-      GCRY_MD_SHA3_256, GCRY_KEM_RAW_BP256,
-      0
-    },
-    {
-      "brainpoolP384r1",
-      97, 48, 97, 64,
-      GCRY_MD_SHA3_512, GCRY_KEM_RAW_BP384,
-      0
-    },
-    { NULL, 0, 0, 0, 0, 0, 0, 0 }
-};
-
-static const struct ecc_params *
-get_ecc_params (const char *curve)
-{
-  int i;
-
-  for (i = 0; ecc_table[i].curve; i++)
-    if (!strcmp (ecc_table[i].curve, curve))
-      return &ecc_table[i];
-
-  return NULL;
-}
-
-#define ECC_SCALAR_LEN_MAX 64
-#define ECC_POINT_LEN_MAX (1+2*64)
-#define ECC_HASH_LEN_MAX 64
 
 /* For composite PGP KEM (ECC+ML-KEM), decrypt CIPHERTEXT using KEM API.
    First keygrip is for ECC, second keygrip is for PQC.  CIPHERTEXT
@@ -247,7 +260,6 @@ static gpg_error_t
 composite_pgp_kem_decrypt (ctrl_t ctrl, const char *desc_text,
                            gcry_sexp_t s_cipher, membuf_t *outbuf)
 {
-#if GCRYPT_VERSION_NUMBER >= 0x010b00
   gcry_sexp_t s_skey0 = NULL;
   gcry_sexp_t s_skey1 = NULL;
   unsigned char *shadow_info = NULL;
@@ -579,9 +591,6 @@ composite_pgp_kem_decrypt (ctrl_t ctrl, const char *desc_text,
   gcry_sexp_release (s_skey0);
   gcry_sexp_release (s_skey1);
   return err;
-#else
-  return gpg_error (GPG_ERR_NOT_IMPLEMENTED);
-#endif
 }
 
 /* DECRYPT the encrypted stuff (like encrypted session key) in
