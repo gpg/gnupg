@@ -175,7 +175,6 @@ reverse_buffer (unsigned char *buffer, unsigned int length)
 
 struct ecc_params
 {
-  int name_len;
   const char *curve;
   size_t pubkey_len;            /* Pubkey in the SEXP representation.   */
   size_t scalar_len;
@@ -189,39 +188,39 @@ struct ecc_params
 static const struct ecc_params ecc_table[] =
   {
     {
-      10, "Curve25519",
+      "Curve25519",
       33, 32, 32, 32,
       GCRY_MD_SHA3_256, GCRY_KEM_RAW_X25519,
       1
     },
     {
-      4, "X448",
+      "X448",
       56, 56, 56, 64,
       GCRY_MD_SHA3_512, GCRY_KEM_RAW_X448,
       0
     },
     {
-      15, "brainpoolP256r1",
+      "brainpoolP256r1",
       65, 32, 65, 32,
       GCRY_MD_SHA3_256, GCRY_KEM_RAW_BP256,
       0
     },
     {
-      15, "brainpoolP384r1",
+      "brainpoolP384r1",
       97, 48, 97, 64,
       GCRY_MD_SHA3_512, GCRY_KEM_RAW_BP384,
       0
     },
-    { 0, NULL, 0, 0, 0, 0, 0, 0, 0 }
+    { NULL, 0, 0, 0, 0, 0, 0, 0 }
 };
 
 static const struct ecc_params *
-get_ecc_params (const char *curve, size_t curve_len)
+get_ecc_params (const char *curve)
 {
-  int i, name_len;
+  int i;
 
-  for (i = 0; (name_len = ecc_table[i].name_len); i++)
-    if (name_len == curve_len && !memcmp (ecc_table[i].curve, curve, name_len))
+  for (i = 0; ecc_table[i].curve; i++)
+    if (!strcmp (ecc_table[i].curve, curve))
       return &ecc_table[i];
 
   return NULL;
@@ -292,7 +291,7 @@ composite_pgp_kem_decrypt (ctrl_t ctrl, const char *desc_text,
   gcry_buffer_t fixed_info = { 0, 0, 0, NULL };
 
   gcry_sexp_t curve = NULL;
-  const char *curve_name;
+  char *curve_name = NULL;
 
   err = agent_key_from_file (ctrl, NULL, desc_text,
                              ctrl->keygrip, &shadow_info,
@@ -347,8 +346,8 @@ composite_pgp_kem_decrypt (ctrl_t ctrl, const char *desc_text,
       goto leave;
     }
 
-  curve_name = gcry_sexp_nth_data (curve, 1, &len);
-  ecc = get_ecc_params (curve_name, len);
+  curve_name = gcry_sexp_nth_string (curve, 1);
+  ecc = get_ecc_params (curve_name);
   if (!ecc)
     {
       if (opt.verbose)
@@ -436,7 +435,7 @@ composite_pgp_kem_decrypt (ctrl_t ctrl, const char *desc_text,
     log_printhex (ecc_ecdh, ecc->point_len, "ECC     ecdh:");
 
   err = gnupg_ecc_kem_kdf (ecc_ss, ecc->shared_len, ecc->hash_algo,
-                           ecc_ecdh, ecc->scalar_len, ecc_ct, ecc->point_len,
+                           ecc_ecdh, ecc->point_len, ecc_ct, ecc->point_len,
                            ecc_pk, ecc->point_len);
   if (err)
     {
@@ -509,9 +508,8 @@ composite_pgp_kem_decrypt (ctrl_t ctrl, const char *desc_text,
 
   /* Then, combine two shared secrets and ciphertexts into one KEK */
   err = gnupg_kem_combiner (kek, kek_len,
-                            ecc_ss, 32, ecc_ct, 32,
-                            mlkem_ss, GCRY_KEM_MLKEM768_SHARED_LEN,
-                            mlkem_ct, GCRY_KEM_MLKEM768_CIPHER_LEN,
+                            ecc_ss, ecc->shared_len, ecc_ct, ecc->point_len,
+                            mlkem_ss, mlkem_ss_len, mlkem_ct, mlkem_ct_len,
                             fixed_info.data, fixed_info.size);
   if (err)
     {
@@ -577,6 +575,7 @@ composite_pgp_kem_decrypt (ctrl_t ctrl, const char *desc_text,
   mpi_release (encrypted_sessionkey_mpi);
   gcry_free (fixed_info.data);
   gcry_sexp_release (curve);
+  xfree (curve_name);
   gcry_sexp_release (s_skey0);
   gcry_sexp_release (s_skey1);
   return err;
