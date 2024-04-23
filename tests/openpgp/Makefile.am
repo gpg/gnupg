@@ -218,7 +218,16 @@ priv_keys = privkeys/50B2D4FA4122C212611048BC5FC31BD44393626E.asc \
             privkeys/8B2E1355C97C34E0AC1CBC9DFDF2526BFE8990A7.key \
             privkeys/F5DB116462B7BD2FA83A4453C4DFA2AE8604FB59.key \
             privkeys/8F9ABF3E5BBFC50D168DD524EB8F7263E7B33859.key \
-            privkeys/A1598F57316F7FEC3F946895E35A7D2EAE8D3A13.key
+            privkeys/A1598F57316F7FEC3F946895E35A7D2EAE8D3A13.key \
+	    privkeys/19C87B74004E9839F3D56992B0A9943BF90B56F7.key \
+	    privkeys/513906BEA5A40F25C9D6EBBCEF62D0784E7235A5.key \
+	    privkeys/6EC551A7895031EE4543A1C789E16E6A6C229CFC.key \
+	    privkeys/702F599E35E6E0BE68E6FDF25D887229D42780F7.key \
+	    privkeys/7C31A4A632A49C4E8B1C8CBA53976ADFF714510F.key \
+	    privkeys/A1ABFD89944870D04039D40C218EE127254AEEE9.key \
+	    privkeys/A87B85D88DB8B2B5A62A9958C8F2878F49605D09.key \
+	    privkeys/D54E9B75C3541D95C45E430DAC9645E9FB62C668.key \
+	    privkeys/EAD718DCE3D2F33A20BFC8BA617844DEF3FFAF3A.key
 
 
 sample_keys = samplekeys/README \
@@ -248,7 +257,10 @@ sample_keys = samplekeys/README \
 	      samplekeys/authenticate-only.pub.asc \
 	      samplekeys/authenticate-only.sec.asc \
               samplekeys/pqc-sample-1.key.asc \
-              samplekeys/pqc-sample-2.key.asc
+              samplekeys/pqc-sample-2.key.asc \
+              samplekeys/pqc-sample-3.key.asc \
+              samplekeys/pqc-sample-4.key.asc \
+              samplekeys/pqc-sample-5.key.asc
 
 sample_msgs = samplemsgs/clearsig-1-key-1.asc \
 	      samplemsgs/clearsig-2-keys-1.asc \
@@ -283,7 +295,10 @@ sample_msgs = samplemsgs/clearsig-1-key-1.asc \
 	      samplemsgs/signed-2-keys-1.asc \
 	      samplemsgs/signed-2-keys-2.asc \
               samplemsgs/pqc-sample-1.enc.asc \
-              samplemsgs/pqc-sample-2.enc.asc
+              samplemsgs/pqc-sample-2.enc.asc \
+              samplemsgs/pqc-sample-3.enc.asc \
+              samplemsgs/pqc-sample-4.enc.asc \
+              samplemsgs/pqc-sample-5.enc.asc
 
 EXTRA_DIST = defs.scm trust-pgp/common.scm $(XTESTS) $(TEST_FILES) \
 	     mkdemodirs signdemokey $(priv_keys) $(sample_keys)   \

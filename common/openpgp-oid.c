@@ -69,7 +69,8 @@ static struct {
     0, GCRY_KEM_RAW_BP256 },
   { "brainpoolP384r1", "1.3.36.3.3.2.8.1.1.11",  384, NULL, "bp384",
     0, GCRY_KEM_RAW_BP384 },
-  { "brainpoolP512r1", "1.3.36.3.3.2.8.1.1.13",  512, NULL, "bp512" },
+  { "brainpoolP512r1", "1.3.36.3.3.2.8.1.1.13",  512, NULL, "bp512",
+    0, GCRY_KEM_RAW_BP512 },
 
   { "secp256k1",       "1.3.132.0.10",           256 },
 

@@ -554,6 +554,22 @@ do_encrypt_kem (PKT_public_key *pk, gcry_mpi_t data, int seskey_algo,
       ecc_ss_len = 64;
       ecc_hash_algo = GCRY_MD_SHA3_512;
     }
+  else if (ecc_algo == GCRY_KEM_RAW_BP512)
+    {
+      ecc_pubkey = gcry_mpi_get_opaque (pk->pkey[1], &nbits);
+      ecc_pubkey_len = (nbits+7)/8;
+      if (ecc_pubkey_len != 129)
+        {
+          if (opt.verbose)
+            log_info ("%s: ECC public key length invalid (%zu)\n",
+                      __func__, ecc_pubkey_len);
+          err = gpg_error (GPG_ERR_INV_DATA);
+          goto leave;
+        }
+      ecc_ct_len = ecc_ecdh_len = 129;
+      ecc_ss_len = 64;
+      ecc_hash_algo = GCRY_MD_SHA3_512;
+    }
   else
     {
       if (opt.verbose)

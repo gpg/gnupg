@@ -70,6 +70,12 @@ static const struct ecc_params ecc_table[] =
       GCRY_MD_SHA3_512, GCRY_KEM_RAW_BP384,
       0
     },
+    {
+      "brainpoolP512r1",
+      129, 64, 129, 64,
+      GCRY_MD_SHA3_512, GCRY_KEM_RAW_BP512,
+      0
+    },
     { NULL, 0, 0, 0, 0, 0, 0, 0 }
 };
 

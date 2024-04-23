@@ -25,6 +25,9 @@ v5-sample-1-pub.asc    A version 5 key (ed25519/cert,sign,v5+cv25519/v5)
 v5-sample-1-sec.asc    Ditto, but the secret keyblock (unprotected).
 pqc-sample-1.key.asc   ky768_cv25519 public key.  [*]
 pqc-sample-2.key.asc   ky1024_cv448 public key. [*]
+pqc-sample-3.key.asc   ky768_bp256 public key. [*]
+pqc-sample-4.key.asc   ky1024_bp384 public key. [*]
+pqc-sample-5.key.asc   ky1024_bp384 public key. [*]
 
 
 Notes:
