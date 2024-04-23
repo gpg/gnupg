@@ -1171,6 +1171,19 @@ dump_attribs (const PKT_user_id *uid, PKT_public_key *pk)
 }
 
 
+static void
+print_keygrip (const char *keygrip)
+{
+  const char *s;
+
+  s = strchr (keygrip, ',');
+  if (s)
+    es_fprintf (es_stdout, "      Keygrip = %.*s,\n%*s%s\n",
+                (int)(s-keygrip), keygrip, 16, "", s+1);
+  else
+    es_fprintf (es_stdout, "      Keygrip = %s\n", keygrip);
+}
+
 
 /* If PK is given the output is written to a new file instead of
  * stdout.  */
@@ -1513,7 +1526,7 @@ list_keyblock_print (ctrl_t ctrl, kbnode_t keyblock, int secret, int fpr,
     print_fingerprint (ctrl, NULL, pk, 0);
 
   if (opt.with_keygrip && hexgrip)
-    es_fprintf (es_stdout, "      Keygrip = %s\n", hexgrip);
+    print_keygrip (hexgrip);
 
   if (serialno)
     print_card_serialno (serialno);
@@ -1670,7 +1683,7 @@ list_keyblock_print (ctrl_t ctrl, kbnode_t keyblock, int secret, int fpr,
                 print_card_serialno (serialno);
             }
           if (opt.with_keygrip && hexgrip)
-            es_fprintf (es_stdout, "      Keygrip = %s\n", hexgrip);
+            print_keygrip (hexgrip);
 	  if (opt.with_key_data)
 	    print_key_data (pk2);
           if (opt.with_key_screening)
