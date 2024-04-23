@@ -457,6 +457,9 @@ get_it (ctrl_t ctrl,
       log_info (_("WARNING: cipher algorithm %s not found in recipient"
                   " preferences\n"), openpgp_cipher_algo_name (dek->algo));
 
+    /* if (!err && 25519 && openpgp_oidbuf_is_ed25519 (curve, len)) */
+    /*   log_info ("Note: legacy OID was used for cv25519\n"); */
+
     if (!err)
       {
         kbnode_t k;
