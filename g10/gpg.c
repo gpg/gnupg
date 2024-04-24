@@ -456,6 +456,7 @@ enum cmd_and_opt_values
     oAssertSigner,
     oAssertPubkeyAlgo,
     oKbxBufferSize,
+    oRequirePQCEncryption,
 
     oNoop
   };
@@ -896,7 +897,7 @@ static gpgrt_opt_t opts[] = {
   ARGPARSE_s_s (oCipherAlgo, "cipher-algo", "@"),
   ARGPARSE_s_s (oDigestAlgo, "digest-algo", "@"),
   ARGPARSE_s_s (oCertDigestAlgo, "cert-digest-algo", "@"),
-
+  ARGPARSE_s_n (oRequirePQCEncryption, "require-pqc-encryption", "@"),
 
   ARGPARSE_header (NULL, N_("Options for unattended use")),
 
@@ -3071,6 +3072,9 @@ main (int argc, char **argv)
             break;
 
 	  case oMinRSALength: opt.min_rsa_length = pargs.r.ret_ulong; break;
+          case oRequirePQCEncryption:
+            opt.flags.require_pqc_encryption = 1;
+            break;
 
           case oRFC2440Text: opt.rfc2440_text=1; break;
           case oNoRFC2440Text: opt.rfc2440_text=0; break;

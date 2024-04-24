@@ -3779,6 +3779,16 @@ finish_lookup (kbnode_t keyblock, unsigned int req_usage, int want_exact,
 	      continue;
 	    }
 
+          if (opt.flags.require_pqc_encryption
+              && (req_usage & PUBKEY_USAGE_ENC)
+              && pk->pubkey_algo != PUBKEY_ALGO_KYBER)
+            {
+	      if (DBG_LOOKUP)
+		log_debug ("\tsubkey is not quantum-resistant\n");
+              continue;
+            }
+
+
           if (want_secret)
             {
               int secret_key_avail = agent_probe_secret_key (NULL, pk);
@@ -3857,6 +3867,13 @@ finish_lookup (kbnode_t keyblock, unsigned int req_usage, int want_exact,
 	  if (DBG_LOOKUP)
 	    log_debug ("\tprimary key has expired\n");
 	}
+      else if (opt.flags.require_pqc_encryption
+               && (req_usage & PUBKEY_USAGE_ENC)
+               && pk->pubkey_algo != PUBKEY_ALGO_KYBER)
+        {
+          if (DBG_LOOKUP)
+            log_debug ("\tprimary key is not quantum-resistant\n");
+        }
       else /* Okay.  */
 	{
 	  if (DBG_LOOKUP)

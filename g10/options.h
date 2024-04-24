@@ -283,6 +283,7 @@ struct
     /* Fail if an operation can't be done in the requested compliance
      * mode.  */
     unsigned int require_compliance:1;
+    unsigned int require_pqc_encryption:1;
   } flags;
 
   /* Linked list of ways to find a key if the key isn't on the local

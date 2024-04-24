@@ -578,6 +578,10 @@ print_pkenc_list (ctrl_t ctrl, struct pubkey_enc_list *list)
                   openpgp_pk_algo_name (list->pubkey_algo),
                   keystr(list->keyid));
 
+      if (opt.flags.require_pqc_encryption
+          && pk->pubkey_algo != PUBKEY_ALGO_KYBER)
+        log_info (_("WARNING: key is not quantum-resistant\n"));
+
       free_public_key (pk);
     }
 }
