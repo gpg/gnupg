@@ -244,26 +244,11 @@ reverse_buffer (unsigned char *buffer, unsigned int length)
 }
 
 
-/* For composite PGP KEM (ECC+ML-KEM), decrypt CIPHERTEXT using KEM API.
-   First keygrip is for ECC, second keygrip is for PQC.  CIPHERTEXT
-   should follow the format of:
-
-	(enc-val(pqc(c%d)(e%m)(k%m)(s%m)(fixed-info&)))
-        c: cipher identifier (symmetric)
-        e: ECDH ciphertext
-        k: ML-KEM ciphertext
-        s: encrypted session key
-        fixed-info: A buffer with the fixed info.
-
-   FIXME: For now, possible keys on smartcard are not supported.
-  */
 static gpg_error_t
-composite_pgp_kem_decrypt (ctrl_t ctrl, const char *desc_text,
-                           gcry_sexp_t s_cipher, membuf_t *outbuf)
+ecc_pgp_kem_decrypt (ctrl_t ctrl, gcry_sexp_t s_skey0,
+                     const unsigned char *ecc_ct, size_t ecc_ct_len,
+                     unsigned char *ecc_ss, size_t *r_shared_len, size_t *r_point_len)
 {
-  gcry_sexp_t s_skey0 = NULL;
-  gcry_sexp_t s_skey1 = NULL;
-  unsigned char *shadow_info = NULL;
   gpg_error_t err = 0;
   const struct ecc_params *ecc;
 
@@ -271,92 +256,23 @@ composite_pgp_kem_decrypt (ctrl_t ctrl, const char *desc_text,
   const unsigned char *p;
   size_t len;
 
-  int algo;
-  gcry_mpi_t encrypted_sessionkey_mpi = NULL;
-  const unsigned char *encrypted_sessionkey;
-  size_t encrypted_sessionkey_len;
-
   gcry_mpi_t ecc_sk_mpi = NULL;
   unsigned char ecc_sk[ECC_SCALAR_LEN_MAX];
   gcry_mpi_t ecc_pk_mpi = NULL;
   unsigned char ecc_pk[ECC_POINT_LEN_MAX];
-  gcry_mpi_t ecc_ct_mpi = NULL;
-  const unsigned char *ecc_ct;
   unsigned char ecc_ecdh[ECC_POINT_LEN_MAX];
-  unsigned char ecc_ss[ECC_HASH_LEN_MAX];
-
-  enum gcry_kem_algos mlkem_kem_algo;
-  gcry_mpi_t mlkem_sk_mpi = NULL;
-  gcry_mpi_t mlkem_ct_mpi = NULL;
-  const unsigned char *mlkem_sk;
-  size_t mlkem_sk_len;
-  const unsigned char *mlkem_ct;
-  size_t mlkem_ct_len;
-  unsigned char mlkem_ss[GCRY_KEM_MLKEM1024_SHARED_LEN];
-  size_t mlkem_ss_len;
-
-  unsigned char kek[32];
-  size_t kek_len = 32;        /* AES-256 is mandatory */
-
-  gcry_cipher_hd_t hd;
-  unsigned char sessionkey[256];
-  size_t sessionkey_len;
-  gcry_buffer_t fixed_info = { 0, 0, 0, NULL };
 
   gcry_sexp_t curve = NULL;
   char *curve_name = NULL;
 
-  err = agent_key_from_file (ctrl, NULL, desc_text,
-                             ctrl->keygrip, &shadow_info,
-                             CACHE_MODE_NORMAL, NULL, &s_skey0, NULL, NULL);
-  if (err)
-    {
-      log_error ("failed to read the secret key\n");
-      goto leave;
-    }
+  (void)ctrl;
 
-  err = agent_key_from_file (ctrl, NULL, desc_text,
-                             ctrl->keygrip1, &shadow_info,
-                             CACHE_MODE_NORMAL, NULL, &s_skey1, NULL, NULL);
-  if (err)
-    {
-      log_error ("failed to read the another secret key\n");
-      goto leave;
-    }
-
-  /* Here assumes no smartcard, but private keys */
-
-  err = gcry_sexp_extract_param (s_cipher, NULL, "%dc/eks&'fixed-info'",
-                                 &algo, &ecc_ct_mpi, &mlkem_ct_mpi,
-                                 &encrypted_sessionkey_mpi, &fixed_info, NULL);
-  if (err)
-    {
-      if (opt.verbose)
-        log_info ("%s: extracting parameters failed\n", __func__);
-      goto leave;
-    }
-
-  len = gcry_cipher_get_algo_keylen (algo);
-  encrypted_sessionkey = gcry_mpi_get_opaque (encrypted_sessionkey_mpi, &nbits);
-  encrypted_sessionkey_len = (nbits+7)/8;
-  if (len == 0 || encrypted_sessionkey_len != len + 8)
-    {
-      if (opt.verbose)
-        log_info ("%s: encrypted session key length %zu"
-                  " does not match the length for algo %d\n",
-                  __func__, encrypted_sessionkey_len, algo);
-      err = gpg_error (GPG_ERR_INV_DATA);
-      goto leave;
-    }
-
-  /* Firstly, ECC part.  */
   curve = gcry_sexp_find_token (s_skey0, "curve", 0);
   if (!curve)
     {
       if (opt.verbose)
         log_info ("%s: no curve given\n", __func__);
-      err = gpg_error (GPG_ERR_BAD_SECKEY);
-      goto leave;
+      return gpg_error (GPG_ERR_BAD_SECKEY);
     }
 
   curve_name = gcry_sexp_nth_string (curve, 1);
@@ -366,6 +282,18 @@ composite_pgp_kem_decrypt (ctrl_t ctrl, const char *desc_text,
       if (opt.verbose)
         log_info ("%s: curve '%s' not supported\n", __func__, curve_name);
       err = gpg_error (GPG_ERR_BAD_SECKEY);
+      goto leave;
+    }
+
+  *r_shared_len = ecc->shared_len;
+  *r_point_len = ecc->point_len;
+
+  if (ecc->point_len != ecc_ct_len)
+    {
+      if (opt.verbose)
+        log_info ("%s: ECC cipher text length invalid (%zu)\n",
+                  __func__, ecc->point_len);
+      err = gpg_error (GPG_ERR_INV_DATA);
       goto leave;
     }
 
@@ -417,16 +345,6 @@ composite_pgp_kem_decrypt (ctrl_t ctrl, const char *desc_text,
   mpi_release (ecc_sk_mpi);
   ecc_sk_mpi = NULL;
 
-  ecc_ct = gcry_mpi_get_opaque (ecc_ct_mpi, &nbits);
-  if (ecc->point_len != (nbits+7)/8)
-    {
-      if (opt.verbose)
-        log_info ("%s: ECC cipher text length invalid (%zu)\n",
-                  __func__, ecc->point_len);
-      err = gpg_error (GPG_ERR_INV_DATA);
-      goto leave;
-    }
-
   if (DBG_CRYPTO)
     {
       log_debug ("ECC    curve: %s\n", curve_name);
@@ -459,6 +377,123 @@ composite_pgp_kem_decrypt (ctrl_t ctrl, const char *desc_text,
 
   if (DBG_CRYPTO)
     log_printhex (ecc_ss, ecc->shared_len, "ECC   shared:");
+
+ leave:
+  wipememory (ecc_sk, sizeof ecc_sk);
+  wipememory (ecc_ecdh, sizeof ecc_ecdh);
+
+  mpi_release (ecc_pk_mpi);
+  mpi_release (ecc_sk_mpi);
+  xfree (curve_name);
+  gcry_sexp_release (curve);
+  return err;
+}
+
+/* For composite PGP KEM (ECC+ML-KEM), decrypt CIPHERTEXT using KEM API.
+   First keygrip is for ECC, second keygrip is for PQC.  CIPHERTEXT
+   should follow the format of:
+
+	(enc-val(pqc(c%d)(e%m)(k%m)(s%m)(fixed-info&)))
+        c: cipher identifier (symmetric)
+        e: ECDH ciphertext
+        k: ML-KEM ciphertext
+        s: encrypted session key
+        fixed-info: A buffer with the fixed info.
+
+   FIXME: For now, possible keys on smartcard are not supported.
+  */
+static gpg_error_t
+composite_pgp_kem_decrypt (ctrl_t ctrl, const char *desc_text,
+                           gcry_sexp_t s_cipher, membuf_t *outbuf)
+{
+  gcry_sexp_t s_skey0 = NULL;
+  gcry_sexp_t s_skey1 = NULL;
+  unsigned char *shadow_info = NULL;
+  gpg_error_t err = 0;
+
+  unsigned int nbits;
+  size_t len;
+
+  int algo;
+  gcry_mpi_t encrypted_sessionkey_mpi = NULL;
+  const unsigned char *encrypted_sessionkey;
+  size_t encrypted_sessionkey_len;
+
+  gcry_mpi_t ecc_ct_mpi = NULL;
+  const unsigned char *ecc_ct;
+  size_t ecc_ct_len;
+  unsigned char ecc_ss[ECC_HASH_LEN_MAX];
+  size_t ecc_shared_len, ecc_point_len;
+
+  enum gcry_kem_algos mlkem_kem_algo;
+  gcry_mpi_t mlkem_sk_mpi = NULL;
+  gcry_mpi_t mlkem_ct_mpi = NULL;
+  const unsigned char *mlkem_sk;
+  size_t mlkem_sk_len;
+  const unsigned char *mlkem_ct;
+  size_t mlkem_ct_len;
+  unsigned char mlkem_ss[GCRY_KEM_MLKEM1024_SHARED_LEN];
+  size_t mlkem_ss_len;
+
+  unsigned char kek[32];
+  size_t kek_len = 32;        /* AES-256 is mandatory */
+
+  gcry_cipher_hd_t hd;
+  unsigned char sessionkey[256];
+  size_t sessionkey_len;
+  gcry_buffer_t fixed_info = { 0, 0, 0, NULL };
+
+  err = agent_key_from_file (ctrl, NULL, desc_text,
+                             ctrl->keygrip, &shadow_info,
+                             CACHE_MODE_NORMAL, NULL, &s_skey0, NULL, NULL);
+  if (err)
+    {
+      log_error ("failed to read the secret key\n");
+      goto leave;
+    }
+
+  err = agent_key_from_file (ctrl, NULL, desc_text,
+                             ctrl->keygrip1, &shadow_info,
+                             CACHE_MODE_NORMAL, NULL, &s_skey1, NULL, NULL);
+  if (err)
+    {
+      log_error ("failed to read the another secret key\n");
+      goto leave;
+    }
+
+  /* Here assumes no smartcard, but private keys */
+
+  err = gcry_sexp_extract_param (s_cipher, NULL, "%dc/eks&'fixed-info'",
+                                 &algo, &ecc_ct_mpi, &mlkem_ct_mpi,
+                                 &encrypted_sessionkey_mpi, &fixed_info, NULL);
+  if (err)
+    {
+      if (opt.verbose)
+        log_info ("%s: extracting parameters failed\n", __func__);
+      goto leave;
+    }
+
+  ecc_ct = gcry_mpi_get_opaque (ecc_ct_mpi, &nbits);
+  ecc_ct_len = (nbits+7)/8;
+
+  len = gcry_cipher_get_algo_keylen (algo);
+  encrypted_sessionkey = gcry_mpi_get_opaque (encrypted_sessionkey_mpi, &nbits);
+  encrypted_sessionkey_len = (nbits+7)/8;
+  if (len == 0 || encrypted_sessionkey_len != len + 8)
+    {
+      if (opt.verbose)
+        log_info ("%s: encrypted session key length %zu"
+                  " does not match the length for algo %d\n",
+                  __func__, encrypted_sessionkey_len, algo);
+      err = gpg_error (GPG_ERR_INV_DATA);
+      goto leave;
+    }
+
+  /* Firstly, ECC part.  */
+  err = ecc_pgp_kem_decrypt (ctrl, s_skey0, ecc_ct, ecc_ct_len,
+                             ecc_ss, &ecc_shared_len, &ecc_point_len);
+  if (err)
+    goto leave;
 
   /* Secondly, PQC part.  For now, we assume ML-KEM.  */
   err = gcry_sexp_extract_param (s_skey1, NULL, "/s", &mlkem_sk_mpi, NULL);
@@ -521,7 +556,7 @@ composite_pgp_kem_decrypt (ctrl_t ctrl, const char *desc_text,
 
   /* Then, combine two shared secrets and ciphertexts into one KEK */
   err = gnupg_kem_combiner (kek, kek_len,
-                            ecc_ss, ecc->shared_len, ecc_ct, ecc->point_len,
+                            ecc_ss, ecc_shared_len, ecc_ct, ecc_point_len,
                             mlkem_ss, mlkem_ss_len, mlkem_ct, mlkem_ct_len,
                             fixed_info.data, fixed_info.size);
   if (err)
@@ -573,22 +608,16 @@ composite_pgp_kem_decrypt (ctrl_t ctrl, const char *desc_text,
   put_membuf (outbuf, ")", 2);
 
  leave:
-  wipememory (ecc_sk, sizeof ecc_sk);
-  wipememory (ecc_ecdh, sizeof ecc_ecdh);
   wipememory (ecc_ss, sizeof ecc_ss);
   wipememory (mlkem_ss, sizeof mlkem_ss);
   wipememory (kek, sizeof kek);
   wipememory (sessionkey, sizeof sessionkey);
 
-  mpi_release (mlkem_sk_mpi);
-  mpi_release (ecc_pk_mpi);
-  mpi_release (ecc_sk_mpi);
   mpi_release (ecc_ct_mpi);
+  mpi_release (mlkem_sk_mpi);
   mpi_release (mlkem_ct_mpi);
   mpi_release (encrypted_sessionkey_mpi);
   gcry_free (fixed_info.data);
-  gcry_sexp_release (curve);
-  xfree (curve_name);
   gcry_sexp_release (s_skey0);
   gcry_sexp_release (s_skey1);
   return err;
