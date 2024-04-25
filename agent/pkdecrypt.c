@@ -408,7 +408,8 @@ composite_pgp_kem_decrypt (ctrl_t ctrl, const char *desc_text,
 {
   gcry_sexp_t s_skey0 = NULL;
   gcry_sexp_t s_skey1 = NULL;
-  unsigned char *shadow_info = NULL;
+  unsigned char *shadow_info0 = NULL;
+  unsigned char *shadow_info1 = NULL;
   gpg_error_t err = 0;
 
   unsigned int nbits;
@@ -444,7 +445,7 @@ composite_pgp_kem_decrypt (ctrl_t ctrl, const char *desc_text,
   gcry_buffer_t fixed_info = { 0, 0, 0, NULL };
 
   err = agent_key_from_file (ctrl, NULL, desc_text,
-                             ctrl->keygrip, &shadow_info,
+                             ctrl->keygrip, &shadow_info0,
                              CACHE_MODE_NORMAL, NULL, &s_skey0, NULL, NULL);
   if (err)
     {
@@ -453,7 +454,7 @@ composite_pgp_kem_decrypt (ctrl_t ctrl, const char *desc_text,
     }
 
   err = agent_key_from_file (ctrl, NULL, desc_text,
-                             ctrl->keygrip1, &shadow_info,
+                             ctrl->keygrip1, &shadow_info1,
                              CACHE_MODE_NORMAL, NULL, &s_skey1, NULL, NULL);
   if (err)
     {
@@ -620,6 +621,8 @@ composite_pgp_kem_decrypt (ctrl_t ctrl, const char *desc_text,
   gcry_free (fixed_info.data);
   gcry_sexp_release (s_skey0);
   gcry_sexp_release (s_skey1);
+  xfree (shadow_info0);
+  xfree (shadow_info1);
   return err;
 }
 
