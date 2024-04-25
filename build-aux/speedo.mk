@@ -303,7 +303,7 @@ endif
 # Version numbers of the released packages
 gnupg_ver_this = $(shell cat $(topsrc)/VERSION)
 
-gnupg_ver        := $(shell awk '$$1=="gnupg24_ver" {print $$2}' swdb.lst)
+gnupg_ver        := $(shell awk '$$1=="gnupg26_ver" {print $$2}' swdb.lst)
 
 libgpg_error_ver := $(shell awk '$$1=="libgpg_error_ver" {print $$2}' swdb.lst)
 libgpg_error_sha1:= $(shell awk '$$1=="libgpg_error_sha1" {print $$2}' swdb.lst)
@@ -1292,7 +1292,7 @@ endef
 
 # Sign the file $1 and save the result as $2
 define AUTHENTICODE_sign
-   (set -e;
+   (set -e; \
     if gpg-authcode-sign.sh --version >/dev/null; then \
      gpg-authcode-sign.sh "$(1)" "$(2)"; \
    else \
