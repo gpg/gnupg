@@ -106,7 +106,8 @@ divert_tpm2_pkdecrypt (ctrl_t ctrl,
   const unsigned char *s;
   size_t n;
 
-  *r_padding = -1;
+  if (r_padding)
+    *r_padding = -1;
 
   s = cipher;
   if (*s != '(')
@@ -125,7 +126,8 @@ divert_tpm2_pkdecrypt (ctrl_t ctrl,
     return gpg_error (GPG_ERR_INV_SEXP);
   if (smatch (&s, n, "rsa"))
     {
-      *r_padding = 0;
+      if (r_padding)
+        *r_padding = 0;
       if (*s != '(')
         return gpg_error (GPG_ERR_UNKNOWN_SEXP);
       s++;

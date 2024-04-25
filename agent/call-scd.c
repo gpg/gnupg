@@ -548,7 +548,8 @@ padding_info_cb (void *opaque, const char *line)
 
   if ((s=has_leading_keyword (line, "PADDING")))
     {
-      *r_padding = atoi (s);
+      if (r_padding)
+        *r_padding = atoi (s);
     }
   else if ((s=has_leading_keyword (line, "PINCACHE_PUT")))
     err = handle_pincache_put (s);
@@ -560,8 +561,8 @@ padding_info_cb (void *opaque, const char *line)
 /* Decipher INDATA using the current card.  Note that the returned
  * value is not an s-expression but the raw data as returned by
  * scdaemon.  The padding information is stored at R_PADDING with -1
- * for not known.  DESC_TEXT is an additional parameter passed to
- * GETPIN_CB.  */
+ * for not known, when it's not NULL.  DESC_TEXT is an additional
+ * parameter passed to GETPIN_CB.  */
 int
 agent_card_pkdecrypt (ctrl_t ctrl,
                       const char *keyid,
@@ -579,7 +580,8 @@ agent_card_pkdecrypt (ctrl_t ctrl,
   size_t len;
 
   *r_buf = NULL;
-  *r_padding = -1; /* Unknown.  */
+  if (r_padding)
+    *r_padding = -1; /* Unknown.  */
   rc = start_scd (ctrl);
   if (rc)
     return rc;

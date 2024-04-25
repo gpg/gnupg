@@ -380,7 +380,7 @@ divert_pksign (ctrl_t ctrl, const unsigned char *grip,
 /* Decrypt the value given as an s-expression in CIPHER using the
    key identified by SHADOW_INFO and return the plaintext in an
    allocated buffer in R_BUF.  The padding information is stored at
-   R_PADDING with -1 for not known.  */
+   R_PADDING with -1 for not known, when it's not NULL.  */
 int
 divert_pkdecrypt (ctrl_t ctrl,
                   const unsigned char *grip,
@@ -399,7 +399,8 @@ divert_pkdecrypt (ctrl_t ctrl,
 
   bin2hex (grip, 20, hexgrip);
 
-  *r_padding = -1;
+  if (r_padding)
+    *r_padding = -1;
   s = cipher;
   if (*s != '(')
     return gpg_error (GPG_ERR_INV_SEXP);
