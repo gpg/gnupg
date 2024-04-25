@@ -54,6 +54,7 @@ endif
 AM_CFLAGS = $(LIBGCRYPT_CFLAGS) $(GPG_ERROR_CFLAGS) $(LIBASSUAN_CFLAGS)
 
 sbin_SCRIPTS = addgnupghome applygnupgdefaults
+bin_SCRIPTS = gpg-authcode-sign.sh
 
 if BUILD_WKS_TOOLS
   gpg_wks_server = gpg-wks-server
