@@ -24,7 +24,7 @@ WITH_MSI=1
 # Location of the released tarball archives.  This is prefixed by
 # the variable RELEASE_ARCHIVE in ~/.gnupg-autogen.rc.  For example:
 # RELEASE_ARCHIVE=user@host:archive/tarballs
-RELEASE_ARCHIVE_SUFFIX  = gnupg/v2.4
+RELEASE_ARCHIVE_SUFFIX  = gnupg/v2.5
 # The variable RELEASE_SIGNKEY in ~/.gnupg-autogen.rc is used
 # to specify the key for signing.  For example:
 # RELEASE_SIGNKEY=D8692123C4065DEA5E0F3AB5249B39D24F25E3B6

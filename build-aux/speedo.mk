@@ -43,58 +43,7 @@
 #
 # The information required to sign the tarballs and binaries
 # are expected in the developer specific file ~/.gnupg-autogen.rc".
-# Here is an example:
-#--8<---------------cut here---------------start------------->8---
-# # Location of the released tarball archives.  Note that this is an
-# # internal archive and before uploading this to the public server,
-# # manual tests should be run and the git release tagged and pushed.
-# # This is greped by the Makefile.
-# RELEASE_ARCHIVE=foo@somehost:tarball-archive
-#
-# # The key used to sign the GnuPG sources.
-# # This is greped by the Makefile.
-# RELEASE_SIGNKEY=6DAA6E64A76D2840571B4902528897B826403ADA
-#
-# # The key used to sign the VERSION files of some MSI installers.
-# VERSION_SIGNKEY=02F38DFF731FF97CB039A1DA549E695E905BA208
-#
-# # For signing Windows binaries we need to employ a Windows machine.
-# # We connect to this machine via ssh and take the connection
-# # parameters via .ssh/config. For example a VM could be specified
-# # like this:
-# #
-# #   Host authenticode-signhost
-# #        HostName localhost
-# #        Port 27042
-# #        User gpgsign
-# #
-# # Depending on the used token it might be necessary to allow single
-# # signon and unlock the token before running the make.  The following
-# # variable references this entry.  This is greped by the Makefile.
-# AUTHENTICODE_SIGNHOST=authenticode-signhost
-#
-# # The name of the signtool as used on Windows.
-# # This is greped by the Makefile.
-# AUTHENTICODE_TOOL="C:\Program Files (x86)\Windows Kits\10\bin\signtool.exe"
-#
-# # The URL for the timestamping service
-# AUTHENTICODE_TSURL=http://rfc3161timestamp.globalsign.com/advanced
-#
-# # To use osslsigncode the follwing entries are required and
-# # an empty string must be given for AUTHENTICODE_SIGNHOST.
-# # They are greped by the Makefile.
-# AUTHENTICODE_KEY=/home/foo/.gnupg/my-authenticode-key.p12
-# AUTHENTICODE_CERTS=/home/foo/.gnupg/my-authenticode-certs.pem
-#
-# # If a smartcard is used for the Authenticode signature these
-# # entries are required instead:
-# AUTHENTICODE_KEY=card
-# AUTHENTICODE_CERTS=/home/foo/.gnupg/my_authenticode_cert.pem
-# OSSLSIGNCODE=/usr/bin/osslsigncode
-# OSSLPKCS11ENGINE=/usr/lib/x86_64-linux-gnu/engines-1.1/pkcs11.so
-# SCUTEMODULE=/usr/local/lib/scute.so
-#
-#--8<---------------cut here---------------end--------------->8---
+# Use "gpg-authcode-sign.sh --template" to create a template.
 
 
 # We need to know our own name.
@@ -246,14 +195,6 @@ PATCHELF := $(shell patchelf --version 2>/dev/null >/dev/null || echo "echo plea
 define READ_AUTOGEN_template
 $(1) = $$(shell grep '^[[:blank:]]*$(1)[[:blank:]]*=' $$$$HOME/.gnupg-autogen.rc|cut -d= -f2|xargs)
 endef
-$(eval $(call READ_AUTOGEN_template,AUTHENTICODE_SIGNHOST))
-$(eval $(call READ_AUTOGEN_template,AUTHENTICODE_TOOL))
-$(eval $(call READ_AUTOGEN_template,AUTHENTICODE_TSURL))
-$(eval $(call READ_AUTOGEN_template,AUTHENTICODE_KEY))
-$(eval $(call READ_AUTOGEN_template,AUTHENTICODE_CERTS))
-$(eval $(call READ_AUTOGEN_template,OSSLSIGNCODE))
-$(eval $(call READ_AUTOGEN_template,OSSLPKCS11ENGINE))
-$(eval $(call READ_AUTOGEN_template,SCUTEMODULE))
 $(eval $(call READ_AUTOGEN_template,OVERRIDE_TARBALLS))
 
 
@@ -1351,35 +1292,13 @@ endef
 
 # Sign the file $1 and save the result as $2
 define AUTHENTICODE_sign
-   set -e;\
-   if [ -n "$(AUTHENTICODE_SIGNHOST)" ]; then \
-     echo "speedo: Signing via host $(AUTHENTICODE_SIGNHOST)";\
-     scp $(1) "$(AUTHENTICODE_SIGNHOST):a.exe" ;\
-     ssh "$(AUTHENTICODE_SIGNHOST)" '$(AUTHENTICODE_TOOL)' sign \
-        /a /n '"g10 Code GmbH"' \
-        /tr '$(AUTHENTICODE_TSURL)' /td sha256 \
-        /fd sha256 /du https://gnupg.org a.exe ;\
-     scp "$(AUTHENTICODE_SIGNHOST):a.exe" $(2);\
-     echo "speedo: signed file is '$(2)'" ;\
-   elif [ "$(AUTHENTICODE_KEY)" = card ]; then \
-     echo "speedo: Signing using a card: '$(1)'";\
-     $(OSSLSIGNCODE) sign \
-       -pkcs11engine $(OSSLPKCS11ENGINE) \
-       -pkcs11module $(SCUTEMODULE) \
-       -certs $(AUTHENTICODE_CERTS) \
-       -h sha256 -n GnuPG -i https://gnupg.org \
-       -ts $(AUTHENTICODE_TSURL) \
-       -in $(1) -out $(2).tmp ; mv $(2).tmp $(2) ; \
-   elif [ -e "$(AUTHENTICODE_KEY)" ]; then \
-     echo "speedo: Signing using key $(AUTHENTICODE_KEY)";\
-     osslsigncode sign -certs $(AUTHENTICODE_CERTS) \
-       -pkcs12 $(AUTHENTICODE_KEY) -askpass \
-       -ts "$(AUTHENTICODE_TSURL)" \
-       -h sha256 -n GnuPG -i https://gnupg.org \
-       -in $(1) -out $(2) ;\
+   (set -e;
+    if gpg-authcode-sign.sh --version >/dev/null; then \
+     gpg-authcode-sign.sh "$(1)" "$(2)"; \
    else \
-     echo "speedo: WARNING: Binaries are not signed"; \
-   fi
+     echo 2>&1 "warning: Please install gpg-authcode-sign.sh to sign files." ;\
+     [ "$(1)" != "$(2)" ] && cp "$(1)" "$(2)" ;\
+   fi)
 endef
 
 # Help target for testing to sign a file.

@@ -18,7 +18,7 @@
 
 EXTRA_DIST = \
 	Manifest watchgnupg.c no-libgcrypt.c \
-	addgnupghome applygnupgdefaults \
+	addgnupghome applygnupgdefaults gpg-authcode-sign.sh \
 	lspgpot mail-signed-keys convert-from-106 sockprox.c \
 	ccidmon.c ChangeLog-2011 \
 	gpg-connect-agent-w32info.rc gpg-connect-agent.w32-manifest.in \
