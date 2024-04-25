@@ -73,6 +73,7 @@ help:
 	@echo 'Use WIXPREFIX to provide the WIX binaries for the MSI package.'
 	@echo '    Using WIX also requires wine with installed wine mono.'
 	@echo '    See help-wixlib for more information'
+	@echo 'Set W32VERSION=w64 to build a 64 bit Windows version.'
 
 help-wixlib:
 	@echo 'The buildsystem can create a wixlib to build MSI packages.'
@@ -157,8 +158,11 @@ w32-release-offline: check-tools
 #          to "this" from the unpacked sources.
 WHAT=git
 
-# Set target to "native" or "w32"
+# Set target to "native" or "w32".
 TARGETOS=
+
+# To build a 64 bit Windows version also change this to "w64"
+W32VERSION=w32
 
 # Set to 1 to use a pre-installed swdb.lst instead of the online version.
 CUSTOM_SWDB=0
@@ -180,7 +184,9 @@ TARBALLS=$(shell pwd)/../tarballs
 MAKE_J=6
 
 # Name to use for the w32 installer and sources
-INST_NAME=gnupg-w32
+
+
+INST_NAME=gnupg-$(W32VERSION)
 
 # Use this to override the installaion directory for native builds.
 INSTALL_PREFIX=none
@@ -271,7 +277,12 @@ endif
 # Packages which are additionally build for 64 bit Windows.  They are
 # only used for gpgex and thus we need to build them only if we want
 # a full installer.
-speedo_w64_spkgs  =
+ifeq ($(W32VERSION),w64)
+  # Keep this empty
+  speedo_w64_spkgs =
+else
+  speedo_w64_spkgs =
+endif
 
 # Packages which use the gnupg autogen.sh build style
 speedo_gnupg_style = \
@@ -350,7 +361,7 @@ sqlite_sha1 := $(shell awk '$$1=="sqlite_sha1_gz" {print $$2}' swdb.lst)
 sqlite_sha2 := $(shell awk '$$1=="sqlite_sha2_gz" {print $$2}' swdb.lst)
 
 
-$(info Information from the version database)
+$(info Information from the version database:)
 $(info GnuPG ..........: $(gnupg_ver) (building $(gnupg_ver_this)))
 $(info GpgRT ..........: $(libgpg_error_ver))
 $(info Npth ...........: $(npth_ver))
@@ -364,6 +375,18 @@ $(info NtbTLS .. ......: $(ntbtls_ver))
 $(info GPGME ..........: $(gpgme_ver))
 $(info Pinentry .......: $(pinentry_ver))
 endif
+
+$(info Information for this run:)
+$(info Build type .....: $(WHAT))
+$(info Target .........: $(TARGETOS))
+ifeq ($(TARGETOS),w32)
+ifeq ($(W32VERSION),w64)
+  $(info Windows version : 64 bit)
+else
+  $(info Windows version : 32 bit)
+endif
+endif
+
 
 # Version number for external packages
 pkg_config_ver = 0.23
@@ -592,12 +615,21 @@ report: report-speedo
 
 clean: clean-speedo
 
+
+ifeq ($(W32VERSION),w64)
+W32CC_PREFIX = x86_64
+else
+W32CC_PREFIX = i686
+endif
+
 ifeq ($(TARGETOS),w32)
-STRIP = i686-w64-mingw32-strip
+STRIP = $(W32CC_PREFIX)-w64-mingw32-strip
+W32STRIP32 = i686-w64-mingw32-strip
 else
 STRIP = strip
 endif
-W32CC = i686-w64-mingw32-gcc
+W32CC = $(W32CC_PREFIX)-w64-mingw32-gcc
+W32CC32 = i686-w64-mingw32-gcc
 
 -include config.mk
 
@@ -639,9 +671,9 @@ ifneq ($(TARGETOS),)
 # Determine build and host system
 build := $(shell $(topsrc)/autogen.sh --silent --print-build)
 ifeq ($(TARGETOS),w32)
-  speedo_autogen_buildopt := --build-w32
+  speedo_autogen_buildopt := --build-$(W32VERSION)
   speedo_autogen_buildopt6 := --build-w64
-  host := $(shell $(topsrc)/autogen.sh --silent --print-host --build-w32)
+  host := $(shell $(topsrc)/autogen.sh --silent --print-host --build-$(W32VERSION))
   host6:= $(shell $(topsrc)/autogen.sh --silent --print-host --build-w64)
   speedo_host_build_option := --host=$(host) --build=$(build)
   speedo_host_build_option6 := --host=$(host6) --build=$(build)
@@ -865,7 +897,7 @@ else ifneq ($(findstring $(1),$(speedo_gnupg_style)),)
 	 mkdir "$$$${pkgbdir}";				\
 	 cd "$$$${pkgbdir}";		        	\
          if [ -n "$(speedo_autogen_buildopt)" ]; then   \
-            eval AUTOGEN_SH_SILENT=1 w32root="$(idir)"  \
+            eval AUTOGEN_SH_SILENT=1 $(W32VERSION)root="$(idir)"  \
                "$$$${pkgsdir}/autogen.sh"               \
                $(speedo_autogen_buildopt)            	\
                $$$${pkgcfg} $$$${pkgextracflags}; 	\
@@ -1179,13 +1211,13 @@ $(bdir)/README.txt: $(bdir)/NEWS.tmp $(topsrc)/README $(w32src)/README.txt \
 
 $(bdir)/g4wihelp.dll: $(w32src)/g4wihelp.c $(w32src)/exdll.h $(w32src)/exdll.c
 	(set -e; cd $(bdir); \
-         $(W32CC) -DUNICODE -static-libgcc -I . -O2 -c \
+         $(W32CC32) -DUNICODE -static-libgcc -I . -O2 -c \
                           -o exdll.o $(w32src)/exdll.c; \
-	 $(W32CC) -DUNICODE -static-libgcc -I. -shared -O2 \
+	 $(W32CC32) -DUNICODE -static-libgcc -I. -shared -O2 \
                           -o g4wihelp.dll $(w32src)/g4wihelp.c exdll.o \
 	                  -lwinmm -lgdi32 -luserenv \
                           -lshell32 -loleaut32 -lshlwapi -lmsimg32; \
-	 $(STRIP) g4wihelp.dll)
+	 $(W32STRIP32) g4wihelp.dll)
 
 w32_insthelpers: $(bdir)/g4wihelp.dll
 
