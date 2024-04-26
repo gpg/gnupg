@@ -46,7 +46,7 @@ Unicode true
 !define PRETTY_PACKAGE "GNU Privacy Guard"
 !define PRETTY_PACKAGE_SHORT "GnuPG"
 !define COMPANY "The GnuPG Project"
-!define COPYRIGHT "Copyright (C) 2021 g10 Code GmbH"
+!define COPYRIGHT "Copyright (C) 2024 g10 Code GmbH"
 !define DESCRIPTION "GnuPG: The GNU Privacy Guard for Windows"
 
 !define INSTALL_DIR "GnuPG"
@@ -63,13 +63,13 @@ Unicode true
   GnuPG includes an advanced key management facility and is compliant \
   with the OpenPGP Internet standard as described in RFC-4880. \
   \r\n\r\n$_CLICK \
-  \r\n\r\n\r\n\r\n\r\nThis is GnuPG version ${VERSION}.\r\n\
+  \r\n\r\n\r\n\r\n\r\nThis is GnuPG version ${VERSION} (64 bit).\r\n\
   File version: ${PROD_VERSION}\r\n\
   Release date: ${BUILD_ISODATE}"
 !define ABOUT_GERMAN \
  "GnuPG is die häufigst verwendete Software zur Mail- und Datenverschlüsselung.\
    \r\n\r\n$_CLICK \
-   \r\n\r\n\r\n\r\n\r\nDies ist GnuPG Version ${VERSION}.\r\n\
+   \r\n\r\n\r\n\r\n\r\nDies ist GnuPG Version ${VERSION} (64 bit).\r\n\
    Dateiversion: ${PROD_VERSION}\r\n\
    Releasedatum: ${BUILD_ISODATE}"
 
@@ -119,7 +119,7 @@ OutFile "${NAME}-${VERSION}_${BUILD_DATESTR}.exe"
 !ifndef INSTALL_DIR
 !define INSTALL_DIR "GnuPG"
 !endif
-InstallDir "$PROGRAMFILES\${INSTALL_DIR}"
+InstallDir "$PROGRAMFILES64\${INSTALL_DIR}"
 
 # Add version information to the file properties.
 VIProductVersion "${PROD_VERSION}"
@@ -1465,7 +1465,12 @@ Function .onInit
 
   Call G4wRunOnce
 
-  SetOutPath $TEMP
+   ${IfNot} ${RunningX64}
+       MessageBox MB_OK "Sorry this version runs only on x64 machines"
+       Abort
+   ${EndIf}
+
+   SetOutPath $TEMP
 #!ifdef SOURCES
 #  File /oname=gpgspltmp.bmp "${TOP_SRCDIR}/doc/logo/gnupg-logo-400px.bmp"
 #  # We play the tune only for the soruce installer
@@ -1486,7 +1491,7 @@ Function .onInit
 
   Var /GLOBAL changed_dir
   # Check if the install directory was modified on the command line
-  StrCmp "$INSTDIR" "$PROGRAMFILES\${INSTALL_DIR}" unmodified 0
+  StrCmp "$INSTDIR" "$PROGRAMFILES64\${INSTALL_DIR}" unmodified 0
   # It is modified. Save that value.
   StrCpy $changed_dir "$INSTDIR"
 

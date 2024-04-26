@@ -186,7 +186,7 @@ MAKE_J=6
 # Name to use for the w32 installer and sources
 
 
-INST_NAME=gnupg-$(W32VERSION)
+INST_NAME=gnupg-w32
 
 # Use this to override the installaion directory for native builds.
 INSTALL_PREFIX=none
@@ -384,6 +384,9 @@ ifeq ($(W32VERSION),w64)
   $(info Windows version : 64 bit)
 else
   $(info Windows version : 32 bit)
+ifneq ($(W32VERSION),w32)
+  $(error W32VERSION is not set to a proper value: Use only w32 or w64)
+endif
 endif
 endif
 
