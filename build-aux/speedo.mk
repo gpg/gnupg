@@ -478,8 +478,8 @@ speedo_pkg_gettext_tar    = $(pkg2rep)/gettext-$(gettext_ver).tar.gz
 
 speedo_pkg_npth_configure = --enable-static
 
-speedo_pkg_libgpg_error_configure = --enable-static --enable-install-gpg-error-config
-speedo_pkg_w64_libgpg_error_configure = --enable-static --enable-install-gpg-error-config
+speedo_pkg_libgpg_error_configure = --enable-static
+speedo_pkg_w64_libgpg_error_configure = --enable-static
 
 speedo_pkg_libassuan_configure = --enable-static
 speedo_pkg_w64_libassuan_configure = --enable-static
