@@ -1194,3 +1194,47 @@ cipher_mode_to_string (int mode)
     default: return "[?]";
     }
 }
+
+/* Return the cannonical name of the ECC curve in KEY.  */
+const char *
+get_ecc_curve_from_key (gcry_sexp_t key)
+{
+  gcry_sexp_t list = NULL;
+  gcry_sexp_t l2 = NULL;
+  const char *curve_name = NULL;
+  char *name = NULL;
+
+  /* Check that the first element is valid. */
+  list = gcry_sexp_find_token (key, "public-key", 0);
+  if (!list)
+    list = gcry_sexp_find_token (key, "private-key", 0);
+  if (!list)
+    list = gcry_sexp_find_token (key, "protected-private-key", 0);
+  if (!list)
+    list = gcry_sexp_find_token (key, "shadowed-private-key", 0);
+  if (!list)
+    goto leave;
+
+  l2 = gcry_sexp_cadr (list);
+  gcry_sexp_release (list);
+  list = l2;
+  l2 = NULL;
+
+  name = gcry_sexp_nth_string (list, 0);
+  if (!name)
+    goto leave;
+
+  if (gcry_pk_map_name (name) != GCRY_PK_ECC)
+    goto leave;
+
+  l2 = gcry_sexp_find_token (list, "curve", 0);
+  xfree (name);
+  name = gcry_sexp_nth_string (l2, 1);
+  curve_name = openpgp_oid_or_name_to_curve (name, 1);
+  gcry_sexp_release (l2);
+
+ leave:
+  xfree (name);
+  gcry_sexp_release (list);
+  return curve_name;
+}

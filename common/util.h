@@ -196,6 +196,7 @@ char *pubkey_algo_string (gcry_sexp_t s_pkey, enum gcry_pk_algos *r_algoid);
 const char *pubkey_algo_to_string (int algo);
 const char *hash_algo_to_string (int algo);
 const char *cipher_mode_to_string (int mode);
+const char *get_ecc_curve_from_key (gcry_sexp_t key);
 
 /*-- convert.c --*/
 int hex2bin (const char *string, void *buffer, size_t length);

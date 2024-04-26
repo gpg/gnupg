@@ -40,7 +40,7 @@ struct ecc_params
   size_t point_len;
   size_t shared_len;
   int hash_algo;
-  int algo;
+  int kem_algo;
   int scalar_reverse;
 };
 
@@ -245,65 +245,21 @@ reverse_buffer (unsigned char *buffer, unsigned int length)
 
 
 static gpg_error_t
-ecc_pgp_kem_decrypt (ctrl_t ctrl, gcry_sexp_t s_skey0,
-                     const unsigned char *ecc_ct, size_t ecc_ct_len,
-                     unsigned char *ecc_ss, size_t *r_shared_len, size_t *r_point_len)
+ecc_extract_pk_from_key (const struct ecc_params *ecc, gcry_sexp_t s_skey,
+                         unsigned char *ecc_pk)
 {
-  gpg_error_t err = 0;
-  const struct ecc_params *ecc;
-
+  gpg_error_t err;
   unsigned int nbits;
   const unsigned char *p;
   size_t len;
-
-  gcry_mpi_t ecc_sk_mpi = NULL;
-  unsigned char ecc_sk[ECC_SCALAR_LEN_MAX];
   gcry_mpi_t ecc_pk_mpi = NULL;
-  unsigned char ecc_pk[ECC_POINT_LEN_MAX];
-  unsigned char ecc_ecdh[ECC_POINT_LEN_MAX];
 
-  gcry_sexp_t curve = NULL;
-  char *curve_name = NULL;
-
-  (void)ctrl;
-
-  curve = gcry_sexp_find_token (s_skey0, "curve", 0);
-  if (!curve)
-    {
-      if (opt.verbose)
-        log_info ("%s: no curve given\n", __func__);
-      return gpg_error (GPG_ERR_BAD_SECKEY);
-    }
-
-  curve_name = gcry_sexp_nth_string (curve, 1);
-  ecc = get_ecc_params (curve_name);
-  if (!ecc)
-    {
-      if (opt.verbose)
-        log_info ("%s: curve '%s' not supported\n", __func__, curve_name);
-      err = gpg_error (GPG_ERR_BAD_SECKEY);
-      goto leave;
-    }
-
-  *r_shared_len = ecc->shared_len;
-  *r_point_len = ecc->point_len;
-
-  if (ecc->point_len != ecc_ct_len)
-    {
-      if (opt.verbose)
-        log_info ("%s: ECC cipher text length invalid (%zu)\n",
-                  __func__, ecc->point_len);
-      err = gpg_error (GPG_ERR_INV_DATA);
-      goto leave;
-    }
-
-  err = gcry_sexp_extract_param (s_skey0, NULL, "/qd",
-                                 &ecc_pk_mpi, &ecc_sk_mpi, NULL);
+  err = gcry_sexp_extract_param (s_skey, NULL, "/q", &ecc_pk_mpi, NULL);
   if (err)
     {
       if (opt.verbose)
         log_info ("%s: extracting q and d from ECC key failed\n", __func__);
-      goto leave;
+      return err;
     }
 
   p = gcry_mpi_get_opaque (ecc_pk_mpi, &nbits);
@@ -326,8 +282,31 @@ ecc_pgp_kem_decrypt (ctrl_t ctrl, gcry_sexp_t s_skey0,
       goto leave;
     }
 
+  if (DBG_CRYPTO)
+    log_printhex (ecc_pk, ecc->pubkey_len, "ECC   pubkey:");
+
+ leave:
   mpi_release (ecc_pk_mpi);
-  ecc_pk_mpi = NULL;
+  return err;
+}
+
+static gpg_error_t
+ecc_extract_sk_from_key (const struct ecc_params *ecc, gcry_sexp_t s_skey,
+                         unsigned char *ecc_sk)
+{
+  gpg_error_t err;
+  unsigned int nbits;
+  const unsigned char *p;
+  size_t len;
+  gcry_mpi_t ecc_sk_mpi = NULL;
+
+  err = gcry_sexp_extract_param (s_skey, NULL, "/d", &ecc_sk_mpi, NULL);
+  if (err)
+    {
+      if (opt.verbose)
+        log_info ("%s: extracting d from ECC key failed\n", __func__);
+      return err;
+    }
 
   p = gcry_mpi_get_opaque (ecc_sk_mpi, &nbits);
   len = (nbits+7)/8;
@@ -346,47 +325,206 @@ ecc_pgp_kem_decrypt (ctrl_t ctrl, gcry_sexp_t s_skey0,
   ecc_sk_mpi = NULL;
 
   if (DBG_CRYPTO)
+    log_printhex (ecc_sk, ecc->scalar_len, "ECC   seckey:");
+
+ leave:
+  mpi_release (ecc_sk_mpi);
+  return err;
+}
+
+static gpg_error_t
+ecc_raw_kem (const struct ecc_params *ecc, gcry_sexp_t s_skey,
+             const unsigned char *ecc_ct, unsigned char *ecc_ecdh)
+{
+  gpg_error_t err = 0;
+  unsigned char ecc_sk[ECC_SCALAR_LEN_MAX];
+
+  if (ecc->scalar_len > ECC_SCALAR_LEN_MAX)
     {
-      log_debug ("ECC    curve: %s\n", curve_name);
-      log_printhex (ecc_pk, ecc->pubkey_len, "ECC   pubkey:");
-      log_printhex (ecc_sk, ecc->scalar_len, "ECC   seckey:");
-      log_printhex (ecc_ct, ecc->point_len, "ECC    ephem:");
+      if (opt.verbose)
+        log_info ("%s: ECC scalar length invalid (%zu)\n",
+                  __func__, ecc->scalar_len);
+      err = gpg_error (GPG_ERR_INV_DATA);
+      goto leave;
     }
 
-  err = gcry_kem_decap (ecc->algo, ecc_sk, ecc->scalar_len,
-                        ecc_ct, ecc->point_len, ecc_ecdh, ecc->point_len, NULL, 0);
+  err = ecc_extract_sk_from_key  (ecc, s_skey, ecc_sk);
+  if (err)
+    goto leave;
+
+  err = gcry_kem_decap (ecc->kem_algo, ecc_sk, ecc->scalar_len,
+                        ecc_ct, ecc->point_len, ecc_ecdh, ecc->point_len,
+                        NULL, 0);
   if (err)
     {
       if (opt.verbose)
         log_info ("%s: gcry_kem_decap for ECC failed\n", __func__);
+    }
+
+ leave:
+  wipememory (ecc_sk, sizeof ecc_sk);
+
+  return err;
+}
+
+static gpg_error_t
+get_cardkey (ctrl_t ctrl, const char *keygrip, gcry_sexp_t *r_s_pk)
+{
+  gpg_error_t err;
+  unsigned char *pkbuf;
+  size_t pkbuflen;
+
+  err = agent_card_readkey (ctrl, keygrip, &pkbuf, NULL);
+  if (err)
+    return err;
+
+  pkbuflen = gcry_sexp_canon_len (pkbuf, 0, NULL, NULL);
+  err = gcry_sexp_sscan (r_s_pk, NULL, (char*)pkbuf, pkbuflen);
+  if (err)
+    log_error ("failed to build S-Exp from received card key: %s\n",
+               gpg_strerror (err));
+
+  xfree (pkbuf);
+  return err;
+}
+
+static gpg_error_t
+ecc_get_curve (ctrl_t ctrl, gcry_sexp_t s_skey, const char **r_curve)
+{
+  gpg_error_t err = 0;
+  gcry_sexp_t s_skey_card = NULL;
+  const char *curve = NULL;
+  gcry_sexp_t key;
+
+  *r_curve = NULL;
+
+  if (!s_skey)
+    {
+      err = get_cardkey (ctrl, ctrl->keygrip, &s_skey_card);
+      if (err)
+        goto leave;
+
+      key = s_skey_card;
+    }
+  else
+    key = s_skey;
+
+  curve = get_ecc_curve_from_key (key);
+  if (!curve)
+    {
+      err = gpg_error (GPG_ERR_BAD_SECKEY);
       goto leave;
     }
 
+  *r_curve = curve;
+
+ leave:
+  gcry_sexp_release (s_skey_card);
+  return err;
+}
+
+/* Given a private key in SEXP by S_SKEY0 and a cipher text by ECC_CT
+ * with length ECC_POINT_LEN, do ECC-KEM operation.  Result is
+ * returned in the memory referred by ECC_SS.  Shared secret length is
+ * returned in the memory referred by R_SHARED_LEN.  CTRL is used to
+ * access smartcard, internally.  */
+static gpg_error_t
+ecc_pgp_kem_decrypt (ctrl_t ctrl, gcry_sexp_t s_skey0,
+                     unsigned char *shadow_info0,
+                     const unsigned char *ecc_ct, size_t ecc_point_len,
+                     unsigned char *ecc_ss, size_t *r_shared_len)
+{
+  gpg_error_t err;
+  unsigned char ecc_ecdh[ECC_POINT_LEN_MAX];
+  unsigned char ecc_pk[ECC_POINT_LEN_MAX];
+  const char *curve;
+  const struct ecc_params *ecc = NULL;
+
+  if (ecc_point_len > ECC_POINT_LEN_MAX)
+    return gpg_error (GPG_ERR_INV_DATA);
+
+  err = ecc_get_curve (ctrl, s_skey0, &curve);
+  if (err)
+    {
+      if ((gpg_err_code (err) == GPG_ERR_CARD_REMOVED
+           || gpg_err_code (err) == GPG_ERR_CARD_NOT_PRESENT)
+          && !s_skey0)
+        err = gpg_error (GPG_ERR_NO_SECKEY);
+      return err;
+    }
+
+  ecc = get_ecc_params (curve);
+  if (!ecc)
+    {
+      if (opt.verbose)
+        log_info ("%s: curve '%s' not supported\n", __func__, curve);
+      return gpg_error (GPG_ERR_BAD_SECKEY);
+    }
+
+  *r_shared_len = ecc->shared_len;
+
   if (DBG_CRYPTO)
-    log_printhex (ecc_ecdh, ecc->point_len, "ECC     ecdh:");
+    log_debug ("ECC    curve: %s\n", curve);
+
+  if (ecc->point_len != ecc_point_len)
+    {
+      if (opt.verbose)
+        log_info ("%s: ECC cipher text length invalid (%zu != %zu)\n",
+                  __func__, ecc->point_len, ecc_point_len);
+      return gpg_error (GPG_ERR_INV_DATA);
+    }
+
+  err = ecc_extract_pk_from_key  (ecc, s_skey0, ecc_pk);
+  if (err)
+    return err;
+
+  if (DBG_CRYPTO)
+    log_printhex (ecc_ct, ecc->point_len, "ECC    ephem:");
+
+  if (shadow_info0 || !s_skey0)
+    {
+      if (s_skey0 && agent_is_tpm2_key (s_skey0))
+        {
+          log_error ("TPM decryption failed: %s\n", gpg_strerror (err));
+          return gpg_error (GPG_ERR_NOT_IMPLEMENTED);
+        }
+      else
+        {
+          err = agent_card_ecc_kem (ctrl, ecc_ct, ecc->point_len, ecc_ecdh);
+          if (err)
+            {
+              log_error ("smartcard decryption failed: %s\n",
+                         gpg_strerror (err));
+              return err;
+            }
+        }
+    }
+  else
+    err = ecc_raw_kem (ecc, s_skey0, ecc_ct, ecc_ecdh);
+
+  if (err)
+    return err;
+
+  if (DBG_CRYPTO)
+    log_printhex (ecc_ecdh, ecc_point_len, "ECC     ecdh:");
 
   err = gnupg_ecc_kem_kdf (ecc_ss, ecc->shared_len, ecc->hash_algo,
                            ecc_ecdh, ecc->point_len, ecc_ct, ecc->point_len,
                            ecc_pk, ecc->point_len);
+
+  wipememory (ecc_ecdh, sizeof ecc_ecdh);
+
   if (err)
     {
       if (opt.verbose)
         log_info ("%s: kdf for ECC failed\n", __func__);
-      goto leave;
+      return err;
     }
 
   if (DBG_CRYPTO)
     log_printhex (ecc_ss, ecc->shared_len, "ECC   shared:");
 
- leave:
-  wipememory (ecc_sk, sizeof ecc_sk);
-  wipememory (ecc_ecdh, sizeof ecc_ecdh);
-
-  mpi_release (ecc_pk_mpi);
-  mpi_release (ecc_sk_mpi);
-  xfree (curve_name);
-  gcry_sexp_release (curve);
-  return err;
+  return 0;
 }
 
 /* For composite PGP KEM (ECC+ML-KEM), decrypt CIPHERTEXT using KEM API.
@@ -447,7 +585,7 @@ composite_pgp_kem_decrypt (ctrl_t ctrl, const char *desc_text,
   err = agent_key_from_file (ctrl, NULL, desc_text,
                              ctrl->keygrip, &shadow_info0,
                              CACHE_MODE_NORMAL, NULL, &s_skey0, NULL, NULL);
-  if (err)
+  if (err && gpg_err_code (err) != GPG_ERR_NO_SECKEY)
     {
       log_error ("failed to read the secret key\n");
       goto leave;
@@ -456,13 +594,12 @@ composite_pgp_kem_decrypt (ctrl_t ctrl, const char *desc_text,
   err = agent_key_from_file (ctrl, NULL, desc_text,
                              ctrl->keygrip1, &shadow_info1,
                              CACHE_MODE_NORMAL, NULL, &s_skey1, NULL, NULL);
+  /* Here assumes no smartcard for ML-KEM, but private key in a file.  */
   if (err)
     {
       log_error ("failed to read the another secret key\n");
       goto leave;
     }
-
-  /* Here assumes no smartcard, but private keys */
 
   err = gcry_sexp_extract_param (s_cipher, NULL, "%dc/eks&'fixed-info'",
                                  &algo, &ecc_ct_mpi, &mlkem_ct_mpi,
@@ -491,8 +628,9 @@ composite_pgp_kem_decrypt (ctrl_t ctrl, const char *desc_text,
     }
 
   /* Firstly, ECC part.  */
-  err = ecc_pgp_kem_decrypt (ctrl, s_skey0, ecc_ct, ecc_ct_len,
-                             ecc_ss, &ecc_shared_len, &ecc_point_len);
+  ecc_point_len = ecc_ct_len;
+  err = ecc_pgp_kem_decrypt (ctrl, s_skey0, shadow_info0, ecc_ct, ecc_point_len,
+                             ecc_ss, &ecc_shared_len);
   if (err)
     goto leave;
 

@@ -486,6 +486,34 @@ divert_pkdecrypt (ctrl_t ctrl,
   return rc;
 }
 
+gpg_error_t
+agent_card_ecc_kem (ctrl_t ctrl, const unsigned char *ecc_ct,
+                    size_t ecc_point_len, unsigned char *ecc_ecdh)
+{
+  gpg_error_t err = 0;
+  char *ecdh = NULL;
+  size_t len;
+  int rc;
+
+  rc = agent_card_pkdecrypt (ctrl, ctrl->keygrip, getpin_cb, ctrl, NULL,
+                             ecc_ct, ecc_point_len, &ecdh, &len, NULL);
+  if (rc)
+    return rc;
+
+  if (len != ecc_point_len)
+    {
+      if (opt.verbose)
+        log_info ("%s: ECC result length invalid (%zu != %zu)\n",
+                  __func__, len, ecc_point_len);
+      return gpg_error (GPG_ERR_INV_DATA);
+    }
+  else
+    memcpy (ecc_ecdh, ecdh, len);
+
+  xfree (ecdh);
+  return err;
+}
+
 
 gpg_error_t
 divert_writekey (ctrl_t ctrl, int force, const char *serialno,
