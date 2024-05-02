@@ -1109,8 +1109,8 @@ ifneq ($(TARGETOS),w32)
 	 echo "speedo:  * Now copy $(idir)/ to the final location and" ;\
 	 echo "speedo:  * adjust $(idir)/bin/gpgconf.ctl accordingly" ;\
 	 echo "speedo:  * Or run:" ;\
-	 echo "speedo:  *   make -f $(topsrc)/build-aux/speedo.mk install SYSROOT=/usr/local/gnupg24" ;\
-         echo "speedo:  *   ldconfig -n /usr/local/gnupg24/lib";\
+	 echo "speedo:  *   make -f $(topsrc)/build-aux/speedo.mk install SYSROOT=/usr/local/gnupg26" ;\
+         echo "speedo:  *   ldconfig -n /usr/local/gnupg26/lib";\
 	 echo "speedo:  */")
 endif
 
@@ -1125,8 +1125,8 @@ ifneq ($(TARGETOS),w32)
            echo "speedo: ERROR: SYSROOT has not been given";\
            echo "speedo: Set SYSROOT to the desired install directory";\
 	   echo "speedo: Example:";\
-           echo "speedo:   make -f $(topsrc)/build-aux/speedo.mk install SYSROOT=/usr/local/gnupg24";\
-           echo "speedo:   ldconfig -n /usr/local/gnupg24/lib";\
+           echo "speedo:   make -f $(topsrc)/build-aux/speedo.mk install SYSROOT=/usr/local/gnupg26";\
+           echo "speedo:   ldconfig -n /usr/local/gnupg26/lib";\
            exit 1;\
          fi;\
          if [ ! -d "$$SYSROOT"/bin ]; then if ! mkdir "$$SYSROOT"/bin; then \
@@ -1316,7 +1316,7 @@ wixlib: installer $(bdir)/README.txt $(w32src)/wixlib.wxs
 	)
 
 define MKSWDB_commands
- ( pref="#+macro: gnupg24_w32_$(3)" ;\
+ ( pref="#+macro: gnupg26_w32_$(3)" ;\
    echo "$${pref}ver  $(INST_VERSION)_$(BUILD_DATESTR)"  ;\
    echo "$${pref}date $(2)" ;\
    echo "$${pref}size $$(wc -c <$(1)|awk '{print int($$1/1024)}')k";\
