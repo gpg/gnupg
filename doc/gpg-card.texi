@@ -546,7 +546,7 @@ be printed; to create a new key anyway the option @samp{--force} can be
 used.  Note that only the private and public keys have been created
 but no certificates are stored in the key slots.  In fact, GnuPG uses
 its own non-standard method to store just the public key in place of
-the the certificate.  Other application will not be able to make use
+the certificate.  Other application will not be able to make use
 these keys until @command{gpgsm} or another tool has been used to
 create and store the respective certificates.   Let us see what the
 list command now shows:

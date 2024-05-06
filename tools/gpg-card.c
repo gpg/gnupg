@@ -836,6 +836,21 @@ list_one_kinfo (card_info_t info, key_info_t kinfo,
 }
 
 
+/* Return the retired key number if KEYREF is for a retired key; 0 if
+ * not.  */
+static int
+piv_keyref_is_retired (const char *keyref)
+{
+  if (!strncmp (keyref, "PIV.8", 5)
+      && keyref[5] >= '2' && hexdigitp (keyref + 5))
+    return xtoi_1 (keyref+5) - 1;
+  else if (!strncmp (keyref, "PIV.9", 5)
+           && keyref[5] >= '0' && keyref[5] <= '5')
+    return atoi_1 (keyref+5) + 15;
+  else
+    return 0;
+}
+
 /* List all keyinfo in INFO using the list of LABELS.  */
 static void
 list_all_kinfo (card_info_t info, keyinfolabel_t labels, estream_t fp,
@@ -843,6 +858,7 @@ list_all_kinfo (card_info_t info, keyinfolabel_t labels, estream_t fp,
 {
   key_info_t kinfo;
   int idx, i, j;
+  int rn;
 
   /* Print the keyinfo.  We first print those we known and then all
    * remaining item.  */
@@ -864,9 +880,15 @@ list_all_kinfo (card_info_t info, keyinfolabel_t labels, estream_t fp,
     {
       if (kinfo->xflag)
         continue;
-      tty_fprintf (fp, "Key %s", kinfo->keyref);
-      for (i=4+strlen (kinfo->keyref), j=0; i < 18; i++, j=1)
-        tty_fprintf (fp, j? ".":" ");
+      if (info->apptype == APP_TYPE_PIV
+          && (rn = piv_keyref_is_retired (kinfo->keyref)))
+        tty_fprintf (fp, "Key retired %2d ...", rn);
+      else
+        {
+          tty_fprintf (fp, "Key %s", kinfo->keyref);
+          for (i=4+strlen (kinfo->keyref), j=0; i < 18; i++, j=1)
+            tty_fprintf (fp, j? ".":" ");
+        }
       tty_fprintf (fp, ":");
       list_one_kinfo (info, kinfo, NULL, fp, no_key_lookup, create_shadow);
     }
