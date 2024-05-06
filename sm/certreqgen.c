@@ -732,8 +732,7 @@ proc_parameters (ctrl_t ctrl, struct para_data_s *para,
                     "(6:genkey(3:rsa(5:nbits%d:%s)))",
                     (int)strlen (numbuf), numbuf);
         }
-      else if ((opt.compat_flags & COMPAT_ALLOW_ECC_ENCR)
-               && (algo == GCRY_PK_ECC || algo == GCRY_PK_EDDSA))
+      else if (algo == GCRY_PK_ECC || algo == GCRY_PK_EDDSA)
         {
           const char *curve = get_parameter_value (para, pKEYCURVE, 0);
           const char *flags;

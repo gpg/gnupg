@@ -354,7 +354,6 @@ EXTERN_UNLESS_MAIN_MODULE int memory_debug_mode;
 EXTERN_UNLESS_MAIN_MODULE int memory_stat_debug_mode;
 
 /* Compatibility flags */
-#define COMPAT_VSD_ALLOW_OCB  1
 
 
 /* Compliance test macors.  */

@@ -483,10 +483,7 @@ encrypt_dek (const DEK dek, ksba_cert_t cert, int pk_algo,
   s_data = NULL; /* (avoid compiler warning) */
   if (pk_algo == GCRY_PK_ECC)
     {
-      if (!(opt.compat_flags & COMPAT_ALLOW_ECC_ENCR))
-        rc = gpg_error (GPG_ERR_NOT_SUPPORTED);
-      else
-        rc = ecdh_encrypt (dek, s_pkey, &s_ciph);
+      rc = ecdh_encrypt (dek, s_pkey, &s_ciph);
     }
   else
     {

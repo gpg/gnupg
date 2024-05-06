@@ -469,7 +469,6 @@ static struct debug_flags_s debug_flags [] =
 static struct compatibility_flags_s compatibility_flags [] =
   {
     { COMPAT_ALLOW_KA_TO_ENCR, "allow-ka-to-encr" },
-    { COMPAT_ALLOW_ECC_ENCR,   "allow-ecc-encr" },
     { 0, NULL }
   };
 

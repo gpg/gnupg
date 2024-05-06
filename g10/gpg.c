@@ -1001,7 +1001,6 @@ static struct debug_flags_s debug_flags [] =
 /* The list of compatibility flags.  */
 static struct compatibility_flags_s compatibility_flags [] =
   {
-    { COMPAT_VSD_ALLOW_OCB, "vsd-allow-ocb" },
     { 0, NULL }
   };
 
@@ -3825,8 +3824,7 @@ main (int argc, char **argv)
       parse_compatibility_flags (NULL, &opt.compat_flags, compatibility_flags);
 
     gnupg_set_compliance_extra_info (CO_EXTRA_INFO_MIN_RSA, opt.min_rsa_length);
-    if ((opt.compat_flags & COMPAT_VSD_ALLOW_OCB))
-      gnupg_set_compliance_extra_info (CO_EXTRA_INFO_VSD_ALLOW_OCB, 1);
+    gnupg_set_compliance_extra_info (CO_EXTRA_INFO_VSD_ALLOW_OCB, 1);
 
     if (DBG_CLOCK)
       log_clock ("start");

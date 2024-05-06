@@ -183,7 +183,6 @@ struct
  *  policies: 1.3.6.1.4.1.7924.1.1:N:
  */
 #define COMPAT_ALLOW_KA_TO_ENCR   1
-#define COMPAT_ALLOW_ECC_ENCR     2
 
 
 /* Forward declaration for an object defined in server.c */

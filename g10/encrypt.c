@@ -262,10 +262,6 @@ use_aead (pk_list_t pk_list, int algo)
 {
   int can_use;
 
-  if (!(opt.compat_flags & COMPAT_VSD_ALLOW_OCB)
-      && opt.compliance == CO_DE_VS)
-    return 0;  /* Not yet allowed.  */
-
   can_use = openpgp_cipher_get_algo_blklen (algo) == 16;
 
   /* With --force-aead we want AEAD.  */
