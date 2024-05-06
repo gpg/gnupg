@@ -3769,7 +3769,7 @@ parse_key_parameter_part (ctrl_t ctrl,
     {
       /* Get the curve and check that it can technically be used
        * (i.e. everything except the EdXXXX curves.  */
-      curve = openpgp_is_curve_supported ("brainpoolP384r1", &algo, NULL);
+      curve = openpgp_is_curve_supported ("brainpoolP256r1", &algo, NULL);
       if (!curve || algo == PUBKEY_ALGO_EDDSA)
         return gpg_error (GPG_ERR_UNKNOWN_CURVE);
       algo = PUBKEY_ALGO_KYBER;
@@ -3780,7 +3780,7 @@ parse_key_parameter_part (ctrl_t ctrl,
     {
       /* Get the curve and check that it can technically be used
        * (i.e. everything except the EdXXXX curves.  */
-      curve = openpgp_is_curve_supported ("brainpoolP512r1", &algo, NULL);
+      curve = openpgp_is_curve_supported ("brainpoolP384r1", &algo, NULL);
       if (!curve || algo == PUBKEY_ALGO_EDDSA)
         return gpg_error (GPG_ERR_UNKNOWN_CURVE);
       algo = PUBKEY_ALGO_KYBER;
