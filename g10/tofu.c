@@ -3655,7 +3655,7 @@ tofu_wot_trust_combine (int tofu_base, int wot_base)
               || wot == TRUST_FULLY
               || wot == TRUST_ULTIMATE);
 
-  /* We first consider negative trust policys.  These trump positive
+  /* We first consider negative trust policies.  These trump positive
      trust policies.  */
   if (tofu == TRUST_NEVER || wot == TRUST_NEVER)
     /* TRUST_NEVER trumps everything else.  */

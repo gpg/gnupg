@@ -3224,7 +3224,7 @@ cmd_factoryreset (card_info_t info)
    *   /echo Card has been reset to factory defaults
    *
    * For a PIV application on a Yubikey it merely issues the Yubikey
-   * specific resset command.
+   * specific reset command.
    */
 
   err = scd_learn (info, 0);

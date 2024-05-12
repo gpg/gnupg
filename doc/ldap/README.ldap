@@ -291,7 +291,7 @@ olcAccess: {0} to dn.subtree="dc=example,dc=com"
 
 As usual replace all "dc=example,dc=com" accordingly.  Take care not
 to insert a blank line anywhere.  The first line needs to give the DN
-of the database as determined above.  Excute the rules from that file
+of the database as determined above.  Execute the rules from that file
 using the command:
 
 : ldapmodify -Q -Y EXTERNAL -H ldapi:/// -f grantaccess.ldif
@@ -384,7 +384,7 @@ This lists just the DNs.  If you need the entire content of the DIT
 leave out the "dn" argument.  The option "-LLL" selects useful
 formatting options for the output.
 
-** Insert X.509 Certficate
+** Insert X.509 Certificate
 
 If you don't have a handy tool to insert a certificate via LDAP you
 can do it manually.  First put the certificate in binary (DER) format
@@ -505,7 +505,7 @@ to revert replace "ACL" by "none".
 ** Extending the AD Schema
 The Active Directory on Windows is actually an LDAP server but
 configuration differs from OpenLDAP.  The used schema is the same but
-the data objects are slighly different.  To extend the schema the
+the data objects are slightly different.  To extend the schema the
 LDIF format is used but with variants of the files used for OpenLDAP.
 Thus please download these two files:
 
@@ -517,7 +517,7 @@ schema.  There are *no ways to revert changes* made to a schema.  You
 should also first try this all on a test system and not on a
 production system.
 
-To extend the schema become Adminstrator on your Primary Domain
+To extend the schema become Administrator on your Primary Domain
 Controller and open a shell (Command Prompt).  Copy the above
 mentioned ldif files to your working directory and run the following
 command:

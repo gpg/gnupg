@@ -1106,7 +1106,7 @@ learn_cb (void *opaque, const void *buffer, size_t length)
   string = NULL;
 
 
-  /* We do not store a certifciate with missing issuers as ephemeral
+  /* We do not store a certificate with missing issuers as ephemeral
      because we can assume that the --learn-card command has been used
      on purpose.  */
   rc = gpgsm_basic_cert_check (parm->ctrl, cert);

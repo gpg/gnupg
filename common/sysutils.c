@@ -588,7 +588,7 @@ translate_sys2libc_fd_int (int fd, int for_write)
 /*
  * Parse the string representation of a file reference (file handle on
  * Windows or file descriptor on POSIX) in FDSTR.  The string
- * representation may be either of folllowing:
+ * representation may be either of following:
 
  *  (1) 0, 1, or 2 which means stdin, stdout, and stderr, respectively.
  *  (2) Integer representation (by %d of printf).
@@ -1106,7 +1106,7 @@ modestr_to_mode (const char *modestr, mode_t oldmode)
 int
 gnupg_mkdir (const char *name, const char *modestr)
 {
-  /* Note that gpgrt_mkdir also sets ERRNO in addition to returing an
+  /* Note that gpgrt_mkdir also sets ERRNO in addition to returning an
    * gpg-error style error code.  */
   return gpgrt_mkdir (name, modestr);
 }

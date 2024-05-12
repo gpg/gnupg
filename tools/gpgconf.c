@@ -770,7 +770,7 @@ main (int argc, char **argv)
   if (changeuser && (err = gnupg_chuid (changeuser, 0)))
     gpgconf_failure (err);
 
-  /* Set the configuraton directories for use by gpgrt_argparser.  We
+  /* Set the configuration directories for use by gpgrt_argparser.  We
    * don't have a configuration file for this program but we have code
    * which reads the component's config files.  */
   gpgrt_set_confdir (GPGRT_CONFDIR_SYS, gnupg_sysconfdir ());

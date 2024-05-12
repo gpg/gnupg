@@ -72,7 +72,7 @@
 				(path-join "tests" "tpm2dtests" name)
 				(in-srcdir "tests" "tpm2dtests" name)
 				"--use-keyboxd")) all-tests)
-              ;; The third pass uses the legact pubring.gpg
+              ;; The third pass uses the legacy pubring.gpg
 	      (map (lambda (name)
 		     (test::scm setup-use-keyring
                                 "keyring"

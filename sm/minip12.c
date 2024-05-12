@@ -939,7 +939,7 @@ parse_bag_encrypted_data (struct p12_parse_ctx_s *ctx, tlv_parser_t tlv)
   if (!datalen)
     {
       err = gpg_error (GPG_ERR_DECRYPT_FAILED);
-      ctx->badpass = 1;  /* This is the most likley reason.  */
+      ctx->badpass = 1;  /* This is the most likely reason.  */
       goto bailout;
     }
 
@@ -2546,7 +2546,7 @@ build_ecc_key_sequence (gcry_mpi_t *kparms, int mode, size_t *r_length)
     }
 
   /* Unfortunately the private key D may come with a single leading
-   * zero byte.  This is becuase at some point it was treated as
+   * zero byte.  This is because at some point it was treated as
    * signed MPI and the code made sure that it is always interpreted
    * as unsigned.  Fortunately we got the size of the curve and can
    * detect such a case reliable.  */

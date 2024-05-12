@@ -19,7 +19,7 @@
 
 @c Create a separate index for command line options.
 @defcodeindex op
-@c Create an index vor environment variables and files.
+@c Create an index for environment variables and files.
 @defcodeindex ef
 
 @c Merge the function index into the concept index.

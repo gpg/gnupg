@@ -55,7 +55,7 @@ Noteworthy changes in version 1.0.1 (2007-08-16)
 Noteworthy changes in version 1.0.0 (2006-11-29)
 ------------------------------------------------
 
- * Bumbed the version number.
+ * Bumped the version number.
 
  * Removed included gettext.  We now require the system to provide a
    suitable installation.
@@ -174,7 +174,7 @@ Noteworthy changes in version 0.5.4 (2004-04-29)
 ------------------------------------------------
 
  * New commands --ocsp-responder and --ocsp-signer to define a default
-   OCSP reponder if a certificate does not contain an assigned OCSP
+   OCSP responder if a certificate does not contain an assigned OCSP
    responder.
 
 

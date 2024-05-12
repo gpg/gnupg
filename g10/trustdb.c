@@ -1505,7 +1505,7 @@ list_trust_path( const char *username )
 /****************
  * Enumerate all keys, which are needed to build all trust paths for
  * the given key.  This function does not return the key itself or
- * the ultimate key (the last point in cerificate chain).  Only
+ * the ultimate key (the last point in certificate chain).  Only
  * certificate chains which ends up at an ultimately trusted key
  * are listed.	If ownertrust or validity is not NULL, the corresponding
  * value for the returned LID is also returned in these variable(s).

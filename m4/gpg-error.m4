@@ -145,7 +145,7 @@ dnl                   [ACTION-IF-FOUND [, ACTION-IF-NOT-FOUND ]]])
 dnl
 dnl Test for libgpg-error and define GPG_ERROR_CFLAGS, GPG_ERROR_LIBS,
 dnl GPG_ERROR_MT_CFLAGS, and GPG_ERROR_MT_LIBS.  The _MT_ variants are
-dnl used for programs requireing real multi thread support.
+dnl used for programs requiring real multi thread support.
 dnl
 dnl If a prefix option is not used, the config script is first
 dnl searched in $SYSROOT/bin and then along $PATH.  If the used

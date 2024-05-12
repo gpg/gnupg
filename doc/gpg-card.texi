@@ -281,7 +281,7 @@ removes this data object.  GnuPG does not use this info.
 Change the User Interaction Flag.  That flags tells whether the
 confirmation button of a token shall be used.  @var{n} must in the
 range 1 to 3.  "permanent" is the same as "on" but the flag can't be
-changed anmore.
+changed anymore.
 
 @item UNBLOCK
 @opindex unblock

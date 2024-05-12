@@ -95,7 +95,7 @@ ensure_space (tlv_builder_t tb)
  * element is described by CLASS, TAG, VALUE, and VALUEEN.  CLASS and
  * TAG must describe a primitive element and (VALUE,VALUELEN) specify
  * its value.  The value is a pointer and its object must not be
- * changed as long as the instance TB exists.  For a TAG_NULL no vlaue
+ * changed as long as the instance TB exists.  For a TAG_NULL no value
  * is expected.  Errors are not returned but recorded for later
  * retrieval.  */
 void

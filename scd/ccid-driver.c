@@ -1812,7 +1812,7 @@ ccid_open_usb_reader (const char *spec_reader_name,
 
   my_npth_protect ();
 
-  /* Perform any vendor specific intialization.  */
+  /* Perform any vendor specific initialization.  */
   rc = ccid_vendor_specific_init (*handle);
 
  leave:

@@ -152,7 +152,7 @@ Note that such a comment will be removed if the git commit option
       if ( 42 == foo )
 #+end_src
     this is harder to read and modern compilers are pretty good in
-    detecing accidental assignments.  It is also suggested not to
+    detecting accidental assignments.  It is also suggested not to
     compare to 0 or NULL but to test the value direct or with a '!';
     this makes it easier to see that a boolean test is done.
   - We use our own printf style functions like =es_printf=, and
@@ -244,7 +244,7 @@ subject line; the list is used for several different projects.
 
 In general you should send patches only for the master branch; we may
 later decide to backport to another branch.  Please ask first before
-sending pacthes for another branch.
+sending patches for another branch.
 
 If you're working from the Git repo, here's a suggested workflow:
 

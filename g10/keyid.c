@@ -336,7 +336,7 @@ do_hash_public_key (gcry_md_hd_t md, PKT_public_key *pk, int use_v5)
             {
               /* Ugly: We need to re-construct the wire format of the
                * key parameter.  It would be easier to use a second
-               * index for pp and nn which we could bump independet of
+               * index for pp and nn which we could bump independent of
                * i.  */
               const char *p;
 
@@ -870,7 +870,7 @@ nbits_from_pk (PKT_public_key *pk)
         case 800:  nbits =  512; break;
         case 1184: nbits =  768; break;
         case 1568: nbits = 1024; break;
-        default:   nbits = 0;    break;  /* Unkown version.  */
+        default:   nbits = 0;    break;  /* Unknown version.  */
         }
       return nbits;
     }
@@ -1093,7 +1093,7 @@ fingerprint_from_pk (PKT_public_key *pk, byte *array, size_t *ret_len)
  * Return a byte array with the fingerprint for the given PK/SK The
  * length of the array is returned in ret_len. Caller must free the
  * array or provide an array of length MAX_FINGERPRINT_LEN.  This
- * version creates a v5 fingerprint even vor v4 keys.
+ * version creates a v5 fingerprint even for v4 keys.
  */
 byte *
 v5_fingerprint_from_pk (PKT_public_key *pk, byte *array, size_t *ret_len)

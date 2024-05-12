@@ -884,7 +884,7 @@ struct inq_cb_parm_s
 };
 
 
-/* Return true if PIN is indentical to the last generated pin.  */
+/* Return true if PIN is identical to the last generated pin.  */
 static int
 is_generated_pin (struct inq_cb_parm_s *parm, const char *pin)
 {

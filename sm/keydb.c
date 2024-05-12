@@ -53,7 +53,7 @@ struct resource_item {
 
 
 /* Data used to keep track of keybox daemon sessions.  This allows us
- * to use several sessions with the keyboxd and also to re-use already
+ * to use several sessions with the keyboxd and also to reuse already
  * established sessions.  Note that gpgdm.h defines the type
  * keydb_local_t for this structure.  */
 struct keydb_local_s
@@ -1552,7 +1552,7 @@ keydb_search_desc_dump (struct keydb_search_desc *desc)
 
 
 
-/* Status callback for SEARCH and NEXT operaions.  */
+/* Status callback for SEARCH and NEXT operations.  */
 static gpg_error_t
 search_status_cb (void *opaque, const char *line)
 {
@@ -1601,7 +1601,7 @@ search_status_cb (void *opaque, const char *line)
  * keydb_search_reset().
  *
  * If no key matches the search description, the error code
- * GPG_ERR_NOT_FOUND is retruned.  If there was a match, 0 is
+ * GPG_ERR_NOT_FOUND is returned.  If there was a match, 0 is
  * returned.  If an error occurred, that error code is returned.
  *
  * The returned key is considered to be selected and the certificate

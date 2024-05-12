@@ -22,7 +22,7 @@
 #include "../common/sexp-parse.h"
 
 /*
- * When it's for ECC, fixup private key part in the cannonical SEXP
+ * When it's for ECC, fixup private key part in the canonical SEXP
  * representation in BUF.  If not ECC, do nothing.
  */
 gpg_error_t

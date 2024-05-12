@@ -618,7 +618,7 @@ check_signatures_trust (ctrl_t ctrl, kbnode_t keyblock, PKT_public_key *pk,
   targetuid = NULL;
   if (uidbased)
     {
-      u32 tmpcreated = 0; /* Helper to find the lates user ID.  */
+      u32 tmpcreated = 0; /* Helper to find the latest user ID.  */
       PKT_user_id *tmpuid;
 
       for (n=keyblock; n; n = n->next)

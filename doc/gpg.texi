@@ -1611,7 +1611,7 @@ maintained by the keyboxd process in its own database.
 
 @item --primary-keyring @var{file}
 @opindex primary-keyring
-This is a varian of @option{--keyring} and designates @var{file} as
+This is a variant of @option{--keyring} and designates @var{file} as
 the primary public keyring. This means that newly imported keys (via
 @option{--import} or keyserver @option{--recv-from}) will go to this
 keyring.
@@ -1808,7 +1808,7 @@ this option at all (e.g. due to the @option{--no-options} option).
 @opindex add-desig-revoker
 Add the key specified by @var{fingerprint} as a designated revoker to
 newly created keys.  If the fingerprint is prefixed with the keyword
-``sensitive:'' that info is normally not exported wit the key.  This
+``sensitive:'' that info is normally not exported with the key.  This
 option may be given several time to add more than one designated
 revoker.  If the keyword ``clear'' is used instead of a fingerprint,
 all designated options previously encountered are discarded.
@@ -2794,7 +2794,7 @@ The available properties are:
   Key Directory.
 
   @item url
-  A string with the the URL associated wit the last key lookup.
+  A string with the the URL associated with the last key lookup.
 
 @end table
 

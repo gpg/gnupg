@@ -188,13 +188,13 @@ MAKE_J=6
 
 INST_NAME=gnupg-w32
 
-# Use this to override the installaion directory for native builds.
+# Use this to override the installation directory for native builds.
 INSTALL_PREFIX=none
 
 # Set this to the location of wixtools
 WIXPREFIX=$(shell readlink -f ~/w32root/wixtools)
 
-# If patchelf(1) is not availale disable the command.
+# If patchelf(1) is not available disable the command.
 PATCHELF := $(shell patchelf --version 2>/dev/null >/dev/null || echo "echo please run: ")patchelf
 
 # Read signing information from ~/.gnupg-autogen.rc
@@ -1401,7 +1401,7 @@ endif
 
 
 #
-# Check availibility of standard tools and prepare everything.
+# Check availability of standard tools and prepare everything.
 #
 check-tools: $(stampdir)/stamp-directories
 

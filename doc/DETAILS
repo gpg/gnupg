@@ -132,7 +132,7 @@ described here.
 *** Field 5 - KeyID
 
     This is the 64 bit keyid as specified by OpenPGP and the last 64
-    bit of the SHA-1 fingerprint of an X.509 certifciate.
+    bit of the SHA-1 fingerprint of an X.509 certificate.
 
 *** Field 6 - Creation date
 
@@ -1101,7 +1101,7 @@ pkd:0:1024:B665B1435F4C2 .... FF26ABB:
                         gpg-agent.
     - keyedit.passwd :: Changing the password failed.
     - nomdc_with_legacy_cipher :: The message was not MDC protected.
-         Use the command line to lern about a workaround.
+         Use the command line to learn about a workaround.
     - random-compliance :: The random number generator or the used
          version of Libgcrypt do not fulfill the requirements of the
          current compliance setting.  The error code is often
@@ -1179,7 +1179,7 @@ pkd:0:1024:B665B1435F4C2 .... FF26ABB:
     <total>.  For example "B", "KiB", or "MiB".
 
 *** BACKUP_KEY_CREATED <fingerprint> <fname>
-    A backup of a key identified by <fingerprint> has been writte to
+    A backup of a key identified by <fingerprint> has been written to
     the file <fname>; <fname> is percent-escaped.
 
 *** MOUNTPOINT <name>
@@ -1263,7 +1263,7 @@ pkd:0:1024:B665B1435F4C2 .... FF26ABB:
 
 *** CERTINFO <certtype> <certref> [<label>]
 
-    This status is emitted for X.509 certifcates.
+    This status is emitted for X.509 certificates.
     CERTTYPE is a number indicating the type of the certificate:
      0   := Unknown
      100 := Regular X.509 cert
@@ -1274,7 +1274,7 @@ pkd:0:1024:B665B1435F4C2 .... FF26ABB:
 
     CERTREF identifies the certificate uniquely on the card and may be
     used to match it with a key's KEYREF.  LABEL is an optional human
-    readable decription of the certificate; it won't have any space in
+    readable description of the certificate; it won't have any space in
     it and is percent encoded.
 
 *** MANUFACTURER <n> [<string>]
@@ -1297,7 +1297,7 @@ pkd:0:1024:B665B1435F4C2 .... FF26ABB:
 *** KEY-ATTR-INFO <keyref> <string>
     This is the response from scdaemon on GETATTR KEY-ATTR-INFO for
     OpenPGP cards.  <keyref> is the usual keyref (e.g. OPENPGP.1 or
-    OPENPGP.129) and <string> is the algoritm or curve name, which
+    OPENPGP.129) and <string> is the algorithm or curve name, which
     is available for the key.
 
 *** KEY-TIME <n> <timestamp>
@@ -1310,7 +1310,7 @@ pkd:0:1024:B665B1435F4C2 .... FF26ABB:
 *** KEY-LABEL <keyref> <label>
     This returns the human readbable label for the keys given by
     KEYREF.  LABEL won't have any space in it and is percent encoded.
-    This info shall only be used for dispaly purposes.
+    This info shall only be used for display purposes.
 
 * Format of the --attribute-fd output
 

@@ -308,7 +308,7 @@ transform_sigval (const unsigned char *sigval, size_t sigvallen, int mdalgo,
 
 
 /* Wrapper around ksba_cms_get_sig_val to return a gcrypt object
- * instaed of ksba's canonical s-expression.  On errror NULL is return
+ * instead of ksba's canonical s-expression.  On error NULL is return
  * and in some cases an error message is printed.  */
 gcry_sexp_t
 gpgsm_ksba_cms_get_sig_val (ksba_cms_t cms, int idx)

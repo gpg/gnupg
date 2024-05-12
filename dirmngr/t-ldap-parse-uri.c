@@ -291,7 +291,7 @@ main (int argc, char **argv)
     }
   if (argc)
     {
-      fprintf (stderr, PGM ": no argumenst are expected\n");
+      fprintf (stderr, PGM ": no arguments are expected\n");
       exit (1);
     }
 

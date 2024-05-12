@@ -4470,7 +4470,7 @@ parse_parameter_usage (const char *fname,
 
 /* Parse the revocation key specified by NAME, check that the public
  * key exists (so that we can get the required public key algorithm),
- * and return a parameter wit the revocation key information.  On
+ * and return a parameter with the revocation key information.  On
  * error print a diagnostic and return NULL.  */
 static struct para_data_s *
 prepare_desig_revoker (ctrl_t ctrl, const char *name)
@@ -4790,7 +4790,7 @@ proc_parameter_file (ctrl_t ctrl, struct para_data_s *para, const char *fname,
   if (parse_revocation_key (fname, para, pREVOKER))
     return -1;
 
-  /* Check and appened revokers from the config file.  */
+  /* Check and append revokers from the config file.  */
   for (sl = opt.desig_revokers; sl; sl = sl->next)
     {
       r = prepare_desig_revoker (ctrl, sl->d);

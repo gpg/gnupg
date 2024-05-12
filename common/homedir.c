@@ -1089,7 +1089,7 @@ gnupg_daemon_rootdir (void)
 
       n = GetSystemDirectoryA (path, sizeof path);
       if (!n || n >= sizeof path)
-        name = xstrdup ("/"); /* Error - use the curret top dir instead.  */
+        name = xstrdup ("/"); /* Error - use the current top dir instead.  */
       else
         name = xstrdup (path);
       gpgrt_annotate_leaked_object (name);
@@ -1306,7 +1306,7 @@ _gnupg_socketdir_internal (int skip_checks, unsigned *r_info)
       strcat (prefixbuffer, gnupgname);
     }
 
-  /* Check whether the gnupg sub directory (or the specified diretory)
+  /* Check whether the gnupg sub directory (or the specified directory)
    * has proper permissions.  */
   if (stat (prefix, &sb))
     {

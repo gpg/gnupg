@@ -318,7 +318,7 @@ gpgsm_export (ctrl_t ctrl, strlist_t names, estream_t stream)
 
 /* Export a certificate and its private key.  RAWMODE controls the
    actual output:
-       0 - Private key and certifciate in PKCS#12 format
+       0 - Private key and certificate in PKCS#12 format
        1 - Only unencrypted private key in PKCS#8 format
        2 - Only unencrypted private key in PKCS#1 format
     */
@@ -485,7 +485,7 @@ gpgsm_p12_export (ctrl_t ctrl, const char *name, estream_t stream, int rawmode)
 }
 
 
-/* Print some info about the certifciate CERT to FP or STREAM */
+/* Print some info about the certificate CERT to FP or STREAM */
 static void
 print_short_info (ksba_cert_t cert, estream_t stream)
 {

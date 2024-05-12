@@ -1,4 +1,4 @@
-/* frontend.c - Database fronend code for keyboxd
+/* frontend.c - Database frontend code for keyboxd
  * Copyright (C) 2019 g10 Code GmbH
  *
  * This file is part of GnuPG.

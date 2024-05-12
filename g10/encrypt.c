@@ -68,7 +68,7 @@ encrypt_store (const char *filename)
 }
 
 
-/* Create and setup a DEK structure and print approriate warnings.
+/* Create and setup a DEK structure and print appropriate warnings.
  * PK_LIST gives the list of public keys.  Always returns a DEK.  The
  * actual session needs to be added later.  */
 static DEK *
@@ -94,7 +94,7 @@ create_dek_with_warnings (pk_list_t pk_list)
 
       /* In case 3DES has been selected, print a warning if any key
        * does not have a preference for AES.  This should help to
-       * indentify why encrypting to several recipients falls back to
+       * identify why encrypting to several recipients falls back to
        * 3DES. */
       if (opt.verbose && dek->algo == CIPHER_ALGO_3DES)
         warn_missing_aes_from_pklist (pk_list);
@@ -1128,7 +1128,7 @@ write_pubkey_enc (ctrl_t ctrl,
    * the structure DEK and want to encode this session key in an
    * integer value of n bits. pubkey_nbits gives us the number of
    * bits we have to use.  We then encode the session key in some
-   * way and we get it back in the big intger value FRAME.  Then
+   * way and we get it back in the big integer value FRAME.  Then
    * we use FRAME, the public key PK->PKEY and the algorithm
    * number PK->PUBKEY_ALGO and pass it to pubkey_encrypt which
    * returns the encrypted value in the array ENC->DATA.  This

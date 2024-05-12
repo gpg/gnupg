@@ -190,7 +190,7 @@ struct app_local_s {
   struct
   {
     unsigned int is_v2:1;              /* Compatible to v2 or later.        */
-    unsigned int is_v3:1;              /* Comatible to v3 or later.         */
+    unsigned int is_v3:1;              /* Compatible to v3 or later.        */
     unsigned int has_button:1;         /* Has confirmation button or not.   */
 
     unsigned int sm_supported:1;       /* Secure Messaging is supported.    */

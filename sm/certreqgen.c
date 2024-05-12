@@ -477,7 +477,7 @@ proc_parameters (ctrl_t ctrl, struct para_data_s *para,
     }
 
   /* Check the keylength.  NOTE: If you change this make sure that it
-     macthes the gpgconflist item in gpgsm.c  */
+     matches the gpgconflist item in gpgsm.c  */
   if (!get_parameter (para, pKEYLENGTH, 0))
     nbits = 3072;
   else
@@ -1270,7 +1270,7 @@ create_request (ctrl_t ctrl,
             }
           der[0] = 0x30; /* Sequence */
           der[1] = qlen + 2;
-          der[2] = 0x80; /* Context tag for an implict Octet String. */
+          der[2] = 0x80; /* Context tag for an implicit Octet String. */
           der[3] = qlen;
           memcpy (der+4, q, qlen);
           err = ksba_certreq_add_extension (cr, oidstr_authorityKeyIdentifier,

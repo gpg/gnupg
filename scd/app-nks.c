@@ -528,7 +528,7 @@ find_fid_by_keyref (app_t app, const char *keyref, int *r_idx, int *r_algo)
               break;
           if (!filelist[idx].fid)
             {
-              log_debug ("nks: Ooops: Unkown FID cached!\n");
+              log_debug ("nks: Ooops: Unknown FID cached!\n");
               err = gpg_error (GPG_ERR_BUG);
               goto leave;
             }

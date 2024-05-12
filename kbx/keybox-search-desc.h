@@ -1,4 +1,4 @@
-/* keybox-search-desc.h - Keybox serch description
+/* keybox-search-desc.h - Keybox search description
  *	Copyright (C) 2001 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.

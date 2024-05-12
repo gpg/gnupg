@@ -1826,7 +1826,7 @@ Do the check using the OCSP protocol and ignore any CRLs.
 @item --force-default-responder
 @opindex force-default-responder
 When checking using the OCSP protocol, force the use of the default OCSP
-responder.  That is not to use the Reponder as given by the certificate.
+responder.  That is not to use the Responder as given by the certificate.
 
 @item --ping
 @opindex ping

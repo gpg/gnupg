@@ -992,7 +992,7 @@ check_signature_over_key_or_uid (ctrl_t ctrl, PKT_public_key *signer,
               if (ret_pk)
                 {
                   signer = ret_pk;
-                  /* FIXME: Using memset here is probematic because it
+                  /* FIXME: Using memset here is problematic because it
                    * assumes that there are no allocated fields in
                    * SIGNER.  */
                   memset (signer, 0, sizeof (*signer));

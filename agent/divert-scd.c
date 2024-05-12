@@ -90,7 +90,7 @@ has_percent0A_suffix (const char *string)
 
    INFO gets displayed as part of a generic string.  However if the
    first character of INFO is a vertical bar all up to the next
-   verical bar are considered flags and only everything after the
+   vertical bar are considered flags and only everything after the
    second vertical bar gets displayed as the full prompt.
 
    Flags:

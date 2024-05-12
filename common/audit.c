@@ -44,7 +44,7 @@ struct log_item_s
   gpg_error_t err;     /* The logged error code.  */
   int intvalue;        /* A logged integer value.  */
   char *string;        /* A malloced string or NULL.  */
-  ksba_cert_t cert;    /* A certifciate or NULL. */
+  ksba_cert_t cert;    /* A certificate or NULL. */
   unsigned int have_err:1;
   unsigned int have_intvalue:1;
 };

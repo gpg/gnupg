@@ -446,7 +446,7 @@ leave:
 
 
 /* Same as get_pubkey but if the key was not found the function tries
- * to import it from LDAP.  FIXME: We should not need this but swicth
+ * to import it from LDAP.  FIXME: We should not need this but switch
  * to a fingerprint lookup.  */
 gpg_error_t
 get_pubkey_with_ldap_fallback (ctrl_t ctrl, PKT_public_key *pk, u32 *keyid)
@@ -992,7 +992,7 @@ get_pubkey_byname (ctrl_t ctrl, enum get_pubkey_modes mode,
   /* If we are called due to --locate-external-key Check whether NAME
    * is a fingerprint and then try to lookup that key by configured
    * method which support lookup by fingerprint.  FPRBUF carries the
-   * parsed fingerpint iff IS_FPR is true.  */
+   * parsed fingerprint iff IS_FPR is true.  */
   is_fpr = 0;
   if (!is_mbox && mode == GET_PUBKEY_NO_LOCAL)
     {
@@ -2525,7 +2525,7 @@ parse_key_usage (PKT_signature * sig)
 
 /* Apply information from SIGNODE (which is the valid self-signature
  * associated with that UID) to the UIDNODE:
- * - wether the UID has been revoked
+ * - whether the UID has been revoked
  * - assumed creation date of the UID
  * - temporary store the keyflags here
  * - temporary store the key expiration time here

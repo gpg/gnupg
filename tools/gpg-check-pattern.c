@@ -327,7 +327,7 @@ parse_pattern_file (char *data, size_t datalen)
   unsigned int lineno = 0;
   unsigned int icase_mode = 1;
   unsigned int accept_mode = 0;
-  unsigned int newblock = 1;  /* The first implict block.  */
+  unsigned int newblock = 1;  /* The first implicit block.  */
 
   /* Estimate the number of entries by counting the non-comment lines.  */
   arraysize = 0;

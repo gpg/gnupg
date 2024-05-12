@@ -42,7 +42,7 @@ enum cert_usage_modes
     CERT_USAGE_MODE_VRFY,  /* Usable for verification.          */
     CERT_USAGE_MODE_DECR,  /* Usable for decryption.            */
     CERT_USAGE_MODE_CERT,  /* Usable for cert signing.          */
-    CERT_USAGE_MODE_OCSP,  /* Usable for OCSP respone signing.  */
+    CERT_USAGE_MODE_OCSP,  /* Usable for OCSP response signing. */
     CERT_USAGE_MODE_CRL    /* Usable for CRL signing.           */
   };
 
@@ -56,7 +56,7 @@ struct chain_item_s
   ksba_cert_t cert;      /* The certificate.  */
   unsigned char fpr[20]; /* Fingerprint of the certificate.  */
   int is_self_signed;    /* This certificate is self-signed.  */
-  int is_valid;          /* The certifiate is valid except for revocations.  */
+  int is_valid;          /* The certificate is valid except for revocations.  */
 };
 typedef struct chain_item_s *chain_item_t;
 
@@ -173,7 +173,7 @@ check_cert_policy (ksba_cert_t cert)
   if (err)
     return err;
 
-  /* STRING is a line delimited list of certifiate policies as stored
+  /* STRING is a line delimited list of certificate policies as stored
      in the certificate.  The line itself is colon delimited where the
      first field is the OID of the policy and the second field either
      N or C for normal or critical extension */

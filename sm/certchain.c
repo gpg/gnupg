@@ -758,7 +758,7 @@ find_up_via_auth_info_access (ctrl_t ctrl, KEYDB_HANDLE kh, ksba_cert_t cert)
                               &find_up_store_certs_parm);
 
   /* Although we might receive several certificates we use only the
-   * first one.  Or more exacty the first one for which we retrieved
+   * first one.  Or more exactly the first one for which we retrieved
    * the fingerprint.  */
   if (opt.verbose)
     log_info ("number of caIssuers found: %d\n",

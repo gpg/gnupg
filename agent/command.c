@@ -251,7 +251,7 @@ reset_notify (assuan_context_t ctx, char *line)
 
   clear_nonce_cache (ctrl);
 
-  /* Note that a RESET does not clear the ephemeral store becuase
+  /* Note that a RESET does not clear the ephemeral store because
    * clients are used to issue a RESET on a connection.  */
 
   return 0;

@@ -1399,7 +1399,7 @@ app_munge_serialno (card_t card)
        *   !     !----------- Form factor
        *   !----------------- Our prefix
        * Yubico seems to use the decimalized version of their S/N
-       * as the OpenPGP card S/N.  Thus in theory we can contruct the
+       * as the OpenPGP card S/N.  Thus in theory we can construct the
        * number from this information so that we do not rely on having
        * the OpenPGP app enabled.
        */

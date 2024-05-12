@@ -1778,7 +1778,7 @@ card_generate_subkey (ctrl_t ctrl, kbnode_t pub_keyblock)
 /* Store the key at NODE into the smartcard and modify NODE to carry
    the serialno stuff instead of the actual secret key parameters.
    USE is the usage for that key; 0 means any usage.  If
-   PROCESSED_KEYS is not NULL it is a poiter to an strlist which will
+   PROCESSED_KEYS is not NULL it is a pointer to an strlist which will
    be filled with the keygrips of successfully stored keys.  */
 int
 card_store_subkey (KBNODE node, int use, strlist_t *processed_keys)

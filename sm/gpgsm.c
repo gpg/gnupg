@@ -1026,12 +1026,12 @@ main ( int argc, char **argv)
   /* Set the default policy file */
   opt.policy_file = make_filename (gnupg_homedir (), "policies.txt", NULL);
 
-  /* The configuraton directories for use by gpgrt_argparser.  */
+  /* The configuration directories for use by gpgrt_argparser.  */
   gpgrt_set_confdir (GPGRT_CONFDIR_SYS, gnupg_sysconfdir ());
   gpgrt_set_confdir (GPGRT_CONFDIR_USER, gnupg_homedir ());
 
   /* We are re-using the struct, thus the reset flag.  We OR the
-   * flags so that the internal intialized flag won't be cleared. */
+   * flags so that the internal initialized flag won't be cleared. */
   argc        = orig_argc;
   argv        = orig_argv;
   pargs.argc  = &argc;
@@ -1873,7 +1873,7 @@ main ( int argc, char **argv)
       /* We do not require a recipient for decryption but because
        * recipients and signers are always checked and log_error is
        * sometimes used (for failed signing keys or due to a failed
-       * CRL checking) that would have bumbed up the error counter.
+       * CRL checking) that would have bumped up the error counter.
        * We clear the counter in the decryption case because there is
        * no reason to force decryption to fail. */
       if (cmd == aDecrypt && !errcount)

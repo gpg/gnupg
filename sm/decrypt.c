@@ -251,7 +251,7 @@ ecdh_decrypt (unsigned char *secret, size_t secretlen,
     log_printhex (secret, secretlen, "ECDH X ..:");
 
   /* We have now the shared secret bytes in (SECRET,SECRETLEN).  Now
-   * we will compute the KEK using a value dervied from the secret
+   * we will compute the KEK using a value derived from the secret
    * bytes. */
   err = gcry_sexp_extract_param (enc_val, "enc-val",
                                  "&'encr-algo''wrap-algo''ukm'?s",
@@ -555,7 +555,7 @@ pwri_decrypt (ctrl_t ctrl, gcry_sexp_t enc_val,
                                  ioarray+2, ioarray+3, ioarray+4, NULL);
   if (err)
     {
-      /* If this is not pwri element, it is likly a kekri element
+      /* If this is not pwri element, it is likely a kekri element
        * which we do not yet support.  Change the error back to the
        * original as returned by ksba_cms_get_issuer.  */
       if (gpg_err_code (err) == GPG_ERR_NOT_FOUND)

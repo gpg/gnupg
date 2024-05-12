@@ -932,7 +932,7 @@ proc_wkd_get (ctrl_t ctrl, assuan_context_t ctx, char *line)
       err = get_dns_srv (ctrl, domain, "openpgpkey", NULL, &srvs, &srvscount);
       if (err)
         {
-          /* Ignore server failed becuase there are too many resolvers
+          /* Ignore server failed because there are too many resolvers
            * which do not work as expected.  */
           if (gpg_err_code (err) == GPG_ERR_SERVER_FAILED)
             err = 0; /*(srvcount is guaranteed to be 0)*/

@@ -884,7 +884,7 @@ run_select_statement (ctrl_t ctrl, be_sqlite_local_t ctx,
       goto leave;
     }
 
-  /* Check whether we can re-use the current select statement.  */
+  /* Check whether we can reuse the current select statement.  */
   if (!ctx->select_stmt)
     ;
   else if (ctx->select_mode != desc[descidx].mode)

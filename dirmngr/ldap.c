@@ -256,7 +256,7 @@ url_fetch_ldap (ctrl_t ctrl, const char *url, ksba_reader_t *reader)
     }
 
   if (ludp->lud_scheme && !strcmp (ludp->lud_scheme, "ldaps"))
-    tls_mode = 2; /* LDAP-over-TLS here becuase we get it from certs. */
+    tls_mode = 2; /* LDAP-over-TLS here because we get it from certs. */
   else
     tls_mode = 0;
 
@@ -524,7 +524,7 @@ make_one_filter (const char *pattern, char **r_result)
       if (*pattern)
         {
           /* We need just the BaseDN.  This assumes that the Subject
-           * is correcly stored in the DT.  This is however not always
+           * is correctly stored in the DT.  This is however not always
            * the case and the actual DN is different from the
            * subject.  In this case we won't find anything.  */
           if (extfilt_need_escape (pattern)
@@ -606,7 +606,7 @@ make_one_filter (const char *pattern, char **r_result)
 /* Prepare an LDAP query to return the cACertificate attribute for DN.
  * All configured default servers are queried until one responds.
  * This function returns an error code or 0 and stored a newly
- * allocated contect object at CONTEXT on success. */
+ * allocated context object at CONTEXT on success. */
 gpg_error_t
 start_cacert_fetch_ldap (ctrl_t ctrl, cert_fetch_context_t *r_context,
                          const char *dn)
@@ -778,7 +778,7 @@ start_cert_fetch_ldap (ctrl_t ctrl, cert_fetch_context_t *r_context,
       if (argc >= DIM (argv) - 1)
         {
           /* Too many patterns.  It does not make sense to allow an
-             arbitrary number of patters because the length of the
+             arbitrary number of patterns because the length of the
              command line is limited anyway.  */
           err = gpg_error (GPG_ERR_RESOURCE_LIMIT);
           goto leave;

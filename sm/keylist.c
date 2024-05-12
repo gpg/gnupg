@@ -56,7 +56,7 @@ struct list_external_parm_s
 #define OID_FLAG_UTF8 2
 /* The extension can be printed as a hex string.  */
 #define OID_FLAG_HEX  4
-/* Define if this specififies a key purpose.  */
+/* Define if this specifies a key purpose.  */
 #define OID_FLAG_KP   8
 
 /* A table mapping OIDs to a descriptive string. */

@@ -1,6 +1,6 @@
 # gnupg-ldap-ad-scheme.ldif                               -*- conf -*-
 #
-# Schema for an OpenPGP LDAP keyserver.  This is a slighly enhanced
+# Schema for an OpenPGP LDAP keyserver.  This is a slightly enhanced
 # version of the original LDAP schema used for PGP keyservers as
 # installed at quite some sites.
 # Revision: 2021-09-01  v1
@@ -12,7 +12,7 @@
 #      ldifde -i -v -f gnupg-ldap-ad-schema.ldif
 #             -c "DC=EXAMPLEDC" "#configurationNamingContext"
 #   (the above command is given as one line)
-# - The schema does not get its own distingished name as done with OpenLDAP.
+# - The schema does not get its own distinguished name as done with OpenLDAP.
 # - The first GUID we use is f406e7a5-a5ea-411e-9ddd-2e4e66899800
 #   and incremented for each attribute.
 #

@@ -113,7 +113,7 @@
 
 ;; Note that the entry for pinentry relies on the fact that
 ;; GNUPG_BUILD_ROOT is the top of the build root.  The second element
-;; in each list is an envvar which can be used to specifiy a different
+;; in each list is an envvar which can be used to specify a different
 ;; tool than the installed one.
 (define tools
   '((gpgv "GPGV" "g10/gpgv")

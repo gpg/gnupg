@@ -251,7 +251,7 @@ typedef struct
   const byte *trust_regexp;
   struct revocation_key *revkey;
   int numrevkeys;
-  int help_counter;          /* Used internally bu some functions.  */
+  int help_counter;          /* Used internally by some functions.  */
   char *signers_uid;         /* Malloced value of the SIGNERS_UID
                               * subpacket or NULL.  This string has
                               * already been sanitized.  */

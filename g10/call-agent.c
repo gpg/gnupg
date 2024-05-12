@@ -791,7 +791,7 @@ learn_status_cb (void *opaque, const char *line)
  * Used by:
  *  card-util.c
  *  keyedit_menu
- *  card_store_key_with_backup  (Woth force to remove secret key data)
+ *  card_store_key_with_backup  (With force to remove secret key data)
  */
 int
 agent_scd_learn (struct agent_card_info_s *info, int force)
@@ -2316,7 +2316,7 @@ agent_probe_secret_key (ctrl_t ctrl, PKT_public_key *pk)
   else if (!result && result2)
     return 0;       /* Only first key available - return no key.  */
   else if (result && !result2)
-    return 0;       /* Only second key not availabale - return no key.  */
+    return 0;       /* Only second key not available - return no key.  */
   else if (result == 4 || result == 2)
     return result;  /* First key on card - don't care where the second is.  */
   else
@@ -2345,7 +2345,7 @@ agent_probe_any_secret_key (ctrl_t ctrl, kbnode_t keyblock)
     return err;
 
   /* If we have not yet issued a "HAVEKEY --list" do that now.  We use
-   * a more or less arbitray limit of 1000 keys.  */
+   * a more or less arbitrary limit of 1000 keys.  */
   if (ctrl && !ctrl->secret_keygrips && !ctrl->no_more_secret_keygrips)
     {
       membuf_t data;

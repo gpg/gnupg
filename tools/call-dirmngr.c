@@ -359,7 +359,7 @@ wkd_get_key (const char *addrspec, estream_t *r_key)
 
 
 /* Send the KS_GET command to the dirmngr.  The caller provides CB
- * which is called for each key.  The callback is called wit a stream
+ * which is called for each key.  The callback is called with a stream
  * conveying a single key and several other informational parameters.
  * DOMAIN restricts the returned keys to this domain.  */
 gpg_error_t

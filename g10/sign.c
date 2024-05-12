@@ -684,7 +684,7 @@ hash_for (PKT_public_key *pk)
 	 like a new DSA key that just happens to have a 160-bit q
 	 (i.e. allow truncation).  If q is not 160, by definition it
 	 must be a new DSA key.  We ignore the personal_digest_prefs
-	 for ECDSA because they should always macth the curve and
+	 for ECDSA because they should always match the curve and
 	 truncated hashes are not useful either.  Even worse,
 	 smartcards may reject non matching hash lengths for curves
 	 (e.g. using SHA-512 with brainpooolP385r1 on a Yubikey).  */
@@ -1322,7 +1322,7 @@ sign_file (ctrl_t ctrl, strlist_t filenames, int detached, strlist_t locusr,
 
           if (opt.verbose)
             log_info (_("signing:") );
-          /* Must walk reverse trough this list.  */
+          /* Must walk reverse through this list.  */
           for (sl = strlist_last(filenames);
                sl;
                sl = strlist_prev( filenames, sl))

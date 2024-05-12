@@ -304,7 +304,7 @@ struct rootca_flags_s
                             information.  */
   unsigned int relax:1;  /* Relax checking of root certificates.  */
   unsigned int chain_model:1; /* Root requires the use of the chain model.  */
-  unsigned int qualified:1;   /* Root CA used for qualfied signatures.   */
+  unsigned int qualified:1;   /* Root CA used for qualified signatures.   */
   unsigned int de_vs:1;       /* Root CA is de-vs compliant.             */
 };
 

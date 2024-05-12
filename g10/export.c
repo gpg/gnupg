@@ -2134,7 +2134,7 @@ do_export_revocs (ctrl_t ctrl, kbnode_t keyblock, u32 *keyid,
         continue;
       sig = node->pkt->pkt.signature;
 
-      /* We are only interested in revocation certifcates.  */
+      /* We are only interested in revocation certificates.  */
       if (!(IS_KEY_REV (sig) || IS_UID_REV (sig) || IS_SUBKEY_REV (sig)))
         continue;
 

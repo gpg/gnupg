@@ -289,7 +289,7 @@ main (int argc, char **argv)
           if (passphrase)
             reply ("D %s\n", passphrase);
           else
-            reply ("D deafult\n");
+            reply ("D default\n");
         }
       else if (strncmp (buffer, "BYE", 3) == 0)
 	{

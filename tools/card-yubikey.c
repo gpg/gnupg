@@ -305,7 +305,7 @@ yk_enable_disable (struct ykapps_s *yk, struct iface_s *iface,
 
 
 /* Implementation part of cmd_yubikey.  ARGV is an array of size ARGc
- * with the argumets given to the yubikey command.  Note that ARGV has
+ * with the arguments given to the yubikey command.  Note that ARGV has
  * no terminating NULL so that ARGC must be considered.  FP is the
  * stream to output information.  This function must only be called on
  * Yubikeys. */

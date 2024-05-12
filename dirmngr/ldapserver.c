@@ -60,7 +60,7 @@ ldapserver_list_free (ldap_server_t servers)
  * Flags are:
  *
  *   starttls  := Use STARTTLS with a default port of 389
- *   ldaptls   := Tunnel LDAP trough a TLS tunnel with default port 636
+ *   ldaptls   := Tunnel LDAP through a TLS tunnel with default port 636
  *   plain     := Switch to plain unsecured LDAP.
  *   (The last of these 3 flags is the effective one)
  *   ntds      := Use Active Directory authentication

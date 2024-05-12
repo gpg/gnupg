@@ -1278,7 +1278,7 @@ static int prefix_cmp(const int *prog, int proglen, const char *string, int noca
 }
 
 /**
- * Searchs for 'c' in the range 'range'.
+ * Searches for 'c' in the range 'range'.
  *
  * Returns 1 if found, or 0 if not.
  */

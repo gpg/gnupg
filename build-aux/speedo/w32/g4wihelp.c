@@ -24,7 +24,7 @@
  ************************************************************
  * The code for the splash screen has been taken from the Splash
  * plugin of the NSIS 2.04 distribution.  That code comes without
- * explicit copyright notices in tyhe source files or author names, it
+ * explicit copyright notices in the source files or author names, it
  * seems that it has been written by Justin Frankel; not sure about
  * the year, though. [wk 2005-11-28]
  *

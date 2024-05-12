@@ -151,7 +151,7 @@ hex_to_buffer (const char *string, size_t *r_length)
 /* Reset the card and free the application context.  With SEND_RESET
    set to true actually send a RESET to the reader; this is the normal
    way of calling the function.  If KEEP_LOCK is set and the session
-   is locked that lock wil not be released.  */
+   is locked that lock will not be released.  */
 static void
 do_reset (ctrl_t ctrl, int send_reset, int keep_lock)
 {
@@ -1356,7 +1356,7 @@ static const char hlp_writecert[] =
   "\n"
   "This command is used to store a certificate on a smartcard.  The\n"
   "allowed certids depend on the currently selected smartcard\n"
-  "application. The actual certifciate is requested using the inquiry\n"
+  "application. The actual certificate is requested using the inquiry\n"
   "\"CERTDATA\" and needs to be provided in its raw (e.g. DER) form.\n"
   "\n"
   "In almost all cases a PIN will be requested.  See the related\n"

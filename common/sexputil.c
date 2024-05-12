@@ -199,7 +199,7 @@ make_canon_sexp_pad (gcry_sexp_t sexp, int secure,
 }
 
 /* Return the so called "keygrip" which is the SHA-1 hash of the
-   public key parameters expressed in a way dependend on the algorithm.
+   public key parameters expressed in a way dependent on the algorithm.
 
    KEY is expected to be an canonical encoded S-expression with a
    public or private key. KEYLEN is the length of that buffer.
@@ -1195,7 +1195,7 @@ cipher_mode_to_string (int mode)
     }
 }
 
-/* Return the cannonical name of the ECC curve in KEY.  */
+/* Return the canonical name of the ECC curve in KEY.  */
 const char *
 get_ecc_curve_from_key (gcry_sexp_t key)
 {

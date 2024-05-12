@@ -1,4 +1,4 @@
-# Makfile.am - Makefile for tpm2d
+# Makefile.am - Makefile for tpm2d
 # Copyright (C) 2021 James Bottomley <James.Bottomley@HansenPartnership.com>
 #
 # This file is part of GnuPG.

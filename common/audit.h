@@ -76,7 +76,7 @@ typedef enum
     /* The signature is a detached one. */
 
     AUDIT_CERT_ONLY_SIG,
-    /* A certifciate only signature has been detected.  */
+    /* A certificate only signature has been detected.  */
 
     AUDIT_DATA_HASH_ALGO,  /* int */
     /* The hash algo given as argument is used for the data.  This

@@ -204,7 +204,7 @@ struct iobuf_struct
     byte *buf;
   } d;
 
-  /* A external drain buffer for reading/writting data skipping internal
+  /* A external drain buffer for reading/writing data skipping internal
      draint buffer D.BUF.  This allows zerocopy operation reducing
      processing overhead across filter stack.
 

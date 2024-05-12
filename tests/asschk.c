@@ -25,7 +25,7 @@
    only white spaces are ignored, line with a hash sign as first non
    white space character are treated as comments.
 
-   A simple macro mechanism is implemnted.  Macros are expanded before
+   A simple macro mechanism is implemented.  Macros are expanded before
    a line is processed but after comment processing.  Macros are only
    expanded once and non existing macros expand to the empty string.
    A macro is dereferenced by prefixing its name with a dollar sign;
@@ -36,7 +36,7 @@
    and an equal sign.  The value is assigned verbatim if it does not
    resemble a command, otherwise the return value of the command will
    get assigned.  The command "let" may be used to assign values
-   unambigiously and it should be used if the value starts with a
+   unambiguously and it should be used if the value starts with a
    letter.
 
    Conditions are not yes implemented except for a simple evaluation

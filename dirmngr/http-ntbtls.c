@@ -78,7 +78,7 @@ gnupg_http_tls_verify_cb (void *opaque,
   validate_flags = VALIDATE_FLAG_TLS;
 
   /* If we are using the standard hkps:// pool use the dedicated root
-   * certificate.  Note that this differes from the GnuTLS
+   * certificate.  Note that this differs from the GnuTLS
    * implementation which uses this special certificate only if no
    * other certificates are configured. */
   /* Disabled for 2.3.2 to due problems with the standard hkps pool.  */

@@ -1601,7 +1601,7 @@ if test "$build_tpm2d" = "yes"; then
     # until version 2.4.0.
     #
     # Note: the missing API is fairly serious and is also easily backportable
-    # so keep the check below as is intead of going by library version number.
+    # so keep the check below as is instead of going by library version number.
     ##
     AC_CHECK_LIB(tss2-esys, Esys_TR_GetTpmHandle, [], [
 	AC_MSG_WARN([Need Esys_TR_GetTpmHandle API (usually requires Intel TSS 2.4.0 or later, disabling TPM support)])
@@ -1638,7 +1638,7 @@ if test "$GCC" = yes; then
     mycflags=
     mycflags_save=$CFLAGS
 
-    # Check whether gcc does not emit a diagnositc for unknown -Wno-*
+    # Check whether gcc does not emit a diagnostic for unknown -Wno-*
     # options.  This is the case for gcc >= 4.6
     AC_MSG_CHECKING([if gcc ignores unknown -Wno-* options])
     AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[

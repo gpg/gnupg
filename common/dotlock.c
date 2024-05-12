@@ -1450,7 +1450,7 @@ dotlock_take_unix (dotlock_t h, long timeout)
       int wtimereal;
 
       if (ownerchanged)
-        wtime = 0;  /* Reset because owner chnaged.  */
+        wtime = 0;  /* Reset because owner changed.  */
 
       wtimereal = next_wait_interval (&wtime, &timeout);
       if (!timeout)

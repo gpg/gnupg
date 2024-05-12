@@ -225,7 +225,7 @@ cert_compute_fpr (ksba_cert_t cert, unsigned char *digest)
 
 
 
-/* Cleanup one slot.  This releases all resourses but keeps the actual
+/* Cleanup one slot.  This releases all resources but keeps the actual
    slot in the cache marked for reuse. */
 static void
 clean_cache_slot (cert_item_t ci)

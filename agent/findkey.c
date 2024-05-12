@@ -1550,7 +1550,7 @@ agent_key_from_file (ctrl_t ctrl, const char *cache_nonce,
                 {
                   memcpy (*shadow_info, s, n);
                   /*
-                   * When it's a key on card (not on tpm2), maks sure
+                   * When it's a key on card (not on tpm2), make sure
                    * it's available.
                    */
                   if (strcmp (shadow_type, "t1-v1") == 0 && !grip)

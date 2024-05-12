@@ -231,7 +231,7 @@ parse_import_options(char *str,unsigned int *options,int noisy)
   int rc;
   int saved_self_sigs_only, saved_import_clean;
 
-  /* We need to set flags indicating wether the user has set certain
+  /* We need to set flags indicating whether the user has set certain
    * options or if they came from the default.  */
   saved_self_sigs_only = (*options & IMPORT_SELF_SIGS_ONLY);
   saved_self_sigs_only &= ~IMPORT_SELF_SIGS_ONLY;

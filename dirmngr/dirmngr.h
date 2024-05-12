@@ -241,7 +241,7 @@ struct server_control_s
   int audit_events;  /* Send audit events to client.  */
   char *http_proxy;  /* The used http_proxy or NULL.  */
 
-  nvc_t rootdse;     /* Container wit the rootDSE properties.  */
+  nvc_t rootdse;     /* Container with the rootDSE properties.  */
 
   unsigned int timeout; /* Timeout for connect calls in ms.  */
 

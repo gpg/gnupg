@@ -141,7 +141,7 @@ void tlv_builder_add_end (tlv_builder_t tb);
 gpg_error_t tlv_builder_finalize (tlv_builder_t tb,
                                   void **r_obj, size_t *r_objlen);
 
-/* Wite a TLV header to MEMBUF.  */
+/* Write a TLV header to MEMBUF.  */
 void put_tlv_to_membuf (membuf_t *membuf, int class, int tag,
                         int constructed, size_t length);
 

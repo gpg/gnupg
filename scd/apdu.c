@@ -2310,7 +2310,7 @@ apdu_open_reader (struct dev_list *dl)
 /* Open an remote reader and return an internal slot number or -1 on
    error. This function is an alternative to apdu_open_reader and used
    with remote readers only.  Note that the supplied CLOSEFNC will
-   only be called once and the slot will not be valid afther this.
+   only be called once and the slot will not be valid after this.
 
    If PORTSTR is NULL we default to the first available port.
 */

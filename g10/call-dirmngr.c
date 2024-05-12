@@ -390,7 +390,7 @@ ks_status_cb (void *opaque, const char *line)
                 {
                   /* This is an LDAP config entry like
                    * "foo:389:user:pass:base:flags"
-                   * we strip off everything beyound the port.  */
+                   * we strip off everything beyond the port.  */
                   if ((p = strchr (p+1, ':')))
                     {
                       if (p[-1] == ':')

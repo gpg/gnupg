@@ -189,7 +189,7 @@ parse_header (const void *record, const char *filename, tarinfo_t info)
   return header;
 }
 
-/* Parse the extended header.  This funcion may modify BUFFER.  */
+/* Parse the extended header.  This function may modify BUFFER.  */
 static gpg_error_t
 parse_extended_header (const char *fname,
                        char *buffer, size_t buflen, strlist_t *r_exthdr)
@@ -317,14 +317,14 @@ read_header (estream_t stream, tarinfo_t info,
   /* Read the extended header.  */
   if (!hdr->nrecords)
     {
-      /* More than 64k for an extedned header is surely too large.  */
+      /* More than 64k for an extended header is surely too large.  */
       log_info ("%s: warning: empty extended header\n",
                  es_fname_get (stream));
       return 0;
     }
   if (hdr->nrecords > 65536 / RECORDSIZE)
     {
-      /* More than 64k for an extedned header is surely too large.  */
+      /* More than 64k for an extended header is surely too large.  */
       log_error ("%s: extended header too large - skipping\n",
                  es_fname_get (stream));
       return 0;
@@ -365,7 +365,7 @@ read_header (estream_t stream, tarinfo_t info,
     }
 
   xfree (buffer);
-  /* Now tha the extedned header has been read, we read the next
+  /* Now that the extended header has been read, we read the next
    * header without allowing an extended header.  */
   return read_header (stream, info, r_header, NULL);
 }

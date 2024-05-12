@@ -383,7 +383,7 @@ EXTERN_UNLESS_MAIN_MODULE int memory_stat_debug_mode;
 #define COMPAT_T7014_OLD      2  /* Use initial T7014 test data.  */
 
 
-/* Compliance test macors.  */
+/* Compliance test macros.  */
 #define GNUPG   (opt.compliance==CO_GNUPG || opt.compliance==CO_DE_VS)
 #define RFC2440 (opt.compliance==CO_RFC2440)
 #define RFC4880 (opt.compliance==CO_RFC4880)

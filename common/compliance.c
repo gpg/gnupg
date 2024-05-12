@@ -42,7 +42,7 @@ static int module;
 
 /* This value is used by DSA and RSA checks in addition to the hard
  * coded length checks.  It allows one to increase the required key length
- * using a confue file.  */
+ * using a config file.  */
 static unsigned int min_compliant_rsa_length;
 
 /* Return the address of a compliance cache variable for COMPLIANCE.

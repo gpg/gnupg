@@ -1,6 +1,6 @@
 # gnupg-ldap-scheme.ldif                                 -*- conf -*-
 #
-# Schema for an OpenPGP LDAP keyserver.  This is a slighly enhanced
+# Schema for an OpenPGP LDAP keyserver.  This is a slightly enhanced
 # version of the original LDAP schema used for PGP keyservers as
 # installed at quite some sites.
 # Revision: 2020-10-07
@@ -58,7 +58,7 @@ olcAttributeTypes: {5}(
     SYNTAX 1.3.6.1.4.1.1466.115.121.1.15
     SINGLE-VALUE )
 # The short key id.  This is actually not required and should thus not
-# be used by cleint software.
+# be used by client software.
 olcAttributeTypes: {6}(
     1.3.6.1.4.1.3401.8.2.14
     NAME 'pgpKeyID'

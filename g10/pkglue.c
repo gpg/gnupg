@@ -486,7 +486,7 @@ do_encrypt_kem (PKT_public_key *pk, gcry_mpi_t data, int seskey_algo,
     {
       if (!strcmp (ecc_oid, "1.3.6.1.4.1.3029.1.5.1"))
         log_info ("Warning: "
-                  "legacy OID for cv25519 accepted during develpment\n");
+                  "legacy OID for cv25519 accepted during development\n");
       ecc_pubkey = gcry_mpi_get_opaque (pk->pkey[1], &nbits);
       ecc_pubkey_len = (nbits+7)/8;
       if (ecc_pubkey_len == 33 && *ecc_pubkey == 0x40)

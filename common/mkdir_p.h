@@ -34,7 +34,7 @@
 
 /* Create a directory as well as any missing parents.
 
-   The arguments must be NULL termianted.  If DIRECTORY_COMPONENTS...
+   The arguments must be NULL terminated.  If DIRECTORY_COMPONENTS...
    consists of two elements, "foo/bar" and "xyzzy", this function will
    first try to create the directory "foo/bar" and then the directory
    "foo/bar/xyzzy".  On success returns 0, otherwise an error code is

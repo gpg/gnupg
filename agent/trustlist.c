@@ -63,7 +63,7 @@ static const char headerblurb[] =
 "# well as empty lines are ignored.  Lines have a length limit but this\n"
 "# is not a serious limitation as the format of the entries is fixed and\n"
 "# checked by gpg-agent.  A non-comment line starts with optional white\n"
-"# space, followed by the SHA-1 fingerpint in hex, followed by a flag\n"
+"# space, followed by the SHA-1 fingerprint in hex, followed by a flag\n"
 "# which may be one of 'P', 'S' or '*' and optionally followed by a list of\n"
 "# other flags.  The fingerprint may be prefixed with a '!' to mark the\n"
 "# key as not trusted.  You should give the gpg-agent a HUP or run the\n"
@@ -736,7 +736,7 @@ agent_marktrusted (ctrl_t ctrl, const char *name, const char *fpr, int flag)
             insert a line break.  The double percent sign is actually
             needed because it is also a printf format string.  If you
             need to insert a plain % sign, you need to encode it as
-            "%%25".  The second "%s" gets replaced by a hexdecimal
+            "%%25".  The second "%s" gets replaced by a hexadecimal
             fingerprint string whereas the first one receives the name
             as stored in the certificate. */
          L_("Please verify that the certificate identified as:%%0A"

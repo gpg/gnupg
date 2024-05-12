@@ -124,7 +124,7 @@ timegm (struct tm *tm)
 
 /* Version of the GNU timegm which returns an unsigned 64 bit integer
  * instead of the usually signed time_t.  On error (uint64_t)(-1) is
- * returned.  This function is mostly here becuase on 32 bit Windows
+ * returned.  This function is mostly here because on 32 bit Windows
  * we have an internal API to get the system time even after
  * 2023-01-19.  For 32 bit Unix we need to suffer from the too short
  * time_t and no system function to construct the time from a tm.  */

@@ -104,7 +104,7 @@ smatch (unsigned char const **buf, size_t buflen, const char *token)
   return 1;
 }
 
-/* Format VALUE for use as the length indicatior of an S-expression.
+/* Format VALUE for use as the length indicator of an S-expression.
    The caller needs to provide a buffer HELP_BUFFER with a length of
    HELP_BUFLEN.  The return value is a pointer into HELP_BUFFER with
    the formatted length string.  The colon and a trailing nul are

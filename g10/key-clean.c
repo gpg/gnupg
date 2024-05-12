@@ -612,7 +612,7 @@ clean_all_subkeys (ctrl_t ctrl, kbnode_t keyblock, int noisy, int clean_level,
   /* Do the selected cleaning.  */
   if (clean_level > KEY_CLEAN_NONE)
     {
-      /* Clean enitre subkeys.  */
+      /* Clean entire subkeys.  */
       for (node = first_subkey; node; node = node->next)
         {
           if (is_deleted_kbnode (node))

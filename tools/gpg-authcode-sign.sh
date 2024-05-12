@@ -73,7 +73,7 @@ AUTHENTICODE_TOOL="C:\Program Files (x86)\Windows Kits\10\bin\signtool.exe"
 # The URL for the timestamping service
 AUTHENTICODE_TSURL=http://rfc3161timestamp.globalsign.com/advanced
 
-# To use osslsigncode the follwing entries are required and
+# To use osslsigncode the following entries are required and
 # an empty string must be given for AUTHENTICODE_SIGNHOST.
 # They are greped by the Makefile.  For example:
 #AUTHENTICODE_KEY=/home/foo/.gnupg/my-authenticode-key.p12
@@ -99,7 +99,7 @@ autogenrc="$HOME/.gnupg-autogen.rc"
 dryrun=
 stamp=
 buildtype=
-# Set defaults  accrding to our build system.
+# Set defaults according to our build system.
 if [ -n "$abs_top_srcdir" -a -f "$abs_top_srcdir/packages/BUILDTYPE" ]; then
     buildtype=$(cat "$abs_top_srcdir/packages/BUILDTYPE")
 elif [ -f "../packages/BUILDTYPE" ]; then

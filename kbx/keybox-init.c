@@ -103,7 +103,7 @@ keybox_is_writable (void *token)
 }
 
 
-/* Change the default buffering to KBYTES KiB; using 0 uses the syste
+/* Change the default buffering to KBYTES KiB; using 0 uses the system
  * buffers.  This function must be called early.  */
 void
 keybox_set_buffersize (unsigned int kbytes, int reserved)

@@ -1104,12 +1104,12 @@ main (int argc, char **argv)
 
   socket_name = dirmngr_socket_name ();
 
-  /* The configuraton directories for use by gpgrt_argparser.  */
+  /* The configuration directories for use by gpgrt_argparser.  */
   gpgrt_set_confdir (GPGRT_CONFDIR_SYS, gnupg_sysconfdir ());
   gpgrt_set_confdir (GPGRT_CONFDIR_USER, gnupg_homedir ());
 
   /* We are re-using the struct, thus the reset flag.  We OR the
-   * flags so that the internal intialized flag won't be cleared. */
+   * flags so that the internal initialized flag won't be cleared. */
   argc = orig_argc;
   argv = orig_argv;
   pargs.argc = &argc;
@@ -1748,7 +1748,7 @@ dirmngr_deinit_default_ctrl (ctrl_t ctrl)
 
    The format of such a file is line oriented where empty lines and
    lines starting with a hash mark are ignored.  All other lines are
-   assumed to be colon seprated with these fields:
+   assumed to be colon separated with these fields:
 
    1. field: Hostname
    2. field: Portnumber

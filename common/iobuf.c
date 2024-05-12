@@ -1670,7 +1670,7 @@ iobuf_ioctl (iobuf_t a, iobuf_ioctl_t cmd, int intval, void *ptrval)
       /* Peek at a justed opened file.  Use this only directly after a
        * file has been opened for reading.  Don't use it after you did
        * a seek.  This works only if just file filter has been
-       * pushed.  Expects a buffer wit size INTVAL at PTRVAL and returns
+       * pushed.  Expects a buffer with size INTVAL at PTRVAL and returns
        * the number of bytes put into the buffer.  */
       if (DBG_IOBUF)
 	log_debug ("iobuf-%d.%d: ioctl '%s' peek\n",

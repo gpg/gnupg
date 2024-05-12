@@ -509,7 +509,7 @@ do_encryption (const unsigned char *hashbegin, size_t hashlen,
        ((sha1 salt no_of_iterations) 16byte_iv)
        encrypted_octet_string)
 
-     in canoncical format of course.  We use asprintf and %n modifier
+     in canonical format of course.  We use asprintf and %n modifier
      and dummy values as placeholders.  */
   {
     char countbuf[35];

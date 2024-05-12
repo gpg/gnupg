@@ -80,7 +80,7 @@
 				    (path-join "tests" "openpgp" name)
 				    (in-srcdir "tests" "openpgp" name)
 				    "--use-keyboxd")) all-tests))
-	      ;; The third pass uses the legact pubring.gpg
+	      ;; The third pass uses the legacy pubring.gpg
 	      (map (lambda (name)
 		     (test::scm setup-use-keyring
 				"keyring"

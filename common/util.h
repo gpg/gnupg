@@ -323,7 +323,7 @@ void setup_libgcrypt_logging (void);
 /* Print an out of core message and die.  */
 void xoutofcore (void);
 
-/* Wrapper aroung gpgrt_reallocarray.  Uses the gpgrt alloc function
+/* Wrapper around gpgrt_reallocarray.  Uses the gpgrt alloc function
  * which redirects to the Libgcrypt versions via
  * init_common_subsystems.  Thus this can be used interchangeable with
  * the other alloc functions. */

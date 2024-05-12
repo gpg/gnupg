@@ -66,7 +66,7 @@
 #define HEADER_SECTORS (SETUP_AREA_SECTORS * HEADER_SETUP_AREA_COPIES)
 #define FOOTER_SECTORS (SETUP_AREA_SECTORS * FOOTER_SETUP_AREA_COPIES)
 
-/* Minimim size of the encrypted space in blocks.  This is more or
+/* Minimum size of the encrypted space in blocks.  This is more or
    less an arbitrary value.  */
 #define MIN_ENCRYPTED_SPACE 32
 

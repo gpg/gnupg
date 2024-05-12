@@ -220,7 +220,7 @@ ldap_to_gpg_err (LDAP *ld)
  *  ^&SCOPE&(objectClasses=*)
  *
  * Give a scope and a filter.  Note that R_SCOPE is only changed if a
- * STRING has scope parameter.  Setting this initally to -1 allows to
+ * STRING has scope parameter.  Setting this initially to -1 allows to
  * detect this case.
  */
 gpg_error_t

@@ -2003,7 +2003,7 @@ gpgconf_list (void)
    * compliance mode.  This does not test all parameters but the basic
    * conditions like a proper RNG and Libgcrypt.  AS of now we always
    * return 0 because this version of gnupg has not yet received an
-   * appoval. */
+   * approval. */
   es_printf ("compliance_de_vs:%lu:%d:\n", GC_OPT_FLAG_DEFAULT,
              0 /*gnupg_rng_is_compliant (CO_DE_VS)*/);
 
@@ -2609,7 +2609,7 @@ main (int argc, char **argv)
     pargs.argc = &argc;
     pargs.argv = &argv;
     /* We are re-using the struct, thus the reset flag.  We OR the
-     * flags so that the internal intialized flag won't be cleared. */
+     * flags so that the internal initialized flag won't be cleared. */
     pargs.flags |= (ARGPARSE_FLAG_RESET
                     | ARGPARSE_FLAG_KEEP
                     | ARGPARSE_FLAG_SYS
@@ -2619,7 +2619,7 @@ main (int argc, char **argv)
     /* By this point we have a homedir, and cannot change it. */
     check_permissions (gnupg_homedir (), 0);
 
-    /* The configuraton directories for use by gpgrt_argparser.  */
+    /* The configuration directories for use by gpgrt_argparser.  */
     gpgrt_set_confdir (GPGRT_CONFDIR_SYS, gnupg_sysconfdir ());
     gpgrt_set_confdir (GPGRT_CONFDIR_USER, gnupg_homedir ());
 

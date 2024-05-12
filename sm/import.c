@@ -388,7 +388,7 @@ import_one (ctrl_t ctrl, struct stats_s *stats, estream_t fp)
 
 
 
-/* Re-import certifciates.  IN_FD is a list of linefeed delimited
+/* Re-import certificates.  IN_FD is a list of linefeed delimited
    fingerprints t re-import.  The actual re-import is done by clearing
    the ephemeral flag.  */
 static int

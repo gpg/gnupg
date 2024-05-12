@@ -93,7 +93,7 @@ struct server_local_s
    * multi_search_desc_len.  If a search description has ever been
    * allocated the allocated size is stored at multi_search_desc_size.
    * multi_search_store is allocated at the same size as
-   * multi_search_desc and used to provde backing store for the SN and
+   * multi_search_desc and used to provide backing store for the SN and
    * NAME elements of KEYBOX_SEARCH_DESC.  */
   KEYBOX_SEARCH_DESC search_desc;
   KEYBOX_SEARCH_DESC *multi_search_desc;

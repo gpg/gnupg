@@ -2,7 +2,7 @@
 # one, as well as empty lines are ignored.  Lines have a length limit
 # but this is not serious limitation as the format of the entries is
 # fixed and checked by gpg-agent.  A non-comment line starts with
-# optional white space, followed by the SHA-1 fingerpint in hex,
+# optional white space, followed by the SHA-1 fingerprint in hex,
 # optionally followed by a flag character which my either be 'P', 'S'
 # or '*'.  This file will be read by gpg-agent if no local trustlist
 # is available or if the statement "include-default" is used in the

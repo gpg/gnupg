@@ -1319,7 +1319,7 @@ armor_filter( void *opaque, int control,
 	*ret_len = n;
     }
     else if( control == IOBUFCTRL_UNDERFLOW ) {
-        /* We need some space for the faked packet.  The minmum
+        /* We need some space for the faked packet.  The minimum
          * required size is the PARTIAL_CHUNK size plus a byte for the
          * length itself */
 	if( size < PARTIAL_CHUNK+1 )
@@ -1495,7 +1495,7 @@ armor_filter( void *opaque, int control,
     else if( control == IOBUFCTRL_FREE ) {
 	if( afx->cancel )
 	    ;
-	else if( afx->status ) { /* pad, write cecksum, and bottom line */
+	else if( afx->status ) { /* pad, write checksum, and bottom line */
 	    gcry_md_final (afx->crc_md);
 	    crc = get_afx_crc (afx);
 	    idx = afx->idx;

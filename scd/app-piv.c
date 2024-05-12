@@ -354,7 +354,7 @@ get_cached_data (app_t app, int tag,
 
 
 /* Remove data object described by TAG from the cache.  If TAG is 0
- * all cache iterms are flushed.  */
+ * all cache items are flushed.  */
 static void
 flush_cached_data (app_t app, int tag)
 {
@@ -2983,7 +2983,7 @@ writekey_ecc (app_t app, data_object_t dobj, int keyref,
 
 
 /* Write a key to a slot.  This command requires proprietary
- * extensions of the PIV specification and is thus only implemnted for
+ * extensions of the PIV specification and is thus only implemented for
  * supported card types.  The input is a canonical encoded
  * S-expression with the secret key in KEYDATA and its length (for
  * assertion) in KEYDATALEN.  KEYREFSTR needs to be the usual 2

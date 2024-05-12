@@ -47,7 +47,7 @@
 
 
 /* Data used to keep track of keybox daemon sessions.  This allows us
- * to use several sessions with the keyboxd and also to re-use already
+ * to use several sessions with the keyboxd and also to reuse already
  * established sessions.  Note that gpg.h defines the type
  * keyboxd_local_t for this structure. */
 struct keyboxd_local_s
@@ -631,7 +631,7 @@ keydb_search_reset (KEYDB_HANDLE hd)
 
 
 
-/* Status callback for SEARCH and NEXT operaions.  */
+/* Status callback for SEARCH and NEXT operations.  */
 static gpg_error_t
 search_status_cb (void *opaque, const char *line)
 {

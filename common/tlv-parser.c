@@ -42,7 +42,7 @@ struct bufferlist_s
 /* An object to control the ASN.1 parsing.  */
 struct tlv_parser_s
 {
-  /* The orginal buffer with the entire pkcs#12 object and its length.  */
+  /* The original buffer with the entire pkcs#12 object and its length.  */
   const unsigned char *origbuffer;
   size_t origbufsize;
 

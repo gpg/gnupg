@@ -1278,7 +1278,7 @@ as a binary blob.
 @c
 @c For historical reasons the Assuan command ISVALID is a bit different
 @c to CHECKCRL but this is mainly due to different calling conventions.
-@c In the end the same fucntionality is used, albeit hidden by a couple
+@c In the end the same functionality is used, albeit hidden by a couple
 @c of indirection and argument and result code mangling.  It furthere
 @c ingetrages OCSP checking depending on options are the way it is
 @c called.  GPGSM still uses this command but might eventually switch over

@@ -121,7 +121,7 @@ struct
   /* Flag disallowing bypassing of the warning.  */
   int enforce_passphrase_constraints;
 
-  /* The require minmum length of a passphrase. */
+  /* The required minimum length of a passphrase. */
   unsigned int min_passphrase_len;
 
   /* The minimum number of non-alpha characters in a passphrase.  */
@@ -286,7 +286,7 @@ struct server_control_s
     int algo;
     unsigned char value[MAX_DIGEST_LEN];
     unsigned int raw_value: 1;
-    unsigned int is_pss: 1;    /* DATA holds PSS formated data.  */
+    unsigned int is_pss: 1;    /* DATA holds PSS formatted data.  */
   } digest;
   unsigned int have_keygrip:  1;
   unsigned int have_keygrip1: 1;

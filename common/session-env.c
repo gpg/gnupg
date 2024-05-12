@@ -315,7 +315,7 @@ session_env_putenv (session_env_t se, const char *string)
 }
 
 
-/* Same as session_env_putenv but with name and value given as distict
+/* Same as session_env_putenv but with name and value given as distinct
    values.  */
 gpg_error_t
 session_env_setenv (session_env_t se, const char *name, const char *value)
@@ -355,7 +355,7 @@ session_env_getenv (session_env_t se, const char *name)
    object.  The returned value is valid as long as SE is valid and as
    long it has not been removed or updated by a call to
    session_env_putenv.  If the variable does not exist, the function
-   tries to return the value trough a call to getenv; if that returns
+   tries to return the value through a call to getenv; if that returns
    a value, this value is recorded and used.  If no value could be
    found, returns NULL.  The caller must not change the returned
    value. */

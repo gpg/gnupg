@@ -1445,7 +1445,7 @@ keyedit_menu (ctrl_t ctrl, const char *username, strlist_t locusr,
      inhibits that and flushing the cache right before the stale
      check is not easy to implement.  Thus we take the easy way out
      and run the stale check as early as possible.  Note, that for
-     non- W32 platforms it is run indirectly trough a call to
+     non- W32 platforms it is run indirectly through a call to
      get_validity ().  */
   check_trustdb_stale (ctrl);
 #endif
@@ -2894,7 +2894,7 @@ find_by_primary_fpr (ctrl_t ctrl, const char *fpr,
 }
 
 
-/* Unattended key signing function.  If the key specifified by FPR is
+/* Unattended key signing function.  If the key specified by FPR is
    available and FPR is the primary fingerprint all user ids of the
    key are signed using the default signing key.  If UIDS is an empty
    list all usable UIDs are signed, if it is not empty, only those
@@ -3153,7 +3153,7 @@ keyedit_quick_revsig (ctrl_t ctrl, const char *username, const char *sigtorev,
           unsigned int sigcount = 0;
           kbnode_t *sigarray;
 
-          /* Allocate an array large enogh for all signatures.  */
+          /* Allocate an array large enough for all signatures.  */
           for (n=node; n && n->pkt->pkttype == PKT_SIGNATURE; n = n->next)
             sigcount++;
           sigarray = xtrycalloc (sigcount, sizeof *sigarray);

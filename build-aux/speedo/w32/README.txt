@@ -60,7 +60,7 @@ Below is the README file as distributed with the GnuPG source.
 4. Software Versions of the Included Packages
 =============================================
 
-GnuPG for Windows depends on several independet developed packages
+GnuPG for Windows depends on several independent developed packages
 which are part of the installation.  These packages along with their
 version numbers and the SHA-1 checksums of their compressed tarballs
 are listed here:

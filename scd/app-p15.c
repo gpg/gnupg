@@ -295,7 +295,7 @@ struct prkdf_object_s
 
   /* PKCS#15 info whether this is an EC key.  Default is RSA.  Note
    * that there is also a KEYALGO field which is derived from the
-   * publick key via Libgcrypt.  */
+   * public key via Libgcrypt.  */
   unsigned int is_ecc:1;
 
   /* The key's usage flags. */
@@ -1571,7 +1571,7 @@ parse_common_obj_attr (unsigned char const **buffer, size_t *size,
 
 /* Parse the commonKeyAttributes.  On success store the objid at
  * (R_OBJID/R_OBJIDLEN), sets the key usage flags at USAGEFLAGS and
- * the optiona key refrence at R_KEY_REFERENCE.  The latter is only
+ * the optional key reference at R_KEY_REFERENCE.  The latter is only
  * valid if true is also stored at R_KEY_REFERENCE_VALID.
  *
  * Example data:
@@ -3751,7 +3751,7 @@ read_p15_info (app_t app)
   /* See whether we can extend the private key information using
    * information from certificates.  We use only the first matching
    * certificate; if we want to change this strategy we should walk
-   * over the certificates and then find the corresponsing private key
+   * over the certificates and then find the corresponding private key
    * objects.  */
   app->app_local->any_gpgusage = 0;
   for (prkdf = app->app_local->private_key_info; prkdf; prkdf = prkdf->next)
@@ -4840,7 +4840,7 @@ do_getattr (app_t app, ctrl_t ctrl, const char *name)
       int i;
 
       /* Put the AODFs into an array for easier sorting.  Note that we
-       * handle onl the first 16 encountrer which should be more than
+       * handle only the first 16 encountrer which should be more than
        * enough.  */
       for (aodf = app->app_local->auth_object_info;
            aodf && naodf < DIM(aodfarray); aodf = aodf->next)
@@ -6226,7 +6226,7 @@ do_check_pin (app_t app, ctrl_t ctrl, const char *keyidstr,
         if (aodf->label && !ascii_strcasecmp (aodf->label, keyidstr))
           break;
       if (!aodf)
-        return err;  /* Re-use the original error code.  */
+        return err;  /* Reuse the original error code.  */
     }
   else /* Find the authentication object to this private key object. */
     {

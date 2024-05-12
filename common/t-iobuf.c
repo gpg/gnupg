@@ -29,7 +29,7 @@
  */
 
 /* The whole code here does not very fill into our general test frame
- * work patter.  But let's keep it as it is.  */
+ * work pattern.  But let's keep it as it is.  */
 
 #include <config.h>
 #include <stdio.h>

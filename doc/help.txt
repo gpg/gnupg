@@ -117,7 +117,7 @@ disable CRL checking in gpgsm's configuration.
 
 
 .gpg.edit_ownertrust.value
-# The help identies prefixed with "gpg." used to be hard coded in gpg
+# The help entries prefixed with "gpg." used to be hard coded in gpg
 # but may now be overridden by help texts from this file.
 It's up to you to assign a value here; this value will never be exported
 to any 3rd party.  We need it to implement the web-of-trust; it has nothing
