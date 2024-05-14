@@ -162,7 +162,7 @@ ldap_parse_uri (parsed_uri_t *purip, const char *uri)
 
   if (password)
     {
-      puri->query = calloc (sizeof (*puri->query), 1);
+      puri->query = calloc (1, sizeof (*puri->query));
       if (!puri->query)
         {
           err = gpg_err_code_from_syserror ();
