@@ -84,12 +84,6 @@ my_error_from_syserror (void)
   return gpg_err_make (default_errsource, gpg_err_code_from_syserror ());
 }
 
-static inline gpg_error_t
-my_error (int errcode)
-{
-  return gpg_err_make (default_errsource, errcode);
-}
-
 
 /* Return the maximum number of currently allowed open file
    descriptors.  Only useful on POSIX systems but returns a value on
