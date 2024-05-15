@@ -6292,8 +6292,11 @@ do_generate_keypair (ctrl_t ctrl, struct para_data_s *para,
               list_keyblock_direct (ctrl, pub_root, 0, 1,
                                     opt.fingerprint || opt.with_fingerprint,
                                     1);
+              /* Note that we ignore errors from the list function
+               * because that would only be an additional info.  It
+               * has already been remarked that the key has been
+               * created.  */
             }
-
 
           if (!opt.batch
               && (get_parameter_algo (ctrl, para,

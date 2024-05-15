@@ -82,7 +82,7 @@ static estream_t attrib_fp;
 
 
 
-static void list_keyblock (ctrl_t ctrl,
+static gpg_error_t list_keyblock (ctrl_t ctrl,
                            kbnode_t keyblock, int secret, int has_secret,
                            int fpr, struct keylist_context *listctx);
 
@@ -745,6 +745,7 @@ list_all (ctrl_t ctrl, int secret, int mark_secret)
   int any_secret;
   const char *lastresname, *resname;
   struct keylist_context listctx;
+  gpg_error_t listerr = 0;
 
   memset (&listctx, 0, sizeof (listctx));
   if (opt.check_sigs)
@@ -802,13 +803,13 @@ list_all (ctrl_t ctrl, int secret, int mark_secret)
                 }
             }
           merge_keys_and_selfsig (ctrl, keyblock);
-          list_keyblock (ctrl, keyblock, secret, any_secret, opt.fingerprint,
-                         &listctx);
+          listerr = list_keyblock (ctrl, keyblock, secret, any_secret,
+                                   opt.fingerprint, &listctx);
         }
       release_kbnode (keyblock);
       keyblock = NULL;
     }
-  while (!(rc = keydb_search_next (hd)));
+  while (!listerr && !(rc = keydb_search_next (hd)));
   es_fflush (es_stdout);
   if (rc && gpg_err_code (rc) != GPG_ERR_NOT_FOUND)
     log_error ("keydb_search_next failed: %s\n", gpg_strerror (rc));
@@ -839,6 +840,7 @@ list_one (ctrl_t ctrl, strlist_t names, int secret, int mark_secret)
   const char *keyring_str = _("Keyring");
   int i;
   struct keylist_context listctx;
+  gpg_error_t listerr = 0;
 
   memset (&listctx, 0, sizeof (listctx));
   if (!secret && opt.check_sigs)
@@ -887,12 +889,12 @@ list_one (ctrl_t ctrl, strlist_t names, int secret, int mark_secret)
                 es_putc ('-', es_stdout);
               es_putc ('\n', es_stdout);
             }
-          list_keyblock (ctrl, keyblock, secret, any_secret,
-                         opt.fingerprint, &listctx);
+          listerr = list_keyblock (ctrl, keyblock, secret, any_secret,
+                                   opt.fingerprint, &listctx);
         }
       release_kbnode (keyblock);
     }
-  while (!getkey_next (ctrl, ctx, NULL, &keyblock));
+  while (!listerr && !getkey_next (ctrl, ctx, NULL, &keyblock));
   getkey_end (ctrl, ctx);
 
   if (opt.check_sigs && !opt.with_colons)
@@ -910,12 +912,13 @@ locate_one (ctrl_t ctrl, strlist_t names, int no_local)
   GETKEY_CTX ctx = NULL;
   KBNODE keyblock = NULL;
   struct keylist_context listctx;
+  gpg_error_t listerr = 0;
 
   memset (&listctx, 0, sizeof (listctx));
   if (opt.check_sigs)
     listctx.check_sigs = 1;
 
-  for (sl = names; sl; sl = sl->next)
+  for (sl = names; sl && !listerr; sl = sl->next)
     {
       rc = get_best_pubkey_byname (ctrl,
                                    no_local? GET_PUBKEY_NO_LOCAL
@@ -933,10 +936,11 @@ locate_one (ctrl_t ctrl, strlist_t names, int no_local)
 	{
 	  do
 	    {
-	      list_keyblock (ctrl, keyblock, 0, 0, opt.fingerprint, &listctx);
+	      listerr = list_keyblock (ctrl, keyblock, 0, 0,
+                                       opt.fingerprint, &listctx);
 	      release_kbnode (keyblock);
 	    }
-	  while (ctx && !getkey_next (ctrl, ctx, NULL, &keyblock));
+	  while (!listerr && ctx && !getkey_next (ctrl, ctx, NULL, &keyblock));
 	  getkey_end (ctrl, ctx);
 	  ctx = NULL;
 	}
@@ -2325,11 +2329,18 @@ reorder_keyblock (KBNODE keyblock)
 }
 
 
-static void
+/* Note: If this function returns an error the caller is expected to
+ * honor this and stop all further processing.  Any error returned
+ * will be a write error (to stdout) and a diagnostics is always
+ * printed using log_error.  */
+static gpg_error_t
 list_keyblock (ctrl_t ctrl,
                KBNODE keyblock, int secret, int has_secret, int fpr,
                struct keylist_context *listctx)
 {
+  gpg_error_t err = 0;
+
+  es_clearerr (es_stdout);
   reorder_keyblock (keyblock);
 
   if (list_filter.selkey)
@@ -2347,7 +2358,7 @@ list_keyblock (ctrl_t ctrl,
             }
         }
       if (!selected)
-        return;  /* Skip this one.  */
+        return 0;  /* Skip this one.  */
     }
 
   if (opt.with_colons)
@@ -2361,24 +2372,34 @@ list_keyblock (ctrl_t ctrl,
   else
     list_keyblock_print (ctrl, keyblock, secret, fpr, listctx);
 
-  if (secret)
-    es_fflush (es_stdout);
+  if (es_ferror (es_stdout))
+    err = gpg_error_from_syserror ();
+
+  if (secret && es_fflush (es_stdout) && !err)
+    err = gpg_error_from_syserror ();
+
+  if (err)
+    log_error (_("error writing to stdout: %s\n"), gpg_strerror (err));
+
+  return err;
 }
 
 
 /* Public function used by keygen to list a keyblock.  If NO_VALIDITY
  * is set the validity of a key is never shown.  */
-void
+gpg_error_t
 list_keyblock_direct (ctrl_t ctrl,
                       kbnode_t keyblock, int secret, int has_secret, int fpr,
                       int no_validity)
 {
   struct keylist_context listctx;
+  gpg_error_t err;
 
   memset (&listctx, 0, sizeof (listctx));
   listctx.no_validity = !!no_validity;
-  list_keyblock (ctrl, keyblock, secret, has_secret, fpr, &listctx);
+  err = list_keyblock (ctrl, keyblock, secret, has_secret, fpr, &listctx);
   keylist_context_release (&listctx);
+  return err;
 }
 
 

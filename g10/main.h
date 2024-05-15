@@ -470,8 +470,8 @@ void secret_key_list (ctrl_t ctrl, strlist_t list );
 gpg_error_t parse_and_set_list_filter (const char *string);
 void print_subpackets_colon(PKT_signature *sig);
 void reorder_keyblock (KBNODE keyblock);
-void list_keyblock_direct (ctrl_t ctrl, kbnode_t keyblock, int secret,
-                           int has_secret, int fpr, int no_validity);
+gpg_error_t list_keyblock_direct (ctrl_t ctrl, kbnode_t keyblock, int secret,
+                                  int has_secret, int fpr, int no_validity);
 int  cmp_signodes (const void *av, const void *bv);
 void print_fingerprint (ctrl_t ctrl, estream_t fp,
                         PKT_public_key *pk, int mode);
