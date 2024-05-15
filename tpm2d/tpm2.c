@@ -695,8 +695,8 @@ TPM_RC tpm2_SensitiveToDuplicate (TPMT_SENSITIVE *s,
     {
       TPMT_HA hash;
       const int hlen = TSS_GetDigestSize (nalg);
-      TPM2B *digest = (TPM2B *)buf;
-      TPM2B *s2b;
+      BYTE *digest;
+      BYTE *s2b;
       int32_t size;
       unsigned char null_iv[AES_128_BLOCK_SIZE_BYTES];
       UINT16 bsize, written = 0;
@@ -707,13 +707,12 @@ TPM_RC tpm2_SensitiveToDuplicate (TPMT_SENSITIVE *s,
       memset (null_iv, 0, sizeof (null_iv));
 
       /* reserve space for hash before the encrypted sensitive */
-      bsize = sizeof (digest->size) + hlen;
-      buf += bsize;
+      digest = buf;
+      bsize = sizeof (uint16_t /* TPM2B.size */) + hlen;
       p->size += bsize;
-      s2b = (TPM2B *)buf;
+      s2b = digest + bsize;
 
       /* marshal the digest size */
-      buf = (BYTE *)&digest->size;
       bsize = hlen;
       size = 2;
       TSS_UINT16_Marshal (&bsize, &written, &buf, &size);
@@ -721,13 +720,13 @@ TPM_RC tpm2_SensitiveToDuplicate (TPMT_SENSITIVE *s,
       /* marshal the unencrypted sensitive in place */
       size = sizeof (*s);
       bsize = 0;
-      buf = s2b->buffer;
+      buf = s2b + offsetof (TPM2B, buffer);
       TSS_TPMT_SENSITIVE_Marshal (s, &bsize, &buf, &size);
-      buf = (BYTE *)&s2b->size;
+      buf = s2b;
       size = 2;
       TSS_UINT16_Marshal (&bsize, &written, &buf, &size);
 
-      bsize = bsize + sizeof (s2b->size);
+      bsize = bsize + sizeof (uint16_t /* TPM2B.size */);
       p->size += bsize;
 
       /* compute hash of unencrypted marshalled sensitive and
@@ -736,7 +735,7 @@ TPM_RC tpm2_SensitiveToDuplicate (TPMT_SENSITIVE *s,
       TSS_Hash_Generate (&hash, bsize, s2b,
 			 name->size, name->name,
 			 0, NULL);
-      memcpy (digest->buffer, &hash.digest, hlen);
+      memcpy (digest + offsetof (TPM2B, buffer), &hash.digest, hlen);
       gcry_cipher_open (&hd, GCRY_CIPHER_AES128,
 			GCRY_CIPHER_MODE_CFB, GCRY_CIPHER_SECURE);
       gcry_cipher_setiv (hd, null_iv, sizeof (null_iv));
@@ -749,20 +748,20 @@ TPM_RC tpm2_SensitiveToDuplicate (TPMT_SENSITIVE *s,
   else if (symdef->algorithm == TPM_ALG_NULL)
     {
       /* Code is for debugging only, should never be used in production */
-      TPM2B *s2b = (TPM2B *)buf;
+      BYTE *s2b = buf;
       int32_t size = sizeof (*s);
       UINT16 bsize = 0, written = 0;
 
       log_error ("Secret key sent to TPM unencrypted\n");
-      buf = s2b->buffer;
+      buf = s2b + offsetof (TPM2B, buffer);
 
       /* marshal the unencrypted sensitive in place */
       TSS_TPMT_SENSITIVE_Marshal (s, &bsize, &buf, &size);
-      buf = (BYTE *)&s2b->size;
+      buf = s2b;
       size = 2;
       TSS_UINT16_Marshal (&bsize, &written, &buf, &size);
 
-      p->size += bsize + sizeof (s2b->size);
+      p->size += bsize + sizeof (uint16_t /* TPM2B.size */);
     }
   else
     {
