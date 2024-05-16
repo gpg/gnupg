@@ -2534,7 +2534,7 @@ pin2hash_if_kdf (app_t app, int chvno, const char *pin,
       err = gcry_kdf_derive (pin, pinlen,
                              GCRY_KDF_ITERSALTED_S2K,
                              DIGEST_ALGO_SHA256, salt, 8,
-                             s2k_count, sizeof (dek), dek);
+                             s2k_count, deklen, dek);
       if (!err)
         {
           *r_pinlen = deklen;
