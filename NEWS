@@ -1,10 +1,27 @@
 Noteworthy changes in version 2.5.0 (unreleased)
 ------------------------------------------------
 
-  Changes also found in 2.4.5:
+  Changes also found in 2.4.6:
 
-Noteworthy changes in version 2.4.5 (2024-03-07)
-------------------------------------------------
+  * gpg: New command --quick-set-ownertrust.  [rG967678d972]
+
+  * gpg: Indicate disabled keys in key listings and add list option
+    "show-ownertrust".  [rG2a0a706eb2]
+
+  * gpg: Make sure a DECRYPTION_OKAY is never issued for a bad OCB
+    tag.  [T7042]
+
+  * gpg: Do not allow to accidently set the RENC usage.  [T7072]
+
+  * agent: Consider an empty pattern file as valid.  [rGc27534de95]
+
+  * agent: Fix error handling of READKEY.  [T6012]
+
+  * gpgconf: Check readability of some files with -X and change its
+    output format.  [rG759adb2493]
+
+
+  Changes also found in 2.4.5:
 
   * gpg,gpgv: New option --assert-pubkey-algo.  [T6946]
 

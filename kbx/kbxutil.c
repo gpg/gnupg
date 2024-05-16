@@ -457,6 +457,7 @@ main (int argc, char **argv)
   /* Make sure that our subsystems are ready.  */
   i18n_init ();
   init_common_subsystems (&argc, &argv);
+  setup_libgcrypt_logging ();
 
   /*create_dotlock(NULL); register locking cleanup */
 
