@@ -20,8 +20,8 @@ usage()
     cat <<EOF
 Usage: $PGM [OPTIONS]  FILE_TO_SIGN  SIGNED_FILE
 Options:
-        [--desc=STRING]   Include STRING as description (default=$url)
-        [--url=STRING]    Include STRING as URL (default=$desc)
+        [--desc=STRING]   Include STRING as description (default=$desc)
+        [--url=STRING]    Include STRING as URL (default=$url)
         [--stamp]         Use a stamp file to avoid double signing
         [--dry-run]       Do not actually run osslsigncode
         [--template]      Print a template for ~/.gnupg-autogenrc
