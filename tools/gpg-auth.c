@@ -818,7 +818,6 @@ ssh_authorized_keys (const char *user, struct ssh_key_list **r_ssh_key_list)
       xfree (fname);
       return err;
     }
-  xfree (fname);
 
   maxlen = 2048; /* Set limit.  */
   while ((len = es_read_line (fp, &line, &length_of_line, &maxlen)) > 0)
@@ -861,6 +860,7 @@ ssh_authorized_keys (const char *user, struct ssh_key_list **r_ssh_key_list)
   *r_ssh_key_list = ssh_key_list;
 
  leave:
+  xfree (fname);
   xfree (line);
   es_fclose (fp);
   return err;
