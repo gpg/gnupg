@@ -291,12 +291,12 @@ cmd_pkdecrypt (assuan_context_t ctx, char *line)
 {
   ctrl_t ctrl = assuan_get_pointer (ctx);
   int rc;
-  unsigned char *shadow_info;
+  unsigned char *shadow_info = NULL;
   size_t len;
   TSS_CONTEXT *tssc;
   TPM_HANDLE key;
   TPMI_ALG_PUBLIC type;
-  unsigned char *crypto;
+  unsigned char *crypto = NULL;
   size_t cryptolen;
   char *buf;
   size_t buflen;
@@ -313,7 +313,7 @@ cmd_pkdecrypt (assuan_context_t ctx, char *line)
 
   rc = assuan_inquire (ctx, "EXTRA", &crypto, &cryptolen, MAXLEN_KEYDATA);
   if (rc)
-    goto out_freeshadow;
+    goto out;
 
   rc = tpm2_start (&tssc);
   if (rc)
@@ -329,6 +329,11 @@ cmd_pkdecrypt (assuan_context_t ctx, char *line)
   else if (type == TPM_ALG_ECC)
     rc = tpm2_ecc_decrypt (ctrl, tssc, key, pin_cb, crypto,
 			   cryptolen, &buf, &buflen);
+  else
+    {
+      rc = GPG_ERR_PUBKEY_ALGO;
+      goto end_out;
+    }
 
   tpm2_flush_handle (tssc, key);
 
@@ -343,7 +348,6 @@ cmd_pkdecrypt (assuan_context_t ctx, char *line)
 
  out:
   xfree (crypto);
- out_freeshadow:
   xfree (shadow_info);
 
   return rc;

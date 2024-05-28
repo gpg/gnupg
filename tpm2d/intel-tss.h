@@ -344,7 +344,7 @@ TSS_Hash_Generate(TPMT_HA *digest, ...)
   int length;
   uint8_t *buffer;
   int algo;
-  gcry_md_hd_t md;
+  gcry_md_hd_t md = NULL;
   va_list ap;
 
   va_start(ap, digest);
@@ -353,7 +353,7 @@ TSS_Hash_Generate(TPMT_HA *digest, ...)
   if (rc)
     {
       log_error ("TSS_Hash_Generate: Unknown hash %d\n", digest->hashAlg);
-      goto out;
+      goto leave;
     }
 
   rc = gcry_md_open (&md, algo, 0);
@@ -362,7 +362,7 @@ TSS_Hash_Generate(TPMT_HA *digest, ...)
       log_error ("TSS_Hash_Generate: EVP_MD_CTX_create failed: %s\n",
                  gpg_strerror (rc));
       rc = TPM_RC_FAILURE;
-      goto out;
+      goto leave;
     }
 
   rc = TPM_RC_FAILURE;
@@ -374,19 +374,24 @@ TSS_Hash_Generate(TPMT_HA *digest, ...)
 	break;
       if (length < 0)
 	{
-	  log_error ("TSS_Hash_Generate: Length is negative\n");
-	  goto out_free;
+	  log_error ("%s: Length is negative\n", "TSS_Hash_Generate");
+	  goto leave;
 	}
       if (length != 0)
 	gcry_md_write (md, buffer, length);
     }
 
-  memcpy (&digest->digest, gcry_md_read (md, algo),
-	  TSS_GetDigestSize(digest->hashAlg));
+  length = TSS_GetDigestSize(digest->hashAlg);
+  if (length < 0)
+    {
+      log_error ("%s: Length is negative\n", "TSS_GetDigestSize");
+      goto leave;
+    }
+  memcpy (&digest->digest, gcry_md_read (md, algo), length);
   rc = TPM_RC_SUCCESS;
- out_free:
+
+ leave:
   gcry_md_close (md);
- out:
   va_end(ap);
   return rc;
 }

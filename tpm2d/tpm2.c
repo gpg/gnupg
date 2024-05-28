@@ -446,46 +446,55 @@ static int
 sexp_to_tpm2_public_ecc (TPMT_PUBLIC *p, gcry_sexp_t key)
 {
   const char *q;
-  gcry_sexp_t l;
-  int rc = GPG_ERR_BAD_PUBKEY;
+  gcry_sexp_t l = NULL;
+  int rc;
   size_t len;
   TPMI_ECC_CURVE curve;
-  char *curve_name;
+  char *curve_name = NULL;
 
   l = gcry_sexp_find_token (key, "curve", 0);
   if (!l)
-    return rc;
+    {
+      rc = GPG_ERR_NO_PUBKEY;
+      goto leave;
+    }
   curve_name = gcry_sexp_nth_string (l, 1);
   if (!curve_name)
-    goto out;
+    {
+      rc = GPG_ERR_INV_CURVE;
+      goto leave;
+    }
   rc = tpm2_ecc_curve (curve_name, &curve);
-  gcry_free (curve_name);
   if (rc)
-    goto out;
-  gcry_sexp_release (l);
+    goto leave;
 
+  gcry_sexp_release (l);
   l = gcry_sexp_find_token (key, "q", 0);
   if (!l)
-    return rc;
+    {
+      rc = GPG_ERR_NO_PUBKEY;
+      goto leave;
+    }
   q = gcry_sexp_nth_data (l, 1, &len);
   /* This is a point representation, the first byte tells you what
    * type.  The only format we understand is uncompressed (0x04)
    * which has layout 0x04 | x | y */
-  if (q[0] != 0x04)
+  if (!q || len < 2 || q[0] != 0x04)
     {
-      log_error ("Point format for q is not uncompressed\n");
-      goto out;
+      log_error ("tss: point format for q is not uncompressed\n");
+      rc = GPG_ERR_BAD_PUBKEY;
+      goto leave;
     }
   q++;
   len--;
   /* now should have to equal sized big endian point numbers */
   if ((len & 0x01) == 1)
     {
-      log_error ("Point format for q has incorrect length\n");
-      goto out;
+      log_error ("tss: point format for q has incorrect length\n");
+      rc = GPG_ERR_BAD_PUBKEY;
+      goto leave;
     }
-
-  len >>= 1;
+  len >>= 1; /* Compute length of one coordinate.  */
 
   p->type = TPM_ALG_ECC;
   p->nameAlg = TPM_ALG_SHA256;
@@ -502,7 +511,9 @@ sexp_to_tpm2_public_ecc (TPMT_PUBLIC *p, gcry_sexp_t key)
   VAL_2B (p->unique.ecc.x, size) = len;
   memcpy (VAL_2B (p->unique.ecc.y, buffer), q + len, len);
   VAL_2B (p->unique.ecc.y, size) = len;
- out:
+
+ leave:
+  gcry_free (curve_name);
   gcry_sexp_release (l);
   return rc;
 }
@@ -637,36 +648,42 @@ tpm2_ObjectPublic_GetName (NAME_2B *name,
   uint16_t written = 0;
   TPMT_HA digest;
   uint32_t sizeInBytes;
+  INT32 size = MAX_RESPONSE_SIZE;
   uint8_t buffer[MAX_RESPONSE_SIZE];
+  uint8_t *buffer1 = buffer;
+  TPMI_ALG_HASH nameAlgNbo;
+  int length;
 
   /* marshal the TPMT_PUBLIC */
-  if (rc == 0)
-    {
-      INT32 size = MAX_RESPONSE_SIZE;
-      uint8_t *buffer1 = buffer;
-      rc = TSS_TPMT_PUBLIC_Marshal (tpmtPublic, &written, &buffer1, &size);
-    }
-  /* hash the public area */
-  if (rc == 0)
-    {
-      sizeInBytes = TSS_GetDigestSize (tpmtPublic->nameAlg);
-      digest.hashAlg = tpmtPublic->nameAlg;       /* Name digest algorithm */
-      /* generate the TPMT_HA */
-      rc = TSS_Hash_Generate (&digest, written, buffer, 0, NULL);
-    }
-  if (rc == 0)
-    {
-      TPMI_ALG_HASH nameAlgNbo;
+  rc = TSS_TPMT_PUBLIC_Marshal (tpmtPublic, &written, &buffer1, &size);
+  if (rc)
+    goto leave;
 
-      /* copy the digest */
-      memcpy (name->name + sizeof (TPMI_ALG_HASH),
-	      (uint8_t *)&digest.digest, sizeInBytes);
-      /* copy the hash algorithm */
-      nameAlgNbo = htons (tpmtPublic->nameAlg);
-      memcpy (name->name, (uint8_t *)&nameAlgNbo, sizeof (TPMI_ALG_HASH));
-      /* set the size */
-      name->size = sizeInBytes + sizeof (TPMI_ALG_HASH);
+  /* hash the public area */
+  length = TSS_GetDigestSize (tpmtPublic->nameAlg);
+  if (length < 0)
+    {
+      rc = TPM_RC_VALUE;
+      goto leave;
     }
+  sizeInBytes = length;
+  digest.hashAlg = tpmtPublic->nameAlg;       /* Name digest algorithm */
+
+  /* generate the TPMT_HA */
+  rc = TSS_Hash_Generate (&digest, written, buffer, 0, NULL);
+  if (rc)
+    goto leave;
+
+  /* copy the digest */
+  memcpy (name->name + sizeof (TPMI_ALG_HASH),
+          (uint8_t *)&digest.digest, sizeInBytes);
+  /* copy the hash algorithm */
+  nameAlgNbo = htons (tpmtPublic->nameAlg);
+  memcpy (name->name, (uint8_t *)&nameAlgNbo, sizeof (TPMI_ALG_HASH));
+  /* set the size */
+  name->size = sizeInBytes + sizeof (TPMI_ALG_HASH);
+
+ leave:
   return rc;
 }
 
@@ -694,7 +711,7 @@ TPM_RC tpm2_SensitiveToDuplicate (TPMT_SENSITIVE *s,
       && symdef->mode.aes == TPM_ALG_CFB)
     {
       TPMT_HA hash;
-      const int hlen = TSS_GetDigestSize (nalg);
+      int hlen;
       BYTE *digest;
       BYTE *s2b;
       int32_t size;
@@ -705,6 +722,14 @@ TPM_RC tpm2_SensitiveToDuplicate (TPMT_SENSITIVE *s,
       /* WARNING: don't use the static null_iv trick here:
        * the AES routines alter the passed in iv */
       memset (null_iv, 0, sizeof (null_iv));
+
+      hlen = TSS_GetDigestSize (nalg);
+      if (hlen < 0)
+        {
+          log_error ("%s: unknown symmetric algo id %d\n",
+                     "TSS_GetDigestSize", (int)nalg);
+          return TPM_RC_SYMMETRIC;
+        }
 
       /* reserve space for hash before the encrypted sensitive */
       digest = buf;
@@ -765,7 +790,7 @@ TPM_RC tpm2_SensitiveToDuplicate (TPMT_SENSITIVE *s,
     }
   else
     {
-      log_error ("Unknown symmetric algorithm\n");
+      log_error ("tss: Unknown symmetric algorithm\n");
       return TPM_RC_SYMMETRIC;
     }
 
@@ -795,7 +820,9 @@ tpm2_import_key (ctrl_t ctrl, TSS_CONTEXT *tssc,
   TPM_RC rc;
 
   uint32_t size;
-  uint16_t len;
+  uint16_t u16len;
+  size_t len;
+  int dlen;
   BYTE *buffer;
   int ret;
   char *passphrase;
@@ -817,14 +844,22 @@ tpm2_import_key (ctrl_t ctrl, TSS_CONTEXT *tssc,
 
   /* add an authorization password to the key which the TPM will check */
 
-  ret = pin_cb (ctrl,  _("Please enter the TPM Authorization passphrase for the key."), &passphrase);
+  ret = pin_cb (ctrl,
+           _("Please enter the TPM Authorization passphrase for the key."),
+                &passphrase);
   if (ret)
     return ret;
   len = strlen(passphrase);
-  if (len > TSS_GetDigestSize(objectPublic.publicArea.nameAlg))
+  dlen = TSS_GetDigestSize(objectPublic.publicArea.nameAlg);
+  if (dlen < 0)
     {
-      len = TSS_GetDigestSize(objectPublic.publicArea.nameAlg);
-      log_error ("Truncating Passphrase to TPM allowed %d\n", len);
+      log_error ("%s: error getting digest size\n", "TSS_GetDigestSize");
+      return GPG_ERR_DIGEST_ALGO;
+    }
+  if (len > dlen)
+    {
+      len = dlen;
+      log_info ("tss: truncating Passphrase to TPM allowed size of %zu\n", len);
     }
   VAL_2B (s.authValue, size) = len;
   memcpy (VAL_2B (s.authValue, buffer), passphrase, len);
@@ -885,16 +920,16 @@ tpm2_import_key (ctrl_t ctrl, TSS_CONTEXT *tssc,
 
   size = sizeof (pub);
   buffer = pub;
-  len = 0;
+  u16len = 0;
   TSS_TPM2B_PUBLIC_Marshal (&objectPublic,
-                            &len, &buffer, &size);
+                            &u16len, &buffer, &size);
   pub_len = len;
 
   size = sizeof (priv);
   buffer = priv;
-  len = 0;
+  u16len = 0;
   TSS_TPM2B_PRIVATE_Marshal ((TPM2B_PRIVATE *)&outPrivate,
-			     &len, &buffer, &size);
+			     &u16len, &buffer, &size);
   priv_len = len;
 
   *shadow_info = make_tpm2_shadow_info (parent, pub, pub_len,
