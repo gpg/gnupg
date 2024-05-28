@@ -300,7 +300,7 @@ TSS_Create(TSS_CONTEXT **tssContext)
 	}
       else
 	{
-	  fprintf(stderr, "Unknown TPM_INTERFACE_TYPE %s\n", intType);
+	  log_error ("tss: Unknown TPM_INTERFACE_TYPE %s\n", intType);
 	}
     }
 
@@ -352,15 +352,15 @@ TSS_Hash_Generate(TPMT_HA *digest, ...)
   rc = TSS_Hash_GetMd(&algo, digest->hashAlg);
   if (rc)
     {
-      fprintf(stderr, "TSS_HASH_GENERATE: Unknown hash %d\n",
-	      digest->hashAlg);
+      log_error ("TSS_Hash_Generate: Unknown hash %d\n", digest->hashAlg);
       goto out;
     }
 
   rc = gcry_md_open (&md, algo, 0);
   if (rc != 0)
     {
-      fprintf(stderr, "TSS_Hash_Generate: EVP_MD_CTX_create failed\n");
+      log_error ("TSS_Hash_Generate: EVP_MD_CTX_create failed: %s\n",
+                 gpg_strerror (rc));
       rc = TPM_RC_FAILURE;
       goto out;
     }
@@ -374,7 +374,7 @@ TSS_Hash_Generate(TPMT_HA *digest, ...)
 	break;
       if (length < 0)
 	{
-	  fprintf(stderr, "TSS_Hash_Generate: Length is negative\n");
+	  log_error ("TSS_Hash_Generate: Length is negative\n");
 	  goto out_free;
 	}
       if (length != 0)
@@ -408,9 +408,8 @@ tpm2_error(TPM_RC rc, const char *reason)
 {
   const char *msg;
 
-  fprintf(stderr, "%s failed with %d\n", reason, rc);
   msg = Tss2_RC_Decode(rc);
-  fprintf(stderr, "%s\n", msg);
+  log_error ("%s failed with error %d (%s)\n", reason, rc, msg);
 }
 
 static inline int
