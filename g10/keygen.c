@@ -5846,11 +5846,10 @@ static gpg_error_t
 card_store_key_with_backup (ctrl_t ctrl, PKT_public_key *sub_psk,
                             const char *backup_dir)
 {
+  gpg_error_t err;
   PKT_public_key *sk;
   gnupg_isotime_t timestamp;
-  gpg_error_t err;
-  char *hexgrip;
-  int rc;
+  char *hexgrip = NULL;
   struct agent_card_info_s info;
   gcry_cipher_hd_t cipherhd = NULL;
   char *cache_nonce = NULL;
@@ -5858,9 +5857,14 @@ card_store_key_with_backup (ctrl_t ctrl, PKT_public_key *sub_psk,
   size_t keklen;
   char *ecdh_param_str = NULL;
 
+  memset (&info, 0, sizeof (info));
+
   sk = copy_public_key (NULL, sub_psk);
   if (!sk)
-    return gpg_error_from_syserror ();
+    {
+      err = gpg_error_from_syserror ();
+      goto leave;
+    }
 
   epoch2isotime (timestamp, (time_t)sk->timestamp);
   if (sk->pubkey_algo == PUBKEY_ALGO_ECDH)
@@ -5868,37 +5872,23 @@ card_store_key_with_backup (ctrl_t ctrl, PKT_public_key *sub_psk,
       ecdh_param_str = ecdh_param_str_from_pk (sk);
       if (!ecdh_param_str)
         {
-          free_public_key (sk);
-          return gpg_error_from_syserror ();
+          err = gpg_error_from_syserror ();
+          goto leave;
         }
     }
 
   err = hexkeygrip_from_pk (sk, &hexgrip);
   if (err)
-    {
-      xfree (ecdh_param_str);
-      free_public_key (sk);
-      goto leave;
-    }
+    goto leave;
 
-  memset(&info, 0, sizeof (info));
-  rc = agent_scd_getattr ("SERIALNO", &info);
-  if (rc)
-    {
-      xfree (ecdh_param_str);
-      free_public_key (sk);
-      err = (gpg_error_t)rc;
-      goto leave;
-    }
+  err = agent_scd_getattr ("SERIALNO", &info);
+  if (err)
+    goto leave;
 
-  rc = agent_keytocard (hexgrip, 2, 1, info.serialno,
-                        timestamp, ecdh_param_str);
-  xfree (info.serialno);
-  if (rc)
-    {
-      err = (gpg_error_t)rc;
-      goto leave;
-    }
+  err = agent_keytocard (hexgrip, 2, 1, info.serialno,
+                         timestamp, ecdh_param_str);
+  if (err)
+    goto leave;
 
   err = agent_keywrap_key (ctrl, 1, &kek, &keklen);
   if (err)
@@ -5931,10 +5921,13 @@ card_store_key_with_backup (ctrl_t ctrl, PKT_public_key *sub_psk,
   if (err)
     log_error ("writing card key to backup file: %s\n", gpg_strerror (err));
   else
-    /* Remove secret key data in agent side.  */
-    agent_scd_learn (NULL, 1);
+    {
+      /* Remove secret key data in agent side.  */
+      agent_scd_learn (NULL, 1);
+    }
 
  leave:
+  xfree (info.serialno);
   xfree (ecdh_param_str);
   xfree (cache_nonce);
   gcry_cipher_close (cipherhd);
