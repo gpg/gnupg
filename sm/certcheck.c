@@ -528,13 +528,11 @@ gpgsm_check_cms_signature (ksba_cert_t cert, gcry_sexp_t s_sig,
       rc = extract_pss_params (s_sig, &algo, &saltlen);
       if (rc)
         {
-          gcry_sexp_release (s_sig);
           return rc;
         }
       if (algo != mdalgo)
         {
           log_error ("PSS hash algo mismatch (%d/%d)\n", mdalgo, algo);
-          gcry_sexp_release (s_sig);
           return gpg_error (GPG_ERR_DIGEST_ALGO);
         }
     }
