@@ -2094,7 +2094,7 @@ apdu_dev_list_start (const char *portstr, struct dev_list **l_p)
           nreader -= n + 1;
           p += n + 1;
           dl->idx_max++;
-          if (dl->idx_max > MAX_READER)
+          if (dl->idx_max >= MAX_READER)
             {
               log_error ("too many readers from pcsc_list_readers\n");
               dl->idx_max--;
