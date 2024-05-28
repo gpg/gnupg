@@ -876,6 +876,8 @@ cmd_genkey (assuan_context_t ctx, char *line)
   time_t opt_timestamp;
   int c;
 
+  init_membuf (&outbuf, 512);
+
   if (ctrl->restricted)
     return leave_cmd (ctx, gpg_error (GPG_ERR_FORBIDDEN));
 
@@ -927,8 +929,6 @@ cmd_genkey (assuan_context_t ctx, char *line)
     rc = assuan_inquire (ctx, "KEYPARAM", &value, &valuelen, MAXLEN_KEYPARAM);
   if (rc)
     return rc;
-
-  init_membuf (&outbuf, 512);
 
   /* If requested, ask for the password to be used for the key.  If
      this is not used the regular Pinentry mechanism is used.  */
