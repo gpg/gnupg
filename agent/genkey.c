@@ -116,6 +116,7 @@ store_key (ctrl_t ctrl, gcry_sexp_t private,
       ek->keybuf = buf;
       buf = NULL;
       ek->keybuflen = len;
+      err = 0;
     }
   else
     err = agent_write_private_key (ctrl, grip, buf, len, force,
