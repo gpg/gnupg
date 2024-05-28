@@ -1169,6 +1169,7 @@ install_key_from_spec_file (const char *fname)
       goto leave;
     }
 
+  err = 0;
   while (es_read_line (fp, &line, &linelen, &maxlen) > 0)
     {
       if (!maxlen)
