@@ -1611,7 +1611,7 @@ keydb_search (ctrl_t ctrl, KEYDB_HANDLE hd,
               KEYDB_SEARCH_DESC *desc, size_t ndesc)
 {
   gpg_error_t err = gpg_error (GPG_ERR_EOF);
-  unsigned long skipped;
+  unsigned long skipped = 0;
   int i;
 
   if (!hd)
