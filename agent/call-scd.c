@@ -196,7 +196,8 @@ handle_pincache_get (const char *args, assuan_context_t ctx)
   const char *key;
   char *pin = NULL;
 
-  log_debug ("%s: enter '%s'\n", __func__, args);
+  if (DBG_CACHE)
+    log_debug ("%s: enter '%s'\n", __func__, args);
   key = args;
   if (strlen (key) < 5)
     {
@@ -210,11 +211,14 @@ handle_pincache_get (const char *args, assuan_context_t ctx)
   if (!pin || !*pin)
     {
       xfree (pin);
+      pin = NULL;
       err = 0;  /* Not found is indicated by sending no data back.  */
-      log_debug ("%s: not cached\n", __func__);
+      if (DBG_CACHE)
+        log_debug ("%s: not cached\n", __func__);
       goto leave;
     }
-  log_debug ("%s: cache returned '%s'\n", __func__, pin);
+  if (DBG_CACHE)
+    log_debug ("%s: cache returned '%s'\n", __func__, "[hidden]"/*pin*/);
   err = assuan_send_data (ctx, pin, strlen (pin));
 
  leave:
