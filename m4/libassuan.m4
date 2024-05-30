@@ -9,14 +9,101 @@ dnl This file is distributed in the hope that it will be useful, but
 dnl WITHOUT ANY WARRANTY, to the extent permitted by law; without even the
 dnl implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 dnl SPDX-License-Identifier: FSFULLR
-# Last-changed: 2023-07-26
+# Last-changed: 2024-05-14
+
+dnl
+dnl Find gpgrt-config, which uses .pc file
+dnl (minimum pkg-config functionality, supporting cross build)
+dnl
+dnl _AM_PATH_GPGRT_CONFIG
+AC_DEFUN([_AM_PATH_GPGRT_CONFIG],[dnl
+  AC_PATH_PROG(GPGRT_CONFIG, gpgrt-config, no, [$prefix/bin:$PATH])
+  if test "$GPGRT_CONFIG" != "no"; then
+    # Determine gpgrt_libdir
+    #
+    # Get the prefix of gpgrt-config assuming it's something like:
+    #   <PREFIX>/bin/gpgrt-config
+    gpgrt_prefix=${GPGRT_CONFIG%/*/*}
+    possible_libdir1=${gpgrt_prefix}/lib
+    # Determine by using system libdir-format with CC, it's like:
+    #   Normal style: /usr/lib
+    #   GNU cross style: /usr/<triplet>/lib
+    #   Debian style: /usr/lib/<multiarch-name>
+    #   Fedora/openSUSE style: /usr/lib, /usr/lib32 or /usr/lib64
+    # It is assumed that CC is specified to the one of host on cross build.
+    if libdir_candidates=$(${CC:-cc} -print-search-dirs | \
+          sed -n -e "/^libraries/{s/libraries: =//;s/:/\\
+/g;p;}"); then
+      # From the output of -print-search-dirs, select valid pkgconfig dirs.
+      libdir_candidates=$(for dir in $libdir_candidates; do
+        if p=$(cd $dir 2>/dev/null && pwd); then
+          test -d "$p/pkgconfig" && echo $p;
+        fi
+      done)
+
+      for possible_libdir0 in $libdir_candidates; do
+        # possible_libdir0:
+        #   Fallback candidate, the one of system-installed (by $CC)
+        #   (/usr/<triplet>/lib, /usr/lib/<multiarch-name> or /usr/lib32)
+        # possible_libdir1:
+        #   Another candidate, user-locally-installed
+        #   (<gpgrt_prefix>/lib)
+        # possible_libdir2
+        #   Most preferred
+        #   (<gpgrt_prefix>/<triplet>/lib,
+        #    <gpgrt_prefix>/lib/<multiarch-name> or <gpgrt_prefix>/lib32)
+        if test "${possible_libdir0##*/}" = "lib"; then
+          possible_prefix0=${possible_libdir0%/lib}
+          possible_prefix0_triplet=${possible_prefix0##*/}
+          if test -z "$possible_prefix0_triplet"; then
+            continue
+          fi
+          possible_libdir2=${gpgrt_prefix}/$possible_prefix0_triplet/lib
+        else
+          possible_prefix0=${possible_libdir0%%/lib*}
+          possible_libdir2=${gpgrt_prefix}${possible_libdir0#$possible_prefix0}
+        fi
+        if test -f ${possible_libdir2}/pkgconfig/gpg-error.pc; then
+          gpgrt_libdir=${possible_libdir2}
+        elif test -f ${possible_libdir1}/pkgconfig/gpg-error.pc; then
+          gpgrt_libdir=${possible_libdir1}
+        elif test -f ${possible_libdir0}/pkgconfig/gpg-error.pc; then
+          gpgrt_libdir=${possible_libdir0}
+        fi
+        if test -n "$gpgrt_libdir"; then break; fi
+      done
+    fi
+    if test -z "$gpgrt_libdir"; then
+      # No valid pkgconfig dir in any of the system directories, fallback
+      gpgrt_libdir=${possible_libdir1}
+    fi
+  else
+    unset GPGRT_CONFIG
+  fi
+
+  if test -n "$gpgrt_libdir"; then
+    GPGRT_CONFIG="$GPGRT_CONFIG --libdir=$gpgrt_libdir"
+    if $GPGRT_CONFIG gpg-error >/dev/null 2>&1; then
+      GPG_ERROR_CONFIG="$GPGRT_CONFIG gpg-error"
+      AC_MSG_NOTICE([Use gpgrt-config with $gpgrt_libdir as gpg-error-config])
+      gpg_error_config_version=`$GPG_ERROR_CONFIG --modversion`
+    else
+      gpg_error_config_version=`$GPG_ERROR_CONFIG --version`
+      unset GPGRT_CONFIG
+    fi
+  elif test "$GPG_ERROR_CONFIG" != "no"; then
+    gpg_error_config_version=`$GPG_ERROR_CONFIG --version`
+    unset GPGRT_CONFIG
+  fi
+])
 
 dnl
 dnl Common code used for libassuan detection [internal]
 dnl Returns ok set to yes or no.
 dnl
 AC_DEFUN([_AM_PATH_LIBASSUAN_COMMON],
-[ AC_REQUIRE([AC_CANONICAL_HOST])
+[ AC_REQUIRE([AC_CANONICAL_HOST])dnl
+  AC_REQUIRE([_AM_PATH_GPGRT_CONFIG])dnl
   AC_ARG_WITH(libassuan-prefix,
               AS_HELP_STRING([--with-libassuan-prefix=PFX],
                              [prefix where LIBASSUAN is installed (optional)]),
