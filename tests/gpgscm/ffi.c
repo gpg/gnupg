@@ -938,7 +938,7 @@ do_process_spawn_io (scheme *sc, pointer args)
     }
 
   err = gnupg_process_spawn (argv[0], (const char **) &argv[1],
-                             flags, NULL, NULL, &proc);
+                             flags, NULL, &proc);
   err = gnupg_process_get_streams (proc, 0, &infp, NULL, NULL);
 
   err = es_write (infp, a_input, strlen (a_input), NULL);
@@ -1137,25 +1137,6 @@ do_process_spawn_io (scheme *sc, pointer args)
   FFI_RETURN_ERR (sc, err);
 }
 
-static void
-setup_std_fds (struct spawn_cb_arg *sca)
-{
-  int *std_fds = sca->arg;
-
-#ifdef HAVE_W32_SYSTEM
-  sca->hd[0] = std_fds[0] == -1?
-    INVALID_HANDLE_VALUE : (HANDLE)_get_osfhandle (std_fds[0]);
-  sca->hd[1] = std_fds[1] == -1?
-    INVALID_HANDLE_VALUE : (HANDLE)_get_osfhandle (std_fds[1]);
-  sca->hd[2] = std_fds[2] == -1?
-    INVALID_HANDLE_VALUE : (HANDLE)_get_osfhandle (std_fds[2]);
-#else
-  sca->fds[0] = std_fds[0];
-  sca->fds[1] = std_fds[1];
-  sca->fds[2] = std_fds[2];
-#endif
-}
-
 static pointer
 do_process_spawn_fd (scheme *sc, pointer args)
 {
@@ -1165,6 +1146,7 @@ do_process_spawn_fd (scheme *sc, pointer args)
   size_t len;
   int std_fds[3];
   gnupg_process_t proc = NULL;
+  gnupg_spawn_actions_t act = NULL;
 
   FFI_ARG_OR_RETURN (sc, pointer, arguments, list, args);
   FFI_ARG_OR_RETURN (sc, int, std_fds[0], number, args);
@@ -1189,8 +1171,35 @@ do_process_spawn_fd (scheme *sc, pointer args)
       fprintf (stderr, " (%d %d %d)\n", std_fds[0], std_fds[1], std_fds[2]);
     }
 
-  err = gnupg_process_spawn (argv[0], (const char **) &argv[1],
-                             0, setup_std_fds, std_fds, &proc);
+  err = gnupg_spawn_actions_new (&act);
+  if (err)
+    {
+      FFI_RETURN_ERR (sc, err);
+    }
+#ifdef HAVE_W32_SYSTEM
+  {
+    HANDLE std_in, std_out, std_err;
+
+    if (std_fds[0] == -1)
+      std_in = INVALID_HANDLE_VALUE;
+    else
+      std_in = (HANDLE)_get_osfhandle (std_fds[0]);
+    if (std_fds[1] == -1)
+      std_out = INVALID_HANDLE_VALUE;
+    else
+      std_out = (HANDLE)_get_osfhandle (std_fds[1]);
+    if (std_fds[2] == -1)
+      std_err = INVALID_HANDLE_VALUE;
+    else
+      std_err = (HANDLE)_get_osfhandle (std_fds[2]);
+
+    gnupg_spawn_actions_set_redirect (act, std_in, std_out, std_err);
+  }
+#else
+  gnupg_spawn_actions_set_redirect (act, std_fds[0], std_fds[1], std_fds[2]);
+#endif
+  err = gnupg_process_spawn (argv[0], (const char **)&argv[1], 0, act, &proc);
+  gnupg_spawn_actions_release (act);
   xfree (argv);
   FFI_RETURN_POINTER (sc, proc_wrap (sc, proc));
 }

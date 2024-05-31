@@ -601,7 +601,7 @@ run_with_pipe (struct spawn_info *info, const void *image, u32 len)
 
   fill_command_argv (argv, info->command);
   err = gnupg_process_spawn (argv[0], argv+1, GNUPG_PROCESS_STDIN_PIPE,
-                             NULL, NULL, &proc);
+                             NULL, &proc);
   if (err)
     log_error (_("unable to execute shell '%s': %s\n"),
                argv[0], gpg_strerror (err));
@@ -695,7 +695,7 @@ show_photo (const char *command, const char *name, const void *image, u32 len)
       const char *argv[4];
 
       fill_command_argv (argv, spawn->command);
-      err = gnupg_process_spawn (argv[0], argv+1, 0, NULL, NULL, NULL);
+      err = gnupg_process_spawn (argv[0], argv+1, 0, NULL, NULL);
       if (err)
         log_error (_("unnatural exit of external program\n"));
 #endif

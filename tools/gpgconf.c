@@ -1311,9 +1311,8 @@ show_versions_via_dirmngr (estream_t fp)
   pgmname = gnupg_module_name (GNUPG_MODULE_NAME_DIRMNGR);
   argv[0] = "--gpgconf-versions";
   argv[1] = NULL;
-  err = gnupg_process_spawn (pgmname, argv,
-                             GNUPG_PROCESS_STDOUT_PIPE,
-                             NULL, NULL, &proc);
+  err = gnupg_process_spawn (pgmname, argv, GNUPG_PROCESS_STDOUT_PIPE,
+                             NULL, &proc);
   if (err)
     {
       log_error ("error spawning %s: %s", pgmname, gpg_strerror (err));

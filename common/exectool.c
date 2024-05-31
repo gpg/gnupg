@@ -338,6 +338,7 @@ gnupg_exec_tool_stream (const char *pgmname, const char *argv[],
   read_and_log_buffer_t fderrstate;
   struct copy_buffer *cpbuf_in = NULL, *cpbuf_out = NULL, *cpbuf_extra = NULL;
   int quiet = 0;
+  gnupg_spawn_actions_t act = NULL;
 
   memset (fds, 0, sizeof fds);
   memset (&fderrstate, 0, sizeof fderrstate);
@@ -413,13 +414,21 @@ gnupg_exec_tool_stream (const char *pgmname, const char *argv[],
   else
     exceptclose[0] = -1;
 
+  err = gnupg_spawn_actions_new (&act);
+  if (err)
+    goto leave;
+
+#ifdef HAVE_W32_SYSTEM
+  gnupg_spawn_actions_set_inherit_handles (act, exceptclose);
+#else
+  gnupg_spawn_actions_set_inherit_fds (act, exceptclose);
+#endif
   err = gnupg_process_spawn (pgmname, argv,
                              ((input
                                ? GNUPG_PROCESS_STDIN_PIPE
                                : 0)
                               | GNUPG_PROCESS_STDOUT_PIPE
-                              | GNUPG_PROCESS_STDERR_PIPE),
-                             gnupg_spawn_helper, exceptclose, &proc);
+                              | GNUPG_PROCESS_STDERR_PIPE), act, &proc);
   gnupg_process_get_streams (proc, GNUPG_PROCESS_STREAM_NONBLOCK,
                              input? &infp : NULL, &outfp, &errfp);
   if (extrapipe[0] != -1)
@@ -572,6 +581,7 @@ gnupg_exec_tool_stream (const char *pgmname, const char *argv[],
   es_fclose (outfp);
   es_fclose (errfp);
   gnupg_process_release (proc);
+  gnupg_spawn_actions_release (act);
 
   copy_buffer_shred (cpbuf_in);
   xfree (cpbuf_in);

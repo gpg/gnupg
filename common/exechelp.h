@@ -42,7 +42,7 @@ int get_max_fds (void);
    EXCEPT is not NULL, it is expected to be a list of file descriptors
    which are not to close.  This list shall be sorted in ascending
    order with its end marked by -1.  */
-void close_all_fds (int first, int *except);
+void close_all_fds (int first, const int *except);
 
 
 /* Returns an array with all currently open file descriptors.  The end
@@ -75,22 +75,21 @@ void gnupg_close_pipe (int fd);
 
 /* The opaque type for a subprocess.  */
 typedef struct gnupg_process *gnupg_process_t;
+typedef struct gnupg_spawn_actions *gnupg_spawn_actions_t;
+gpg_err_code_t gnupg_spawn_actions_new (gnupg_spawn_actions_t *r_act);
+void gnupg_spawn_actions_release (gnupg_spawn_actions_t act);
 #ifdef HAVE_W32_SYSTEM
-struct spawn_cb_arg;
-#ifdef NEED_STRUCT_SPAWN_CB_ARG
-struct spawn_cb_arg {
-  HANDLE hd[3];
-  HANDLE *inherit_hds;
-  BOOL allow_foreground_window;
-  void *arg;
-};
-#endif
+void gnupg_spawn_actions_set_envvars (gnupg_spawn_actions_t, char *);
+void gnupg_spawn_actions_set_redirect (gnupg_spawn_actions_t,
+                                       void *, void *, void *);
+void gnupg_spawn_actions_set_inherit_handles (gnupg_spawn_actions_t, void **);
 #else
-struct spawn_cb_arg {
-  int fds[3];
-  int *except_fds;
-  void *arg;
-};
+void gnupg_spawn_actions_set_environ (gnupg_spawn_actions_t, char **);
+void gnupg_spawn_actions_set_redirect (gnupg_spawn_actions_t, int, int, int);
+void gnupg_spawn_actions_set_inherit_fds (gnupg_spawn_actions_t,
+                                          const int *);
+void gnupg_spawn_actions_set_atfork (gnupg_spawn_actions_t,
+                                      void (*atfork)(void *), void *arg);
 #endif
 
 #define GNUPG_PROCESS_DETACHED            (1 << 1)
@@ -110,14 +109,10 @@ struct spawn_cb_arg {
 
 #define GNUPG_PROCESS_STREAM_NONBLOCK     (1 << 16)
 
-/* Spawn helper.  */
-void gnupg_spawn_helper (struct spawn_cb_arg *sca);
-
 /* Spawn PGMNAME.  */
-gpg_err_code_t gnupg_process_spawn (const char *pgmname, const char *argv[],
+gpg_err_code_t gnupg_process_spawn (const char *pgmname, const char *argv1[],
                                     unsigned int flags,
-                                    void (*spawn_cb) (struct spawn_cb_arg *),
-                                    void *spawn_cb_arg,
+                                    gnupg_spawn_actions_t act,
                                     gnupg_process_t *r_process);
 
 /* Get FDs for subprocess I/O.  It is the caller which should care

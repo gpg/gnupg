@@ -2383,18 +2383,15 @@ app_check_pin (card_t card, ctrl_t ctrl, const char *keyidstr,
   return err;
 }
 
-
+#ifndef HAVE_W32_SYSTEM
 static void
-setup_env (struct spawn_cb_arg *sca)
+setup_env (void *arg)
 {
-#ifdef HAVE_W32_SYSTEM
-  (void)sca;			/* Not supported on Windows.  */
-#else
-  char *v = sca->arg;
+  char *v = arg;
 
   putenv (v);
-#endif
 }
+#endif
 
 static void
 report_change (int slot, int old_status, int cur_status)
@@ -2425,6 +2422,7 @@ report_change (int slot, int old_status, int cur_status)
       gpg_error_t err;
       const char *args[9];
       char numbuf1[30], numbuf2[30], numbuf3[30];
+      gnupg_spawn_actions_t act = NULL;
 
       sprintf (numbuf1, "%d", slot);
       sprintf (numbuf2, "0x%04X", old_status);
@@ -2442,9 +2440,16 @@ report_change (int slot, int old_status, int cur_status)
       args[8] = NULL;
 
       fname = make_filename (gnupg_homedir (), "scd-event", NULL);
-      err = gnupg_process_spawn (fname, args,
-                                 GNUPG_PROCESS_DETACHED,
-                                 setup_env, envstr, NULL);
+      err = gnupg_spawn_actions_new (&act);
+      if (!err)
+        {
+#ifndef HAVE_W32_SYSTEM
+          gnupg_spawn_actions_set_atfork (act, setup_env, envstr);
+#endif
+          err = gnupg_process_spawn (fname, args, GNUPG_PROCESS_DETACHED,
+                                     act, NULL);
+          gnupg_spawn_actions_release (act);
+        }
       if (err && gpg_err_code (err) != GPG_ERR_ENOENT)
         log_error ("failed to run event handler '%s': %s\n",
                    fname, gpg_strerror (err));

@@ -851,7 +851,7 @@ ldap_wrapper (ctrl_t ctrl, ksba_reader_t *reader, const char *argv[])
   err = gnupg_process_spawn (pgmname, arg_list,
                              (GNUPG_PROCESS_STDOUT_PIPE
                               | GNUPG_PROCESS_STDERR_PIPE),
-                             NULL, NULL, &process);
+                             NULL, &process);
   if (err)
     {
       xfree (arg_list);

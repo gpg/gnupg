@@ -761,7 +761,7 @@ gpg_agent_runtime_change (int killflag)
   log_assert (i < DIM(argv));
 
   if (!err)
-    err = gnupg_process_spawn (pgmname, argv, 0, NULL, NULL, &proc);
+    err = gnupg_process_spawn (pgmname, argv, 0, NULL, &proc);
   if (!err)
     err = gnupg_process_wait (proc, 1);
   if (err)
@@ -805,7 +805,7 @@ scdaemon_runtime_change (int killflag)
   log_assert (i < DIM(argv));
 
   if (!err)
-    err = gnupg_process_spawn (pgmname, argv, 0, NULL, NULL, &proc);
+    err = gnupg_process_spawn (pgmname, argv, 0, NULL, &proc);
   if (!err)
     err = gnupg_process_wait (proc, 1);
   if (err)
@@ -850,7 +850,7 @@ tpm2daemon_runtime_change (int killflag)
   log_assert (i < DIM(argv));
 
   if (!err)
-    err = gnupg_process_spawn (pgmname, argv, 0, NULL, NULL, &proc);
+    err = gnupg_process_spawn (pgmname, argv, 0, NULL, &proc);
   if (!err)
     err = gnupg_process_wait (proc, 1);
   if (err)
@@ -885,7 +885,7 @@ dirmngr_runtime_change (int killflag)
   log_assert (i < DIM(argv));
 
   if (!err)
-    err = gnupg_process_spawn (pgmname, argv, 0, NULL, NULL, &proc);
+    err = gnupg_process_spawn (pgmname, argv, 0, NULL, &proc);
   if (!err)
     err = gnupg_process_wait (proc, 1);
   if (err)
@@ -919,7 +919,7 @@ keyboxd_runtime_change (int killflag)
   log_assert (i < DIM(argv));
 
   if (!err)
-    err = gnupg_process_spawn (pgmname, argv, 0, NULL, NULL, &proc);
+    err = gnupg_process_spawn (pgmname, argv, 0, NULL, &proc);
   if (!err)
     err = gnupg_process_wait (proc, 1);
   if (err)
@@ -985,7 +985,7 @@ gc_component_launch (int component)
   argv[i] = NULL;
   log_assert (i < DIM(argv));
 
-  err = gnupg_process_spawn (pgmname, argv, 0, NULL, NULL, &proc);
+  err = gnupg_process_spawn (pgmname, argv, 0, NULL, &proc);
   if (!err)
     err = gnupg_process_wait (proc, 1);
   if (err)
@@ -1369,9 +1369,8 @@ gc_component_check_options (int component, estream_t out, const char *conf_file)
 
   result = 0;
   errlines = NULL;
-  err = gnupg_process_spawn (pgmname, argv,
-                             GNUPG_PROCESS_STDERR_PIPE,
-                             NULL, NULL, &proc);
+  err = gnupg_process_spawn (pgmname, argv, GNUPG_PROCESS_STDERR_PIPE,
+                             NULL, &proc);
   if (err)
     result |= 1; /* Program could not be run.  */
   else
@@ -1763,9 +1762,8 @@ retrieve_options_from_program (gc_component_id_t component, int only_installed)
   /* First we need to read the option table from the program.  */
   argv[0] = "--dump-option-table";
   argv[1] = NULL;
-  err = gnupg_process_spawn (pgmname, argv,
-                             GNUPG_PROCESS_STDOUT_PIPE,
-                             NULL, NULL, &proc);
+  err = gnupg_process_spawn (pgmname, argv, GNUPG_PROCESS_STDOUT_PIPE,
+                             NULL, &proc);
   if (err)
     {
       gc_error (1, 0, "could not gather option table from '%s': %s",
@@ -1952,9 +1950,8 @@ retrieve_options_from_program (gc_component_id_t component, int only_installed)
   /* Now read the default options.  */
   argv[0] = "--gpgconf-list";
   argv[1] = NULL;
-  err = gnupg_process_spawn (pgmname, argv,
-                             GNUPG_PROCESS_STDOUT_PIPE,
-                             NULL, NULL, &proc);
+  err = gnupg_process_spawn (pgmname, argv, GNUPG_PROCESS_STDOUT_PIPE,
+                             NULL, &proc);
   if (err)
     {
       gc_error (1, 0, "could not gather active options from '%s': %s",

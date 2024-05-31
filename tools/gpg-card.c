@@ -3835,7 +3835,7 @@ cmd_gpg (card_info_t info, char *argstr, int use_gpgsm)
                              argv,
                              (GNUPG_PROCESS_STDOUT_KEEP
                               | GNUPG_PROCESS_STDERR_KEEP),
-                             NULL, NULL, &proc);
+                             NULL, &proc);
   if (!err)
     {
       err = gnupg_process_wait (proc, 1);

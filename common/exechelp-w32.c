@@ -65,7 +65,6 @@
 #include "util.h"
 #include "i18n.h"
 #include "sysutils.h"
-#define NEED_STRUCT_SPAWN_CB_ARG
 #include "exechelp.h"
 
 #include <windows.h>
@@ -126,7 +125,7 @@ get_max_fds (void)
 
 /* Under Windows this is a dummy function.  */
 void
-close_all_fds (int first, int *except)
+close_all_fds (int first, const int *except)
 {
   (void)first;
   (void)except;
@@ -410,6 +409,12 @@ gnupg_close_pipe (int fd)
     close (fd);
 }
 
+struct gnupg_spawn_actions {
+  void *hd[3];
+  void **inherit_hds;
+  char *env;
+};
+
 struct gnupg_process {
   const char *pgmname;
   unsigned int terminated   :1; /* or detached */
@@ -479,8 +484,7 @@ check_windows_version (void)
 
 
 static gpg_err_code_t
-spawn_detached (const char *pgmname, char *cmdline,
-                void (*spawn_cb) (struct spawn_cb_arg *), void *spawn_cb_arg)
+spawn_detached (const char *pgmname, char *cmdline, gnupg_spawn_actions_t act)
 {
   SECURITY_ATTRIBUTES sec_attr;
   PROCESS_INFORMATION pi = { NULL, 0, 0, 0 };
@@ -490,8 +494,8 @@ spawn_detached (const char *pgmname, char *cmdline,
   wchar_t *wpgmname = NULL;
   gpg_err_code_t ec;
   int ret;
-  struct spawn_cb_arg sca;
   BOOL ask_inherit = FALSE;
+  int i;
 
   ec = gnupg_access (pgmname, X_OK);
   if (ec)
@@ -502,22 +506,27 @@ spawn_detached (const char *pgmname, char *cmdline,
 
   memset (&si, 0, sizeof si);
 
-  sca.allow_foreground_window = FALSE;
-  sca.hd[0] = INVALID_HANDLE_VALUE;
-  sca.hd[1] = INVALID_HANDLE_VALUE;
-  sca.hd[2] = INVALID_HANDLE_VALUE;
-  sca.inherit_hds = NULL;
-  sca.arg = spawn_cb_arg;
-  if (spawn_cb)
-    (*spawn_cb) (&sca);
+  i = 0;
+  if (act->hd[0] != INVALID_HANDLE_VALUE)
+    i++;
+  if (act->hd[1] != INVALID_HANDLE_VALUE)
+    i++;
+  if (act->hd[2] != INVALID_HANDLE_VALUE)
+    i++;
 
-  if (sca.inherit_hds)
+  if (i != 0 || act->inherit_hds)
     {
       SIZE_T attr_list_size = 0;
       HANDLE hd[16];
-      HANDLE *hd_p = sca.inherit_hds;
+      HANDLE *hd_p = act->inherit_hds;
       int j = 0;
 
+      if (act->hd[0] != INVALID_HANDLE_VALUE)
+        hd[j++] = act->hd[0];
+      if (act->hd[1] != INVALID_HANDLE_VALUE)
+        hd[j++] = act->hd[1];
+      if (act->hd[1] != INVALID_HANDLE_VALUE)
+        hd[j++] = act->hd[2];
       if (hd_p)
         {
           while (*hd_p != INVALID_HANDLE_VALUE)
@@ -559,7 +568,8 @@ spawn_detached (const char *pgmname, char *cmdline,
 
   /* Start the process.  */
   si.StartupInfo.cb = sizeof (si);
-  si.StartupInfo.dwFlags = STARTF_USESHOWWINDOW;
+  si.StartupInfo.dwFlags = ((i > 0 ? STARTF_USESTDHANDLES : 0)
+                            | STARTF_USESHOWWINDOW);
   si.StartupInfo.wShowWindow = DEBUG_W32_SPAWN? SW_SHOW : SW_MINIMIZE;
 
   cr_flags = (CREATE_DEFAULT_ERROR_MODE
@@ -579,7 +589,7 @@ spawn_detached (const char *pgmname, char *cmdline,
                           &sec_attr,     /* Thread security attributes.  */
                           ask_inherit,   /* Inherit handles.  */
                           cr_flags,      /* Creation flags.  */
-                          NULL,          /* Environment.  */
+                          act->env,      /* Environment.  */
                           NULL,          /* Use current drive/directory.  */
                           (STARTUPINFOW *)&si,    /* Startup information. */
                           &pi            /* Returns process information.  */
@@ -617,18 +627,60 @@ spawn_detached (const char *pgmname, char *cmdline,
 }
 
 
-void
-gnupg_spawn_helper (struct spawn_cb_arg *sca)
+gpg_err_code_t
+gnupg_spawn_actions_new (gnupg_spawn_actions_t *r_act)
 {
-  HANDLE *user_except = sca->arg;
-  sca->inherit_hds = user_except;
+  gnupg_spawn_actions_t act;
+  int i;
+
+  *r_act = NULL;
+
+  act = xtrycalloc (1, sizeof (struct gnupg_spawn_actions));
+  if (act == NULL)
+    return gpg_err_code_from_syserror ();
+
+  for (i = 0; i <= 2; i++)
+    act->hd[i] = INVALID_HANDLE_VALUE;
+
+  *r_act = act;
+  return 0;
 }
+
+void
+gnupg_spawn_actions_release (gnupg_spawn_actions_t act)
+{
+  if (!act)
+    return;
+
+  xfree (act);
+}
+
+void
+gnupg_spawn_actions_set_envvars (gnupg_spawn_actions_t act, char *env)
+{
+  act->env = env;
+}
+
+void
+gnupg_spawn_actions_set_redirect (gnupg_spawn_actions_t act,
+                                  void *in, void *out, void *err)
+{
+  act->hd[0] = in;
+  act->hd[1] = out;
+  act->hd[2] = err;
+}
+
+void
+gnupg_spawn_actions_set_inherit_handles (gnupg_spawn_actions_t act,
+                                         void **handles)
+{
+  act->inherit_hds = handles;
+}
+
 
 gpg_err_code_t
 gnupg_process_spawn (const char *pgmname, const char *argv[],
-                     unsigned int flags,
-                     void (*spawn_cb) (struct spawn_cb_arg *),
-                     void *spawn_cb_arg,
+                     unsigned int flags, gnupg_spawn_actions_t act,
                      gnupg_process_t *r_process)
 {
   gpg_err_code_t ec;
@@ -644,9 +696,18 @@ gnupg_process_spawn (const char *pgmname, const char *argv[],
   HANDLE hd_in[2];
   HANDLE hd_out[2];
   HANDLE hd_err[2];
-  struct spawn_cb_arg sca;
   int i;
   BOOL ask_inherit = FALSE;
+  BOOL allow_foreground_window = FALSE;
+  struct gnupg_spawn_actions act_default;
+
+  if (!act)
+    {
+      memset (&act_default, 0, sizeof (act_default));
+      for (i = 0; i <= 2; i++)
+        act_default.hd[i] = INVALID_HANDLE_VALUE;
+      act = &act_default;
+    }
 
   check_syscall_func ();
 
@@ -670,7 +731,7 @@ gnupg_process_spawn (const char *pgmname, const char *argv[],
           return GPG_ERR_INV_ARG;
         }
 
-      return spawn_detached (pgmname, cmdline, spawn_cb, spawn_cb_arg);
+      return spawn_detached (pgmname, cmdline, act);
     }
 
   if (r_process)
@@ -770,36 +831,34 @@ gnupg_process_spawn (const char *pgmname, const char *argv[],
 
   memset (&si, 0, sizeof si);
 
-  sca.allow_foreground_window = FALSE;
-  sca.hd[0] = hd_in[0];
-  sca.hd[1] = hd_out[1];
-  sca.hd[2] = hd_err[1];
-  sca.inherit_hds = NULL;
-  sca.arg = spawn_cb_arg;
-  if (spawn_cb)
-    (*spawn_cb) (&sca);
+  if (act->hd[0] == INVALID_HANDLE_VALUE)
+    act->hd[0] = hd_in[0];
+  if (act->hd[1] == INVALID_HANDLE_VALUE)
+    act->hd[1] = hd_out[1];
+  if (act->hd[2] == INVALID_HANDLE_VALUE)
+    act->hd[2] = hd_err[1];
 
   i = 0;
-  if (sca.hd[0] != INVALID_HANDLE_VALUE)
+  if (act->hd[0] != INVALID_HANDLE_VALUE)
     i++;
-  if (sca.hd[1] != INVALID_HANDLE_VALUE)
+  if (act->hd[1] != INVALID_HANDLE_VALUE)
     i++;
-  if (sca.hd[2] != INVALID_HANDLE_VALUE)
+  if (act->hd[2] != INVALID_HANDLE_VALUE)
     i++;
 
-  if (i != 0 || sca.inherit_hds)
+  if (i != 0 || act->inherit_hds)
     {
       SIZE_T attr_list_size = 0;
       HANDLE hd[16];
-      HANDLE *hd_p = sca.inherit_hds;
+      HANDLE *hd_p = act->inherit_hds;
       int j = 0;
 
-      if (sca.hd[0] != INVALID_HANDLE_VALUE)
-        hd[j++] = sca.hd[0];
-      if (sca.hd[1] != INVALID_HANDLE_VALUE)
-        hd[j++] = sca.hd[1];
-      if (sca.hd[1] != INVALID_HANDLE_VALUE)
-        hd[j++] = sca.hd[2];
+      if (act->hd[0] != INVALID_HANDLE_VALUE)
+        hd[j++] = act->hd[0];
+      if (act->hd[1] != INVALID_HANDLE_VALUE)
+        hd[j++] = act->hd[1];
+      if (act->hd[1] != INVALID_HANDLE_VALUE)
+        hd[j++] = act->hd[2];
       if (hd_p)
         {
           while (*hd_p != INVALID_HANDLE_VALUE)
@@ -858,9 +917,9 @@ gnupg_process_spawn (const char *pgmname, const char *argv[],
   si.StartupInfo.cb = sizeof (si);
   si.StartupInfo.dwFlags = STARTF_USESTDHANDLES | STARTF_USESHOWWINDOW;
   si.StartupInfo.wShowWindow = DEBUG_W32_SPAWN? SW_SHOW : SW_HIDE;
-  si.StartupInfo.hStdInput  = sca.hd[0];
-  si.StartupInfo.hStdOutput = sca.hd[1];
-  si.StartupInfo.hStdError  = sca.hd[2];
+  si.StartupInfo.hStdInput  = act->hd[0];
+  si.StartupInfo.hStdOutput = act->hd[1];
+  si.StartupInfo.hStdError  = act->hd[2];
 
   /* log_debug ("CreateProcess, path='%s' cmdline='%s'\n", pgmname, cmdline); */
   cr_flags = (CREATE_DEFAULT_ERROR_MODE
@@ -877,9 +936,9 @@ gnupg_process_spawn (const char *pgmname, const char *argv[],
                           &sec_attr,     /* Thread security attributes.  */
                           ask_inherit,   /* Inherit handles.  */
                           cr_flags,      /* Creation flags.  */
-                          NULL,          /* Environment.  */
+                          act->env,      /* Environment.  */
                           NULL,          /* Use current drive/directory.  */
-                          (STARTUPINFOW *)&si,           /* Startup information. */
+                          (STARTUPINFOW *)&si,    /* Startup information. */
                           &pi            /* Returns process information.  */
                           );
   if (!ret)
@@ -933,7 +992,7 @@ gnupg_process_spawn (const char *pgmname, const char *argv[],
   /*           pi.hProcess, pi.hThread, */
   /*           (int) pi.dwProcessId, (int) pi.dwThreadId); */
 
-  if (sca.allow_foreground_window)
+  if (allow_foreground_window)
     {
       /* Fixme: For unknown reasons AllowSetForegroundWindow returns
        * an invalid argument error if we pass it the correct

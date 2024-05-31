@@ -1234,6 +1234,7 @@ gpgtar_create (char **inpattern, const char *files_from, int null_names,
       int except[2] = { -1, -1 };
 #endif
       const char **argv;
+      gnupg_spawn_actions_t act = NULL;
 
       /* '--encrypt' may be combined with '--symmetric', but 'encrypt'
        * is set either way.  Clear it if no recipients are specified.
@@ -1296,11 +1297,23 @@ gpgtar_create (char **inpattern, const char *files_from, int null_names,
           goto leave;
         }
 
+      err = gnupg_spawn_actions_new (&act);
+      if (err)
+        {
+          xfree (argv);
+          goto leave;
+        }
+
+#ifdef HAVE_W32_SYSTEM
+      gnupg_spawn_actions_set_inherit_handles (act, except);
+#else
+      gnupg_spawn_actions_set_inherit_fds (act, except);
+#endif
       err = gnupg_process_spawn (opt.gpg_program, argv,
                                  (GNUPG_PROCESS_STDIN_PIPE
                                   | GNUPG_PROCESS_STDOUT_KEEP
-                                  | GNUPG_PROCESS_STDERR_KEEP),
-                                 gnupg_spawn_helper, except, &proc);
+                                  | GNUPG_PROCESS_STDERR_KEEP), act, &proc);
+      gnupg_spawn_actions_release (act);
       xfree (argv);
       if (err)
         goto leave;

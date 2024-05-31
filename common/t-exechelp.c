@@ -266,7 +266,7 @@ test_pipe_stream (const char *pgmname)
   err = gnupg_process_spawn (pgmname, argv,
                              (GNUPG_PROCESS_STDOUT_PIPE
                               |GNUPG_PROCESS_STDERR_KEEP),
-                             NULL, NULL, &proc);
+                             NULL, &proc);
   if (err)
     {
       fprintf (stderr, "gnupg_process_spawn failed\n");
