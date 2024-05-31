@@ -83,7 +83,7 @@ run_umount_helper (const char *mountpoint)
 
   err = gnupg_process_spawn (pgmname, args,
                              GNUPG_PROCESS_DETACHED,
-                             NULL, NULL, NULL);
+                             NULL, NULL);
   if (err)
     log_error ("failed to run '%s': %s\n",
                pgmname, gpg_strerror (err));
@@ -262,7 +262,7 @@ run_encfs_tool (ctrl_t ctrl, enum encfs_cmds cmd,
   err = gnupg_process_spawn (pgmname, argv,
                              (GNUPG_PROCESS_STDIN_PIPE
                               | GNUPG_PROCESS_STDERR_PIPE),
-                             NULL, NULL, &proc);
+                             NULL, &proc);
   if (err)
     {
       log_error ("error spawning '%s': %s\n", pgmname, gpg_strerror (err));
