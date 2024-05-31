@@ -1,6 +1,6 @@
 /* strlist.c -  string helpers
  * Copyright (C) 1998, 2000, 2001, 2006 Free Software Foundation, Inc.
- * Copyright (C) 2015  g10 Code GmbH
+ * Copyright (C) 2015, 2024  g10 Code GmbH
  *
  * This file is part of GnuPG.
  *
@@ -27,6 +27,7 @@
  * You should have received a copies of the GNU General Public License
  * and the GNU Lesser General Public License along with this program;
  * if not, see <https://www.gnu.org/licenses/>.
+ * SPDX-License-Identifier: (LGPL-3.0-or-later OR GPL-2.0-or-later)
  */
 
 #include <config.h>
@@ -134,27 +135,39 @@ append_to_strlist( strlist_t *list, const char *string )
 }
 
 
+/* Core of append_to_strlist_try which take the length of the string.
+ * Return the item added to the end of the list.  Or NULL in case of
+ * an error.  */
+static strlist_t
+do_append_to_strlist (strlist_t *list, const char *string, size_t stringlen)
+{
+  strlist_t r, sl;
+
+  sl = xtrymalloc (sizeof *sl + stringlen);
+  if (!sl)
+    return NULL;
+
+  sl->flags = 0;
+  memcpy (sl->d, string, stringlen);
+  sl->d[stringlen] = 0;
+  sl->next = NULL;
+  if (!*list)
+    *list = sl;
+  else
+    {
+      for (r = *list; r->next; r = r->next)
+        ;
+      r->next = sl;
+    }
+  return sl;
+}
+
+
 /* Add STRING to the LIST at the end.  */
 strlist_t
 append_to_strlist_try (strlist_t *list, const char *string)
 {
-    strlist_t r, sl;
-
-    sl = xtrymalloc( sizeof *sl + strlen(string));
-    if (sl == NULL)
-      return NULL;
-
-    sl->flags = 0;
-    strcpy(sl->d, string);
-    sl->next = NULL;
-    if( !*list )
-	*list = sl;
-    else {
-	for( r = *list; r->next; r = r->next )
-	    ;
-	r->next = sl;
-    }
-    return sl;
+  return do_append_to_strlist (list, string, strlen (string));
 }
 
 
@@ -172,6 +185,75 @@ append_to_strlist2( strlist_t *list, const char *string, int is_utf8 )
       xfree( p );
     }
   return sl;
+}
+
+
+/* Tokenize STRING using the delimiters from DELIM and append each
+ * token to the string list LIST.  On success a pinter into LIST with
+ * the first new token is returned.  Returns NULL on error and sets
+ * ERRNO.  Take care, an error with ENOENT set mean that no tokens
+ * were found in STRING.  */
+strlist_t
+tokenize_to_strlist (strlist_t *list, const char *string, const char *delim)
+{
+  const char *s, *se;
+  size_t n;
+  strlist_t newlist = NULL;
+  strlist_t tail;
+
+  s = string;
+  do
+    {
+      se = strpbrk (s, delim);
+      if (se)
+        n = se - s;
+      else
+        n = strlen (s);
+      if (!n)
+        continue;  /* Skip empty string.  */
+      tail = do_append_to_strlist (&newlist, s, n);
+      if (!tail)
+        {
+          free_strlist (newlist);
+          return NULL;
+        }
+      trim_spaces (tail->d);
+      if (!*tail->d)  /* Remove new but empty item from the list.  */
+        {
+          tail = strlist_prev (newlist, tail);
+          if (tail)
+            {
+              free_strlist (tail->next);
+              tail->next = NULL;
+            }
+          else if (newlist)
+            {
+              free_strlist (newlist);
+              newlist = NULL;
+            }
+          continue;
+        }
+    }
+  while (se && (s = se + 1));
+
+  if (!newlist)
+    {
+      /* Not items found.  Indicate this by returnning NULL with errno
+       * set to ENOENT.  */
+      gpg_err_set_errno (ENOENT);
+      return NULL;
+    }
+
+  /* Append NEWLIST to LIST.  */
+  if (!*list)
+    *list = newlist;
+  else
+    {
+      for (tail = *list; tail->next; tail = tail->next)
+        ;
+      tail->next = newlist;
+    }
+  return newlist;
 }
 
 
