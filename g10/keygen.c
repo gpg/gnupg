@@ -97,6 +97,7 @@ enum para_name {
   pKEYSERVER,
   pKEYGRIP,
   pSUBKEYGRIP,
+  pADSK,        /* this uses u.adsk  */
   pVERSION,     /* Desired version of the key packet.  */
   pSUBVERSION,  /* Ditto for the subpacket.  */
   pCARDKEY      /* The keygrips have been taken from active card (bool).  */
@@ -112,6 +113,7 @@ struct para_data_s {
         int abool;
         unsigned int usage;
         struct revocation_key revkey;
+        PKT_public_key *adsk;  /* used with key == pADSK */
         char value[1];
     } u;
 };
@@ -3926,6 +3928,9 @@ release_parameter_list (struct para_data_s *r)
       r2 = r->next;
       if (r->key == pPASSPHRASE && *r->u.value)
         wipememory (r->u.value, strlen (r->u.value));
+      else if (r->key == pADSK)
+        free_public_key (r->u.adsk);
+
       xfree (r);
     }
 }
@@ -4162,6 +4167,59 @@ prepare_desig_revoker (ctrl_t ctrl, const char *name)
 }
 
 
+/* Parse asn ADSK specified by NAME, check that the public key exists
+ * and return a parameter with the adsk information.  On error print a
+ * diagnostic and return NULL.  */
+static struct para_data_s *
+prepare_adsk (ctrl_t ctrl, const char *name)
+{
+  gpg_error_t err;
+  char *namebuffer = NULL;
+  struct para_data_s *para = NULL;
+  KEYDB_SEARCH_DESC desc;
+  PKT_public_key *adsk_pk = NULL;
+  char *p;
+
+  if (classify_user_id (name, &desc, 1)
+      || desc.mode != KEYDB_SEARCH_MODE_FPR)
+    {
+      log_info (_("\"%s\" is not a fingerprint\n"), name);
+      err = gpg_error (GPG_ERR_INV_NAME);
+      goto leave;
+    }
+
+  /* Force searching for that exact fingerprint.  */
+  if (!strchr (name, '!'))
+    {
+      namebuffer = xstrconcat (name, "!", NULL);
+      name = namebuffer;
+    }
+
+  adsk_pk = xcalloc (1, sizeof *adsk_pk);
+  adsk_pk->req_usage = PUBKEY_USAGE_ENC;
+  err = get_pubkey_byname (ctrl, GET_PUBKEY_NO_AKL,
+                           NULL, adsk_pk, name, NULL, NULL, 1);
+  if (err)
+    goto leave;
+
+  para = xcalloc (1, sizeof *para);
+  para->key = pADSK;
+  para->u.adsk = adsk_pk;
+  adsk_pk = NULL;
+
+ leave:
+  if (err)
+    {
+      if (namebuffer && (p=strchr (namebuffer, '!')))
+        *p = 0; /* Strip the ! for the diagnostic.  */
+      log_error ("invalid ADSK '%s' specified: %s\n", name, gpg_strerror (err));
+    }
+  free_public_key (adsk_pk);
+  xfree (namebuffer);
+  return para;
+}
+
+
 /* Parse a pREVOKER parameter into its dedicated parts.  */
 static int
 parse_revocation_key (const char *fname,
@@ -4246,11 +4304,17 @@ get_parameter_uint( struct para_data_s *para, enum para_name key )
 }
 
 static struct revocation_key *
-get_parameter_revkey (struct para_data_s *para, enum para_name key,
-                      unsigned int idx)
+get_parameter_revkey (struct para_data_s *para, unsigned int idx)
 {
-  struct para_data_s *r = get_parameter_idx (para, key, idx);
+  struct para_data_s *r = get_parameter_idx (para, pREVOKER, idx);
   return r? &r->u.revkey : NULL;
+}
+
+static PKT_public_key *
+get_parameter_adsk (struct para_data_s *para, unsigned int idx)
+{
+  struct para_data_s *r = get_parameter_idx (para, pADSK, idx);
+  return r? r->u.adsk : NULL;
 }
 
 static int
@@ -4269,7 +4333,7 @@ proc_parameter_file (ctrl_t ctrl, struct para_data_s *para, const char *fname,
   const char *s1, *s2, *s3;
   size_t n;
   char *p;
-  strlist_t sl;
+  strlist_t sl, slr;
   int is_default = 0;
   int have_user_id = 0;
   int err, algo;
@@ -4426,6 +4490,33 @@ proc_parameter_file (ctrl_t ctrl, struct para_data_s *para, const char *fname,
   for (sl = opt.desig_revokers; sl; sl = sl->next)
     {
       r = prepare_desig_revoker (ctrl, sl->d);
+      if (!r)
+        return -1;
+      append_to_parameter (para, r);
+     }
+
+
+  /* Check and append ADSKs from the config file.  While doing this
+   * also check for duplicate specifications.  In addition we remove
+   * an optional '!' suffix for easier comparing; the suffix is anyway
+   * re-added later.  */
+  for (sl = opt.def_new_key_adsks; sl; sl = sl->next)
+    {
+      if (!*sl->d)
+        continue;
+      p = strchr (sl->d, '!');
+      if (p)
+        *p = 0;
+      for (slr = opt.def_new_key_adsks; slr != sl; slr = slr->next)
+        if (!ascii_strcasecmp (sl->d, slr->d))
+          {
+            *sl->d = 0; /* clear fpr to mark this as a duplicate.  */
+            break;
+          }
+      if (!*sl->d)
+        continue;
+
+      r = prepare_adsk (ctrl, sl->d);
       if (!r)
         return -1;
       append_to_parameter (para, r);
@@ -5589,6 +5680,7 @@ do_generate_keypair (ctrl_t ctrl, struct para_data_s *para,
   int cardkey;
   unsigned int keygen_flags;
   unsigned int idx;
+  int any_adsk = 0;
 
   if (outctrl->dryrun)
     {
@@ -5725,11 +5817,11 @@ do_generate_keypair (ctrl_t ctrl, struct para_data_s *para,
     }
 
   /* Write all signatures specifying designated revokers.  */
-  for (idx=0;
-       !err && (revkey = get_parameter_revkey (para, pREVOKER, idx));
-       idx++)
-    err = write_direct_sig (ctrl, pub_root, pri_psk,
-                            revkey, signtimestamp, cache_nonce);
+  for (idx=0; !err && (revkey = get_parameter_revkey (para, idx)); idx++)
+    {
+      err = write_direct_sig (ctrl, pub_root, pri_psk,
+                              revkey, signtimestamp, cache_nonce);
+    }
 
   if (!err && (s = get_parameter_value (para, pUSERID)))
     {
@@ -5848,6 +5940,25 @@ do_generate_keypair (ctrl_t ctrl, struct para_data_s *para,
       did_sub = 1;
     }
 
+
+  /* Get rid of the first empty packet.  */
+  if (!err)
+    commit_kbnode (&pub_root);
+
+  /* Add ADSKs if any are specified.  */
+  if (!err)
+    {
+      PKT_public_key *adsk;
+
+      for (idx=0; (adsk = get_parameter_adsk (para, idx)); idx++)
+        {
+          err = append_adsk_to_key (ctrl, pub_root, adsk);
+          if (err)
+            break;
+          any_adsk++;
+        }
+    }
+
   if (!err && outctrl->use_files)  /* Direct write to specified files.  */
     {
       err = write_keyblock (outctrl->pub.stream, pub_root);
@@ -5905,9 +6016,6 @@ do_generate_keypair (ctrl_t ctrl, struct para_data_s *para,
 
           gen_standard_revoke (ctrl, pk, cache_nonce);
 
-          /* Get rid of the first empty packet.  */
-          commit_kbnode (&pub_root);
-
           if (!opt.batch)
             {
               tty_printf (_("public and secret key created and signed.\n") );
@@ -5949,6 +6057,9 @@ do_generate_keypair (ctrl_t ctrl, struct para_data_s *para,
                                         PKT_PUBLIC_KEY)->pkt->pkt.public_key;
       print_status_key_created (did_sub? 'B':'P', pk,
                                 get_parameter_value (para, pHANDLE));
+      es_fflush (es_stdout);
+      if (any_adsk)
+        log_info (_("Note: The key has been created with one or more ADSK!\n"));
     }
 
   release_kbnode (pub_root);
