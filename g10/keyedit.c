@@ -4893,6 +4893,85 @@ fail:
 }
 
 
+/* Core function to add an ADSK to the KEYBLOCK.  Returns 0 on success
+ * or an error code.  */
+gpg_error_t
+append_adsk_to_key (ctrl_t ctrl, kbnode_t keyblock, PKT_public_key *adsk)
+{
+  gpg_error_t err;
+  PKT_public_key *main_pk;  /* The primary key.  */
+  PKT_signature *sig = NULL;
+  kbnode_t adsknode = NULL;
+  PACKET *pkt;  /* (temp. use; will be put into a kbnode_t)  */
+
+  /* First get a copy.  */
+  adsk = copy_public_key_basics (NULL, adsk);
+
+  /* Check compliance.  */
+  if (!gnupg_pk_is_compliant (opt.compliance, adsk->pubkey_algo, 0,
+                              adsk->pkey, nbits_from_pk (adsk), NULL))
+    {
+      char pkhex[MAX_FINGERPRINT_LEN*2+1];
+
+      hexfingerprint (adsk, pkhex, sizeof pkhex);
+      log_error (_("WARNING: key %s is not suitable for encryption"
+                   " in %s mode\n"),
+                 pkhex, gnupg_compliance_option_string (opt.compliance));
+      err = gpg_error (GPG_ERR_FORBIDDEN);
+      goto leave;
+    }
+
+  /* Get the primary key.  */
+  log_assert (keyblock->pkt->pkttype == PKT_PUBLIC_KEY);
+  main_pk = keyblock->pkt->pkt.public_key;
+
+  /* Prepare and append the adsk.  */
+  keyid_from_pk (main_pk, adsk->main_keyid); /* Fixup main keyid.  */
+  log_assert ((adsk->pubkey_usage & PUBKEY_USAGE_ENC));
+  adsk->pubkey_usage = PUBKEY_USAGE_RENC;    /* 'e' -> 'r'         */
+  pkt = xtrycalloc (1, sizeof *pkt);
+  if (!pkt)
+    {
+      err = gpg_error_from_syserror ();
+      goto leave;
+    }
+  pkt->pkttype = PKT_PUBLIC_SUBKEY;    /* Make sure it is a subkey.  */
+  pkt->pkt.public_key = adsk;
+  adsknode = new_kbnode (pkt);
+
+  /* Make the signature.  */
+  err = make_keysig_packet (ctrl, &sig, main_pk, NULL, adsk, main_pk, 0x18,
+                            adsk->timestamp, 0,
+                            keygen_add_key_flags_and_expire, adsk, NULL);
+  adsk = NULL; /* (owned by adsknode - avoid double free.)  */
+  if (err)
+    {
+      write_status_error ("keysig", err);
+      log_error ("creating key binding failed: %s\n", gpg_strerror (err));
+      goto leave;
+    }
+
+  /* Append the subkey packet and the binding signature.  */
+  add_kbnode (keyblock, adsknode);
+  adsknode = NULL;
+  pkt = xtrycalloc (1, sizeof *pkt);
+  if (!pkt)
+    {
+      err = gpg_error_from_syserror ();
+      goto leave;
+    }
+  pkt->pkttype = PKT_SIGNATURE;
+  pkt->pkt.signature = sig;
+  add_kbnode (keyblock, new_kbnode (pkt));
+
+ leave:
+  release_kbnode (adsknode);
+  free_public_key (adsk);  /* Release our copy.  */
+  return err;
+}
+
+
+
 /*
  * Ask for a new additional decryption subkey and add it to the key
  * block.  Returns true if the keyblock was changed and false
@@ -4903,22 +4982,16 @@ static int
 menu_addadsk (ctrl_t ctrl, kbnode_t pub_keyblock, const char *adskfpr)
 {
   PKT_public_key *pk;
-  PKT_public_key *sub_pk;
-  PKT_public_key *main_pk;
   PKT_public_key *adsk_pk = NULL;
   kbnode_t adsk_keyblock = NULL;
-  PKT_signature *sig = NULL;
   char *answer = NULL;
   gpg_error_t err;
   KEYDB_SEARCH_DESC desc;
   byte fpr[MAX_FINGERPRINT_LEN];
   size_t fprlen;
   kbnode_t node, node2;
-  kbnode_t subkeynode = NULL;
-  PACKET *pkt;  /* (temp. use; will be put into a kbnode_t)  */
 
   log_assert (pub_keyblock->pkt->pkttype == PKT_PUBLIC_KEY);
-  main_pk = pub_keyblock->pkt->pkt.public_key;
 
   for (;;)
     {
@@ -5024,46 +5097,16 @@ menu_addadsk (ctrl_t ctrl, kbnode_t pub_keyblock, const char *adskfpr)
       break;
     }
 
-  /* Append the subkey.
-   * Note that we don't use the ADSK_PK directly because this is the
-   * primary key and in general we use a subkey to which NODE points.
-   * ADSK_PK has only been used to pass the requested key usage to
-   * get_pubkey_byname.   SUB_PK will point to the actual adsk. */
+  /* Append the subkey.  */
   log_assert (node->pkt->pkttype == PKT_PUBLIC_KEY
               || node->pkt->pkttype == PKT_PUBLIC_SUBKEY);
-  sub_pk = copy_public_key_basics (NULL, node->pkt->pkt.public_key);
-  keyid_from_pk (main_pk, sub_pk->main_keyid); /* Fixup main keyid.  */
-  log_assert ((sub_pk->pubkey_usage & PUBKEY_USAGE_ENC));
-  sub_pk->pubkey_usage = PUBKEY_USAGE_RENC;    /* 'e' -> 'r'         */
-  pkt = xcalloc (1, sizeof *pkt);
-  pkt->pkttype = PKT_PUBLIC_SUBKEY;    /* Make sure it is a subkey.  */
-  pkt->pkt.public_key = sub_pk;
-  subkeynode = new_kbnode (pkt);
+  err = append_adsk_to_key (ctrl, pub_keyblock, node->pkt->pkt.public_key);
 
-  /* Make the signature.  */
-  err = make_keysig_packet (ctrl, &sig, main_pk, NULL, sub_pk, main_pk, 0x18,
-                            sub_pk->timestamp, 0,
-                            keygen_add_key_flags_and_expire, sub_pk, NULL);
-  if (err)
-    {
-      write_status_error ("keysig", err);
-      log_error ("creating key binding failed: %s\n", gpg_strerror (err));
-      goto leave;
-    }
-
-  /* Append the subkey packet and the binding signature.  */
-  add_kbnode (pub_keyblock, subkeynode);
-  subkeynode = NULL;
-  pkt = xcalloc (1, sizeof *pkt);
-  pkt->pkttype = PKT_SIGNATURE;
-  pkt->pkt.signature = sig;
-  add_kbnode (pub_keyblock, new_kbnode (pkt));
 
  leave:
   xfree (answer);
   free_public_key (adsk_pk);
   release_kbnode (adsk_keyblock);
-  release_kbnode (subkeynode);
   if (!err)
     return 1; /* The keyblock was modified.  */
   else
