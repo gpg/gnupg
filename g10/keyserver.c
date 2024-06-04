@@ -946,17 +946,17 @@ keyserver_any_configured (ctrl_t ctrl)
 
 
 /* Import all keys that exactly match MBOX */
-int
+gpg_error_t
 keyserver_import_mbox (ctrl_t ctrl, const char *mbox,
                        unsigned char **fpr, size_t *fprlen,
-                       struct keyserver_spec *keyserver)
+                       struct keyserver_spec *keyserver, unsigned int flags)
 {
   KEYDB_SEARCH_DESC desc = { 0 };
 
   desc.mode = KEYDB_SEARCH_MODE_MAIL;
   desc.u.name = mbox;
 
-  return keyserver_get (ctrl, &desc, 1, keyserver, 0, fpr, fprlen);
+  return keyserver_get (ctrl, &desc, 1, keyserver, flags, fpr, fprlen);
 }
 
 
@@ -1866,86 +1866,4 @@ keyserver_import_wkd (ctrl_t ctrl, const char *name, unsigned int flags,
   xfree (url);
   xfree (mbox);
   return err;
-}
-
-
-/* Import a key by name using LDAP */
-int
-keyserver_import_ldap (ctrl_t ctrl,
-                       const char *name, unsigned char **fpr, size_t *fprlen)
-{
-  (void)ctrl;
-  (void)name;
-  (void)fpr;
-  (void)fprlen;
-  return gpg_error (GPG_ERR_NOT_IMPLEMENTED); /*FIXME*/
-#if 0
-  char *domain;
-  struct keyserver_spec *keyserver;
-  strlist_t list=NULL;
-  int rc,hostlen=1;
-  struct srventry *srvlist=NULL;
-  int srvcount,i;
-  char srvname[MAXDNAME];
-
-  /* Parse out the domain */
-  domain=strrchr(name,'@');
-  if(!domain)
-    return GPG_ERR_GENERAL;
-
-  domain++;
-
-  keyserver=xmalloc_clear(sizeof(struct keyserver_spec));
-  keyserver->scheme=xstrdup("ldap");
-  keyserver->host=xmalloc(1);
-  keyserver->host[0]='\0';
-
-  snprintf(srvname,MAXDNAME,"_pgpkey-ldap._tcp.%s",domain);
-
-  FIXME("network related - move to dirmngr or drop the code");
-  srvcount=getsrv(srvname,&srvlist);
-
-  for(i=0;i<srvcount;i++)
-    {
-      hostlen+=strlen(srvlist[i].target)+1;
-      keyserver->host=xrealloc(keyserver->host,hostlen);
-
-      strcat(keyserver->host,srvlist[i].target);
-
-      if(srvlist[i].port!=389)
-	{
-	  char port[7];
-
-	  hostlen+=6; /* a colon, plus 5 digits (unsigned 16-bit value) */
-	  keyserver->host=xrealloc(keyserver->host,hostlen);
-
-	  snprintf(port,7,":%u",srvlist[i].port);
-	  strcat(keyserver->host,port);
-	}
-
-      strcat(keyserver->host," ");
-    }
-
-  free(srvlist);
-
-  /* If all else fails, do the PGP Universal trick of
-     ldap://keys.(domain) */
-
-  hostlen+=5+strlen(domain);
-  keyserver->host=xrealloc(keyserver->host,hostlen);
-  strcat(keyserver->host,"keys.");
-  strcat(keyserver->host,domain);
-
-  append_to_strlist(&list,name);
-
-  rc = gpg_error (GPG_ERR_NOT_IMPLEMENTED); /*FIXME*/
-       /* keyserver_work (ctrl, KS_GETNAME, list, NULL, */
-       /*                 0, fpr, fpr_len, keyserver); */
-
-  free_strlist(list);
-
-  free_keyserver_spec(keyserver);
-
-  return rc;
-#endif
 }

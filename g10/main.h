@@ -327,6 +327,7 @@ gpg_error_t make_backsig (ctrl_t ctrl,
                           PKT_signature *sig, PKT_public_key *pk,
                           PKT_public_key *sub_pk, PKT_public_key *sub_psk,
                           u32 timestamp, const char *cache_nonce);
+void keygen_prepare_new_key_adsks (void);
 gpg_error_t generate_subkeypair (ctrl_t ctrl, kbnode_t keyblock,
                                  const char *algostr,
                                  const char *usagestr,
