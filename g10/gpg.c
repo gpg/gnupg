@@ -4773,8 +4773,6 @@ main (int argc, char **argv)
             parse_auto_key_locate (DEFAULT_AKL_LIST);
           }
 	public_key_list (ctrl, sl, 1, cmd == aLocateExtKeys);
-
-
 	free_strlist (sl);
 	break;
 

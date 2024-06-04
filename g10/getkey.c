@@ -1,7 +1,7 @@
 /* getkey.c -  Get a key from the database
  * Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,
  *               2007, 2008, 2010  Free Software Foundation, Inc.
- * Copyright (C) 2015, 2016 g10 Code GmbH
+ * Copyright (C) 2015, 2016, 2024 g10 Code GmbH
  *
  * This file is part of GnuPG.
  *
@@ -17,6 +17,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, see <https://www.gnu.org/licenses/>.
+ * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
 #include <config.h>
@@ -1176,16 +1177,31 @@ get_pubkey_byname (ctrl_t ctrl, enum get_pubkey_modes mode,
 	      break;
 
 	    case AKL_LDAP:
-              if (is_fpr)
+	      if (!keyserver_any_configured (ctrl))
                 {
                   mechanism_string = "";
                   rc = GPG_ERR_NO_PUBKEY;
                 }
               else
                 {
-                  mechanism_string = "LDAP";
+                  mechanism_string = is_fpr? "ldap/fpr":"ldap/mbox";
                   glo_ctrl.in_auto_key_retrieve++;
-                  rc = keyserver_import_ldap (ctrl, name, &fpr, &fpr_len);
+                  if (is_fpr)
+                    rc = keyserver_import_fpr (ctrl,
+                                               fprbuf.u.fpr, fprbuf.fprlen,
+                                               opt.keyserver,
+                                               KEYSERVER_IMPORT_FLAG_LDAP);
+                  else
+                    rc = keyserver_import_mbox (ctrl, name, &fpr, &fpr_len,
+                                                opt.keyserver,
+                                                KEYSERVER_IMPORT_FLAG_LDAP);
+                  /* Map error codes because Dirmngr returns NO DATA
+                   * if the keyserver does not have the requested key.
+                   * It returns NO KEYSERVER if no LDAP keyservers are
+                   * configured.  */
+                  if (gpg_err_code (rc) == GPG_ERR_NO_DATA
+                      || gpg_err_code (rc) == GPG_ERR_NO_KEYSERVER)
+                    rc = gpg_error (GPG_ERR_NO_PUBKEY);
                   glo_ctrl.in_auto_key_retrieve--;
                 }
               break;
@@ -1227,7 +1243,7 @@ get_pubkey_byname (ctrl_t ctrl, enum get_pubkey_modes mode,
                   else
                     {
                       rc = keyserver_import_mbox (ctrl, name, &fpr, &fpr_len,
-                                                  opt.keyserver);
+                                                  opt.keyserver, 0);
                     }
 		  glo_ctrl.in_auto_key_retrieve--;
 		}
@@ -1258,7 +1274,7 @@ get_pubkey_byname (ctrl_t ctrl, enum get_pubkey_modes mode,
                 else
                   {
                     rc = keyserver_import_mbox (ctrl, name,
-                                                &fpr, &fpr_len, keyserver);
+                                                &fpr, &fpr_len, keyserver, 0);
                   }
 		glo_ctrl.in_auto_key_retrieve--;
 	      }
