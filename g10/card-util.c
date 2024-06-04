@@ -699,7 +699,7 @@ current_card_status (ctrl_t ctrl, estream_t fp,
       /* If the fingerprint is all 0xff, the key has no associated
          OpenPGP certificate.  */
       if ( thefpr && !fpr_is_ff (thefpr, thefprlen)
-           && !get_pubkey_byfprint (ctrl, pk, &keyblock, thefpr, thefprlen))
+           && !get_pubkey_byfpr (ctrl, pk, &keyblock, thefpr, thefprlen))
         {
           print_key_info (ctrl, fp, 0, pk, 0);
           print_card_key_info (fp, keyblock);
@@ -917,8 +917,8 @@ fetch_url (ctrl_t ctrl)
         }
       else if (info.fpr1len)
 	{
-          rc = keyserver_import_fprint (ctrl, info.fpr1, info.fpr1len,
-                                        opt.keyserver, 0);
+          rc = keyserver_import_fpr (ctrl, info.fpr1, info.fpr1len,
+                                     opt.keyserver, 0);
 	}
     }
 

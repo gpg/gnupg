@@ -2192,8 +2192,8 @@ check_sig_and_print (CTX c, kbnode_t node)
           free_public_key (pk);
           pk = NULL;
           glo_ctrl.in_auto_key_retrieve++;
-          res = keyserver_import_fprint (c->ctrl, p, n, opt.keyserver,
-                                         KEYSERVER_IMPORT_FLAG_QUICK);
+          res = keyserver_import_fpr (c->ctrl, p, n, opt.keyserver,
+                                      KEYSERVER_IMPORT_FLAG_QUICK);
           glo_ctrl.in_auto_key_retrieve--;
           if (!res)
             rc = do_check_sig (c, node, extrahash, extrahashlen, NULL,

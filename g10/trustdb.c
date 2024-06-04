@@ -112,7 +112,7 @@ keyid_from_fpr20 (ctrl_t ctrl, const byte *fpr, u32 *keyid)
       int rc;
 
       memset (&pk, 0, sizeof pk);
-      rc = get_pubkey_byfprint (ctrl, &pk, NULL, fpr, fprlen);
+      rc = get_pubkey_byfpr (ctrl, &pk, NULL, fpr, fprlen);
       if (rc)
         {
           log_printhex (fpr, fprlen,

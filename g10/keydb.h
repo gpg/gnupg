@@ -404,23 +404,23 @@ gpg_error_t get_pubkey_from_buffer (ctrl_t ctrl, PKT_public_key *pkbuf,
 gpg_error_t get_seckey (ctrl_t ctrl, PKT_public_key *pk, u32 *keyid);
 
 /* Lookup a key with the specified fingerprint.  */
-int get_pubkey_byfprint (ctrl_t ctrl, PKT_public_key *pk, kbnode_t *r_keyblock,
-                         const byte *fprint, size_t fprint_len);
+int get_pubkey_byfpr (ctrl_t ctrl, PKT_public_key *pk, kbnode_t *r_keyblock,
+                      const byte *fpr, size_t fprlen);
+
+/* This function is similar to get_pubkey_byfpr, but it doesn't
+   merge the self-signed data into the public key and subkeys or into
+   the user ids.  */
+gpg_error_t get_pubkey_byfpr_fast (ctrl_t ctrl, PKT_public_key *pk,
+                                   const byte *fpr, size_t fprlen);
 
 /* This function is similar to get_pubkey_byfprint, but it doesn't
    merge the self-signed data into the public key and subkeys or into
    the user ids.  */
-gpg_error_t get_pubkey_byfprint_fast (ctrl_t ctrl, PKT_public_key *pk,
-                                      const byte *fprint, size_t fprint_len);
-
-/* This function is similar to get_pubkey_byfprint, but it doesn't
-   merge the self-signed data into the public key and subkeys or into
-   the user ids.  */
-gpg_error_t get_keyblock_byfprint_fast (ctrl_t ctrl,
-                                        kbnode_t *r_keyblock,
-                                        KEYDB_HANDLE *r_hd,
-                                        const byte *fprint, size_t fprint_len,
-                                        int lock);
+gpg_error_t get_keyblock_byfpr_fast (ctrl_t ctrl,
+                                     kbnode_t *r_keyblock,
+                                     KEYDB_HANDLE *r_hd,
+                                     const byte *fpr, size_t fprlen,
+                                     int lock);
 
 
 /* Returns true if a secret key is available for the public key with

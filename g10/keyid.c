@@ -778,25 +778,24 @@ keyid_from_pk (PKT_public_key *pk, u32 *keyid)
  * keyid is not part of the fingerprint.
  */
 u32
-keyid_from_fingerprint (ctrl_t ctrl, const byte *fprint,
-                        size_t fprint_len, u32 *keyid)
+keyid_from_fingerprint (ctrl_t ctrl, const byte *fpr, size_t fprlen, u32 *keyid)
 {
   u32 dummy_keyid[2];
 
   if( !keyid )
     keyid = dummy_keyid;
 
-  if (fprint_len != 20 && fprint_len != 32)
+  if (fprlen != 20 && fprlen != 32)
     {
       /* This is special as we have to lookup the key first.  */
       PKT_public_key pk;
       int rc;
 
       memset (&pk, 0, sizeof pk);
-      rc = get_pubkey_byfprint (ctrl, &pk, NULL, fprint, fprint_len);
+      rc = get_pubkey_byfpr (ctrl, &pk, NULL, fpr, fprlen);
       if( rc )
         {
-          log_printhex (fprint, fprint_len,
+          log_printhex (fpr, fprlen,
                         "Oops: keyid_from_fingerprint: no pubkey; fpr:");
           keyid[0] = 0;
           keyid[1] = 0;
@@ -806,8 +805,8 @@ keyid_from_fingerprint (ctrl_t ctrl, const byte *fprint,
     }
   else
     {
-      const byte *dp = fprint;
-      if (fprint_len == 20)  /* v4 key */
+      const byte *dp = fpr;
+      if (fprlen == 20)  /* v4 key */
         {
           keyid[0] = buf32_to_u32 (dp+12);
           keyid[1] = buf32_to_u32 (dp+16);

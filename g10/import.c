@@ -2199,8 +2199,8 @@ import_one_real (ctrl_t ctrl,
     goto leave;
 
   /* Do we have this key already in one of our pubrings ? */
-  err = get_keyblock_byfprint_fast (ctrl, &keyblock_orig, &hd,
-                                    fpr2, fpr2len, 1/*locked*/);
+  err = get_keyblock_byfpr_fast (ctrl, &keyblock_orig, &hd,
+                                 fpr2, fpr2len, 1/*locked*/);
   if ((err
        && gpg_err_code (err) != GPG_ERR_NO_PUBKEY
        && gpg_err_code (err) != GPG_ERR_UNUSABLE_PUBKEY)
@@ -3071,7 +3071,7 @@ import_matching_seckeys (ctrl_t ctrl, kbnode_t seckeys,
 
   /* Get the entire public key block from our keystore and put all its
    * fingerprints into an array.  */
-  err = get_pubkey_byfprint (ctrl, NULL, &pub_keyblock, mainfpr, mainfprlen);
+  err = get_pubkey_byfpr (ctrl, NULL, &pub_keyblock, mainfpr, mainfprlen);
   if (err)
     goto leave;
   log_assert (pub_keyblock && pub_keyblock->pkt->pkttype == PKT_PUBLIC_KEY);
@@ -3309,7 +3309,7 @@ import_secret_one (ctrl_t ctrl, kbnode_t keyblock,
 	{
           /* Read the keyblock again to get the effects of a merge for
            * the public key.  */
-          err = get_pubkey_byfprint (ctrl, NULL, &node, fpr, fprlen);
+          err = get_pubkey_byfpr (ctrl, NULL, &node, fpr, fprlen);
           if (err || !node)
             log_error ("key %s: failed to re-lookup public key: %s\n",
                        keystr_from_pk (pk), gpg_strerror (err));
@@ -4403,9 +4403,9 @@ revocation_present (ctrl_t ctrl, kbnode_t keyblock)
                        * itself?  */
                       gpg_error_t err;
 
-		      err = get_pubkey_byfprint_fast (ctrl, NULL,
-                                                      sig->revkey[idx].fpr,
-                                                      sig->revkey[idx].fprlen);
+		      err = get_pubkey_byfpr_fast (ctrl, NULL,
+                                                   sig->revkey[idx].fpr,
+                                                   sig->revkey[idx].fprlen);
 		      if (gpg_err_code (err) == GPG_ERR_NO_PUBKEY
                           || gpg_err_code (err) == GPG_ERR_UNUSABLE_PUBKEY)
 			{
@@ -4419,13 +4419,13 @@ revocation_present (ctrl_t ctrl, kbnode_t keyblock)
 			      log_info(_("WARNING: key %s may be revoked:"
 					 " fetching revocation key %s\n"),
 				       tempkeystr,keystr(keyid));
-			      keyserver_import_fprint (ctrl,
-                                                       sig->revkey[idx].fpr,
-                                                       sig->revkey[idx].fprlen,
-                                                       opt.keyserver, 0);
+			      keyserver_import_fpr (ctrl,
+                                                    sig->revkey[idx].fpr,
+                                                    sig->revkey[idx].fprlen,
+                                                    opt.keyserver, 0);
 
 			      /* Do we have it now? */
-			      err = get_pubkey_byfprint_fast (ctrl, NULL,
+			      err = get_pubkey_byfpr_fast (ctrl, NULL,
 						     sig->revkey[idx].fpr,
                                                      sig->revkey[idx].fprlen);
 			    }

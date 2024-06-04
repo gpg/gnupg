@@ -2493,9 +2493,8 @@ get_policy (ctrl_t ctrl, tofu_dbs_t dbs, PKT_public_key *pk,
         int lookup_err;
         kbnode_t kb;
 
-        lookup_err = get_pubkey_byfprint (ctrl, NULL, &kb,
-                                          fingerprint_raw,
-                                          fingerprint_raw_len);
+        lookup_err = get_pubkey_byfpr (ctrl, NULL, &kb,
+                                       fingerprint_raw, fingerprint_raw_len);
         if (lookup_err)
           {
             if (DBG_TRUST)

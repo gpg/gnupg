@@ -510,7 +510,7 @@ enum_secret_keys (ctrl_t ctrl, void **context, PKT_public_key *sk)
                       if (opt.debug)
                         log_debug ("using LDAP to find public key"
                                    " for current card\n");
-                      if (!keyserver_import_fprint
+                      if (!keyserver_import_fpr
                           (ctrl, cinfo.fpr2, cinfo.fpr2len, opt.keyserver,
                            KEYSERVER_IMPORT_FLAG_LDAP))
                         {

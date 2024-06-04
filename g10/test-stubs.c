@@ -202,8 +202,8 @@ keyserver_import_keyid (u32 *keyid, void *dummy, unsigned int flags)
 }
 
 int
-keyserver_import_fprint (ctrl_t ctrl, const byte *fprint,size_t fprint_len,
-			 struct keyserver_spec *keyserver, unsigned int flags)
+keyserver_import_fpr (ctrl_t ctrl, const byte *fprint,size_t fprint_len,
+		      struct keyserver_spec *keyserver, unsigned int flags)
 {
   (void)ctrl;
   (void)fprint;
@@ -214,8 +214,8 @@ keyserver_import_fprint (ctrl_t ctrl, const byte *fprint,size_t fprint_len,
 }
 
 int
-keyserver_import_fprint_ntds (ctrl_t ctrl,
-                              const byte *fprint, size_t fprint_len)
+keyserver_import_fpr_ntds (ctrl_t ctrl,
+                           const byte *fprint, size_t fprint_len)
 {
   (void)ctrl;
   (void)fprint;

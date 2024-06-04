@@ -976,34 +976,32 @@ keyserver_import_ntds (ctrl_t ctrl, const char *mbox,
 
 
 int
-keyserver_import_fprint (ctrl_t ctrl, const byte *fprint, size_t fprint_len,
-			 struct keyserver_spec *keyserver,
-                         unsigned int flags)
+keyserver_import_fpr (ctrl_t ctrl, const byte *fpr, size_t fprlen,
+		      struct keyserver_spec *keyserver, unsigned int flags)
 {
   KEYDB_SEARCH_DESC desc;
 
   memset (&desc, 0, sizeof(desc));
 
-  if (fprint_len == 16 || fprint_len == 20 || fprint_len == 32)
+  if (fprlen == 16 || fprlen == 20 || fprlen == 32)
     desc.mode = KEYDB_SEARCH_MODE_FPR;
   else
     return gpg_error (GPG_ERR_INV_ARG);
 
-  memcpy (desc.u.fpr, fprint, fprint_len);
-  desc.fprlen = fprint_len;
+  memcpy (desc.u.fpr, fpr, fprlen);
+  desc.fprlen = fprlen;
 
   return keyserver_get (ctrl, &desc, 1, keyserver, flags, NULL, NULL);
 }
 
 
 int
-keyserver_import_fprint_ntds (ctrl_t ctrl,
-                              const byte *fprint, size_t fprint_len)
+keyserver_import_fpr_ntds (ctrl_t ctrl, const byte *fpr, size_t fprlen)
 {
   struct keyserver_spec keyserver = { NULL, "ldap:///" };
 
-  return keyserver_import_fprint (ctrl, fprint, fprint_len,
-                                  &keyserver, KEYSERVER_IMPORT_FLAG_LDAP);
+  return keyserver_import_fpr (ctrl, fpr, fprlen,
+                               &keyserver, KEYSERVER_IMPORT_FLAG_LDAP);
 }
 
 
@@ -1779,7 +1777,7 @@ keyserver_import_cert (ctrl_t ctrl, const char *name, int dane_mode,
 	  spec = parse_keyserver_uri (url, 1);
 	  if(spec)
 	    {
-	      err = keyserver_import_fprint (ctrl, *fpr, *fpr_len, spec, 0);
+	      err = keyserver_import_fpr (ctrl, *fpr, *fpr_len, spec, 0);
 	      free_keyserver_spec(spec);
 	    }
 	}
@@ -1788,8 +1786,7 @@ keyserver_import_cert (ctrl_t ctrl, const char *name, int dane_mode,
 	  /* If only a fingerprint is provided, try and fetch it from
 	     the configured keyserver. */
 
-	  err = keyserver_import_fprint (ctrl,
-                                         *fpr, *fpr_len, opt.keyserver, 0);
+	  err = keyserver_import_fpr (ctrl, *fpr, *fpr_len, opt.keyserver, 0);
 	}
       else
 	log_info(_("no keyserver known\n"));

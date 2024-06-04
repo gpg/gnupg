@@ -294,8 +294,8 @@ gen_desig_revoke (ctrl_t ctrl, const char *uname, strlist_t locusr)
 	else
 	  {
 	    pk2 = xmalloc_clear (sizeof *pk2);
-	    rc = get_pubkey_byfprint (ctrl, pk2, NULL,
-                                      pk->revkey[i].fpr, pk->revkey[i].fprlen);
+	    rc = get_pubkey_byfpr (ctrl, pk2, NULL,
+                                   pk->revkey[i].fpr, pk->revkey[i].fprlen);
 	  }
 
 	/* We have the revocation key.  */
