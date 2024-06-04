@@ -329,7 +329,11 @@ gnupg_exec_tool_stream (const char *pgmname, const char *argv[],
   estream_t extrafp = NULL;
   estream_t outfp = NULL, errfp = NULL;
   es_poll_t fds[4];
+#ifdef HAVE_W32_SYSTEM
+  HANDLE exceptclose[2];
+#else
   int exceptclose[2];
+#endif
   int extrapipe[2] = {-1, -1};
   char extrafdbuf[20];
   const char *argsave = NULL;
@@ -339,6 +343,7 @@ gnupg_exec_tool_stream (const char *pgmname, const char *argv[],
   struct copy_buffer *cpbuf_in = NULL, *cpbuf_out = NULL, *cpbuf_extra = NULL;
   int quiet = 0;
   gnupg_spawn_actions_t act = NULL;
+  int i = 0;
 
   memset (fds, 0, sizeof fds);
   memset (&fderrstate, 0, sizeof fderrstate);
@@ -392,16 +397,20 @@ gnupg_exec_tool_stream (const char *pgmname, const char *argv[],
                      gpg_strerror (err));
           goto leave;
         }
-      exceptclose[0] = extrapipe[0]; /* Do not close in child. */
-      exceptclose[1] = -1;
+      /* Do not close in child. */
+#ifdef HAVE_W32_SYSTEM
+      exceptclose[i] = (HANDLE)_get_osfhandle (extrapipe[0]);
+#else
+      exceptclose[i] = extrapipe[0];
+#endif
       /* Now find the argument marker and replace by the pipe's fd.
          Yeah, that is an ugly non-thread safe hack but it safes us to
          create a copy of the array.  */
 #ifdef HAVE_W32_SYSTEM
       snprintf (extrafdbuf, sizeof extrafdbuf, "-&%lu",
-                (unsigned long)_get_osfhandle (extrapipe[0]));
+                (unsigned long)exceptclose[i]);
 #else
-      snprintf (extrafdbuf, sizeof extrafdbuf, "-&%d", extrapipe[0]);
+      snprintf (extrafdbuf, sizeof extrafdbuf, "-&%d", exceptclose[i]);
 #endif
       for (argsaveidx=0; argv[argsaveidx]; argsaveidx++)
         if (!strcmp (argv[argsaveidx], "-&@INEXTRA@"))
@@ -410,9 +419,14 @@ gnupg_exec_tool_stream (const char *pgmname, const char *argv[],
             argv[argsaveidx] = extrafdbuf;
             break;
           }
+      i++;
     }
-  else
-    exceptclose[0] = -1;
+
+#ifdef HAVE_W32_SYSTEM
+    exceptclose[i] = INVALID_HANDLE_VALUE;
+#else
+    exceptclose[i] = -1;
+#endif
 
   err = gnupg_spawn_actions_new (&act);
   if (err)
