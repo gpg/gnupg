@@ -60,6 +60,10 @@
 #define PUBKEY_USAGE_RENC    1024                /* Restricted encryption.  */
 #define PUBKEY_USAGE_TIME    2048                /* Timestamp use.  */
 
+/* The usage bits which can be derived from the algo.  */
+#define PUBKEY_USAGE_BASIC_MASK  (PUBKEY_USAGE_SIG|PUBKEY_USAGE_ENC\
+                                  |PUBKEY_USAGE_CERT|PUBKEY_USAGE_AUTH)
+
 /* Bitflags to convey hints on what kind of signature is created.  */
 #define SIGNHINT_KEYSIG  1
 #define SIGNHINT_SELFSIG 2

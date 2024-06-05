@@ -3090,7 +3090,8 @@ merge_selfsigs_main (ctrl_t ctrl, kbnode_t keyblock, int *r_revoked,
   if (!key_usage)
     {
       /* No key flags at all: get it from the algo.  */
-      key_usage = openpgp_pk_algo_usage (pk->pubkey_algo);
+      key_usage = (openpgp_pk_algo_usage (pk->pubkey_algo)
+                   & PUBKEY_USAGE_BASIC_MASK);
     }
   else
     {
@@ -3364,7 +3365,8 @@ merge_selfsigs_subkey (ctrl_t ctrl, kbnode_t keyblock, kbnode_t subnode)
   if (!key_usage)
     {
       /* No key flags at all: get it from the algo.  */
-      key_usage = openpgp_pk_algo_usage (subpk->pubkey_algo);
+      key_usage = (openpgp_pk_algo_usage (subpk->pubkey_algo)
+                   & PUBKEY_USAGE_BASIC_MASK);
     }
   else
     {
