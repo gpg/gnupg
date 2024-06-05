@@ -472,6 +472,10 @@ int parse_auto_key_locate(const char *options);
 int parse_key_origin (char *string);
 const char *key_origin_string (int origin);
 
+/* Return an error if KEYBLOCK has a primary or subkey with the fpr.  */
+gpg_error_t has_key_with_fingerprint (kbnode_t keyblock,
+                                      const byte *fpr, size_t fprlen);
+
 /*-- keyid.c --*/
 int pubkey_letter( int algo );
 char *pubkey_string (PKT_public_key *pk, char *buffer, size_t bufsize);

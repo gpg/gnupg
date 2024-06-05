@@ -142,6 +142,8 @@ static int mdc_available,ks_modify;
 static int aead_available;
 
 
+static void release_parameter_list (struct para_data_s *r);
+static struct para_data_s *prepare_adsk (ctrl_t ctrl, const char *name);
 static gpg_error_t parse_algo_usage_expire (ctrl_t ctrl, int for_subkey,
                                      const char *algostr, const char *usagestr,
                                      const char *expirestr,
@@ -1082,6 +1084,74 @@ make_backsig (ctrl_t ctrl, PKT_signature *sig, PKT_public_key *pk,
 	  iobuf_close (backsig_out);
 	}
     }
+
+  return err;
+}
+
+
+/* This function should be called to make sure that
+ * opt.def_new_key_adsks has no duplicates and that tehre is no '!'
+ * suffix.  We don't do this during normal option processing because
+ * this list is only needed for a very few operations.  Callingit
+ * twice does not harm.  Users of the option list should skip empty
+ * items.  */
+static void
+keygen_prepare_new_key_adsks (void)
+{
+  strlist_t sl, slr;
+  char *p;
+
+  for (sl = opt.def_new_key_adsks; sl; sl = sl->next)
+    {
+      if (!*sl->d)
+        continue;
+      p = strchr (sl->d, '!');
+      if (p)
+        *p = 0;
+      for (slr = opt.def_new_key_adsks; slr != sl; slr = slr->next)
+        if (!ascii_strcasecmp (sl->d, slr->d))
+          {
+            *sl->d = 0; /* clear fpr to mark this as a duplicate.  */
+            break;
+          }
+    }
+}
+
+
+/* Append all default ADSKs to the KEYBLOCK but ignore those which are
+ * already on that keyblock.  Returns 0 if any key has been added;
+ * GPG_ERR_FALSE if no key was added or any other error code.  */
+gpg_error_t
+append_all_default_adsks (ctrl_t ctrl, kbnode_t keyblock)
+{
+  gpg_error_t err = 0;
+  int any_done = 0;
+  strlist_t sl;
+  struct para_data_s *para;
+  byte adskfpr[MAX_FINGERPRINT_LEN];
+  size_t adskfprlen;
+
+  keygen_prepare_new_key_adsks ();
+  for (sl = opt.def_new_key_adsks; sl && !err; sl = sl->next)
+    {
+      if (!*sl->d)
+        continue;
+      para = prepare_adsk (ctrl, sl->d);
+      if (para)
+        {
+          fingerprint_from_pk (para->u.adsk, adskfpr, &adskfprlen);
+          if (!has_key_with_fingerprint (keyblock, adskfpr, adskfprlen))
+            {
+              err = append_adsk_to_key (ctrl, keyblock, para->u.adsk);
+              if (!err)
+                any_done = 1;
+            }
+          release_parameter_list (para);
+        }
+    }
+
+  if (!err && !any_done)
+    err = gpg_error (GPG_ERR_FALSE);
 
   return err;
 }

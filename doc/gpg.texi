@@ -772,7 +772,9 @@ the fingerprint @var{fpr}.  @var{adskfpr} is the fingerprint of
 another key's encryption subkey.  A subkey is commonly used here
 because by default a primary key has no encryption capability.  Use
 the option @option{--with-subkey-fingerprint} with a list command to
-display the subkey fingerprints.
+display the subkey fingerprints.  If the string "default" is used for
+@var{adskfpr} all missing ADSKs configured with
+@option{--default-new-key-adsk} are added.
 
 @item --generate-key
 @opindex generate-key

@@ -4603,3 +4603,30 @@ have_secret_key_with_kid (u32 *keyid)
   keydb_release (kdbhd);
   return result;
 }
+
+
+/* Return an error if KEYBLOCK has a primary or subkey with the given
+ * fingerprint (FPR,FPRLEN).  */
+gpg_error_t
+has_key_with_fingerprint (kbnode_t keyblock, const byte *fpr, size_t fprlen)
+{
+  kbnode_t node;
+  PKT_public_key *pk;
+  byte pkfpr[MAX_FINGERPRINT_LEN];
+  size_t pkfprlen;
+
+  for (node = keyblock; node; node = node->next)
+    {
+      if (node->pkt->pkttype == PKT_PUBLIC_KEY
+          || node->pkt->pkttype == PKT_PUBLIC_SUBKEY
+          || node->pkt->pkttype == PKT_SECRET_KEY
+          || node->pkt->pkttype == PKT_SECRET_SUBKEY)
+        {
+          pk = node->pkt->pkt.public_key;
+          fingerprint_from_pk (pk, pkfpr, &pkfprlen);
+          if (pkfprlen == fprlen && !memcmp (pkfpr, fpr, fprlen))
+            return gpg_error (GPG_ERR_DUP_KEY);
+        }
+    }
+  return 0;
+}
