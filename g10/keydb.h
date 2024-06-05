@@ -372,7 +372,8 @@ enum get_pubkey_modes
   {
    GET_PUBKEY_NORMAL = 0,
    GET_PUBKEY_NO_AKL = 1,
-   GET_PUBKEY_NO_LOCAL = 2
+   GET_PUBKEY_NO_LOCAL = 2,
+   GET_PUBKEY_TRY_LDAP = 3
   };
 
 /* Find a public key identified by NAME.  */

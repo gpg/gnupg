@@ -916,6 +916,7 @@ key_byname (ctrl_t ctrl, GETKEY_CTX *retctx, strlist_t namelist,
  *                          auto-key-locate option list!
  *    GET_PUBKEY_NO_LOCAL - Only the auto key locate functionality is
  *                          used and no local search is done.
+ *    GET_PUBKEY_TRY_LDAP - If the key was not found locally try LDAP.
  *
  * If RETCTX is not NULL, then the constructed context is returned in
  * *RETCTX so that getpubkey_next can be used to get subsequent
@@ -968,7 +969,7 @@ get_pubkey_byname (ctrl_t ctrl, enum get_pubkey_modes mode,
   int nodefault = 0;
   int anylocalfirst = 0;
   int mechanism_type = AKL_NODEFAULT;
-
+  struct akl *used_akl = opt.auto_key_locate;
 
   /* If RETCTX is not NULL, then RET_KDBHD must be NULL.  */
   log_assert (retctx == NULL || ret_kdbhd == NULL);
@@ -990,12 +991,12 @@ get_pubkey_byname (ctrl_t ctrl, enum get_pubkey_modes mode,
       is_mbox = 1;
     }
 
-  /* If we are called due to --locate-external-key Check whether NAME
+  /* If we are called due to --locate-external-key check whether NAME
    * is a fingerprint and then try to lookup that key by configured
    * method which support lookup by fingerprint.  FPRBUF carries the
    * parsed fingerpint iff IS_FPR is true.  */
   is_fpr = 0;
-  if (!is_mbox && mode == GET_PUBKEY_NO_LOCAL)
+  if (!is_mbox && (mode == GET_PUBKEY_NO_LOCAL || mode == GET_PUBKEY_TRY_LDAP))
     {
       if (!classify_user_id (name, &fprbuf, 1)
           && fprbuf.mode == KEYDB_SEARCH_MODE_FPR)
@@ -1021,12 +1022,20 @@ get_pubkey_byname (ctrl_t ctrl, enum get_pubkey_modes mode,
    * implicitly).  */
   if (mode == GET_PUBKEY_NO_LOCAL)
     nodefault = 1;  /* Auto-key-locate but ignore "local".  */
-  else if (mode != GET_PUBKEY_NO_AKL)
+  else if (mode == GET_PUBKEY_NO_AKL)
+    ;
+  else if (mode == GET_PUBKEY_TRY_LDAP)
+    {
+      static struct akl ldap_only_akl = { AKL_LDAP, NULL, NULL };
+
+      used_akl = &ldap_only_akl;
+    }
+  else
     {
       /* auto-key-locate is enabled.  */
 
       /* nodefault is true if "nodefault" or "local" appear.  */
-      for (akl = opt.auto_key_locate; akl; akl = akl->next)
+      for (akl = used_akl; akl; akl = akl->next)
 	if (akl->type == AKL_NODEFAULT || akl->type == AKL_LOCAL)
 	  {
 	    nodefault = 1;
@@ -1034,7 +1043,7 @@ get_pubkey_byname (ctrl_t ctrl, enum get_pubkey_modes mode,
 	  }
       /* anylocalfirst is true if "local" appears before any other
 	 search methods (except "nodefault").  */
-      for (akl = opt.auto_key_locate; akl; akl = akl->next)
+      for (akl = used_akl; akl; akl = akl->next)
 	if (akl->type != AKL_NODEFAULT)
 	  {
 	    if (akl->type == AKL_LOCAL)
@@ -1085,7 +1094,7 @@ get_pubkey_byname (ctrl_t ctrl, enum get_pubkey_modes mode,
        * the local keyring).  Since the auto key locate feature is
        * enabled and NAME appears to be an email address, try the auto
        * locate feature.  */
-      for (akl = opt.auto_key_locate; akl; akl = akl->next)
+      for (akl = used_akl; akl; akl = akl->next)
 	{
 	  unsigned char *fpr = NULL;
 	  size_t fpr_len;
