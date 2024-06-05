@@ -41,6 +41,26 @@ struct keyserver_spec
 };
 typedef struct keyserver_spec *keyserver_spec_t;
 
+/* The --auto-key-locate mechanisms object.  */
+struct akl
+{
+  enum {
+    AKL_NODEFAULT,
+    AKL_LOCAL,
+    AKL_CERT,
+    AKL_PKA,
+    AKL_DANE,
+    AKL_WKD,
+    AKL_LDAP,
+    AKL_NTDS,
+    AKL_KEYSERVER,
+    AKL_SPEC
+  } type;
+  keyserver_spec_t spec;
+  struct akl *next;
+};
+
+
 
 /* Global options for GPG.  */
 EXTERN_UNLESS_MAIN_MODULE
@@ -290,23 +310,7 @@ struct
 
   /* Linked list of ways to find a key if the key isn't on the local
      keyring. */
-  struct akl
-  {
-    enum {
-      AKL_NODEFAULT,
-      AKL_LOCAL,
-      AKL_CERT,
-      AKL_PKA,
-      AKL_DANE,
-      AKL_WKD,
-      AKL_LDAP,
-      AKL_NTDS,
-      AKL_KEYSERVER,
-      AKL_SPEC
-    } type;
-    keyserver_spec_t spec;
-    struct akl *next;
-  } *auto_key_locate;
+  struct akl *auto_key_locate;
 
   /* The value of --key-origin.  See parse_key_origin().  */
   int key_origin;
@@ -326,6 +330,7 @@ struct
   /* Compatibility flags (COMPAT_FLAG_xxxx).  */
   unsigned int compat_flags;
 } opt;
+
 
 /* CTRL is used to keep some global variables we currently can't
    avoid.  Future concurrent versions of gpg will put it into a per

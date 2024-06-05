@@ -4504,7 +4504,7 @@ prepare_desig_revoker (ctrl_t ctrl, const char *name)
 
   revoker_pk = xcalloc (1, sizeof *revoker_pk);
   revoker_pk->req_usage = PUBKEY_USAGE_CERT;
-  err = get_pubkey_byname (ctrl, GET_PUBKEY_NO_AKL,
+  err = get_pubkey_byname (ctrl, GET_PUBKEY_TRY_LDAP,
                            NULL, revoker_pk, name, NULL, NULL, 1);
   if (err)
     goto leave;
@@ -4565,7 +4565,7 @@ prepare_adsk (ctrl_t ctrl, const char *name)
 
   adsk_pk = xcalloc (1, sizeof *adsk_pk);
   adsk_pk->req_usage = PUBKEY_USAGE_ENC;
-  err = get_pubkey_byname (ctrl, GET_PUBKEY_NO_AKL,
+  err = get_pubkey_byname (ctrl, GET_PUBKEY_TRY_LDAP,
                            NULL, adsk_pk, name, NULL, NULL, 1);
   if (err)
     goto leave;
