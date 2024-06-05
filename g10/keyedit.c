@@ -3389,7 +3389,15 @@ keyedit_quick_addadsk (ctrl_t ctrl, const char *fpr, const char *adskfpr)
 
   /* Locate and add the ADSK.  Note that the called function already
    * prints error messages. */
-  if (menu_addadsk (ctrl, keyblock, adskfpr))
+  if (adskfpr && !ascii_strcasecmp (adskfpr, "default"))
+    {
+      err = append_all_default_adsks (ctrl, keyblock);
+      if (!err)
+        modified = 1;
+      else if (gpg_err_code (err) == GPG_ERR_FALSE)
+        err = 0;
+    }
+  else if (menu_addadsk (ctrl, keyblock, adskfpr))
     modified = 1;
   else
     log_inc_errorcount ();  /* (We use log_info in menu_adsk) */
@@ -4971,7 +4979,6 @@ append_adsk_to_key (ctrl_t ctrl, kbnode_t keyblock, PKT_public_key *adsk)
 }
 
 
-
 /*
  * Ask for a new additional decryption subkey and add it to the key
  * block.  Returns true if the keyblock was changed and false
@@ -4989,7 +4996,7 @@ menu_addadsk (ctrl_t ctrl, kbnode_t pub_keyblock, const char *adskfpr)
   KEYDB_SEARCH_DESC desc;
   byte fpr[MAX_FINGERPRINT_LEN];
   size_t fprlen;
-  kbnode_t node, node2;
+  kbnode_t node;
 
   log_assert (pub_keyblock->pkt->pkttype == PKT_PUBLIC_KEY);
 
@@ -5073,22 +5080,10 @@ menu_addadsk (ctrl_t ctrl, kbnode_t pub_keyblock, const char *adskfpr)
         }
 
       /* Check that the selected subkey is not yet on our keyblock.  */
-      for (node2 = pub_keyblock; node2; node2 = node2->next)
-        {
-          if (node2->pkt->pkttype == PKT_PUBLIC_KEY
-              || node2->pkt->pkttype == PKT_PUBLIC_SUBKEY)
-            {
-              pk = node2->pkt->pkt.public_key;
-              fingerprint_from_pk (pk, fpr, &fprlen);
-              if (fprlen == desc.fprlen
-                  && !memcmp (fpr, desc.u.fpr, fprlen))
-                break;
-            }
-        }
-      if (node2)
+      err = has_key_with_fingerprint (pub_keyblock, desc.u.fpr, desc.fprlen);
+      if (err)
         {
           log_info (_("key \"%s\" is already on this keyblock\n"), answer);
-          err = gpg_error (GPG_ERR_DUP_KEY);
           if (adskfpr)
             goto leave;
           continue;
