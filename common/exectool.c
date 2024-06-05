@@ -407,8 +407,13 @@ gnupg_exec_tool_stream (const char *pgmname, const char *argv[],
          Yeah, that is an ugly non-thread safe hack but it safes us to
          create a copy of the array.  */
 #ifdef HAVE_W32_SYSTEM
+# ifdef _WIN64
+      snprintf (extrafdbuf, sizeof extrafdbuf, "-&%llu",
+                (unsigned long long)exceptclose[i]);
+# else
       snprintf (extrafdbuf, sizeof extrafdbuf, "-&%lu",
                 (unsigned long)exceptclose[i]);
+# endif
 #else
       snprintf (extrafdbuf, sizeof extrafdbuf, "-&%d", exceptclose[i]);
 #endif
