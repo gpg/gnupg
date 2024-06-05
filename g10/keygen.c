@@ -1181,6 +1181,35 @@ make_backsig (ctrl_t ctrl, PKT_signature *sig, PKT_public_key *pk,
 }
 
 
+/* This function should be called to make sure that
+ * opt.def_new_key_adsks has no duplicates and that tehre is no '!'
+ * suffix.  We don't do this during normal option processing because
+ * this list is only needed for a very few operations.  Callingit
+ * twice does not harm.  Users of the option list should skip empty
+ * items.  */
+void
+keygen_prepare_new_key_adsks (void)
+{
+  strlist_t sl, slr;
+  char *p;
+
+  for (sl = opt.def_new_key_adsks; sl; sl = sl->next)
+    {
+      if (!*sl->d)
+        continue;
+      p = strchr (sl->d, '!');
+      if (p)
+        *p = 0;
+      for (slr = opt.def_new_key_adsks; slr != sl; slr = slr->next)
+        if (!ascii_strcasecmp (sl->d, slr->d))
+          {
+            *sl->d = 0; /* clear fpr to mark this as a duplicate.  */
+            break;
+          }
+    }
+}
+
+
 /* Write a direct key signature to the first key in ROOT using the key
    PSK.  REVKEY is describes the direct key signature and TIMESTAMP is
    the timestamp to set on the signature.  */
@@ -4535,7 +4564,7 @@ prepare_desig_revoker (ctrl_t ctrl, const char *name)
 }
 
 
-/* Parse asn ADSK specified by NAME, check that the public key exists
+/* Parse an ADSK specified by NAME, check that the public key exists
  * and return a parameter with the adsk information.  On error print a
  * diagnostic and return NULL.  */
 static struct para_data_s *
@@ -4701,7 +4730,7 @@ proc_parameter_file (ctrl_t ctrl, struct para_data_s *para, const char *fname,
   const char *s1, *s2, *s3;
   size_t n;
   char *p;
-  strlist_t sl, slr;
+  strlist_t sl;
   int is_default = 0;
   int have_user_id = 0;
   int err, algo;
@@ -4868,19 +4897,9 @@ proc_parameter_file (ctrl_t ctrl, struct para_data_s *para, const char *fname,
    * also check for duplicate specifications.  In addition we remove
    * an optional '!' suffix for easier comparing; the suffix is anyway
    * re-added later.  */
+  keygen_prepare_new_key_adsks ();
   for (sl = opt.def_new_key_adsks; sl; sl = sl->next)
     {
-      if (!*sl->d)
-        continue;
-      p = strchr (sl->d, '!');
-      if (p)
-        *p = 0;
-      for (slr = opt.def_new_key_adsks; slr != sl; slr = slr->next)
-        if (!ascii_strcasecmp (sl->d, slr->d))
-          {
-            *sl->d = 0; /* clear fpr to mark this as a duplicate.  */
-            break;
-          }
       if (!*sl->d)
         continue;
 

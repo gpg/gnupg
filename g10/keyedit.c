@@ -3725,7 +3725,7 @@ show_key_with_all_names_colon (ctrl_t ctrl, estream_t fp, kbnode_t keyblock)
 	  es_putc ('\n', fp);
 
 	  print_fingerprint (ctrl, fp, pk, 0);
-	  print_revokers (fp, pk);
+	  print_revokers (fp, 1, pk);
 	}
     }
 
