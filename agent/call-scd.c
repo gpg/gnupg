@@ -151,15 +151,17 @@ handle_pincache_put (const char *args)
   pin = s;
   if (!*pin)
     {
-      /* No value - flush the cache.  The cache module knows aboput
+      /* No value - flush the cache.  The cache module knows about
        * the structure of the key to flush only parts.  */
-      log_debug ("%s: flushing cache '%s'\n", __func__, key);
+      if (DBG_CACHE)
+        log_debug ("%s: flushing cache '%s'\n", __func__, key);
       agent_put_cache (NULL, key, CACHE_MODE_PIN, NULL, -1);
       err = 0;
       goto leave;
     }
 
-  log_debug ("%s: caching '%s'->'%s'\n", __func__, key, pin);
+  if (DBG_CACHE)
+    log_debug ("%s: caching '%s'->'%s'\n", __func__, key, "[hidden]");
   agent_put_cache (NULL, key, CACHE_MODE_PIN, pin, -1);
   err = 0;
 
