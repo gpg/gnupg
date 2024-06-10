@@ -10,7 +10,7 @@
 # WITHOUT ANY WARRANTY, to the extent permitted by law; without even the
 # implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
-VERSION=2024-03-25
+VERSION=2024-06-10
 PGM=gpg-authcode-sign.sh
 
 set -e
@@ -199,6 +199,7 @@ if [ "$stamp" = yes ]; then
     fi
 fi
 
+waittime=2
 if [ -n "$dryrun" ]; then
 
     echo >&2 "$PGM: would sign: '$inname' to '$outname'"
@@ -221,13 +222,27 @@ elif [ "$AUTHENTICODE_KEY" = card ]; then
 
     echo >&2 "$PGM: Signing using a card: '$inname'"
 
-    "$OSSLSIGNCODE" sign \
+    while ! "$OSSLSIGNCODE" sign \
        -pkcs11engine "$OSSLPKCS11ENGINE" \
        -pkcs11module "$SCUTEMODULE" \
        -certs "$AUTHENTICODE_CERTS" \
        -h sha256 -n "$desc" -i "$url" \
        -ts "$AUTHENTICODE_TSURL" \
-       -in "$inname" -out "$outname.tmp"
+       -in "$inname" -out "$outname.tmp" 2> $outname.tmp.log ; do
+      cat >&2 $outname.tmp.log
+      if ! grep 'HTTP status 500' $outname.tmp.log >/dev/null ; then
+        echo >&2 "$PGM: signing failed - see above"
+        exit 2
+      fi
+      if [ $waittime -ge 32 ]; then
+        echo >&2 "$PGM: signing failed - giving up"
+        exit 2
+      fi
+      echo >&2 "$PGM: signing failed - waiting ${waittime}s before next try"
+      sleep $waittime
+      waittime=$(( $waittime * 2 ))
+    done
+    rm "$outname.tmp.log"
     cp "$outname.tmp" "$outname"
     rm "$outname.tmp"
 
