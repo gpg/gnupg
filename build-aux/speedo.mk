@@ -1351,36 +1351,15 @@ endef
 
 # Sign the file $1 and save the result as $2
 define AUTHENTICODE_sign
-   set -e;\
-   if [ -n "$(AUTHENTICODE_SIGNHOST)" ]; then \
-     echo "speedo: Signing via host $(AUTHENTICODE_SIGNHOST)";\
-     scp $(1) "$(AUTHENTICODE_SIGNHOST):a.exe" ;\
-     ssh "$(AUTHENTICODE_SIGNHOST)" '$(AUTHENTICODE_TOOL)' sign \
-        /a /n '"g10 Code GmbH"' \
-        /tr '$(AUTHENTICODE_TSURL)' /td sha256 \
-        /fd sha256 /du https://gnupg.org a.exe ;\
-     scp "$(AUTHENTICODE_SIGNHOST):a.exe" $(2);\
-     echo "speedo: signed file is '$(2)'" ;\
-   elif [ "$(AUTHENTICODE_KEY)" = card ]; then \
-     echo "speedo: Signing using a card: '$(1)'";\
-     $(OSSLSIGNCODE) sign \
-       -pkcs11engine $(OSSLPKCS11ENGINE) \
-       -pkcs11module $(SCUTEMODULE) \
-       -certs $(AUTHENTICODE_CERTS) \
-       -h sha256 -n GnuPG -i https://gnupg.org \
-       -ts $(AUTHENTICODE_TSURL) \
-       -in $(1) -out $(2).tmp ; mv $(2).tmp $(2) ; \
-   elif [ -e "$(AUTHENTICODE_KEY)" ]; then \
-     echo "speedo: Signing using key $(AUTHENTICODE_KEY)";\
-     osslsigncode sign -certs $(AUTHENTICODE_CERTS) \
-       -pkcs12 $(AUTHENTICODE_KEY) -askpass \
-       -ts "$(AUTHENTICODE_TSURL)" \
-       -h sha256 -n GnuPG -i https://gnupg.org \
-       -in $(1) -out $(2) ;\
+   (set -e; \
+    if gpg-authcode-sign.sh --version >/dev/null; then \
+     gpg-authcode-sign.sh "$(1)" "$(2)"; \
    else \
-     echo "speedo: WARNING: Binaries are not signed"; \
-   fi
+     echo 2>&1 "warning: Please install gpg-authcode-sign.sh to sign files." ;\
+     [ "$(1)" != "$(2)" ] && cp "$(1)" "$(2)" ;\
+   fi)
 endef
+
 
 # Help target for testing to sign a file.
 # Usage: make -f speedo.mk test-authenticode-sign TARGETOS=w32 FILE=foo.exe
