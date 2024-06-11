@@ -4008,6 +4008,8 @@ lookup (ctrl_t ctrl, getkey_ctx_t ctx, int want_secret,
 	  rc = agent_probe_any_secret_key (NULL, keyblock);
 	  if (gpg_err_code(rc) == GPG_ERR_NO_SECKEY)
 	    goto skip; /* No secret key available.  */
+	  if (gpg_err_code (rc) == GPG_ERR_PUBKEY_ALGO)
+	    goto skip; /* Not implemented algo - skip.  */
 	  if (rc)
 	    goto found; /* Unexpected error.  */
 	}
