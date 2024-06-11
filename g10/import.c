@@ -207,6 +207,8 @@ parse_import_options(char *str,unsigned int *options,int noisy)
       {"show-only", (IMPORT_SHOW | IMPORT_DRY_RUN), NULL,
        NULL},
 
+      {"no-seckeys", IMPORT_NO_SECKEY, NULL, NULL},
+
       /* Aliases for backward compatibility */
       {"allow-local-sigs",IMPORT_LOCAL_SIGS,NULL,NULL},
       {"repair-hkp-subkey-bug",IMPORT_REPAIR_PKS_SUBKEY_BUG,NULL,NULL},
