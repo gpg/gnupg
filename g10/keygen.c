@@ -53,6 +53,7 @@
    default answer in ask_algo also needs to be adjusted.  */
 #define DEFAULT_STD_KEY_PARAM  "ed25519/cert,sign+cv25519/encr"
 #define FUTURE_STD_KEY_PARAM   "ed25519/cert,sign+cv25519/encr"
+#define PQC_STD_KEY_PARAM      "bp384/cert,sign+kyber768_bp256/encr"
 
 /* When generating keys using the streamlined key generation dialog,
    use this as a default expiration interval.  */
@@ -4292,6 +4293,8 @@ parse_key_parameter_string (ctrl_t ctrl,
   else if (!ascii_strcasecmp (string, "future-default")
            || !ascii_strcasecmp (string, "futuredefault"))
     string = FUTURE_STD_KEY_PARAM;
+  else if (!ascii_strcasecmp (string, "pqc"))
+    string = PQC_STD_KEY_PARAM;
   else if (!ascii_strcasecmp (string, "card"))
     string = "card/cert,sign+card/encr";
 
@@ -5281,14 +5284,14 @@ quickgen_set_para (struct para_data_s *para, int for_subkey,
       r->next = para;
       para = r;
     }
-  else
-    {
-      r = xmalloc_clear (sizeof *r + 20);
-      r->key = for_subkey? pSUBKEYLENGTH : pKEYLENGTH;
-      sprintf (r->u.value, "%u", nbits);
-      r->next = para;
-      para = r;
-    }
+
+  /* Always store the size - although not required for ECC it is
+   * required for compiste algos.  Should not harm anyway.  */
+  r = xmalloc_clear (sizeof *r + 20);
+  r->key = for_subkey? pSUBKEYLENGTH : pKEYLENGTH;
+  sprintf (r->u.value, "%u", nbits);
+  r->next = para;
+  para = r;
 
   r = xmalloc_clear (sizeof *r + 20);
   r->key = for_subkey? pSUBVERSION : pVERSION;
@@ -5394,6 +5397,7 @@ quick_generate_keypair (ctrl_t ctrl, const char *uid, const char *algostr,
   if ((!*algostr || !ascii_strcasecmp (algostr, "default")
        || !ascii_strcasecmp (algostr, "future-default")
        || !ascii_strcasecmp (algostr, "futuredefault")
+       || !ascii_strcasecmp (algostr, "pqc")
        || !ascii_strcasecmp (algostr, "card"))
       && (!*usagestr || !ascii_strcasecmp (usagestr, "default")
           || !strcmp (usagestr, "-")))

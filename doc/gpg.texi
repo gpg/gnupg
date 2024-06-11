@@ -686,12 +686,14 @@ force the creation of the key will show up.
 
 If @var{algo} or @var{usage} are given, only the primary key is
 created and no prompts are shown.  To specify an expiration date but
-still create a primary and subkey use ``default'' or
-``future-default'' for @var{algo} and ``default'' for @var{usage}.
-For a description of these optional arguments see the command
-@code{--quick-add-key}.  The @var{usage} accepts also the value
-``cert'' which can be used to create a certification only primary key;
-the default is to a create certification and signing key.
+still create a primary and a subkey use ``default'',
+``future-default'', or ``pqc'' for @var{algo} and ``default'' for
+@var{usage}.  For a description of these optional arguments see the
+command @code{--quick-add-key}; the value ``pqc'' create a key with a
+quantum-resistant encryption encryption subkey.  The @var{usage}
+accepts also the value ``cert'' which can be used to create a
+certification only primary key; the default is to a create
+certification and signing key.
 
 The @var{expire} argument can be used to specify an expiration date
 for the key.  Several formats are supported; commonly the ISO formats
