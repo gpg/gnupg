@@ -56,9 +56,6 @@ struct daemon_local_s
      DAEMON_LOCAL_LIST (see below). */
   struct daemon_local_s *next_local;
 
-  /* Link back to the global structure.  */
-  struct daemon_global_s *g;
-
   assuan_context_t ctx;   /* NULL or session context for the daemon
                              used with this connection. */
   unsigned int in_use: 1; /* CTX is in use.  */
@@ -269,7 +266,6 @@ daemon_start (enum daemon_type type, ctrl_t ctrl)
                        strerror (rc));
           return err;
         }
-      ctrl->d_local[type]->g = g;
       ctrl->d_local[type]->next_local = g->local_list;
       g->local_list = ctrl->d_local[type];  /* FIXME: CHECK the G thing */
     }
@@ -578,7 +574,7 @@ agent_reset_daemon (ctrl_t ctrl)
   for (i = 0; i < DAEMON_MAX_TYPE; i++)
     if (ctrl->d_local[i])
       {
-        struct daemon_global_s *g = ctrl->d_local[i]->g;
+        struct daemon_global_s *g = &daemon_global[i];
 
 	if (ctrl->d_local[i]->ctx)
 	  {
