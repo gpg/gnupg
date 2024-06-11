@@ -469,13 +469,12 @@ daemon_start (enum daemon_type type, ctrl_t ctrl)
   }
 
  leave:
-  rc = npth_mutex_unlock (&start_daemon_lock);
-  if (rc)
-    log_error ("failed to release the start_daemon lock: %s\n", strerror (rc));
-
   xfree (abs_homedir);
   if (err)
     {
+      rc = npth_mutex_unlock (&start_daemon_lock);
+      if (rc)
+        log_error ("failed to release the start_daemon lock: %s\n", strerror (rc));
       daemon_unlock (type, ctrl, err);
       if (ctx)
 	assuan_release (ctx);
@@ -484,6 +483,9 @@ daemon_start (enum daemon_type type, ctrl_t ctrl)
     {
       ctrl->d_local[type]->ctx = ctx;
       ctrl->d_local[type]->invalid = 0;
+      rc = npth_mutex_unlock (&start_daemon_lock);
+      if (rc)
+        log_error ("failed to release the start_daemon lock: %s\n", strerror (rc));
     }
   return err;
 }
