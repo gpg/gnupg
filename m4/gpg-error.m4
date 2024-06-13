@@ -1,5 +1,5 @@
 # gpg-error.m4 - autoconf macro to detect libgpg-error.
-# Copyright (C) 2002, 2003, 2004, 2011, 2014, 2018, 2020, 2021, 2022
+# Copyright (C) 2002, 2003, 2004, 2011, 2014, 2018, 2020, 2021, 2022, 2024
 #               g10 Code GmbH
 #
 # This file is free software; as a special exception the author gives
@@ -10,7 +10,7 @@
 # WITHOUT ANY WARRANTY, to the extent permitted by law; without even the
 # implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 #
-# Last-changed: 2023-04-01
+# Last-changed: 2024-06-13
 
 dnl
 dnl Find gpg-error-config, for backward compatibility
@@ -125,17 +125,16 @@ AC_DEFUN([_AM_PATH_GPGRT_CONFIG],[dnl
   fi
 
   if test -n "$gpgrt_libdir"; then
+    # Add the --libdir option to GPGRT_CONFIG
     GPGRT_CONFIG="$GPGRT_CONFIG --libdir=$gpgrt_libdir"
-    if $GPGRT_CONFIG gpg-error >/dev/null 2>&1; then
-      GPG_ERROR_CONFIG="$GPGRT_CONFIG gpg-error"
-      AC_MSG_NOTICE([Use gpgrt-config with $gpgrt_libdir as gpg-error-config])
-      gpg_error_config_version=`$GPG_ERROR_CONFIG --modversion`
-    else
-      gpg_error_config_version=`$GPG_ERROR_CONFIG --version`
+    # Make sure if gpgrt-config really works, by testing config gpg-error
+    if ! $GPGRT_CONFIG gpg-error --exists; then
+      # If it doesn't work, clear the GPGRT_CONFIG variable.
       unset GPGRT_CONFIG
     fi
-  elif test "$GPG_ERROR_CONFIG" != "no"; then
-    gpg_error_config_version=`$GPG_ERROR_CONFIG --version`
+  else
+    # GPGRT_CONFIG found but no suitable dir for --libdir found.
+    # This is a failure.  Clear the GPGRT_CONFIG variable.
     unset GPGRT_CONFIG
   fi
 ])
@@ -152,10 +151,20 @@ dnl searched in $SYSROOT/bin and then along $PATH.  If the used
 dnl config script does not match the host specification the script
 dnl is added to the gpg_config_script_warn variable.
 dnl
-AC_DEFUN([AM_PATH_GPG_ERROR],[dnl
-AC_REQUIRE([AC_CANONICAL_HOST])dnl
-AC_REQUIRE([_AM_PATH_POSSIBLE_GPG_ERROR_CONFIG])dnl
-AC_REQUIRE([_AM_PATH_GPGRT_CONFIG])dnl
+AC_DEFUN([AM_PATH_GPG_ERROR],
+[ AC_REQUIRE([AC_CANONICAL_HOST])dnl
+  AC_REQUIRE([_AM_PATH_POSSIBLE_GPG_ERROR_CONFIG])dnl
+  AC_REQUIRE([_AM_PATH_GPGRT_CONFIG])dnl
+  if test x"$GPGRT_CONFIG" != x -a "$GPGRT_CONFIG" != "no"; then
+    GPG_ERROR_CONFIG="$GPGRT_CONFIG gpg-error"
+    AC_MSG_NOTICE([Use gpgrt-config with $gpgrt_libdir as gpg-error-config])
+    gpg_error_config_version=`$GPG_ERROR_CONFIG --modversion`
+  elif test x"$GPG_ERROR_CONFIG" != x -a "$GPG_ERROR_CONFIG" != "no"; then
+    gpg_error_config_version=`$GPG_ERROR_CONFIG --version`
+  else
+    gpg_error_config_version="0.0"
+  fi
+
   min_gpg_error_version=ifelse([$1], ,1.33,$1)
   ok=no
   if test "$GPG_ERROR_CONFIG" != "no"; then
