@@ -1216,6 +1216,8 @@ start_connection_thread (void *arg)
     log_info (_("handler for fd %d started\n"),
               FD_DBG (ctrl->thread_startup.fd));
 
+  scd_command_handler (ctrl, ctrl->thread_startup.fd);
+
   /* If this thread is the pipe connection thread, flag that a
      shutdown is required.  With the next ticker event and given that
      no other connections are running the shutdown will then
