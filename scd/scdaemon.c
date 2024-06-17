@@ -249,9 +249,6 @@ static int shutdown_pending;
 /* It is possible that we are currently running under setuid permissions */
 static int maybe_setuid = 1;
 
-/* Flag telling whether we are running as a pipe server.  */
-static int pipe_server;
-
 /* Name of the communication socket */
 static char *socket_name;
 /* Name of the redirected socket or NULL.  */
@@ -457,6 +454,7 @@ main (int argc, char **argv )
   int greeting = 0;
   int nogreeting = 0;
   int multi_server = 0;
+  int pipe_server = 0;
   int is_daemon = 0;
   int nodetach = 0;
   int csh_style = 0;
@@ -467,7 +465,6 @@ main (int argc, char **argv )
   int allow_coredump = 0;
   struct assuan_malloc_hooks malloc_hooks;
   int res;
-  npth_t pipecon_handler;
   const char *application_priority = NULL;
 
   early_system_init ();
@@ -763,6 +760,7 @@ main (int argc, char **argv )
       ctrl_t ctrl;
       npth_attr_t tattr;
       gnupg_fd_t fd = GNUPG_INVALID_FD;
+      npth_t pipecon_handler;
 
 #ifndef HAVE_W32_SYSTEM
       {
@@ -1218,12 +1216,11 @@ start_connection_thread (void *arg)
     log_info (_("handler for fd %d started\n"),
               FD_DBG (ctrl->thread_startup.fd));
 
-  /* If this is a pipe server, we request a shutdown if the command
-     handler asked for it.  With the next ticker event and given that
+  /* If this thread is the pipe connection thread, flag that a
+     shutdown is required.  With the next ticker event and given that
      no other connections are running the shutdown will then
      happen.  */
-  if (scd_command_handler (ctrl, ctrl->thread_startup.fd)
-      && pipe_server)
+  if (ctrl->thread_startup.fd == GNUPG_INVALID_FD)
     shutdown_pending = 1;
 
   if (opt.verbose)

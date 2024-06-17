@@ -141,7 +141,7 @@ const char *scd_get_socket_name (void);
 
 /*-- command.c --*/
 gpg_error_t initialize_module_command (void);
-int  scd_command_handler (ctrl_t, gnupg_fd_t);
+void scd_command_handler (ctrl_t, gnupg_fd_t);
 void send_status_info (ctrl_t ctrl, const char *keyword, ...)
      GPGRT_ATTR_SENTINEL(1);
 gpg_error_t send_status_direct (ctrl_t ctrl,
