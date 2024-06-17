@@ -2472,9 +2472,8 @@ register_commands (assuan_context_t ctx)
 
 
 /* Startup the server.  If FD is given as -1 this is simple pipe
-   server, otherwise it is a regular server.  Returns true if there
-   are no more active asessions.  */
-int
+   server, otherwise it is a regular server.  */
+void
 scd_command_handler (ctrl_t ctrl, gnupg_fd_t fd)
 {
   int rc;
@@ -2573,9 +2572,6 @@ scd_command_handler (ctrl_t ctrl, gnupg_fd_t fd)
 
   if (stopme)
     scd_exit (0);
-
-  /* If there are no more sessions return true.  */
-  return !session_list;
 }
 
 
