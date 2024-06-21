@@ -271,7 +271,10 @@ described here.
 
     The origin of the key or the user ID.  This is an integer
     optionally followed by a space and an URL.  This goes along with
-    the previous field.  The URL is quoted in C style.
+    the previous field.  The URL is quoted in C style.  Note that the
+    origin is stored for a user ID as well as for the entire key.  The
+    latter solves the cases where a key is updated by fingerprint and
+    and thus there is no way to know which user ID shall be used.
 
 *** Field 21 - Comment
 
