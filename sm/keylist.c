@@ -660,36 +660,47 @@ list_cert_colon (ctrl_t ctrl, ksba_cert_t cert, unsigned int validity,
     print_key_data (cert, fp);
 
   kludge_uid = NULL;
-  for (idx=0; (p = ksba_cert_get_subject (cert,idx)); idx++)
+  p = ksba_cert_get_subject (cert, 0);
+  es_fprintf (fp, "uid:%s::::::::", truststring);
+  if (p)
+    es_write_sanitized (fp, p, strlen (p), ":", NULL);
+  es_putc (':', fp);
+  es_putc (':', fp);
+  es_putc (':', fp);
+  es_putc ('\n', fp);
+  if (p)
+    {
+      /* It would be better to get the faked email address from the
+       * keydb.  But as long as we don't have a way to pass the meta
+       * data back, we just check it the same way as the code used to
+       * create the keybox meta data does */
+      kludge_uid = email_kludge (p);
+      if (kludge_uid)
+        {
+          es_fprintf (fp, "uid:%s::::::::", truststring);
+          es_write_sanitized (fp, kludge_uid, strlen (kludge_uid),
+                              ":", NULL);
+          es_putc (':', fp);
+          es_putc (':', fp);
+          es_putc ('\n', fp);
+        }
+      xfree (p);
+    }
+  for (idx=1; (p = ksba_cert_get_subject (cert,idx)); idx++)
     {
       /* In the case that the same email address is in the subject DN
          as well as in an alternate subject name we avoid printing it
          a second time. */
       if (kludge_uid && !strcmp (kludge_uid, p))
-        continue;
-
+        {
+          xfree (p);
+          continue;
+        }
       es_fprintf (fp, "uid:%s::::::::", truststring);
       es_write_sanitized (fp, p, strlen (p), ":", NULL);
       es_putc (':', fp);
       es_putc (':', fp);
       es_putc ('\n', fp);
-      if (!idx)
-        {
-          /* It would be better to get the faked email address from
-             the keydb.  But as long as we don't have a way to pass
-             the meta data back, we just check it the same way as the
-             code used to create the keybox meta data does */
-          kludge_uid = email_kludge (p);
-          if (kludge_uid)
-            {
-              es_fprintf (fp, "uid:%s::::::::", truststring);
-              es_write_sanitized (fp, kludge_uid, strlen (kludge_uid),
-                                  ":", NULL);
-              es_putc (':', fp);
-              es_putc (':', fp);
-              es_putc ('\n', fp);
-            }
-        }
       xfree (p);
     }
   xfree (kludge_uid);
