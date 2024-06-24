@@ -376,7 +376,7 @@ EXTERN_UNLESS_MAIN_MODULE int memory_stat_debug_mode;
 #define IMPORT_MERGE_ONLY                (1<<4)
 #define IMPORT_MINIMAL                   (1<<5)
 #define IMPORT_CLEAN                     (1<<6)
-#define IMPORT_NO_SECKEY                 (1<<7)
+#define IMPORT_ONLY_PUBKEYS              (1<<7)
 #define IMPORT_KEEP_OWNERTTRUST          (1<<8)
 #define IMPORT_EXPORT                    (1<<9)
 #define IMPORT_RESTORE                   (1<<10)

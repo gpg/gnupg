@@ -207,7 +207,7 @@ parse_import_options(char *str,unsigned int *options,int noisy)
       {"show-only", (IMPORT_SHOW | IMPORT_DRY_RUN), NULL,
        NULL},
 
-      {"no-seckeys", IMPORT_NO_SECKEY, NULL, NULL},
+      {"only-pubkeys", IMPORT_ONLY_PUBKEYS, NULL, NULL},
 
       /* Aliases for backward compatibility */
       {"allow-local-sigs",IMPORT_LOCAL_SIGS,NULL,NULL},
@@ -3026,7 +3026,7 @@ import_secret_one (ctrl_t ctrl, kbnode_t keyblock,
     }
   stats->secret_read++;
 
-  if ((options & IMPORT_NO_SECKEY))
+  if ((options & IMPORT_ONLY_PUBKEYS))
     {
       if (!for_migration)
         log_error (_("importing secret keys not allowed\n"));
