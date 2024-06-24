@@ -1026,7 +1026,36 @@ scd_get_socket_name (void)
 }
 
 
-#ifndef HAVE_W32_SYSTEM
+#ifdef HAVE_W32_SYSTEM
+/* Creat an event into E_P and sets EVENTS to watch by npth_eselect.  */
+void
+scd_init_event (HANDLE *e_p, HANDLE events[2])
+{
+  HANDLE h, h2;
+  SECURITY_ATTRIBUTES sa = { sizeof (SECURITY_ATTRIBUTES), NULL, TRUE};
+
+  events[0] = *e_p = INVALID_HANDLE_VALUE;
+  events[1] = INVALID_HANDLE_VALUE;
+  /* Create event for manual reset, initially non-signaled.  Make it
+   * waitable and inheritable.  */
+  h = CreateEvent (&sa, TRUE, FALSE, NULL);
+  if (!h)
+    log_error ("can't create scd event: %s\n", w32_strerror (-1) );
+  else if (!DuplicateHandle (GetCurrentProcess(), h,
+                             GetCurrentProcess(), &h2,
+                             EVENT_MODIFY_STATE|SYNCHRONIZE, TRUE, 0))
+    {
+      log_error ("setting synchronize for scd_kick_the_loop failed: %s\n",
+                 w32_strerror (-1) );
+      CloseHandle (h);
+    }
+  else
+    {
+      CloseHandle (h);
+      events[0] = *e_p = h2;
+    }
+}
+#else
 static void
 handle_signal (int signo)
 {
@@ -1302,31 +1331,7 @@ handle_connections (gnupg_fd_t listen_fd)
   npth_attr_setdetachstate (&tattr, NPTH_CREATE_DETACHED);
 
 #ifdef HAVE_W32_SYSTEM
-  {
-    HANDLE h, h2;
-    SECURITY_ATTRIBUTES sa = { sizeof (SECURITY_ATTRIBUTES), NULL, TRUE};
-
-    events[0] = the_event = INVALID_HANDLE_VALUE;
-    events[1] = INVALID_HANDLE_VALUE;
-    /* Create event for manual reset, initially non-signaled.  Make it
-     * waitable and inheritable.  */
-    h = CreateEvent (&sa, TRUE, FALSE, NULL);
-    if (!h)
-      log_error ("can't create scd event: %s\n", w32_strerror (-1) );
-    else if (!DuplicateHandle (GetCurrentProcess(), h,
-                               GetCurrentProcess(), &h2,
-                               EVENT_MODIFY_STATE|SYNCHRONIZE, TRUE, 0))
-      {
-        log_error ("setting synchronize for scd_kick_the_loop failed: %s\n",
-                   w32_strerror (-1) );
-        CloseHandle (h);
-      }
-    else
-      {
-        CloseHandle (h);
-        events[0] = the_event = h2;
-      }
-  }
+  scd_init_event (&the_event, events);
 #endif
 
   FD_ZERO (&fdset);
