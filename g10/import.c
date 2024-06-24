@@ -212,7 +212,7 @@ parse_import_options(char *str,unsigned int *options,int noisy)
       /* New options.  Right now, without description string.  */
       {"ignore-attributes", IMPORT_IGNORE_ATTRIBUTES, NULL, NULL},
 
-      {"no-seckeys", IMPORT_NO_SECKEY, NULL, NULL},
+      {"only-pubkeys", IMPORT_ONLY_PUBKEYS, NULL, NULL},
 
       /* Hidden options which are enabled by default and are provided
        * in case of problems with the respective implementation.  */
@@ -3191,7 +3191,7 @@ import_secret_one (ctrl_t ctrl, kbnode_t keyblock,
     }
   stats->secret_read++;
 
-  if ((options & IMPORT_NO_SECKEY))
+  if ((options & IMPORT_ONLY_PUBKEYS))
     {
       if (!for_migration)
         log_error (_("importing secret keys not allowed\n"));

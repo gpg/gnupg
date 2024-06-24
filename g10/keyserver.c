@@ -1518,7 +1518,7 @@ keyserver_get_chunk (ctrl_t ctrl, KEYDB_SEARCH_DESC *desc, int ndesc,
 
       /* For LDAP servers we reset IMPORT_SELF_SIGS_ONLY and
        * IMPORT_CLEAN unless they have been set explicitly.  */
-      options = (opt.keyserver_options.import_options | IMPORT_NO_SECKEY);
+      options = (opt.keyserver_options.import_options | IMPORT_ONLY_PUBKEYS);
       if (source && (!strncmp (source, "ldap:", 5)
                      || !strncmp (source, "ldaps:", 6)))
         {
@@ -1747,7 +1747,7 @@ keyserver_import_cert (ctrl_t ctrl, const char *name, int dane_mode,
               xfree (filtstr);
               if (!err)
                 err = import_keys_es_stream (ctrl, key, NULL, fpr, fpr_len,
-                                             IMPORT_NO_SECKEY,
+                                             IMPORT_ONLY_PUBKEYS,
                                              NULL, NULL, KEYORG_DANE, NULL);
               restore_import_filter (save_filt);
             }
@@ -1756,7 +1756,7 @@ keyserver_import_cert (ctrl_t ctrl, const char *name, int dane_mode,
         {
           err = import_keys_es_stream (ctrl, key, NULL, fpr, fpr_len,
                                        (opt.keyserver_options.import_options
-                                        | IMPORT_NO_SECKEY),
+                                        | IMPORT_ONLY_PUBKEYS),
                                        NULL, NULL, 0, NULL);
         }
 
@@ -1848,7 +1848,7 @@ keyserver_import_wkd (ctrl_t ctrl, const char *name, unsigned int flags,
           xfree (filtstr);
           if (!err)
             err = import_keys_es_stream (ctrl, key, NULL, fpr, fpr_len,
-                                         IMPORT_NO_SECKEY,
+                                         IMPORT_ONLY_PUBKEYS,
                                          NULL, NULL, KEYORG_WKD, url);
 
         }

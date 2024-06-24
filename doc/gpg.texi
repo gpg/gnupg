@@ -2176,7 +2176,7 @@ are available for all keyserver types, some common options are:
   this option is not used with HKP keyservers, as they do not support
   retrieving keys by subkey id.
 
-  @item no-seckeys
+  @item only-pubkeys
   Do now allow to import secret keys.
 
   @item timeout
