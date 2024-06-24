@@ -138,6 +138,10 @@ struct server_control_s
 /*-- scdaemon.c --*/
 void scd_exit (int rc);
 const char *scd_get_socket_name (void);
+#ifdef HAVE_W32_SYSTEM
+void scd_init_event (HANDLE *e_p, HANDLE events[2]);
+#endif
+
 
 /*-- command.c --*/
 gpg_error_t initialize_module_command (void);
