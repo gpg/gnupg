@@ -234,7 +234,8 @@ struct
   int ignore_expiration;
   int command_fd;
   const char *override_session_key;
-  int show_session_key;
+  unsigned int show_session_key:1;
+  unsigned int show_only_session_key:1;
 
   const char *gpg_agent_info;
   int try_all_secrets;

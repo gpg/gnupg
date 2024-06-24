@@ -3794,9 +3794,13 @@ This is not for normal use. Use the source to see for what it might be useful.
 This is not for normal use. Use the source to see for what it might be useful.
 
 @item --show-session-key
+@itemx --show-only-session-key
 @opindex show-session-key
+@opindex show-only-session-key
 Display the session key used for one message. See
 @option{--override-session-key} for the counterpart of this option.
+The variant @option{--show-only-session-key} does not actually use the
+session key but stops processing after having printed the session key.
 
 We think that Key Escrow is a Bad Thing; however the user should have
 the freedom to decide whether to go to prison or to reveal the content

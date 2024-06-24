@@ -664,7 +664,8 @@ proc_encrypted (CTX c, PACKET *pkt)
   if (c->dek && opt.verbose > 1)
     log_info (_("public key encrypted data: good DEK\n"));
 
-  write_status (STATUS_BEGIN_DECRYPTION);
+  if (!opt.show_only_session_key)
+    write_status (STATUS_BEGIN_DECRYPTION);
 
   /*log_debug("dat: %sencrypted data\n", c->dek?"":"conventional ");*/
   if (opt.list_only)
@@ -794,6 +795,8 @@ proc_encrypted (CTX c, PACKET *pkt)
    * log_error printed in the cry_cipher_checktag never gets ignored.  */
   if (!result && early_plaintext)
     result = gpg_error (GPG_ERR_BAD_DATA);
+  else if (!result && opt.show_only_session_key)
+    result = -1;
   else if (!result && pkt->pkt.encrypted->aead_algo
            && log_get_errorcount (0))
     result = gpg_error (GPG_ERR_BAD_SIGNATURE);
@@ -903,7 +906,9 @@ proc_encrypted (CTX c, PACKET *pkt)
   c->dek = NULL;
   free_packet (pkt, NULL);
   c->last_was_session_key = 0;
-  write_status (STATUS_END_DECRYPTION);
+
+  if (!opt.show_only_session_key)
+    write_status (STATUS_END_DECRYPTION);
 
   /* Bump the counter even if we have not seen a literal data packet
    * inside an encryption container.  This acts as a sentinel in case
@@ -915,7 +920,8 @@ proc_encrypted (CTX c, PACKET *pkt)
    * de-vs compliance mode by just looking at the exit status.  */
   if (opt.flags.require_compliance
       && opt.compliance == CO_DE_VS
-      && compliance_de_vs != (4|2|1))
+      && compliance_de_vs != (4|2|1)
+      && !opt.show_only_session_key)
     {
       log_error (_("operation forced to fail due to"
                    " unfulfilled compliance rules\n"));
@@ -2203,7 +2209,7 @@ check_sig_and_print (CTX c, kbnode_t node)
         }
     }
 
-  /* Do do something with the result of the signature checking.  */
+  /* Do something with the result of the signature checking.  */
   if (!rc || gpg_err_code (rc) == GPG_ERR_BAD_SIGNATURE)
     {
       /* We have checked the signature and the result is either a good

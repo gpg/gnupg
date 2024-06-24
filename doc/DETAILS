@@ -569,11 +569,13 @@ pkd:0:1024:B665B1435F4C2 .... FF26ABB:
     actual key used for decryption.  <fpr2> is the fingerprint of the
     primary key.  <otrust> is the letter with the ownertrust; this is
     in general a 'u' which stands for ultimately trusted.
-*** DECRYPTION_INFO <mdc_method> <sym_algo> [<aead_algo>]
+*** DECRYPTION_INFO <mdc_method> <sym_algo> [<aead_algo> <complerr>]
     Print information about the symmetric encryption algorithm and the
     MDC method.  This will be emitted even if the decryption fails.
-    For an AEAD algorithm AEAD_ALGO is not 0.  GPGSM currently does
-    not print such a status.
+    For an AEAD algorithm AEAD_ALGO is not 0.  COMPLERR is set to a
+    non-zero integer if a compliance check for the cipher failed.
+    GPGSM currently prints only the first two items and thus they are
+    marked as optional
 
 *** DECRYPTION_FAILED
     The symmetric decryption failed - one reason could be a wrong

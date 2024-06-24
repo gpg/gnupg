@@ -263,11 +263,13 @@ decrypt_data (ctrl_t ctrl, void *procctx, PKT_encrypted *ed, DEK *dek,
   /* Check compliance.  */
   if (!gnupg_cipher_is_allowed (opt.compliance, 0, dek->algo, ciphermode))
     {
-      log_error (_("cipher algorithm '%s' may not be used in %s mode\n"),
+      gpgrt_log (opt.show_only_session_key? GPGRT_LOGLVL_INFO
+                 /*                     */: GPGRT_LOGLVL_ERROR,
+                 _("cipher algorithm '%s' may not be used in %s mode\n"),
 		 openpgp_cipher_algo_mode_name (dek->algo,ed->aead_algo),
 		 gnupg_compliance_option_string (opt.compliance));
       *compliance_error = 1;
-      if (opt.flags.require_compliance)
+      if (opt.flags.require_compliance && !opt.show_only_session_key)
         {
           /* We fail early in this case because it does not make sense
            * to first decrypt everything.  */
@@ -276,8 +278,9 @@ decrypt_data (ctrl_t ctrl, void *procctx, PKT_encrypted *ed, DEK *dek,
         }
     }
 
-  write_status_printf (STATUS_DECRYPTION_INFO, "%d %d %d",
-                       ed->mdc_method, dek->algo, ed->aead_algo);
+  write_status_printf (STATUS_DECRYPTION_INFO, "%d %d %d %d",
+                       ed->mdc_method, dek->algo, ed->aead_algo,
+                       *compliance_error);
 
   if (opt.show_session_key)
     {
@@ -297,6 +300,11 @@ decrypt_data (ctrl_t ctrl, void *procctx, PKT_encrypted *ed, DEK *dek,
       log_info ("session key: '%s%s'\n", numbuf, hexbuf);
       write_status_strings (STATUS_SESSION_KEY, numbuf, hexbuf, NULL);
       xfree (hexbuf);
+      if (opt.show_only_session_key)
+        {
+          rc = 0;
+          goto leave;
+        }
     }
 
   rc = openpgp_cipher_test_algo (dek->algo);

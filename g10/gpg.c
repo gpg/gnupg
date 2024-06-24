@@ -367,6 +367,7 @@ enum cmd_and_opt_values
     oIgnoreCrcError,
     oIgnoreMDCError,
     oShowSessionKey,
+    oShowOnlySessionKey,
     oOverrideSessionKey,
     oOverrideSessionKeyFD,
     oNoRandomSeedFile,
@@ -770,6 +771,7 @@ static gpgrt_opt_t opts[] = {
   ARGPARSE_s_n (oShowNotation,      "show-notation", "@"),
   ARGPARSE_s_n (oNoShowNotation, "no-show-notation", "@"),
   ARGPARSE_s_n (oShowSessionKey, "show-session-key", "@"),
+  ARGPARSE_s_n (oShowOnlySessionKey, "show-only-session-key", "@"),
   ARGPARSE_s_n (oUseEmbeddedFilename,      "use-embedded-filename", "@"),
   ARGPARSE_s_n (oNoUseEmbeddedFilename, "no-use-embedded-filename", "@"),
   ARGPARSE_s_n (oUnwrap, "unwrap", "@"),
@@ -3564,7 +3566,13 @@ main (int argc, char **argv)
             opt.keyserver_options.options &= ~KEYSERVER_AUTO_KEY_RETRIEVE;
             break;
 
-	  case oShowSessionKey: opt.show_session_key = 1; break;
+	  case oShowOnlySessionKey:
+            opt.show_only_session_key = 1;
+            /* fallthru */
+	  case oShowSessionKey:
+            opt.show_session_key = 1;
+            break;
+
 	  case oOverrideSessionKey:
 		opt.override_session_key = pargs.r.ret_str;
 		break;
