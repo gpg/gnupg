@@ -49,7 +49,12 @@ struct mrsw_lock
   int num_readers_active;
   int num_writers_waiting;
   int writer_active;
-  npth_cond_t notify_cond;
+#ifdef HAVE_W32_SYSTEM
+  HANDLE events[2];
+  HANDLE the_event;
+#else
+  int notify_pipe[2];
+#endif
 };
 
 /* MRSW lock to protect the list of cards.
@@ -366,17 +371,79 @@ card_list_w_unlock (void)
 static void
 card_list_signal (void)
 {
-  npth_cond_broadcast (&card_list_lock.notify_cond);
+#ifdef HAVE_W32_SYSTEM
+  if (SetEvent (card_list_lock.the_event) == 0)
+    log_error ("SetEvent for card_list_signal failed: %s\n",
+               w32_strerror (-1));
+#else
+  write (card_list_lock.notify_pipe[1], "", 1);
+#endif
 }
 
-static void
-card_list_wait (void)
+/* Wait for some card list event or input shutdown.
+   Return 1 on input shutdown, return 0 otherwise.  */
+static int
+card_list_wait (ctrl_t ctrl)
 {
+  gnupg_fd_t fd = ctrl->thread_startup.fd;
+  int nfd;
+  fd_set fdset;
+#ifdef HAVE_W32_SYSTEM
+  unsigned int events_set;
+#endif
+  int ret;
+
   npth_mutex_lock (&card_list_lock.lock);
   card_list_lock.writer_active--;
   npth_cond_broadcast (&card_list_lock.cond);
 
-  npth_cond_wait (&card_list_lock.notify_cond, &card_list_lock.lock);
+  npth_mutex_unlock (&card_list_lock.lock);
+
+  while (1)
+    {
+      FD_ZERO (&fdset);
+      FD_SET (FD2INT (fd), &fdset);
+      nfd = FD2NUM (fd);
+
+#ifdef HAVE_W32_SYSTEM
+      ret = npth_eselect (nfd+1, &fdset, NULL, NULL, NULL,
+                          card_list_lock.events, &events_set);
+#else
+      FD_SET (card_list_lock.notify_pipe[0], &fdset);
+      if (nfd < card_list_lock.notify_pipe[0])
+        nfd = card_list_lock.notify_pipe[0];
+
+      ret = npth_pselect (nfd+1, &fdset, NULL, NULL, NULL,
+                          npth_sigev_sigmask ());
+#endif
+      if (ret <= 0)
+        continue;
+
+      if (FD_ISSET (fd, &fdset))
+        {
+          ret = 1;
+          break;
+        }
+
+#ifdef HAVE_W32_SYSTEM
+      if (events_set & 1)
+        {
+          ret = 0;
+          break;
+        }
+#else
+      if (FD_ISSET (card_list_lock.notify_pipe[0], &fdset))
+        {
+          char buf[256];
+
+          read (card_list_lock.notify_pipe[0], buf, sizeof buf);
+          ret = 0;
+          break;
+        }
+#endif
+    }
+
+  npth_mutex_lock (&card_list_lock.lock);
 
   card_list_lock.num_writers_waiting++;
   while (card_list_lock.num_readers_active
@@ -386,6 +453,7 @@ card_list_wait (void)
 
   card_list_lock.writer_active++;
   npth_mutex_unlock (&card_list_lock.lock);
+  return ret;
 }
 
 
@@ -451,7 +519,8 @@ app_send_devinfo (ctrl_t ctrl, int keep_looping)
       if (keep_looping == 0)
         break;
 
-      card_list_wait ();
+      if (card_list_wait (ctrl))
+        break;
     }
   card_list_w_unlock ();
 
@@ -2530,6 +2599,9 @@ gpg_error_t
 initialize_module_command (void)
 {
   gpg_error_t err;
+#ifndef HAVE_W32_SYSTEM
+  int ret;
+#endif
 
   card_list_lock.num_readers_active = 0;
   card_list_lock.num_writers_waiting = 0;
@@ -2550,13 +2622,17 @@ initialize_module_command (void)
       return err;
     }
 
-  err = npth_cond_init (&card_list_lock.notify_cond, NULL);
-  if (err)
+#ifdef HAVE_W32_SYSTEM
+  scd_init_event (&card_list_lock.the_event, card_list_lock.events);
+#else
+  ret = gnupg_create_pipe (card_list_lock.notify_pipe);
+  if (ret)
     {
       err = gpg_error_from_syserror ();
-      log_error ("npth_cond_init failed: %s\n", gpg_strerror (err));
+      log_error ("pipe creation failed: %s\n", gpg_strerror (ret));
       return err;
     }
+#endif
 
   return apdu_init ();
 }
