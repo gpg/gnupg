@@ -484,7 +484,7 @@ app_dump_state (void)
  *
  * With KEEP_LOOPING=0, it only outputs once.
  * With KEEP_LOOPING<0, it keeps looping, until it detects no device.
- * With KEEP_LOOPING>0, it keeps looping forever.
+ * With KEEP_LOOPING>0, it keeps looping forever (until connection close).
  */
 gpg_error_t
 app_send_devinfo (ctrl_t ctrl, int keep_looping)
@@ -492,6 +492,13 @@ app_send_devinfo (ctrl_t ctrl, int keep_looping)
   card_t c;
   app_t a;
   int no_device;
+
+  /* The connection from client should be by a socket.  This is needed
+     for Windows using the select function.  And it's not good to use
+     the primary pipe connection of gpg-agent for watching
+     devinfo.  */
+  if (keep_looping && ctrl->thread_startup.fd == GNUPG_INVALID_FD)
+    return gpg_error (GPG_ERR_INV_HANDLE);
 
   card_list_w_lock ();
   while (1)
