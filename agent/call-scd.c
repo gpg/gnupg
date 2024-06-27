@@ -94,7 +94,7 @@ struct inq_needpin_parm_s
 static int
 start_scd (ctrl_t ctrl)
 {
-  return daemon_start (DAEMON_SCD, ctrl);
+  return daemon_start (DAEMON_SCD, ctrl, 0);
 }
 
 

@@ -16,7 +16,7 @@
 static int
 start_tpm2d (ctrl_t ctrl)
 {
-  return daemon_start (DAEMON_TPM2D, ctrl);
+  return daemon_start (DAEMON_TPM2D, ctrl, 0);
 }
 
 static int

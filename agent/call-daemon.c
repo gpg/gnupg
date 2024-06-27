@@ -252,7 +252,7 @@ atfork_cb (void *opaque, int where)
  * caller must call unlock_daemon after this function has returned
  * success and the actual Assuan transaction been done. */
 gpg_error_t
-daemon_start (enum daemon_type type, ctrl_t ctrl)
+daemon_start (enum daemon_type type, ctrl_t ctrl, int require_socket)
 {
   gpg_error_t err = 0;
   const char *pgmname;
@@ -284,6 +284,7 @@ daemon_start (enum daemon_type type, ctrl_t ctrl)
       return gpg_error (GPG_ERR_INTERNAL);
     }
 
+ again:
   /* We need to serialize the access to scd_local_list and primary_scd_ctx. */
   rc = npth_mutex_lock (&start_daemon_lock);
   if (rc)
@@ -316,7 +317,7 @@ daemon_start (enum daemon_type type, ctrl_t ctrl)
   /* Check whether the pipe server has already been started and in
      this case either reuse a lingering pipe connection or establish a
      new socket based one. */
-  if (g->primary_ctx && g->primary_ctx_reusable)
+  if (g->primary_ctx && g->primary_ctx_reusable && !require_socket)
     {
       ctx = g->primary_ctx;
       g->primary_ctx_reusable = 0;
@@ -508,6 +509,7 @@ daemon_start (enum daemon_type type, ctrl_t ctrl)
 
  leave:
   xfree (abs_homedir);
+  abs_homedir = NULL;
   if (err)
     {
       rc = npth_mutex_unlock (&start_daemon_lock);
@@ -524,6 +526,12 @@ daemon_start (enum daemon_type type, ctrl_t ctrl)
       rc = npth_mutex_unlock (&start_daemon_lock);
       if (rc)
         log_error ("failed to release the start_daemon lock: %s\n", strerror (rc));
+
+      if (require_socket && g->primary_ctx == ctx)
+        {
+          daemon_unlock (type, ctrl, 0);
+          goto again;
+        }
     }
   return err;
 }

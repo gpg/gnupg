@@ -690,7 +690,7 @@ gpg_error_t divert_writekey (ctrl_t ctrl, int force, const char *serialno,
                              const char *keydata, size_t keydatalen);
 
 /*-- call-daemon.c --*/
-gpg_error_t daemon_start (enum daemon_type type, ctrl_t ctrl);
+gpg_error_t daemon_start (enum daemon_type type, ctrl_t ctrl, int req_sock);
 assuan_context_t daemon_type_ctx (enum daemon_type type, ctrl_t ctrl);
 gpg_error_t daemon_unlock (enum daemon_type type, ctrl_t ctrl, gpg_error_t rc);
 void initialize_module_daemon (void);
