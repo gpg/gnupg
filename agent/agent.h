@@ -709,7 +709,7 @@ gpg_error_t agent_card_ecc_kem (ctrl_t ctrl, const unsigned char *ecc_ct,
                                 size_t ecc_point_len, unsigned char *ecc_ecdh);
 
 /*-- call-daemon.c --*/
-gpg_error_t daemon_start (enum daemon_type type, ctrl_t ctrl);
+gpg_error_t daemon_start (enum daemon_type type, ctrl_t ctrl, int req_sock);
 assuan_context_t daemon_type_ctx (enum daemon_type type, ctrl_t ctrl);
 gpg_error_t daemon_unlock (enum daemon_type type, ctrl_t ctrl, gpg_error_t rc);
 void initialize_module_daemon (void);
