@@ -1189,6 +1189,9 @@ agent_card_devinfo (ctrl_t ctrl, void *assuan_context)
   int rc;
   gnupg_fd_t client_fds[2];
 
+  if (ctrl->thread_startup.fd == GNUPG_INVALID_FD)
+    return GPG_ERR_INV_HANDLE;
+
   rc = daemon_start (DAEMON_SCD, ctrl, 1);
   if (rc)
     return rc;
