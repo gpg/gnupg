@@ -1530,6 +1530,7 @@ main (int argc, char **argv)
                      strerror (errno) );
           agent_exit (1);
         }
+      ctrl->thread_startup.fd = GNUPG_INVALID_FD;
       ctrl->session_env = session_env_new ();
       if (!ctrl->session_env)
         {
