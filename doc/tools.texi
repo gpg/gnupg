@@ -20,6 +20,7 @@ GnuPG comes with a couple of smaller tools:
 * dirmngr-client::        How to use the Dirmngr client tool.
 * gpgparsemail::          Parse a mail message into an annotated format
 * gpgtar::                Encrypt or sign files into an archive.
+* gpg-mail-tube::         Encrypt rfc822 formated mail in a pipeline.
 * gpg-check-pattern::     Check a passphrase on stdin against the patternfile.
 @end menu
 
@@ -2097,7 +2098,7 @@ This option is deprecated in favor of option @option{--directory}.
 @item --no-compress
 @opindex no-compress
 This option tells gpg to disable compression (i.e., using option -z0).
-It is useful for archiving only large files which are are already
+It is useful for archiving only large files which are already
 compressed (e.g., a set of videos).
 
 @item --gpg @var{gpgcmd}
@@ -2164,6 +2165,121 @@ gpgtar --list-archive test1
 @command{tar}(1),
 @end ifset
 @include see-also-note.texi
+
+@c
+@c  GPG-MAIL-TUBE
+@c
+@manpage gpg-mail-tube.1
+@node gpg-mail-tube
+@section Encrypt rfc822 formated mail in a pipeline
+@ifset manverb
+.B gpg-mail-tube
+\- Encrypt rfc822 formated mail in a pipeline
+@end ifset
+
+@mansect synopsis
+@ifset manverb
+.B gpg\-mail\-tube
+.RI [ options ]
+.I recipients
+@end ifset
+
+@mansect description
+@command{gpg-mail-tube} takes RFC-822 formatted mail on stdin and
+turns it into a PGP/MIME encrypted mail which is then written to
+stdout.
+
+The recipients must be plain mail addresses
+(e.g. @code{foo@@example.org}) and should in general list the To and
+Cc addresses contained in the mail.
+
+@mansect options
+@noindent
+@command{gpg-mail-tube} understands these options:
+
+@table @gnupgtabopt
+
+@item --verbose
+@itemx -v
+@opindex verbose
+Enable extra informational output.
+
+@item --quiet
+@itemx -q
+@opindex quiet
+Try to be as quiet as possible.
+
+@item --log-file @var{file}
+@opindex log-file
+Write log output to @var{file}.  Use @file{socket://} to log to a
+socket.
+
+@item --no-stderr
+Suppresses all output to stderr.  This is useful for callers which
+don't distinguish stdout and stderr.  To get diagnostics the option
+@option{--log-file} can be used.
+
+@item --header @var{name}=@var{value}
+@opindex header
+Add the mail header "@var{name}: @var{value}" to the output.
+
+@item --setenv @var{name}=@var{value}
+@opindex setenv
+Put the given environment string into the environment of this process
+and of the called gpg.  This option is required if there is no other
+way to set the environemt.
+
+@item --gpg @var{gpgcmd}
+@opindex gpg
+Use the specified command @var{gpgcmd} instead of @command{gpg}.
+
+@item --vsd
+@opindex vsd
+Use the gpg from a @emph{GnuPG VS-Desktop®} AppImage.  The AppImage is
+started if it is not running.  A symlink named
+@file{~/.gnupg-vsd/gnupg-vs-desktop.AppImage} needs to link to the
+actually to be used AppImage.
+
+@item --version
+@opindex version
+Print version of the program and exit.
+
+@item --help
+@opindex help
+Display a brief help page and exit.
+
+@end table
+
+@mansect diagnostics
+@noindent
+The program returns 0 on a successful encryption or a non-zero value
+on error.  Note that on error some output might have already been
+written to stdout.
+
+@mansect examples
+
+@noindent
+The following options can be used in a local transport rule of the
+Exim MTA which assumes that that @option{check_local_user} has been
+used in the router.
+
+@example
+transport_filter = /usr/local/bin/gpg-mail-tube --setenv HOME=$@{home@} \
+                   --no-stderr -- $pipe_addresses
+@end example
+
+@noindent
+For a remote transport the use of @option{size_addition} and an
+explicit setting of the user and its home directory might be required.
+
+
+@mansect see also
+@ifset isman
+@command{gpg}(1),
+@end ifset
+@include see-also-note.texi
+
+
 
 @c
 @c  GPG-CHECK-PATTERN

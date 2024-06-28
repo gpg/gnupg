@@ -65,7 +65,8 @@ endif
 
 bin_PROGRAMS = gpgconf gpg-connect-agent gpg-card gpg-wks-client
 if !HAVE_W32_SYSTEM
-bin_PROGRAMS += watchgnupg gpgparsemail ${gpg_wks_server} gpgsplit
+bin_PROGRAMS += watchgnupg gpgparsemail ${gpg_wks_server} gpgsplit \
+                gpg-mail-tube
 else
 bin_PROGRAMS += gpgconf-w32
 endif
@@ -189,6 +190,17 @@ gpg_wks_client_LDADD = $(libcommon) \
 		       $(LIBASSUAN_LIBS) $(LIBGCRYPT_LIBS) $(GPG_ERROR_LIBS) \
 		       $(LIBINTL) $(LIBICONV) $(NETLIBS) \
 	               $(gpg_wks_client_rc_objs)
+
+gpg_mail_tube_SOURCES = \
+        gpg-mail-tube.c \
+        rfc822parse.c rfc822parse.h \
+	mime-maker.c  mime-maker.h
+
+gpg_mail_tube_CFLAGS = $(LIBGCRYPT_CFLAGS) $(GPG_ERROR_CFLAGS) $(INCICONV)
+gpg_mail_tube_LDADD =  $(libcommon) \
+		       $(LIBGCRYPT_LIBS) $(GPG_ERROR_LIBS) \
+                       $(LIBINTL) $(LIBICONV)
+
 
 gpg_pair_tool_SOURCES = \
 	gpg-pair-tool.c
