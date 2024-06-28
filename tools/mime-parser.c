@@ -416,7 +416,7 @@ parse_message_cb (void *opaque, rfc822parse_event_t event, rfc822parse_t msg)
                   if (!ctx->b64state)
                     rc = gpg_error_from_syserror ();
                 }
-              free (value); /* Right, we need a plain free.  */
+              rfc822_free (value);
             }
         }
 

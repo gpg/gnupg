@@ -86,6 +86,7 @@ struct part
   struct part *down;      /* A contained part. */
   HDR_LINE hdr_lines;       /* Header lines os that part. */
   HDR_LINE *hdr_lines_tail; /* Helper for adding lines. */
+  const char *last_hdr_line;/* NULL or a ptr to the last inserted hdr.  */
   char *boundary;           /* Only used in the first part. */
 };
 typedef struct part *part_t;
@@ -237,6 +238,15 @@ release_handle_data (rfc822parse_t msg)
 }
 
 
+/* Wrapper around free becuase in this moulde we use a plain free.  */
+void
+rfc822_free (void *a)
+{
+  if (a)
+    free (a);
+}
+
+
 /* Check that the header name is valid.  We allow all lower and
  * uppercase letters and, except for the first character, digits and
  * the dash.  The check stops at the first colon or at string end.
@@ -291,6 +301,22 @@ rfc822_capitalize_header_name (char *name)
     }
 }
 
+
+/* This is an strcmp which considers a colon also as end-of-string.
+ * Use this function to compare capitalized header names.  */
+int
+rfc822_cmp_header_name (const char *a, const char *b)
+{
+  for (; *a && *a != ':' && *b && *b != ':'; a++, b++)
+    {
+      if (*a != *b )
+        break;
+    }
+  if (*a == *b || (!*a && *b == ':') || (!*b && *a == ':'))
+    return 0;
+  else
+    return (*(signed char *)a - *(signed char *)b);
+}
 
 
 /* Create a new parsing context for an entire rfc822 message and
@@ -488,6 +514,7 @@ static int
 insert_header (rfc822parse_t msg, const unsigned char *line, size_t length)
 {
   HDR_LINE hdr;
+  int new_hdr = 0;
 
   if (!msg->current_part)
     {
@@ -515,11 +542,19 @@ insert_header (rfc822parse_t msg, const unsigned char *line, size_t length)
 
   /* Transform a field name into canonical format. */
   if (!hdr->cont && strchr (line, ':'))
-    rfc822_capitalize_header_name (hdr->line);
+    {
+      rfc822_capitalize_header_name (hdr->line);
+      msg->current_part->last_hdr_line = hdr->line;
+      new_hdr = 1;
+    }
+  else
+    msg->current_part->last_hdr_line = NULL;
 
   *msg->current_part->hdr_lines_tail = hdr;
   msg->current_part->hdr_lines_tail = &hdr->next;
 
+  if (new_hdr)
+    do_callback (msg, RFC822PARSE_HEADER_SEEN);
   /* Lets help the caller to prevent mail loops and issue an event for
    * every Received header. */
   if (length >= 9 && !memcmp (line, "Received:", 9))
@@ -587,6 +622,18 @@ rfc822parse_finish (rfc822parse_t msg)
   return do_callback (msg, RFC822PARSE_FINISH);
 }
 
+
+/* If the last inserted line was a header and not a continuation of a
+ * header line, return a pointer to that line.  This function may be
+ * used on the RFC822PARSE_HEADER_SEEN event to get the name of the
+ * current header.  Returns NULL if no header is available.  */
+const char *
+rfc822parse_last_header_line (rfc822parse_t msg)
+{
+  if (!msg || !msg->current_part)
+    return NULL;
+  return  msg->current_part->last_hdr_line;
+}
 
 
 /****************
@@ -697,7 +744,7 @@ rfc822parse_enum_header_lines (rfc822parse_t msg, void **context)
  *
  *  which  -1 : Retrieve the last field
  *	   >0 : Retrieve the n-th field
-
+ *
  * RPREV may be used to return the predecessor of the returned field;
  * which may be NULL for the very first one. It has to be initialized
  * to either NULL in which case the search start at the first header line,

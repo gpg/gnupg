@@ -279,7 +279,7 @@ t2body (void *cookie, int level)
             {
               if (atoi(value+valueoff) >= 2 )
                 ctx->draft_version_2 = 1;
-              free (value);
+              rfc822_free (value);
             }
         }
     }
