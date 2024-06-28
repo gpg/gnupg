@@ -420,7 +420,7 @@ parse_message_cb (void *opaque, rfc822parse_event_t event, rfc822parse_t msg)
                   if (!rc)
                     rc = b64dec_start (ctx->b64state, NULL);
                 }
-              free (value); /* Right, we need a plain free.  */
+              rfc822_free (value);
             }
         }
 

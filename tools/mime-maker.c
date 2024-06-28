@@ -216,8 +216,8 @@ find_part (part_t root, unsigned int partid)
 }
 
 
-/* Create a boundary string.  Outr codes is aware of the general
- * structure of that string (gebins with "=-=") so that
+/* Create a boundary string.  Our codes is aware of the general
+ * structure of that string (begins with "=-=") so that
  * it can protect against accidentally-used boundaries within the
  * content.   */
 static char *

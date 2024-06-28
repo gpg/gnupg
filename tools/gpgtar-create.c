@@ -1294,6 +1294,7 @@ gpgtar_create (char **inpattern, const char *files_from, int null_names,
       xfree (argv);
       if (err)
         goto leave;
+      /* Note that OUTSTREAM is our tar output which is fed to gpg.  */
       es_set_binary (outstream);
     }
   else if (opt.outfile) /* No crypto  */

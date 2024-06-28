@@ -29,6 +29,7 @@ typedef enum
     RFC822PARSE_CANCEL,
     RFC822PARSE_T2BODY,
     RFC822PARSE_FINISH,
+    RFC822PARSE_HEADER_SEEN,
     RFC822PARSE_RCVD_SEEN,
     RFC822PARSE_LEVEL_DOWN,
     RFC822PARSE_LEVEL_UP,
@@ -48,8 +49,10 @@ typedef int (*rfc822parse_cb_t) (void *opaque,
                                  rfc822parse_event_t event,
                                  rfc822parse_t msg);
 
+void rfc822_free (void *);
 int rfc822_valid_header_name_p (const char *name);
 void rfc822_capitalize_header_name (char *name);
+int rfc822_cmp_header_name (const char *a, const char *b);
 
 rfc822parse_t rfc822parse_open (rfc822parse_cb_t cb, void *opaque_value);
 
@@ -60,6 +63,7 @@ int rfc822parse_finish (rfc822parse_t msg);
 
 int rfc822parse_insert (rfc822parse_t msg,
                         const unsigned char *line, size_t length);
+const char *rfc822parse_last_header_line (rfc822parse_t msg);
 
 char *rfc822parse_get_field (rfc822parse_t msg, const char *name, int which,
                              size_t *valueoff);
