@@ -28,6 +28,8 @@ Noteworthy changes in version 2.4.6 (unreleased)
   * gpgconf: Check readability of some files with -X and change its
     output format.  [rG759adb2493]
 
+  * gpg-mail-tube: New tool to apply PGP/MIME encryption to a mail.
+
   * Fix some uninitialized variables and double frees in error code
     paths.  [T7129]
 
