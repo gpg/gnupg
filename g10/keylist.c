@@ -2414,6 +2414,8 @@ list_keyblock_direct (ctrl_t ctrl,
 
   memset (&listctx, 0, sizeof (listctx));
   listctx.no_validity = !!no_validity;
+  if (opt.check_sigs)
+    listctx.check_sigs = 1;
   err = list_keyblock (ctrl, keyblock, secret, has_secret, fpr, &listctx);
   keylist_context_release (&listctx);
   return err;
