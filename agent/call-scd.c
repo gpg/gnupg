@@ -1151,6 +1151,97 @@ pass_data_thru (void *opaque, const void *buffer, size_t length)
   return 0;
 }
 
+#define DEVINFO_WATCH_COMMAND "DEVINFO --watch"
+
+struct devinfo_watch_thread {
+  ctrl_t ctrl;
+  void *assuan_context;
+};
+
+static void *
+devinfo_watch_thread (void *arg)
+{
+  struct devinfo_watch_thread *d = arg;
+
+  assuan_set_flag (daemon_ctx (d->ctrl), ASSUAN_CONVEY_COMMENTS, 1);
+  assuan_transact (daemon_ctx (d->ctrl), DEVINFO_WATCH_COMMAND,
+                   pass_data_thru, d->assuan_context,
+                   NULL, NULL,
+                   pass_status_thru, d->assuan_context);
+  return NULL;
+}
+
+static int
+agent_card_devinfo (ctrl_t ctrl, void *assuan_context)
+{
+  npth_t thread;
+  struct devinfo_watch_thread dwt;
+  gpg_error_t err = 0;
+  npth_attr_t tattr;
+  assuan_context_t scd_ctx;
+  gnupg_fd_t scd_fds[2];
+  gnupg_fd_t client_input;
+  gnupg_fd_t scd_sock;
+  int rc;
+  gnupg_fd_t client_fds[2];
+
+  rc = daemon_start (DAEMON_SCD, ctrl, 1);
+  if (rc)
+    return rc;
+
+  dwt.ctrl = ctrl;
+  dwt.assuan_context = assuan_context;
+  scd_ctx = daemon_ctx (ctrl);
+
+  err = npth_attr_init (&tattr);
+  if (err)
+    return err;
+
+  npth_attr_setdetachstate (&tattr, NPTH_CREATE_JOINABLE);
+  err = npth_create (&thread, &tattr, devinfo_watch_thread, &dwt);
+  npth_attr_destroy (&tattr);
+  if (err)
+    {
+      log_error ("error spawning devinfo_watch_thread: %s\n", strerror (err));
+      return err;
+    }
+
+  assuan_get_active_fds (assuan_context, 0, client_fds, 2);
+  client_input = client_fds[0];
+
+  assuan_get_active_fds (scd_ctx, 0, scd_fds, 2);
+  scd_sock = scd_fds[0];
+
+  while (1)
+    {
+      fd_set fdset;
+      int nfd;
+      int ret;
+
+      FD_ZERO (&fdset);
+      FD_SET (FD2INT (client_input), &fdset);
+      nfd = FD2INT (client_input);
+
+      ret = npth_select (nfd+1, &fdset, NULL, NULL, NULL);
+      if (ret == 1)
+        break;
+    }
+
+  /* Forcibly close the socket connection to scdaemon.  */
+#ifdef HAVE_W32_SYSTEM
+# if _WIN64
+  shutdown ((uintptr_t)scd_sock, SD_BOTH);
+# else
+  shutdown ((unsigned int)scd_sock, SD_BOTH);
+# endif
+#else
+  shutdown (scd_sock, SHUT_RDWR);
+#endif
+  /* Then, join the thread.  */
+  npth_join (thread, NULL);
+
+  return unlock_scd (ctrl, rc);
+}
 
 /* Send the line CMDLINE with command for the SCDdaemon to it and send
    all status messages back.  This command is used as a general quoting
@@ -1165,6 +1256,11 @@ agent_card_scd (ctrl_t ctrl, const char *cmdline,
   int rc;
   struct inq_needpin_parm_s inqparm;
   int saveflag;
+
+  /* This is a layer violation, but it's needed that because DEVINFO
+     --watch is so special.  */
+  if (!strcmp (cmdline, DEVINFO_WATCH_COMMAND))
+    return agent_card_devinfo (ctrl, assuan_context);
 
   rc = start_scd (ctrl);
   if (rc)

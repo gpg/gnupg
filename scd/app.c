@@ -403,7 +403,7 @@ card_list_wait (ctrl_t ctrl)
     {
       FD_ZERO (&fdset);
       FD_SET (FD2INT (fd), &fdset);
-      nfd = FD2NUM (fd);
+      nfd = FD2INT (fd);
 
 #ifdef HAVE_W32_SYSTEM
       ret = npth_eselect (nfd+1, &fdset, NULL, NULL, NULL,
