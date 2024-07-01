@@ -11,7 +11,17 @@ Noteworthy changes in version 2.4.6 (unreleased)
 
   * gpg: Do not allow to accidently set the RENC usage.  [T7072]
 
-  * gpg: Accept armored withes without CRC24 checksum.  [T7071]
+  * gpg: Accept armored files without CRC24 checksum.  [T7071]
+
+  * gpg: New --import-option "only-pubkeys".  [T7146]
+
+  * gpg: Repurpose the AKL mechanism "ldap" to work like the keyserver
+    mechnism but only for LDAP keyservers.  [rG6551281ca3]
+
+  * gpg: ADSKs are now configurable for new keys.  [T6882]
+
+  * gpgsm: Emit user IDs with an empty Subject also in colon mode.
+    [T7171]
 
   * agent: Consider an empty pattern file as valid.  [rGc27534de95]
 
@@ -20,15 +30,21 @@ Noteworthy changes in version 2.4.6 (unreleased)
   * agent: Avoid random errors when storing key in ephemeral mode.
     [T7129, rG19d93a239d]
 
+  * agent: Make "SCD DEVINFO --watch" more robust.  [T7151]
+
   * scd: Improve KDF data object handling for OpenPGP cards.  [T7058]
 
   * scd: Avoid buffer overrun with more than 16 PC/SC readers.
     [T7129, rG524e3a9345]
 
+  * scd: Fix how the scdaemon on its pipe connection finishes.
+    [T7160]
+
   * gpgconf: Check readability of some files with -X and change its
     output format.  [rG759adb2493]
 
   * gpg-mail-tube: New tool to apply PGP/MIME encryption to a mail.
+    [rGa564a9f66c]
 
   * Fix some uninitialized variables and double frees in error code
     paths.  [T7129]
