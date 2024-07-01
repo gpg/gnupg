@@ -222,7 +222,7 @@ AUTHENTICODE_FILES= \
                     gpgv.exe                  \
                     gpg-card.exe              \
                     keyboxd.exe               \
-                    libassuan-0.dll           \
+                    libassuan-9.dll           \
                     libgcrypt-20.dll          \
                     libgpg-error-0.dll        \
                     libgpgme-11.dll           \
