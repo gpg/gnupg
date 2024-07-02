@@ -35,7 +35,6 @@
 #include "../common/init.h"
 #include "../common/sysutils.h"
 #include "../common/ccparray.h"
-#include "../common/exechelp.h"
 #include "../common/mbox-util.h"
 #include "../common/zb32.h"
 #include "rfc822parse.h"
@@ -151,7 +150,7 @@ struct parser_context_s
 static gpg_error_t mail_tube_encrypt (estream_t fpin, strlist_t recipients);
 static void prepare_for_appimage (void);
 static gpg_error_t start_gpg_encrypt (estream_t *r_input,
-                                      gnupg_process_t *r_proc,
+                                      gpgrt_process_t *r_proc,
                                       strlist_t recipients);
 
 
@@ -405,7 +404,7 @@ mail_tube_encrypt (estream_t fpin, strlist_t recipients)
   const char *s;
   char *boundary = NULL;  /* Actually only the random part of it.  */
   estream_t gpginfp = NULL;
-  gnupg_process_t proc = NULL;
+  gpgrt_process_t proc = NULL;
   int exitcode;
   int i, found;
 
@@ -562,14 +561,14 @@ mail_tube_encrypt (estream_t fpin, strlist_t recipients)
   if (err)
     log_error ("error closing pipe: %s\n", gpg_strerror (err));
 
-  err = gnupg_process_wait (proc, 1 /* hang */);
+  err = gpgrt_process_wait (proc, 1 /* hang */);
   if (err)
     {
       log_error ("waiting for process %s failed: %s\n",
                  opt.gpg_program, gpg_strerror (err));
       goto leave;
     }
-  gnupg_process_ctl (proc, GNUPG_PROCESS_GET_EXIT_ID, &exitcode);
+  gpgrt_process_ctl (proc, GPGRT_PROCESS_GET_EXIT_ID, &exitcode);
   if (exitcode)
     {
       log_error ("running %s failed: exitcode=%d\n",
@@ -577,7 +576,7 @@ mail_tube_encrypt (estream_t fpin, strlist_t recipients)
       goto leave;
     }
 
-  gnupg_process_release (proc);
+  gpgrt_process_release (proc);
   proc = NULL;
 
   /* Output the final boundary.  */
@@ -597,7 +596,7 @@ mail_tube_encrypt (estream_t fpin, strlist_t recipients)
 
  leave:
   gpgrt_fcancel (gpginfp);
-  gnupg_process_release (proc);
+  gpgrt_process_release (proc);
   rfc822parse_cancel (ctx->msg);
   xfree (boundary);
   return err;
@@ -688,16 +687,16 @@ prepare_for_appimage (void)
     {
       /* Run the sleep program for 2^30 seconds (34 years). */
       static const char *args[4] = { "-c", "sleep", "1073741824", NULL };
-      gnupg_spawn_actions_t act;
+      gpgrt_spawn_actions_t act;
 
       fname = make_filename ("~/.gnupg-vsd/gnupg-vs-desktop.AppImage", NULL);
 
-      err = gnupg_spawn_actions_new (&act);
+      err = gpgrt_spawn_actions_new (&act);
       if (!err)
         {
-          err = gnupg_process_spawn (fname, args,
-                                     GNUPG_PROCESS_DETACHED, act, NULL);
-          gnupg_spawn_actions_release (act);
+          err = gpgrt_process_spawn (fname, args,
+                                     GPGRT_PROCESS_DETACHED, act, NULL);
+          gpgrt_spawn_actions_release (act);
         }
       if (err)
         {
@@ -730,7 +729,7 @@ prepare_for_appimage (void)
  * is stored at R_INPUT and the process objectat R_PROC.  The gpg
  * output is sent to stdout and is always armored.  */
 static gpg_error_t
-start_gpg_encrypt (estream_t *r_input, gnupg_process_t *r_proc,
+start_gpg_encrypt (estream_t *r_input, gpgrt_process_t *r_proc,
                    strlist_t recipients)
 {
   gpg_error_t err;
@@ -742,7 +741,7 @@ start_gpg_encrypt (estream_t *r_input, gnupg_process_t *r_proc,
   int except[2] = { -1, -1 };
 #endif
   const char **argv;
-  gnupg_spawn_actions_t act = NULL;
+  gpgrt_spawn_actions_t act = NULL;
   char *logfilebuf = NULL;
 
   *r_input = NULL;
@@ -786,7 +785,7 @@ start_gpg_encrypt (estream_t *r_input, gnupg_process_t *r_proc,
       goto leave;
     }
 
-  err = gnupg_spawn_actions_new (&act);
+  err = gpgrt_spawn_actions_new (&act);
   if (err)
     {
       xfree (argv);
@@ -794,24 +793,24 @@ start_gpg_encrypt (estream_t *r_input, gnupg_process_t *r_proc,
     }
 
 #ifdef HAVE_W32_SYSTEM
-  gnupg_spawn_actions_set_inherit_handles (act, except);
+  gpgrt_spawn_actions_set_inherit_handles (act, except);
 #else
-  gnupg_spawn_actions_set_inherit_fds (act, except);
+  gpgrt_spawn_actions_set_inherit_fds (act, except);
 #endif
-  err = gnupg_process_spawn (opt.gpg_program, argv,
-                             (GNUPG_PROCESS_STDIN_PIPE
-                              | GNUPG_PROCESS_STDOUT_KEEP
-                              | GNUPG_PROCESS_STDERR_KEEP), act, r_proc);
-  gnupg_spawn_actions_release (act);
+  err = gpgrt_process_spawn (opt.gpg_program, argv,
+                             (GPGRT_PROCESS_STDIN_PIPE
+                              | GPGRT_PROCESS_STDOUT_KEEP
+                              | GPGRT_PROCESS_STDERR_KEEP), act, r_proc);
+  gpgrt_spawn_actions_release (act);
   xfree (argv);
   if (err)
     goto leave;
-  gnupg_process_get_streams (*r_proc, 0, r_input, NULL, NULL);
+  gpgrt_process_get_streams (*r_proc, 0, r_input, NULL, NULL);
 
  leave:
   if (err)
     {
-      gnupg_process_release (*r_proc);
+      gpgrt_process_release (*r_proc);
       *r_proc = NULL;
     }
   xfree (logfilebuf);

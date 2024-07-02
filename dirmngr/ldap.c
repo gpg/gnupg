@@ -31,7 +31,6 @@
 #include <npth.h>
 
 #include "dirmngr.h"
-#include "../common/exechelp.h"
 #include "crlfetch.h"
 #include "ldapserver.h"
 #include "misc.h"

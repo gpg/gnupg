@@ -36,9 +36,6 @@
 #include "../common/sysutils.h"
 #include "../common/membuf.h"
 #include "../common/ttyio.h"
-#ifdef HAVE_W32_SYSTEM
-#  include "../common/exechelp.h"
-#endif
 #include "../common/init.h"
 #include "../common/comopt.h"
 

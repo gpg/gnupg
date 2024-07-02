@@ -29,7 +29,6 @@
 #include "../common/i18n.h"
 #include "keyblob.h"
 #include "../common/sysutils.h"
-#include "../common/exechelp.h"
 #include "runner.h"
 #include "be-encfs.h"
 
@@ -81,8 +80,8 @@ run_umount_helper (const char *mountpoint)
   args[1] = mountpoint;
   args[2] = NULL;
 
-  err = gnupg_process_spawn (pgmname, args,
-                             GNUPG_PROCESS_DETACHED,
+  err = gpgrt_process_spawn (pgmname, args,
+                             GPGRT_PROCESS_DETACHED,
                              NULL, NULL);
   if (err)
     log_error ("failed to run '%s': %s\n",
@@ -223,7 +222,7 @@ run_encfs_tool (ctrl_t ctrl, enum encfs_cmds cmd,
   const char *pgmname;
   const char *argv[10];
   int idx;
-  gnupg_process_t proc;
+  gpgrt_process_t proc;
   int inbound, outbound;
 
   (void)ctrl;
@@ -259,9 +258,9 @@ run_encfs_tool (ctrl_t ctrl, enum encfs_cmds cmd,
   argv[idx++] = NULL;
   assert (idx <= DIM (argv));
 
-  err = gnupg_process_spawn (pgmname, argv,
-                             (GNUPG_PROCESS_STDIN_PIPE
-                              | GNUPG_PROCESS_STDERR_PIPE),
+  err = gpgrt_process_spawn (pgmname, argv,
+                             (GPGRT_PROCESS_STDIN_PIPE
+                              | GPGRT_PROCESS_STDERR_PIPE),
                              NULL, &proc);
   if (err)
     {
@@ -269,11 +268,11 @@ run_encfs_tool (ctrl_t ctrl, enum encfs_cmds cmd,
       goto leave;
     }
 
-  err = gnupg_process_get_fds (proc, 0, &outbound, NULL, &inbound);
+  err = gpgrt_process_get_fds (proc, 0, &outbound, NULL, &inbound);
   if (err)
     {
       log_error ("error get fds '%s': %s\n", pgmname, gpg_strerror (err));
-      gnupg_process_release (proc);
+      gpgrt_process_release (proc);
       goto leave;
     }
 
@@ -287,7 +286,7 @@ run_encfs_tool (ctrl_t ctrl, enum encfs_cmds cmd,
   err = runner_spawn (runner);
   if (err)
     {
-      gnupg_process_release (proc);
+      gpgrt_process_release (proc);
       goto leave;
     }
 

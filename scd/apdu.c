@@ -43,7 +43,6 @@
 
 #if defined(GNUPG_MAJOR_VERSION)
 # include "scdaemon.h"
-# include "../common/exechelp.h"
 #endif /*GNUPG_MAJOR_VERSION*/
 
 #include "../common/host2net.h"

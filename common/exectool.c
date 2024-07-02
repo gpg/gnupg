@@ -43,9 +43,6 @@
 #include "logging.h"
 #include "membuf.h"
 #include "mischelp.h"
-#ifdef HAVE_W32_SYSTEM
-#define NEED_STRUCT_SPAWN_CB_ARG 1
-#endif
 #include "exechelp.h"
 #include "sysutils.h"
 #include "util.h"
@@ -324,7 +321,7 @@ gnupg_exec_tool_stream (const char *pgmname, const char *argv[],
                         void *status_cb_value)
 {
   gpg_error_t err;
-  gnupg_process_t proc = NULL;
+  gpgrt_process_t proc = NULL;
   estream_t infp = NULL;
   estream_t extrafp = NULL;
   estream_t outfp = NULL, errfp = NULL;
@@ -342,7 +339,7 @@ gnupg_exec_tool_stream (const char *pgmname, const char *argv[],
   read_and_log_buffer_t fderrstate;
   struct copy_buffer *cpbuf_in = NULL, *cpbuf_out = NULL, *cpbuf_extra = NULL;
   int quiet = 0;
-  gnupg_spawn_actions_t act = NULL;
+  gpgrt_spawn_actions_t act = NULL;
   int i = 0;
 
   memset (fds, 0, sizeof fds);
@@ -433,22 +430,22 @@ gnupg_exec_tool_stream (const char *pgmname, const char *argv[],
     exceptclose[i] = -1;
 #endif
 
-  err = gnupg_spawn_actions_new (&act);
+  err = gpgrt_spawn_actions_new (&act);
   if (err)
     goto leave;
 
 #ifdef HAVE_W32_SYSTEM
-  gnupg_spawn_actions_set_inherit_handles (act, exceptclose);
+  gpgrt_spawn_actions_set_inherit_handles (act, exceptclose);
 #else
-  gnupg_spawn_actions_set_inherit_fds (act, exceptclose);
+  gpgrt_spawn_actions_set_inherit_fds (act, exceptclose);
 #endif
-  err = gnupg_process_spawn (pgmname, argv,
+  err = gpgrt_process_spawn (pgmname, argv,
                              ((input
-                               ? GNUPG_PROCESS_STDIN_PIPE
+                               ? GPGRT_PROCESS_STDIN_PIPE
                                : 0)
-                              | GNUPG_PROCESS_STDOUT_PIPE
-                              | GNUPG_PROCESS_STDERR_PIPE), act, &proc);
-  gnupg_process_get_streams (proc, GNUPG_PROCESS_STREAM_NONBLOCK,
+                              | GPGRT_PROCESS_STDOUT_PIPE
+                              | GPGRT_PROCESS_STDERR_PIPE), act, &proc);
+  gpgrt_process_get_streams (proc, GPGRT_PROCESS_STREAM_NONBLOCK,
                              input? &infp : NULL, &outfp, &errfp);
   if (extrapipe[0] != -1)
     close (extrapipe[0]);
@@ -581,26 +578,26 @@ gnupg_exec_tool_stream (const char *pgmname, const char *argv[],
   es_fclose (outfp); outfp = NULL;
   es_fclose (errfp); errfp = NULL;
 
-  err = gnupg_process_wait (proc, 1);
+  err = gpgrt_process_wait (proc, 1);
   if (!err)
     {                      /* To be compatible to old wait_process. */
       int status;
 
-      gnupg_process_ctl (proc, GNUPG_PROCESS_GET_EXIT_ID, &status);
+      gpgrt_process_ctl (proc, GPGRT_PROCESS_GET_EXIT_ID, &status);
       if (status)
         err = gpg_error (GPG_ERR_GENERAL);
     }
 
  leave:
   if (err && proc)
-    gnupg_process_terminate (proc);
+    gpgrt_process_terminate (proc);
 
   es_fclose (infp);
   es_fclose (extrafp);
   es_fclose (outfp);
   es_fclose (errfp);
-  gnupg_process_release (proc);
-  gnupg_spawn_actions_release (act);
+  gpgrt_process_release (proc);
+  gpgrt_spawn_actions_release (act);
 
   copy_buffer_shred (cpbuf_in);
   xfree (cpbuf_in);

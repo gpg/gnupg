@@ -33,7 +33,6 @@
 #include "../common/sysutils.h"
 #include "../common/init.h"
 #include "../common/status.h"
-#include "../common/exechelp.h"
 #include "../common/dotlock.h"
 
 #ifdef HAVE_W32_SYSTEM
@@ -1303,7 +1302,7 @@ show_versions_via_dirmngr (estream_t fp)
   const char *pgmname;
   const char *argv[2];
   estream_t outfp;
-  gnupg_process_t proc;
+  gpgrt_process_t proc;
   char *line = NULL;
   size_t line_len = 0;
   ssize_t length;
@@ -1311,7 +1310,7 @@ show_versions_via_dirmngr (estream_t fp)
   pgmname = gnupg_module_name (GNUPG_MODULE_NAME_DIRMNGR);
   argv[0] = "--gpgconf-versions";
   argv[1] = NULL;
-  err = gnupg_process_spawn (pgmname, argv, GNUPG_PROCESS_STDOUT_PIPE,
+  err = gpgrt_process_spawn (pgmname, argv, GPGRT_PROCESS_STDOUT_PIPE,
                              NULL, &proc);
   if (err)
     {
@@ -1320,7 +1319,7 @@ show_versions_via_dirmngr (estream_t fp)
       return;
     }
 
-  gnupg_process_get_streams (proc, 0, NULL, &outfp, NULL);
+  gpgrt_process_get_streams (proc, 0, NULL, &outfp, NULL);
   while ((length = es_read_line (outfp, &line, &line_len, NULL)) > 0)
     {
       /* Strip newline and carriage return, if present.  */
@@ -1341,17 +1340,17 @@ show_versions_via_dirmngr (estream_t fp)
                  pgmname, gpg_strerror (err));
     }
 
-  err = gnupg_process_wait (proc, 1);
+  err = gpgrt_process_wait (proc, 1);
   if (!err)
     {
       int exitcode;
 
-      gnupg_process_ctl (proc, GNUPG_PROCESS_GET_EXIT_ID, &exitcode);
+      gpgrt_process_ctl (proc, GPGRT_PROCESS_GET_EXIT_ID, &exitcode);
       log_error ("running %s failed (exitcode=%d): %s\n",
                  pgmname, exitcode, gpg_strerror (err));
       es_fprintf (fp, "[error: can't get further info]\n");
     }
-  gnupg_process_release (proc);
+  gpgrt_process_release (proc);
   xfree (line);
 }
 

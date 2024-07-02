@@ -29,7 +29,6 @@
 #include "g13.h"
 #include "../common/i18n.h"
 #include "keyblob.h"
-#include "../common/exechelp.h"
 #include "runner.h"
 #include "mountinfo.h"
 

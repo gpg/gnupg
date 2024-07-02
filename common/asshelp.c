@@ -39,7 +39,6 @@
 
 #include "i18n.h"
 #include "util.h"
-#include "exechelp.h"
 #include "sysutils.h"
 #include "status.h"
 #include "membuf.h"
@@ -524,10 +523,10 @@ start_new_service (assuan_context_t *r_ctx,
           && assuan_socket_connect (ctx, sockname, 0, connect_flags))
         {
 #ifdef HAVE_W32_SYSTEM
-          err = gnupg_process_spawn (program? program : program_name, argv,
-                                     GNUPG_PROCESS_DETACHED, NULL, NULL);
+          err = gpgrt_process_spawn (program? program : program_name, argv,
+                                     GPGRT_PROCESS_DETACHED, NULL, NULL);
 #else /*!W32*/
-          err = gnupg_process_spawn (program? program : program_name, argv,
+          err = gpgrt_process_spawn (program? program : program_name, argv,
                                      0, NULL, NULL);
 #endif /*!W32*/
           if (err)
