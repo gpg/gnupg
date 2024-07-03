@@ -29,6 +29,7 @@
 #include <time.h>
 
 #include "call-gpg.h"
+#include "sysutils.h"
 #include "exechelp.h"
 #include "i18n.h"
 #include "logging.h"

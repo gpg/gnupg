@@ -42,8 +42,8 @@
 #endif
 
 #include "../../common/util.h"
-#include "../../common/exechelp.h"
 #include "../../common/sysutils.h"
+#include "../../common/exechelp.h"
 
 #ifdef HAVE_W32_SYSTEM
 #include <windows.h>

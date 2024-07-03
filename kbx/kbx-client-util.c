@@ -30,6 +30,7 @@
 #include "../common/membuf.h"
 #include "../common/i18n.h"
 #include "../common/asshelp.h"
+#include "../common/sysutils.h"
 #include "../common/exechelp.h"
 #include "../common/sysutils.h"
 #include "../common/host2net.h"
@@ -102,7 +103,7 @@ prepare_data_pipe (kbx_client_data_t kcd)
 {
   gpg_error_t err;
   int rc;
-  int inpipe[2];
+  gnupg_fd_t inpipe[2];
   estream_t infp;
   npth_attr_t tattr;
 
@@ -118,17 +119,22 @@ prepare_data_pipe (kbx_client_data_t kcd)
       return err;  /* That should not happen.  */
     }
 
-#ifdef HAVE_W32_SYSTEM
-  err = assuan_sendfd (kcd->ctx, (HANDLE)_get_osfhandle (inpipe[1]));
-#else
   err = assuan_sendfd (kcd->ctx, inpipe[1]);
-#endif
   if (err)
     {
+#ifdef HAVE_W32_SYSTEM
+      log_error ("sending fd %p to keyboxd: %s <%s>\n",
+                 inpipe[1], gpg_strerror (err), gpg_strsource (err));
+#else
       log_error ("sending fd %d to keyboxd: %s <%s>\n",
                  inpipe[1], gpg_strerror (err), gpg_strsource (err));
+#endif
       es_fclose (infp);
-      gnupg_close_pipe (inpipe[1]);
+#ifdef HAVE_W32_SYSTEM
+      CloseHandle (inpipe[1]);
+#else
+      close (inpipe[1]);
+#endif
       return err;
     }
 
@@ -142,7 +148,11 @@ prepare_data_pipe (kbx_client_data_t kcd)
       return err;
     }
 
+#ifdef HAVE_W32_SYSTEM
+  CloseHandle (inpipe[1]);
+#else
   close (inpipe[1]);
+#endif
   kcd->fp = infp;
 
   rc = npth_attr_init (&tattr);

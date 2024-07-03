@@ -223,37 +223,15 @@ create_inheritable_pipe (HANDLE filedes[2], int flags)
 
 
 static gpg_error_t
-create_pipe_and_estream (int filedes[2], int flags,
+create_pipe_and_estream (gnupg_fd_t fds[2], int flags,
                          estream_t *r_fp, int outbound, int nonblock)
 {
   gpg_error_t err = 0;
-  HANDLE fds[2];
   es_syshd_t syshd;
 
-  filedes[0] = filedes[1] = -1;
-  err = my_error (GPG_ERR_GENERAL);
-  if (!create_inheritable_pipe (fds, flags))
-    {
-      filedes[0] = _open_osfhandle (handle_to_fd (fds[0]), O_RDONLY);
-      if (filedes[0] == -1)
-        {
-          log_error ("failed to translate osfhandle %p\n", fds[0]);
-          CloseHandle (fds[1]);
-        }
-      else
-        {
-          filedes[1] = _open_osfhandle (handle_to_fd (fds[1]), O_APPEND);
-          if (filedes[1] == -1)
-            {
-              log_error ("failed to translate osfhandle %p\n", fds[1]);
-              close (filedes[0]);
-              filedes[0] = -1;
-              CloseHandle (fds[1]);
-            }
-          else
-            err = 0;
-        }
-    }
+  fds[0] = fds[1] = GNUPG_INVALID_FD;
+  if (create_inheritable_pipe (fds, flags) < 0)
+    err = my_error_from_syserror ();
 
   if (! err && r_fp)
     {
@@ -273,9 +251,9 @@ create_pipe_and_estream (int filedes[2], int flags,
           err = my_error_from_syserror ();
           log_error (_("error creating a stream for a pipe: %s\n"),
                      gpg_strerror (err));
-          close (filedes[0]);
-          close (filedes[1]);
-          filedes[0] = filedes[1] = -1;
+          CloseHandle (fds[0]);
+          CloseHandle (fds[1]);
+          fds[0] = fds[1] = GNUPG_INVALID_FD;
           return err;
         }
     }
@@ -287,10 +265,9 @@ create_pipe_and_estream (int filedes[2], int flags,
    inheritable.  If R_FP is not NULL, an estream is created for the
    read end and stored at R_FP.  */
 gpg_error_t
-gnupg_create_inbound_pipe (int filedes[2], estream_t *r_fp, int nonblock)
+gnupg_create_inbound_pipe (gnupg_fd_t fds[2], estream_t *r_fp, int nonblock)
 {
-  return create_pipe_and_estream (filedes, INHERIT_WRITE,
-                                  r_fp, 0, nonblock);
+  return create_pipe_and_estream (fds, INHERIT_WRITE, r_fp, 0, nonblock);
 }
 
 
@@ -298,10 +275,9 @@ gnupg_create_inbound_pipe (int filedes[2], estream_t *r_fp, int nonblock)
    inheritable.  If R_FP is not NULL, an estream is created for the
    write end and stored at R_FP.  */
 gpg_error_t
-gnupg_create_outbound_pipe (int filedes[2], estream_t *r_fp, int nonblock)
+gnupg_create_outbound_pipe (gnupg_fd_t fds[2], estream_t *r_fp, int nonblock)
 {
-  return create_pipe_and_estream (filedes, INHERIT_READ,
-                                  r_fp, 1, nonblock);
+  return create_pipe_and_estream (fds, INHERIT_READ, r_fp, 1, nonblock);
 }
 
 
@@ -310,8 +286,37 @@ gnupg_create_outbound_pipe (int filedes[2], estream_t *r_fp, int nonblock)
 gpg_error_t
 gnupg_create_pipe (int filedes[2])
 {
-  return create_pipe_and_estream (filedes, INHERIT_BOTH,
-                                  NULL, 0, 0);
+  gnupg_fd_t fds[2];
+  gpg_error_t err = 0;
+
+  if (create_inheritable_pipe (fds, INHERIT_BOTH) < 0)
+    return my_error_from_syserror ();
+
+  filedes[0] = _open_osfhandle (handle_to_fd (fds[0]), O_RDONLY);
+  if (filedes[0] == -1)
+    {
+      log_error ("failed to translate osfhandle %p\n", fds[0]);
+      CloseHandle (fds[0]);
+      CloseHandle (fds[1]);
+      filedes[1] = -1;
+      err = my_error (GPG_ERR_GENERAL);
+    }
+  else
+    {
+      filedes[1] = _open_osfhandle (handle_to_fd (fds[1]), O_APPEND);
+      if (filedes[1] == -1)
+        {
+          log_error ("failed to translate osfhandle %p\n", fds[1]);
+          close (filedes[0]);
+          filedes[0] = -1;
+          CloseHandle (fds[1]);
+          err = my_error (GPG_ERR_GENERAL);
+        }
+      else
+        err = 0;
+    }
+
+  return err;
 }
 
 

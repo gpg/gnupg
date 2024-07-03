@@ -25,6 +25,7 @@
 #include <unistd.h>
 
 #include "util.h"
+#include "sysutils.h"
 #include "exechelp.h"
 
 static int verbose;
@@ -253,7 +254,6 @@ main (int argc, char **argv)
 {
   if (argc)
     {
-      myname = argv[0];
       argc--; argv++;
     }
   if (argc && !strcmp (argv[0], "--verbose"))
