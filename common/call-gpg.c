@@ -428,9 +428,9 @@ _gpg_encrypt (ctrl_t ctrl,
   assert ((reader_mb == NULL) != (cipher_stream == NULL));
 
   /* Create two pipes.  */
-  err = gnupg_create_outbound_pipe (outbound_fds, NULL, 0);
+  err = gnupg_create_pipe (outbound_fds);
   if (!err)
-    err = gnupg_create_inbound_pipe (inbound_fds, NULL, 0);
+    err = gnupg_create_pipe (inbound_fds);
   if (err)
     {
       log_error (_("error creating a pipe: %s\n"), gpg_strerror (err));
@@ -612,9 +612,9 @@ _gpg_decrypt (ctrl_t ctrl,
   assert ((reader_mb == NULL) != (plain_stream == NULL));
 
   /* Create two pipes.  */
-  err = gnupg_create_outbound_pipe (outbound_fds, NULL, 0);
+  err = gnupg_create_pipe (outbound_fds);
   if (!err)
-    err = gnupg_create_inbound_pipe (inbound_fds, NULL, 0);
+    err = gnupg_create_pipe (inbound_fds);
   if (err)
     {
       log_error (_("error creating a pipe: %s\n"), gpg_strerror (err));
