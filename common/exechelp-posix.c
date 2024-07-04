@@ -283,24 +283,31 @@ do_create_pipe (int filedes[2])
 
 
 static gpg_error_t
-create_pipe_and_estream (int filedes[2], estream_t *r_fp,
+create_pipe_and_estream (int *r_fd, estream_t *r_fp,
                          int outbound, int nonblock)
 {
   gpg_error_t err;
+  int filedes[2];
 
   if (pipe (filedes) == -1)
     {
       err = my_error_from_syserror ();
       log_error (_("error creating a pipe: %s\n"), gpg_strerror (err));
-      filedes[0] = filedes[1] = -1;
+      *r_fd = -1;
       *r_fp = NULL;
       return err;
     }
 
   if (!outbound)
-    *r_fp = es_fdopen (filedes[0], nonblock? "r,nonblock" : "r");
+    {
+      *r_fd = filedes[1];
+      *r_fp = es_fdopen (filedes[0], nonblock? "r,nonblock" : "r");
+    }
   else
-    *r_fp = es_fdopen (filedes[1], nonblock? "w,nonblock" : "w");
+    {
+      *r_fd = filedes[0];
+      *r_fp = es_fdopen (filedes[1], nonblock? "w,nonblock" : "w");
+    }
   if (!*r_fp)
     {
       err = my_error_from_syserror ();
@@ -308,7 +315,7 @@ create_pipe_and_estream (int filedes[2], estream_t *r_fp,
                  gpg_strerror (err));
       close (filedes[0]);
       close (filedes[1]);
-      filedes[0] = filedes[1] = -1;
+      *r_fd = -1;
       return err;
     }
   return 0;
@@ -316,28 +323,28 @@ create_pipe_and_estream (int filedes[2], estream_t *r_fp,
 
 
 /* Portable function to create a pipe.  Under Windows the write end is
-   inheritable.  If R_FP is not NULL, an estream is created for the
-   read end and stored at R_FP.  */
+   inheritable.  Pipe is created and the read end is stored at R_FD.
+   An estream is created for the write end and stored at R_FP.  */
 gpg_error_t
-gnupg_create_inbound_pipe (int filedes[2], estream_t *r_fp, int nonblock)
+gnupg_create_inbound_pipe (int *r_fd, estream_t *r_fp, int nonblock)
 {
-  if (r_fp)
-    return create_pipe_and_estream (filedes, r_fp, 0, nonblock);
-  else
-    return do_create_pipe (filedes);
+  if (!r_fd || !r_fp)
+    gpg_error (GPG_ERR_INV_ARG);
+
+  return create_pipe_and_estream (r_fd, r_fp, 0, nonblock);
 }
 
 
 /* Portable function to create a pipe.  Under Windows the read end is
-   inheritable.  If R_FP is not NULL, an estream is created for the
-   write end and stored at R_FP.  */
+   inheritable.  Pipe is created and the write end is stored at R_FD.
+   An estream is created for the write end and stored at R_FP.  */
 gpg_error_t
-gnupg_create_outbound_pipe (int filedes[2], estream_t *r_fp, int nonblock)
+gnupg_create_outbound_pipe (int *r_fd, estream_t *r_fp, int nonblock)
 {
-  if (r_fp)
-    return create_pipe_and_estream (filedes, r_fp, 1, nonblock);
-  else
-    return do_create_pipe (filedes);
+  if (!r_fd || !r_fp)
+    gpg_error (GPG_ERR_INV_ARG);
+
+  return create_pipe_and_estream (r_fd, r_fp, 1, nonblock);
 }
 
 

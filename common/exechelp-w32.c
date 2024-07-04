@@ -223,61 +223,72 @@ create_inheritable_pipe (HANDLE filedes[2], int flags)
 
 
 static gpg_error_t
-create_pipe_and_estream (gnupg_fd_t fds[2], int flags,
+create_pipe_and_estream (gnupg_fd_t *r_fd, int flags,
                          estream_t *r_fp, int outbound, int nonblock)
 {
   gpg_error_t err = 0;
   es_syshd_t syshd;
+  gnupg_fd_t fds[2];
 
-  fds[0] = fds[1] = GNUPG_INVALID_FD;
   if (create_inheritable_pipe (fds, flags) < 0)
-    err = my_error_from_syserror ();
-
-  if (! err && r_fp)
     {
-      syshd.type = ES_SYSHD_HANDLE;
-      if (!outbound)
-        {
-          syshd.u.handle = fds[0];
-          *r_fp = es_sysopen (&syshd, nonblock? "r,nonblock" : "r");
-        }
-      else
-        {
-          syshd.u.handle = fds[1];
-          *r_fp = es_sysopen (&syshd, nonblock? "w,nonblock" : "w");
-        }
-      if (!*r_fp)
-        {
-          err = my_error_from_syserror ();
-          log_error (_("error creating a stream for a pipe: %s\n"),
-                     gpg_strerror (err));
-          CloseHandle (fds[0]);
-          CloseHandle (fds[1]);
-          fds[0] = fds[1] = GNUPG_INVALID_FD;
-          return err;
-        }
+      err = my_error_from_syserror ();
+      log_error (_("error creating a pipe: %s\n"), gpg_strerror (err));
+      *r_fd = GNUPG_INVALID_FD;
+      *r_fp = NULL;
+      return err;
     }
 
-  return err;
+  syshd.type = ES_SYSHD_HANDLE;
+  if (!outbound)
+    {
+      syshd.u.handle = fds[0];
+      *r_fd = fds[1];
+      *r_fp = es_sysopen (&syshd, nonblock? "r,nonblock" : "r");
+    }
+  else
+    {
+      syshd.u.handle = fds[1];
+      *r_fd = fds[0];
+      *r_fp = es_sysopen (&syshd, nonblock? "w,nonblock" : "w");
+    }
+  if (!*r_fp)
+    {
+      err = my_error_from_syserror ();
+      log_error (_("error creating a stream for a pipe: %s\n"),
+                 gpg_strerror (err));
+      CloseHandle (fds[0]);
+      CloseHandle (fds[1]);
+      *r_fd = GNUPG_INVALID_FD;
+      return err;
+    }
+
+  return 0;
 }
 
 /* Portable function to create a pipe.  Under Windows the write end is
-   inheritable.  If R_FP is not NULL, an estream is created for the
-   read end and stored at R_FP.  */
+   inheritable.  Pipe is created and the read end is stored at R_FD.
+   An estream is created for the write end and stored at R_FP.  */
 gpg_error_t
-gnupg_create_inbound_pipe (gnupg_fd_t fds[2], estream_t *r_fp, int nonblock)
+gnupg_create_inbound_pipe (gnupg_fd_t *r_fd, estream_t *r_fp, int nonblock)
 {
-  return create_pipe_and_estream (fds, INHERIT_WRITE, r_fp, 0, nonblock);
+  if (!r_fd || !r_fp)
+    gpg_error (GPG_ERR_INV_ARG);
+
+  return create_pipe_and_estream (r_fd, INHERIT_WRITE, r_fp, 0, nonblock);
 }
 
 
 /* Portable function to create a pipe.  Under Windows the read end is
-   inheritable.  If R_FP is not NULL, an estream is created for the
-   write end and stored at R_FP.  */
+   inheritable.  Pipe is created and the write end is stored at R_FD.
+   An estream is created for the write end and stored at R_FP.  */
 gpg_error_t
-gnupg_create_outbound_pipe (gnupg_fd_t fds[2], estream_t *r_fp, int nonblock)
+gnupg_create_outbound_pipe (gnupg_fd_t *r_fd, estream_t *r_fp, int nonblock)
 {
-  return create_pipe_and_estream (fds, INHERIT_READ, r_fp, 1, nonblock);
+  if (!r_fd || !r_fp)
+    gpg_error (GPG_ERR_INV_ARG);
+
+  return create_pipe_and_estream (r_fd, INHERIT_READ, r_fp, 1, nonblock);
 }
 
 

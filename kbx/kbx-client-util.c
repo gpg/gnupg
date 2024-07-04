@@ -103,7 +103,7 @@ prepare_data_pipe (kbx_client_data_t kcd)
 {
   gpg_error_t err;
   int rc;
-  gnupg_fd_t inpipe[2];
+  gnupg_fd_t inpipe;
   estream_t infp;
   npth_attr_t tattr;
 
@@ -112,28 +112,28 @@ prepare_data_pipe (kbx_client_data_t kcd)
   kcd->datalen = 0;
   kcd->dataerr = 0;
 
-  err = gnupg_create_inbound_pipe (inpipe, &infp, 0);
+  err = gnupg_create_inbound_pipe (&inpipe, &infp, 0);
   if (err)
     {
       log_error ("error creating inbound pipe: %s\n", gpg_strerror (err));
       return err;  /* That should not happen.  */
     }
 
-  err = assuan_sendfd (kcd->ctx, inpipe[1]);
+  err = assuan_sendfd (kcd->ctx, inpipe);
   if (err)
     {
 #ifdef HAVE_W32_SYSTEM
       log_error ("sending fd %p to keyboxd: %s <%s>\n",
-                 inpipe[1], gpg_strerror (err), gpg_strsource (err));
+                 inpipe, gpg_strerror (err), gpg_strsource (err));
 #else
       log_error ("sending fd %d to keyboxd: %s <%s>\n",
-                 inpipe[1], gpg_strerror (err), gpg_strsource (err));
+                 inpipe, gpg_strerror (err), gpg_strsource (err));
 #endif
       es_fclose (infp);
 #ifdef HAVE_W32_SYSTEM
-      CloseHandle (inpipe[1]);
+      CloseHandle (inpipe);
 #else
-      close (inpipe[1]);
+      close (inpipe);
 #endif
       return err;
     }
@@ -149,9 +149,9 @@ prepare_data_pipe (kbx_client_data_t kcd)
     }
 
 #ifdef HAVE_W32_SYSTEM
-  CloseHandle (inpipe[1]);
+  CloseHandle (inpipe);
 #else
-  close (inpipe[1]);
+  close (inpipe);
 #endif
   kcd->fp = infp;
 
