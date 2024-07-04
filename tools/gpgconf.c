@@ -1189,7 +1189,7 @@ show_version_gnupg (estream_t fp, const char *prefix)
   ssize_t length;
 
   es_fprintf (fp, "%s%sGnuPG %s (%s)\n%s%s\n", prefix, *prefix?"":"* ",
-              gpgrt_strusage (13), BUILD_REVISION, prefix, gpgrt_strusage (17));
+              gpgrt_strusage (13), BUILD_COMMITID, prefix, gpgrt_strusage (17));
 
   /* Show the GnuPG VS-Desktop version in --show-configs mode  */
   if (prefix && *prefix)

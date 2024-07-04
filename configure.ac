@@ -47,7 +47,9 @@ m4_define([mym4_isbeta],       m4_argn(2, mym4_verslist))
 m4_define([mym4_version],      m4_argn(4, mym4_verslist))
 m4_define([mym4_revision],     m4_argn(7, mym4_verslist))
 m4_define([mym4_revision_dec], m4_argn(8, mym4_verslist))
+m4_define([mym4_commitid],     m4_argn(9, mym4_verslist))
 m4_esyscmd([echo ]mym4_version[>VERSION])
+m4_esyscmd([echo ]mym4_commitid[>>VERSION])
 AC_INIT([mym4_package],[mym4_version],[https://bugs.gnupg.org])
 
 # When changing the SWDB tag please also adjust the hard coded tags in
@@ -1957,9 +1959,10 @@ fi
 # Provide information about the build.
 #
 BUILD_REVISION="mym4_revision"
+BUILD_COMMITID="mym4_commitid"
 AC_SUBST(BUILD_REVISION)
-AC_DEFINE_UNQUOTED(BUILD_REVISION, "$BUILD_REVISION",
-                   [GIT commit id revision used to build this package])
+AC_DEFINE_UNQUOTED(BUILD_COMMITID, "$BUILD_COMMITID",
+                   [Git commit id used to build this package])
 
 changequote(,)dnl
 BUILD_VERSION=`echo "$VERSION" | sed 's/\([0-9.]*\).*/\1./'`
