@@ -923,14 +923,14 @@ tpm2_import_key (ctrl_t ctrl, TSS_CONTEXT *tssc,
   u16len = 0;
   TSS_TPM2B_PUBLIC_Marshal (&objectPublic,
                             &u16len, &buffer, &size);
-  pub_len = len;
+  pub_len = u16len;
 
   size = sizeof (priv);
   buffer = priv;
   u16len = 0;
   TSS_TPM2B_PRIVATE_Marshal ((TPM2B_PRIVATE *)&outPrivate,
 			     &u16len, &buffer, &size);
-  priv_len = len;
+  priv_len = u16len;
 
   *shadow_info = make_tpm2_shadow_info (parent, pub, pub_len,
 					priv, priv_len, shadow_len);
