@@ -1,6 +1,6 @@
 #! /bin/sh
 # autogen.sh
-# Copyright (C) 2003, 2014, 2017, 2018 g10 Code GmbH
+# Copyright (C) 2003, 2014, 2017, 2018, 2022 g10 Code GmbH
 #
 # This file is free software; as a special exception the author gives
 # unlimited permission to copy and/or distribute it, with or without
@@ -15,7 +15,7 @@
 # configure it for the respective package.  It is maintained as part of
 # GnuPG and source copied by other packages.
 #
-# Version: 2018-02-21
+# Version: 2024-07-04
 
 configure_ac="configure.ac"
 
@@ -74,7 +74,6 @@ PRINT_HOST=no
 PRINT_BUILD=no
 tmp=$(dirname "$0")
 tsdir=$(cd "${tmp}"; pwd)
-version_parts=3
 
 if [ -n "${AUTOGEN_SH_SILENT}" ]; then
   SILENT=" --silent"
@@ -85,9 +84,10 @@ if test x"$1" = x"--help"; then
   echo "    --silent       Silent operation"
   echo "    --force        Pass --force to autoconf"
   echo "    --find-version Helper for configure.ac"
-  echo "    --build-TYPE   Configure to cross build for TYPE"
+  echo "    --git-build    Run all commands to  build from a Git"
   echo "    --print-host   Print only the host triplet"
   echo "    --print-build  Print only the build platform triplet"
+  echo "    --build-TYPE   Configure to cross build for TYPE"
   echo ""
   echo "  ARGS are passed to configure in --build-TYPE mode."
   echo "  Configuration for this script is expected in autogen.rc"
@@ -137,16 +137,14 @@ extraoptions=
 # List of optional variables sourced from autogen.rc and ~/.gnupg-autogen.rc
 w32_toolprefixes=
 w32_extraoptions=
-w32ce_toolprefixes=
-w32ce_extraoptions=
 w64_toolprefixes=
 w64_extraoptions=
 amd64_toolprefixes=
+disable_gettext_checks=
 # End list of optional variables sourced from ~/.gnupg-autogen.rc
 # What follows are variables which are sourced but default to
 # environment variables or lacking them hardcoded values.
 #w32root=
-#w32ce_root=
 #w64root=
 #amd64root=
 
@@ -159,13 +157,12 @@ case "$1" in
         SILENT=" --silent"
         shift
         ;;
-    --build-w32)
-        myhost="w32"
+    --git-build)
+        myhost="git-build"
         shift
         ;;
-    --build-w32ce)
+    --build-w32)
         myhost="w32"
-        myhostsub="ce"
         shift
         ;;
     --build-w64)
@@ -185,6 +182,25 @@ case "$1" in
         ;;
 esac
 die_p
+
+
+# **** GIT BUILD ****
+# This is a helper to build from git.
+if [ "$myhost" = "git-build" ]; then
+    tmp="$(pwd)"
+    cd "$tsdir" || fatal "error cd-ing to $tsdir"
+    ./autogen.sh || fatal "error running ./autogen.sh"
+    cd "$tmp"   || fatal "error cd-ing back to $tmp"
+    die_p
+    "$tsdir"/configure || fatal "error running $tsdir/configure"
+    die_p
+    make || fatal "error running make"
+    die_p
+    make check || fatal "error running make check"
+    die_p
+    exit 0
+fi
+# **** end GIT BUILD ****
 
 
 # Source our configuration
@@ -215,43 +231,53 @@ if [ "$myhost" = "find-version" ]; then
       exit 1
     fi
 
-    case "$version_parts" in
-      2)
-        matchstr1="$package-$major.[0-9]*"
-        matchstr2="$package-$major-base"
-        vers="$major.$minor"
-        ;;
-      *)
-        matchstr1="$package-$major.$minor.[0-9]*"
-        matchstr2="$package-$major.$minor-base"
-        vers="$major.$minor.$micro"
-        ;;
-    esac
+    if [ -z "$micro" ]; then
+      matchstr1="$package-$major.[0-9]*"
+      matchstr2="$package-$major-base"
+      matchstr3=""
+      vers="$major.$minor"
+    else
+      matchstr1="$package-$major.$minor.[0-9]*"
+      matchstr2="$package-$major.[0-9]*-base"
+      matchstr3="$package-$major-base"
+      vers="$major.$minor.$micro"
+    fi
 
     beta=no
     if [ -e .git ]; then
       ingit=yes
       tmp=$(git describe --match "${matchstr1}" --long 2>/dev/null)
-      tmp=$(echo "$tmp" | sed s/^"$package"//)
       if [ -n "$tmp" ]; then
-          tmp=$(echo "$tmp" | sed s/^"$package"//  \
-                | awk -F- '$3!=0 && $3 !~ /^beta/ {print"-beta"$3}')
+          tmp=$(echo "$tmp" | sed s/^"$package"// \
+                    | awk -F- '$3!=0 && $3 !~ /^beta/ {print"-beta"$3}')
       else
-          tmp=$(git describe --match "${matchstr2}" --long 2>/dev/null \
-                | awk -F- '$4!=0{print"-beta"$4}')
+          # (due tof "-base" in the tag we need to take the 4th field)
+          tmp=$(git describe --match "${matchstr2}" --long 2>/dev/null)
+          if [ -n "$tmp" ]; then
+              tmp=$(echo "$tmp" | sed s/^"$package"// \
+                        | awk -F- '$4!=0 && $4 !~ /^beta/ {print"-beta"$4}')
+          elif [ -n "${matchstr3}" ]; then
+              tmp=$(git describe --match "${matchstr3}" --long 2>/dev/null)
+              if [ -n "$tmp" ]; then
+                  tmp=$(echo "$tmp" | sed s/^"$package"// \
+                          | awk -F- '$4!=0 && $4 !~ /^beta/ {print"-beta"$4}')
+              fi
+          fi
       fi
       [ -n "$tmp" ] && beta=yes
+      cid=$(git rev-parse --verify HEAD | tr -d '\n\r')
       rev=$(git rev-parse --short HEAD | tr -d '\n\r')
       rvd=$((0x$(echo ${rev} | dd bs=1 count=4 2>/dev/null)))
     else
       ingit=no
       beta=yes
       tmp="-unknown"
+      cid="0000000"
       rev="0000000"
       rvd="0"
     fi
 
-    echo "$package-$vers$tmp:$beta:$ingit:$vers$tmp:$vers:$tmp:$rev:$rvd:"
+    echo "$package-$vers$tmp:$beta:$ingit:$vers$tmp:$vers:$tmp:$rev:$rvd:$cid:"
     exit 0
 fi
 # **** end FIND VERSION ****
@@ -274,12 +300,6 @@ fi
 # ******************
 if [ "$myhost" = "w32" ]; then
     case $myhostsub in
-        ce)
-          w32root="$w32ce_root"
-          [ -z "$w32root" ] && w32root="$HOME/w32ce_root"
-          toolprefixes="$w32ce_toolprefixes arm-mingw32ce"
-          extraoptions="$extraoptions $w32ce_extraoptions"
-          ;;
         64)
           w32root="$w64root"
           [ -z "$w32root" ] && w32root="$HOME/w64root"
@@ -393,17 +413,16 @@ q
 }' ${configure_ac}`
 automake_vers_num=`echo "$automake_vers" | cvtver`
 
+gettext_vers="n/a"
 if [ -d "${tsdir}/po" ]; then
   gettext_vers=`sed -n '/^AM_GNU_GETTEXT_VERSION(/ {
 s/^.*\[\(.*\)])/\1/p
 q
 }' ${configure_ac}`
   gettext_vers_num=`echo "$gettext_vers" | cvtver`
-else
-  gettext_vers="n/a"
 fi
 
-if [ -z "$autoconf_vers" -o -z "$automake_vers" -o -z "$gettext_vers" ]
+if [ -z "$autoconf_vers" -o -z "$automake_vers" ]
 then
   echo "**Error**: version information not found in "\`${configure_ac}\'"." >&2
   exit 1
@@ -469,6 +488,7 @@ EOF
       chmod +x  .git/hooks/commit-msg
       if [ x"${display_name}" != x ]; then
          git config format.subjectPrefix "PATCH ${display_name}"
+         git config sendemail.to "${patches_to}"
       fi
   fi
 fi
@@ -480,12 +500,21 @@ fi
 if [ -n "${ACLOCAL_FLAGS}" ]; then
   aclocal_flags="${aclocal_flags} ${ACLOCAL_FLAGS}"
 fi
+
+automake_flags="--gnu"
+if [ -n "${extra_automake_flags}" ]; then
+  automake_flags="${automake_flags} ${extra_automake_flags}"
+fi
+if [ -n "${AUTOMAKE_FLAGS}" ]; then
+  automake_flags="${automake_flags} ${AUTOMAKE_FLAGS}"
+fi
+
 info "Running $ACLOCAL ${aclocal_flags} ..."
 $ACLOCAL ${aclocal_flags}
 info "Running autoheader..."
 $AUTOHEADER
-info "Running automake --gnu ..."
-$AUTOMAKE --gnu;
+info "Running $AUTOMAKE ${automake_flags} ..."
+$AUTOMAKE ${automake_flags};
 info "Running autoconf${FORCE} ..."
 $AUTOCONF${FORCE}
 

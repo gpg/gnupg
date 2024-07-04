@@ -1082,7 +1082,7 @@ show_version_gnupg (estream_t fp, const char *prefix)
   ssize_t length;
 
   es_fprintf (fp, "%s%sGnuPG %s (%s)\n%s%s\n", prefix, *prefix?"":"* ",
-              strusage (13), BUILD_REVISION, prefix, strusage (17));
+              strusage (13), BUILD_COMMITID, prefix, strusage (17));
 
   /* Show the GnuPG VS-Desktop version in --show-configs mode  */
   if (prefix && *prefix)
