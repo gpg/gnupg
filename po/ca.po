@@ -766,7 +766,7 @@ msgstr ""
 #. insert a line break.  The double percent sign is actually
 #. needed because it is also a printf format string.  If you
 #. need to insert a plain % sign, you need to encode it as
-#. "%%25".  The second "%s" gets replaced by a hexdecimal
+#. "%%25".  The second "%s" gets replaced by a hexadecimal
 #. fingerprint string whereas the first one receives the name
 #. as stored in the certificate.
 #, c-format
@@ -876,24 +876,8 @@ msgid "waiting for process %d to terminate failed: %s\n"
 msgstr ""
 
 #, fuzzy, c-format
-msgid "error running '%s': probably not installed\n"
-msgstr "error en la lectura de «%s»: %s\n"
-
-#, fuzzy, c-format
-msgid "error running '%s': exit status %d\n"
-msgstr "error en la lectura de «%s»: %s\n"
-
-#, fuzzy, c-format
-msgid "error running '%s': terminated\n"
-msgstr "error en la lectura de «%s»: %s\n"
-
-#, fuzzy, c-format
-msgid "waiting for processes to terminate failed: %s\n"
+msgid "waiting for process to terminate failed: ec=%d\n"
 msgstr "ha fallat l'actualització: %s\n"
-
-#, fuzzy, c-format
-msgid "error getting exit code of process %d: %s\n"
-msgstr "s'ha produït un error mentre s'escrivia l'anell secret «%s»: %s\n"
 
 #, fuzzy, c-format
 #| msgid "can't connect to `%s': %s\n"
@@ -2550,6 +2534,11 @@ msgstr "No hi ha cap signatura corresponent en l'anell secret\n"
 msgid "show preferences"
 msgstr "estableix la llista de preferències"
 
+#, fuzzy
+#| msgid "change the ownertrust"
+msgid "show ownertrust"
+msgstr "canvia la confiança"
+
 #, fuzzy, c-format
 msgid "unknown TOFU policy '%s'\n"
 msgstr "el destinatari predeterminat és desconegut «%s»\n"
@@ -2681,6 +2670,10 @@ msgstr ""
 #, fuzzy, c-format
 msgid "invalid argument for option \"%.50s\"\n"
 msgstr "opcions d'importació no vàlides\n"
+
+#, fuzzy, c-format
+msgid "error parsing value for option '%s': %s\n"
+msgstr "error en la creació de la contrasenya: %s\n"
 
 #, c-format
 msgid "WARNING: program may create a core file!\n"
@@ -3973,6 +3966,10 @@ msgid "setting the primary user ID failed: %s\n"
 msgstr "no s'ha pogut comprovar la signatura creada: %s\n"
 
 #, fuzzy, c-format
+msgid "setting the ownertrust to '%s' failed: %s\n"
+msgstr "no s'ha pogut comprovar la signatura creada: %s\n"
+
+#, fuzzy, c-format
 msgid "\"%s\" is not a fingerprint\n"
 msgstr "error: l'empremta digital és invàlida\n"
 
@@ -4555,13 +4552,13 @@ msgstr "  (%d) RSA (només xifrar)\n"
 msgid "Enter the keygrip: "
 msgstr "Notació de signatura: "
 
-#, c-format
-msgid "Not a valid keygrip (expecting 40 hex digits)\n"
-msgstr ""
-
 #, fuzzy
 msgid "No key with this keygrip\n"
 msgstr "No hi ha cap ID amb l'índex %d\n"
+
+#, c-format
+msgid "Not a valid keygrip (expecting 40 hex digits)\n"
+msgstr ""
 
 #, fuzzy, c-format
 msgid "error reading the card: %s\n"
@@ -4855,6 +4852,11 @@ msgstr ""
 "Noteu que aquesta clau no serveix per a xifrar. Potser vulgueu usar l'ordre\n"
 "\"--edit-key\" per a generar una clau secundària per a tal propòsit.\n"
 
+#, fuzzy, c-format
+#| msgid "WARNING: This key has been revoked by its owner!\n"
+msgid "Note: The key has been created with one or more ADSK!\n"
+msgstr "AVÍS: Aquesta clau ha estat revocada pel propietari!\n"
+
 # Werner FIXME: Use ngettext. jm
 #, c-format
 msgid ""
@@ -4940,6 +4942,13 @@ msgstr[1] ""
 
 msgid "Keyring"
 msgstr "Anell"
+
+msgid "Revocable by: "
+msgstr ""
+
+#, fuzzy, c-format
+msgid "error writing to stdout: %s\n"
+msgstr "error mentre s'escrivia l'anell «%s»: %s\n"
 
 msgid "Primary key fingerprint:"
 msgstr "Empremtes digital de la clau primària:"
@@ -5107,6 +5116,10 @@ msgstr ""
 #, fuzzy, c-format
 msgid "encrypted with %s key, ID %s\n"
 msgstr "xifrat amb una clau %s, ID %08lX\n"
+
+#, c-format
+msgid "WARNING: key is not quantum-resistant\n"
+msgstr ""
 
 #, c-format
 msgid "WARNING: multiple plaintexts seen\n"
@@ -7742,6 +7755,10 @@ msgid "Enter URIs"
 msgstr "Introduïu el nom d'usuari: "
 
 #, fuzzy
+msgid "Enter extensions"
+msgstr "Notació de signatura: "
+
+#, fuzzy
 msgid "Create self-signed certificate? (y/N) "
 msgstr "Voleu crear un certificat de revocació per a aquesta clau? "
 
@@ -9502,6 +9519,22 @@ msgstr ""
 msgid "manage the command history"
 msgstr ""
 
+#, fuzzy, c-format
+#~ msgid "error running '%s': probably not installed\n"
+#~ msgstr "error en la lectura de «%s»: %s\n"
+
+#, fuzzy, c-format
+#~ msgid "error running '%s': exit status %d\n"
+#~ msgstr "error en la lectura de «%s»: %s\n"
+
+#, fuzzy, c-format
+#~ msgid "error running '%s': terminated\n"
+#~ msgstr "error en la lectura de «%s»: %s\n"
+
+#, fuzzy, c-format
+#~ msgid "error getting exit code of process %d: %s\n"
+#~ msgstr "s'ha produït un error mentre s'escrivia l'anell secret «%s»: %s\n"
+
 #~ msgid "use canonical text mode"
 #~ msgstr "usa el mode de text canònic"
 
@@ -9576,10 +9609,6 @@ msgstr ""
 #~| msgid "invalid import options\n"
 #~ msgid "invalid port number %d\n"
 #~ msgstr "opcions d'importació no vàlides\n"
-
-#, fuzzy
-#~ msgid "error writing to stdout: %s\n"
-#~ msgstr "error mentre s'escrivia l'anell «%s»: %s\n"
 
 #, fuzzy
 #~ msgid "attribute '%s' not found\n"

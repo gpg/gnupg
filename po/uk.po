@@ -734,7 +734,7 @@ msgstr "Ні"
 #. insert a line break.  The double percent sign is actually
 #. needed because it is also a printf format string.  If you
 #. need to insert a plain % sign, you need to encode it as
-#. "%%25".  The second "%s" gets replaced by a hexdecimal
+#. "%%25".  The second "%s" gets replaced by a hexadecimal
 #. fingerprint string whereas the first one receives the name
 #. as stored in the certificate.
 #, c-format
@@ -852,26 +852,10 @@ msgstr "помилка під час спроби розгалужування �
 msgid "waiting for process %d to terminate failed: %s\n"
 msgstr "не вдалося дочекатися завершення процесу %d: %s\n"
 
-#, c-format
-msgid "error running '%s': probably not installed\n"
-msgstr ""
-"помилка під час спроби виконання «%s»: ймовірно, програму не встановлено\n"
-
-#, c-format
-msgid "error running '%s': exit status %d\n"
-msgstr "помилка під час спроби виконання «%s»: стан виходу %d\n"
-
-#, c-format
-msgid "error running '%s': terminated\n"
-msgstr "помилка під час спроби виконання «%s»: виконання перервано\n"
-
-#, c-format
-msgid "waiting for processes to terminate failed: %s\n"
+#, fuzzy, c-format
+#| msgid "waiting for processes to terminate failed: %s\n"
+msgid "waiting for process to terminate failed: ec=%d\n"
 msgstr "не вдалося дочекатися переривання процесу: %s\n"
-
-#, c-format
-msgid "error getting exit code of process %d: %s\n"
-msgstr "помилка під час спроби отримання коду виходу процесу %d: %s\n"
 
 #, c-format
 msgid "can't connect to '%s': %s\n"
@@ -2415,6 +2399,11 @@ msgstr "показувати дати завершення строків дії
 msgid "show preferences"
 msgstr "список переваг (експертний)"
 
+#, fuzzy
+#| msgid "change the ownertrust"
+msgid "show ownertrust"
+msgstr "змінити рівень довіри до власника"
+
 #, c-format
 msgid "unknown TOFU policy '%s'\n"
 msgstr "невідомі правила TOFU «%s»\n"
@@ -2546,6 +2535,11 @@ msgstr "некоректний список auto-key-locate\n"
 #, c-format
 msgid "invalid argument for option \"%.50s\"\n"
 msgstr "некоректний аргумент параметра «%.50s»\n"
+
+#, fuzzy, c-format
+#| msgid "error parsing key specification '%s': %s\n"
+msgid "error parsing value for option '%s': %s\n"
+msgstr "помилка під час спроби обробки специфікації ключа «%s»: %s\n"
 
 #, c-format
 msgid "WARNING: program may create a core file!\n"
@@ -3773,6 +3767,11 @@ msgstr "помилка перевірки списку довіри: %s\n"
 msgid "setting the primary user ID failed: %s\n"
 msgstr "помилка перевірки списку довіри: %s\n"
 
+#, fuzzy, c-format
+#| msgid "checking the trust list failed: %s\n"
+msgid "setting the ownertrust to '%s' failed: %s\n"
+msgstr "помилка перевірки списку довіри: %s\n"
+
 #, c-format
 msgid "\"%s\" is not a fingerprint\n"
 msgstr "«%s» не є відбитком\n"
@@ -4342,12 +4341,12 @@ msgstr "  (%d) Вже записаний ключ з картки\n"
 msgid "Enter the keygrip: "
 msgstr "Вкажіть keygrip: "
 
+msgid "No key with this keygrip\n"
+msgstr "Немає ключів з таким значенням keygrip\n"
+
 #, c-format
 msgid "Not a valid keygrip (expecting 40 hex digits)\n"
 msgstr "Некоректний keygrip (мало бути вказано 40 шістнадцяткових цифр)\n"
-
-msgid "No key with this keygrip\n"
-msgstr "Немає ключів з таким значенням keygrip\n"
 
 #, c-format
 msgid "error reading the card: %s\n"
@@ -4630,6 +4629,11 @@ msgstr ""
 "Зауважте, що цей ключ не може бути використано для шифрування. Ви можете\n"
 "скористатися командою «--edit-key» для створення підключа з цією метою.\n"
 
+#, fuzzy, c-format
+#| msgid "WARNING: This key has been revoked by its owner!\n"
+msgid "Note: The key has been created with one or more ADSK!\n"
+msgstr "УВАГА: цей ключ було відкликано власником!\n"
+
 #, c-format
 msgid ""
 "key has been created %lu second in future (time warp or clock problem)\n"
@@ -4714,6 +4718,13 @@ msgstr[2] ""
 
 msgid "Keyring"
 msgstr "Сховище ключів"
+
+msgid "Revocable by: "
+msgstr ""
+
+#, c-format
+msgid "error writing to stdout: %s\n"
+msgstr "помилка під час спроби запису до stdout: %s\n"
 
 msgid "Primary key fingerprint:"
 msgstr "Основний відбиток ключа:"
@@ -4882,6 +4893,10 @@ msgstr "      «%s»\n"
 #, c-format
 msgid "encrypted with %s key, ID %s\n"
 msgstr "зашифровано ключем %s, ідентифікатор %s\n"
+
+#, c-format
+msgid "WARNING: key is not quantum-resistant\n"
+msgstr ""
 
 #, c-format
 msgid "WARNING: multiple plaintexts seen\n"
@@ -7509,6 +7524,11 @@ msgstr " (необов’язковий; завершується порожні
 msgid "Enter URIs"
 msgstr "Вкажіть адреси"
 
+#, fuzzy
+#| msgid "Enter the notation: "
+msgid "Enter extensions"
+msgstr "Вкажіть примітку: "
+
 msgid "Create self-signed certificate? (y/N) "
 msgstr "Створити самопідписаний сертифікат? (y/N або т/Н) "
 
@@ -9248,6 +9268,23 @@ msgstr ""
 msgid "manage the command history"
 msgstr ""
 
+#, c-format
+#~ msgid "error running '%s': probably not installed\n"
+#~ msgstr ""
+#~ "помилка під час спроби виконання «%s»: ймовірно, програму не встановлено\n"
+
+#, c-format
+#~ msgid "error running '%s': exit status %d\n"
+#~ msgstr "помилка під час спроби виконання «%s»: стан виходу %d\n"
+
+#, c-format
+#~ msgid "error running '%s': terminated\n"
+#~ msgstr "помилка під час спроби виконання «%s»: виконання перервано\n"
+
+#, c-format
+#~ msgid "error getting exit code of process %d: %s\n"
+#~ msgstr "помилка під час спроби отримання коду виходу процесу %d: %s\n"
+
 #~ msgid "use canonical text mode"
 #~ msgstr "використовувати канонічний текстовий режим"
 
@@ -9349,9 +9386,6 @@ msgstr ""
 
 #~ msgid "scanning result for attribute '%s'\n"
 #~ msgstr "сканування результату для атрибуту «%s»\n"
-
-#~ msgid "error writing to stdout: %s\n"
-#~ msgstr "помилка під час спроби запису до stdout: %s\n"
 
 #~ msgid "          available attribute '%s'\n"
 #~ msgstr "          доступний атрибут «%s»\n"

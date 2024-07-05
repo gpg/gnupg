@@ -735,7 +735,7 @@ msgstr "No"
 #. insert a line break.  The double percent sign is actually
 #. needed because it is also a printf format string.  If you
 #. need to insert a plain % sign, you need to encode it as
-#. "%%25".  The second "%s" gets replaced by a hexdecimal
+#. "%%25".  The second "%s" gets replaced by a hexadecimal
 #. fingerprint string whereas the first one receives the name
 #. as stored in the certificate.
 #, c-format
@@ -845,26 +845,10 @@ msgstr "衍生執行程序時出錯: %s\n"
 msgid "waiting for process %d to terminate failed: %s\n"
 msgstr "等候 %d 處理程序終止時失敗: %s\n"
 
-#, c-format
-msgid "error running '%s': probably not installed\n"
-msgstr "執行 '%s' 時出錯: 可能尚未安裝\n"
-
-#, c-format
-msgid "error running '%s': exit status %d\n"
-msgstr "執行 '%s' 時出錯: 結束狀態 %d\n"
-
-#, c-format
-msgid "error running '%s': terminated\n"
-msgstr "執行 '%s' 時出錯: 已終止\n"
-
 #, fuzzy, c-format
 #| msgid "waiting for process %d to terminate failed: %s\n"
-msgid "waiting for processes to terminate failed: %s\n"
+msgid "waiting for process to terminate failed: ec=%d\n"
 msgstr "等候 %d 處理程序終止時失敗: %s\n"
-
-#, c-format
-msgid "error getting exit code of process %d: %s\n"
-msgstr "取得 %d 執行程序結束碼時出錯: %s\n"
 
 #, c-format
 msgid "can't connect to '%s': %s\n"
@@ -2414,6 +2398,11 @@ msgstr "列出簽章時顯示有效期限"
 msgid "show preferences"
 msgstr "列出偏好 (專家模式)"
 
+#, fuzzy
+#| msgid "change the ownertrust"
+msgid "show ownertrust"
+msgstr "更改主觀信任"
+
 #, fuzzy, c-format
 #| msgid "unknown option '%s'\n"
 msgid "unknown TOFU policy '%s'\n"
@@ -2544,6 +2533,11 @@ msgstr "無效的自動金鑰定址清單\n"
 #, c-format
 msgid "invalid argument for option \"%.50s\"\n"
 msgstr "選項 \"%.50s\" 的引數無效\n"
+
+#, fuzzy, c-format
+#| msgid "error loading certificate '%s': %s\n"
+msgid "error parsing value for option '%s': %s\n"
+msgstr "載入憑證 '%s' 時出錯: %s\n"
 
 #, c-format
 msgid "WARNING: program may create a core file!\n"
@@ -3747,6 +3741,11 @@ msgstr "檢查信任清單時失敗: %s\n"
 msgid "setting the primary user ID failed: %s\n"
 msgstr "檢查信任清單時失敗: %s\n"
 
+#, fuzzy, c-format
+#| msgid "checking the trust list failed: %s\n"
+msgid "setting the ownertrust to '%s' failed: %s\n"
+msgstr "檢查信任清單時失敗: %s\n"
+
 #, c-format
 msgid "\"%s\" is not a fingerprint\n"
 msgstr "\"%s\" 不是指紋\n"
@@ -4315,12 +4314,12 @@ msgstr "  (%d) 卡片上現存的金鑰\n"
 msgid "Enter the keygrip: "
 msgstr "請輸入金鑰鑰柄: "
 
+msgid "No key with this keygrip\n"
+msgstr "沒有金鑰有此金鑰鑰柄\n"
+
 #, c-format
 msgid "Not a valid keygrip (expecting 40 hex digits)\n"
 msgstr "不是有效的金鑰鑰柄 (應該要是 40 位十六進制數值)\n"
-
-msgid "No key with this keygrip\n"
-msgstr "沒有金鑰有此金鑰鑰柄\n"
 
 #, c-format
 msgid "error reading the card: %s\n"
@@ -4594,6 +4593,11 @@ msgstr ""
 "請注意這把金鑰不能用於加密.  也許你會想藉由 \"--edit-key\" 指令\n"
 "來產生加密用的子鑰.\n"
 
+#, fuzzy, c-format
+#| msgid "WARNING: This key has been revoked by its owner!\n"
+msgid "Note: The key has been created with one or more ADSK!\n"
+msgstr "警告: 這把金鑰已被其持有人所撤銷!\n"
+
 #, c-format
 msgid ""
 "key has been created %lu second in future (time warp or clock problem)\n"
@@ -4669,6 +4673,13 @@ msgstr[0] "警告: %lu 把金鑰因尺寸太大已跳過\n"
 
 msgid "Keyring"
 msgstr "鑰匙圈"
+
+msgid "Revocable by: "
+msgstr ""
+
+#, c-format
+msgid "error writing to stdout: %s\n"
+msgstr "寫入標準輸出時出錯: %s\n"
 
 msgid "Primary key fingerprint:"
 msgstr "               主鑰指紋:"
@@ -4831,6 +4842,10 @@ msgstr "      \"%s\"\n"
 #, c-format
 msgid "encrypted with %s key, ID %s\n"
 msgstr "已用 %s 金鑰, ID %s 所加密\n"
+
+#, c-format
+msgid "WARNING: key is not quantum-resistant\n"
+msgstr ""
 
 #, c-format
 msgid "WARNING: multiple plaintexts seen\n"
@@ -7339,6 +7354,11 @@ msgstr " (非必要; 以空白列結束):\n"
 msgid "Enter URIs"
 msgstr "請輸入 URI"
 
+#, fuzzy
+#| msgid "Enter the notation: "
+msgid "Enter extensions"
+msgstr "請輸入註記: "
+
 msgid "Create self-signed certificate? (y/N) "
 msgstr "要建立自簽憑證嗎? (y/N) "
 
@@ -9056,6 +9076,22 @@ msgstr ""
 msgid "manage the command history"
 msgstr ""
 
+#, c-format
+#~ msgid "error running '%s': probably not installed\n"
+#~ msgstr "執行 '%s' 時出錯: 可能尚未安裝\n"
+
+#, c-format
+#~ msgid "error running '%s': exit status %d\n"
+#~ msgstr "執行 '%s' 時出錯: 結束狀態 %d\n"
+
+#, c-format
+#~ msgid "error running '%s': terminated\n"
+#~ msgstr "執行 '%s' 時出錯: 已終止\n"
+
+#, c-format
+#~ msgid "error getting exit code of process %d: %s\n"
+#~ msgstr "取得 %d 執行程序結束碼時出錯: %s\n"
+
 #~ msgid "use canonical text mode"
 #~ msgstr "使用標準的文字模式"
 
@@ -9156,9 +9192,6 @@ msgstr ""
 
 #~ msgid "scanning result for attribute '%s'\n"
 #~ msgstr "正在掃描屬性 '%s' 之結果\n"
-
-#~ msgid "error writing to stdout: %s\n"
-#~ msgstr "寫入標準輸出時出錯: %s\n"
 
 #~ msgid "          available attribute '%s'\n"
 #~ msgstr "          可用屬性 '%s'\n"

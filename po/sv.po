@@ -831,7 +831,7 @@ msgstr "Nej"
 #. insert a line break.  The double percent sign is actually
 #. needed because it is also a printf format string.  If you
 #. need to insert a plain % sign, you need to encode it as
-#. "%%25".  The second "%s" gets replaced by a hexdecimal
+#. "%%25".  The second "%s" gets replaced by a hexadecimal
 #. fingerprint string whereas the first one receives the name
 #. as stored in the certificate.
 #, c-format
@@ -949,28 +949,9 @@ msgid "waiting for process %d to terminate failed: %s\n"
 msgstr "misslyckades med att vänta på att processen %d skulle avslutas: %s\n"
 
 #, fuzzy, c-format
-#| msgid "error running `%s': probably not installed\n"
-msgid "error running '%s': probably not installed\n"
-msgstr "fel vid körning av \"%s\": antagligen inte installerat\n"
-
-#, fuzzy, c-format
-#| msgid "error running `%s': exit status %d\n"
-msgid "error running '%s': exit status %d\n"
-msgstr "fel vid körning av \"%s\": avslutsstatus %d\n"
-
-#, fuzzy, c-format
-#| msgid "error running `%s': terminated\n"
-msgid "error running '%s': terminated\n"
-msgstr "fel vid körning av \"%s\": avslutades\n"
-
-#, fuzzy, c-format
 #| msgid "waiting for process %d to terminate failed: %s\n"
-msgid "waiting for processes to terminate failed: %s\n"
+msgid "waiting for process to terminate failed: ec=%d\n"
 msgstr "misslyckades med att vänta på att processen %d skulle avslutas: %s\n"
-
-#, c-format
-msgid "error getting exit code of process %d: %s\n"
-msgstr "fel vid hämtning av avslutskod för processen %d: %s\n"
 
 #, fuzzy, c-format
 #| msgid "can't connect to `%s': %s\n"
@@ -2634,6 +2615,12 @@ msgstr "visa utgångsdatum under signaturlistningar"
 msgid "show preferences"
 msgstr "lista inställningar (expertläge)"
 
+# originalet borde ha ett value
+#, fuzzy
+#| msgid "change the ownertrust"
+msgid "show ownertrust"
+msgstr "ändra ägartillitsvärdet"
+
 #, fuzzy, c-format
 #| msgid "unknown option `%s'\n"
 msgid "unknown TOFU policy '%s'\n"
@@ -2769,6 +2756,11 @@ msgstr "ogiltig auto-key-locate-lista\n"
 #| msgid "missing argument for option \"%.50s\"\n"
 msgid "invalid argument for option \"%.50s\"\n"
 msgstr "argument för flaggan \"%.50s\" saknas\n"
+
+#, fuzzy, c-format
+#| msgid "error storing certificate: %s\n"
+msgid "error parsing value for option '%s': %s\n"
+msgstr "fel vid lagring av certifikat: %s\n"
 
 # Programmet skapar en avbildning (image) av minnet för att lättare kunna spåra fel.
 #, c-format
@@ -4051,6 +4043,11 @@ msgid "setting the primary user ID failed: %s\n"
 msgstr "kontroll mot tillitslistan misslyckades: %s\n"
 
 #, fuzzy, c-format
+#| msgid "checking the trust list failed: %s\n"
+msgid "setting the ownertrust to '%s' failed: %s\n"
+msgstr "kontroll mot tillitslistan misslyckades: %s\n"
+
+#, fuzzy, c-format
 #| msgid "invalid fingerprint"
 msgid "\"%s\" is not a fingerprint\n"
 msgstr "ogiltigt fingeravtryck"
@@ -4645,12 +4642,12 @@ msgstr "  (%d) Befintlig nyckel från kort\n"
 msgid "Enter the keygrip: "
 msgstr "Ange nyckelhashen: "
 
+msgid "No key with this keygrip\n"
+msgstr "Ingen nyckel med denna nyckelhash\n"
+
 #, c-format
 msgid "Not a valid keygrip (expecting 40 hex digits)\n"
 msgstr "Inte en giltig nyckelhash (förväntade 40 hexadecimala siffror)\n"
-
-msgid "No key with this keygrip\n"
-msgstr "Ingen nyckel med denna nyckelhash\n"
 
 #, c-format
 msgid "error reading the card: %s\n"
@@ -4947,6 +4944,11 @@ msgstr ""
 "vill använda flaggan \"--edit-key\" för att skapa en undernyckel för detta "
 "syfte.\n"
 
+#, fuzzy, c-format
+#| msgid "WARNING: This key has been revoked by its owner!\n"
+msgid "Note: The key has been created with one or more ADSK!\n"
+msgstr "VARNING: Denna nyckel har spärrats av sin ägare!\n"
+
 # c-format behövs inte i singularis
 #, c-format
 msgid ""
@@ -5030,6 +5032,14 @@ msgstr[1] ""
 
 msgid "Keyring"
 msgstr "Nyckelring"
+
+msgid "Revocable by: "
+msgstr ""
+
+#, fuzzy, c-format
+#| msgid "error writing to %s: %s\n"
+msgid "error writing to stdout: %s\n"
+msgstr "fel vid skrivning till %s: %s\n"
 
 msgid "Primary key fingerprint:"
 msgstr "Primära nyckelns fingeravtryck:"
@@ -5196,6 +5206,10 @@ msgstr "      \"%s\"\n"
 #, c-format
 msgid "encrypted with %s key, ID %s\n"
 msgstr "krypterad med %s-nyckel, id %s\n"
+
+#, c-format
+msgid "WARNING: key is not quantum-resistant\n"
+msgstr ""
 
 #, c-format
 msgid "WARNING: multiple plaintexts seen\n"
@@ -7904,6 +7918,11 @@ msgid "Enter URIs"
 msgstr "Ange URI:er"
 
 #, fuzzy
+#| msgid "Enter the notation: "
+msgid "Enter extensions"
+msgstr "Ange notationen: "
+
+#, fuzzy
 #| msgid "Create a designated revocation certificate for this key? (y/N) "
 msgid "Create self-signed certificate? (y/N) "
 msgstr "Skapa ett spärrcertifikat för denna nyckel? (j/N) "
@@ -9859,6 +9878,25 @@ msgstr ""
 msgid "manage the command history"
 msgstr ""
 
+#, fuzzy, c-format
+#~| msgid "error running `%s': probably not installed\n"
+#~ msgid "error running '%s': probably not installed\n"
+#~ msgstr "fel vid körning av \"%s\": antagligen inte installerat\n"
+
+#, fuzzy, c-format
+#~| msgid "error running `%s': exit status %d\n"
+#~ msgid "error running '%s': exit status %d\n"
+#~ msgstr "fel vid körning av \"%s\": avslutsstatus %d\n"
+
+#, fuzzy, c-format
+#~| msgid "error running `%s': terminated\n"
+#~ msgid "error running '%s': terminated\n"
+#~ msgstr "fel vid körning av \"%s\": avslutades\n"
+
+#, c-format
+#~ msgid "error getting exit code of process %d: %s\n"
+#~ msgstr "fel vid hämtning av avslutskod för processen %d: %s\n"
+
 #~ msgid "use canonical text mode"
 #~ msgstr "använd \"ursprunglig text\"-läget"
 
@@ -9941,11 +9979,6 @@ msgstr ""
 #~| msgid "invalid import options\n"
 #~ msgid "invalid port number %d\n"
 #~ msgstr "ogiltiga importflaggor\n"
-
-#, fuzzy
-#~| msgid "error writing to %s: %s\n"
-#~ msgid "error writing to stdout: %s\n"
-#~ msgstr "fel vid skrivning till %s: %s\n"
 
 #, fuzzy
 #~| msgid "certificate `%s' not found: %s\n"

@@ -744,7 +744,7 @@ msgstr ""
 #. insert a line break.  The double percent sign is actually
 #. needed because it is also a printf format string.  If you
 #. need to insert a plain % sign, you need to encode it as
-#. "%%25".  The second "%s" gets replaced by a hexdecimal
+#. "%%25".  The second "%s" gets replaced by a hexadecimal
 #. fingerprint string whereas the first one receives the name
 #. as stored in the certificate.
 #, c-format
@@ -858,24 +858,8 @@ msgid "waiting for process %d to terminate failed: %s\n"
 msgstr ""
 
 #, fuzzy, c-format
-msgid "error running '%s': probably not installed\n"
-msgstr "eroare la citire `%s': %s\n"
-
-#, fuzzy, c-format
-msgid "error running '%s': exit status %d\n"
-msgstr "eroare la citire `%s': %s\n"
-
-#, fuzzy, c-format
-msgid "error running '%s': terminated\n"
-msgstr "eroare la citire `%s': %s\n"
-
-#, fuzzy, c-format
-msgid "waiting for processes to terminate failed: %s\n"
+msgid "waiting for process to terminate failed: ec=%d\n"
 msgstr "actualizarea a eşuat: %s\n"
-
-#, fuzzy, c-format
-msgid "error getting exit code of process %d: %s\n"
-msgstr "eroare la obţinerea informaţiei pentru cheia curentă: %s\n"
 
 #, fuzzy, c-format
 #| msgid "can't connect to `%s': %s\n"
@@ -2516,6 +2500,11 @@ msgstr "Nici o semnătură corespunzătoare în inelul secret\n"
 msgid "show preferences"
 msgstr "showpref"
 
+#, fuzzy
+#| msgid "change the ownertrust"
+msgid "show ownertrust"
+msgstr "schimbă încrederea pentru proprietar"
+
 #, fuzzy, c-format
 #| msgid "unknown option `%s'\n"
 msgid "unknown TOFU policy '%s'\n"
@@ -2652,6 +2641,10 @@ msgstr ""
 #, fuzzy, c-format
 msgid "invalid argument for option \"%.50s\"\n"
 msgstr "opţiuni enumerare invalide\n"
+
+#, fuzzy, c-format
+msgid "error parsing value for option '%s': %s\n"
+msgstr "eroare la obţinerea numărului serial: %s\n"
 
 #, c-format
 msgid "WARNING: program may create a core file!\n"
@@ -3902,6 +3895,10 @@ msgid "setting the primary user ID failed: %s\n"
 msgstr "verificarea semnăturii create a eşuat: %s\n"
 
 #, fuzzy, c-format
+msgid "setting the ownertrust to '%s' failed: %s\n"
+msgstr "verificarea semnăturii create a eşuat: %s\n"
+
+#, fuzzy, c-format
 #| msgid "invalid fingerprint"
 msgid "\"%s\" is not a fingerprint\n"
 msgstr "amprentă invalidă"
@@ -4485,13 +4482,13 @@ msgstr "   (2) Cheie de cifrare\n"
 msgid "Enter the keygrip: "
 msgstr "Notare semnătură: "
 
-#, c-format
-msgid "Not a valid keygrip (expecting 40 hex digits)\n"
-msgstr ""
-
 #, fuzzy
 msgid "No key with this keygrip\n"
 msgstr "Nici o subcheie cu indicele %d\n"
+
+#, c-format
+msgid "Not a valid keygrip (expecting 40 hex digits)\n"
+msgstr ""
 
 #, fuzzy, c-format
 msgid "error reading the card: %s\n"
@@ -4781,6 +4778,11 @@ msgstr ""
 "să folosiţi comanda \"--edit-key\" pentru a genera o subcheie secundară\n"
 "pentru acest scop.\n"
 
+#, fuzzy, c-format
+#| msgid "WARNING: This key has been revoked by its owner!\n"
+msgid "Note: The key has been created with one or more ADSK!\n"
+msgstr "AVERTISMENT: Această cheie a fost revocată de proprietarul ei!\n"
+
 #, c-format
 msgid ""
 "key has been created %lu second in future (time warp or clock problem)\n"
@@ -4863,6 +4865,13 @@ msgstr[1] ""
 
 msgid "Keyring"
 msgstr "Inel de chei"
+
+msgid "Revocable by: "
+msgstr ""
+
+#, fuzzy, c-format
+msgid "error writing to stdout: %s\n"
+msgstr "eroare la scrierea inelului de chei `%s': %s\n"
 
 msgid "Primary key fingerprint:"
 msgstr "Amprentă cheie primară:"
@@ -5030,6 +5039,10 @@ msgstr "      \"%s\"\n"
 #, c-format
 msgid "encrypted with %s key, ID %s\n"
 msgstr "cifrat cu cheia %s, ID %s\n"
+
+#, c-format
+msgid "WARNING: key is not quantum-resistant\n"
+msgstr ""
 
 #, c-format
 msgid "WARNING: multiple plaintexts seen\n"
@@ -7644,6 +7657,10 @@ msgid "Enter URIs"
 msgstr "Introduceţi PIN: "
 
 #, fuzzy
+msgid "Enter extensions"
+msgstr "Notare semnătură: "
+
+#, fuzzy
 #| msgid "Create a designated revocation certificate for this key? (y/N) "
 msgid "Create self-signed certificate? (y/N) "
 msgstr "Creaţi un certificat de revocare desemnat pentru această cheie? (d/N) "
@@ -9412,6 +9429,22 @@ msgstr ""
 msgid "manage the command history"
 msgstr ""
 
+#, fuzzy, c-format
+#~ msgid "error running '%s': probably not installed\n"
+#~ msgstr "eroare la citire `%s': %s\n"
+
+#, fuzzy, c-format
+#~ msgid "error running '%s': exit status %d\n"
+#~ msgstr "eroare la citire `%s': %s\n"
+
+#, fuzzy, c-format
+#~ msgid "error running '%s': terminated\n"
+#~ msgstr "eroare la citire `%s': %s\n"
+
+#, fuzzy, c-format
+#~ msgid "error getting exit code of process %d: %s\n"
+#~ msgstr "eroare la obţinerea informaţiei pentru cheia curentă: %s\n"
+
 #~ msgid "use canonical text mode"
 #~ msgstr "foloseşte modul text canonic"
 
@@ -9485,10 +9518,6 @@ msgstr ""
 #~| msgid "invalid import options\n"
 #~ msgid "invalid port number %d\n"
 #~ msgstr "opţiuni import invalide\n"
-
-#, fuzzy
-#~ msgid "error writing to stdout: %s\n"
-#~ msgstr "eroare la scrierea inelului de chei `%s': %s\n"
 
 #, fuzzy
 #~ msgid "attribute '%s' not found\n"

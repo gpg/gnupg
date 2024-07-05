@@ -735,7 +735,7 @@ msgstr ""
 #. insert a line break.  The double percent sign is actually
 #. needed because it is also a printf format string.  If you
 #. need to insert a plain % sign, you need to encode it as
-#. "%%25".  The second "%s" gets replaced by a hexdecimal
+#. "%%25".  The second "%s" gets replaced by a hexadecimal
 #. fingerprint string whereas the first one receives the name
 #. as stored in the certificate.
 #, c-format
@@ -844,24 +844,8 @@ msgid "waiting for process %d to terminate failed: %s\n"
 msgstr ""
 
 #, fuzzy, c-format
-msgid "error running '%s': probably not installed\n"
-msgstr "chyba pri čítaní `%s': %s\n"
-
-#, fuzzy, c-format
-msgid "error running '%s': exit status %d\n"
-msgstr "chyba pri čítaní `%s': %s\n"
-
-#, fuzzy, c-format
-msgid "error running '%s': terminated\n"
-msgstr "chyba pri čítaní `%s': %s\n"
-
-#, fuzzy, c-format
-msgid "waiting for processes to terminate failed: %s\n"
+msgid "waiting for process to terminate failed: ec=%d\n"
 msgstr "aktualizácia zlyhala: %s\n"
-
-#, fuzzy, c-format
-msgid "error getting exit code of process %d: %s\n"
-msgstr "chyba pri zápise do súboru tajných kľúčov `%s': %s\n"
 
 #, fuzzy, c-format
 #| msgid "can't connect to `%s': %s\n"
@@ -2473,6 +2457,11 @@ msgstr "V súbore tajných kľúčov chýba zodpovedajúci podpis\n"
 msgid "show preferences"
 msgstr "nastaviť zoznam predvolieb"
 
+#, fuzzy
+#| msgid "change the ownertrust"
+msgid "show ownertrust"
+msgstr "zmeniť dôveryhodnosť vlastníka kľúča"
+
 #, fuzzy, c-format
 msgid "unknown TOFU policy '%s'\n"
 msgstr "neznámy implicitný adresát `%s'\n"
@@ -2604,6 +2593,10 @@ msgstr ""
 #, fuzzy, c-format
 msgid "invalid argument for option \"%.50s\"\n"
 msgstr "neplatný parameter pre import\n"
+
+#, fuzzy, c-format
+msgid "error parsing value for option '%s': %s\n"
+msgstr "chyba pri vytváraní hesla: %s\n"
 
 #, c-format
 msgid "WARNING: program may create a core file!\n"
@@ -3874,6 +3867,10 @@ msgid "setting the primary user ID failed: %s\n"
 msgstr "kontrola vytvoreného podpisu sa nepodarila: %s\n"
 
 #, fuzzy, c-format
+msgid "setting the ownertrust to '%s' failed: %s\n"
+msgstr "kontrola vytvoreného podpisu sa nepodarila: %s\n"
+
+#, fuzzy, c-format
 msgid "\"%s\" is not a fingerprint\n"
 msgstr "chyba: neplatný odtlačok\n"
 
@@ -4437,13 +4434,13 @@ msgstr "  (%d) RSA (len na šifrovanie)\n"
 msgid "Enter the keygrip: "
 msgstr "Podpisová notácia: "
 
-#, c-format
-msgid "Not a valid keygrip (expecting 40 hex digits)\n"
-msgstr ""
-
 #, fuzzy
 msgid "No key with this keygrip\n"
 msgstr "Neexistuje identifikátor užívateľa s indexom %d\n"
+
+#, c-format
+msgid "Not a valid keygrip (expecting 40 hex digits)\n"
+msgstr ""
 
 #, fuzzy, c-format
 msgid "error reading the card: %s\n"
@@ -4730,6 +4727,11 @@ msgstr ""
 "Tento kľúč nemôže byť použitý na šifrovanie. Pre vytvorenie\n"
 "sekundárneho kľúča na tento účel môžete použiť príkaz \"--edit-key\".\n"
 
+#, fuzzy, c-format
+#| msgid "WARNING: This key has been revoked by its owner!\n"
+msgid "Note: The key has been created with one or more ADSK!\n"
+msgstr "VAROVANIE: Tento kľúč bol revokovaný jeho vlastníkom!\n"
+
 #, c-format
 msgid ""
 "key has been created %lu second in future (time warp or clock problem)\n"
@@ -4813,6 +4815,13 @@ msgstr[1] ""
 
 msgid "Keyring"
 msgstr "súbor kľúčov (keyring)"
+
+msgid "Revocable by: "
+msgstr ""
+
+#, fuzzy, c-format
+msgid "error writing to stdout: %s\n"
+msgstr "chyba pri zápise súboru kľúčov (keyring)  `%s': %s\n"
 
 msgid "Primary key fingerprint:"
 msgstr "Primárny fingerprint kľúča:"
@@ -4980,6 +4989,10 @@ msgstr "                alias \""
 #, fuzzy, c-format
 msgid "encrypted with %s key, ID %s\n"
 msgstr "zašifrovaná %s kľúčom, ID %08lX\n"
+
+#, c-format
+msgid "WARNING: key is not quantum-resistant\n"
+msgstr ""
 
 #, c-format
 msgid "WARNING: multiple plaintexts seen\n"
@@ -7552,6 +7565,10 @@ msgid "Enter URIs"
 msgstr ""
 
 #, fuzzy
+msgid "Enter extensions"
+msgstr "Podpisová notácia: "
+
+#, fuzzy
 msgid "Create self-signed certificate? (y/N) "
 msgstr "Vytvoriť pre tento podpis revokačný certifikát? "
 
@@ -9301,6 +9318,22 @@ msgstr ""
 msgid "manage the command history"
 msgstr ""
 
+#, fuzzy, c-format
+#~ msgid "error running '%s': probably not installed\n"
+#~ msgstr "chyba pri čítaní `%s': %s\n"
+
+#, fuzzy, c-format
+#~ msgid "error running '%s': exit status %d\n"
+#~ msgstr "chyba pri čítaní `%s': %s\n"
+
+#, fuzzy, c-format
+#~ msgid "error running '%s': terminated\n"
+#~ msgstr "chyba pri čítaní `%s': %s\n"
+
+#, fuzzy, c-format
+#~ msgid "error getting exit code of process %d: %s\n"
+#~ msgstr "chyba pri zápise do súboru tajných kľúčov `%s': %s\n"
+
 #~ msgid "use canonical text mode"
 #~ msgstr "použiť kánonický textový mód"
 
@@ -9371,10 +9404,6 @@ msgstr ""
 #~| msgid "invalid import options\n"
 #~ msgid "invalid port number %d\n"
 #~ msgstr "neplatný parameter pre import\n"
-
-#, fuzzy
-#~ msgid "error writing to stdout: %s\n"
-#~ msgstr "chyba pri zápise súboru kľúčov (keyring)  `%s': %s\n"
 
 #, fuzzy
 #~ msgid "attribute '%s' not found\n"

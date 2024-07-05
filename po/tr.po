@@ -711,7 +711,7 @@ msgstr "Hayır"
 #. insert a line break.  The double percent sign is actually
 #. needed because it is also a printf format string.  If you
 #. need to insert a plain % sign, you need to encode it as
-#. "%%25".  The second "%s" gets replaced by a hexdecimal
+#. "%%25".  The second "%s" gets replaced by a hexadecimal
 #. fingerprint string whereas the first one receives the name
 #. as stored in the certificate.
 #, c-format
@@ -826,25 +826,10 @@ msgstr "işlem çatallanırken hata: %s\n"
 msgid "waiting for process %d to terminate failed: %s\n"
 msgstr "%d işleminin sonlanmasını bekleme başarısız: %s\n"
 
-#, c-format
-msgid "error running '%s': probably not installed\n"
-msgstr "'%s' çalıştırılırken hata: Muhtemelen kurulu değil\n"
-
-#, c-format
-msgid "error running '%s': exit status %d\n"
-msgstr "'%s' çalıştırılırken hata: Çıkış durumu: %d\n"
-
-#, c-format
-msgid "error running '%s': terminated\n"
-msgstr "'%s' çalıştırılırken hata: Sonlandırıldı\n"
-
-#, c-format
-msgid "waiting for processes to terminate failed: %s\n"
+#, fuzzy, c-format
+#| msgid "waiting for processes to terminate failed: %s\n"
+msgid "waiting for process to terminate failed: ec=%d\n"
 msgstr "işlemin sonlanmasını bekleme başarısız: %s\n"
-
-#, c-format
-msgid "error getting exit code of process %d: %s\n"
-msgstr "%d işleminin çıkış kodu alınırken hata: %s\n"
 
 #, c-format
 msgid "can't connect to '%s': %s\n"
@@ -2311,6 +2296,11 @@ msgstr "imza listelemesi sırasında zaman aşımı tarihleri göster"
 msgid "show preferences"
 msgstr "tercihleri göster"
 
+#, fuzzy
+#| msgid "change the ownertrust"
+msgid "show ownertrust"
+msgstr "iye güvencesini değiştir"
+
 #, c-format
 msgid "unknown TOFU policy '%s'\n"
 msgstr "bilinmeyen TOFU poliçesi '%s'\n"
@@ -2440,6 +2430,11 @@ msgstr "geçersiz auto-key-locate listesi\n"
 #, c-format
 msgid "invalid argument for option \"%.50s\"\n"
 msgstr "\"%.50s\" seçeneği için geçersiz argüman\n"
+
+#, fuzzy, c-format
+#| msgid "error parsing key specification '%s': %s\n"
+msgid "error parsing value for option '%s': %s\n"
+msgstr "'%s' anahtar belirtimi ayrıştırılırken hata: %s\n"
 
 #, c-format
 msgid "WARNING: program may create a core file!\n"
@@ -3649,6 +3644,11 @@ msgstr "kullanıcı kimliğinin yürürlükten kaldırılması başarısız: %s\
 msgid "setting the primary user ID failed: %s\n"
 msgstr "asıl kullanıcı kimliğini ayarlama başarısız: %s\n"
 
+#, fuzzy, c-format
+#| msgid "checking the trust list failed: %s\n"
+msgid "setting the ownertrust to '%s' failed: %s\n"
+msgstr "güvence listesinin sınanması başarısız: %s\n"
+
 #, c-format
 msgid "\"%s\" is not a fingerprint\n"
 msgstr "\"%s\", bir parmak izi değil\n"
@@ -4200,12 +4200,12 @@ msgstr "  (%d) Karttaki var olan anahtar%s\n"
 msgid "Enter the keygrip: "
 msgstr "Anahtar maşasını girin: "
 
+msgid "No key with this keygrip\n"
+msgstr "Bu anahtar maşasında bir anahtar yok\n"
+
 #, c-format
 msgid "Not a valid keygrip (expecting 40 hex digits)\n"
 msgstr "Geçerli bir anahtar maşası değil (40 onaltılık basamak bekleniyor)\n"
-
-msgid "No key with this keygrip\n"
-msgstr "Bu anahtar maşasında bir anahtar yok\n"
 
 #, c-format
 msgid "error reading the card: %s\n"
@@ -4483,6 +4483,11 @@ msgstr ""
 "Bu anahtar şifreleme için kullanılamaz. Şifreleme için yardımcı anahtarı\n"
 "\"--edit-key\" seçeneğini kullanarak üretebilirsiniz.\n"
 
+#, fuzzy, c-format
+#| msgid "WARNING: This key has been revoked by its owner!\n"
+msgid "Note: The key has been created with one or more ADSK!\n"
+msgstr "UYARI: Bu anahtar iyesi tarafından yürürlükten kaldırılmış!\n"
+
 #, c-format
 msgid ""
 "key has been created %lu second in future (time warp or clock problem)\n"
@@ -4561,6 +4566,14 @@ msgstr[1] "Uyarı: %lu imza, büyük boyut nedeniyle atlandı\n"
 
 msgid "Keyring"
 msgstr "Anahtar zinciri"
+
+msgid "Revocable by: "
+msgstr ""
+
+#, fuzzy, c-format
+#| msgid "error writing to '%s': %s\n"
+msgid "error writing to stdout: %s\n"
+msgstr "'%s' konumuna yazılırken hata: %s\n"
 
 msgid "Primary key fingerprint:"
 msgstr "    Asıl anahtar parmak izi:"
@@ -4717,6 +4730,10 @@ msgstr "      \"%s\"\n"
 #, c-format
 msgid "encrypted with %s key, ID %s\n"
 msgstr "%s anahtarı ve %s kullanıcı kimliği ile şifrelendi\n"
+
+#, c-format
+msgid "WARNING: key is not quantum-resistant\n"
+msgstr ""
 
 #, c-format
 msgid "WARNING: multiple plaintexts seen\n"
@@ -7229,6 +7246,11 @@ msgstr " (isteğe bağlı; boş bir satır ile sonlandır):\n"
 msgid "Enter URIs"
 msgstr "URI'leri girin"
 
+#, fuzzy
+#| msgid "Enter the notation: "
+msgid "Enter extensions"
+msgstr "Simgelemi giriniz: "
+
 msgid "Create self-signed certificate? (y/N) "
 msgstr "Öz imzalı bir sertifika üretilsin mi? (e/H) "
 
@@ -8917,6 +8939,22 @@ msgstr "Yubikey yönetim konsolu"
 
 msgid "manage the command history"
 msgstr "komut geçmişini yönet"
+
+#, c-format
+#~ msgid "error running '%s': probably not installed\n"
+#~ msgstr "'%s' çalıştırılırken hata: Muhtemelen kurulu değil\n"
+
+#, c-format
+#~ msgid "error running '%s': exit status %d\n"
+#~ msgstr "'%s' çalıştırılırken hata: Çıkış durumu: %d\n"
+
+#, c-format
+#~ msgid "error running '%s': terminated\n"
+#~ msgstr "'%s' çalıştırılırken hata: Sonlandırıldı\n"
+
+#, c-format
+#~ msgid "error getting exit code of process %d: %s\n"
+#~ msgstr "%d işleminin çıkış kodu alınırken hata: %s\n"
 
 #~ msgid "use canonical text mode"
 #~ msgstr "kurallı metin kipini kullan"

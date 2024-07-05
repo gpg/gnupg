@@ -730,7 +730,7 @@ msgstr ""
 #. insert a line break.  The double percent sign is actually
 #. needed because it is also a printf format string.  If you
 #. need to insert a plain % sign, you need to encode it as
-#. "%%25".  The second "%s" gets replaced by a hexdecimal
+#. "%%25".  The second "%s" gets replaced by a hexadecimal
 #. fingerprint string whereas the first one receives the name
 #. as stored in the certificate.
 #, c-format
@@ -839,24 +839,8 @@ msgid "waiting for process %d to terminate failed: %s\n"
 msgstr ""
 
 #, fuzzy, c-format
-msgid "error running '%s': probably not installed\n"
-msgstr "Hiba \"%s\" olvasásakor: %s\n"
-
-#, fuzzy, c-format
-msgid "error running '%s': exit status %d\n"
-msgstr "Hiba \"%s\" olvasásakor: %s\n"
-
-#, fuzzy, c-format
-msgid "error running '%s': terminated\n"
-msgstr "Hiba \"%s\" olvasásakor: %s\n"
-
-#, fuzzy, c-format
-msgid "waiting for processes to terminate failed: %s\n"
+msgid "waiting for process to terminate failed: ec=%d\n"
 msgstr "Frissítés sikertelen: %s.\n"
-
-#, fuzzy, c-format
-msgid "error getting exit code of process %d: %s\n"
-msgstr "Hiba a(z) \"%s\" titkoskulcs-karika írásakor: %s.\n"
 
 #, fuzzy, c-format
 #| msgid "can't connect to `%s': %s\n"
@@ -2457,6 +2441,11 @@ msgstr "Nincs megfelelő aláírás a titkoskulcs-karikán.\n"
 msgid "show preferences"
 msgstr "preferencialista beállítása"
 
+#, fuzzy
+#| msgid "change the ownertrust"
+msgid "show ownertrust"
+msgstr "kulcstulajdonos megbízhatóságának beállítása"
+
 #, fuzzy, c-format
 msgid "unknown TOFU policy '%s'\n"
 msgstr "Ismeretlen alapértelmezett címzett: \"%s\"\n"
@@ -2588,6 +2577,10 @@ msgstr ""
 #, fuzzy, c-format
 msgid "invalid argument for option \"%.50s\"\n"
 msgstr "Érvénytelen import opciók!\n"
+
+#, fuzzy, c-format
+msgid "error parsing value for option '%s': %s\n"
+msgstr "Hiba a jelszó létrehozásakor: %s.\n"
 
 #, c-format
 msgid "WARNING: program may create a core file!\n"
@@ -3848,6 +3841,10 @@ msgid "setting the primary user ID failed: %s\n"
 msgstr "A létrehozott aláírás ellenőrzése sikertelen: %s.\n"
 
 #, fuzzy, c-format
+msgid "setting the ownertrust to '%s' failed: %s\n"
+msgstr "A létrehozott aláírás ellenőrzése sikertelen: %s.\n"
+
+#, fuzzy, c-format
 msgid "\"%s\" is not a fingerprint\n"
 msgstr "Hiba: Érvénytelen ujjlenyomat.\n"
 
@@ -4416,13 +4413,13 @@ msgstr "  (%d) RSA (csak titkosítás)\n"
 msgid "Enter the keygrip: "
 msgstr "Aláírás-jelölés: "
 
-#, c-format
-msgid "Not a valid keygrip (expecting 40 hex digits)\n"
-msgstr ""
-
 #, fuzzy
 msgid "No key with this keygrip\n"
 msgstr "Nincs %d indexű felhasználóazonosító!\n"
+
+#, c-format
+msgid "Not a valid keygrip (expecting 40 hex digits)\n"
+msgstr ""
 
 #, fuzzy, c-format
 msgid "error reading the card: %s\n"
@@ -4709,6 +4706,11 @@ msgstr ""
 "kíván ilyen célra létrehozni, azt az \"--edit-key\" parancs segítségével\n"
 "teheti meg.\n"
 
+#, fuzzy, c-format
+#| msgid "WARNING: This key has been revoked by its owner!\n"
+msgid "Note: The key has been created with one or more ADSK!\n"
+msgstr "FIGYELEM: Ezt a kulcsot a tulajdonosa visszavonta!\n"
+
 #, c-format
 msgid ""
 "key has been created %lu second in future (time warp or clock problem)\n"
@@ -4791,6 +4793,13 @@ msgstr[1] ""
 
 msgid "Keyring"
 msgstr "Kulcskarika"
+
+msgid "Revocable by: "
+msgstr ""
+
+#, fuzzy, c-format
+msgid "error writing to stdout: %s\n"
+msgstr "Hiba a \"%s\" kulcskarika írásakor: %s\n"
 
 msgid "Primary key fingerprint:"
 msgstr "Elsődlegeskulcs-ujjlenyomat:"
@@ -4958,6 +4967,10 @@ msgstr "               azaz \""
 #, fuzzy, c-format
 msgid "encrypted with %s key, ID %s\n"
 msgstr "Titkosítva %s kulccsal, azonosító: %08lX\n"
+
+#, c-format
+msgid "WARNING: key is not quantum-resistant\n"
+msgstr ""
 
 #, c-format
 msgid "WARNING: multiple plaintexts seen\n"
@@ -7527,6 +7540,10 @@ msgid "Enter URIs"
 msgstr ""
 
 #, fuzzy
+msgid "Enter extensions"
+msgstr "Aláírás-jelölés: "
+
+#, fuzzy
 msgid "Create self-signed certificate? (y/N) "
 msgstr "Csináljunk egy visszavonó igazolást ehhez a kulcshoz? "
 
@@ -9268,6 +9285,22 @@ msgstr ""
 msgid "manage the command history"
 msgstr ""
 
+#, fuzzy, c-format
+#~ msgid "error running '%s': probably not installed\n"
+#~ msgstr "Hiba \"%s\" olvasásakor: %s\n"
+
+#, fuzzy, c-format
+#~ msgid "error running '%s': exit status %d\n"
+#~ msgstr "Hiba \"%s\" olvasásakor: %s\n"
+
+#, fuzzy, c-format
+#~ msgid "error running '%s': terminated\n"
+#~ msgstr "Hiba \"%s\" olvasásakor: %s\n"
+
+#, fuzzy, c-format
+#~ msgid "error getting exit code of process %d: %s\n"
+#~ msgstr "Hiba a(z) \"%s\" titkoskulcs-karika írásakor: %s.\n"
+
 #~ msgid "use canonical text mode"
 #~ msgstr "kanonikus szöveges mód használata"
 
@@ -9339,10 +9372,6 @@ msgstr ""
 #~| msgid "invalid import options\n"
 #~ msgid "invalid port number %d\n"
 #~ msgstr "Érvénytelen import opciók!\n"
-
-#, fuzzy
-#~ msgid "error writing to stdout: %s\n"
-#~ msgstr "Hiba a \"%s\" kulcskarika írásakor: %s\n"
 
 #, fuzzy
 #~ msgid "attribute '%s' not found\n"

@@ -768,7 +768,7 @@ msgstr "No"
 #. insert a line break.  The double percent sign is actually
 #. needed because it is also a printf format string.  If you
 #. need to insert a plain % sign, you need to encode it as
-#. "%%25".  The second "%s" gets replaced by a hexdecimal
+#. "%%25".  The second "%s" gets replaced by a hexadecimal
 #. fingerprint string whereas the first one receives the name
 #. as stored in the certificate.
 #, c-format
@@ -885,25 +885,10 @@ msgstr "error bifurcando procesos: %s\n"
 msgid "waiting for process %d to terminate failed: %s\n"
 msgstr "fallo esperando que el proceso %d terminara: %s\n"
 
-#, c-format
-msgid "error running '%s': probably not installed\n"
-msgstr "error al ejecutar '%s': probablemente no está instalado\n"
-
-#, c-format
-msgid "error running '%s': exit status %d\n"
-msgstr "error ejecutando '%s': código de salida %d\n"
-
-#, c-format
-msgid "error running '%s': terminated\n"
-msgstr "error al ejecutar '%s': terminado\n"
-
-#, c-format
-msgid "waiting for processes to terminate failed: %s\n"
+#, fuzzy, c-format
+#| msgid "waiting for processes to terminate failed: %s\n"
+msgid "waiting for process to terminate failed: ec=%d\n"
 msgstr "fallo esperando que el proceso termine: %s\n"
-
-#, c-format
-msgid "error getting exit code of process %d: %s\n"
-msgstr "error obteniendo código de finalización del proceso: %d %s\n"
 
 #, c-format
 msgid "can't connect to '%s': %s\n"
@@ -2426,6 +2411,11 @@ msgstr "mostrar fechas de caducidad al listar firmas"
 msgid "show preferences"
 msgstr "verpref"
 
+#, fuzzy
+#| msgid "change the ownertrust"
+msgid "show ownertrust"
+msgstr "cambia valores de confianza"
+
 #, c-format
 msgid "unknown TOFU policy '%s'\n"
 msgstr "política TOFU desconocida '%s'\n"
@@ -2552,6 +2542,11 @@ msgstr "lista de auto-localización de claves inválida\n"
 #, c-format
 msgid "invalid argument for option \"%.50s\"\n"
 msgstr "parámetro incorrecto para la opción \"%.50s\"\n"
+
+#, fuzzy, c-format
+#| msgid "error parsing key specification '%s': %s\n"
+msgid "error parsing value for option '%s': %s\n"
+msgstr "error al leer la especificación de clave '%s': %s\n"
 
 #, c-format
 msgid "WARNING: program may create a core file!\n"
@@ -3755,6 +3750,11 @@ msgstr "la revocación del identificador de usuario ha fallado: %s\n"
 msgid "setting the primary user ID failed: %s\n"
 msgstr "la configuración del ID de usuario primario ha fallado: %s\n"
 
+#, fuzzy, c-format
+#| msgid "checking the trust list failed: %s\n"
+msgid "setting the ownertrust to '%s' failed: %s\n"
+msgstr "la comprobación de la lista de confianza falló: %s\n"
+
 #, c-format
 msgid "\"%s\" is not a fingerprint\n"
 msgstr "\"%s\" no es una huella digital\n"
@@ -4314,12 +4314,12 @@ msgstr "  (%d) Clave existente de la tarjeta\n"
 msgid "Enter the keygrip: "
 msgstr "Introduzca keygrip: "
 
+msgid "No key with this keygrip\n"
+msgstr "No hay claves con ese keygrip\n"
+
 #, c-format
 msgid "Not a valid keygrip (expecting 40 hex digits)\n"
 msgstr "No es un keygrip válido (se esperaban 40 dígitos hex)\n"
-
-msgid "No key with this keygrip\n"
-msgstr "No hay claves con ese keygrip\n"
 
 #, c-format
 msgid "error reading the card: %s\n"
@@ -4598,6 +4598,11 @@ msgstr ""
 "Tenga en cuenta que esta clave no puede ser usada para cifrar. Puede usar\n"
 "la orden \"--edit-key\" para crear una subclave con este propósito.\n"
 
+#, fuzzy, c-format
+#| msgid "WARNING: This key has been revoked by its owner!\n"
+msgid "Note: The key has been created with one or more ADSK!\n"
+msgstr "ATENCIÓN: ¡Esta clave ha sido revocada por su propietario!\n"
+
 #, c-format
 msgid ""
 "key has been created %lu second in future (time warp or clock problem)\n"
@@ -4678,6 +4683,13 @@ msgstr[1] "Advertencia: claves %lu no usadas por su gran tamaño\n"
 
 msgid "Keyring"
 msgstr "Anillo de claves"
+
+msgid "Revocable by: "
+msgstr ""
+
+#, c-format
+msgid "error writing to stdout: %s\n"
+msgstr "error al escribir a stdout: %s\n"
 
 msgid "Primary key fingerprint:"
 msgstr "Huellas dactilares de la clave primaria:"
@@ -4838,6 +4850,10 @@ msgstr "      \"%s\"\n"
 #, c-format
 msgid "encrypted with %s key, ID %s\n"
 msgstr "cifrado con clave %s, ID %s\n"
+
+#, c-format
+msgid "WARNING: key is not quantum-resistant\n"
+msgstr ""
 
 #, c-format
 msgid "WARNING: multiple plaintexts seen\n"
@@ -7415,6 +7431,11 @@ msgstr " (opcional; acabe con una línea en blanco):\n"
 msgid "Enter URIs"
 msgstr "Introduzca URIs"
 
+#, fuzzy
+#| msgid "Enter the notation: "
+msgid "Enter extensions"
+msgstr "Introduzca la notación: "
+
 msgid "Create self-signed certificate? (y/N) "
 msgstr "¿Crear un certificado auto-firmado? (s/N)"
 
@@ -9165,6 +9186,22 @@ msgstr ""
 msgid "manage the command history"
 msgstr ""
 
+#, c-format
+#~ msgid "error running '%s': probably not installed\n"
+#~ msgstr "error al ejecutar '%s': probablemente no está instalado\n"
+
+#, c-format
+#~ msgid "error running '%s': exit status %d\n"
+#~ msgstr "error ejecutando '%s': código de salida %d\n"
+
+#, c-format
+#~ msgid "error running '%s': terminated\n"
+#~ msgstr "error al ejecutar '%s': terminado\n"
+
+#, c-format
+#~ msgid "error getting exit code of process %d: %s\n"
+#~ msgstr "error obteniendo código de finalización del proceso: %d %s\n"
+
 #~ msgid "use canonical text mode"
 #~ msgstr "usa modo de texto canónico"
 
@@ -9265,9 +9302,6 @@ msgstr ""
 
 #~ msgid "scanning result for attribute '%s'\n"
 #~ msgstr "resultado del scanning para el atributo '%s'\n"
-
-#~ msgid "error writing to stdout: %s\n"
-#~ msgstr "error al escribir a stdout: %s\n"
 
 #~ msgid "          available attribute '%s'\n"
 #~ msgstr "          atributo disponible '%s'\n"

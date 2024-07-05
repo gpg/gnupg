@@ -735,7 +735,7 @@ msgstr ""
 #. insert a line break.  The double percent sign is actually
 #. needed because it is also a printf format string.  If you
 #. need to insert a plain % sign, you need to encode it as
-#. "%%25".  The second "%s" gets replaced by a hexdecimal
+#. "%%25".  The second "%s" gets replaced by a hexadecimal
 #. fingerprint string whereas the first one receives the name
 #. as stored in the certificate.
 #, c-format
@@ -844,24 +844,8 @@ msgid "waiting for process %d to terminate failed: %s\n"
 msgstr ""
 
 #, fuzzy, c-format
-msgid "error running '%s': probably not installed\n"
-msgstr "kesalahan membaca `%s': %s\n"
-
-#, fuzzy, c-format
-msgid "error running '%s': exit status %d\n"
-msgstr "kesalahan membaca `%s': %s\n"
-
-#, fuzzy, c-format
-msgid "error running '%s': terminated\n"
-msgstr "kesalahan membaca `%s': %s\n"
-
-#, fuzzy, c-format
-msgid "waiting for processes to terminate failed: %s\n"
+msgid "waiting for process to terminate failed: ec=%d\n"
 msgstr "gagal memperbarui: %s\n"
-
-#, fuzzy, c-format
-msgid "error getting exit code of process %d: %s\n"
-msgstr "kesalahan menulis keyring rahasia `%s': %s\n"
 
 #, fuzzy, c-format
 #| msgid "can't connect to `%s': %s\n"
@@ -2461,6 +2445,11 @@ msgstr "Tidak ada signature koresponden di ring rahasia\n"
 msgid "show preferences"
 msgstr "set daftar preferensi"
 
+#, fuzzy
+#| msgid "change the ownertrust"
+msgid "show ownertrust"
+msgstr "ubah ownertrust"
+
 #, fuzzy, c-format
 msgid "unknown TOFU policy '%s'\n"
 msgstr "penerima baku tidak dikenal `%s'\n"
@@ -2592,6 +2581,10 @@ msgstr ""
 #, fuzzy, c-format
 msgid "invalid argument for option \"%.50s\"\n"
 msgstr "opsi impor tidak valid\n"
+
+#, fuzzy, c-format
+msgid "error parsing value for option '%s': %s\n"
+msgstr "kesalahan penciptaan passphrase: %s\n"
 
 #, c-format
 msgid "WARNING: program may create a core file!\n"
@@ -3854,6 +3847,10 @@ msgid "setting the primary user ID failed: %s\n"
 msgstr "Gagal memeriksa signature yang dibuat: %s\n"
 
 #, fuzzy, c-format
+msgid "setting the ownertrust to '%s' failed: %s\n"
+msgstr "Gagal memeriksa signature yang dibuat: %s\n"
+
+#, fuzzy, c-format
 msgid "\"%s\" is not a fingerprint\n"
 msgstr "kesalahan: fingerprint tidak valid\n"
 
@@ -4426,13 +4423,13 @@ msgstr "  (%d) RSA (hanya enkripsi)\n"
 msgid "Enter the keygrip: "
 msgstr "Notasi signature: "
 
-#, c-format
-msgid "Not a valid keygrip (expecting 40 hex digits)\n"
-msgstr ""
-
 #, fuzzy
 msgid "No key with this keygrip\n"
 msgstr "Tidak ada ID user dengan index %d\n"
+
+#, c-format
+msgid "Not a valid keygrip (expecting 40 hex digits)\n"
+msgstr ""
 
 #, fuzzy, c-format
 msgid "error reading the card: %s\n"
@@ -4720,6 +4717,11 @@ msgstr ""
 "mungkin ingin menggunakan perintah \"--edit-key\" untuk membuat kunci kedua "
 "untuk tujuan ini.\n"
 
+#, fuzzy, c-format
+#| msgid "WARNING: This key has been revoked by its owner!\n"
+msgid "Note: The key has been created with one or more ADSK!\n"
+msgstr "PERINGATAN: Kunci ini telah dibatalkan oleh pemiliknya!\n"
+
 #, c-format
 msgid ""
 "key has been created %lu second in future (time warp or clock problem)\n"
@@ -4801,6 +4803,13 @@ msgstr[1] ""
 
 msgid "Keyring"
 msgstr "Keyring"
+
+msgid "Revocable by: "
+msgstr ""
+
+#, fuzzy, c-format
+msgid "error writing to stdout: %s\n"
+msgstr "kesalahan menulis keyring `%s': %s\n"
 
 msgid "Primary key fingerprint:"
 msgstr "Fingerprint kunci primer:"
@@ -4966,6 +4975,10 @@ msgstr "              alias \""
 #, fuzzy, c-format
 msgid "encrypted with %s key, ID %s\n"
 msgstr "dienkripsi dengan kunci %s, ID %08lX\n"
+
+#, c-format
+msgid "WARNING: key is not quantum-resistant\n"
+msgstr ""
 
 #, c-format
 msgid "WARNING: multiple plaintexts seen\n"
@@ -7526,6 +7539,10 @@ msgid "Enter URIs"
 msgstr ""
 
 #, fuzzy
+msgid "Enter extensions"
+msgstr "Notasi signature: "
+
+#, fuzzy
 msgid "Create self-signed certificate? (y/N) "
 msgstr "Buat sertifikat pembatalan untuk kunci ini?"
 
@@ -9267,6 +9284,22 @@ msgstr ""
 msgid "manage the command history"
 msgstr ""
 
+#, fuzzy, c-format
+#~ msgid "error running '%s': probably not installed\n"
+#~ msgstr "kesalahan membaca `%s': %s\n"
+
+#, fuzzy, c-format
+#~ msgid "error running '%s': exit status %d\n"
+#~ msgstr "kesalahan membaca `%s': %s\n"
+
+#, fuzzy, c-format
+#~ msgid "error running '%s': terminated\n"
+#~ msgstr "kesalahan membaca `%s': %s\n"
+
+#, fuzzy, c-format
+#~ msgid "error getting exit code of process %d: %s\n"
+#~ msgstr "kesalahan menulis keyring rahasia `%s': %s\n"
+
 #~ msgid "use canonical text mode"
 #~ msgstr "gunakan mode teks kanonikal"
 
@@ -9338,10 +9371,6 @@ msgstr ""
 #~| msgid "invalid import options\n"
 #~ msgid "invalid port number %d\n"
 #~ msgstr "opsi impor tidak valid\n"
-
-#, fuzzy
-#~ msgid "error writing to stdout: %s\n"
-#~ msgstr "kesalahan menulis keyring `%s': %s\n"
 
 #, fuzzy
 #~ msgid "attribute '%s' not found\n"

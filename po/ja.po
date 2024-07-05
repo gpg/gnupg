@@ -707,7 +707,7 @@ msgstr "いいえ"
 #. insert a line break.  The double percent sign is actually
 #. needed because it is also a printf format string.  If you
 #. need to insert a plain % sign, you need to encode it as
-#. "%%25".  The second "%s" gets replaced by a hexdecimal
+#. "%%25".  The second "%s" gets replaced by a hexadecimal
 #. fingerprint string whereas the first one receives the name
 #. as stored in the certificate.
 #, c-format
@@ -817,25 +817,10 @@ msgstr "プロセスforkエラー: %s\n"
 msgid "waiting for process %d to terminate failed: %s\n"
 msgstr "プロセス%dの終了待ちが失敗: %s\n"
 
-#, c-format
-msgid "error running '%s': probably not installed\n"
-msgstr "'%s'の実行エラー: おそらくインストールされていません\n"
-
-#, c-format
-msgid "error running '%s': exit status %d\n"
-msgstr "'%s'の実行エラー: exitステイタス %d\n"
-
-#, c-format
-msgid "error running '%s': terminated\n"
-msgstr "'%s'の実行エラー: 終了しました\n"
-
-#, c-format
-msgid "waiting for processes to terminate failed: %s\n"
+#, fuzzy, c-format
+#| msgid "waiting for processes to terminate failed: %s\n"
+msgid "waiting for process to terminate failed: ec=%d\n"
 msgstr "プロセスの終了待ちが失敗: %s\n"
-
-#, c-format
-msgid "error getting exit code of process %d: %s\n"
-msgstr "プロセス %d のexitコード取得エラー: %s\n"
 
 #, c-format
 msgid "can't connect to '%s': %s\n"
@@ -2289,6 +2274,11 @@ msgstr "署名の一覧時に有効期限の日付を表示する"
 msgid "show preferences"
 msgstr "優先指定の表示"
 
+#, fuzzy
+#| msgid "change the ownertrust"
+msgid "show ownertrust"
+msgstr "所有者信用の変更"
+
 #, c-format
 msgid "unknown TOFU policy '%s'\n"
 msgstr "不明のTOFUポリシー'%s'\n"
@@ -2415,6 +2405,11 @@ msgstr "無効な auto-key-locate リストです\n"
 #, c-format
 msgid "invalid argument for option \"%.50s\"\n"
 msgstr "オプション\"%.50s\"には無効な引数です\n"
+
+#, fuzzy, c-format
+#| msgid "error parsing key specification '%s': %s\n"
+msgid "error parsing value for option '%s': %s\n"
+msgstr "鍵指定'%s'の構文解析エラー: %s\n"
 
 #, c-format
 msgid "WARNING: program may create a core file!\n"
@@ -3582,6 +3577,11 @@ msgstr "ユーザIDの失効に失敗しました: %s\n"
 msgid "setting the primary user ID failed: %s\n"
 msgstr "プライマリ・ユーザIDの設定に失敗しました: %s\n"
 
+#, fuzzy, c-format
+#| msgid "checking the trust list failed: %s\n"
+msgid "setting the ownertrust to '%s' failed: %s\n"
+msgstr "信用リストの検査に失敗しました: %s\n"
+
 #, c-format
 msgid "\"%s\" is not a fingerprint\n"
 msgstr "\"%s\"はフィンガープリントではありません\n"
@@ -4112,12 +4112,12 @@ msgstr "  (%d) カードに存在する鍵%s\n"
 msgid "Enter the keygrip: "
 msgstr "keygripを入力: "
 
+msgid "No key with this keygrip\n"
+msgstr "このkeygripの鍵はありません\n"
+
 #, c-format
 msgid "Not a valid keygrip (expecting 40 hex digits)\n"
 msgstr "有効なkeygrip (40桁の16進数字)ではありません\n"
-
-msgid "No key with this keygrip\n"
-msgstr "このkeygripの鍵はありません\n"
 
 #, c-format
 msgid "error reading the card: %s\n"
@@ -4392,6 +4392,11 @@ msgstr ""
 "この鍵は暗号化には使用できないことに注意してください。暗号化を行うには、\n"
 "\"--edit-key\"コマンドを使って副鍵を生成してください。\n"
 
+#, fuzzy, c-format
+#| msgid "WARNING: This key has been revoked by its owner!\n"
+msgid "Note: The key has been created with one or more ADSK!\n"
+msgstr "*警告*: この鍵は所有者によって失効されています!\n"
+
 #, c-format
 msgid ""
 "key has been created %lu second in future (time warp or clock problem)\n"
@@ -4464,6 +4469,13 @@ msgstr[0] "警告: %lu個の鍵がその大きさのためスキップされま�
 
 msgid "Keyring"
 msgstr "鍵リング"
+
+msgid "Revocable by: "
+msgstr ""
+
+#, c-format
+msgid "error writing to stdout: %s\n"
+msgstr "stdoutへの書き込みエラー: %s\n"
 
 msgid "Primary key fingerprint:"
 msgstr " 主鍵フィンガープリント:"
@@ -4616,6 +4628,10 @@ msgstr "      \"%s\"\n"
 #, c-format
 msgid "encrypted with %s key, ID %s\n"
 msgstr "%s鍵, ID %sで暗号化されました\n"
+
+#, c-format
+msgid "WARNING: key is not quantum-resistant\n"
+msgstr ""
 
 #, c-format
 msgid "WARNING: multiple plaintexts seen\n"
@@ -7049,6 +7065,11 @@ msgstr " (オプションです。空行で終了):\n"
 msgid "Enter URIs"
 msgstr "URIを入力"
 
+#, fuzzy
+#| msgid "Enter the notation: "
+msgid "Enter extensions"
+msgstr "注釈を入力: "
+
 msgid "Create self-signed certificate? (y/N) "
 msgstr "自己署名証明書を作成しますか? (y/N) "
 
@@ -8735,6 +8756,22 @@ msgstr "Yubikey管理コマンド"
 msgid "manage the command history"
 msgstr "コマンド履歴を管理する"
 
+#, c-format
+#~ msgid "error running '%s': probably not installed\n"
+#~ msgstr "'%s'の実行エラー: おそらくインストールされていません\n"
+
+#, c-format
+#~ msgid "error running '%s': exit status %d\n"
+#~ msgstr "'%s'の実行エラー: exitステイタス %d\n"
+
+#, c-format
+#~ msgid "error running '%s': terminated\n"
+#~ msgstr "'%s'の実行エラー: 終了しました\n"
+
+#, c-format
+#~ msgid "error getting exit code of process %d: %s\n"
+#~ msgstr "プロセス %d のexitコード取得エラー: %s\n"
+
 #~ msgid "use canonical text mode"
 #~ msgstr "正準テキスト・モードを使用"
 
@@ -8833,9 +8870,6 @@ msgstr "コマンド履歴を管理する"
 
 #~ msgid "scanning result for attribute '%s'\n"
 #~ msgstr "属性'%s'のスキャン結果\n"
-
-#~ msgid "error writing to stdout: %s\n"
-#~ msgstr "stdoutへの書き込みエラー: %s\n"
 
 #~ msgid "          available attribute '%s'\n"
 #~ msgstr "          利用可能な属性'%s'\n"

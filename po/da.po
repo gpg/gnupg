@@ -815,7 +815,7 @@ msgstr "Nej"
 #. insert a line break.  The double percent sign is actually
 #. needed because it is also a printf format string.  If you
 #. need to insert a plain % sign, you need to encode it as
-#. "%%25".  The second "%s" gets replaced by a hexdecimal
+#. "%%25".  The second "%s" gets replaced by a hexadecimal
 #. fingerprint string whereas the first one receives the name
 #. as stored in the certificate.
 #, c-format
@@ -936,28 +936,9 @@ msgid "waiting for process %d to terminate failed: %s\n"
 msgstr "ventning på at proces %d skulle terminere mislykkedes: %s\n"
 
 #, fuzzy, c-format
-#| msgid "error running `%s': probably not installed\n"
-msgid "error running '%s': probably not installed\n"
-msgstr "fejl ved kørsel af »%s«: sikkert ikke installeret\n"
-
-#, fuzzy, c-format
-#| msgid "error running `%s': exit status %d\n"
-msgid "error running '%s': exit status %d\n"
-msgstr "fejl ved kørsel af »%s«: afslutningsstatus %d\n"
-
-#, fuzzy, c-format
-#| msgid "error running `%s': terminated\n"
-msgid "error running '%s': terminated\n"
-msgstr "fejl ved kørsel af »%s«: termineret\n"
-
-#, fuzzy, c-format
 #| msgid "waiting for process %d to terminate failed: %s\n"
-msgid "waiting for processes to terminate failed: %s\n"
+msgid "waiting for process to terminate failed: ec=%d\n"
 msgstr "ventning på at proces %d skulle terminere mislykkedes: %s\n"
-
-#, c-format
-msgid "error getting exit code of process %d: %s\n"
-msgstr "fejl ved indhentelse af afslutningskode for proces %d: %s\n"
 
 #, fuzzy, c-format
 #| msgid "can't connect to `%s': %s\n"
@@ -2589,6 +2570,11 @@ msgstr "vis udløbsdatoer under underskriftvisninger"
 msgid "show preferences"
 msgstr "vis præferencer (ekspert)"
 
+#, fuzzy
+#| msgid "change the ownertrust"
+msgid "show ownertrust"
+msgstr "ændr ejertroværdigheden"
+
 #, fuzzy, c-format
 #| msgid "unknown option `%s'\n"
 msgid "unknown TOFU policy '%s'\n"
@@ -2724,6 +2710,11 @@ msgstr "ugyldig liste for auto-key-locate\n"
 #| msgid "missing argument for option \"%.50s\"\n"
 msgid "invalid argument for option \"%.50s\"\n"
 msgstr "manglende parameter for indstilling »%.50s«\n"
+
+#, fuzzy, c-format
+#| msgid "error storing certificate: %s\n"
+msgid "error parsing value for option '%s': %s\n"
+msgstr "fejl ved lagring af certifikat: %s\n"
 
 #, c-format
 msgid "WARNING: program may create a core file!\n"
@@ -3989,6 +3980,11 @@ msgid "setting the primary user ID failed: %s\n"
 msgstr "kontrol af troværdighedslisten mislykkedes: %s\n"
 
 #, fuzzy, c-format
+#| msgid "checking the trust list failed: %s\n"
+msgid "setting the ownertrust to '%s' failed: %s\n"
+msgstr "kontrol af troværdighedslisten mislykkedes: %s\n"
+
+#, fuzzy, c-format
 #| msgid "invalid fingerprint"
 msgid "\"%s\" is not a fingerprint\n"
 msgstr "ugyldig fingeraftryk"
@@ -4578,12 +4574,12 @@ msgstr "  (%d) Eksisterende nøgle fra kort\n"
 msgid "Enter the keygrip: "
 msgstr "Indtst nøglegrebet: "
 
+msgid "No key with this keygrip\n"
+msgstr "Ingen nøgle med dette nøglegreb\n"
+
 #, c-format
 msgid "Not a valid keygrip (expecting 40 hex digits)\n"
 msgstr "Ikke et gyldigt nøglegreb (forventer 40 hex cifre)\n"
-
-msgid "No key with this keygrip\n"
-msgstr "Ingen nøgle med dette nøglegreb\n"
 
 #, c-format
 msgid "error reading the card: %s\n"
@@ -4872,6 +4868,11 @@ msgstr ""
 "Bemærk at denne nøgle ikke kan bruges til kryptering. Du kan bruge\n"
 "kommandoen »--edit-key« til at oprette en undernøgle til dette formål.\n"
 
+#, fuzzy, c-format
+#| msgid "WARNING: This key has been revoked by its owner!\n"
+msgid "Note: The key has been created with one or more ADSK!\n"
+msgstr "ADVARSEL: Denne nøgle er blevet tilbagekaldt af dets ejer!\n"
+
 #, c-format
 msgid ""
 "key has been created %lu second in future (time warp or clock problem)\n"
@@ -4955,6 +4956,14 @@ msgstr[1] ""
 
 msgid "Keyring"
 msgstr "Nøglering"
+
+msgid "Revocable by: "
+msgstr ""
+
+#, fuzzy, c-format
+#| msgid "error writing to %s: %s\n"
+msgid "error writing to stdout: %s\n"
+msgstr "fejl ved skrivning til »%s«: %s\n"
 
 msgid "Primary key fingerprint:"
 msgstr "Primær nøglefingeraftryk:"
@@ -5121,6 +5130,10 @@ msgstr "      »%s«\n"
 #, c-format
 msgid "encrypted with %s key, ID %s\n"
 msgstr "krypteret med %s nøgle, id %s\n"
+
+#, c-format
+msgid "WARNING: key is not quantum-resistant\n"
+msgstr ""
 
 #, c-format
 msgid "WARNING: multiple plaintexts seen\n"
@@ -7772,6 +7785,11 @@ msgid "Enter URIs"
 msgstr "Indtast URI'er"
 
 #, fuzzy
+#| msgid "Enter the notation: "
+msgid "Enter extensions"
+msgstr "Indtast notationen: "
+
+#, fuzzy
 #| msgid "Create a designated revocation certificate for this key? (y/N) "
 msgid "Create self-signed certificate? (y/N) "
 msgstr "Opret et designet tilbagekaldscertifikat for denne nøgle? (j/N) "
@@ -9719,6 +9737,25 @@ msgstr ""
 msgid "manage the command history"
 msgstr ""
 
+#, fuzzy, c-format
+#~| msgid "error running `%s': probably not installed\n"
+#~ msgid "error running '%s': probably not installed\n"
+#~ msgstr "fejl ved kørsel af »%s«: sikkert ikke installeret\n"
+
+#, fuzzy, c-format
+#~| msgid "error running `%s': exit status %d\n"
+#~ msgid "error running '%s': exit status %d\n"
+#~ msgstr "fejl ved kørsel af »%s«: afslutningsstatus %d\n"
+
+#, fuzzy, c-format
+#~| msgid "error running `%s': terminated\n"
+#~ msgid "error running '%s': terminated\n"
+#~ msgstr "fejl ved kørsel af »%s«: termineret\n"
+
+#, c-format
+#~ msgid "error getting exit code of process %d: %s\n"
+#~ msgstr "fejl ved indhentelse af afslutningskode for proces %d: %s\n"
+
 #~ msgid "use canonical text mode"
 #~ msgstr "brug kanonisk teksttilstand"
 
@@ -9794,11 +9831,6 @@ msgstr ""
 #~| msgid "invalid import options\n"
 #~ msgid "invalid port number %d\n"
 #~ msgstr "ugyldige importindstillinger\n"
-
-#, fuzzy
-#~| msgid "error writing to %s: %s\n"
-#~ msgid "error writing to stdout: %s\n"
-#~ msgstr "fejl ved skrivning til »%s«: %s\n"
 
 #, fuzzy
 #~| msgid "certificate `%s' not found: %s\n"

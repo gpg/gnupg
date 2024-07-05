@@ -742,7 +742,7 @@ msgstr "Ne"
 #. insert a line break.  The double percent sign is actually
 #. needed because it is also a printf format string.  If you
 #. need to insert a plain % sign, you need to encode it as
-#. "%%25".  The second "%s" gets replaced by a hexdecimal
+#. "%%25".  The second "%s" gets replaced by a hexadecimal
 #. fingerprint string whereas the first one receives the name
 #. as stored in the certificate.
 #, c-format
@@ -849,25 +849,10 @@ msgstr "chyba při rozdvojování procesu: %s\n"
 msgid "waiting for process %d to terminate failed: %s\n"
 msgstr "čekání na konec procesu %d se nezdařilo: %s\n"
 
-#, c-format
-msgid "error running '%s': probably not installed\n"
-msgstr "chyba při spouštění „%s“: pravděpodobně není nainstalován\n"
-
-#, c-format
-msgid "error running '%s': exit status %d\n"
-msgstr "chyba v běhu „%s“: návratový kód %d\n"
-
-#, c-format
-msgid "error running '%s': terminated\n"
-msgstr "chyba v běhu „%s“: násilně ukončeno\n"
-
-#, c-format
-msgid "waiting for processes to terminate failed: %s\n"
+#, fuzzy, c-format
+#| msgid "waiting for processes to terminate failed: %s\n"
+msgid "waiting for process to terminate failed: ec=%d\n"
 msgstr "čekání na ukončení procesu se nezdařilo: %s\n"
-
-#, c-format
-msgid "error getting exit code of process %d: %s\n"
-msgstr "chyba při získání návratového kódu procesu %d: %s\n"
 
 #, c-format
 msgid "can't connect to '%s': %s\n"
@@ -2347,6 +2332,11 @@ msgstr "ukazovat data expirace během výpisu podpisů"
 msgid "show preferences"
 msgstr "vypsat předvolby"
 
+#, fuzzy
+#| msgid "change the ownertrust"
+msgid "show ownertrust"
+msgstr "změnit důvěryhodnost vlastníka klíče"
+
 #, c-format
 msgid "unknown TOFU policy '%s'\n"
 msgstr "neznámá TOFU politika „%s“\n"
@@ -2473,6 +2463,11 @@ msgstr "neplatný seznam auto-key-locate\n"
 #, c-format
 msgid "invalid argument for option \"%.50s\"\n"
 msgstr "neplatný argument u volby „%.50s“\n"
+
+#, fuzzy, c-format
+#| msgid "error parsing key specification '%s': %s\n"
+msgid "error parsing value for option '%s': %s\n"
+msgstr "chyba při rozboru názvu klíče „%s“: %s\n"
 
 #, c-format
 msgid "WARNING: program may create a core file!\n"
@@ -3667,6 +3662,11 @@ msgstr "odvolání ID uživatele se nepodařilo: %s\n"
 msgid "setting the primary user ID failed: %s\n"
 msgstr "nastavení primárního ID uživatele se nepodařilo: %s\n"
 
+#, fuzzy, c-format
+#| msgid "checking the trust list failed: %s\n"
+msgid "setting the ownertrust to '%s' failed: %s\n"
+msgstr "kontrola seznamu důvěry se nepodařila: %s\n"
+
 #, c-format
 msgid "\"%s\" is not a fingerprint\n"
 msgstr "„%s“ není otisk\n"
@@ -4200,12 +4200,12 @@ msgstr "  (%d) Klíč existující na kartě%s\n"
 msgid "Enter the keygrip: "
 msgstr "Vložte keygrip: "
 
+msgid "No key with this keygrip\n"
+msgstr "Klíč s takovým keygripem neexistuje\n"
+
 #, c-format
 msgid "Not a valid keygrip (expecting 40 hex digits)\n"
 msgstr "Není platným keygripem (očekáváno 40 šestnáctkových číslic)\n"
-
-msgid "No key with this keygrip\n"
-msgstr "Klíč s takovým keygripem neexistuje\n"
 
 #, c-format
 msgid "error reading the card: %s\n"
@@ -4485,6 +4485,11 @@ msgstr ""
 "Tento klíč nemůže být použitý pro šifrování. K vytvoření\n"
 "sekundárního klíče pro tento účel můžete použít příkaz „--edit-key“.\n"
 
+#, fuzzy, c-format
+#| msgid "WARNING: This key has been revoked by its owner!\n"
+msgid "Note: The key has been created with one or more ADSK!\n"
+msgstr "POZOR: Tento klíč byl revokován svým vlastníkem!\n"
+
 #, c-format
 msgid ""
 "key has been created %lu second in future (time warp or clock problem)\n"
@@ -4567,6 +4572,13 @@ msgstr[2] "Pozor: %lu klíčů přeskočeno kvůli jejich přílišné velikosti
 
 msgid "Keyring"
 msgstr "Soubor klíčů (keyring)"
+
+msgid "Revocable by: "
+msgstr ""
+
+#, c-format
+msgid "error writing to stdout: %s\n"
+msgstr "chyba při zápisu na standardní výstup: %s\n"
 
 msgid "Primary key fingerprint:"
 msgstr "Otisk primárního klíče:"
@@ -4729,6 +4741,10 @@ msgstr "      „%s“\n"
 #, c-format
 msgid "encrypted with %s key, ID %s\n"
 msgstr "zašifrováno klíčem %s, ID %s\n"
+
+#, c-format
+msgid "WARNING: key is not quantum-resistant\n"
+msgstr ""
 
 #, c-format
 msgid "WARNING: multiple plaintexts seen\n"
@@ -7275,6 +7291,11 @@ msgstr " (volitelné; ukončete prázdným řádkem):\n"
 msgid "Enter URIs"
 msgstr "Zadejte (několik) URI"
 
+#, fuzzy
+#| msgid "Enter the notation: "
+msgid "Enter extensions"
+msgstr "Vložte poznámku: "
+
 msgid "Create self-signed certificate? (y/N) "
 msgstr "Vytvořit sám sebou podepsaný certifikát? (a/N)"
 
@@ -8982,6 +9003,22 @@ msgstr "Příkazy pro správu Yubikey"
 msgid "manage the command history"
 msgstr "spravuje historii příkazů"
 
+#, c-format
+#~ msgid "error running '%s': probably not installed\n"
+#~ msgstr "chyba při spouštění „%s“: pravděpodobně není nainstalován\n"
+
+#, c-format
+#~ msgid "error running '%s': exit status %d\n"
+#~ msgstr "chyba v běhu „%s“: návratový kód %d\n"
+
+#, c-format
+#~ msgid "error running '%s': terminated\n"
+#~ msgstr "chyba v běhu „%s“: násilně ukončeno\n"
+
+#, c-format
+#~ msgid "error getting exit code of process %d: %s\n"
+#~ msgstr "chyba při získání návratového kódu procesu %d: %s\n"
+
 #~ msgid "use canonical text mode"
 #~ msgstr "použít kanonický textový režim"
 
@@ -9189,9 +9226,6 @@ msgstr "spravuje historii příkazů"
 
 #~ msgid "scanning result for attribute '%s'\n"
 #~ msgstr "ve výsledku se hledá atribut „%s“\n"
-
-#~ msgid "error writing to stdout: %s\n"
-#~ msgstr "chyba při zápisu na standardní výstup: %s\n"
 
 #~ msgid "          available attribute '%s'\n"
 #~ msgstr "          dostupný atribut „%s“\n"

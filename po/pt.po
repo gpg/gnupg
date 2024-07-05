@@ -770,7 +770,7 @@ msgstr "Não"
 #. insert a line break.  The double percent sign is actually
 #. needed because it is also a printf format string.  If you
 #. need to insert a plain % sign, you need to encode it as
-#. "%%25".  The second "%s" gets replaced by a hexdecimal
+#. "%%25".  The second "%s" gets replaced by a hexadecimal
 #. fingerprint string whereas the first one receives the name
 #. as stored in the certificate.
 #, c-format
@@ -2137,9 +2137,6 @@ msgstr "criar saída blindada ASCII"
 msgid "|FILE|write output to FILE"
 msgstr "|FILE|escrever saída em FILE"
 
-msgid "use canonical text mode"
-msgstr "usar modo de texto canónico"
-
 msgid "|N|set compress level to N (0 disables)"
 msgstr "|N|definir nível de compressão para N (0 desabilita)"
 
@@ -2351,6 +2348,11 @@ msgstr "mostrar datas de expiração durante as listagens de assinaturas"
 msgid "show preferences"
 msgstr "mostrar preferências"
 
+#, fuzzy
+#| msgid "change the ownertrust"
+msgid "show ownertrust"
+msgstr "alterar o ownertrust"
+
 #, c-format
 msgid "unknown TOFU policy '%s'\n"
 msgstr "política TOFU desconhecida '%s'\n"
@@ -2482,6 +2484,11 @@ msgstr "lista auto-key-locate inválida\n"
 #, c-format
 msgid "invalid argument for option \"%.50s\"\n"
 msgstr "argumento inválido para a opção \"%.50s\"\n"
+
+#, fuzzy, c-format
+#| msgid "error parsing key specification '%s': %s\n"
+msgid "error parsing value for option '%s': %s\n"
+msgstr "erro ao processar a especificação de chave '%s': %s\n"
 
 #, c-format
 msgid "WARNING: program may create a core file!\n"
@@ -3689,6 +3696,11 @@ msgstr "falha ao revogar a ID de utilizador: %s\n"
 msgid "setting the primary user ID failed: %s\n"
 msgstr "falha ao definir a ID de utilizador principal: %s\n"
 
+#, fuzzy, c-format
+#| msgid "checking the trust list failed: %s\n"
+msgid "setting the ownertrust to '%s' failed: %s\n"
+msgstr "falha ao verificar a lista da confiança: %s\n"
+
 #, c-format
 msgid "\"%s\" is not a fingerprint\n"
 msgstr "\"%s\" não é uma impressão digital\n"
@@ -4229,12 +4241,12 @@ msgstr "  (%d) Chave do cartão existente%s\n"
 msgid "Enter the keygrip: "
 msgstr "Introduzir o keygrip: "
 
+msgid "No key with this keygrip\n"
+msgstr "Nenhuma chave com este keygrip\n"
+
 #, c-format
 msgid "Not a valid keygrip (expecting 40 hex digits)\n"
 msgstr "Não é um keygrip válido (à espera de 40 dígitos hex)\n"
-
-msgid "No key with this keygrip\n"
-msgstr "Nenhuma chave com este keygrip\n"
 
 #, c-format
 msgid "error reading the card: %s\n"
@@ -4512,6 +4524,11 @@ msgstr ""
 "Repare que esta chave não pode ser usada para cifração.  Poderá querer usar\n"
 "o comando \"--edit-key\" para gerar uma subchave com esta finalidade.\n"
 
+#, fuzzy, c-format
+#| msgid "WARNING: This key has been revoked by its owner!\n"
+msgid "Note: The key has been created with one or more ADSK!\n"
+msgstr "AVISO: Esta chave foi revogada pelo seu dono!\n"
+
 #, c-format
 msgid ""
 "key has been created %lu second in future (time warp or clock problem)\n"
@@ -4592,6 +4609,14 @@ msgstr[1] "Aviso: %lu chaves ignoradas devido aos seus tamanhos grandes\n"
 
 msgid "Keyring"
 msgstr "Porta-chaves"
+
+msgid "Revocable by: "
+msgstr ""
+
+#, fuzzy, c-format
+#| msgid "error writing to '%s': %s\n"
+msgid "error writing to stdout: %s\n"
+msgstr "erro ao escrever em '%s': %s\n"
 
 msgid "Primary key fingerprint:"
 msgstr "Impressão digital da chave principal:"
@@ -4750,6 +4775,10 @@ msgstr "      \"%s\"\n"
 #, c-format
 msgid "encrypted with %s key, ID %s\n"
 msgstr "cifrado com chave %s, ID %s\n"
+
+#, c-format
+msgid "WARNING: key is not quantum-resistant\n"
+msgstr ""
 
 #, c-format
 msgid "WARNING: multiple plaintexts seen\n"
@@ -6706,7 +6735,9 @@ msgstr "o acesso aos comandos admin não está configurado\n"
 msgid "||Please enter the PIN"
 msgstr "||Introduza o PIN"
 
-msgid "||Please enter the Reset Code for the card"
+#, fuzzy
+#| msgid "||Please enter the Reset Code for the card"
+msgid "|R|Please enter the Reset Code for the card"
 msgstr "||Introduza o Código de Reset do cartão"
 
 #, c-format
@@ -7274,6 +7305,11 @@ msgstr " (opcional; terminar com uma linha vazia):\n"
 
 msgid "Enter URIs"
 msgstr "Introduzir URIs"
+
+#, fuzzy
+#| msgid "Enter the notation: "
+msgid "Enter extensions"
+msgstr "Introduzir a notação: "
 
 msgid "Create self-signed certificate? (y/N) "
 msgstr "Criar certificado auto-assinado? (s/N) "
@@ -8968,8 +9004,14 @@ msgstr "armazenar um certificado em um objeto de dados"
 msgid "store a private key to a data object"
 msgstr "armazenar uma chave privada em um objeto de dados"
 
+msgid "run various checks on the keys"
+msgstr ""
+
 msgid "Yubikey management commands"
 msgstr "comandos de gerir uma Yubikey"
 
 msgid "manage the command history"
 msgstr "gerir o histórico de comandos"
+
+#~ msgid "use canonical text mode"
+#~ msgstr "usar modo de texto canónico"

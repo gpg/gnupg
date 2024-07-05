@@ -735,7 +735,7 @@ msgstr ""
 #. insert a line break.  The double percent sign is actually
 #. needed because it is also a printf format string.  If you
 #. need to insert a plain % sign, you need to encode it as
-#. "%%25".  The second "%s" gets replaced by a hexdecimal
+#. "%%25".  The second "%s" gets replaced by a hexadecimal
 #. fingerprint string whereas the first one receives the name
 #. as stored in the certificate.
 #, c-format
@@ -844,24 +844,8 @@ msgid "waiting for process %d to terminate failed: %s\n"
 msgstr ""
 
 #, fuzzy, c-format
-msgid "error running '%s': probably not installed\n"
-msgstr "erro lendo `%s': %s\n"
-
-#, fuzzy, c-format
-msgid "error running '%s': exit status %d\n"
-msgstr "erro lendo `%s': %s\n"
-
-#, fuzzy, c-format
-msgid "error running '%s': terminated\n"
-msgstr "erro lendo `%s': %s\n"
-
-#, fuzzy, c-format
-msgid "waiting for processes to terminate failed: %s\n"
+msgid "waiting for process to terminate failed: ec=%d\n"
 msgstr "a actualización fallou: %s\n"
-
-#, fuzzy, c-format
-msgid "error getting exit code of process %d: %s\n"
-msgstr "erro escribindo no chaveiro secreto `%s': %s\n"
 
 #, fuzzy, c-format
 #| msgid "can't connect to `%s': %s\n"
@@ -2465,6 +2449,11 @@ msgstr "Non hai unha sinatura correspondiente no chaveiro secreto\n"
 msgid "show preferences"
 msgstr "estabrece-la lista de preferencias"
 
+#, fuzzy
+#| msgid "change the ownertrust"
+msgid "show ownertrust"
+msgstr "cambia-la confianza sobre o dono"
+
 #, fuzzy, c-format
 msgid "unknown TOFU policy '%s'\n"
 msgstr "destinatario por defecto `%s' descoñecido\n"
@@ -2596,6 +2585,10 @@ msgstr ""
 #, fuzzy, c-format
 msgid "invalid argument for option \"%.50s\"\n"
 msgstr "opcións de importación non válidas\n"
+
+#, fuzzy, c-format
+msgid "error parsing value for option '%s': %s\n"
+msgstr "erro ao crea-lo contrasinal: %s\n"
 
 #, c-format
 msgid "WARNING: program may create a core file!\n"
@@ -3871,6 +3864,10 @@ msgid "setting the primary user ID failed: %s\n"
 msgstr "fallou a comprobación da sinatura creada: %s\n"
 
 #, fuzzy, c-format
+msgid "setting the ownertrust to '%s' failed: %s\n"
+msgstr "fallou a comprobación da sinatura creada: %s\n"
+
+#, fuzzy, c-format
 msgid "\"%s\" is not a fingerprint\n"
 msgstr "erro: pegada dactilar non válida\n"
 
@@ -4447,13 +4444,13 @@ msgstr "  (%d) RSA (só cifrar)\n"
 msgid "Enter the keygrip: "
 msgstr "Notación de sinaturas: "
 
-#, c-format
-msgid "Not a valid keygrip (expecting 40 hex digits)\n"
-msgstr ""
-
 #, fuzzy
 msgid "No key with this keygrip\n"
 msgstr "Non hai ID de usuario con índice %d\n"
+
+#, c-format
+msgid "Not a valid keygrip (expecting 40 hex digits)\n"
+msgstr ""
 
 #, fuzzy, c-format
 msgid "error reading the card: %s\n"
@@ -4744,6 +4741,11 @@ msgstr ""
 "queira emprega-lo comando \"--edit-key\" para xerar unha chave secundaria\n"
 "con esa finalidade.\n"
 
+#, fuzzy, c-format
+#| msgid "WARNING: This key has been revoked by its owner!\n"
+msgid "Note: The key has been created with one or more ADSK!\n"
+msgstr "AVISO: ¡Esta chave está revocada polo propietario!\n"
+
 #, c-format
 msgid ""
 "key has been created %lu second in future (time warp or clock problem)\n"
@@ -4827,6 +4829,13 @@ msgstr[1] ""
 
 msgid "Keyring"
 msgstr "Chaveiro"
+
+msgid "Revocable by: "
+msgstr ""
+
+#, fuzzy, c-format
+msgid "error writing to stdout: %s\n"
+msgstr "erro escribindo no chaveiro `%s': %s\n"
 
 msgid "Primary key fingerprint:"
 msgstr "Pegada dactilar da chave primaria:"
@@ -4993,6 +5002,10 @@ msgstr "               alias \""
 #, fuzzy, c-format
 msgid "encrypted with %s key, ID %s\n"
 msgstr "cifrado cunha chave %s, ID %08lX\n"
+
+#, c-format
+msgid "WARNING: key is not quantum-resistant\n"
+msgstr ""
 
 #, c-format
 msgid "WARNING: multiple plaintexts seen\n"
@@ -7574,6 +7587,10 @@ msgid "Enter URIs"
 msgstr "Introduza o ID de usuario: "
 
 #, fuzzy
+msgid "Enter extensions"
+msgstr "Notación de sinaturas: "
+
+#, fuzzy
 msgid "Create self-signed certificate? (y/N) "
 msgstr "¿Crear un certificado de revocación para esta sinatura? "
 
@@ -9321,6 +9338,22 @@ msgstr ""
 msgid "manage the command history"
 msgstr ""
 
+#, fuzzy, c-format
+#~ msgid "error running '%s': probably not installed\n"
+#~ msgstr "erro lendo `%s': %s\n"
+
+#, fuzzy, c-format
+#~ msgid "error running '%s': exit status %d\n"
+#~ msgstr "erro lendo `%s': %s\n"
+
+#, fuzzy, c-format
+#~ msgid "error running '%s': terminated\n"
+#~ msgstr "erro lendo `%s': %s\n"
+
+#, fuzzy, c-format
+#~ msgid "error getting exit code of process %d: %s\n"
+#~ msgstr "erro escribindo no chaveiro secreto `%s': %s\n"
+
 #~ msgid "use canonical text mode"
 #~ msgstr "usar modo de texto canónico"
 
@@ -9392,10 +9425,6 @@ msgstr ""
 #~| msgid "invalid import options\n"
 #~ msgid "invalid port number %d\n"
 #~ msgstr "opcións de importación non válidas\n"
-
-#, fuzzy
-#~ msgid "error writing to stdout: %s\n"
-#~ msgstr "erro escribindo no chaveiro `%s': %s\n"
 
 #, fuzzy
 #~ msgid "attribute '%s' not found\n"

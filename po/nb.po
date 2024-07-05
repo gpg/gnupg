@@ -731,7 +731,7 @@ msgstr "Nei"
 #. insert a line break.  The double percent sign is actually
 #. needed because it is also a printf format string.  If you
 #. need to insert a plain % sign, you need to encode it as
-#. "%%25".  The second "%s" gets replaced by a hexdecimal
+#. "%%25".  The second "%s" gets replaced by a hexadecimal
 #. fingerprint string whereas the first one receives the name
 #. as stored in the certificate.
 #, c-format
@@ -846,26 +846,10 @@ msgstr "feil under kopiering av prosess: %s\n"
 msgid "waiting for process %d to terminate failed: %s\n"
 msgstr "prosess %d avsluttet ikke i tide: %s\n"
 
-#, c-format
-msgid "error running '%s': probably not installed\n"
-msgstr ""
-"feil under kjøring av «%s». Programmet er sannsynligvis ikke installert\n"
-
-#, c-format
-msgid "error running '%s': exit status %d\n"
-msgstr "feil under kjøring av «%s». Avslutningskode %d\n"
-
-#, c-format
-msgid "error running '%s': terminated\n"
-msgstr "feil under kjøring av «%s». Avsluttet\n"
-
-#, c-format
-msgid "waiting for processes to terminate failed: %s\n"
+#, fuzzy, c-format
+#| msgid "waiting for processes to terminate failed: %s\n"
+msgid "waiting for process to terminate failed: ec=%d\n"
 msgstr "venting på avslutning av prosesser mislyktes: %s\n"
-
-#, c-format
-msgid "error getting exit code of process %d: %s\n"
-msgstr "feil under henting av prosess-avslutningskode %d: %s\n"
 
 #, c-format
 msgid "can't connect to '%s': %s\n"
@@ -2386,6 +2370,11 @@ msgstr "vis utløpsdatoer i nøkkelvisning"
 msgid "show preferences"
 msgstr "vis innstillinger (avansert)"
 
+#, fuzzy
+#| msgid "change the ownertrust"
+msgid "show ownertrust"
+msgstr "endre eiertillit"
+
 #, c-format
 msgid "unknown TOFU policy '%s'\n"
 msgstr "«%s» er et ukjent TOFU-regelverk\n"
@@ -2513,6 +2502,11 @@ msgstr "ugyldig «auto-key-locate»-liste\n"
 #, c-format
 msgid "invalid argument for option \"%.50s\"\n"
 msgstr "ugyldig argument for valget «%.50s»\n"
+
+#, fuzzy, c-format
+#| msgid "error parsing key specification '%s': %s\n"
+msgid "error parsing value for option '%s': %s\n"
+msgstr "feil under tolking av nøkkelspesifikasjon «%s»: %s\n"
 
 #, c-format
 msgid "WARNING: program may create a core file!\n"
@@ -3720,6 +3714,11 @@ msgstr "opphevelse av bruker-id mislyktes: %s\n"
 msgid "setting the primary user ID failed: %s\n"
 msgstr "endring av primær bruker-ID mislyktes: %s\n"
 
+#, fuzzy, c-format
+#| msgid "checking the trust list failed: %s\n"
+msgid "setting the ownertrust to '%s' failed: %s\n"
+msgstr "kontroll av tillitsliste mislyktes: %s\n"
+
 #, c-format
 msgid "\"%s\" is not a fingerprint\n"
 msgstr "«%s» er ikke et fingeravtrykk\n"
@@ -4284,12 +4283,12 @@ msgstr "  (%d) Nøkkel fra kort\n"
 msgid "Enter the keygrip: "
 msgstr "Skriv inn nøkkelgrep: "
 
+msgid "No key with this keygrip\n"
+msgstr "Ingen nøkkel med dette nøkkelgrepet\n"
+
 #, c-format
 msgid "Not a valid keygrip (expecting 40 hex digits)\n"
 msgstr "Ugyldig nøkkelgrep (forventer 40 heks-sifre)\n"
-
-msgid "No key with this keygrip\n"
-msgstr "Ingen nøkkel med dette nøkkelgrepet\n"
 
 #, c-format
 msgid "error reading the card: %s\n"
@@ -4567,6 +4566,11 @@ msgstr ""
 "vurdere å bruke kommandoen «--edit-key» for å lage en\n"
 "undernøkkel til dette formålet.\n"
 
+#, fuzzy, c-format
+#| msgid "WARNING: This key has been revoked by its owner!\n"
+msgid "Note: The key has been created with one or more ADSK!\n"
+msgstr "ADVARSEL: denne nøkkelen er opphevet av eieren.\n"
+
 #, c-format
 msgid ""
 "key has been created %lu second in future (time warp or clock problem)\n"
@@ -4647,6 +4651,13 @@ msgstr[1] "Advarsel: hoppet over %lu nøkler pga. for høy størrelse\n"
 
 msgid "Keyring"
 msgstr "Nøkkelknippe"
+
+msgid "Revocable by: "
+msgstr ""
+
+#, c-format
+msgid "error writing to stdout: %s\n"
+msgstr "feil under skriving til std.utkanal: %s\n"
 
 msgid "Primary key fingerprint:"
 msgstr "Fingeravtrykk for primærnøkkel:"
@@ -4809,6 +4820,10 @@ msgstr "      «%s»\n"
 #, c-format
 msgid "encrypted with %s key, ID %s\n"
 msgstr "kryptert med %s-nøkkel, ID %s\n"
+
+#, c-format
+msgid "WARNING: key is not quantum-resistant\n"
+msgstr ""
 
 #, c-format
 msgid "WARNING: multiple plaintexts seen\n"
@@ -7335,6 +7350,11 @@ msgstr " (valgfritt. Avslutt med tom linje):\n"
 msgid "Enter URIs"
 msgstr "Skriv inn adresser"
 
+#, fuzzy
+#| msgid "Enter the notation: "
+msgid "Enter extensions"
+msgstr "Skriv inn notat: "
+
 msgid "Create self-signed certificate? (y/N) "
 msgstr "Vil du lage selvsignert sertifikat? (y/N) "
 
@@ -9054,6 +9074,23 @@ msgstr ""
 msgid "manage the command history"
 msgstr ""
 
+#, c-format
+#~ msgid "error running '%s': probably not installed\n"
+#~ msgstr ""
+#~ "feil under kjøring av «%s». Programmet er sannsynligvis ikke installert\n"
+
+#, c-format
+#~ msgid "error running '%s': exit status %d\n"
+#~ msgstr "feil under kjøring av «%s». Avslutningskode %d\n"
+
+#, c-format
+#~ msgid "error running '%s': terminated\n"
+#~ msgstr "feil under kjøring av «%s». Avsluttet\n"
+
+#, c-format
+#~ msgid "error getting exit code of process %d: %s\n"
+#~ msgstr "feil under henting av prosess-avslutningskode %d: %s\n"
+
 #~ msgid "use canonical text mode"
 #~ msgstr "bruk kanonisk tekstmodus"
 
@@ -9152,9 +9189,6 @@ msgstr ""
 
 #~ msgid "scanning result for attribute '%s'\n"
 #~ msgstr "ser gjennom treff for attributt «%s»\n"
-
-#~ msgid "error writing to stdout: %s\n"
-#~ msgstr "feil under skriving til std.utkanal: %s\n"
 
 #~ msgid "          available attribute '%s'\n"
 #~ msgstr "          tilgjengelig attributt «%s»\n"
