@@ -1110,9 +1110,8 @@ ifneq ($(TARGETOS),w32)
 	 echo "speedo: /*" ;\
 	 echo "speedo:  * Now copy $(idir)/ to the final location and" ;\
 	 echo "speedo:  * adjust $(idir)/bin/gpgconf.ctl accordingly" ;\
-	 echo "speedo:  * Or run:" ;\
+	 echo "speedo:  * Or run run for example:" ;\
 	 echo "speedo:  *   make -f $(topsrc)/build-aux/speedo.mk install SYSROOT=/usr/local/gnupg26" ;\
-         echo "speedo:  *   ldconfig -n /usr/local/gnupg26/lib";\
 	 echo "speedo:  */")
 endif
 
@@ -1128,7 +1127,6 @@ ifneq ($(TARGETOS),w32)
            echo "speedo: Set SYSROOT to the desired install directory";\
 	   echo "speedo: Example:";\
            echo "speedo:   make -f $(topsrc)/build-aux/speedo.mk install SYSROOT=/usr/local/gnupg26";\
-           echo "speedo:   ldconfig -n /usr/local/gnupg26/lib";\
            exit 1;\
          fi;\
          if [ ! -d "$$SYSROOT"/bin ]; then if ! mkdir "$$SYSROOT"/bin; then \
@@ -1149,6 +1147,8 @@ ifneq ($(TARGETOS),w32)
          fi;\
          echo "speedo: Installing files to $$SYSROOT";\
          find . -type f -executable \
+                -exec install -Dm 755 "{}" "$$SYSROOT/{}" \; ;\
+         find . -type l -executable \
                 -exec install -Dm 755 "{}" "$$SYSROOT/{}" \; ;\
          find . -type f \! -executable \
                 -exec install -Dm 644 "{}" "$$SYSROOT/{}" \; ;\

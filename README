@@ -97,9 +97,13 @@
   example:
 
     make -f build-aux/speedo.mk install SYSROOT=/usr/local/gnupg26
-    ldconfig -n /usr/local/gnupg26/lib
 
-  and adding /usr/local/gnupg26/bin to PATH.
+  and run the binaries like
+
+    /usr/local/gnupg26/bin/gpg
+
+  which will also start any daemon from the same directory.  Make sure
+  to stop already running daemons or use a different GNUPGHOME.
 
 
 ** Specific build problems on some machines:
