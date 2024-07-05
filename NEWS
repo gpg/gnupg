@@ -1,4 +1,4 @@
-Noteworthy changes in version 2.5.0 (unreleased)
+Noteworthy changes in version 2.5.0 (2024-07-05)
 ------------------------------------------------
 
   * gpg: Support composite Kyber+ECC public key algorithms.  This is
@@ -285,6 +285,9 @@ Noteworthy changes in version 2.5.0 (unreleased)
   * gpgtar: Emit extra status lines to help GPGME.  [T6497]
 
   * w32: Avoid using the VirtualStore.  [T6403]
+
+
+  Release-info: https://dev.gnupg.org/T7189
 
 
 Release dates of 2.4 versions
