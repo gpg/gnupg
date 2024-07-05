@@ -25,9 +25,12 @@
   can be freely used, modified and distributed under the terms of the
   GNU General Public License.
 
+  Note that versions 2.5.x are maintained development versions leading
+  to the forthcoming new stable version 2.6.x.
+
 * BUILD INSTRUCTIONS
 
-  GnuPG 2.4 depends on the following GnuPG related packages:
+  GnuPG 2.6 depends on the following GnuPG related packages:
 
     npth         (https://gnupg.org/ftp/gcrypt/npth/)
     libgpg-error (https://gnupg.org/ftp/gcrypt/libgpg-error/)
@@ -93,10 +96,10 @@
   libraries can be installed into an arbitrary location using for
   example:
 
-    make -f build-aux/speedo.mk install SYSROOT=/usr/local/gnupg24
-    ldconfig -n /usr/local/gnupg24/lib
+    make -f build-aux/speedo.mk install SYSROOT=/usr/local/gnupg26
+    ldconfig -n /usr/local/gnupg26/lib
 
-  and adding /usr/local/gnupg24/bin to PATH.
+  and adding /usr/local/gnupg26/bin to PATH.
 
 
 ** Specific build problems on some machines:

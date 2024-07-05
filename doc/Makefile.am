@@ -74,7 +74,7 @@ DVIPS = TEXINPUTS="$(srcdir)$(PATH_SEPARATOR)$$TEXINPUTS" dvips
 AM_MAKEINFOFLAGS = -I $(srcdir) --css-ref=/share/site.css
 
 YAT2M_OPTIONS = -I $(srcdir) \
-        --release "GnuPG @PACKAGE_VERSION@" --source "GNU Privacy Guard 2.4"
+        --release "GnuPG @PACKAGE_VERSION@" --source "GNU Privacy Guard 2.6"
 
 myman_sources = gnupg7.texi gpg.texi gpgsm.texi gpg-agent.texi \
 	        dirmngr.texi scdaemon.texi tools.texi wks.texi \

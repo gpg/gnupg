@@ -163,7 +163,7 @@ dist-hook: gen-ChangeLog
 
 distcheck-hook:
 	set -e; ( \
-	pref="#+macro: gnupg24_" ;\
+	pref="#+macro: gnupg26_" ;\
 	reldate="$$(date -u +%Y-%m-%d)" ;\
         echo "$${pref}ver  $(PACKAGE_VERSION)"  ;\
         echo "$${pref}date $${reldate}" ;\
@@ -312,7 +312,7 @@ sign-release:
 	      gpg -sbu $$mysignkey $${wixlibfile} ;\
 	  fi; \
 	  cat $(RELEASE_NAME).swdb >swdb.snippet;\
-	  echo '#+macro: gnupg24_branch  STABLE-BRANCH-2-4' >>swdb.snippet;\
+	  echo '#+macro: gnupg26_branch  master' >>swdb.snippet;\
 	  cat  $${release_w32_name}.exe.swdb >>swdb.snippet;\
 	  echo >>swdb.snippet ;\
 	  sha1sum $${files1} >>swdb.snippet ;\
