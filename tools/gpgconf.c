@@ -1347,9 +1347,12 @@ show_versions_via_dirmngr (estream_t fp)
       int exitcode;
 
       gnupg_process_ctl (proc, GNUPG_PROCESS_GET_EXIT_ID, &exitcode);
-      log_error ("running %s failed (exitcode=%d): %s\n",
-                 pgmname, exitcode, gpg_strerror (err));
-      es_fprintf (fp, "[error: can't get further info]\n");
+      if (exitcode)
+        {
+          log_error ("running %s failed (exitcode=%d): %s\n",
+                     pgmname, exitcode, gpg_strerror (err));
+          es_fprintf (fp, "[error: can't get further info]\n");
+        }
     }
   gnupg_process_release (proc);
   xfree (line);
