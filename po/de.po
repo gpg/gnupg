@@ -9,7 +9,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnupg-2.4.1\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"PO-Revision-Date: 2024-03-07 13:56+0100\n"
+"PO-Revision-Date: 2024-07-05 14:33+0200\n"
 "Last-Translator: Werner Koch <wk@gnupg.org>\n"
 "Language-Team: German\n"
 "Language: de\n"
@@ -726,7 +726,7 @@ msgstr "Nein"
 #. insert a line break.  The double percent sign is actually
 #. needed because it is also a printf format string.  If you
 #. need to insert a plain % sign, you need to encode it as
-#. "%%25".  The second "%s" gets replaced by a hexdecimal
+#. "%%25".  The second "%s" gets replaced by a hexadecimal
 #. fingerprint string whereas the first one receives the name
 #. as stored in the certificate.
 #, c-format
@@ -844,24 +844,8 @@ msgid "waiting for process %d to terminate failed: %s\n"
 msgstr "Das Warten auf die Beendigung des Prozesses %d schlug fehl: %s\n"
 
 #, c-format
-msgid "error running '%s': probably not installed\n"
-msgstr "Fehler bei Ausführung von `%s': wahrscheinlich nicht installiert\n"
-
-#, c-format
-msgid "error running '%s': exit status %d\n"
-msgstr "Fehler bei Ausführung von `%s': Endestatus %d\n"
-
-#, c-format
-msgid "error running '%s': terminated\n"
-msgstr "Fehler bei Ausführung von `%s': beendet\n"
-
-#, c-format
-msgid "waiting for processes to terminate failed: %s\n"
-msgstr "Das Warten auf die Beendigung von Prozessen schlug fehl: %s\n"
-
-#, c-format
-msgid "error getting exit code of process %d: %s\n"
-msgstr "Fehler beim Holen des Exitwerte des Prozesses %d: %s\n"
+msgid "waiting for process to terminate failed: ec=%d\n"
+msgstr "Das Warten auf die Beendigung des Prozesses schlug fehl: ec=%d\n"
 
 #, c-format
 msgid "can't connect to '%s': %s\n"
@@ -2357,6 +2341,9 @@ msgstr "Das Ablaufdatum mit den Signaturen anlisten"
 msgid "show preferences"
 msgstr "Voreinstellungen anzeigen"
 
+msgid "show ownertrust"
+msgstr "Den \"Ownertrust\" anzeigen"
+
 #, c-format
 msgid "unknown TOFU policy '%s'\n"
 msgstr "Unbekannte TOFU Regel '%s'\n"
@@ -2485,6 +2472,10 @@ msgstr "ungültige \"auto-key-locate\"-Liste\n"
 #, c-format
 msgid "invalid argument for option \"%.50s\"\n"
 msgstr "Ungültiges Argument für Option \"%.50s\"\n"
+
+#, c-format
+msgid "error parsing value for option '%s': %s\n"
+msgstr "Fehler beim Parsen des Wertes der Option '%s': %s\n"
 
 #, c-format
 msgid "WARNING: program may create a core file!\n"
@@ -3707,6 +3698,10 @@ msgid "setting the primary user ID failed: %s\n"
 msgstr "Fehler beim Setzen der Haupt-User-ID: %s\n"
 
 #, c-format
+msgid "setting the ownertrust to '%s' failed: %s\n"
+msgstr "Setzen der \"Ownertrust\" auf '%s' schlug fehl: %s\n"
+
+#, c-format
 msgid "\"%s\" is not a fingerprint\n"
 msgstr "\"%s\" ist kein Fingerabdruck\n"
 
@@ -4252,12 +4247,12 @@ msgstr "  (%d) Vorhandener Schlüssel auf der Karte%s\n"
 msgid "Enter the keygrip: "
 msgstr "Geben Sie den \"Keygrip\" ein: "
 
+msgid "No key with this keygrip\n"
+msgstr "Kein Schlüssel mit diesem \"Keygrip\"\n"
+
 #, c-format
 msgid "Not a valid keygrip (expecting 40 hex digits)\n"
 msgstr "Kein gültiger \"Keygrip\" (40 Hex-Ziffern werden erwartet)\n"
-
-msgid "No key with this keygrip\n"
-msgstr "Kein Schlüssel mit diesem \"Keygrip\"\n"
 
 #, c-format
 msgid "error reading the card: %s\n"
@@ -4535,6 +4530,10 @@ msgstr ""
 "Unterschlüssel für diesem Zweck erzeugen.\n"
 
 #, c-format
+msgid "Note: The key has been created with one or more ADSK!\n"
+msgstr "WARNUNG: Dieser Schlüssel wurde mit einem oder mehreren ADSK erzeugt!\n"
+
+#, c-format
 msgid ""
 "key has been created %lu second in future (time warp or clock problem)\n"
 msgstr ""
@@ -4613,6 +4612,13 @@ msgstr[1] "WARNUNG: %lu Schlüssel übersprungen, da sie zu groß sind\n"
 
 msgid "Keyring"
 msgstr "Schlüsselbund"
+
+msgid "Revocable by: "
+msgstr "Widerrufbar durch: "
+
+#, c-format
+msgid "error writing to stdout: %s\n"
+msgstr "Fehler beim Schreiben auf Standardausgabe: %s\n"
 
 msgid "Primary key fingerprint:"
 msgstr "Haupt-Fingerabdruck  ="
@@ -4770,6 +4776,10 @@ msgstr "      \"%s\"\n"
 #, c-format
 msgid "encrypted with %s key, ID %s\n"
 msgstr "verschlüsselt mit %s Schlüssel, ID %s\n"
+
+#, c-format
+msgid "WARNING: key is not quantum-resistant\n"
+msgstr "WARNUNG: Der Schlüssel ist nicht quantenresistent\n"
 
 #, c-format
 msgid "WARNING: multiple plaintexts seen\n"
@@ -7382,6 +7392,9 @@ msgstr " (Optional. Beenden mit einer leeren Zeile):\n"
 msgid "Enter URIs"
 msgstr "Bitte geben Sie die URIs ein"
 
+msgid "Enter extensions"
+msgstr "Geben Sie die \"Erweiterung\" ein: "
+
 msgid "Create self-signed certificate? (y/N) "
 msgstr "Ein eigenbeglaubigtes Zertifikat erzeugen? (j/N) "
 
@@ -9113,6 +9126,22 @@ msgstr "Verwaltungskommandos für Yubikeys"
 msgid "manage the command history"
 msgstr "Verwaltung der Kommandohistorie"
 
+#, c-format
+#~ msgid "error running '%s': probably not installed\n"
+#~ msgstr "Fehler bei Ausführung von `%s': wahrscheinlich nicht installiert\n"
+
+#, c-format
+#~ msgid "error running '%s': exit status %d\n"
+#~ msgstr "Fehler bei Ausführung von `%s': Endestatus %d\n"
+
+#, c-format
+#~ msgid "error running '%s': terminated\n"
+#~ msgstr "Fehler bei Ausführung von `%s': beendet\n"
+
+#, c-format
+#~ msgid "error getting exit code of process %d: %s\n"
+#~ msgstr "Fehler beim Holen des Exitwerte des Prozesses %d: %s\n"
+
 #~ msgid "use canonical text mode"
 #~ msgstr "Textmodus benutzen"
 
@@ -9231,9 +9260,6 @@ msgstr "Verwaltung der Kommandohistorie"
 
 #~ msgid "scanning result for attribute '%s'\n"
 #~ msgstr "Absuchen des Ergebnisses nach Attribut `%s'\n"
-
-#~ msgid "error writing to stdout: %s\n"
-#~ msgstr "Fehler beim Schreiben auf Standardausgabe: %s\n"
 
 #~ msgid "          available attribute '%s'\n"
 #~ msgstr "        verfügbare Attribute `%s'\n"
@@ -9560,9 +9586,8 @@ msgstr "Verwaltung der Kommandohistorie"
 #~ msgstr "Geschlecht: (Männlich (M), Weiblich (F) oder Leerzeichen): "
 
 #, fuzzy
-#~| msgid "error writing public keyring '%s': %s\n"
 #~ msgid "error setting policy for key %s, user id \"%s\": %s"
-#~ msgstr "Fehler beim Schreiben des öff. Schlüsselbundes `%s': %s\n"
+#~ msgstr "Fehler beim Setzen der Policy des öff. Schlüssels '%s', UID '%s': %s\n"
 
 #~ msgid "only SHA-1 is supported for OCSP responses\n"
 #~ msgstr "Lediglich SHA-1 wird bei OCSP Antworten unterstützt\n"
