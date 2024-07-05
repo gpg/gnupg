@@ -1400,8 +1400,13 @@ write_keybinding (ctrl_t ctrl, kbnode_t root,
       && gnupg_rng_is_compliant (CO_DE_VS))
     oduap.cpl_notation = "de-vs";
   else if ((use & PUBKEY_USAGE_ENC)
-           && sub_pk->pubkey_algo == PUBKEY_ALGO_KYBER)
-    oduap.cpl_notation = "fips203.ipd.2023-08-24";
+           && sub_pk->pubkey_algo == PUBKEY_ALGO_KYBER
+           && PUBKEY_ALGO_KYBER == 29)
+    {
+      /* FIXME: This can be removed as soon as we have implemented the
+       * final fips-203 specification.  */
+      oduap.cpl_notation = "fips203.ipd.2023-08-24";
+    }
   else
     oduap.cpl_notation = NULL;
   oduap.pk = sub_pk;
@@ -6488,6 +6493,7 @@ do_generate_keypair (ctrl_t ctrl, struct para_data_s *para,
     }
   else
     {
+      kbnode_t node;
       PKT_public_key *pk = find_kbnode (pub_root,
                                         PKT_PUBLIC_KEY)->pkt->pkt.public_key;
       print_status_key_created (did_sub? 'B':'P', pk,
@@ -6495,6 +6501,18 @@ do_generate_keypair (ctrl_t ctrl, struct para_data_s *para,
       es_fflush (es_stdout);
       if (any_adsk)
         log_info (_("Note: The key has been created with one or more ADSK!\n"));
+
+      for (node=pub_root; node; node = node->next)
+        if ((node->pkt->pkttype == PKT_PUBLIC_KEY
+             || node->pkt->pkttype == PKT_PUBLIC_SUBKEY)
+            && node->pkt->pkt.public_key->pubkey_algo == PUBKEY_ALGO_KYBER)
+          {
+            log_info ("Note: The key uses the Kyber algorithm from"
+                      " a draft specification\n");
+            log_info ("      This is EXPERIMENTAL only;"
+                      " the final version will not be compatible!\n");
+            break;
+          }
     }
 
   release_kbnode (pub_root);

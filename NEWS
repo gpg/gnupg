@@ -1,6 +1,25 @@
 Noteworthy changes in version 2.5.0 (unreleased)
 ------------------------------------------------
 
+  * gpg: Support composite Kyber+ECC public key algorithms.  This is
+    experimental due to the yet outstanding FIPS-203 specification.
+    [T6815]
+
+  * gpg: Allow algo string "pqc" for --quick-gen-key.  [rG12ac129a70]
+
+  * gpg: New option --show-only-session-key.  [rG1695cf267e]
+
+  * gpg: Print designated revokers also in non-colon listing mode.
+    [rG9d618d1273]
+
+  * gpg: Make --with-sig-check work with --show-key in non-colon
+    listing mode.  [rG0c34edc443]
+
+  * tpm: Rework error handling and fix key import [T7129, T7186]
+
+  * Varous fixes to improve robustness on 64 bit Windows.  [T7139]
+
+
   Changes also found in 2.4.6:
 
   * gpg: New command --quick-set-ownertrust.  [rG967678d972]
@@ -13,12 +32,43 @@ Noteworthy changes in version 2.5.0 (unreleased)
 
   * gpg: Do not allow to accidently set the RENC usage.  [T7072]
 
+  * gpg: Accept armored files without CRC24 checksum.  [T7071]
+
+  * gpg: New --import-option "only-pubkeys".  [T7146]
+
+  * gpg: Repurpose the AKL mechanism "ldap" to work like the keyserver
+    mechnism but only for LDAP keyservers.  [rG068ebb6f1e]
+
+  * gpg: ADSKs are now configurable for new keys.  [T6882]
+
+  * gpgsm: Emit user IDs with an empty Subject also in colon mode.
+    [T7171]
+
   * agent: Consider an empty pattern file as valid.  [rGc27534de95]
 
   * agent: Fix error handling of READKEY.  [T6012]
 
+  * agent: Avoid random errors when storing key in ephemeral mode.
+    [T7129, rGfdc5003956]
+
+  * agent: Make "SCD DEVINFO --watch" more robust.  [T7151]
+
+  * scd: Improve KDF data object handling for OpenPGP cards.  [T7058]
+
+  * scd: Avoid buffer overrun with more than 16 PC/SC readers.
+    [T7129, rG4c1b007035]
+
+  * scd: Fix how the scdaemon on its pipe connection finishes.
+    [T7160]
+
   * gpgconf: Check readability of some files with -X and change its
-    output format.  [rG759adb2493]
+    output format.  [rG98e287ba6d]
+
+  * gpg-mail-tube: New tool to apply PGP/MIME encryption to a mail.
+    [rG28a080bc9f]
+
+  * Fix some uninitialized variables and double frees in error code
+    paths.  [T7129]
 
 
   Changes also found in 2.4.5:
@@ -240,6 +290,7 @@ Noteworthy changes in version 2.5.0 (unreleased)
 Release dates of 2.4 versions
 -----------------------------
 
+Version 2.4.6 (unreleased) https://dev.gnupg.org/T7030
 Version 2.4.5 (2024-03-07) https://dev.gnupg.org/T6960
 Version 2.4.4 (2024-01-25) https://dev.gnupg.org/T6578
 Version 2.4.3 (2023-07-04) https://dev.gnupg.org/T6509

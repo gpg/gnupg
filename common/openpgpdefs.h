@@ -165,6 +165,7 @@ typedef enum
     PUBKEY_ALGO_RSA         =  1,
     PUBKEY_ALGO_RSA_E       =  2, /* RSA encrypt only (legacy). */
     PUBKEY_ALGO_RSA_S       =  3, /* RSA sign only (legacy).    */
+    /*PUBKEY_ALGO_KYBER     =  8,    Kyber (FIPS-203 final)     */
     PUBKEY_ALGO_ELGAMAL_E   = 16, /* Elgamal encrypt only.      */
     PUBKEY_ALGO_DSA         = 17,
     PUBKEY_ALGO_ECDH        = 18, /* RFC-6637  */
