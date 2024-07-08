@@ -593,6 +593,9 @@ speedo_pkg_bzip2_make_args = \
 
 speedo_pkg_bzip2_make_args_inst = \
 	PREFIX=$(idir) CC="$(host)-gcc" AR="$(host)-ar" RANLIB="$(host)-ranlib"
+else
+speedo_pkg_bzip2_make_args_inst = \
+	PREFIX=$(idir)
 endif
 
 speedo_pkg_w64_libiconv_configure = \
