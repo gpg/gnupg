@@ -54,15 +54,15 @@ int *get_all_open_fds (void);
 
 
 /* Portable function to create a pipe.  Under Windows the write end is
-   inheritable.  If R_FP is not NULL, an estream is created for the
-   write end and stored at R_FP.  */
-gpg_error_t gnupg_create_inbound_pipe (int filedes[2],
+   inheritable.  Pipe is created and the read end is stored at R_FD.
+   An estream is created for the write end and stored at R_FP.  */
+gpg_error_t gnupg_create_inbound_pipe (gnupg_fd_t *r_fd,
                                        estream_t *r_fp, int nonblock);
 
 /* Portable function to create a pipe.  Under Windows the read end is
-   inheritable.  If R_FP is not NULL, an estream is created for the
-   write end and stored at R_FP.  */
-gpg_error_t gnupg_create_outbound_pipe (int filedes[2],
+   inheritable.  Pipe is created and the write end is stored at R_FD.
+   An estream is created for the write end and stored at R_FP.  */
+gpg_error_t gnupg_create_outbound_pipe (gnupg_fd_t *r_fd,
                                         estream_t *r_fp, int nonblock);
 
 /* Portable function to create a pipe.  Under Windows both ends are

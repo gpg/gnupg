@@ -331,7 +331,7 @@ gnupg_exec_tool_stream (const char *pgmname, const char *argv[],
 #else
   int exceptclose[2];
 #endif
-  int extrapipe[2] = {-1, -1};
+  gnupg_fd_t extrapipe;
   char extrafdbuf[20];
   const char *argsave = NULL;
   int argsaveidx;
@@ -387,7 +387,7 @@ gnupg_exec_tool_stream (const char *pgmname, const char *argv[],
 
   if (inextra)
     {
-      err = gnupg_create_outbound_pipe (extrapipe, &extrafp, 1);
+      err = gnupg_create_outbound_pipe (&extrapipe, &extrafp, 1);
       if (err)
         {
           log_error ("error creating outbound pipe for extra fp: %s\n",
@@ -395,11 +395,7 @@ gnupg_exec_tool_stream (const char *pgmname, const char *argv[],
           goto leave;
         }
       /* Do not close in child. */
-#ifdef HAVE_W32_SYSTEM
-      exceptclose[i] = (HANDLE)_get_osfhandle (extrapipe[0]);
-#else
-      exceptclose[i] = extrapipe[0];
-#endif
+      exceptclose[i] = extrapipe;
       /* Now find the argument marker and replace by the pipe's fd.
          Yeah, that is an ugly non-thread safe hack but it safes us to
          create a copy of the array.  */
@@ -424,11 +420,7 @@ gnupg_exec_tool_stream (const char *pgmname, const char *argv[],
       i++;
     }
 
-#ifdef HAVE_W32_SYSTEM
-    exceptclose[i] = INVALID_HANDLE_VALUE;
-#else
-    exceptclose[i] = -1;
-#endif
+  exceptclose[i] = GNUPG_INVALID_FD;
 
   err = gpgrt_spawn_actions_new (&act);
   if (err)
@@ -447,8 +439,12 @@ gnupg_exec_tool_stream (const char *pgmname, const char *argv[],
                               | GPGRT_PROCESS_STDERR_PIPE), act, &proc);
   gpgrt_process_get_streams (proc, GPGRT_PROCESS_STREAM_NONBLOCK,
                              input? &infp : NULL, &outfp, &errfp);
-  if (extrapipe[0] != -1)
-    close (extrapipe[0]);
+  if (extrapipe != GNUPG_INVALID_FD)
+#ifdef HAVE_W32_SYSTEM
+    CloseHandle (extrapipe);
+#else
+    close (extrapipe);
+#endif
   if (argsave)
     argv[argsaveidx] = argsave;
   if (err)
