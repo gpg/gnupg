@@ -65,11 +65,17 @@ gpg_error_t gnupg_create_inbound_pipe (gnupg_fd_t *r_fd,
 gpg_error_t gnupg_create_outbound_pipe (gnupg_fd_t *r_fd,
                                         estream_t *r_fp, int nonblock);
 
-/* Portable function to create a pipe.  Under Windows both ends are
-   inheritable.  */
-gpg_error_t gnupg_create_pipe (int filedes[2]);
+enum {
+  GNUPG_PIPE_DONTCARE=0,
+  GNUPG_PIPE_INBOUND=1,
+  GNUPG_PIPE_OUTBOUND=2,
+  GNUPG_PIPE_BOTH=3
+};
 
-/* Close the end of a pipe.  */
-void gnupg_close_pipe (int fd);
+/* Portable function to create a pipe.  FLAGS=GNUPG_PIPE_INBOUND for
+   ihneritable write-end for Windows, GNUPG_PIPE_OUTBOUND for
+   inheritable read-end for Windows, GNUPG_PIPE_BOTH to specify
+   both ends may be inheritable.  */
+gpg_error_t gnupg_create_pipe (int filedes[2], int flags);
 
 #endif /*GNUPG_COMMON_EXECHELP_H*/

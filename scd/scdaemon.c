@@ -1312,7 +1312,7 @@ handle_connections (gnupg_fd_t listen_fd)
 #ifdef HAVE_PSELECT_NO_EINTR
   int pipe_fd[2];
 
-  ret = gnupg_create_pipe (pipe_fd);
+  ret = gnupg_create_pipe (pipe_fd, 0);
   if (ret)
     {
       log_error ("pipe creation failed: %s\n", gpg_strerror (ret));

@@ -1227,7 +1227,7 @@ do_pipe (scheme *sc, pointer args)
   FFI_PROLOG ();
   int filedes[2];
   FFI_ARGS_DONE_OR_RETURN (sc, args);
-  err = gnupg_create_pipe (filedes);
+  err = gnupg_create_pipe (filedes, GNUPG_PIPE_BOTH);
 #define IMC(A, B)                                                       \
   _cons (sc, sc->vptr->mk_integer (sc, (unsigned long) (A)), (B), 1)
   FFI_RETURN_POINTER (sc, IMC (filedes[0],
@@ -1241,7 +1241,7 @@ do_inbound_pipe (scheme *sc, pointer args)
   FFI_PROLOG ();
   int filedes[2];
   FFI_ARGS_DONE_OR_RETURN (sc, args);
-  err = gnupg_create_pipe (filedes);
+  err = gnupg_create_pipe (filedes, GNUPG_PIPE_INBOUND);
 #define IMC(A, B)                                                       \
   _cons (sc, sc->vptr->mk_integer (sc, (unsigned long) (A)), (B), 1)
   FFI_RETURN_POINTER (sc, IMC (filedes[0],
@@ -1255,7 +1255,7 @@ do_outbound_pipe (scheme *sc, pointer args)
   FFI_PROLOG ();
   int filedes[2];
   FFI_ARGS_DONE_OR_RETURN (sc, args);
-  err = gnupg_create_pipe (filedes);
+  err = gnupg_create_pipe (filedes, GNUPG_PIPE_OUTBOUND);
 #define IMC(A, B)                                                       \
   _cons (sc, sc->vptr->mk_integer (sc, (unsigned long) (A)), (B), 1)
   FFI_RETURN_POINTER (sc, IMC (filedes[0],

@@ -2649,7 +2649,7 @@ initialize_module_command (void)
 #ifdef HAVE_W32_SYSTEM
   scd_init_event (&card_list_lock.the_event, card_list_lock.events);
 #else
-  ret = gnupg_create_pipe (card_list_lock.notify_pipe);
+  ret = gnupg_create_pipe (card_list_lock.notify_pipe, 0);
   if (ret)
     {
       err = gpg_error_from_syserror ();

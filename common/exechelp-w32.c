@@ -229,8 +229,16 @@ create_pipe_and_estream (gnupg_fd_t *r_fd, int flags,
   gpg_error_t err = 0;
   es_syshd_t syshd;
   gnupg_fd_t fds[2];
+  int inherit_flags = 0;
 
-  if (create_inheritable_pipe (fds, flags) < 0)
+  if (flags == GNUPG_PIPE_OUTBOUND)
+    inherit_flags = INHERIT_READ;
+  else if (flags == GNUPG_PIPE_INBOUND)
+    inherit_flags = INHERIT_WRITE;
+  else
+    inherit_flags = INHERIT_BOTH;
+
+  if (create_inheritable_pipe (fds, inherit_flags) < 0)
     {
       err = my_error_from_syserror ();
       log_error (_("error creating a pipe: %s\n"), gpg_strerror (err));
@@ -275,7 +283,7 @@ gnupg_create_inbound_pipe (gnupg_fd_t *r_fd, estream_t *r_fp, int nonblock)
   if (!r_fd || !r_fp)
     gpg_error (GPG_ERR_INV_ARG);
 
-  return create_pipe_and_estream (r_fd, INHERIT_WRITE, r_fp, 0, nonblock);
+  return create_pipe_and_estream (r_fd, GNUPG_PIPE_INBOUND, r_fp, 0, nonblock);
 }
 
 
@@ -288,19 +296,29 @@ gnupg_create_outbound_pipe (gnupg_fd_t *r_fd, estream_t *r_fp, int nonblock)
   if (!r_fd || !r_fp)
     gpg_error (GPG_ERR_INV_ARG);
 
-  return create_pipe_and_estream (r_fd, INHERIT_READ, r_fp, 1, nonblock);
+  return create_pipe_and_estream (r_fd, GNUPG_PIPE_OUTBOUND, r_fp, 1, nonblock);
 }
 
 
-/* Portable function to create a pipe.  Under Windows both ends are
-   inheritable.  */
+/* Portable function to create a pipe.  FLAGS=GNUPG_PIPE_INBOUND for
+   ihneritable write-end for Windows, GNUPG_PIPE_OUTBOUND for
+   inheritable read-end for Windows, GNUPG_PIPE_BOTH to specify
+   both ends may be inheritable.  */
 gpg_error_t
-gnupg_create_pipe (int filedes[2])
+gnupg_create_pipe (int filedes[2], int flags)
 {
   gnupg_fd_t fds[2];
   gpg_error_t err = 0;
+  int inherit_flags = 0;
 
-  if (create_inheritable_pipe (fds, INHERIT_BOTH) < 0)
+  if (flags == GNUPG_PIPE_OUTBOUND)
+    inherit_flags = INHERIT_READ;
+  else if (flags == GNUPG_PIPE_INBOUND)
+    inherit_flags = INHERIT_WRITE;
+  else
+    inherit_flags = INHERIT_BOTH;
+
+  if (create_inheritable_pipe (fds, inherit_flags) < 0)
     return my_error_from_syserror ();
 
   filedes[0] = _open_osfhandle (handle_to_fd (fds[0]), O_RDONLY);

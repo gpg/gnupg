@@ -3022,7 +3022,7 @@ handle_connections (gnupg_fd_t listen_fd,
   npth_sigev_add (SIGTERM);
   npth_sigev_fini ();
 # ifdef HAVE_PSELECT_NO_EINTR
-  ret = gnupg_create_pipe (pipe_fd);
+  ret = gnupg_create_pipe (pipe_fd, 0);
   if (ret)
     {
       log_error ("pipe creation failed: %s\n", gpg_strerror (ret));

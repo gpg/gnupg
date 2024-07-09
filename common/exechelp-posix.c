@@ -348,11 +348,14 @@ gnupg_create_outbound_pipe (gnupg_fd_t *r_fd, estream_t *r_fp, int nonblock)
 }
 
 
-/* Portable function to create a pipe.  Under Windows both ends are
-   inheritable.  */
+/* Portable function to create a pipe.  FLAGS=GNUPG_PIPE_INBOUND for
+   ihneritable write-end for Windows, GNUPG_PIPE_OUTBOUND for
+   inheritable read-end for Windows, GNUPG_PIPE_BOTH to specify
+   both ends may be inheritable.  */
 gpg_error_t
-gnupg_create_pipe (int filedes[2])
+gnupg_create_pipe (int filedes[2], int flags)
 {
+  (void)flags;
   return do_create_pipe (filedes);
 }
 
