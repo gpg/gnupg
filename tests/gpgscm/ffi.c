@@ -42,11 +42,8 @@
 #endif
 
 #include "../../common/util.h"
-#ifdef HAVE_W32_SYSTEM
-#define NEED_STRUCT_SPAWN_CB_ARG
-#endif
-#include "../../common/exechelp.h"
 #include "../../common/sysutils.h"
+#include "../../common/exechelp.h"
 
 #ifdef HAVE_W32_SYSTEM
 #include <windows.h>
@@ -762,7 +759,7 @@ do_es_write (scheme *sc, pointer args)
 
 struct proc_object_box
 {
-  gnupg_process_t proc;
+  gpgrt_process_t proc;
 };
 
 static void
@@ -772,7 +769,7 @@ proc_object_finalize (scheme *sc, void *data)
   (void) sc;
 
   if (!box->proc)
-    gnupg_process_release (box->proc);
+    gpgrt_process_release (box->proc);
   xfree (box);
 }
 
@@ -792,7 +789,7 @@ static struct foreign_object_vtable proc_object_vtable =
   };
 
 static pointer
-proc_wrap (scheme *sc, gnupg_process_t proc)
+proc_wrap (scheme *sc, gpgrt_process_t proc)
 {
   struct proc_object_box *box = xmalloc (sizeof *box);
   if (box == NULL)
@@ -897,7 +894,7 @@ do_process_spawn_io (scheme *sc, pointer args)
   char **argv;
   size_t len;
   unsigned int flags;
-  gnupg_process_t proc = NULL;
+  gpgrt_process_t proc = NULL;
   estream_t infp;
 #ifdef HAVE_W32_SYSTEM
   HANDLE out_hd, err_hd;
@@ -915,9 +912,9 @@ do_process_spawn_io (scheme *sc, pointer args)
 
   FFI_ARG_OR_RETURN (sc, pointer, arguments, list, args);
   FFI_ARG_OR_RETURN (sc, char *, a_input, string, args);
-  flags = (GNUPG_PROCESS_STDIN_PIPE
-           | GNUPG_PROCESS_STDOUT_PIPE
-           | GNUPG_PROCESS_STDERR_PIPE);
+  flags = (GPGRT_PROCESS_STDIN_PIPE
+           | GPGRT_PROCESS_STDOUT_PIPE
+           | GPGRT_PROCESS_STDERR_PIPE);
   FFI_ARGS_DONE_OR_RETURN (sc, args);
 
   err = ffi_list2argv (sc, arguments, &argv, &len);
@@ -937,28 +934,28 @@ do_process_spawn_io (scheme *sc, pointer args)
       fprintf (stderr, "\n");
     }
 
-  err = gnupg_process_spawn (argv[0], (const char **) &argv[1],
+  err = gpgrt_process_spawn (argv[0], (const char **) &argv[1],
                              flags, NULL, &proc);
-  err = gnupg_process_get_streams (proc, 0, &infp, NULL, NULL);
+  err = gpgrt_process_get_streams (proc, 0, &infp, NULL, NULL);
 
   err = es_write (infp, a_input, strlen (a_input), NULL);
   es_fclose (infp);
   if (err)
     {
-      gnupg_process_release (proc);
+      gpgrt_process_release (proc);
       xfree (argv);
       FFI_RETURN_ERR (sc, err);
     }
 
 #ifdef HAVE_W32_SYSTEM
-  err = gnupg_process_ctl (proc, GNUPG_PROCESS_GET_HANDLES,
+  err = gpgrt_process_ctl (proc, GPGRT_PROCESS_GET_HANDLES,
                            NULL, &out_hd, &err_hd);
 #else
-  err = gnupg_process_get_fds (proc, 0, NULL, &out_fd, &err_fd);
+  err = gpgrt_process_get_fds (proc, 0, NULL, &out_fd, &err_fd);
 #endif
   if (err)
     {
-      gnupg_process_release (proc);
+      gpgrt_process_release (proc);
       xfree (argv);
       FFI_RETURN_ERR (sc, err);
     }
@@ -1101,11 +1098,11 @@ do_process_spawn_io (scheme *sc, pointer args)
   }
 #endif
 
-  err = gnupg_process_wait (proc, 1);
+  err = gpgrt_process_wait (proc, 1);
   if (!err)
-    err = gnupg_process_ctl (proc, GNUPG_PROCESS_GET_EXIT_ID, &retcode);
+    err = gpgrt_process_ctl (proc, GPGRT_PROCESS_GET_EXIT_ID, &retcode);
 
-  gnupg_process_release (proc);
+  gpgrt_process_release (proc);
   xfree (argv);
 
   p0 = sc->vptr->mk_integer (sc, (unsigned long)retcode);
@@ -1132,7 +1129,7 @@ do_process_spawn_io (scheme *sc, pointer args)
   if (err_fd >= 0)
     close (err_fd);
 #endif
-  gnupg_process_release (proc);
+  gpgrt_process_release (proc);
   xfree (argv);
   FFI_RETURN_ERR (sc, err);
 }
@@ -1145,8 +1142,8 @@ do_process_spawn_fd (scheme *sc, pointer args)
   char **argv;
   size_t len;
   int std_fds[3];
-  gnupg_process_t proc = NULL;
-  gnupg_spawn_actions_t act = NULL;
+  gpgrt_process_t proc = NULL;
+  gpgrt_spawn_actions_t act = NULL;
 
   FFI_ARG_OR_RETURN (sc, pointer, arguments, list, args);
   FFI_ARG_OR_RETURN (sc, int, std_fds[0], number, args);
@@ -1171,7 +1168,7 @@ do_process_spawn_fd (scheme *sc, pointer args)
       fprintf (stderr, " (%d %d %d)\n", std_fds[0], std_fds[1], std_fds[2]);
     }
 
-  err = gnupg_spawn_actions_new (&act);
+  err = gpgrt_spawn_actions_new (&act);
   if (err)
     {
       FFI_RETURN_ERR (sc, err);
@@ -1193,13 +1190,13 @@ do_process_spawn_fd (scheme *sc, pointer args)
     else
       std_err = (HANDLE)_get_osfhandle (std_fds[2]);
 
-    gnupg_spawn_actions_set_redirect (act, std_in, std_out, std_err);
+    gpgrt_spawn_actions_set_redirect (act, std_in, std_out, std_err);
   }
 #else
-  gnupg_spawn_actions_set_redirect (act, std_fds[0], std_fds[1], std_fds[2]);
+  gpgrt_spawn_actions_set_redirect (act, std_fds[0], std_fds[1], std_fds[2]);
 #endif
-  err = gnupg_process_spawn (argv[0], (const char **)&argv[1], 0, act, &proc);
-  gnupg_spawn_actions_release (act);
+  err = gpgrt_process_spawn (argv[0], (const char **)&argv[1], 0, act, &proc);
+  gpgrt_spawn_actions_release (act);
   xfree (argv);
   FFI_RETURN_POINTER (sc, proc_wrap (sc, proc));
 }
@@ -1215,9 +1212,9 @@ do_process_wait (scheme *sc, pointer args)
   FFI_ARG_OR_RETURN (sc, struct proc_object_box *, box, proc, args);
   FFI_ARG_OR_RETURN (sc, int, hang, bool, args);
   FFI_ARGS_DONE_OR_RETURN (sc, args);
-  err = gnupg_process_wait (box->proc, hang);
+  err = gpgrt_process_wait (box->proc, hang);
   if (!err)
-    err = gnupg_process_ctl (box->proc, GNUPG_PROCESS_GET_EXIT_ID, &retcode);
+    err = gpgrt_process_ctl (box->proc, GPGRT_PROCESS_GET_EXIT_ID, &retcode);
   if (err == GPG_ERR_TIMEOUT)
     err = 0;
 

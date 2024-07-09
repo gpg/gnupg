@@ -27,7 +27,6 @@
 
 #include "agent.h"
 #include "../common/i18n.h"
-#include "../common/exechelp.h"
 #include "../common/sysutils.h"
 
 
@@ -162,7 +161,7 @@ do_check_passphrase_pattern (ctrl_t ctrl, const char *pw, unsigned int flags)
   const char *pgmname = gnupg_module_name (GNUPG_MODULE_NAME_CHECK_PATTERN);
   estream_t stream_to_check_pattern = NULL;
   const char *argv[10];
-  gnupg_process_t proc;
+  gpgrt_process_t proc;
   int result, i;
   const char *pattern;
   char *patternfname;
@@ -205,15 +204,15 @@ do_check_passphrase_pattern (ctrl_t ctrl, const char *pw, unsigned int flags)
   argv[i] = NULL;
   log_assert (i < sizeof argv);
 
-  if (gnupg_process_spawn (pgmname, argv,
-                           GNUPG_PROCESS_STDIN_PIPE,
+  if (gpgrt_process_spawn (pgmname, argv,
+                           GPGRT_PROCESS_STDIN_PIPE,
                            NULL, &proc))
     result = 1; /* Execute error - assume password should no be used.  */
   else
     {
       int status;
 
-      gnupg_process_get_streams (proc, 0, &stream_to_check_pattern,
+      gpgrt_process_get_streams (proc, 0, &stream_to_check_pattern,
                                  NULL, NULL);
 
       es_set_binary (stream_to_check_pattern);
@@ -226,13 +225,13 @@ do_check_passphrase_pattern (ctrl_t ctrl, const char *pw, unsigned int flags)
       else
         es_fflush (stream_to_check_pattern);
       es_fclose (stream_to_check_pattern);
-      gnupg_process_wait (proc, 1);
-      gnupg_process_ctl (proc, GNUPG_PROCESS_GET_EXIT_ID, &status);
+      gpgrt_process_wait (proc, 1);
+      gpgrt_process_ctl (proc, GPGRT_PROCESS_GET_EXIT_ID, &status);
       if (status)
         result = 1; /* Helper returned an error - probably a match.  */
       else
         result = 0; /* Success; i.e. no match.  */
-      gnupg_process_release (proc);
+      gpgrt_process_release (proc);
     }
 
   xfree (patternfname);

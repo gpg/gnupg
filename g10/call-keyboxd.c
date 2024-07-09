@@ -38,7 +38,6 @@
 #include "../common/i18n.h"
 #include "../common/asshelp.h"
 #include "../common/host2net.h"
-#include "../common/exechelp.h"
 #include "../common/status.h"
 #include "../kbx/kbx-client-util.h"
 #include "keydb.h"

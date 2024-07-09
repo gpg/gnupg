@@ -31,7 +31,6 @@
 
 #include "../common/i18n.h"
 #include <gpg-error.h>
-#include "../common/exechelp.h"
 #include "../common/sysutils.h"
 #include "../common/ccparray.h"
 #include "gpgtar.h"
@@ -339,7 +338,7 @@ gpgtar_extract (const char *filename, int decrypt)
   char *dirname = NULL;
   struct tarinfo_s tarinfo_buffer;
   tarinfo_t tarinfo = &tarinfo_buffer;
-  gnupg_process_t proc;
+  gpgrt_process_t proc;
   char *logfilename = NULL;
   unsigned long long notextracted;
 
@@ -390,7 +389,7 @@ gpgtar_extract (const char *filename, int decrypt)
       int except[2] = { -1, -1 };
 #endif
       const char **argv;
-      gnupg_spawn_actions_t act = NULL;
+      gpgrt_spawn_actions_t act = NULL;
 
       ccparray_init (&ccp, 0);
       if (opt.batch)
@@ -436,7 +435,7 @@ gpgtar_extract (const char *filename, int decrypt)
           goto leave;
         }
 
-      err = gnupg_spawn_actions_new (&act);
+      err = gpgrt_spawn_actions_new (&act);
       if (err)
         {
           xfree (argv);
@@ -444,18 +443,18 @@ gpgtar_extract (const char *filename, int decrypt)
         }
 
 #ifdef HAVE_W32_SYSTEM
-      gnupg_spawn_actions_set_inherit_handles (act, except);
+      gpgrt_spawn_actions_set_inherit_handles (act, except);
 #else
-      gnupg_spawn_actions_set_inherit_fds (act, except);
+      gpgrt_spawn_actions_set_inherit_fds (act, except);
 #endif
-      err = gnupg_process_spawn (opt.gpg_program, argv,
-                                 ((filename ? 0 : GNUPG_PROCESS_STDIN_KEEP)
-                                  | GNUPG_PROCESS_STDOUT_PIPE), act, &proc);
-      gnupg_spawn_actions_release (act);
+      err = gpgrt_process_spawn (opt.gpg_program, argv,
+                                 ((filename ? 0 : GPGRT_PROCESS_STDIN_KEEP)
+                                  | GPGRT_PROCESS_STDOUT_PIPE), act, &proc);
+      gpgrt_spawn_actions_release (act);
       xfree (argv);
       if (err)
         goto leave;
-      gnupg_process_get_streams (proc, 0, NULL, &stream, NULL);
+      gpgrt_process_get_streams (proc, 0, NULL, &stream, NULL);
       es_set_binary (stream);
     }
   else if (filename)
@@ -502,17 +501,17 @@ gpgtar_extract (const char *filename, int decrypt)
       if (err)
         log_error ("error closing pipe: %s\n", gpg_strerror (err));
 
-      err = gnupg_process_wait (proc, 1);
+      err = gpgrt_process_wait (proc, 1);
       if (!err)
         {
           int exitcode;
 
-          gnupg_process_ctl (proc, GNUPG_PROCESS_GET_EXIT_ID, &exitcode);
+          gpgrt_process_ctl (proc, GPGRT_PROCESS_GET_EXIT_ID, &exitcode);
           if (exitcode)
             log_error ("running %s failed (exitcode=%d): %s",
                        opt.gpg_program, exitcode, gpg_strerror (err));
         }
-      gnupg_process_release (proc);
+      gpgrt_process_release (proc);
       proc = NULL;
     }
 

@@ -25,6 +25,7 @@
 #include <unistd.h>
 
 #include "util.h"
+#include "sysutils.h"
 #include "exechelp.h"
 
 static int verbose;
@@ -248,75 +249,11 @@ run_server (void)
 }
 
 
-static void
-test_pipe_stream (const char *pgmname)
-{
-  gpg_error_t err;
-  gnupg_process_t proc;
-  estream_t outfp;
-  const char *argv[2];
-  unsigned int len;
-  size_t n;
-  off_t o;
-  int ret;
-
-  argv[0] = "--server";
-  argv[1] = NULL;
-
-  err = gnupg_process_spawn (pgmname, argv,
-                             (GNUPG_PROCESS_STDOUT_PIPE
-                              |GNUPG_PROCESS_STDERR_KEEP),
-                             NULL, &proc);
-  if (err)
-    {
-      fprintf (stderr, "gnupg_process_spawn failed\n");
-      exit (1);
-    }
-
-  gnupg_process_get_streams (proc, 0, NULL, &outfp, NULL);
-
-  ret = es_read (outfp, (void *)&len, sizeof (len), NULL);
-  if (ret)
-    {
-      fprintf (stderr, "es_read (1) failed\n");
-      exit (1);
-    }
-
-  o = 0;
-  while (1)
-    {
-      if (es_feof (outfp))
-        break;
-
-      ret = es_read (outfp, buff4k, sizeof (buff4k), &n);
-      if (ret)
-        {
-          fprintf (stderr, "es_read (2) failed\n");
-          exit (1);
-        }
-
-      memcpy (buff12k + o, buff4k, n);
-      o += n;
-    }
-
-  if (o != sizeof (buff12k))
-    {
-      fprintf (stderr, "received data with wrong length %d\n", (int)o);
-      exit (1);
-    }
-  es_fclose (outfp);
-  gnupg_process_release (proc);
-}
-
-
 int
 main (int argc, char **argv)
 {
-  const char *myname = "no-pgm";
-
   if (argc)
     {
-      myname = argv[0];
       argc--; argv++;
     }
   if (argc && !strcmp (argv[0], "--verbose"))
@@ -330,7 +267,6 @@ main (int argc, char **argv)
 #ifndef HAVE_W32_SYSTEM
   test_close_all_fds ();
 #endif
-  test_pipe_stream (myname);
 
   return 0;
 }

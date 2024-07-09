@@ -30,7 +30,6 @@
 #include <ksba.h>
 
 #include "keydb.h"
-#include "../common/exechelp.h"
 #include "../common/i18n.h"
 #include "../common/sysutils.h"
 #include "minip12.h"

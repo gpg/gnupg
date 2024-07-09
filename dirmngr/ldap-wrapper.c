@@ -60,7 +60,6 @@
 #include <npth.h>
 
 #include "dirmngr.h"
-#include "../common/exechelp.h"
 #include "misc.h"
 #include "ldap-wrapper.h"
 
@@ -87,7 +86,7 @@ struct wrapper_context_s
 {
   struct wrapper_context_s *next;
 
-  gnupg_process_t proc;/* The wrapper process. */
+  gpgrt_process_t proc;/* The wrapper process. */
   int printable_pid;   /* Helper to print diagnostics after the process has
                         * been cleaned up. */
   estream_t fp;        /* Connected with stdout of the ldap wrapper.  */
@@ -172,8 +171,8 @@ destroy_wrapper (struct wrapper_context_s *ctx)
 {
   if (ctx->proc)
     {
-      gnupg_process_terminate (ctx->proc);
-      gnupg_process_release (ctx->proc);
+      gpgrt_process_terminate (ctx->proc);
+      gpgrt_process_release (ctx->proc);
     }
   ksba_reader_release (ctx->reader);
   SAFE_CLOSE (ctx->fp);
@@ -440,17 +439,17 @@ ldap_reaper_thread (void *dummy)
             /* Check whether the process is still running.  */
             if (ctx->proc)
               {
-                err = gnupg_process_wait (ctx->proc, 0);
+                err = gpgrt_process_wait (ctx->proc, 0);
                 if (!err)
                   {
                     int status;
 
-                    gnupg_process_ctl (ctx->proc, GNUPG_PROCESS_GET_EXIT_ID,
+                    gpgrt_process_ctl (ctx->proc, GPGRT_PROCESS_GET_EXIT_ID,
                                        &status);
                     if (DBG_EXTPROG)
                       log_info (_("ldap wrapper %d ready"), ctx->printable_pid);
                     ctx->ready = 1;
-                    gnupg_process_release (ctx->proc);
+                    gpgrt_process_release (ctx->proc);
                     ctx->proc = NULL;
                     any_action = 1;
 
@@ -472,7 +471,7 @@ ldap_reaper_thread (void *dummy)
             /* Check whether we should terminate the process. */
             if (ctx->proc && ctx->stamp != (time_t)(-1) && ctx->stamp < exptime)
               {
-                gnupg_process_terminate (ctx->proc);
+                gpgrt_process_terminate (ctx->proc);
                 ctx->stamp = (time_t)(-1);
                 log_info (_("ldap wrapper %d stalled - killing\n"),
                           ctx->printable_pid);
@@ -634,7 +633,7 @@ ldap_wrapper_connection_cleanup (ctrl_t ctrl)
           ctx->ctrl->refcount--;
           ctx->ctrl = NULL;
           if (ctx->proc)
-            gnupg_process_terminate (ctx->proc);
+            gpgrt_process_terminate (ctx->proc);
           if (ctx->fp_err)
             log_info ("%s: reading from ldap wrapper %d failed: %s\n",
                       __func__, ctx->printable_pid, gpg_strerror (ctx->fp_err));
@@ -792,7 +791,7 @@ gpg_error_t
 ldap_wrapper (ctrl_t ctrl, ksba_reader_t *reader, const char *argv[])
 {
   gpg_error_t err;
-  gnupg_process_t process;
+  gpgrt_process_t process;
   struct wrapper_context_s *ctx;
   int i;
   int j;
@@ -848,9 +847,9 @@ ldap_wrapper (ctrl_t ctrl, ksba_reader_t *reader, const char *argv[])
       return err;
     }
 
-  err = gnupg_process_spawn (pgmname, arg_list,
-                             (GNUPG_PROCESS_STDOUT_PIPE
-                              | GNUPG_PROCESS_STDERR_PIPE),
+  err = gpgrt_process_spawn (pgmname, arg_list,
+                             (GPGRT_PROCESS_STDOUT_PIPE
+                              | GPGRT_PROCESS_STDERR_PIPE),
                              NULL, &process);
   if (err)
     {
@@ -859,9 +858,9 @@ ldap_wrapper (ctrl_t ctrl, ksba_reader_t *reader, const char *argv[])
       log_error ("error running '%s': %s\n", pgmname, gpg_strerror (err));
       return err;
     }
-  gnupg_process_get_streams (process, GNUPG_PROCESS_STREAM_NONBLOCK,
+  gpgrt_process_get_streams (process, GPGRT_PROCESS_STREAM_NONBLOCK,
                              NULL, &outfp, &errfp);
-  gnupg_process_ctl (process, GNUPG_PROCESS_GET_PROC_ID, &ctx->printable_pid);
+  gpgrt_process_ctl (process, GPGRT_PROCESS_GET_PROC_ID, &ctx->printable_pid);
 
   ctx->proc = process;
   ctx->fp = outfp;

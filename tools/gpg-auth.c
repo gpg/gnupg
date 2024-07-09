@@ -33,7 +33,6 @@
 #include "../common/asshelp.h"
 #include "../common/session-env.h"
 #include "../common/membuf.h"
-#include "../common/exechelp.h"
 
 
 /* We keep all global options in the structure OPT.  */

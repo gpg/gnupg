@@ -39,7 +39,6 @@
 #include "../common/userids.h"
 #include "../common/ccparray.h"
 #include "../common/exectool.h"
-#include "../common/exechelp.h"
 #include "../common/ttyio.h"
 #include "../common/server-help.h"
 #include "../common/openpgpdefs.h"
@@ -3803,7 +3802,7 @@ cmd_gpg (card_info_t info, char *argstr, int use_gpgsm)
   char **argarray;
   ccparray_t ccp;
   const char **argv = NULL;
-  gnupg_process_t proc;
+  gpgrt_process_t proc;
   int i;
 
   if (!info)
@@ -3831,15 +3830,15 @@ cmd_gpg (card_info_t info, char *argstr, int use_gpgsm)
       goto leave;
     }
 
-  err = gnupg_process_spawn (use_gpgsm? opt.gpgsm_program:opt.gpg_program,
+  err = gpgrt_process_spawn (use_gpgsm? opt.gpgsm_program:opt.gpg_program,
                              argv,
-                             (GNUPG_PROCESS_STDOUT_KEEP
-                              | GNUPG_PROCESS_STDERR_KEEP),
+                             (GPGRT_PROCESS_STDOUT_KEEP
+                              | GPGRT_PROCESS_STDERR_KEEP),
                              NULL, &proc);
   if (!err)
     {
-      err = gnupg_process_wait (proc, 1);
-      gnupg_process_release (proc);
+      err = gpgrt_process_wait (proc, 1);
+      gpgrt_process_release (proc);
     }
 
 

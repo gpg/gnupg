@@ -424,7 +424,6 @@ show_photo (const char *command, const char *name, const void *image, u32 len)
 }
 #else /* ! NO_EXEC */
 #include "../common/membuf.h"
-#include "../common/exechelp.h"
 
 /* Makes a temp directory and filenames */
 static int
@@ -597,10 +596,10 @@ run_with_pipe (struct spawn_info *info, const void *image, u32 len)
 #else /* !EXEC_TEMPFILE_ONLY */
   gpg_error_t err;
   const char *argv[4];
-  gnupg_process_t proc;
+  gpgrt_process_t proc;
 
   fill_command_argv (argv, info->command);
-  err = gnupg_process_spawn (argv[0], argv+1, GNUPG_PROCESS_STDIN_PIPE,
+  err = gpgrt_process_spawn (argv[0], argv+1, GPGRT_PROCESS_STDIN_PIPE,
                              NULL, &proc);
   if (err)
     log_error (_("unable to execute shell '%s': %s\n"),
@@ -609,7 +608,7 @@ run_with_pipe (struct spawn_info *info, const void *image, u32 len)
     {
       int fd_in;
 
-      err = gnupg_process_get_fds (proc, 0, &fd_in, NULL, NULL);
+      err = gpgrt_process_get_fds (proc, 0, &fd_in, NULL, NULL);
       if (err)
         log_error ("unable to get pipe connection '%s': %s\n",
                    argv[2], gpg_strerror (err));
@@ -619,11 +618,11 @@ run_with_pipe (struct spawn_info *info, const void *image, u32 len)
           close (fd_in);
         }
 
-      err = gnupg_process_wait (proc, 1);
+      err = gpgrt_process_wait (proc, 1);
       if (err)
         log_error (_("unnatural exit of external program\n"));
 
-      gnupg_process_release (proc);
+      gpgrt_process_release (proc);
     }
 #endif /* !EXEC_TEMPFILE_ONLY */
 }
@@ -695,7 +694,7 @@ show_photo (const char *command, const char *name, const void *image, u32 len)
       const char *argv[4];
 
       fill_command_argv (argv, spawn->command);
-      err = gnupg_process_spawn (argv[0], argv+1, 0, NULL, NULL);
+      err = gpgrt_process_spawn (argv[0], argv+1, 0, NULL, NULL);
       if (err)
         log_error (_("unnatural exit of external program\n"));
 #endif

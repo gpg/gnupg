@@ -37,7 +37,6 @@
 #include "../common/host2net.h"
 #include "server.h"  /*(g13_keyblob_decrypt)*/
 #include "../common/sysutils.h"
-#include "../common/exechelp.h"
 #include "runner.h"
 #include "call-syshelp.h"
 
