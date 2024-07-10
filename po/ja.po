@@ -817,10 +817,9 @@ msgstr "プロセスforkエラー: %s\n"
 msgid "waiting for process %d to terminate failed: %s\n"
 msgstr "プロセス%dの終了待ちが失敗: %s\n"
 
-#, fuzzy, c-format
-#| msgid "waiting for processes to terminate failed: %s\n"
+#, c-format
 msgid "waiting for process to terminate failed: ec=%d\n"
-msgstr "プロセスの終了待ちが失敗: %s\n"
+msgstr "プロセスの終了待ちが失敗: ec=%d\n"
 
 #, c-format
 msgid "can't connect to '%s': %s\n"
@@ -2274,10 +2273,8 @@ msgstr "署名の一覧時に有効期限の日付を表示する"
 msgid "show preferences"
 msgstr "優先指定の表示"
 
-#, fuzzy
-#| msgid "change the ownertrust"
 msgid "show ownertrust"
-msgstr "所有者信用の変更"
+msgstr "所有者信用の表示"
 
 #, c-format
 msgid "unknown TOFU policy '%s'\n"
@@ -2406,10 +2403,9 @@ msgstr "無効な auto-key-locate リストです\n"
 msgid "invalid argument for option \"%.50s\"\n"
 msgstr "オプション\"%.50s\"には無効な引数です\n"
 
-#, fuzzy, c-format
-#| msgid "error parsing key specification '%s': %s\n"
+#, c-format
 msgid "error parsing value for option '%s': %s\n"
-msgstr "鍵指定'%s'の構文解析エラー: %s\n"
+msgstr "オプション'%s'の値の構文解析エラー: %s\n"
 
 #, c-format
 msgid "WARNING: program may create a core file!\n"
@@ -3577,10 +3573,9 @@ msgstr "ユーザIDの失効に失敗しました: %s\n"
 msgid "setting the primary user ID failed: %s\n"
 msgstr "プライマリ・ユーザIDの設定に失敗しました: %s\n"
 
-#, fuzzy, c-format
-#| msgid "checking the trust list failed: %s\n"
+#, c-format
 msgid "setting the ownertrust to '%s' failed: %s\n"
-msgstr "信用リストの検査に失敗しました: %s\n"
+msgstr "'%s' への所有者信用の設定に失敗しました: %s\n"
 
 #, c-format
 msgid "\"%s\" is not a fingerprint\n"
@@ -4392,10 +4387,9 @@ msgstr ""
 "この鍵は暗号化には使用できないことに注意してください。暗号化を行うには、\n"
 "\"--edit-key\"コマンドを使って副鍵を生成してください。\n"
 
-#, fuzzy, c-format
-#| msgid "WARNING: This key has been revoked by its owner!\n"
+#, c-format
 msgid "Note: The key has been created with one or more ADSK!\n"
-msgstr "*警告*: この鍵は所有者によって失効されています!\n"
+msgstr "注意: この鍵はひとつあるいは複数のADSKで作成されています!\n"
 
 #, c-format
 msgid ""
@@ -4471,7 +4465,7 @@ msgid "Keyring"
 msgstr "鍵リング"
 
 msgid "Revocable by: "
-msgstr ""
+msgstr "以下によって失効可能:"
 
 #, c-format
 msgid "error writing to stdout: %s\n"
@@ -4631,7 +4625,7 @@ msgstr "%s鍵, ID %sで暗号化されました\n"
 
 #, c-format
 msgid "WARNING: key is not quantum-resistant\n"
-msgstr ""
+msgstr "*警告*: 鍵は耐量子ではありません\n"
 
 #, c-format
 msgid "WARNING: multiple plaintexts seen\n"
@@ -7065,10 +7059,8 @@ msgstr " (オプションです。空行で終了):\n"
 msgid "Enter URIs"
 msgstr "URIを入力"
 
-#, fuzzy
-#| msgid "Enter the notation: "
 msgid "Enter extensions"
-msgstr "注釈を入力: "
+msgstr "拡張を入力: "
 
 msgid "Create self-signed certificate? (y/N) "
 msgstr "自己署名証明書を作成しますか? (y/N) "
