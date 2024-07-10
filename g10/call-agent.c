@@ -2434,9 +2434,14 @@ agent_probe_any_secret_key (ctrl_t ctrl, kbnode_t keyblock)
             nkeys++;
 
             err = keygrip_from_pk (node->pkt->pkt.public_key, grip2, 1);
-            if (err && gpg_err_code (err) != GPG_ERR_FALSE)
-              return err;
-            if (!err)  /* Add the second keygrip from dual algos.  */
+            if (err)
+              {
+                if (gpg_err_code (err) == GPG_ERR_FALSE) /* No second keygrip.  */
+                  err = 0;
+                else
+                  return err;
+              }
+            else /* Add the second keygrip from dual algos.  */
               {
                 *p++ = ' ';
                 bin2hex (grip2, 20, p);
