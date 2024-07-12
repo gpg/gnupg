@@ -556,7 +556,10 @@ tlv_expect_octet_string (tlv_parser_t tlv, int encapsulates,
         && (!tlv->ti.is_constructed || encapsulates)))
     return (tlv->lasterr = gpg_error (GPG_ERR_INV_OBJ));
   p = tlv->buffer;
-  if (!(n=tlv->ti.length) && !tlv->ti.ndef)
+  n = tlv->ti.length;
+  if (!n && tlv->ti.ndef)
+    n = tlv->bufsize;
+  else if (!tlv->ti.length)
     return (tlv->lasterr = gpg_error (GPG_ERR_TOO_SHORT));
 
   if (encapsulates && tlv->ti.is_constructed
