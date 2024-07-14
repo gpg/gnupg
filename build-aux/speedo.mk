@@ -180,8 +180,10 @@ STATIC=0
 # external packages.
 TARBALLS=$(shell pwd)/../tarballs
 
-#  Number of parallel make jobs for each package
-MAKE_J=6
+# Check if nproc is available, set MAKE_J accordingly
+MAKE_J = $(shell if command -v nproc >/dev/null 2>&1; then \
+           nproc; else echo 6; \
+         fi)
 
 # Name to use for the w32 installer and sources
 
