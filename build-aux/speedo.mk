@@ -765,6 +765,9 @@ define SETVARS
         fi;                                                             \
         pkgbdir="$(bdir)/$(1)";                                         \
         pkgcfg="$(call GETVAR,speedo_pkg_$(1)_configure)";              \
+        if [ "$(TARGETOS)" != native ]; then                            \
+          pkgcfg="$(pkgcfg) --libdir=$(idir)/lib";                      \
+        fi;                                                             \
         tmp="$(speedo_w32_cflags)                                       \
              $(call GETVAR,speedo_pkg_$(1)_extracflags)";               \
         if [ x$$$$(echo "$$$$tmp" | tr -d '[:space:]')x != xx ]; then   \
