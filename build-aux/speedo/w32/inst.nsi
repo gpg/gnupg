@@ -250,7 +250,7 @@ LangString T_About ${LANG_GERMAN} "${ABOUT_GERMAN}"
 LangString T_GPLHeader ${LANG_ENGLISH} \
   "This software is licensed under the terms of the GNU General Public \
    License (GNU GPL)."
-LangString T_GPLHeader ${LANG_GERMAN}} \
+LangString T_GPLHeader ${LANG_GERMAN} \
   "Diese Software ist unter der GNU General Public License \
    (GNU GPL) lizensiert."
 
