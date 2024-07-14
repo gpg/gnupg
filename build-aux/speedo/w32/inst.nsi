@@ -45,11 +45,10 @@ Unicode true
 !define PACKAGE_SHORT "gnupg"
 !define PRETTY_PACKAGE "GNU Privacy Guard"
 !define PRETTY_PACKAGE_SHORT "GnuPG"
+!define INSTALL_DIR "GnuPG"
 !define COMPANY "The GnuPG Project"
 !define COPYRIGHT "Copyright (C) 2024 g10 Code GmbH"
 !define DESCRIPTION "GnuPG: The GNU Privacy Guard for Windows"
-
-!define INSTALL_DIR "GnuPG"
 
 !define WELCOME_TITLE_ENGLISH \
  "Welcome to the installation of GnuPG"
@@ -91,6 +90,10 @@ SetCompressor lzma
 !include "LogicLib.nsh"
 !include "x64.nsh"
 
+# Set the default installation directory. This is used by
+# MultiUser.nsh which then sets the actual INSTDIR.
+InstallDir "$PROGRAMFILES64\${INSTALL_DIR}"
+
 # We support user mode installation but prefer system wide
 !define MULTIUSER_EXECUTIONLEVEL Highest
 !define MULTIUSER_MUI
@@ -99,7 +102,8 @@ SetCompressor lzma
 !define MULTIUSER_INSTALLMODE_DEFAULT_REGISTRY_VALUENAME ""
 !define MULTIUSER_INSTALLMODE_INSTDIR_REGISTRY_KEY "Software\${PACKAGE_SHORT}"
 !define MULTIUSER_INSTALLMODE_INSTDIR_REGISTRY_VALUENAME "Install Directory"
-!define MULTIUSER_INSTALLMODE_INSTDIR "${PACKAGE_SHORT}"
+!define MULTIUSER_INSTALLMODE_INSTDIR "${INSTALL_DIR}"
+!define MULTIUSER_USE_PROGRAMFILES64
 !include "MultiUser.nsh"
 
 # Set the package name.  Note that this name should not be suffixed
@@ -114,12 +118,6 @@ OutFile "${NAME}-${VERSION}_${BUILD_DATESTR}.exe"
 #Fixme: Do we need a logo?
 #Icon "${TOP_SRCDIR}/doc/logo/gnupg-logo-icon.ico"
 #UninstallIcon "${TOP_SRCDIR}/doc/logo/gnupg-logo-icon.ico"
-
-# Set the installation directory.
-!ifndef INSTALL_DIR
-!define INSTALL_DIR "GnuPG"
-!endif
-InstallDir "$PROGRAMFILES64\${INSTALL_DIR}"
 
 # Add version information to the file properties.
 VIProductVersion "${PROD_VERSION}"
@@ -576,8 +574,32 @@ FunctionEnd
 #
 # Define the installer sections.
 #
-
+Var MYTMP
 Section "-gnupginst"
+  # Check if GnuPG is already installed and uninstall it (Update)
+  #
+  # Before GnuPG 2.5 the Windows installer was 32 bit
+  # so look for 32 bit installations, too.
+  SetRegView 32
+uninst_old_version:
+  ClearErrors
+  ReadRegStr $0 SHCTX "Software\Microsoft\Windows\CurrentVersion\Uninstall\GnuPG" "UninstallString"
+  IfErrors skip_uninst 0
+  ReadRegStr $1 SHCTX "Software\Microsoft\Windows\CurrentVersion\Uninstall\GnuPG" "InstallLocation"
+  IfErrors skip_uninst 0
+
+  ExecWait '$0 /S _?=$1'
+  Delete /REBOOTOK "$1\gnupg-uninstall.exe"
+  RmDir "$1"
+skip_uninst:
+  StrCmp $MYTMP "1" skip_uninst2 0
+  SetRegView 64
+  StrCpy $MYTMP "1"
+  goto uninst_old_version
+skip_uninst2:
+
+  # We are now 64 bit only
+  SetRegView 64
   SetOutPath "$INSTDIR"
 
   File "${BUILD_DIR}/README.txt"
@@ -589,23 +611,6 @@ Section "-gnupginst"
   FileClose $0
 
   WriteRegStr SHCTX "Software\GnuPG" "Install Directory" $INSTDIR
-
-  # If we are reinstalling, try to kill a possible running gpa using
-  # an already installed gpa.
-  ifFileExists "$INSTDIR\bin\launch-gpa.exe"  0 no_uiserver
-    nsExec::ExecToLog '"$INSTDIR\bin\launch-gpa" "--stop-server"'
-
-  no_uiserver:
-
-  # If we are reinstalling, try to kill a possible running agent using
-  # an already installed gpgconf.
-
-  ifFileExists "$INSTDIR\bin\gpgconf.exe"  0 no_gpgconf
-    nsExec::ExecToLog '"$INSTDIR\bin\gpgconf" "--kill" "dirmngr"'
-    nsExec::ExecToLog '"$INSTDIR\bin\gpgconf" "--kill" "gpg-agent"'
-    nsExec::ExecToLog '"$INSTDIR\bin\gpgconf" "--kill" "keyboxd"'
-
-  no_gpgconf:
 
   # Add the bin directory to the PATH
   Push "$INSTDIR\bin"
@@ -1466,22 +1471,11 @@ Function .onInit
 
   Call G4wRunOnce
 
-   ${IfNot} ${RunningX64}
-       MessageBox MB_OK "Sorry this version runs only on x64 machines"
-       Abort
-   ${EndIf}
-
-   SetOutPath $TEMP
-#!ifdef SOURCES
-#  File /oname=gpgspltmp.bmp "${TOP_SRCDIR}/doc/logo/gnupg-logo-400px.bmp"
-#  # We play the tune only for the soruce installer
-#  File /oname=gpgspltmp.wav "${TOP_SRCDIR}/src/gnupg-splash.wav"
-#  g4wihelp::playsound $TEMP\gpgspltmp.wav
-#  g4wihelp::showsplash 2500 $TEMP\gpgspltmp.bmp
-
-#  Delete $TEMP\gpgspltmp.bmp
-#  # Note that we delete gpgspltmp.wav in .onInst{Failed,Success}
-#!endif
+  ${IfNot} ${RunningX64}
+      MessageBox MB_OK "Sorry this version runs only on x64 machines"
+      Abort
+  ${EndIf}
+  SetRegView 64
 
   # We can't use TOP_SRCDIR dir as the name of the file needs to be
   # the same while building and running the installer.  Thus we
@@ -1506,6 +1500,7 @@ initDone:
 FunctionEnd
 
 Function "un.onInit"
+  SetRegView 64
   !insertmacro MULTIUSER_UNINIT
 FunctionEnd
 
@@ -1614,7 +1609,6 @@ SectionEnd
 #
 # Now for the generic parts to end the installation.
 #
-Var MYTMP
 
 # Last section is a hidden one.
 Section
