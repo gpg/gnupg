@@ -2978,7 +2978,7 @@ export_secret_ssh_key (ctrl_t ctrl, const char *userid)
     {
       log_error (_("key \"%s\" not found: %s\n"), userid,
                  err? gpg_strerror (err) : "Not a Keygrip" );
-      return err;
+      goto leave;
     }
 
   bin2hex (desc.u.grip, KEYGRIP_LEN, hexgrip);
