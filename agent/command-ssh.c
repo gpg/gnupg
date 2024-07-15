@@ -2602,6 +2602,7 @@ ssh_send_available_keys (ctrl_t ctrl, estream_t key_blobs, u32 *r_key_counter)
   if (!dirname)
     {
       err = gpg_error_from_syserror ();
+      ssh_close_control_file (cf);
       agent_card_free_keyinfo (keyinfo_on_cards);
       return err;
     }
@@ -2610,6 +2611,7 @@ ssh_send_available_keys (ctrl_t ctrl, estream_t key_blobs, u32 *r_key_counter)
     {
       err = gpg_error_from_syserror ();
       xfree (dirname);
+      ssh_close_control_file (cf);
       agent_card_free_keyinfo (keyinfo_on_cards);
       return err;
     }
@@ -2714,6 +2716,8 @@ ssh_send_available_keys (ctrl_t ctrl, estream_t key_blobs, u32 *r_key_counter)
       err = add_to_key_array (&keyarray, key_public, cardsn, order);
       if (err)
         {
+          gnupg_closedir (dir);
+          ssh_close_control_file (cf);
           gcry_sexp_release (key_public);
           xfree (cardsn);
           goto leave;
