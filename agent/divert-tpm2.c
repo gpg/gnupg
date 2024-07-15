@@ -53,6 +53,7 @@ agent_write_tpm2_shadow_key (ctrl_t ctrl, const unsigned char *grip,
   if (err)
     {
       log_error ("failed to delete unshadowed key: %s\n", gpg_strerror (err));
+      xfree (shdkey);
       return err;
     }
 
