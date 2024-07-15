@@ -467,7 +467,7 @@ gpgtar_extract (const char *filename, int decrypt)
         {
           err = gpg_error_from_syserror ();
           log_error ("error opening '%s': %s\n", filename, gpg_strerror (err));
-          return err;
+          goto leave;
         }
       if (stream == es_stdin)
         es_set_binary (es_stdin);

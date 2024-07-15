@@ -825,6 +825,7 @@ ssh_authorized_keys (const char *user, struct ssh_key_list **r_ssh_key_list)
         {
           err = gpg_error (GPG_ERR_LINE_TOO_LONG);
           log_error (_("error reading '%s': %s\n"), fname, gpg_strerror (err));
+          release_ssh_key_list (ssh_key_list);
           goto leave;
         }
 
