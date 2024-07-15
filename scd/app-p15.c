@@ -5742,6 +5742,7 @@ do_sign (app_t app, ctrl_t ctrl, const char *keyidstr, int hashalgo,
               log_error ("p15: non-matching input data for Starcos:"
                          " hash=%d len=%zu\n", hashalgo, indatalen);
               err = gpg_error (GPG_ERR_INV_VALUE);
+              xfree (frame);
               goto leave;
             }
           framelen = indatalen - oidbuflen;
