@@ -402,12 +402,9 @@ libiconv_ver = 1.14
 gettext_ver = 0.18.2.1
 
 
-# The GIT repository.  Using a local repo is much faster.
-ifeq ($(shell [ -d ${HOME}/s ] && echo yes),yes)
-  gitrep = ${HOME}/s
-else
-  gitrep = git://git.gnupg.org
-endif
+# The GIT repository.  Using a local repo is much faster and more secure.
+# The default is to expect it below ~/s/
+gitrep = ${HOME}/s
 
 # The tarball directories
 pkgrep = https://gnupg.org/ftp/gcrypt
