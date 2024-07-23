@@ -54,7 +54,7 @@ struct runner_s
      2 = Thread is running and someone is holding a reference.  */
   int refcount;
 
-  gnupg_process_t proc;  /* Process of the backend's process (the engine).  */
+  gpgrt_process_t proc;  /* Process of the backend's process (the engine).  */
   int in_fd;  /* File descriptors to read from the engine.  */
   int out_fd; /* File descriptors to write to the engine.  */
   engine_handler_fnc_t handler;  /* The handler functions.  */
@@ -159,13 +159,13 @@ runner_release (runner_t runner)
   if (runner->proc)
     {
       /* The process has not been cleaned up - do it now.  */
-      gnupg_process_terminate (runner->proc);
+      gpgrt_process_terminate (runner->proc);
       /* (Actually we should use the program name and not the
           arbitrary NAME of the runner object.  However it does not
           matter because that information is only used for
           diagnostics.)  */
-      gnupg_process_wait (runner->proc, 1);
-      gnupg_process_release (runner->proc);
+      gpgrt_process_wait (runner->proc, 1);
+      gpgrt_process_release (runner->proc);
     }
 
   xfree (runner->name);
@@ -268,7 +268,7 @@ runner_set_fds (runner_t runner, int in_fd, int out_fd)
 /* Set the PROC of the backend engine.  After this call the engine is
    owned by the runner object.  */
 void
-runner_set_proc (runner_t runner, gnupg_process_t proc)
+runner_set_proc (runner_t runner, gpgrt_process_t proc)
 {
   if (check_already_spawned (runner, "runner_set_proc"))
     return;
@@ -370,10 +370,10 @@ runner_thread (void *arg)
       int exitcode;
 
       log_debug ("runner thread waiting ...\n");
-      err = gnupg_process_wait (runner->proc, 1);
+      err = gpgrt_process_wait (runner->proc, 1);
       if (!err)
-        gnupg_process_ctl (runner->proc, GNUPG_PROCESS_GET_EXIT_ID, &exitcode);
-      gnupg_process_release (runner->proc);
+        gpgrt_process_ctl (runner->proc, GPGRT_PROCESS_GET_EXIT_ID, &exitcode);
+      gpgrt_process_release (runner->proc);
       runner->proc = NULL;
       if (exitcode)
         log_error ("running '%s' failed (exitcode=%d): %s\n",
@@ -474,7 +474,7 @@ runner_cancel (runner_t runner)
          need to change the thread to wait on an event.  */
       runner->cancel_flag = 1;
       /* For now we use the brutal way and kill the process. */
-      gnupg_process_terminate (runner->proc);
+      gpgrt_process_terminate (runner->proc);
     }
 }
 

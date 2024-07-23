@@ -49,7 +49,7 @@ runner_t runner_find_by_rid (unsigned int rid);
 /* Functions to set properties of the runner.  */
 void runner_set_fds (runner_t runner, int in_fd, int out_fd);
 
-void runner_set_proc (runner_t runner, gnupg_process_t proc);
+void runner_set_proc (runner_t runner, gpgrt_process_t proc);
 
 /* Register the handler functions with a runner.  */
 void runner_set_handler (runner_t runner,
