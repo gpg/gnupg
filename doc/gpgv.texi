@@ -22,7 +22,8 @@
 @ifset manverb
 .B  gpgv
 .RI [ options ]
-.I signed_files
+.I sigfile
+.RI [ datafiles ]
 @end ifset
 @end ifclear
 @c End standard stuff
@@ -41,7 +42,8 @@
 @ifset manverb
 .B  gpgv2
 .RI [ options ]
-.I signed_files
+.I sigfile
+.RI [ datafiles ]
 @end ifset
 @end ifset
 @c End gpg2 hack stuff
