@@ -245,6 +245,7 @@ main (int argc, char **argv)
   enum cmd_and_opt_values cmd;
   strlist_t recipients = NULL;
   int i;
+  const char *s;
 
   gnupg_reopen_std ("gpg-mail-tube");
   gpgrt_set_strusage (my_strusage);
@@ -314,14 +315,31 @@ main (int argc, char **argv)
         }
     }
 
-  /* The remaining argumenst are the recipients - put them into a list.  */
+  /* The remaining arguments are the recipients - put them into a list.  */
   /* TODO: Check that these are all valid mail addresses so that gpg
    * will consider them as such.  */
   for (i=0; i < argc; i++)
     add_to_strlist (&recipients, argv[i]);
 
   if (opt.vsd)
-    prepare_for_appimage ();
+    {
+      prepare_for_appimage ();
+
+      /* In VSD mode we set GNUPGHOME unless it has already been set.
+       * This is the same what the AppImage shell does.  This has to
+       * be done after the appimage has been started because otherwise
+       * the AppImage won't write the run-gpgconf script. */
+      if (!(s=getenv ("GNUPGHOME")) || !*s)
+        {
+          char *tmpstr, *estr;
+
+          tmpstr = make_filename ("~/.gnupg-vsd", NULL);
+          estr = xstrconcat ("GNUPGHOME=", tmpstr, NULL);
+          xfree (tmpstr);
+          gpgrt_annotate_leaked_object (estr);
+          putenv (estr);
+        }
+    }
 
   if (log_get_errorcount (0))
     exit (2);
@@ -687,8 +705,24 @@ prepare_for_appimage (void)
     {
       /* Run the sleep program for 2^30 seconds (34 years). */
       static const char *args[4] = { "-c", "sleep", "1073741824", NULL };
+      static char *save_gpghome;
+      static int gpghome_saved;
       gpgrt_spawn_actions_t act;
 
+      /* Reset the GNUPGHOME so that the AppRun shell can do the Right
+       * Thing; i.e. creating a ~/.gnupg-vsd/run-gpgconf script.  */
+      if (!gpghome_saved)
+        {
+          if ((save_gpghome = getenv ("GNUPGHOME")) && *save_gpghome)
+            {
+              save_gpghome = xstrconcat ("GNUPGHOME=", save_gpghome, NULL);
+              gpgrt_annotate_leaked_object (save_gpghome);
+              putenv ("GNUPGHOME=");
+            }
+          gpghome_saved = 1;
+        }
+
+      /* Note that we need to  use that fixed GNUPGHOME.  */
       fname = make_filename ("~/.gnupg-vsd/gnupg-vs-desktop.AppImage", NULL);
 
       err = gpgrt_spawn_actions_new (&act);
@@ -710,6 +744,8 @@ prepare_for_appimage (void)
             log_info ("waiting until the AppImage has started ...\n");
           gnupg_sleep (1);
         }
+      if (gpgbin && gpghome_saved && save_gpghome && *save_gpghome)
+        putenv (save_gpghome);
       if (opt.verbose && gpgbin)
         log_info ("using AppImage gpg binary '%s'\n", gpgbin);
     }
@@ -743,15 +779,20 @@ start_gpg_encrypt (estream_t *r_input, gpgrt_process_t *r_proc,
   const char **argv;
   gpgrt_spawn_actions_t act = NULL;
   char *logfilebuf = NULL;
+  const char *s;
 
   *r_input = NULL;
   *r_proc = NULL;
   es_fflush (es_stdout);
 
   if (opt.verbose)
-    log_info ("starting gpg as %u:%u with HOME=%s\n",
-              (unsigned int)getuid (), (unsigned int)getgid (),
-              getenv ("HOME"));
+    {
+      if (!(s = getenv ("GNUPGHOME")))
+        s = "";
+      log_info ("starting gpg as %u:%u with %s%s\n",
+                (unsigned int)getuid (), (unsigned int)getgid (),
+                *s? "GNUPGHOME=":"HOME=", *s? s : getenv ("HOME"));
+    }
   ccparray_init (&ccp, 0);
   ccparray_put (&ccp, "--batch");
   if (opt.logfile)
