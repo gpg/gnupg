@@ -369,9 +369,8 @@ future also be useful with @command{gpgsm}.  Version 1 and version 2 of
 the card is supported.
 
 @noindent
-The specifications for these cards are available at@*
-@uref{http://g10code.com/docs/openpgp-card-1.0.pdf} and@*
-@uref{http://g10code.com/docs/openpgp-card-2.0.pdf}.
+The specification for this card is available at@*
+@uref{https://gnupg.org/ftp/specs/} .
 
 @node NKS Card
 @subsection The Telesec NetKey card ``nks''
