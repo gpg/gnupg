@@ -63,7 +63,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnupg\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"PO-Revision-Date: 2024-04-19 16:10+0100\n"
+"PO-Revision-Date: 2024-08-02 14:16+0100\n"
 "Last-Translator: Daniel Cerqueira <dan.git@brilhante.top>\n"
 "Language-Team: pt <dan.git@brilhante.top>\n"
 "Language: pt\n"
@@ -871,18 +871,6 @@ msgstr "erro ao criar um pipe: %s\n"
 #, c-format
 msgid "error creating a stream for a pipe: %s\n"
 msgstr "erro ao criar um fluxo para um pipe: %s\n"
-
-#, c-format
-msgid "error forking process: %s\n"
-msgstr "erro ao fazer fork de processo: %s\n"
-
-#, c-format
-msgid "waiting for process %d to terminate failed: %s\n"
-msgstr "falha ao aguardar pelo encerramento do processo %d: %s\n"
-
-#, c-format
-msgid "waiting for process to terminate failed: ec=%d\n"
-msgstr "falha ao esperar que o processo terminasse: ec=%d\n"
 
 #, c-format
 msgid "can't connect to '%s': %s\n"
@@ -2348,10 +2336,8 @@ msgstr "mostrar datas de expiração durante as listagens de assinaturas"
 msgid "show preferences"
 msgstr "mostrar preferências"
 
-#, fuzzy
-#| msgid "change the ownertrust"
 msgid "show ownertrust"
-msgstr "alterar o ownertrust"
+msgstr "mostrar a ownertrust"
 
 #, c-format
 msgid "unknown TOFU policy '%s'\n"
@@ -2485,10 +2471,9 @@ msgstr "lista auto-key-locate inválida\n"
 msgid "invalid argument for option \"%.50s\"\n"
 msgstr "argumento inválido para a opção \"%.50s\"\n"
 
-#, fuzzy, c-format
-#| msgid "error parsing key specification '%s': %s\n"
+#, c-format
 msgid "error parsing value for option '%s': %s\n"
-msgstr "erro ao processar a especificação de chave '%s': %s\n"
+msgstr "erro ao processar o valor da opção '%s': %s\n"
 
 #, c-format
 msgid "WARNING: program may create a core file!\n"
@@ -3522,7 +3507,7 @@ msgid "change the passphrase"
 msgstr "alterar a frase-secreta"
 
 msgid "change the ownertrust"
-msgstr "alterar o ownertrust"
+msgstr "alterar a ownertrust"
 
 msgid "revoke signatures on the selected user IDs"
 msgstr "revogar assinaturas nas IDs de utilizador selecionadas"
@@ -3696,10 +3681,9 @@ msgstr "falha ao revogar a ID de utilizador: %s\n"
 msgid "setting the primary user ID failed: %s\n"
 msgstr "falha ao definir a ID de utilizador principal: %s\n"
 
-#, fuzzy, c-format
-#| msgid "checking the trust list failed: %s\n"
+#, c-format
 msgid "setting the ownertrust to '%s' failed: %s\n"
-msgstr "falha ao verificar a lista da confiança: %s\n"
+msgstr "falha ao definir a ownertrust para '%s': %s\n"
 
 #, c-format
 msgid "\"%s\" is not a fingerprint\n"
@@ -4524,10 +4508,9 @@ msgstr ""
 "Repare que esta chave não pode ser usada para cifração.  Poderá querer usar\n"
 "o comando \"--edit-key\" para gerar uma subchave com esta finalidade.\n"
 
-#, fuzzy, c-format
-#| msgid "WARNING: This key has been revoked by its owner!\n"
+#, c-format
 msgid "Note: The key has been created with one or more ADSK!\n"
-msgstr "AVISO: Esta chave foi revogada pelo seu dono!\n"
+msgstr "Nota: Esta chave foi criada com ADSK!\n"
 
 #, c-format
 msgid ""
@@ -4611,12 +4594,11 @@ msgid "Keyring"
 msgstr "Porta-chaves"
 
 msgid "Revocable by: "
-msgstr ""
+msgstr "Revocável por: "
 
-#, fuzzy, c-format
-#| msgid "error writing to '%s': %s\n"
+#, c-format
 msgid "error writing to stdout: %s\n"
-msgstr "erro ao escrever em '%s': %s\n"
+msgstr "erro ao escrever em stdout: %s\n"
 
 msgid "Primary key fingerprint:"
 msgstr "Impressão digital da chave principal:"
@@ -4778,7 +4760,7 @@ msgstr "cifrado com chave %s, ID %s\n"
 
 #, c-format
 msgid "WARNING: key is not quantum-resistant\n"
-msgstr ""
+msgstr "AVISO: chave não é resistente a ataques quantum\n"
 
 #, c-format
 msgid "WARNING: multiple plaintexts seen\n"
@@ -5084,7 +5066,7 @@ msgstr "Introduzir um novo nome de ficheiro"
 
 #, c-format
 msgid "writing to stdout\n"
-msgstr "escrevendo para stdout\n"
+msgstr "escrevendo em stdout\n"
 
 #, c-format
 msgid "assuming signed data in '%s'\n"
@@ -6735,10 +6717,8 @@ msgstr "o acesso aos comandos admin não está configurado\n"
 msgid "||Please enter the PIN"
 msgstr "||Introduza o PIN"
 
-#, fuzzy
-#| msgid "||Please enter the Reset Code for the card"
 msgid "|R|Please enter the Reset Code for the card"
-msgstr "||Introduza o Código de Reset do cartão"
+msgstr "|R|Introduza o Código de Reset do cartão"
 
 #, c-format
 msgid "Reset Code is too short; minimum length is %d\n"
@@ -7306,10 +7286,8 @@ msgstr " (opcional; terminar com uma linha vazia):\n"
 msgid "Enter URIs"
 msgstr "Introduzir URIs"
 
-#, fuzzy
-#| msgid "Enter the notation: "
 msgid "Enter extensions"
-msgstr "Introduzir a notação: "
+msgstr "Introduzir extensões"
 
 msgid "Create self-signed certificate? (y/N) "
 msgstr "Criar certificado auto-assinado? (s/N) "
@@ -8391,6 +8369,10 @@ msgid "colons are not allowed in the socket name\n"
 msgstr "'dois pontos' não são permitidos no nome do socket\n"
 
 #, c-format
+msgid "error forking process: %s\n"
+msgstr "erro ao fazer fork de processo: %s\n"
+
+#, c-format
 msgid "fetching CRL from '%s' failed: %s\n"
 msgstr "falha ao buscar a CRL de '%s': %s\n"
 
@@ -9005,13 +8987,21 @@ msgid "store a private key to a data object"
 msgstr "armazenar uma chave privada em um objeto de dados"
 
 msgid "run various checks on the keys"
-msgstr ""
+msgstr "executar várias verificações nas chaves"
 
 msgid "Yubikey management commands"
 msgstr "comandos de gerir uma Yubikey"
 
 msgid "manage the command history"
 msgstr "gerir o histórico de comandos"
+
+#, c-format
+#~ msgid "waiting for process %d to terminate failed: %s\n"
+#~ msgstr "falha ao aguardar pelo encerramento do processo %d: %s\n"
+
+#, c-format
+#~ msgid "waiting for process to terminate failed: ec=%d\n"
+#~ msgstr "falha ao esperar que o processo terminasse: ec=%d\n"
 
 #~ msgid "use canonical text mode"
 #~ msgstr "usar modo de texto canónico"
