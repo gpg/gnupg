@@ -28,7 +28,6 @@
 #include <stdarg.h>
 #include <string.h>
 #include <errno.h>
-#include <assert.h>
 #include <time.h>
 #include <fcntl.h>
 #include <sys/stat.h>

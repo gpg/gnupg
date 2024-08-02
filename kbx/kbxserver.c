@@ -745,6 +745,7 @@ static const char hlp_getinfo[] =
   "pid         - Return the process id of the server.\n"
   "socket_name - Return the name of the socket.\n"
   "session_id  - Return the current session_id.\n"
+  "connections - Return number of active connections.\n"
   "getenv NAME - Return value of envvar NAME\n";
 static gpg_error_t
 cmd_getinfo (assuan_context_t ctx, char *line)
@@ -791,6 +792,12 @@ cmd_getinfo (assuan_context_t ctx, char *line)
           else
             err = assuan_send_data (ctx, s, strlen (s));
         }
+    }
+  else if (!strcmp (line, "connections"))
+    {
+      snprintf (numbuf, sizeof numbuf, "%d",
+                get_kbxd_active_connection_count ());
+      err = assuan_send_data (ctx, numbuf, strlen (numbuf));
     }
   else
     err = set_error (GPG_ERR_ASS_PARAMETER, "unknown value for WHAT");
