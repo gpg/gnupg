@@ -335,6 +335,7 @@ card_t app_do_with_keygrip (ctrl_t ctrl, int action, const char *keygrip_str,
 
 /*-- app-openpgp.c --*/
 gpg_error_t app_select_openpgp (app_t app);
+const char *app_openpgp_manufacturer (unsigned int no);
 
 /*-- app-nks.c --*/
 gpg_error_t app_select_nks (app_t app);
