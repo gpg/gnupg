@@ -1878,6 +1878,8 @@ static const char hlp_getinfo[] =
   "  cmd_has_option CMD OPT\n"
   "              - Returns OK if command CMD has option OPT.\n"
   "  dump_state  - Dump internal infos to the log stream.\n"
+  "  manufacturer NUMBER\n"
+  "              - Return a description of the OpenPGP manufacturer id.\n"
   "  apdu_strerror NUMBER\n"
   "              - Return a string for a status word.\n";
 static gpg_error_t
@@ -2003,6 +2005,12 @@ cmd_getinfo (assuan_context_t ctx, char *line)
   else if (!strcmp (line, "all_active_apps"))
     {
       rc = app_send_active_apps (NULL, ctrl);
+    }
+  else if ((s=has_leading_keyword (line, "manufacturer")))
+    {
+      unsigned long ul = strtoul (s, NULL, 0);
+      s = app_openpgp_manufacturer (ul);
+      rc = assuan_send_data (ctx, s, strlen (s));
     }
   else if ((s=has_leading_keyword (line, "apdu_strerror")))
     {
