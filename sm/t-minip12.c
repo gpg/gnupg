@@ -27,6 +27,8 @@
 #include <ctype.h>
 
 #include "../common/util.h"
+#include "../common/tlv.h"
+#include "../common/membuf.h"
 #include "minip12.h"
 
 
@@ -682,6 +684,185 @@ run_tests_from_file (const char *descfname)
 }
 
 
+/* Cram constructed octet strings.  */
+static int
+cram_file (const char *name)
+{
+  gpg_error_t err;
+  int tag, class, constructed, ndef;
+  size_t length, nhdr;
+  FILE *fp;
+  struct stat st;
+  unsigned char *buffer;
+  size_t buflen;
+  const unsigned char *s, *saved_s;
+  size_t n;
+
+  fp = fopen (name, "rb");
+  if (!fp)
+    {
+      fprintf (stderr, PGM": can't open '%s': %s\n", name, strerror (errno));
+      return 1;
+    }
+
+  if (fstat (fileno(fp), &st))
+    {
+      fprintf (stderr, PGM": can't stat '%s': %s\n", name, strerror (errno));
+      return 1;
+    }
+
+  buflen = st.st_size;
+  buffer = xmalloc (buflen+1);
+  if (fread (buffer, buflen, 1, fp) != 1)
+    {
+      fprintf (stderr, "error reading '%s': %s\n", name, strerror (errno));
+      return 1;
+    }
+  fclose (fp);
+
+
+  s = buffer;
+  n = buflen;
+  while (n)
+    {
+      saved_s = s;
+      err = parse_ber_header (&s, &n, &class, &tag, &constructed, &ndef,
+                              &length, &nhdr);
+      if (err)
+        {
+          fprintf (stderr, PGM": off=%zu parse error %d\n",
+                   saved_s - buffer, err);
+          return 2;
+        }
+      if (tag < 0)
+        {
+          fprintf (stderr, PGM": off=%zu overflow\n", saved_s - buffer);
+          return 2;
+        }
+
+      if (length > n)
+        {
+          fprintf (stderr, PGM": off=%zu length=%zu for a buffer of size=%zu\n",
+                   saved_s - buffer, length, n);
+          return 2;
+        }
+      fprintf (stderr, PGM": off=%zu cls=%d tag=%d nhdr=%zu %c len=%zu%s\n",
+               saved_s - buffer, class, tag, nhdr, constructed? 'c':'p',
+               length, ndef?" ndef":"");
+      if (class==0 && tag == 4 && constructed && ndef)
+        {
+          size_t newlen;
+          char *newbuf;
+          membuf_t mb;
+
+          fprintf (stderr, PGM": off=%zu cramming\n", saved_s - buffer);
+          init_membuf (&mb, 16384);
+          for (;;)
+            {
+              saved_s = s;
+              err = parse_ber_header (&s, &n, &class, &tag, &constructed, &ndef,
+                                      &length, &nhdr);
+              if (err)
+                {
+                  fprintf (stderr, PGM": off=%zu parse error %d\n",
+                           saved_s - buffer, err);
+                  return 2;
+                }
+              if (tag < 0)
+                {
+                  fprintf (stderr, PGM": off=%zu overflow\n", saved_s - buffer);
+                  return 2;
+                }
+              if (length > n)
+                {
+                  fprintf (stderr, PGM": off=%zu length=%zu for a buffer "
+                           "of size=%zu\n", saved_s - buffer, length, n);
+                  return 2;
+                }
+              fprintf (stderr, PGM": off=%zu cls=%d tag=%d nhdr=%zu %c len=%zu%s\n",
+                       saved_s - buffer, class, tag, nhdr, constructed? 'c':'p',
+                       length, ndef?" ndef":"");
+              if (class == 0 && tag == 4 && !ndef && !constructed)
+                {
+                  put_membuf (&mb, s, length);
+                  s += length;  /* Skip to next tag.  */
+                  n -= length;
+                }
+              else if (!class && !tag && !length)
+                break; /* ready  */
+              else
+                {
+                  fprintf (stderr, PGM": off=%zu invalid data for cramming\n",
+                           saved_s - buffer);
+                  return 2;
+                }
+            }
+
+          newbuf = get_membuf (&mb, &newlen);
+          if (!newbuf)
+            {
+              fprintf (stderr, PGM": error getting membuf\n");
+              return 2;
+            }
+
+          putchar (0x04);
+          if (newlen < 128)
+            putchar (newlen);
+          else if (newlen < 0xff)
+            {
+              putchar (0x81);
+              putchar (newlen);
+            }
+          else if (newlen < 0xffff)
+            {
+              putchar (0x82);
+              putchar (newlen >> 8);
+              putchar (newlen);
+            }
+          else if (newlen < 0xffffff)
+            {
+              putchar (0x83);
+              putchar (newlen >> 16);
+              putchar (newlen >> 8);
+              putchar (newlen);
+            }
+          else
+            {
+              putchar (0x84);
+              putchar (newlen >> 24);
+              putchar (newlen >> 16);
+              putchar (newlen >> 8);
+              putchar (newlen);
+            }
+          if (fwrite (newbuf, newlen, 1, stdout) != 1)
+            {
+              fprintf (stderr, PGM": writing %zu octets to stdout failed\n",
+                       newlen);
+              return 2;
+            }
+          xfree (newbuf);
+        }
+      else
+        {
+          if (fwrite (saved_s, nhdr, 1, stdout) != 1)
+            {
+              fprintf (stderr, PGM": writing tag to stdout failed\n");
+              return 2;
+            }
+          if (length && fwrite (s, length, 1, stdout) != 1)
+            {
+              fprintf (stderr, PGM": writing value to stdout failed\n");
+              return 2;
+            }
+          s += length;
+          n -= length;
+        }
+    }
+
+  xfree (buffer);
+  return 0;
+}
+
 
 int
 main (int argc, char **argv)
@@ -691,6 +872,7 @@ main (int argc, char **argv)
   char const *pass = NULL;
   int ret;
   int no_extra = 0;
+  int crammode = 0;
 
   if (argc)
     { argc--; argv++; }
@@ -708,6 +890,7 @@ main (int argc, char **argv)
                  "Without <pkcs12file> a regression test is run\n"
                  "Options:\n"
                  "  --no-extra          do not run extra tests\n"
+                 "  --cram              Cram octet strings\n"
                  "  --verbose           print timings etc.\n"
                  "                      given twice shows more\n"
                  "  --debug             flyswatter\n"
@@ -717,6 +900,11 @@ main (int argc, char **argv)
       else if (!strcmp (*argv, "--no-extra"))
         {
           no_extra = 1;
+          argc--; argv++;
+        }
+      else if (!strcmp (*argv, "--cram"))
+        {
+          crammode = 1;
           argc--; argv++;
         }
       else if (!strcmp (*argv, "--verbose"))
@@ -764,7 +952,10 @@ main (int argc, char **argv)
   if (name)
     {
       p12_set_verbosity (verbose, debug);
-      ret = one_file (name, pass);
+      if (crammode)
+        ret = cram_file (name);
+      else
+        ret = one_file (name, pass);
     }
   else
     {
