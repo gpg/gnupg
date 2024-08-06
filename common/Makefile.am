@@ -61,7 +61,7 @@ common_sources = \
 	openpgpdefs.h \
 	gc-opt-flags.h \
 	sexp-parse.h \
-	tlv.c tlv.h tlv-builder.c \
+	tlv.c tlv.h tlv-builder.c tlv-parser.c \
 	init.c init.h \
 	sexputil.c \
 	sysutils.c sysutils.h \
