@@ -1,7 +1,7 @@
 /* minip12.c - A minimal pkcs-12 implementation.
  * Copyright (C) 2002, 2003, 2004, 2006, 2011 Free Software Foundation, Inc.
  * Copyright (C) 2014 Werner Koch
- * Copyright (C) 2022, 2023 g10 Code GmbH
+ * Copyright (C) 2022-2024 g10 Code GmbH
  *
  * This file is part of GnuPG.
  *
@@ -49,9 +49,6 @@
 #ifndef DIM
 #define DIM(v)		     (sizeof(v)/sizeof((v)[0]))
 #endif
-
-/* Enable the next macro to dump stuff for debugging.  */
-#undef ENABLE_DER_STRUCT_DUMPING
 
 
 static unsigned char const oid_data[9] = {
@@ -186,6 +183,25 @@ p12_set_verbosity (int verbose, int debug)
   opt_verbose = !!verbose;
   if (debug)
     opt_verbose = 2;
+}
+
+
+static void
+dump_to_file (const void *s, size_t n, const char *name)
+{
+  FILE *fp;
+  char fname[100];
+  static int fcount;
+
+  if (opt_verbose > 1 && getenv ("GPGSM_DUMP_P12_DATA"))
+    {
+      snprintf (fname, sizeof fname, "tmp-p12-%03d-%s", ++fcount, name);
+      log_debug ("dumping %zu bytes to '%s'\n", n, fname);
+      fp = fopen (fname, "wb");
+      if (!fp || fwrite (s, n, 1, fp) != 1)
+        log_assert (!"fopen or fwrite failed");
+      fclose (fp);
+    }
 }
 
 
@@ -608,6 +624,7 @@ decrypt_block (const void *ciphertext, unsigned char *plaintext, size_t length,
       memcpy (plaintext, ciphertext, length);
       crypt_block (plaintext, length, salt, saltlen, iter, iv, ivlen,
                    convertedpw? convertedpw:pw, cipher_algo, digest_algo, 0);
+      dump_to_file (plaintext, length, "raw-decrypt");
       if (check_fnc (plaintext, length))
         {
           /* Strip the pkcs#7 padding.  */
@@ -646,15 +663,7 @@ bag_decrypted_data_p (const void *plaintext, size_t length)
   const unsigned char *p = plaintext;
   size_t n = length;
 
-#ifdef ENABLE_DER_STRUCT_DUMPING
-  {
-  #  warning debug code is enabled
-      FILE *fp = fopen ("tmp-minip12-plain-data.der", "wb");
-      if (!fp || fwrite (p, n, 1, fp) != 1)
-        exit (2);
-      fclose (fp);
-  }
-#endif /*ENABLE_DER_STRUCT_DUMPING*/
+  dump_to_file (p, n, "plain-data.der");
 
   if (tlv_parse_tag (&p, &n, &ti))
     return 0;
@@ -686,7 +695,8 @@ parse_bag_encrypted_data (struct p12_parse_ctx_s *ctx, tlv_parser_t tlv)
   int is_pbes2 = 0;
   int is_aes256 = 0;
   int keyelem_count;
-  int renewed_tlv = 0;
+  tlv_parser_t tmptlv;
+  int newtlv = 0;
   int loopcount;
   unsigned int startlevel, startlevel2;
   int digest_algo = GCRY_MD_SHA1;
@@ -791,7 +801,7 @@ parse_bag_encrypted_data (struct p12_parse_ctx_s *ctx, tlv_parser_t tlv)
 
       if (tlv_next (tlv))
         goto bailout;
-      if (tlv_expect_octet_string (tlv, 0, &data, &datalen))
+      if (tlv_expect_octet_string (tlv, &data, &datalen))
         goto bailout;
       parmlen -= tlv_parser_tag_length (tlv, 1);
       if (datalen < 8 || datalen > sizeof salt)
@@ -835,12 +845,13 @@ parse_bag_encrypted_data (struct p12_parse_ctx_s *ctx, tlv_parser_t tlv)
           if (opt_verbose > 1)
             log_debug ("kdf digest algo = %d\n", digest_algo);
 
-          if (tlv_peek_null (tlv))
-            {
-              /* Read the optional Null tag.  */
-              if (tlv_next (tlv))
-                goto bailout;
-            }
+          /* Read the optional Null tag.  */
+          if (tlv_next (tlv))
+            goto bailout;
+          else if (!tlv_expect_null (tlv))
+            ; /* NULL tag needs no skip.  */
+          else
+            tlv_parser_set_pending (tlv);
         }
       else
         digest_algo = GCRY_MD_SHA1;
@@ -870,7 +881,7 @@ parse_bag_encrypted_data (struct p12_parse_ctx_s *ctx, tlv_parser_t tlv)
 
       if (tlv_next (tlv))
         goto bailout;
-      if (tlv_expect_octet_string (tlv, 0, &data, &datalen))
+      if (tlv_expect_octet_string (tlv, &data, &datalen))
         goto bailout;
       if (datalen != sizeof iv)
         {
@@ -889,7 +900,7 @@ parse_bag_encrypted_data (struct p12_parse_ctx_s *ctx, tlv_parser_t tlv)
 
       if (tlv_next (tlv))
         goto bailout;
-      if (tlv_expect_octet_string (tlv, 0, &data, &datalen))
+      if (tlv_expect_octet_string (tlv, &data, &datalen))
         goto bailout;
       if (datalen < 8 || datalen > 20)
         {
@@ -913,11 +924,12 @@ parse_bag_encrypted_data (struct p12_parse_ctx_s *ctx, tlv_parser_t tlv)
     }
 
   where = "rc2or3desoraes-ciphertext";
-  if (tlv_next (tlv))
+  if (tlv_next_with_flag (tlv, TLV_PARSER_FLAG_T5793))
     goto bailout;
 
   if (tlv_expect_object (tlv, CLASS_CONTEXT, 0, &data, &datalen))
     goto bailout;
+  dump_to_file (data, datalen, "raw-ciphertext");
 
   if (opt_verbose)
     log_info ("%zu bytes of %s encrypted text\n", datalen,
@@ -945,13 +957,14 @@ parse_bag_encrypted_data (struct p12_parse_ctx_s *ctx, tlv_parser_t tlv)
 
   /* We do not need the TLV anymore and allocated a new one.  */
   where = "bag.encryptedData.decrypted-text";
-  tlv = tlv_parser_new (plain, datalen, opt_verbose);
-  if (!tlv)
+  tmptlv = tlv_parser_new (plain, datalen, opt_verbose, tlv);
+  if (!tmptlv)
     {
       err = gpg_error_from_syserror ();
       goto bailout;
     }
-  renewed_tlv = 1;
+  tlv = tmptlv;
+  newtlv = 1;
 
   if (tlv_next (tlv))
     {
@@ -1056,7 +1069,7 @@ parse_bag_encrypted_data (struct p12_parse_ctx_s *ctx, tlv_parser_t tlv)
           /* We ignore the next octet string.  */
           if (tlv_next (tlv))
             goto bailout;
-          if (tlv_expect_octet_string (tlv, 0, &data, &datalen))
+          if (tlv_expect_octet_string (tlv, &data, &datalen))
             goto bailout;
 
           if (tlv_next (tlv))
@@ -1144,7 +1157,7 @@ parse_bag_encrypted_data (struct p12_parse_ctx_s *ctx, tlv_parser_t tlv)
 
           if (tlv_next (tlv))
             goto bailout;
-          if (tlv_expect_octet_string (tlv, 0, &data, &datalen))
+          if (tlv_expect_octet_string (tlv, &data, &datalen))
             goto bailout;
 
           /* Return the certificate. */
@@ -1154,17 +1167,19 @@ parse_bag_encrypted_data (struct p12_parse_ctx_s *ctx, tlv_parser_t tlv)
 
       /* Skip the optional SET with the pkcs12 cert attributes. */
       where = "bag.attribute_set";
-      if (tlv_peek (tlv, CLASS_UNIVERSAL, TAG_SET))
+      err = tlv_next (tlv);
+      if (err && gpg_err_code (err) == GPG_ERR_EOF)
+        err = 0;
+      else if (err)
+        goto bailout;
+      else if (!tlv_expect_set (tlv))
         {
-          if (tlv_next (tlv))
-            goto bailout;
-          err = tlv_expect_set (tlv);
-          if (err)
-            goto bailout;
           tlv_parser_skip (tlv);
           if (opt_verbose)
             log_info ("skipping %s\n", where);
         }
+      else
+        tlv_parser_set_pending (tlv);
     }
   if (!err)
     tlv_parser_set_pending (tlv);
@@ -1177,7 +1192,7 @@ parse_bag_encrypted_data (struct p12_parse_ctx_s *ctx, tlv_parser_t tlv)
   err = 0;
 
  leave:
-  if (renewed_tlv)
+  if (newtlv)
     tlv_parser_release (tlv);
   gcry_free (plain);
   if (ctx->badpass)
@@ -1211,15 +1226,7 @@ bag_data_p (const void *plaintext, size_t length)
   const unsigned char *p = plaintext;
   size_t n = length;
 
-#ifdef ENABLE_DER_STRUCT_DUMPING
-  {
-#  warning debug code is enabled
-    FILE *fp = fopen ("tmp-minip12-plain-key.der", "wb");
-    if (!fp || fwrite (p, n, 1, fp) != 1)
-      exit (2);
-    fclose (fp);
-  }
-#endif /*ENABLE_DER_STRUCT_DUMPING*/
+  dump_to_file (p, n, "plain-key.der");
 
   if (tlv_parse_tag (&p, &n, &ti) || ti.class || ti.tag != TAG_SEQUENCE)
     return 0;
@@ -1245,8 +1252,8 @@ parse_shrouded_key_bag (struct p12_parse_ctx_s *ctx, tlv_parser_t tlv)
   size_t saltlen;
   char iv[16];
   unsigned int iter;
-  tlv_parser_t saved_tlv = NULL;
-  int renewed_tlv = 0;  /* True if the TLV must be released.  */
+  tlv_parser_t tmptlv = NULL;
+  int newtlv = 0;  /* Counter which is true if the TLV must be released.  */
   unsigned char *plain = NULL;
   int is_pbes2 = 0;
   int is_aes256 = 0;
@@ -1322,7 +1329,7 @@ parse_shrouded_key_bag (struct p12_parse_ctx_s *ctx, tlv_parser_t tlv)
 
       if (tlv_next (tlv))
         goto bailout;
-      if (tlv_expect_octet_string (tlv, 0, &data, &datalen))
+      if (tlv_expect_octet_string (tlv, &data, &datalen))
         goto bailout;
       parmlen -= tlv_parser_tag_length (tlv, 1);
       if (datalen < 8 || datalen > sizeof salt)
@@ -1366,12 +1373,13 @@ parse_shrouded_key_bag (struct p12_parse_ctx_s *ctx, tlv_parser_t tlv)
           if (opt_verbose > 1)
             log_debug ("kdf digest algo = %d\n", digest_algo);
 
-          if (tlv_peek_null (tlv))
-            {
-              /* Read the optional Null tag.  */
-              if (tlv_next (tlv))
-                goto bailout;
-            }
+          /* Read the optional Null tag.  */
+          if (tlv_next (tlv))
+            goto bailout;
+          else if (!tlv_expect_null (tlv))
+            ; /* NULL tag needs no skip.  */
+          else
+            tlv_parser_set_pending (tlv);
         }
       else
         digest_algo = GCRY_MD_SHA1;
@@ -1400,7 +1408,7 @@ parse_shrouded_key_bag (struct p12_parse_ctx_s *ctx, tlv_parser_t tlv)
 
       if (tlv_next (tlv))
         goto bailout;
-      if (tlv_expect_octet_string (tlv, 0, &data, &datalen))
+      if (tlv_expect_octet_string (tlv, &data, &datalen))
         goto bailout;
       if (datalen != sizeof iv)
         goto bailout; /* Bad IV.  */
@@ -1416,8 +1424,11 @@ parse_shrouded_key_bag (struct p12_parse_ctx_s *ctx, tlv_parser_t tlv)
 
       if (tlv_next (tlv))
         goto bailout;
-      if (tlv_expect_octet_string (tlv, 0, &data, &datalen))
+      if (tlv_expect_octet_string (tlv, &data, &datalen))
         goto bailout;
+      if (opt_verbose > 1)
+        log_printhex (data, datalen, "%s: salt", __func__);
+
       if (datalen < 8 || datalen > 20)
         {
           log_info ("bad length of salt (%zu) for 3DES\n", datalen);
@@ -1442,7 +1453,7 @@ parse_shrouded_key_bag (struct p12_parse_ctx_s *ctx, tlv_parser_t tlv)
   where = "shrouded_key_bag.3desoraes-ciphertext";
   if (tlv_next (tlv))
     goto bailout;
-  if (tlv_expect_octet_string (tlv, 0, &data, &datalen))
+  if (tlv_expect_octet_string (tlv, &data, &datalen))
     goto bailout;
 
   if (opt_verbose)
@@ -1472,14 +1483,14 @@ parse_shrouded_key_bag (struct p12_parse_ctx_s *ctx, tlv_parser_t tlv)
 
   /* We do not need the TLV anymore and allocated a new one.  */
   where = "shrouded_key_bag.decrypted-text";
-  saved_tlv = tlv;
-  tlv = tlv_parser_new (plain, datalen, opt_verbose);
-  if (!tlv)
+  tmptlv = tlv_parser_new (plain, datalen, opt_verbose, tlv);
+  if (!tmptlv)
     {
       err = gpg_error_from_syserror ();
       goto bailout;
     }
-  renewed_tlv = 1;
+  tlv = tmptlv;
+  newtlv++;
   if (opt_verbose > 1)
     log_debug ("new parser context\n");
 
@@ -1526,12 +1537,13 @@ parse_shrouded_key_bag (struct p12_parse_ctx_s *ctx, tlv_parser_t tlv)
       if (opt_verbose > 1)
         log_debug ("RSA parameters\n");
 
-      if (tlv_peek_null (tlv))
-        {
-          /* Read the optional Null tag.  */
-          if (tlv_next (tlv))
-            goto bailout;
-        }
+      /* Read the optional Null tag.  */
+      if (tlv_next (tlv))
+        goto bailout;
+      else if (!tlv_expect_null (tlv))
+        ; /* NULL tag needs no skip.  */
+      else
+        tlv_parser_set_pending (tlv);
     }
   else if (oidlen == DIM(oid_pcPublicKey)
            && !memcmp (oid, oid_pcPublicKey, oidlen))
@@ -1561,8 +1573,20 @@ parse_shrouded_key_bag (struct p12_parse_ctx_s *ctx, tlv_parser_t tlv)
   /* An octet string to encapsulate the key elements.  */
   if (tlv_next (tlv))
     goto bailout;
-  if (tlv_expect_octet_string (tlv, 1, &data, &datalen))
+  if (tlv_expect_octet_string (tlv, &data, &datalen))
     goto bailout;
+
+  tmptlv = tlv_parser_new (data, datalen, opt_verbose, tlv);
+  if (!tmptlv)
+    {
+      err = gpg_error_from_syserror ();
+      goto bailout;
+    }
+  tlv = tmptlv;
+  newtlv++;
+  data = NULL;
+  if (opt_verbose > 1)
+    log_debug ("new parser context\n");
 
   if (tlv_next (tlv))
     goto bailout;
@@ -1572,7 +1596,7 @@ parse_shrouded_key_bag (struct p12_parse_ctx_s *ctx, tlv_parser_t tlv)
   if (ctx->privatekey2)
     {
       err = gpg_error (GPG_ERR_DUP_VALUE);
-      log_error ("two private kesy have already been received\n");
+      log_error ("two private keys have already been received\n");
       goto bailout;
     }
   privatekey = gcry_calloc (10, sizeof *privatekey);
@@ -1607,7 +1631,7 @@ parse_shrouded_key_bag (struct p12_parse_ctx_s *ctx, tlv_parser_t tlv)
 
       if (tlv_next (tlv))
         goto bailout;
-      if (tlv_expect_octet_string (tlv, 0, &data, &datalen))
+      if (tlv_expect_octet_string (tlv, &data, &datalen))
         goto bailout;
       if (opt_verbose > 1)
         log_printhex (data, datalen, "ecc q=");
@@ -1660,30 +1684,33 @@ parse_shrouded_key_bag (struct p12_parse_ctx_s *ctx, tlv_parser_t tlv)
 
   if (opt_verbose > 1)
     log_debug ("restoring parser context\n");
-  tlv_parser_release (tlv);
-  renewed_tlv = 0;
-  tlv = saved_tlv;
+  tlv = tlv_parser_release (tlv);
+  log_assert (tlv);
+  newtlv--;
 
   where = "shrouded_key_bag.attribute_set";
   /* Check for an optional set of attributes.  */
-  if (tlv_peek (tlv, CLASS_UNIVERSAL, TAG_SET))
+  err = tlv_next (tlv);
+  if (err && gpg_err_code (err) == GPG_ERR_EOF)
+    err = 0;
+  else if (err)
+    goto bailout;
+  else if (!tlv_expect_set (tlv))
     {
-      if (tlv_next (tlv))
-        goto bailout;
-      err = tlv_expect_set (tlv);
-      if (err)
-        goto bailout;
       tlv_parser_skip (tlv);
       if (opt_verbose)
         log_info ("skipping %s\n", where);
     }
+  else
+    tlv_parser_set_pending (tlv);
 
 
  leave:
   gcry_free (plain);
-  if (renewed_tlv)
+  while (newtlv)
     {
-      tlv_parser_release (tlv);
+      tlv = tlv_parser_release (tlv);
+      newtlv--;
       if (opt_verbose > 1)
         log_debug ("parser context released\n");
     }
@@ -1758,7 +1785,7 @@ parse_cert_bag (struct p12_parse_ctx_s *ctx, tlv_parser_t tlv)
 
   if (tlv_next (tlv))
     goto bailout;
-  if (tlv_expect_octet_string (tlv, 0, &data, &datalen))
+  if (tlv_expect_octet_string (tlv, &data, &datalen))
     goto bailout;
 
   /* Return the certificate from the octet string. */
@@ -1771,18 +1798,19 @@ parse_cert_bag (struct p12_parse_ctx_s *ctx, tlv_parser_t tlv)
    */
   where = "certbag.attribute_set";
   /* Check for an optional set of attributes.  */
-  if (tlv_peek (tlv, CLASS_UNIVERSAL, TAG_SET))
+  err = tlv_next (tlv);
+  if (err && gpg_err_code (err) == GPG_ERR_EOF)
+    err = 0;
+  else if (err)
+    goto bailout;
+  else if (!tlv_expect_set (tlv))
     {
-      if (tlv_next (tlv))
-        goto bailout;
-      err = tlv_expect_set (tlv);
-      if (err)
-        goto bailout;
       tlv_parser_skip (tlv);
       if (opt_verbose)
         log_info ("skipping %s\n", where);
     }
-
+  else
+    tlv_parser_set_pending (tlv);
 
  leave:
   return err;
@@ -1809,6 +1837,10 @@ parse_bag_data (struct p12_parse_ctx_s *ctx, tlv_parser_t tlv)
   const unsigned char *oid;
   size_t oidlen;
   unsigned int startlevel;
+  const unsigned char *data;
+  size_t datalen;
+  tlv_parser_t tmptlv;
+  int newtlv = 0;  /* True if the TLV must be released.  */
 
   if (opt_verbose)
     log_info ("processing bag data\n");
@@ -1825,17 +1857,20 @@ parse_bag_data (struct p12_parse_ctx_s *ctx, tlv_parser_t tlv)
 
   if (tlv_next (tlv))
     goto bailout;
-  if (tlv_expect_octet_string (tlv, 1, NULL, NULL))
+  if (tlv_expect_octet_string (tlv, &data, &datalen))
     goto bailout;
 
-  if (tlv_peek (tlv, CLASS_UNIVERSAL, TAG_OCTET_STRING))
+  tmptlv = tlv_parser_new (data, datalen, opt_verbose, tlv);
+  if (!tmptlv)
     {
-      if (tlv_next (tlv))
-        goto bailout;
-      err = tlv_expect_octet_string (tlv, 1, NULL, NULL);
-      if (err)
-        goto bailout;
+      err = gpg_error_from_syserror ();
+      goto bailout;
     }
+  tlv = tmptlv;
+  newtlv = 1;
+    data = NULL;
+  if (opt_verbose > 1)
+    log_debug ("new parser context for embedded octet string\n");
 
   /* Expect:
    * SEQUENCE
@@ -1894,6 +1929,12 @@ parse_bag_data (struct p12_parse_ctx_s *ctx, tlv_parser_t tlv)
   err = 0;
 
  leave:
+  if (newtlv)
+    {
+      tlv_parser_release (tlv);
+      if (opt_verbose > 1)
+        log_debug ("parser context released\n");
+    }
   return err;
 
  bailout:
@@ -1930,6 +1971,10 @@ p12_parse (const unsigned char *buffer, size_t length, const char *pw,
   int intval;
   unsigned int startlevel;
   int i;
+  const unsigned char *data;
+  size_t datalen;
+  tlv_parser_t tmptlv;
+  int newtlv = 0;  /* True if the TLV must be released.  */
 
   *r_badpass = 0;
 
@@ -1937,7 +1982,7 @@ p12_parse (const unsigned char *buffer, size_t length, const char *pw,
   ctx.certcbarg = certcbarg;
   ctx.password = pw;
 
-  tlv = tlv_parser_new (buffer, length, opt_verbose);
+  tlv = tlv_parser_new (buffer, length, opt_verbose, 0);
   if (!tlv)
     {
       err = gpg_error_from_syserror ();
@@ -1979,17 +2024,21 @@ p12_parse (const unsigned char *buffer, size_t length, const char *pw,
 
   if ((err = tlv_next (tlv)))
     goto bailout;
-  if ((err = tlv_expect_octet_string (tlv, 1, NULL, NULL)))
+  if ((err = tlv_expect_octet_string (tlv, &data, &datalen)))
     goto bailout;
 
-  if (tlv_peek (tlv, CLASS_UNIVERSAL, TAG_OCTET_STRING))
+  tmptlv = tlv_parser_new (data, datalen, opt_verbose, NULL);
+  if (!tmptlv)
     {
-      if ((err = tlv_next (tlv)))
-        goto bailout;
-      err = tlv_expect_octet_string (tlv, 1, NULL, NULL);
-      if (err)
-        goto bailout;
+      err = gpg_error_from_syserror ();
+      goto bailout;
     }
+  tlv = tmptlv;
+  newtlv = 1;
+  data = NULL;
+
+  if (opt_verbose > 1)
+    log_debug ("new parser context for embedded octet string\n");
 
   where = "bags";
   if ((err = tlv_next (tlv)))
@@ -2046,6 +2095,12 @@ p12_parse (const unsigned char *buffer, size_t length, const char *pw,
     goto bailout;
   err = 0;
 
+  if (newtlv)
+    {
+      tlv = tlv_parser_release (tlv);
+      if (opt_verbose > 1)
+        log_debug ("parser context released\n");
+    }
   tlv_parser_release (tlv);
   if (r_curve)
     *r_curve = ctx.curve;
@@ -2064,6 +2119,12 @@ p12_parse (const unsigned char *buffer, size_t length, const char *pw,
   return ctx.privatekey;
 
  bailout:
+  if (newtlv)
+    {
+      tlv = tlv_parser_release (tlv);
+      if (opt_verbose > 1)
+        log_debug ("parser context released\n");
+    }
   *r_badpass = ctx.badpass;
   log_error ("%s(%s): @%04zu lvl=%u %s: %s - %s\n",
              __func__, where,

@@ -1,5 +1,5 @@
 /* tlv-parser.c - Parse BER encoded objects
- * Copyright (C) 2023 g10 Code GmbH
+ * Copyright (C) 2023, 2024 g10 Code GmbH
  *
  * This file is part of GnuPG.
  *
@@ -32,24 +32,26 @@
 #define TLV_MAX_DEPTH 25
 
 
-struct bufferlist_s
-{
-  struct bufferlist_s *next;
-  char *buffer;
-};
-
 
 /* An object to control the ASN.1 parsing.  */
 struct tlv_parser_s
 {
   /* The original buffer with the entire pkcs#12 object and its length.  */
-  const unsigned char *origbuffer;
+  unsigned char *origbuffer;
   size_t origbufsize;
 
+  /* The original offset for debugging.  */
+  size_t origoff;
+
+  /* Here we keep a copy of the former TLV.  This is returned by
+   * tlv_parser_release.  */
+  tlv_parser_t lasttlv;
+
   /* The current buffer we are working on and its length. */
-  const unsigned char *buffer;
+  unsigned char *buffer;
   size_t bufsize;
 
+  size_t crammed;      /* 0 or actual length of crammed octet strings.  */
   int in_ndef;         /* Flag indicating that we are in a NDEF. */
   int pending;         /* The last tlv_next has not yet been processed.  */
 
@@ -58,22 +60,18 @@ struct tlv_parser_s
   const char *lastfunc;/* Name of last called function.  */
   int verbosity;       /* Arg from tlv_parser_new.       */
 
-  struct bufferlist_s *bufferlist;  /* To keep track of malloced buffers. */
-
   unsigned int stacklen; /* Used size of the stack.  */
   struct {
-    const unsigned char *buffer;  /* Saved value of BUFFER.   */
+    unsigned char *buffer;        /* Saved value of BUFFER.   */
     size_t bufsize;               /* Saved value of BUFSIZE.  */
     size_t length;                /* Length of the container (ti.length). */
+    size_t crammed;               /* Saved CRAMMED value.                 */
     int    in_ndef;               /* Saved IN_NDEF flag (ti.ndef).        */
   } stack[TLV_MAX_DEPTH];
 };
 
 
-static unsigned char *cram_octet_string (const unsigned char *input,
-                                         size_t length, size_t *r_newlength);
-static int need_octet_string_cramming (const unsigned char *input,
-                                       size_t length);
+static size_t cram_octet_string (tlv_parser_t tlv, int testmode);
 
 
 
@@ -87,12 +85,10 @@ _tlv_parser_dump_tag (const char *text, int lno, tlv_parser_t tlv)
 
   ti = &tlv->ti;
 
-  log_debug ("p12_parse:%s:%d: @%04zu class=%d tag=%lu len=%zu nhdr=%zu %s%s\n",
-             text, lno,
-             (size_t)(tlv->buffer - tlv->origbuffer) - ti->nhdr,
-             ti->class, ti->tag, ti->length, ti->nhdr,
-             ti->is_constructed?" cons":"",
-             ti->ndef?" ndef":"");
+  log_debug ("%s:%d: %zu@%04zu class=%d tag=%lu %c len=%zu%s nhdr=%zu\n",
+             text, lno, tlv->origoff, tlv_parser_offset (tlv) - ti->nhdr,
+             ti->class, ti->tag, ti->is_constructed?'c':'p',
+             ti->length,ti->ndef?" ndef":"", ti->nhdr);
 }
 
 
@@ -103,15 +99,35 @@ _tlv_parser_dump_state (const char *text, const char *text2,
   if (!tlv || tlv->verbosity < 2)
     return;
 
-  log_debug ("p12_parse:%s%s%s:%d: @%04zu lvl=%u %s\n",
+  log_debug ("p12_parse:%s%s%s:%d: %zu@%04zu lvl=%u %s\n",
              text,
              text2? "/":"", text2? text2:"",
-             lno,
-             (size_t)(tlv->buffer - tlv->origbuffer),
+             lno, tlv->origoff, tlv_parser_offset (tlv),
              tlv->stacklen,
              tlv->in_ndef? " in-ndef":"");
 }
 
+
+static void
+dump_to_file (const void *s, size_t n, const char *name)
+{
+#if 0
+  FILE *fp;
+  char fname[100];
+  static int fcount;
+
+  snprintf (fname, sizeof fname, "tmp-%03d-%s", ++fcount, name);
+  log_debug ("dumping %zu bytes to '%s'\n", n, fname);
+  fp = fopen (fname, "wb");
+  if (!fp || fwrite (s, n, 1, fp) != 1)
+    exit (2);
+  fclose (fp);
+#else
+  (void)s;
+  (void)n;
+  (void)name;
+#endif
+}
 
 
 /* Parse the buffer at the address BUFFER which is of SIZE and return
@@ -135,7 +151,12 @@ parse_tag (unsigned char const **buffer, size_t *size, struct tag_info *ti)
   ti->tag = tag;
 
   if (ti->length > *size)
-    return gpg_error (GPG_ERR_BUFFER_TOO_SHORT); /* data larger than buffer. */
+    {
+      /* data larger than buffer. */
+      log_debug ("%s: ti->length=%zu for a buffer of size=%zu\n",
+                 __func__, ti->length, *size);
+      return gpg_error (GPG_ERR_BUFFER_TOO_SHORT);
+    }
 
   return 0;
 }
@@ -150,95 +171,63 @@ tlv_parse_tag (unsigned char const **buffer, size_t *size, struct tag_info *ti)
 
 /* Create a new TLV object.  */
 tlv_parser_t
-tlv_parser_new (const unsigned char *buffer, size_t bufsize, int verbosity)
+_tlv_parser_new (const unsigned char *buffer, size_t bufsize,
+                int verbosity, tlv_parser_t lasttlv, int lno)
 {
   tlv_parser_t tlv;
+
+  if (verbosity > 1)
+    log_debug ("%s:%d: %zu@%zu (%p,%zu)\n", __func__, lno,
+               lasttlv?lasttlv->origoff:0, tlv_parser_offset (lasttlv),
+               buffer, bufsize);
+
   tlv = xtrycalloc (1, sizeof *tlv);
   if (tlv)
     {
-      tlv->origbuffer = buffer;
+      char *mybuf = xtrymalloc ( bufsize + 1);
+      if (!mybuf)
+        {
+          xfree (tlv);
+          return NULL;
+        }
+      memcpy (mybuf, buffer, bufsize);
+      mybuf[bufsize] = 0;
+      tlv->origbuffer = mybuf;
       tlv->origbufsize = bufsize;
-      tlv->buffer = buffer;
+      tlv->origoff = tlv_parser_offset (lasttlv);
+      tlv->buffer = mybuf;
       tlv->bufsize = bufsize;
+      tlv->crammed = 0;
       tlv->verbosity = verbosity;
+      tlv->lasttlv = lasttlv;
+      dump_to_file (mybuf, bufsize, "context");
     }
   return tlv;
 }
 
 
-/* This function can be used to store a malloced buffer into the TLV
- * object.  Ownership of BUFFER is thus transferred to TLV.  This
- * buffer will then only be released by tlv_release. */
-static gpg_error_t
-register_buffer (tlv_parser_t tlv, char *buffer)
+/* Free the TLV object and returns the last TLV object stored in this
+ * TLV.  */
+tlv_parser_t
+_tlv_parser_release (tlv_parser_t tlv, int lno)
 {
-  struct bufferlist_s *item;
+  tlv_parser_t result;
 
-  item = xtrycalloc (1, sizeof *item);
-  if (!item)
-    return gpg_error_from_syserror ();
-  item->buffer = buffer;
-  item->next = tlv->bufferlist;
-  tlv->bufferlist = item;
-  return 0;
-}
-
-
-void
-tlv_parser_release (tlv_parser_t tlv)
-{
   if (!tlv)
-    return;
-  while (tlv->bufferlist)
+    return NULL;
+  result = tlv->lasttlv;
+  if (tlv->verbosity > 1)
     {
-      struct bufferlist_s *save = tlv->bufferlist->next;
-      xfree (tlv->bufferlist->buffer);
-      xfree (tlv->bufferlist);
-      tlv->bufferlist = save;
+      if (result)
+        log_debug ("%s:%d: done; returning last TLV %zu@%zu (%p,%zu)\n",
+                   __func__, lno, result->origoff,
+                   tlv_parser_offset (result), result->buffer, result->bufsize);
+      else
+        log_debug ("%s:%d: done\n", __func__, lno);
     }
+  xfree (tlv->origbuffer);
   xfree (tlv);
-}
-
-
-/* Helper for the tlv_peek functions.  */
-static gpg_error_t
-_tlv_peek (tlv_parser_t tlv, struct tag_info *ti)
-{
-  const unsigned char *p;
-  size_t n;
-
-  /* Note that we want to peek ahead of any current container but of
-   * course not beyond our entire buffer.  */
-  p = tlv->buffer;
-  if ((p - tlv->origbuffer) > tlv->origbufsize)
-    return gpg_error (GPG_ERR_BUG);
-  n = tlv->origbufsize - (p - tlv->origbuffer);
-  return parse_tag (&p, &n, ti);
-}
-
-
-/* Look for the next tag and return true if it matches CLASS and TAG.
- * Otherwise return false.  No state is changed.  */
-int
-_tlv_parser_peek (tlv_parser_t tlv, int class, int tag)
-{
-  struct tag_info ti;
-
-  return (!_tlv_peek (tlv, &ti)
-          && ti.class == class && ti.tag == tag);
-}
-
-
-/* Look for the next tag and return true if it is the Null tag.
- * Otherwise return false.  No state is changed.  */
-int
-_tlv_parser_peek_null (tlv_parser_t tlv)
-{
-  struct tag_info ti;
-
-  return (!_tlv_peek (tlv, &ti)
-          && ti.class == CLASS_UNIVERSAL && ti.tag == TAG_NULL
-          && !ti.is_constructed && !ti.length);
+  return result;
 }
 
 
@@ -246,6 +235,7 @@ _tlv_parser_peek_null (tlv_parser_t tlv)
 static gpg_error_t
 _tlv_push (tlv_parser_t tlv)
 {
+
   /* Right now our pointer is at the value of the current container.
    * We push that info onto the stack.  */
   if (tlv->stacklen >= TLV_MAX_DEPTH)
@@ -254,6 +244,7 @@ _tlv_push (tlv_parser_t tlv)
   tlv->stack[tlv->stacklen].bufsize = tlv->bufsize;
   tlv->stack[tlv->stacklen].in_ndef = tlv->in_ndef;
   tlv->stack[tlv->stacklen].length  = tlv->ti.length;
+  tlv->stack[tlv->stacklen].crammed = tlv->crammed;
   tlv->stacklen++;
 
   tlv->in_ndef = tlv->ti.ndef;
@@ -278,7 +269,7 @@ _tlv_push (tlv_parser_t tlv)
 static gpg_error_t
 _tlv_pop (tlv_parser_t tlv)
 {
-  size_t lastlen;
+  size_t length;
 
   /* We reached the end of a container, either due to the size limit
    * or due to an end tag.  Now we pop the last container so that we
@@ -288,6 +279,8 @@ _tlv_pop (tlv_parser_t tlv)
 
   tlv->stacklen--;
   tlv->in_ndef = tlv->stack[tlv->stacklen].in_ndef;
+  length = tlv->ti.length = tlv->stack[tlv->stacklen].length;
+  tlv->crammed = tlv->stack[tlv->stacklen].crammed;
   if (tlv->in_ndef)
     {
       /* We keep buffer but adjust bufsize to the end of the origbuffer. */
@@ -297,19 +290,19 @@ _tlv_pop (tlv_parser_t tlv)
     }
   else
     {
-      lastlen      = tlv->stack[tlv->stacklen].length;
       tlv->buffer  = tlv->stack[tlv->stacklen].buffer;
       tlv->bufsize = tlv->stack[tlv->stacklen].bufsize;
-      if (lastlen > tlv->bufsize)
+      if (length > tlv->bufsize)
         {
-          log_debug ("%s: container length larger than buffer (%zu/%zu)\n",
-                     __func__, lastlen, tlv->bufsize);
+          if (tlv->verbosity > 1)
+            log_debug ("%s: container larger than buffer (%zu/%zu)\n",
+                       __func__, length, tlv->bufsize);
           return gpg_error (GPG_ERR_INV_BER);
         }
-      tlv->buffer += lastlen;
-      tlv->bufsize -= lastlen;
-    }
+      tlv->buffer += length;
+      tlv->bufsize -= length;
 
+    }
   _tlv_parser_dump_state (__func__, NULL, 0, tlv);
   return 0;
 }
@@ -318,9 +311,13 @@ _tlv_pop (tlv_parser_t tlv)
 /* Parse the next tag and value.  Also detect the end of a
  * container.  The caller should use the tlv_next macro. */
 gpg_error_t
-_tlv_parser_next (tlv_parser_t tlv, int lno)
+_tlv_parser_next (tlv_parser_t tlv, unsigned int flag, int lno)
 {
   gpg_error_t err;
+  const unsigned char *buffer;
+  size_t save_bufsize;
+  const unsigned char *save_buffer;
+  int i;
 
   tlv->lasterr = 0;
   tlv->lastfunc = __func__;
@@ -329,32 +326,66 @@ _tlv_parser_next (tlv_parser_t tlv, int lno)
     {
       tlv->pending = 0;
       if (tlv->verbosity > 1)
-        log_debug ("%s: skipped\n", __func__);
+        log_debug ("%s:%d: skipped\n", __func__, lno);
       return 0;
     }
 
   if (tlv->verbosity > 1)
-    log_debug ("%s: called\n", __func__);
+    log_debug ("%s:%d: called (%p,%zu)\n", __func__, lno,
+               tlv->buffer, tlv->bufsize);
   /* If we are at the end of an ndef container pop the stack.  */
   if (!tlv->in_ndef && !tlv->bufsize)
     {
+      if (tlv->verbosity > 1)
+        for (i=0; i < tlv->stacklen; i++)
+          log_debug ("%s: stack[%d] (%p,@%zu,%zu) len=%zu (%zu) %s\n",
+                     __func__, i,
+                     tlv->stack[i].buffer,
+                     tlv->stack[i].buffer - tlv->origbuffer,
+                     tlv->stack[i].bufsize,
+                     tlv->stack[i].length,
+                     tlv->stack[i].crammed,
+                     tlv->stack[i].in_ndef? " ndef":"");
       do
         err = _tlv_pop (tlv);
       while (!err && !tlv->in_ndef && !tlv->bufsize);
+
       if (err)
         return (tlv->lasterr = err);
       if (tlv->verbosity > 1)
-        log_debug ("%s: container(s) closed due to size\n", __func__);
+        log_debug ("%s: container(s) closed due to size (lvl=%d)\n",
+                   __func__, tlv->stacklen);
     }
 
  again:
   /* Get the next tag.  */
-  err = parse_tag (&tlv->buffer, &tlv->bufsize, &tlv->ti);
+  save_buffer = buffer = tlv->buffer;
+  save_bufsize = tlv->bufsize;
+  err = parse_tag (&buffer, &tlv->bufsize, &tlv->ti);
+  tlv->buffer = (unsigned char *)buffer;
   if (err)
     {
       if (tlv->verbosity > 1)
-        log_debug ("%s: reading tag returned err=%d\n", __func__, err);
+        {
+          log_debug ("%s: reading tag returned err=%d\n", __func__, err);
+          log_printhex (save_buffer, save_bufsize > 40? 40: save_bufsize,
+                        "%s: data was\n", __func__);
+          dump_to_file (tlv->origbuffer, save_buffer - tlv->origbuffer,
+                        "parseerr");
+        }
       return err;
+    }
+
+  if ( ( (tlv->ti.class == CLASS_UNIVERSAL && tlv->ti.tag == TAG_OCTET_STRING)
+         || ((flag & TLV_PARSER_FLAG_T5793)
+             && tlv->ti.class == CLASS_CONTEXT && tlv->ti.tag == 0))
+       && tlv->ti.is_constructed && cram_octet_string (tlv, 1))
+    {
+      if (tlv->verbosity > 1)
+        log_debug ("%s: cramming %s\n", __func__,
+                   tlv->ti.tag? "constructed octet strings":"for Mozilla bug");
+      if (!cram_octet_string (tlv, 0))
+        return (tlv->lasterr = gpg_error (GPG_ERR_BAD_BER));
     }
 
   /* If there is an end tag in an ndef container pop the stack.  Also
@@ -368,7 +399,8 @@ _tlv_parser_next (tlv_parser_t tlv, int lno)
       if (err)
         return (tlv->lasterr = err);
       if (tlv->verbosity > 1)
-        log_debug ("%s: container(s) closed due to end tag\n", __func__);
+        log_debug ("%s: container(s) closed due to end tag (lvl=%d)\n",
+                   __func__, tlv->stacklen);
       goto again;
     }
 
@@ -488,12 +520,13 @@ gpg_error_t
 tlv_expect_object (tlv_parser_t tlv, int class, int tag,
                    unsigned char const **r_data, size_t *r_datalen)
 {
-  gpg_error_t err;
   const unsigned char *p;
   size_t n;
   int needpush = 0;
 
   tlv->lastfunc = __func__;
+  /* Note that the parser has already crammed the octet strings for a
+   * [0] to workaround the Mozilla bug.  */
   if (!(tlv->ti.class == class && tlv->ti.tag == tag))
     return (tlv->lasterr = gpg_error (GPG_ERR_INV_OBJ));
   p = tlv->buffer;
@@ -506,89 +539,65 @@ tlv_expect_object (tlv_parser_t tlv, int class, int tag,
   else if (!tlv->ti.length)
     return (tlv->lasterr = gpg_error (GPG_ERR_TOO_SHORT));
 
-  if (class == CLASS_CONTEXT && tag == 0 && tlv->ti.is_constructed
-      && need_octet_string_cramming (p, n))
-    {
-      char *newbuffer;
+  if (tlv->verbosity > 1)
+    log_debug ("%s: %zu@%zu %c len=%zu (%zu) bufsize=%zu of %zu\n",
+               __func__,
+               tlv->origoff, tlv_parser_offset (tlv),
+               tlv->ti.is_constructed? 'c':'p',
+               n, tlv->crammed,
+               tlv->bufsize, tlv->origbufsize);
 
-      newbuffer = cram_octet_string (p, n, r_datalen);
-      if (!newbuffer)
-        return (tlv->lasterr = gpg_error (GPG_ERR_BAD_BER));
-      err = register_buffer (tlv, newbuffer);
-      if (err)
-        {
-          xfree (newbuffer);
-          return (tlv->lasterr = err);
-        }
-      *r_data = newbuffer;
-    }
-  else
-    {
-      *r_data = p;
-      *r_datalen = n;
-    }
+  if (r_data)
+    *r_data = p;
+  if (r_datalen)
+    *r_datalen = tlv->crammed? tlv->crammed : n;
+
   if (needpush)
     return _tlv_push (tlv);
 
-  if (!(tlv->bufsize >= tlv->ti.length))
+  if (!(tlv->bufsize >= n))
     return (tlv->lasterr = gpg_error (GPG_ERR_TOO_SHORT));
-  tlv->buffer += tlv->ti.length;
-  tlv->bufsize -= tlv->ti.length;
+  tlv->buffer += n;
+  tlv->bufsize -= n;
+  tlv->crammed = 0;
   return 0;
 }
 
 
 /* Expect that the current tag is an object string and store its value
  * at (R_DATA,R_DATALEN).  Then skip over its value to the next tag.
- * Note that the stored value are not allocated but point into TLV.
- * If ENCAPSULATES is set the octet string is used as a new
- * container.  R_DATA and R_DATALEN are optional. */
+ * Note that the stored value are not allocated but point into TLV. */
 gpg_error_t
-tlv_expect_octet_string (tlv_parser_t tlv, int encapsulates,
+tlv_expect_octet_string (tlv_parser_t tlv,
                          unsigned char const **r_data, size_t *r_datalen)
 {
-  gpg_error_t err;
-  const unsigned char *p;
   size_t n;
 
   tlv->lastfunc = __func__;
-  if (!(tlv->ti.class == CLASS_UNIVERSAL && tlv->ti.tag == TAG_OCTET_STRING
-        && (!tlv->ti.is_constructed || encapsulates)))
+  /* The parser has already crammed constructed octet strings.  */
+  if (!(tlv->ti.class == CLASS_UNIVERSAL && tlv->ti.tag == TAG_OCTET_STRING))
     return (tlv->lasterr = gpg_error (GPG_ERR_INV_OBJ));
-  p = tlv->buffer;
-  if (!(n=tlv->ti.length) && !tlv->ti.ndef)
+  if (!(n=tlv->ti.length) || tlv->ti.ndef )
     return (tlv->lasterr = gpg_error (GPG_ERR_TOO_SHORT));
 
-  if (encapsulates && tlv->ti.is_constructed
-      && need_octet_string_cramming (p, n))
-    {
-      char *newbuffer;
+  if (tlv->verbosity > 1)
+    log_debug ("%s: %zu@%zu %c len=%zu (%zu) bufsize=%zu of %zu\n",
+               __func__,
+               tlv->origoff, tlv_parser_offset (tlv),
+               tlv->ti.is_constructed? 'c':'p',
+               n, tlv->crammed,
+               tlv->bufsize, tlv->origbufsize);
 
-      newbuffer = cram_octet_string (p, n, r_datalen);
-      if (!newbuffer)
-        return (tlv->lasterr = gpg_error (GPG_ERR_BAD_BER));
-      err = register_buffer (tlv, newbuffer);
-      if (err)
-        {
-          xfree (newbuffer);
-          return (tlv->lasterr = err);
-        }
-      *r_data = newbuffer;
-    }
-  else
-    {
-      if (r_data)
-        *r_data = p;
-      if (r_datalen)
-        *r_datalen = tlv->ti.length;
-    }
-  if (encapsulates)
-    return _tlv_push (tlv);
+  if (r_data)
+    *r_data = tlv->buffer;
+  if (r_datalen)
+    *r_datalen = tlv->crammed? tlv->crammed : tlv->ti.length;
 
   if (!(tlv->bufsize >= tlv->ti.length))
     return (tlv->lasterr = gpg_error (GPG_ERR_TOO_SHORT));
   tlv->buffer += tlv->ti.length;
   tlv->bufsize -= tlv->ti.length;
+  tlv->crammed = 0;
   return 0;
 }
 
@@ -692,10 +701,26 @@ tlv_expect_object_id (tlv_parser_t tlv,
 }
 
 
-/* Given an ASN.1 chunk of a structure like:
+/* Expect a NULL tag.  */
+gpg_error_t
+tlv_expect_null (tlv_parser_t tlv)
+{
+  tlv->lastfunc = __func__;
+  if (!(tlv->ti.class == CLASS_UNIVERSAL && tlv->ti.tag == TAG_NULL
+        && !tlv->ti.is_constructed && !tlv->ti.length))
+    return (tlv->lasterr = gpg_error (GPG_ERR_INV_OBJ));
+  return 0;
+}
+
+
+/* Given a BER encoded constructed octet string like the example below
+ * from Mozilla Firefox 1.0.4 (which actually exports certs as single
+ * byte chunks of octet strings) in the buffer described by TLV.
+ * Although the example uses an ndef for the length of the constructed
+ * octet string, a fixed length is also allowed.
  *
- *   24 NDEF:       OCTET STRING  -- This is not passed to us
- *   04    1:         OCTET STRING  -- INPUT point s to here
+ *   24 NDEF:       OCTET STRING
+ *   04    1:         OCTET STRING  -- TLV->buffer points to here
  *          :           30
  *   04    1:         OCTET STRING
  *          :           80
@@ -705,84 +730,98 @@ tlv_expect_object_id (tlv_parser_t tlv,
  *          :         } -- This denotes a Null tag and are the last
  *                      -- two bytes in INPUT.
  *
- * The example is from Mozilla Firefox 1.0.4 which actually exports
- * certs as single byte chunks of octet strings.
+ * Turn it into a primitive octet string of this form:
  *
- * Create a new buffer with the content of that octet string.  INPUT
- * is the original buffer with a LENGTH.  Returns
- * NULL on error or a new malloced buffer with its actual used length
- * stored at R_NEWLENGTH.    */
-static unsigned char *
-cram_octet_string (const unsigned char *input, size_t length,
-                   size_t *r_newlength)
+ *   24    2:       OCTET STRING
+ *          :         30 80
+ *
+ * and fill it up with FE to the original length.  Unless TESTMODE is
+ * true the TLV object including the the member and the data is
+ * adjusted accordingly; however the intiial tag is not changed (in
+ * the example the "24 NDEF") because this is not needed anymore.
+ *
+ * On error 0 is returned and in this case the buffer might have
+ * already been modified and thus the caller should better stop
+ * parsing - unless TESTMODE was used.  */
+static size_t
+cram_octet_string (tlv_parser_t tlv, int testmode)
 {
-  const unsigned char *s = input;
-  size_t n = length;
-  unsigned char *output, *d;
+  gpg_error_t err;
+  size_t totallen;    /* Length of the non-crammed octet strings.  */
+  size_t crammedlen;  /* Length of the crammed octet strings.  */
+  const unsigned char *s, *save_s;
+  unsigned char *d;
+  size_t n, save_n;
   struct tag_info ti;
 
-  /* Allocate output buf.  We know that it won't be longer than the
-     input buffer. */
-  d = output = xtrymalloc (length);
-  if (!output)
-    goto bailout;
+  if (tlv->ti.class == CLASS_UNIVERSAL && tlv->ti.tag == TAG_OCTET_STRING)
+    ;  /* Okay.  */
+  else if (tlv->ti.class == CLASS_CONTEXT && tlv->ti.tag == 0)
+    ;  /* Workaround for Mozilla bug; see T5793  */
+  else
+    return 0;  /* Oops - we should not have been called.  */
+  if (!tlv->ti.is_constructed)
+    return 0;  /* Oops - Not a constructed octet string.  */
+  if (!tlv->ti.ndef && tlv->ti.length < 4)
+    return 0;  /* Fixed length but too short.  */
 
+  /* Let S point to the first octet string chunk.  */
+  s = tlv->buffer;
+  n = tlv->ti.ndef? tlv->bufsize : tlv->ti.length;
+
+  d = (unsigned char *)s;
+  totallen = crammedlen = 0;
   while (n)
     {
-      if (parse_tag (&s, &n, &ti))
-        goto bailout;
+      save_s = s;
+      save_n = n;
+      if ((err=parse_tag (&s, &n, &ti)))
+        {
+          if (tlv->verbosity > 1)
+            {
+              log_debug ("%s: parse_tag(n=%zu) failed : %s\n",
+                         __func__, save_n, gpg_strerror (err));
+              log_printhex (save_s, save_n > 40? 40:save_n, "%s: data was",
+                            __func__);
+            }
+          return 0;
+        }
+      if (tlv->verbosity > 1)
+        log_debug ("%s:%s ti.ndef=%d ti.tag=%lu ti.length=%zu (n %zu->%zu)\n",
+                   __func__, testmode?"test:":"",
+                   ti.ndef, ti.tag, ti.length, save_n, n);
       if (ti.class == CLASS_UNIVERSAL && ti.tag == TAG_OCTET_STRING
           && !ti.ndef && !ti.is_constructed)
         {
-          memcpy (d, s, ti.length);
-          s += ti.length;
-          d += ti.length;
+          if (!testmode)
+            memmove (d, s, ti.length);
+          d += ti.length;  /* Update destination */
+          totallen += ti.length + ti.nhdr;
+          crammedlen += ti.length;
+          s += ti.length;  /* Skip to next tag.  */
           n -= ti.length;
         }
       else if (ti.class == CLASS_UNIVERSAL && !ti.tag && !ti.is_constructed)
-        break; /* Ready */
-      else
-        goto bailout;
-    }
-
-
-  *r_newlength = d - output;
-  return output;
-
- bailout:
-  xfree (output);
-  return NULL;
-}
-
-
-/* Return true if (INPUT,LENGTH) is a structure which should be passed
- * to cram_octet_string.  This is basically the same loop as in
- * cram_octet_string but without any actual copying.  */
-static int
-need_octet_string_cramming (const unsigned char *input, size_t length)
-{
-  const unsigned char *s = input;
-  size_t n = length;
-  struct tag_info ti;
-
-  if (!length)
-    return 0;
-
-  while (n)
-    {
-      if (parse_tag (&s, &n, &ti))
-        return 0;
-      if (ti.class == CLASS_UNIVERSAL && ti.tag == TAG_OCTET_STRING
-          && !ti.ndef && !ti.is_constructed)
         {
-          s += ti.length;
-          n -= ti.length;
+          totallen += ti.nhdr;
+          break; /* EOC - Ready */
         }
-      else if (ti.class == CLASS_UNIVERSAL && !ti.tag && !ti.is_constructed)
-        break; /* Ready */
       else
-        return 0;
+        return 0; /* Invalid data.  */
     }
-
-  return 1;
+  if (!testmode)
+    {
+      memset (d, '\xfe', totallen - crammedlen);
+      tlv->ti.length = totallen;
+      tlv->ti.is_constructed = 0;
+      tlv->ti.ndef = 0;
+      tlv->crammed = crammedlen;
+      if (tlv->verbosity > 1)
+        {
+          log_debug ("%s: crammed length is %zu\n", __func__, crammedlen);
+          log_debug ("%s:   total length is %zu\n", __func__, totallen);
+        }
+      dump_to_file (tlv->buffer, totallen, "crammed");
+    }
+  return totallen;
 }
