@@ -1470,15 +1470,18 @@ static const char hlp_getinfo[] =
   "                application per line, fields delimited by colons,\n"
   "                first field is the name.\n"
   "  card_list   - Return a list of serial numbers of active cards,\n"
-  "                using a status response.";
+  "                using a status response."
+  "  manufacturer NUMBER\n"
+  "              - Return a description of the OpenPGP manufacturer id.\n";
 static gpg_error_t
 cmd_getinfo (assuan_context_t ctx, char *line)
 {
   int rc = 0;
+  const char *s;
 
   if (!strcmp (line, "version"))
     {
-      const char *s = VERSION;
+      s = VERSION;
       rc = assuan_send_data (ctx, s, strlen (s));
     }
   else if (!strcmp (line, "pid"))
@@ -1490,7 +1493,7 @@ cmd_getinfo (assuan_context_t ctx, char *line)
     }
   else if (!strcmp (line, "socket_name"))
     {
-      const char *s = scd_get_socket_name ();
+      s = scd_get_socket_name ();
 
       if (s)
         rc = assuan_send_data (ctx, s, strlen (s));
@@ -1518,29 +1521,34 @@ cmd_getinfo (assuan_context_t ctx, char *line)
     }
   else if (!strcmp (line, "reader_list"))
     {
-      char *s = apdu_get_reader_list ();
-      if (s)
-        rc = pretty_assuan_send_data (ctx, s, strlen (s));
+      char *p = apdu_get_reader_list ();
+      if (p)
+        rc = pretty_assuan_send_data (ctx, p, strlen (p));
       else
         rc = gpg_error (GPG_ERR_NO_DATA);
-      xfree (s);
+      xfree (p);
     }
   else if (!strcmp (line, "deny_admin"))
     rc = opt.allow_admin? gpg_error (GPG_ERR_GENERAL) : 0;
   else if (!strcmp (line, "app_list"))
     {
-      char *s = get_supported_applications ();
-      if (s)
-        rc = assuan_send_data (ctx, s, strlen (s));
+      char *p = get_supported_applications ();
+      if (p)
+        rc = assuan_send_data (ctx, p, strlen (p));
       else
         rc = 0;
-      xfree (s);
+      xfree (p);
     }
   else if (!strcmp (line, "card_list"))
     {
       ctrl_t ctrl = assuan_get_pointer (ctx);
-
       app_send_card_list (ctrl);
+    }
+  else if ((s=has_leading_keyword (line, "manufacturer")))
+    {
+      unsigned long ul = strtoul (s, NULL, 0);
+      s = app_openpgp_manufacturer (ul);
+      rc = assuan_send_data (ctx, s, strlen (s));
     }
   else
     rc = set_error (GPG_ERR_ASS_PARAMETER, "unknown value for WHAT");

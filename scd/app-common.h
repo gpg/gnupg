@@ -286,6 +286,7 @@ gpg_error_t app_check_pin (app_t app, ctrl_t ctrl, const char *keyidstr,
 
 /*-- app-openpgp.c --*/
 gpg_error_t app_select_openpgp (app_t app);
+const char *app_openpgp_manufacturer (unsigned int no);
 
 /*-- app-nks.c --*/
 gpg_error_t app_select_nks (app_t app);
