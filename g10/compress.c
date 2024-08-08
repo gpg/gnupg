@@ -81,7 +81,7 @@ init_compress( compress_filter_context_t *zfx, z_stream *zs )
         g10_exit (2);
     }
 
-    zfx->outbufsize = 8192;
+    zfx->outbufsize = 65536;
     zfx->outbuf = xmalloc( zfx->outbufsize );
 }
 
