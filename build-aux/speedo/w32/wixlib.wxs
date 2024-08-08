@@ -91,8 +91,8 @@ and then manually edited:
       <Component Id="cmp2D1FC2D5A2C9B057FC22A0EBE475D6C2" Directory="dirAA72FFDDFA224FB221D53750596B0142" Guid="AF6741CB-C010-436E-BD56-B622EEED11D9">
         <File Id="fil8403D82C4985B5B7EAF7365C15C2A799" KeyPath="yes" Source="$(var.SourceDir)\bin\gpgv.exe"/>
       </Component>
-      <Component Id="cmpF92C3483916C55841364708FCE4E1773" Directory="dirAA72FFDDFA224FB221D53750596B0142" Guid="A8AEC3EA-1634-43C1-B47B-1A87BC39CF6B">
-        <File Id="filEE96FA35D6EEEBB2244C7F37E619364D" KeyPath="yes" Source="$(var.SourceDir)\bin\libassuan-0.dll"/>
+      <Component Id="cmpF92C3483916C55841364708FCE4E1773" Directory="dirAA72FFDDFA224FB221D53750596B0142" Guid="A8AEC3EA-1634-43C1-B47B-1A87BC39CF6C">
+        <File Id="filEE96FA35D6EEEBB2244C7F37E619364D" KeyPath="yes" Source="$(var.SourceDir)\bin\libassuan-9.dll"/>
       </Component>
       <Component Id="cmp387993E51EFE71AAD3DB75D48EF2C869" Directory="dirAA72FFDDFA224FB221D53750596B0142" Guid="B40F4166-2B27-4F9C-A6C5-9788042EE134">
         <File Id="filEE39C3CE2166E1496C1618124EDBBB7E" KeyPath="yes" Source="$(var.SourceDir)\bin\libgcrypt-20.dll"/>
