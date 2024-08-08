@@ -39,6 +39,11 @@
  * libgpg-error version.  Define them here.
  * Example: (#if GPG_ERROR_VERSION_NUMBER < 0x011500 // 1.21)
  */
+#if GPG_ERROR_VERSION_NUMBER < 0x012f00 /* 1.47 */
+#define GPG_ERR_BAD_PUK        320
+#define GPG_ERR_NO_RESET_CODE  321
+#define GPG_ERR_BAD_RESET_CODE 322
+#endif
 
 #ifndef EXTERN_UNLESS_MAIN_MODULE
 # if !defined (INCLUDED_BY_MAIN_MODULE)
