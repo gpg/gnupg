@@ -1353,7 +1353,7 @@ endef
 # Sign the file $1 and save the result as $2
 define AUTHENTICODE_sign
    (set -e; \
-    if gpg-authcode-sign.sh --version >/dev/null; then \
+    if (gpg-authcode-sign.sh --version >/dev/null); then \
      gpg-authcode-sign.sh "$(1)" "$(2)"; \
    else \
      echo 2>&1 "warning: Please install gpg-authcode-sign.sh to sign files." ;\
