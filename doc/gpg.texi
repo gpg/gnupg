@@ -1488,7 +1488,8 @@ give the opposite meaning.  The options are:
   With @option{--list-sigs} and @option{--check-sigs} sort the
   signatures by keyID and creation time to make it easier to view the
   history of these signatures.  The self-signature is also listed
-  before other signatures. Defaults to yes.
+  before other signatures. Defaults to yes.  This option has no effect
+  in @option{-with-colons} mode.
 
 @end table
 
