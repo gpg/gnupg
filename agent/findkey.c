@@ -91,7 +91,7 @@ agent_write_private_key (const unsigned char *grip,
   gpg_error_t err;
   char *oldfname = NULL;
   char *fname = NULL;
-  estream_t fp;
+  estream_t fp = NULL;
   int newkey = 0;
   nvc_t pk = NULL;
   gcry_sexp_t key = NULL;
