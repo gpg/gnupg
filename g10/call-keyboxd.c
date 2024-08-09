@@ -1,5 +1,5 @@
 /* call-keyboxd.c - Access to the keyboxd storage server
- * Copyright (C) 2019  g10 Code GmbH
+ * Copyright (C) 2019, 2024  g10 Code GmbH
  *
  * This file is part of GnuPG.
  *
@@ -717,7 +717,7 @@ keydb_search (KEYDB_HANDLE hd, KEYDB_SEARCH_DESC *desc,
   if (DBG_CLOCK)
     log_clock ("%s enter", __func__);
 
-  if (DBG_LOOKUP)
+  if (DBG_KEYDB)
     {
       log_debug ("%s: %zu search descriptions:\n", __func__, ndesc);
       for (i = 0; i < ndesc; i ++)
@@ -880,7 +880,7 @@ keydb_search (KEYDB_HANDLE hd, KEYDB_SEARCH_DESC *desc,
     {
       hd->kbl->search_result = iobuf_temp_with_content (buffer, len);
       xfree (buffer);
-      if (DBG_LOOKUP && hd->last_ubid_valid)
+      if (DBG_KEYDB && hd->last_ubid_valid)
         log_printhex (hd->last_ubid, 20, "found UBID (%d,%d):",
                       hd->last_uid_no, hd->last_pk_no);
     }

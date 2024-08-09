@@ -1035,6 +1035,7 @@ static struct debug_flags_s debug_flags [] =
     { DBG_CLOCK_VALUE  , "clock"   },
     { DBG_LOOKUP_VALUE , "lookup"  },
     { DBG_EXTPROG_VALUE, "extprog" },
+    { DBG_KEYDB_VALUE,   "keydb"   },
     { 0, NULL }
   };
 

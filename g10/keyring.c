@@ -691,14 +691,14 @@ prepare_search (KEYRING_HANDLE hd)
            we can easily use search_next.  */
         if (gpg_err_code (hd->current.error) == GPG_ERR_LEGACY_KEY)
           {
-            if (DBG_LOOKUP)
+            if (DBG_KEYDB)
               log_debug ("%s: last error was GPG_ERR_LEGACY_KEY, clearing\n",
                          __func__);
             hd->current.error = 0;
           }
         else
           {
-            if (DBG_LOOKUP)
+            if (DBG_KEYDB)
               log_debug ("%s: returning last error: %s\n",
                          __func__, gpg_strerror (hd->current.error));
             return hd->current.error; /* still in error state */
@@ -708,7 +708,7 @@ prepare_search (KEYRING_HANDLE hd)
     if (hd->current.kr && !hd->current.eof) {
         if ( !hd->current.iobuf )
           {
-            if (DBG_LOOKUP)
+            if (DBG_KEYDB)
               log_debug ("%s: missing iobuf!\n", __func__);
             return GPG_ERR_GENERAL; /* Position invalid after a modify.  */
           }
@@ -717,7 +717,7 @@ prepare_search (KEYRING_HANDLE hd)
 
     if (!hd->current.kr && hd->current.eof)
       {
-        if (DBG_LOOKUP)
+        if (DBG_KEYDB)
           log_debug ("%s: EOF!\n", __func__);
         return -1; /* still EOF */
       }
@@ -725,7 +725,7 @@ prepare_search (KEYRING_HANDLE hd)
     if (!hd->current.kr) { /* start search with first keyring */
         hd->current.kr = hd->resource;
         if (!hd->current.kr) {
-          if (DBG_LOOKUP)
+          if (DBG_KEYDB)
             log_debug ("%s: keyring not available!\n", __func__);
           hd->current.eof = 1;
           return -1; /* keyring not available */
@@ -733,7 +733,7 @@ prepare_search (KEYRING_HANDLE hd)
         log_assert (!hd->current.iobuf);
     }
     else { /* EOF */
-        if (DBG_LOOKUP)
+        if (DBG_KEYDB)
           log_debug ("%s: EOF\n", __func__);
         iobuf_close (hd->current.iobuf);
         hd->current.iobuf = NULL;
@@ -1018,14 +1018,14 @@ keyring_search (KEYRING_HANDLE hd, KEYDB_SEARCH_DESC *desc,
         }
     }
 
-  if (DBG_LOOKUP)
+  if (DBG_KEYDB)
     log_debug ("%s: need_uid = %d; need_words = %d; need_keyid = %d; need_fpr = %d; any_skip = %d\n",
                __func__, need_uid, need_words, need_keyid, need_fpr, any_skip);
 
   rc = prepare_search (hd);
   if (rc)
     {
-      if (DBG_LOOKUP)
+      if (DBG_KEYDB)
         log_debug ("%s: prepare_search failed: %s (%d)\n",
                    __func__, gpg_strerror (rc), gpg_err_code (rc));
       return rc;
@@ -1034,12 +1034,12 @@ keyring_search (KEYRING_HANDLE hd, KEYDB_SEARCH_DESC *desc,
   use_key_present_hash = !!key_present_hash;
   if (!use_key_present_hash)
     {
-      if (DBG_LOOKUP)
+      if (DBG_KEYDB)
         log_debug ("%s: no offset table.\n", __func__);
     }
   else if (!key_present_hash_ready)
     {
-      if (DBG_LOOKUP)
+      if (DBG_KEYDB)
         log_debug ("%s: initializing offset table. (need_keyid: %d => 1)\n",
                    __func__, need_keyid);
       need_keyid = 1;
@@ -1048,13 +1048,13 @@ keyring_search (KEYRING_HANDLE hd, KEYDB_SEARCH_DESC *desc,
     {
       struct key_present *oi;
 
-      if (DBG_LOOKUP)
+      if (DBG_KEYDB)
         log_debug ("%s: look up by long key id, checking cache\n", __func__);
 
       oi = key_present_hash_lookup (key_present_hash, desc[0].u.kid);
       if (!oi)
         { /* We know that we don't have this key */
-          if (DBG_LOOKUP)
+          if (DBG_KEYDB)
             log_debug ("%s: cache says not present\n", __func__);
           hd->found.kr = NULL;
           hd->current.eof = 1;
@@ -1099,7 +1099,7 @@ keyring_search (KEYRING_HANDLE hd, KEYDB_SEARCH_DESC *desc,
   pk_no = uid_no = 0;
   initial_skip = 1; /* skip until we see the start of a keyblock */
   scanned_from_start = iobuf_tell (hd->current.iobuf) == 0;
-  if (DBG_LOOKUP)
+  if (DBG_KEYDB)
     log_debug ("%s: %ssearching from start of resource.\n",
                __func__, scanned_from_start ? "" : "not ");
   init_parse_packet (&parsectx, hd->current.iobuf);
@@ -1218,7 +1218,7 @@ keyring_search (KEYRING_HANDLE hd, KEYDB_SEARCH_DESC *desc,
       if (rc)
         goto real_found;
 
-      if (DBG_LOOKUP)
+      if (DBG_KEYDB)
         log_debug ("%s: packet starting at offset %lld matched descriptor %zu\n"
                    , __func__, (long long)offset, n);
 
@@ -1231,7 +1231,7 @@ keyring_search (KEYRING_HANDLE hd, KEYDB_SEARCH_DESC *desc,
           if (desc[n].skipfnc
               && desc[n].skipfnc (desc[n].skipfncvalue, aki, uid_no))
             {
-              if (DBG_LOOKUP)
+              if (DBG_KEYDB)
                 log_debug ("%s: skipping match: desc %zd's skip function returned TRUE\n",
                            __func__, n);
               break;
@@ -1244,7 +1244,7 @@ keyring_search (KEYRING_HANDLE hd, KEYDB_SEARCH_DESC *desc,
  real_found:
   if (!rc)
     {
-      if (DBG_LOOKUP)
+      if (DBG_KEYDB)
         log_debug ("%s: returning success\n", __func__);
       hd->found.offset = main_offset;
       hd->found.kr = hd->current.kr;
@@ -1253,7 +1253,7 @@ keyring_search (KEYRING_HANDLE hd, KEYDB_SEARCH_DESC *desc,
     }
   else if (rc == -1)
     {
-      if (DBG_LOOKUP)
+      if (DBG_KEYDB)
         log_debug ("%s: no matches (EOF)\n", __func__);
 
       hd->current.eof = 1;
@@ -1287,7 +1287,7 @@ keyring_search (KEYRING_HANDLE hd, KEYDB_SEARCH_DESC *desc,
     }
   else
     {
-      if (DBG_LOOKUP)
+      if (DBG_KEYDB)
         log_debug ("%s: error encountered during search: %s (%d)\n",
                    __func__, gpg_strerror (rc), rc);
       hd->current.error = rc;

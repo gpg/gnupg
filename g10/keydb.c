@@ -1,6 +1,7 @@
 /* keydb.c - key database dispatcher
  * Copyright (C) 2001-2013 Free Software Foundation, Inc.
  * Copyright (C) 2001-2015 Werner Koch
+ * Copyright (C) 2019,2024 g10 Code GmbH
  *
  * This file is part of GnuPG.
  *
@@ -16,6 +17,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, see <https://www.gnu.org/licenses/>.
+ * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
 #include <config.h>
@@ -1818,7 +1820,7 @@ internal_keydb_search (KEYDB_HANDLE hd, KEYDB_SEARCH_DESC *desc,
   while ((rc == -1 || gpg_err_code (rc) == GPG_ERR_EOF)
          && hd->current >= 0 && hd->current < hd->used)
     {
-      if (DBG_LOOKUP)
+      if (DBG_KEYDB)
         log_debug ("%s: searching %s (resource %d of %d)\n",
                    __func__,
                    hd->active[hd->current].type == KEYDB_RESOURCE_TYPE_KEYRING
@@ -1845,7 +1847,7 @@ internal_keydb_search (KEYDB_HANDLE hd, KEYDB_SEARCH_DESC *desc,
           break;
         }
 
-      if (DBG_LOOKUP)
+      if (DBG_KEYDB)
         log_debug ("%s: searched %s (resource %d of %d) => %s\n",
                    __func__,
                    hd->active[hd->current].type == KEYDB_RESOURCE_TYPE_KEYRING

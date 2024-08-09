@@ -365,6 +365,7 @@ struct {
 #define DBG_CLOCK_VALUE   4096
 #define DBG_LOOKUP_VALUE  8192	/* debug the key lookup */
 #define DBG_EXTPROG_VALUE 16384 /* debug external program calls */
+#define DBG_KEYDB_VALUE   32768 /* debug keydb and keyboxd searches. */
 
 /* Tests for the debugging flags.  */
 #define DBG_PACKET (opt.debug & DBG_PACKET_VALUE)
@@ -378,6 +379,7 @@ struct {
 #define DBG_CLOCK   (opt.debug & DBG_CLOCK_VALUE)
 #define DBG_LOOKUP  (opt.debug & DBG_LOOKUP_VALUE)
 #define DBG_EXTPROG (opt.debug & DBG_EXTPROG_VALUE)
+#define DBG_KEYDB   (opt.debug & DBG_KEYDB_VALUE)
 
 /* FIXME: We need to check why we did not put this into opt. */
 #define DBG_MEMORY    memory_debug_mode
