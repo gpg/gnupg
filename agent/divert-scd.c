@@ -468,7 +468,20 @@ divert_pkdecrypt (ctrl_t ctrl,
       n = snext (&s);
     }
   else
-    return gpg_error (GPG_ERR_UNSUPPORTED_ALGORITHM);
+    {
+      if (opt.verbose)
+        {
+          if (smatch (&s, n, "elg"))
+            log_info ("unknown algorithm is \"elg\"\n");
+          else if (smatch (&s, n, "dsa"))
+            log_info ("unknown algorithm is \"dsa\"\n");
+          else if (smatch (&s, n, "kyber"))
+            log_info ("unknown algorithm is \"kyber\"\n");
+          else
+            log_printhex (s, n, "unknown algorithm is");
+        }
+      return gpg_error (GPG_ERR_UNSUPPORTED_ALGORITHM);
+    }
 
   if (!n)
     return gpg_error (GPG_ERR_UNKNOWN_SEXP);
