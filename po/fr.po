@@ -5768,6 +5768,11 @@ msgstr ""
 msgid "Note: secret key %s expired at %s\n"
 msgstr "Remarque : la clef secrète %s a expiré le %s\n"
 
+#, fuzzy, c-format
+#| msgid "certificate should not have been used for encryption\n"
+msgid "Note: ADSK key has been used for decryption"
+msgstr "le certificat n'aurait pas dû être utilisé pour le chiffrement\n"
+
 #, c-format
 msgid "Note: key has been revoked"
 msgstr "Remarque : la clef a été révoquée"

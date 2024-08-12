@@ -5313,6 +5313,11 @@ msgstr "注意：接收者的偏好设置中找不到密文算法 %s\n"
 msgid "Note: secret key %s expired at %s\n"
 msgstr "注意：私钥 %s 已于 %s 过期\n"
 
+#, fuzzy, c-format
+#| msgid "certificate should not have been used for encryption\n"
+msgid "Note: ADSK key has been used for decryption"
+msgstr "证书本不应被用于加密\n"
+
 #, c-format
 msgid "Note: key has been revoked"
 msgstr "注意：密钥已被吊销"

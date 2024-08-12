@@ -5904,6 +5904,11 @@ msgid "Note: secret key %s expired at %s\n"
 msgstr "BİLGİ: %s gizli anahtarının %s tarihinde kullanım süresi doldu\n"
 
 #, fuzzy, c-format
+#| msgid "certificate should have not been used for encryption\n"
+msgid "Note: ADSK key has been used for decryption"
+msgstr "sertifika şifreleme için kullanılmamalıydı\n"
+
+#, fuzzy, c-format
 #| msgid "NOTE: key has been revoked"
 msgid "Note: key has been revoked"
 msgstr "BİLGİ: anahtar yürürlükten kaldırılmıştı"

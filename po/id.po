@@ -5737,6 +5737,11 @@ msgstr "CATATAN: kunci pribadi %08lX berakhir pada %s\n"
 
 #, fuzzy, c-format
 #| msgid "NOTE: key has been revoked"
+msgid "Note: ADSK key has been used for decryption"
+msgstr "CATATAN: kunci telah dibatalkan"
+
+#, fuzzy, c-format
+#| msgid "NOTE: key has been revoked"
 msgid "Note: key has been revoked"
 msgstr "CATATAN: kunci telah dibatalkan"
 

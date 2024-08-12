@@ -5884,6 +5884,11 @@ msgid "Note: secret key %s expired at %s\n"
 msgstr "BEMÆRK: hemmelig nøgle %s udløb den %s\n"
 
 #, fuzzy, c-format
+#| msgid "certificate should not have been used for encryption\n"
+msgid "Note: ADSK key has been used for decryption"
+msgstr "certifikat burde ikke være brugt for kryptering\n"
+
+#, fuzzy, c-format
 #| msgid "NOTE: key has been revoked"
 msgid "Note: key has been revoked"
 msgstr "BEMÆRK: nøgle er blevet tilbagekaldt"

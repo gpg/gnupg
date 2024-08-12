@@ -5738,6 +5738,11 @@ msgstr "MEGJEGYZÉS: %08lX titkos kulcs %s-kor lejárt.\n"
 
 #, fuzzy, c-format
 #| msgid "NOTE: key has been revoked"
+msgid "Note: ADSK key has been used for decryption"
+msgstr "MEGJEGYZÉS: A kulcsot visszavonták."
+
+#, fuzzy, c-format
+#| msgid "NOTE: key has been revoked"
 msgid "Note: key has been revoked"
 msgstr "MEGJEGYZÉS: A kulcsot visszavonták."
 

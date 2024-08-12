@@ -5534,6 +5534,11 @@ msgstr "OSTRZEŻENIE: brak algorytmu szyfrującego %s w ustawieniach odbiorcy\n"
 msgid "Note: secret key %s expired at %s\n"
 msgstr "Uwaga: ważność klucza tajnego %s wygasła %s\n"
 
+#, fuzzy, c-format
+#| msgid "certificate should not have been used for encryption\n"
+msgid "Note: ADSK key has been used for decryption"
+msgstr "certyfikat nie powinien być używany do szyfrowania\n"
+
 #, c-format
 msgid "Note: key has been revoked"
 msgstr "Uwaga: klucz został unieważniony"

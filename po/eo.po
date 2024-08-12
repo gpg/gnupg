@@ -5722,6 +5722,10 @@ msgid "Note: secret key %s expired at %s\n"
 msgstr "NOTO: sekreta ŝlosilo %08lX eksvalidiĝis je %s\n"
 
 #, fuzzy, c-format
+msgid "Note: ADSK key has been used for decryption"
+msgstr "ŝlosilo %08lX: ŝlosilo estas revokita!\n"
+
+#, fuzzy, c-format
 msgid "Note: key has been revoked"
 msgstr "ŝlosilo %08lX: ŝlosilo estas revokita!\n"
 

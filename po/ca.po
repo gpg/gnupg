@@ -5894,6 +5894,11 @@ msgstr "NOTA: la clau secreta %08lX caduca el %s\n"
 
 #, fuzzy, c-format
 #| msgid "NOTE: key has been revoked"
+msgid "Note: ADSK key has been used for decryption"
+msgstr "NOTA: aquesta clau ha estat revocada!"
+
+#, fuzzy, c-format
+#| msgid "NOTE: key has been revoked"
 msgid "Note: key has been revoked"
 msgstr "NOTA: aquesta clau ha estat revocada!"
 

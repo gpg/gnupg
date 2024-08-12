@@ -5736,6 +5736,11 @@ msgstr "NOTA: chave secreta %08lX expirou em %s\n"
 
 #, fuzzy, c-format
 #| msgid "NOTE: key has been revoked"
+msgid "Note: ADSK key has been used for decryption"
+msgstr "NOTA: a chave foi revogada"
+
+#, fuzzy, c-format
+#| msgid "NOTE: key has been revoked"
 msgid "Note: key has been revoked"
 msgstr "NOTA: a chave foi revogada"
 

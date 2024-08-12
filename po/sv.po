@@ -5970,6 +5970,11 @@ msgid "Note: secret key %s expired at %s\n"
 msgstr "OBSERVERA: hemliga nyckeln %s gick ut %s\n"
 
 #, fuzzy, c-format
+#| msgid "certificate should have not been used for encryption\n"
+msgid "Note: ADSK key has been used for decryption"
+msgstr "certifikatet skulle inte använts för kryptering\n"
+
+#, fuzzy, c-format
 #| msgid "NOTE: key has been revoked"
 msgid "Note: key has been revoked"
 msgstr "OBSERVERA: nyckeln har spärrats"

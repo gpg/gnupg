@@ -5529,6 +5529,11 @@ msgstr "警告: 收件者偏好設定中找不到 %s 編密演算法\n"
 msgid "Note: secret key %s expired at %s\n"
 msgstr "請注意: 私鑰 %s 已於 %s 過期\n"
 
+#, fuzzy, c-format
+#| msgid "certificate should not have been used for encryption\n"
+msgid "Note: ADSK key has been used for decryption"
+msgstr "憑證應該還未被用於加密\n"
+
 #, c-format
 msgid "Note: key has been revoked"
 msgstr "請注意: 金鑰已撤銷"

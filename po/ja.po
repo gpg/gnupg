@@ -5354,6 +5354,11 @@ msgstr "*警告*: 暗号アルゴリズム%sは受取人の優先指定に入っ
 msgid "Note: secret key %s expired at %s\n"
 msgstr "注意: 秘密鍵%sは%sで期限切れとなります\n"
 
+#, fuzzy, c-format
+#| msgid "certificate should not have been used for encryption\n"
+msgid "Note: ADSK key has been used for decryption"
+msgstr "証明書は暗号化のために使われるべきではありませんでした\n"
+
 #, c-format
 msgid "Note: key has been revoked"
 msgstr "注意: 鍵は失効済みです"

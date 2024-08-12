@@ -5532,6 +5532,11 @@ msgstr "NOTA: el cifrado %s no aparece en las preferencias del receptor\n"
 msgid "Note: secret key %s expired at %s\n"
 msgstr "NOTA: clave secreta %s caducó el %s\n"
 
+#, fuzzy, c-format
+#| msgid "certificate should not have been used for encryption\n"
+msgid "Note: ADSK key has been used for decryption"
+msgstr "el certificado no debería haberse usado para cifrar\n"
+
 #, c-format
 msgid "Note: key has been revoked"
 msgstr "NOTA: la clave ha sido revocada"

@@ -5719,6 +5719,11 @@ msgstr "MÄRKUS: salajane võti %08lX aegus %s\n"
 
 #, fuzzy, c-format
 #| msgid "NOTE: key has been revoked"
+msgid "Note: ADSK key has been used for decryption"
+msgstr "MÄRKUS: võti on tühistatud"
+
+#, fuzzy, c-format
+#| msgid "NOTE: key has been revoked"
 msgid "Note: key has been revoked"
 msgstr "MÄRKUS: võti on tühistatud"
 

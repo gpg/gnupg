@@ -5813,6 +5813,11 @@ msgstr "NOTĂ: cheia secretă %s a expirat la %s\n"
 
 #, fuzzy, c-format
 #| msgid "NOTE: key has been revoked"
+msgid "Note: ADSK key has been used for decryption"
+msgstr "NOTĂ: cheia a fost revocată"
+
+#, fuzzy, c-format
+#| msgid "NOTE: key has been revoked"
 msgid "Note: key has been revoked"
 msgstr "NOTĂ: cheia a fost revocată"
 

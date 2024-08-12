@@ -5585,6 +5585,11 @@ msgstr "УВАГА: не виявлено алгоритму шифруванн�
 msgid "Note: secret key %s expired at %s\n"
 msgstr "ЗАУВАЖЕННЯ: строк дії закритого ключа %s завершився %s\n"
 
+#, fuzzy, c-format
+#| msgid "certificate should not have been used for encryption\n"
+msgid "Note: ADSK key has been used for decryption"
+msgstr "сертифікат не мав використовуватися для шифрування\n"
+
 #, c-format
 msgid "Note: key has been revoked"
 msgstr "ЗАУВАЖЕННЯ: ключ було відкликано"

@@ -5780,6 +5780,11 @@ msgstr "ΣΗΜΕΙΩΣΗ: το μυστικό κλειδί %08lX έληξε στ
 
 #, fuzzy, c-format
 #| msgid "NOTE: key has been revoked"
+msgid "Note: ADSK key has been used for decryption"
+msgstr "ΣΗΜΕΙΩΣΗ: το κλειδί έχει ανακληθεί"
+
+#, fuzzy, c-format
+#| msgid "NOTE: key has been revoked"
 msgid "Note: key has been revoked"
 msgstr "ΣΗΜΕΙΩΣΗ: το κλειδί έχει ανακληθεί"
 

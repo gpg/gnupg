@@ -5521,6 +5521,11 @@ msgstr "VAROVÁNÍ: v předvolbách příjemce nenalezen šifrovací algoritmus 
 msgid "Note: secret key %s expired at %s\n"
 msgstr "Poznámka: platnost tajného klíče %s skončila v %s\n"
 
+#, fuzzy, c-format
+#| msgid "certificate should not have been used for encryption\n"
+msgid "Note: ADSK key has been used for decryption"
+msgstr "certifikát neměl použit pro šifrování\n"
+
 #, c-format
 msgid "Note: key has been revoked"
 msgstr "Poznámka: klíč byl odvolán"

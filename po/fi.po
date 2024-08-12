@@ -5770,6 +5770,11 @@ msgstr "HUOM: salainen avain %08lX vanheni %s\n"
 
 #, fuzzy, c-format
 #| msgid "NOTE: key has been revoked"
+msgid "Note: ADSK key has been used for decryption"
+msgstr "HUOM: avain on mitätöity!"
+
+#, fuzzy, c-format
+#| msgid "NOTE: key has been revoked"
 msgid "Note: key has been revoked"
 msgstr "HUOM: avain on mitätöity!"
 
