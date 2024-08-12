@@ -811,7 +811,7 @@ SectionEnd
 
 Section "-assuan" SEC_assuan
   SetOutPath "$INSTDIR\bin"
-  File bin/libassuan-0.dll
+  File bin/libassuan-9.dll
   SetOutPath "$INSTDIR\lib"
   File /oname=libassuan.imp lib/libassuan.dll.a
   SetOutPath "$INSTDIR\include"
@@ -1223,7 +1223,7 @@ Section "-un.ksba"
 SectionEnd
 
 Section "-un.assuan"
-  Delete "$INSTDIR\bin\libassuan-0.dll"
+  Delete "$INSTDIR\bin\libassuan-9.dll"
   Delete "$INSTDIR\lib\libassuan.imp"
   Delete "$INSTDIR\include\assuan.h"
 SectionEnd

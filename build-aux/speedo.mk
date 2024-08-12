@@ -271,7 +271,7 @@ AUTHENTICODE_FILES= \
                     gpgsm.exe                 \
                     gpgtar.exe                \
                     gpgv.exe                  \
-                    libassuan-0.dll           \
+                    libassuan-9.dll           \
                     libgcrypt-20.dll          \
                     libgpg-error-0.dll        \
                     libgpgme-11.dll           \
@@ -594,6 +594,8 @@ speedo_pkg_npth_configure = --enable-static
 
 speedo_pkg_libgpg_error_configure = --enable-static --enable-install-gpg-error-config
 speedo_pkg_w64_libgpg_error_configure = --enable-static --enable-install-gpg-error-config
+speedo_pkg_libgpg_error_extracflags = -D_WIN32_WINNT=0x0600
+speedo_pkg_w64_libgpg_error_extracflags = -D_WIN32_WINNT=0x0600
 
 speedo_pkg_libassuan_configure = --enable-static
 speedo_pkg_w64_libassuan_configure = --enable-static
