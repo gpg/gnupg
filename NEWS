@@ -1,6 +1,26 @@
-Noteworthy changes in version 2.2.44 (unreleased)
+Noteworthy changes in version 2.2.44 (2024-08-12)
 -------------------------------------------------
 
+  * gpg: More improvements to PKCS#12 parsing to cope with latest IVBB
+    changes.  [T7213]
+
+  * gpg: New import option "only-pubkeys".  [T7146]
+
+  * gpg: Do not show RENC if no key capabilities are found for a key.
+    [rG1d91252205]
+
+  * gpg: Do not bail out on secret keys with an unknown algo.
+    [rGc489bf7e7e]
+
+  * gpg: Improved decryption diagnostic for an ADSK key.
+    [rG861dc01994]
+
+  * agent: Fix an uninitialized variable in an error path which may
+    have caused gpg's "keytocard" command to fail.  [T6944]
+
+  * scd: Fix regression for KDF use with OpenPGP cards.  [T7121]
+
+  * scd: New getinfo subcommand "manufacturer".  [rG1d0874c3d2]
 
   Release-info: https://dev.gnupg.org/T7087
 
