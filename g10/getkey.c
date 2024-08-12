@@ -68,6 +68,9 @@ struct getkey_ctx_s
      details.  */
   int exact;
 
+  /* Allow returning an ADSK key.  */
+  int allow_adsk;
+
   /* Part of the search criteria: Whether the caller only wants keys
      with an available secret key.  This is used by getkey_next to get
      the next result with the same initial criteria.  */
@@ -141,7 +144,8 @@ static int lookup (ctrl_t ctrl, getkey_ctx_t ctx, int want_secret,
 		   kbnode_t *ret_keyblock, kbnode_t *ret_found_key);
 static kbnode_t finish_lookup (kbnode_t keyblock,
                                unsigned int req_usage, int want_exact,
-                               int want_secret, unsigned int *r_flags);
+                               int want_secret, int allow_adsk,
+                               unsigned int *r_flags);
 static void print_status_key_considered (kbnode_t keyblock, unsigned int flags);
 
 
@@ -586,7 +590,7 @@ get_pubkeyblock_for_sig (ctrl_t ctrl, PKT_signature *sig)
  * The self-signed data has already been merged into the public key
  * using merge_selfsigs.  */
 kbnode_t
-get_pubkeyblock (ctrl_t ctrl, u32 * keyid)
+get_pubkeyblock_ext (ctrl_t ctrl, u32 * keyid, unsigned int flags)
 {
   struct getkey_ctx_s ctx;
   int rc = 0;
@@ -602,12 +606,19 @@ get_pubkeyblock (ctrl_t ctrl, u32 * keyid)
   ctx.items[0].mode = KEYDB_SEARCH_MODE_LONG_KID;
   ctx.items[0].u.kid[0] = keyid[0];
   ctx.items[0].u.kid[1] = keyid[1];
+  ctx.allow_adsk = !!(flags & GET_PUBKEYBLOCK_FLAG_ADSK);
   rc = lookup (ctrl, &ctx, 0, &keyblock, NULL);
   getkey_end (ctrl, &ctx);
 
   return rc ? NULL : keyblock;
 }
 
+
+kbnode_t
+get_pubkeyblock (ctrl_t ctrl, u32 * keyid)
+{
+  return get_pubkeyblock_ext (ctrl, keyid, 0);
+}
 
 /* Return the public key with the key id KEYID iff the secret key is
  * available and store it at PK.  The resources should be released
@@ -1770,7 +1781,7 @@ get_pubkey_fromfile (ctrl_t ctrl, PKT_public_key *pk, const char *fname,
       /* Warning: node flag bits 0 and 1 should be preserved by
        * merge_selfsigs.  FIXME: Check whether this still holds. */
       merge_selfsigs (ctrl, keyblock);
-      found_key = finish_lookup (keyblock, pk->req_usage, 0, 0, &infoflags);
+      found_key = finish_lookup (keyblock, pk->req_usage, 0, 0, 0, &infoflags);
       print_status_key_considered (keyblock, infoflags);
       if (found_key)
         pk_from_block (pk, keyblock, found_key);
@@ -3652,7 +3663,7 @@ merge_selfsigs (ctrl_t ctrl, kbnode_t keyblock)
  */
 static kbnode_t
 finish_lookup (kbnode_t keyblock, unsigned int req_usage, int want_exact,
-               int want_secret, unsigned int *r_flags)
+               int want_secret, int allow_adsk, unsigned int *r_flags)
 {
   kbnode_t k;
 
@@ -3673,6 +3684,9 @@ finish_lookup (kbnode_t keyblock, unsigned int req_usage, int want_exact,
 
 #define USAGE_MASK  (PUBKEY_USAGE_SIG|PUBKEY_USAGE_ENC|PUBKEY_USAGE_CERT)
   req_usage &= USAGE_MASK;
+  /* In allow ADSK mode make sure both encryption bis are set.  */
+  if (allow_adsk && (req_usage & PUBKEY_USAGE_XENC_MASK))
+    req_usage |= PUBKEY_USAGE_XENC_MASK;
 
   /* Request the primary if we're certifying another key, and also if
    * signing data while --pgp7 is on since pgp 7 do
@@ -3700,7 +3714,8 @@ finish_lookup (kbnode_t keyblock, unsigned int req_usage, int want_exact,
               pk->flags.exact = 1;
               break;
             }
-          else if ((k->pkt->pkt.public_key->pubkey_usage == PUBKEY_USAGE_RENC))
+          else if (!allow_adsk && (k->pkt->pkt.public_key->pubkey_usage
+                                   == PUBKEY_USAGE_RENC))
             {
               if (DBG_LOOKUP)
                 log_debug ("finish_lookup: found via ADSK - not selected\n");
@@ -3806,7 +3821,7 @@ finish_lookup (kbnode_t keyblock, unsigned int req_usage, int want_exact,
 	    }
 
           if (opt.flags.require_pqc_encryption
-              && (req_usage & PUBKEY_USAGE_ENC)
+              && (req_usage & PUBKEY_USAGE_XENC_MASK)
               && pk->pubkey_algo != PUBKEY_ALGO_KYBER)
             {
 	      if (DBG_LOOKUP)
@@ -3894,7 +3909,7 @@ finish_lookup (kbnode_t keyblock, unsigned int req_usage, int want_exact,
 	    log_debug ("\tprimary key has expired\n");
 	}
       else if (opt.flags.require_pqc_encryption
-               && (req_usage & PUBKEY_USAGE_ENC)
+               && (req_usage & PUBKEY_USAGE_XENC_MASK)
                && pk->pubkey_algo != PUBKEY_ALGO_KYBER)
         {
           if (DBG_LOOKUP)
@@ -4037,7 +4052,8 @@ lookup (ctrl_t ctrl, getkey_ctx_t ctx, int want_secret,
        * merge_selfsigs.  */
       merge_selfsigs (ctrl, keyblock);
       found_key = finish_lookup (keyblock, ctx->req_usage, ctx->exact,
-                                 want_secret, &infoflags);
+                                 want_secret, ctx->allow_adsk,
+                                 &infoflags);
       print_status_key_considered (keyblock, infoflags);
       if (found_key)
 	{

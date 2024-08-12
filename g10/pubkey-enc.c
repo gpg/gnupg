@@ -143,7 +143,7 @@ get_session_key (ctrl_t ctrl, struct pubkey_enc_list *list, DEK *dek)
           else if (opt.try_all_secrets
                    || (k->keyid[0] == keyid[0] && k->keyid[1] == keyid[1]))
             {
-              if (!opt.quiet && !(sk->pubkey_usage & PUBKEY_USAGE_ENC))
+              if (!opt.quiet && !(sk->pubkey_usage & PUBKEY_USAGE_XENC_MASK))
                 log_info (_("used key is not marked for encryption use.\n"));
             }
           else
@@ -156,7 +156,7 @@ get_session_key (ctrl_t ctrl, struct pubkey_enc_list *list, DEK *dek)
               if (!opt.quiet && !k->keyid[0] && !k->keyid[1])
                 {
                   log_info (_("okay, we are the anonymous recipient.\n"));
-                  if (!(sk->pubkey_usage & PUBKEY_USAGE_ENC))
+                  if (!(sk->pubkey_usage & PUBKEY_USAGE_XENC_MASK))
                     log_info (_("used key is not marked for encryption use.\n")
                               );
                 }
@@ -443,7 +443,7 @@ get_it (ctrl_t ctrl,
   {
     PKT_public_key *pk = NULL;
     PKT_public_key *mainpk = NULL;
-    KBNODE pkb = get_pubkeyblock (ctrl, keyid);
+    KBNODE pkb = get_pubkeyblock_ext (ctrl, keyid, GET_PUBKEYBLOCK_FLAG_ADSK);
 
     if (!pkb)
       {
@@ -495,6 +495,13 @@ get_it (ctrl_t ctrl,
           }
       }
 
+    if (pk && !(pk->pubkey_usage & PUBKEY_USAGE_ENC)
+        && (pk->pubkey_usage & PUBKEY_USAGE_RENC))
+      {
+        log_info (_("Note: ADSK key has been used for decryption"));
+        log_printf ("\n");
+      }
+
     if (pk && pk->flags.revoked)
       {
         log_info (_("Note: key has been revoked"));
@@ -512,7 +519,7 @@ get_it (ctrl_t ctrl,
 
         /* Note that we do not want to create a trustdb just for
          * getting the ownertrust: If there is no trustdb there can't
-         * be ulitmately trusted key anyway and thus the ownertrust
+         * be an ultimately trusted key anyway and thus the ownertrust
          * value is irrelevant.  */
         write_status_printf (STATUS_DECRYPTION_KEY, "%s %s %c",
                              pkhex, mainpkhex,

@@ -4076,7 +4076,7 @@ current home directory (@pxref{option --homedir}).
   startup.  It may contain options pertaining to all components of
   GnuPG.  Its current main use is for the "use-keyboxd" option.  If
   the default home directory @file{~/.gnupg} does not exist, GnuPG creates
-  this directory and a @file{common.conf} file with "use_keyboxd".
+  this directory and a @file{common.conf} file with "use-keyboxd".
 
 @end table
 
