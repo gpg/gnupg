@@ -118,6 +118,9 @@ and then manually edited:
       <Component Id="cmpC056F063A80E93157FDD8E5EFB2CE016" Directory="dirAA72FFDDFA224FB221D53750596B0142" Guid="20439DF2-C028-43DD-9BC1-482FDE51C8C5">
         <File Id="filF97663792C6DE115203B57642F12933C" KeyPath="yes" Source="$(var.SourceDir)\bin\libsqlite3-0.dll"/>
       </Component>
+      <Component Id="cmpC056F063A80E93157FDD8E5EFB2CE017" Directory="dirAA72FFDDFA224FB221D53750596B0142" Guid="304AEF03-D2EC-430E-96BF-34893AF88376">
+        <File Id="filF98663792C6DE115203B57642F12933E" KeyPath="yes" Source="$(var.SourceDir)\bin\libntbtls-0.dll"/>
+      </Component>
       <Component Id="cmp1EA054F1DCA27F5E05A6BB12C0FD5037" Directory="dirAA72FFDDFA224FB221D53750596B0142" Guid="C4BB5B91-A126-4E9E-9E59-194CB722E8A5">
         <File Id="fil52E5309B19823ED3214CA9CA0F5E434D" KeyPath="yes" Source="$(var.SourceDir)\bin\pinentry-w32.exe" Name="pinentry-basic.exe"/>
       </Component>

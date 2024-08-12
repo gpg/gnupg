@@ -233,6 +233,7 @@ AUTHENTICODE_FILES= \
                     libgpgme-11.dll           \
                     libksba-8.dll             \
                     libnpth-0.dll             \
+                    libntbtls-0.dll           \
                     libsqlite3-0.dll          \
                     pinentry-w32.exe          \
                     scdaemon.exe	      \
@@ -498,9 +499,6 @@ speedo_pkg_libgcrypt_configure = --disable-static
 
 speedo_pkg_libksba_configure = --disable-static
 
-speedo_pkg_ntbtls_configure = --enable-static
-
-
 ifeq ($(STATIC),1)
 speedo_pkg_npth_configure += --disable-shared
 
@@ -512,9 +510,6 @@ speedo_pkg_libgcrypt_configure += --disable-shared
 
 speedo_pkg_libksba_configure += --disable-shared
 endif
-
-# For now we build ntbtls only static
-speedo_pkg_ntbtls_configure = --disable-shared
 
 ifeq ($(TARGETOS),w32)
 speedo_pkg_gnupg_configure = \

@@ -858,6 +858,11 @@ Section "-sqlite" SEC_sqlite
   File bin/libsqlite3-0.dll
 SectionEnd
 
+Section "-ntbtls" SEC_ntbtls
+  SetOutPath "$INSTDIR\bin"
+  File bin/libntbtls-0.dll
+SectionEnd
+
 !ifdef WITH_GUI
 Section "-libiconv" SEC_libiconv
   SetOutPath "$INSTDIR\bin"
@@ -1440,6 +1445,10 @@ SectionEnd
 
 Section "-un.sqlite"
   Delete "$INSTDIR\bin\libsqlite3-0.dll"
+SectionEnd
+
+Section "-un.ntbtls"
+  Delete "$INSTDIR\bin\libntbtls-0.dll"
 SectionEnd
 
 Section "-un.gnupginst"
