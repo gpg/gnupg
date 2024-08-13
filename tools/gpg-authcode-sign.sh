@@ -261,11 +261,22 @@ elif [ "$AUTHENTICODE_KEY" = none ]; then
     echo >&2 "$PGM: Signing disabled; would sign: '$inname'"
     [ "$inname" != "$outname" ] && cp "$inname" "$outname"
 
-else
+elif [[ "$AUTHENTICODE_KEY" =~ \.p12$ || "$AUTHENTICODE_KEY" =~ \.pfx$ ]]; then
 
-    echo >&2 "$PGM: Signing using key $AUTHENTICODE_KEY"
+    echo >&2 "$PGM: Signing using PKCS#12 container $AUTHENTICODE_KEY"
     osslsigncode sign -certs "$AUTHENTICODE_CERTS" \
        -pkcs12 "$AUTHENTICODE_KEY" -askpass \
+       -ts "$AUTHENTICODE_TSURL" \
+       -h sha256 -n "$desc" -i "$url" \
+       -in "$inname" -out "$outname.tmp"
+       cp "$outname.tmp" "$outname"
+       rm "$outname.tmp"
+
+else
+
+    echo >&2 "$PGM: Signing using unprotected key $AUTHENTICODE_KEY"
+    osslsigncode sign -certs "$AUTHENTICODE_CERTS" \
+       -key "$AUTHENTICODE_KEY" \
        -ts "$AUTHENTICODE_TSURL" \
        -h sha256 -n "$desc" -i "$url" \
        -in "$inname" -out "$outname.tmp"
