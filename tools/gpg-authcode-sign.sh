@@ -183,6 +183,16 @@ if [ ! -f $autogenrc ]; then
     exit 1
 fi
 
+# Define the cleanup routine for osslsigncode
+cleanup() {
+    if [[ -n "$outname" && -f "${outname}.tmp" ]]; then
+        echo "Cleaning up: Removing ${outname}.tmp"
+        rm -f "${outname}.tmp"
+    fi
+}
+
+# Trap any error to call the cleanup routine
+trap cleanup ERR SIGINT SIGTERM
 
 for v in AUTHENTICODE_SIGNHOST AUTHENTICODE_TOOL AUTHENTICODE_TSURL \
          AUTHENTICODE_KEY AUTHENTICODE_CERTS VERSION_SIGNKEY \
