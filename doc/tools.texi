@@ -2271,6 +2271,39 @@ transport_filter = /usr/local/bin/gpg-mail-tube --setenv HOME=$@{home@} \
 @noindent
 For a remote transport the use of @option{size_addition} and an
 explicit setting of the user and its home directory might be required.
+To avoid permission problems it is often better to use a service like
+@command{userv} to run the command under a different user.  This can
+be done by using this transport_filter:
+
+@example
+transport_filter = /usr/bin/userv -- foo gpg-mail-tube $pipe_addresses
+@end example
+
+With @var{foo} being the account name used by GnuPG.  In that user's
+home directory you will install a file @file{~/.userv/rc} with this
+content:
+
+@example
+if ( glob service gpg-mail-tube
+     & glob calling-user Debian-exim
+     & glob service-user foo
+   )
+   reset
+   errors-to-syslog
+   no-suppress-args
+   execute /usr/local/bin/gpg-mail-tube \
+      -v --no-stderr \
+      --log-file /home/foo/logs/mail-tube.log \
+      --setenv HOME=/home/foo  --
+   quit
+fi
+@end example
+
+Take care to have the trailing double dashes and adjust the log-file
+as needed.  The errors-to-syslog statement makes sure that errors
+pertaining to the userv system (e.g. script errors) are directed to
+the syslog (facility is "user", level is "error").  If needed replace
+Debian-exim by the name of the user under which Exim is running.
 
 
 @mansect see also
