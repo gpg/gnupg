@@ -41,7 +41,7 @@ EXTRA_DIST = samplekeys.asc mksamplekeys com-certs.pem \
              gnupg-card-architecture.png gnupg-card-architecture.pdf \
              FAQ gnupg7.texi mkdefsinc.c defsincdate \
              opt-homedir.texi see-also-note.texi specify-user-id.texi \
-	     gpgv.texi yat2m.c ChangeLog-2011 whats-new-in-2.1.txt \
+	     gpgv.texi ChangeLog-2011 whats-new-in-2.1.txt \
              trust-values.texi keyformat.txt
 
 BUILT_SOURCES = gnupg-module-overview.png gnupg-module-overview.pdf \
@@ -95,13 +95,10 @@ man_MANS = $(myman_pages) gnupg.7
 watchgnupg_SOURCE = gnupg.texi
 
 
-CLEANFILES = yat2m mkdefsinc defs.inc
+CLEANFILES = mkdefsinc defs.inc
 
 DISTCLEANFILES = gnupg.tmp gnupg.ops yat2m-stamp.tmp yat2m-stamp \
 		 $(myman_pages) gnupg.7
-
-yat2m: yat2m.c
-	$(CC_FOR_BUILD) -o $@ $(srcdir)/yat2m.c
 
 mkdefsinc: mkdefsinc.c Makefile ../config.h
 	$(CC_FOR_BUILD) -I. -I.. -I$(srcdir) $(AM_CPPFLAGS) \
@@ -138,10 +135,13 @@ yat2m-stamp: $(myman_sources) defs.inc
 	for file in $(myman_sources) ; do \
               $(YAT2M) $(YAT2M_OPTIONS) --store \
                   --date "`cat $$incd 2>/dev/null`" \
-	          `test -f '$$file' || echo '$(srcdir)/'`$$file ; done
+	          `test -f '$$file' || echo '$(srcdir)/'`$$file ;\
+              $(YAT2M) $(YAT2M_OPTIONS) --store --html --gnupgorg \
+                  --date "`cat $$incd 2>/dev/null`" \
+	          `test -f '$$file' || echo '$(srcdir)/'`$$file ;\
+        done
 	@mv -f yat2m-stamp.tmp $@
 
-yat2m-stamp: $(YAT2M)
 
 $(myman_pages) gnupg.7 : yat2m-stamp defs.inc
 	@if test -f $@; then :; else \
