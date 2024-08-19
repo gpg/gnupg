@@ -420,7 +420,6 @@ static void
 show_photo (const char *command, const char *name, const void *image, u32 len)
 {
   log_error(_("no remote program execution supported\n"));
-  return GPG_ERR_GENERAL;
 }
 #else /* ! NO_EXEC */
 #include "../common/membuf.h"
