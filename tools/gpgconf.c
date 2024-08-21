@@ -1412,6 +1412,8 @@ show_other_registry_entries (estream_t outfp)
     { 3, "splitBCCMails" },
     { 3, "combinedOpsEnabled" },
     { 3, "encryptSubject" },
+    { 3, "noSaveBeforeDecrypt" },
+    { 3, "closeOnUnknownWriteEvent" },
     { 0, NULL }
   };
   int idx;
