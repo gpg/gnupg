@@ -512,8 +512,6 @@ start_new_service (assuan_context_t *r_ctx,
       i = 0;
       argv[i++] = "--homedir";
       argv[i++] = abs_homedir;
-      if (module_name_id == GNUPG_MODULE_NAME_AGENT)
-        argv[i++] = "--use-standard-socket";
       if (program_arg)
         argv[i++] = program_arg;
       argv[i++] = "--daemon";
