@@ -2549,7 +2549,7 @@ check_sig_and_print (CTX c, kbnode_t node)
       release_kbnode( keyblock );
       if (rc)
         g10_errors_seen = 1;
-      if (opt.batch && rc)
+      if (opt.batch && rc && !opt.flags.proc_all_sigs)
         g10_exit (1);
     }
   else  /* Error checking the signature. (neither Good nor Bad).  */

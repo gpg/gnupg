@@ -20,6 +20,8 @@ Noteworthy changes in version 2.4.6 (unreleased)
 
   * gpg: ADSKs are now configurable for new keys.  [T6882]
 
+  * gpg: New option --proc-all-sigs.  [T7261]
+
   * gpgsm: Emit user IDs with an empty Subject also in colon mode.
     [T7171]
 

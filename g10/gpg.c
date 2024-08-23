@@ -455,6 +455,7 @@ enum cmd_and_opt_values
     oAssertSigner,
     oAssertPubkeyAlgo,
     oKbxBufferSize,
+    oProcAllSigs,
 
     oNoop
   };
@@ -902,6 +903,7 @@ static gpgrt_opt_t opts[] = {
 
   ARGPARSE_s_n (oBatch, "batch", "@"),
   ARGPARSE_s_n (oNoBatch, "no-batch", "@"),
+  ARGPARSE_s_n (oProcAllSigs, "proc-all-sigs", "@"),
   ARGPARSE_s_n (oAnswerYes, "yes", "@"),
   ARGPARSE_s_n (oAnswerNo, "no", "@"),
   ARGPARSE_s_i (oStatusFD, "status-fd", "@"),
@@ -2800,6 +2802,10 @@ main (int argc, char **argv)
 	  case oBatch:
             opt.batch = 1;
             nogreeting = 1;
+            break;
+
+          case oProcAllSigs:
+            opt.flags.proc_all_sigs = 1;
             break;
 
           case oUseAgent: /* Dummy. */
