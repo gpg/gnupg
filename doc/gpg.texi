@@ -270,6 +270,12 @@ is designed to compare signed data against a list of trusted keys and
 returns with success only for a good signature.  It has its own manual
 page.
 
+Note: With option @option{--batch} the verification of signatures
+stops at the first bad signature.  This is a safe default for
+unattended processing but sometimes a status for all signatures is
+needed.  To override this early bailout use the option
+@option{--proc-all-sigs}.
+
 
 @item --multifile
 @opindex multifile
@@ -1307,6 +1313,10 @@ Assume "yes" on most questions.  Should not be used in an option file.
 @opindex no
 Assume "no" on most questions.  Should not be used in an option file.
 
+@item --proc-all-sigs
+@opindex proc-all-sigs
+This option overrides the behaviour of the @option{--batch} option to
+stop signature verification at the first bad signatures.
 
 @item --list-options @var{parameters}
 @opindex list-options

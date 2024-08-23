@@ -1,6 +1,8 @@
 Noteworthy changes in version 2.2.45 (unreleased)
 -------------------------------------------------
 
+  * gpg: New option --proc-all-sigs.  [T7261]
+
   Release-info: https://dev.gnupg.org/T7255
 
 
