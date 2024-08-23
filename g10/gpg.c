@@ -3871,6 +3871,9 @@ main (int argc, char **argv)
         opt.keyboxd_program = comopt.keyboxd_program;
         comopt.keyboxd_program = NULL;
       }
+    if (opt.use_keyboxd && nrings)
+      log_info ("Note: Specified keyrings are ignored due to option \"%s\"\n",
+                "use-keyboxd");
 
     if (comopt.no_autostart)
       opt.autostart = 0;
