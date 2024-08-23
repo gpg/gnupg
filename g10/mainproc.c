@@ -2681,7 +2681,8 @@ proc_tree (CTX c, kbnode_t node)
         }
 
       for (n1 = node; (n1 = find_next_kbnode (n1, PKT_SIGNATURE));)
-        if (check_sig_and_print (c, n1) && opt.batch)
+        if (check_sig_and_print (c, n1) && opt.batch
+            && !opt.flags.proc_all_sigs)
           break;
 
     }
@@ -2701,7 +2702,8 @@ proc_tree (CTX c, kbnode_t node)
         }
 
       for (n1 = node; (n1 = find_next_kbnode (n1, PKT_SIGNATURE));)
-        if (check_sig_and_print (c, n1) && opt.batch)
+        if (check_sig_and_print (c, n1) && opt.batch
+            && !opt.flags.proc_all_sigs)
           break;
     }
   else if (node->pkt->pkttype == PKT_SIGNATURE)
@@ -2830,7 +2832,8 @@ proc_tree (CTX c, kbnode_t node)
       if (multiple_ok)
         {
           for (n1 = node; n1; (n1 = find_next_kbnode(n1, PKT_SIGNATURE)))
-	    if (check_sig_and_print (c, n1) && opt.batch)
+	    if (check_sig_and_print (c, n1) && opt.batch
+                && !opt.flags.proc_all_sigs)
               break;
         }
       else

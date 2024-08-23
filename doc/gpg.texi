@@ -264,6 +264,11 @@ out the actual signed data, but there are other pitfalls with this
 format as well.  It is suggested to avoid cleartext signatures in
 favor of detached signatures.
 
+Note: With option @option{--batch} he verification of signatures stops
+at the first bad signature.  This is a safe default for unattended
+processing but sometimes a status for all signatures is needed.  To
+override this early bailout use the option @option{--proc-all-sigs}.
+
 Note: To check whether a file was signed by a certain key the option
 @option{--assert-signer} can be used.  As an alternative the
 @command{gpgv} tool can be used.  @command{gpgv} is designed to
@@ -1371,6 +1376,12 @@ Assume "yes" on most questions.  Should not be used in an option file.
 @item --no
 @opindex no
 Assume "no" on most questions.  Should not be used in an option file.
+
+
+@item --proc-all-sigs
+@opindex proc-all-sigs
+This option overrides the behaviour of the @option{--batch} option to
+stop signature verification at the first bad signatures.
 
 
 @item --list-filter @{select=@var{expr}@}
