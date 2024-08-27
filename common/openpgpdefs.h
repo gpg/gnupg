@@ -165,7 +165,7 @@ typedef enum
     PUBKEY_ALGO_RSA         =  1,
     PUBKEY_ALGO_RSA_E       =  2, /* RSA encrypt only (legacy). */
     PUBKEY_ALGO_RSA_S       =  3, /* RSA sign only (legacy).    */
-    /*PUBKEY_ALGO_KYBER     =  8,    Kyber (FIPS-203 final)     */
+    PUBKEY_ALGO_KYBER       =  8, /* Kyber (FIPS-203 final)     */
     PUBKEY_ALGO_ELGAMAL_E   = 16, /* Elgamal encrypt only.      */
     PUBKEY_ALGO_DSA         = 17,
     PUBKEY_ALGO_ECDH        = 18, /* RFC-6637  */
@@ -173,7 +173,7 @@ typedef enum
     PUBKEY_ALGO_ELGAMAL     = 20, /* Elgamal encrypt+sign (legacy).  */
     /*                        21     reserved by OpenPGP.            */
     PUBKEY_ALGO_EDDSA       = 22, /* EdDSA.                          */
-    PUBKEY_ALGO_KYBER       = 29, /* Kyber                           */
+    /*                        29     (was fips203.ipd.2023-08-24 in 1.5.0)   */
     PUBKEY_ALGO_DIL3_25519  = 35, /* Dilithium3 + Ed25519 (aka ML-DSA-65)    */
     PUBKEY_ALGO_DIL5_448    = 36, /* Dilithium5 + Ed448   (aka ML-DSA-87)    */
     PUBKEY_ALGO_SPHINX_SHA2 = 41, /* SPHINX+-simple-SHA2  (aka SLH-DSA-SHA2) */
