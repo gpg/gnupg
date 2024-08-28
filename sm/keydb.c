@@ -580,6 +580,8 @@ open_context (ctrl_t ctrl, keydb_local_t *r_kbl)
           return err;
         }
 
+      /* We use D-lines in 2.4 for communication due to a bug with fd
+       * passing.  See T6512.  */
       err = kbx_client_data_new (&kbl->kcd, kbl->ctx, 1);
       if (err)
         {
