@@ -3847,7 +3847,7 @@ option is not specified, the expiration time set via
 @option{--default-sig-expire} is used. @option{--no-ask-sig-expire}
 disables this option.
 
-@item --default-sig-expire
+@item --default-sig-expire @var{value}
 @opindex default-sig-expire
 The default expiration time to use for signature expiration. Valid
 values are "0" for no expiration, a number followed by the letter d
@@ -3863,7 +3863,7 @@ option is not specified, the expiration time set via
 @option{--default-cert-expire} is used. @option{--no-ask-cert-expire}
 disables this option.
 
-@item --default-cert-expire
+@item --default-cert-expire  @var{value}
 @opindex default-cert-expire
 The default expiration time to use for key signature expiration.
 Valid values are "0" for no expiration, a number followed by the
