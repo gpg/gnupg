@@ -50,6 +50,7 @@ enum cmd_and_opt_values
 
     oQuiet      = 'q',
     oVerbose	= 'v',
+    oAsAttach   = 'a',
 
     oDebug      = 500,
 
@@ -78,6 +79,7 @@ static gpgrt_opt_t opts[] = {
   ARGPARSE_s_n (oVSD, "vsd", "run the vsd installation of gpg"),
   ARGPARSE_s_s (oLogFile, "log-file", "|FILE|write diagnostics to FILE"),
   ARGPARSE_s_n (oNoStderr, "no-stderr", "suppress all output to stderr"),
+  ARGPARSE_s_n (oAsAttach, "as-attachment","attach the encrypted mail"),
 
   ARGPARSE_end ()
 };
@@ -95,6 +97,7 @@ static struct
 
   unsigned int vsd:1;
   unsigned int no_stderr:1;/* Avoid any writes to stderr.  */
+  unsigned int as_attach:1;/* Create an encrypted attachment.  */
 } opt;
 
 
@@ -218,6 +221,7 @@ parse_arguments (gpgrt_argparse_t *pargs, gpgrt_opt_t *popts)
           break;
         case oLogFile: opt.logfile = pargs->r.ret_str; break;
         case oNoStderr: opt.no_stderr = 1; break;
+        case oAsAttach: opt.as_attach = 1; break;
 
         case oGpgProgram:
           opt.gpg_program = pargs->r.ret_str;
@@ -364,7 +368,7 @@ mail_tube_message_cb (void *opaque,
        * collected by the parser and thus with canonicalized names.
        * The original idea was to keep the lines as received so not to
        * break DKIM.  But DKIM would break anyway because DKIM should
-       * aleays cover the CT field which we have to replace.  */
+       * always cover the CT field which we have to replace.  */
       if (!(s = rfc822parse_last_header_line (msg)))
         ;
       else if (!rfc822_cmp_header_name (s, "Content-Type"))
@@ -408,6 +412,7 @@ mail_tube_encrypt (estream_t fpin, strlist_t recipients)
   pid_t pid = (pid_t)(-1);
   int exitcode;
   int i, found;
+  int ct_text = 0;
 
   ctx->msg = rfc822parse_open (mail_tube_message_cb, ctx);
   if (!ctx->msg)
@@ -474,6 +479,18 @@ mail_tube_encrypt (estream_t fpin, strlist_t recipients)
     }
   rfc822parse_enum_header_lines (NULL, &iterp); /* Close enumerator. */
 
+  if (opt.as_attach)
+    {
+      rfc822parse_field_t field;
+      const char *media;
+
+      field = rfc822parse_parse_field (ctx->msg, "Content-Type", -1);
+      if (field && (media = rfc822parse_query_media_type (field, NULL))
+          && !strcmp (media, "text"))
+        ct_text = 1;
+      rfc822parse_release_field (field);
+    }
+
   /* Create a boundary.  We use a pretty simple random string to avoid
    * the Libgcrypt overhead.  It could actually be a constant string
    * because this is the outer container.  */
@@ -490,10 +507,16 @@ mail_tube_encrypt (estream_t fpin, strlist_t recipients)
 
   if (!ctx->mime_version_seen)
     es_fprintf (es_stdout, "MIME-Version: 1.0\r\n");
-  es_fprintf (es_stdout,
-              "Content-Type: multipart/encrypted;"
-              " protocol=\"application/pgp-encrypted\";\r\n"
-              "\tboundary=\"=-=mt-%s=-=\r\n", boundary);
+
+  if (opt.as_attach)
+    es_fprintf (es_stdout,
+                "Content-Type: multipart/mixed;"
+                " boundary=\"=-=mt-%s=-=\r\n", boundary);
+  else
+    es_fprintf (es_stdout,
+                "Content-Type: multipart/encrypted;"
+                " protocol=\"application/pgp-encrypted\";\r\n"
+                "\tboundary=\"=-=mt-%s=-=\r\n", boundary);
 
   /* Add the extra headers.  */
   for (sl = opt.extra_headers; sl; sl = sl->next)
@@ -503,13 +526,42 @@ mail_tube_encrypt (estream_t fpin, strlist_t recipients)
       es_fprintf (es_stdout, "%.*s: %s\r\n", (int)(s - sl->d), sl->d, s + 1);
     }
 
-  /* Output the PGP/MIME boilerplate.  */
-  es_fprintf (es_stdout,
+  /* Output the plain or PGP/MIME boilerplate.  */
+  if (opt.as_attach)
+    {
+      es_fprintf (es_stdout,
+                  "\r\n"
+                  "\r\n"
+                  "--=-=mt-%s=-=\r\n"
+                  "Content-Type: text/plain; charset=us-ascii\r\n"
+                  "Content-Disposition: inline\r\n"
+                  "\r\n"
+                  "Please find attached an encrypted %s.\r\n"
+                  "\r\n"
+                  "--=-=mt-%s=-=\r\n",
+                  boundary,
+                  ct_text? "file":"message",
+                  boundary);
+      if (ct_text)
+        es_fprintf (es_stdout,
+                    "Content-Type: text/plain; charset=us-ascii\r\n"
+                    "Content-Description: PGP encrypted file\r\n"
+                    "Content-Disposition: attachment; filename=\"%s\"\r\n"
+                    "\r\n", "pgp-encrypted-file.asc");
+      else
+        es_fprintf (es_stdout,
+                    "Content-Type: message/rfc822\r\n"
+                    "Content-Description: PGP encrypted message\r\n"
+                    "Content-Disposition: attachment; filename=\"%s\"\r\n"
+                    "\r\n", "pgp-encrypted-msg.eml.asc");
+    }
+  else
+    es_fprintf (es_stdout,
               "\r\n"
-              "This is a PGP/MIME encrypted message.\r\n"
               "\r\n"
               "--=-=mt-%s=-=\r\n"
               "Content-Type: application/pgp-encrypted\r\n"
+              "Content-Description: PGP/MIME version id\r\n"
               "\r\n"
               "Version: 1\r\n"
               "\r\n"
@@ -527,18 +579,26 @@ mail_tube_encrypt (estream_t fpin, strlist_t recipients)
       goto leave;
     }
 
-  /* Write new mime headers using the old content-* values.  */
-  for (i=0; i < DIM (ct_names); i++)
+  if (opt.as_attach && ct_text)
     {
-      line = rfc822parse_get_field (ctx->msg, ct_names[i], -1, NULL);
-      if (line)
-        {
-          es_fprintf (gpginfp, "%s\r\n", line);
-          rfc822_free (line);
-        }
+      /* No headers at all; write as plain file and ignore the encoding.  */
+      /* FIXME: Should we do a base64 or QP decoding?  */
     }
-  es_fprintf (gpginfp, "\r\n");  /* End of MIME header.  */
-
+  else
+    {
+      /* Write new mime headers using the old content-* values.  */
+      for (i=0; i < DIM (ct_names); i++)
+        {
+          line = rfc822parse_get_field (ctx->msg, ct_names[i], -1, NULL);
+          log_debug ("OLD CT is '%s'\n", line);
+          if (line)
+            {
+              es_fprintf (gpginfp, "%s\r\n", line);
+              rfc822_free (line);
+            }
+        }
+      es_fprintf (gpginfp, "\r\n");  /* End of MIME header.  */
+    }
 
   /* Read the remaining input and feed it to gpg.  */
   while (es_fgets (ctx->line, sizeof (ctx->line), fpin))

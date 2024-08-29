@@ -2162,10 +2162,10 @@ gpgtar --list-archive test1
 @c
 @manpage gpg-mail-tube.1
 @node gpg-mail-tube
-@section Encrypt rfc822 formated mail in a pipeline
+@section Encrypt rfc822 formatted mail in a pipeline
 @ifset manverb
 .B gpg-mail-tube
-\- Encrypt rfc822 formated mail in a pipeline
+\- Encrypt rfc822 formatted mail in a pipeline
 @end ifset
 
 @mansect synopsis
@@ -2219,6 +2219,15 @@ Add the mail header "@var{name}: @var{value}" to the output.
 Put the given environment string into the environment of this process
 and of the called gpg.  This option is required if there is no other
 way to set the environemt.
+
+@item --as-attach
+@itemx -a
+@opindex as-attach
+Do not write a PGP/MIME mail but emit a simple body along with an
+attachment containing the encrypted body of the input mail.  If the
+input was a plain text message a simple encrypted file will be
+attached.  If the input was a multipart MIME message the encrypted
+file is of type message/rfc822.
 
 @item --gpg @var{gpgcmd}
 @opindex gpg
