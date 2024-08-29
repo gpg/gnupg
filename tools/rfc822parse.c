@@ -100,6 +100,8 @@ struct rfc822parse_context
   int in_preamble;      /* Whether we are before the first boundary. */
   part_t parts;         /* The tree of parts. */
   part_t current_part;  /* Whom we are processing (points into parts). */
+  part_t this_part;     /* Same as current_part but kept until new
+                         * headers are processed.  */
   const char *boundary; /* Current boundary. */
 };
 
@@ -147,19 +149,21 @@ my_toupper (int c)
   return c;
 }
 
-/* This is the same as ascii_strcasecmp.  */
+/* This is like ascii_strcasecmp but stops at the first colon and
+ * returns true if A and B are the same.  */
 static int
-my_strcasecmp (const char *a, const char *b)
+same_header_name (const char *a, const char *b)
 {
   if (a == b)
-    return 0;
+    return 1;
 
-  for (; *a && *b; a++, b++)
-    {
-      if (*a != *b && my_toupper(*a) != my_toupper(*b))
-        break;
-    }
-  return *a == *b? 0 : (my_toupper (*a) - my_toupper (*b));
+  for (; *a && *a != ':' && *b && *b != ':'
+         && (*a == *b || my_toupper(*a) == my_toupper(*b)); a++,b++)
+    ;
+  if ((!*a || *a == ':') && (!*b || *b == ':'))
+    return 1;
+
+  return 0;
 }
 
 
@@ -234,6 +238,7 @@ release_handle_data (rfc822parse_t msg)
   release_part (msg->parts);
   msg->parts = NULL;
   msg->current_part = NULL;
+  msg->this_part = NULL;
   msg->boundary = NULL;
 }
 
@@ -279,9 +284,9 @@ rfc822_capitalize_header_name (char *name)
   int first = 1;
 
   /* Special cases first.  */
-  if (!my_strcasecmp (name, "MIME-Version"))
+  if (same_header_name (name, "MIME-Version"))
     {
-      strcpy (name, "MIME-Version");
+      memcpy (name, "MIME-Version", 12);
       return;
     }
 
@@ -328,7 +333,7 @@ rfc822parse_open (rfc822parse_cb_t cb, void *cb_value)
   rfc822parse_t msg = calloc (1, sizeof *msg);
   if (msg)
     {
-      msg->parts = msg->current_part = new_part ();
+      msg->parts = msg->current_part = msg->this_part = new_part ();
       if (!msg->parts)
         {
           free (msg);
@@ -411,7 +416,7 @@ set_current_part_to_parent (rfc822parse_t msg)
     assert (part);
   }
 #endif
-  msg->current_part = parent;
+  msg->current_part = msg->this_part = parent;
 
   parent = find_parent (msg->parts, parent);
   msg->boundary = parent? parent->boundary: NULL;
@@ -559,6 +564,8 @@ insert_header (rfc822parse_t msg, const unsigned char *line, size_t length)
    * every Received header. */
   if (length >= 9 && !memcmp (line, "Received:", 9))
      do_callback (msg, RFC822PARSE_RCVD_SEEN);
+
+  msg->this_part = msg->current_part;
   return 0;
 }
 
@@ -718,14 +725,15 @@ const char *
 rfc822parse_enum_header_lines (rfc822parse_t msg, void **context)
 {
   HDR_LINE l;
+  part_t part;
 
   if (!msg) /* Close. */
     return NULL;
 
-  if (*context == msg || !msg->current_part)
+  if (*context == msg || !msg->this_part)
     return NULL;
 
-  l = *context ? (HDR_LINE) *context : msg->current_part->hdr_lines;
+  l = *context ? (HDR_LINE) *context : msg->this_part->hdr_lines;
 
   if (l)
     {
@@ -759,7 +767,7 @@ find_header (rfc822parse_t msg, const char *name, int which, HDR_LINE *rprev)
   int found = 0;
   int glob = 0;
 
-  if (!msg->current_part)
+  if (!msg->this_part)
     return NULL;
 
   namelen = strlen (name);
@@ -769,7 +777,7 @@ find_header (rfc822parse_t msg, const char *name, int which, HDR_LINE *rprev)
       glob = 1;
     }
 
-  hdr = msg->current_part->hdr_lines;
+  hdr = msg->this_part->hdr_lines;
   if (rprev && *rprev)
     {
       /* spool forward to the requested starting place.
