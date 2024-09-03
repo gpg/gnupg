@@ -1525,6 +1525,16 @@ show_other_registry_entries (estream_t outfp)
     { 3, "combinedOpsEnabled" },
     { 3, "encryptSubject" },
     { 0, NULL }
+    /*  We should add the following key but also hide unset ones.:
+     *   "smimeNoCertSigErr"
+     *   "smimeHtmlWarnShown"
+     *   "alwaysShowApproval"
+     *   "syncDec"
+     *   "syncEnc"
+     *   "draftEnc"
+     *   "draftKey"
+     * Or we just interate over the GpgOL keys.
+     */
   };
   int idx;
   int group = 0;
@@ -1625,7 +1635,7 @@ show_registry_entries_from_file (estream_t outfp)
       if (!any)
         {
           any = 1;
-          es_fprintf (outfp, "Taken from gpgconf.rnames:\n");
+          es_fprintf (outfp, "\nTaken from gpgconf.rnames:\n");
         }
 
       es_fprintf (outfp, "  %s\n  ->%s<-%s\n", line, value,
