@@ -1,7 +1,7 @@
 /* mainproc.c - handle packets
  * Copyright (C) 1998-2009 Free Software Foundation, Inc.
  * Copyright (C) 2013-2014 Werner Koch
- * Copyright (C) 2020 g10 Code GmbH
+ * Copyright (C) 2020, 2024 g10 Code GmbH
  *
  * This file is part of GnuPG.
  *
@@ -141,10 +141,7 @@ release_list( CTX c )
     {
       struct pubkey_enc_list *tmp = c->pkenc_list->next;
 
-      mpi_release (c->pkenc_list->data[0]);
-      mpi_release (c->pkenc_list->data[1]);
-      mpi_release (c->pkenc_list->data[2]);
-      mpi_release (c->pkenc_list->data[3]);
+      release_pubkey_enc_parts (&c->pkenc_list->d);
       xfree (c->pkenc_list);
       c->pkenc_list = tmp;
     }
@@ -523,21 +520,10 @@ proc_pubkey_enc (CTX c, PACKET *pkt)
 
   if (!opt.list_only && !opt.override_session_key)
     {
-      struct pubkey_enc_list *x = xmalloc (sizeof *x);
+      struct pubkey_enc_list *x = xcalloc (1, sizeof *x);
 
-      x->keyid[0] = enc->keyid[0];
-      x->keyid[1] = enc->keyid[1];
-      x->pubkey_algo = enc->pubkey_algo;
+      copy_pubkey_enc_parts (&x->d, enc);
       x->result = -1;
-      x->seskey_algo = enc->seskey_algo;
-      x->data[0] = x->data[1] = x->data[2] = x->data[3] = NULL;
-      if (enc->data[0])
-        {
-          x->data[0] = mpi_copy (enc->data[0]);
-          x->data[1] = mpi_copy (enc->data[1]);
-          x->data[2] = mpi_copy (enc->data[2]);
-          x->data[3] = mpi_copy (enc->data[3]);
-        }
       x->next = c->pkenc_list;
       c->pkenc_list = x;
     }
@@ -561,22 +547,22 @@ print_pkenc_list (ctrl_t ctrl, struct pubkey_enc_list *list)
 
       pk = xmalloc_clear (sizeof *pk);
 
-      pk->pubkey_algo = list->pubkey_algo;
-      if (!get_pubkey (ctrl, pk, list->keyid))
+      pk->pubkey_algo = list->d.pubkey_algo;
+      if (!get_pubkey (ctrl, pk, list->d.keyid))
         {
           pubkey_string (pk, pkstrbuf, sizeof pkstrbuf);
 
           log_info (_("encrypted with %s key, ID %s, created %s\n"),
                     pkstrbuf, keystr_from_pk (pk),
                     strtimestamp (pk->timestamp));
-          p = get_user_id_native (ctrl, list->keyid);
+          p = get_user_id_native (ctrl, list->d.keyid);
           log_printf (_("      \"%s\"\n"), p);
           xfree (p);
         }
       else
         log_info (_("encrypted with %s key, ID %s\n"),
-                  openpgp_pk_algo_name (list->pubkey_algo),
-                  keystr(list->keyid));
+                  openpgp_pk_algo_name (list->d.pubkey_algo),
+                  keystr (list->d.keyid));
 
       if (opt.flags.require_pqc_encryption
           && pk->pubkey_algo != PUBKEY_ALGO_KYBER)
@@ -644,7 +630,7 @@ proc_encrypted (CTX c, PACKET *pkt)
               { /* Key was not tried or it caused an error.  */
                 char buf[20];
                 snprintf (buf, sizeof buf, "%08lX%08lX",
-                          (ulong)list->keyid[0], (ulong)list->keyid[1]);
+                          (ulong)list->d.keyid[0], (ulong)list->d.keyid[1]);
                 write_status_text (STATUS_NO_SECKEY, buf);
               }
         }
@@ -768,8 +754,8 @@ proc_encrypted (CTX c, PACKET *pkt)
       for (i = c->pkenc_list; i && compliant; i = i->next)
         {
           memset (pk, 0, sizeof *pk);
-          pk->pubkey_algo = i->pubkey_algo;
-          if (!get_pubkey (c->ctrl, pk, i->keyid)
+          pk->pubkey_algo = i->d.pubkey_algo;
+          if (!get_pubkey (c->ctrl, pk, i->d.keyid)
               && !gnupg_pk_is_compliant (CO_DE_VS, pk->pubkey_algo, 0,
                                          pk->pkey, nbits_from_pk (pk), NULL))
             compliant = 0;

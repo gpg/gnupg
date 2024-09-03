@@ -115,23 +115,23 @@ get_session_key (ctrl_t ctrl, struct pubkey_enc_list *list, DEK *dek)
        */
       for (k = list; k; k = k->next)
         {
-          if (!(k->pubkey_algo == PUBKEY_ALGO_ELGAMAL_E
-                || k->pubkey_algo == PUBKEY_ALGO_ECDH
-                || k->pubkey_algo == PUBKEY_ALGO_KYBER
-                || k->pubkey_algo == PUBKEY_ALGO_RSA
-                || k->pubkey_algo == PUBKEY_ALGO_RSA_E
-                || k->pubkey_algo == PUBKEY_ALGO_ELGAMAL))
+          if (!(k->d.pubkey_algo == PUBKEY_ALGO_ELGAMAL_E
+                || k->d.pubkey_algo == PUBKEY_ALGO_ECDH
+                || k->d.pubkey_algo == PUBKEY_ALGO_KYBER
+                || k->d.pubkey_algo == PUBKEY_ALGO_RSA
+                || k->d.pubkey_algo == PUBKEY_ALGO_RSA_E
+                || k->d.pubkey_algo == PUBKEY_ALGO_ELGAMAL))
             continue;
 
-          if (openpgp_pk_test_algo2 (k->pubkey_algo, PUBKEY_USAGE_ENC))
+          if (openpgp_pk_test_algo2 (k->d.pubkey_algo, PUBKEY_USAGE_ENC))
             continue;
 
-          if (sk->pubkey_algo != k->pubkey_algo)
+          if (sk->pubkey_algo != k->d.pubkey_algo)
             continue;
 
           keyid_from_pk (sk, keyid);
 
-          if (!k->keyid[0] && !k->keyid[1])
+          if (!k->d.keyid[0] && !k->d.keyid[1])
             {
               if (opt.skip_hidden_recipients)
                 continue;
@@ -141,7 +141,7 @@ get_session_key (ctrl_t ctrl, struct pubkey_enc_list *list, DEK *dek)
                           keystr (keyid));
             }
           else if (opt.try_all_secrets
-                   || (k->keyid[0] == keyid[0] && k->keyid[1] == keyid[1]))
+                   || (k->d.keyid[0] == keyid[0] && k->d.keyid[1] == keyid[1]))
             {
               if (!opt.quiet && !(sk->pubkey_usage & PUBKEY_USAGE_XENC_MASK))
                 log_info (_("used key is not marked for encryption use.\n"));
@@ -153,7 +153,7 @@ get_session_key (ctrl_t ctrl, struct pubkey_enc_list *list, DEK *dek)
           k->result = err;
           if (!err)
             {
-              if (!opt.quiet && !k->keyid[0] && !k->keyid[1])
+              if (!opt.quiet && !k->d.keyid[0] && !k->d.keyid[1])
                 {
                   log_info (_("okay, we are the anonymous recipient.\n"));
                   if (!(sk->pubkey_usage & PUBKEY_USAGE_XENC_MASK))
@@ -215,28 +215,28 @@ get_it (ctrl_t ctrl,
   if (sk->pubkey_algo == PUBKEY_ALGO_ELGAMAL
       || sk->pubkey_algo == PUBKEY_ALGO_ELGAMAL_E)
     {
-      if (!enc->data[0] || !enc->data[1])
+      if (!enc->d.data[0] || !enc->d.data[1])
         err = gpg_error (GPG_ERR_BAD_MPI);
       else
         err = gcry_sexp_build (&s_data, NULL, "(enc-val(elg(a%m)(b%m)))",
-                               enc->data[0], enc->data[1]);
+                               enc->d.data[0], enc->d.data[1]);
     }
   else if (sk->pubkey_algo == PUBKEY_ALGO_RSA
            || sk->pubkey_algo == PUBKEY_ALGO_RSA_E)
     {
-      if (!enc->data[0])
+      if (!enc->d.data[0])
         err = gpg_error (GPG_ERR_BAD_MPI);
       else
         err = gcry_sexp_build (&s_data, NULL, "(enc-val(rsa(a%m)))",
-                               enc->data[0]);
+                               enc->d.data[0]);
     }
   else if (sk->pubkey_algo == PUBKEY_ALGO_ECDH)
     {
-      if (!enc->data[0] || !enc->data[1])
+      if (!enc->d.data[0] || !enc->d.data[1])
         err = gpg_error (GPG_ERR_BAD_MPI);
       else
         err = gcry_sexp_build (&s_data, NULL, "(enc-val(ecdh(s%m)(e%m)))",
-                               enc->data[1], enc->data[0]);
+                               enc->d.data[1], enc->d.data[0]);
     }
   else if (sk->pubkey_algo == PUBKEY_ALGO_KYBER)
     {
@@ -251,18 +251,18 @@ get_it (ctrl_t ctrl,
         }
       else
         {
-          fixedinfo[0] = enc->seskey_algo;
+          fixedinfo[0] = enc->d.seskey_algo;
           v5_fingerprint_from_pk (sk, fixedinfo+1, NULL);
           fixedlen = 33;
         }
 
-      if (!enc->data[0] || !enc->data[1] || !enc->data[2])
+      if (!enc->d.data[0] || !enc->d.data[1] || !enc->d.data[2])
         err = gpg_error (GPG_ERR_BAD_MPI);
       else
         err = gcry_sexp_build (&s_data, NULL,
                            "(enc-val(pqc(e%m)(k%m)(s%m)(c%d)(fixed-info%b)))",
-                           enc->data[0], enc->data[1], enc->data[2],
-                           enc->seskey_algo, fixedlen, fixedinfo);
+                           enc->d.data[0], enc->d.data[1], enc->d.data[2],
+                           enc->d.seskey_algo, fixedlen, fixedinfo);
     }
   else
     err = gpg_error (GPG_ERR_BUG);
@@ -316,15 +316,17 @@ get_it (ctrl_t ctrl,
           goto leave;
         }
       dek->keylen = nframe;
-      dek->algo = enc->seskey_algo;
+      dek->algo = enc->d.seskey_algo;
     }
   else if (sk->pubkey_algo == PUBKEY_ALGO_ECDH)
     {
       gcry_mpi_t decoded;
 
       /* At the beginning the frame are the bytes of shared point MPI.  */
-      err = pk_ecdh_decrypt (&decoded, fp, enc->data[1]/*encr data as an MPI*/,
-                             frame, nframe, sk->pkey);
+      err = pk_ecdh_decrypt (&decoded, fp,
+                             enc->d.data[1], /*encr data as an MPI*/
+                             frame, nframe,
+                             sk->pkey);
       if(err)
         goto leave;
 

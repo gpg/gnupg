@@ -52,17 +52,49 @@ free_symkey_enc( PKT_symkey_enc *enc )
     xfree(enc);
 }
 
+/* This is the core of free_pubkey_enc but does only release the
+ * allocated members of ENC.  */
 void
-free_pubkey_enc( PKT_pubkey_enc *enc )
+release_pubkey_enc_parts (PKT_pubkey_enc *enc)
 {
-    int n, i;
-    n = pubkey_get_nenc( enc->pubkey_algo );
-    if( !n )
-	mpi_release(enc->data[0]);
-    for(i=0; i < n; i++ )
-	mpi_release( enc->data[i] );
-    xfree(enc);
+  int n, i;
+  n = pubkey_get_nenc( enc->pubkey_algo );
+  if (!n)
+    mpi_release (enc->data[0]);
+  for (i=0; i < n; i++ )
+    mpi_release (enc->data[i]);
 }
+
+void
+free_pubkey_enc (PKT_pubkey_enc *enc)
+{
+  release_pubkey_enc_parts (enc);
+  xfree (enc);
+}
+
+
+/* Copy everything from SRC to DST.  This assumes that DST has been
+ * malloced or statically allocated. */
+void
+copy_pubkey_enc_parts (PKT_pubkey_enc *dst, PKT_pubkey_enc *src)
+{
+  int n, i;
+
+  dst->keyid[0] = src->keyid[0];
+  dst->keyid[1] = src->keyid[1];
+  dst->version  = src->version;
+  dst->pubkey_algo = src->pubkey_algo;
+  dst->seskey_algo = src->seskey_algo;
+  dst->throw_keyid = src->throw_keyid;
+
+  if (!(n = pubkey_get_nenc (dst->pubkey_algo)))
+    n = 1;  /* All data is in the first item as an opaque MPI. */
+  for (i=0; i < n; i++)
+    dst->data[i] = my_mpi_copy (src->data[i]);
+  for (; i < PUBKEY_MAX_NENC; i++)
+    dst->data[i] = NULL;
+}
+
 
 void
 free_seckey_enc( PKT_signature *sig )

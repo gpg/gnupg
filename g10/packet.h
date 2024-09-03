@@ -159,11 +159,8 @@ typedef struct {
 struct pubkey_enc_list
 {
   struct pubkey_enc_list *next;
-  u32 keyid[2];
-  int pubkey_algo;
-  int seskey_algo;
   int result;
-  gcry_mpi_t data[PUBKEY_MAX_NENC];
+  PKT_pubkey_enc d;
 };
 
 
@@ -895,19 +892,28 @@ void free_notation (struct notation *notation);
 
 /*-- free-packet.c --*/
 void free_symkey_enc( PKT_symkey_enc *enc );
+
+void release_pubkey_enc_parts (PKT_pubkey_enc *enc);
 void free_pubkey_enc( PKT_pubkey_enc *enc );
+void copy_pubkey_enc_parts (PKT_pubkey_enc *dst, PKT_pubkey_enc *src);
+
 void free_seckey_enc( PKT_signature *enc );
+
 void release_public_key_parts( PKT_public_key *pk );
 void free_public_key( PKT_public_key *key );
+
 void free_attributes(PKT_user_id *uid);
 void free_user_id( PKT_user_id *uid );
 void free_comment( PKT_comment *rem );
 void free_packet (PACKET *pkt, parse_packet_ctx_t parsectx);
 prefitem_t *copy_prefs (const prefitem_t *prefs);
+
 PKT_public_key *copy_public_key_basics (PKT_public_key *d, PKT_public_key *s);
 PKT_public_key *copy_public_key( PKT_public_key *d, PKT_public_key *s );
+
 PKT_signature *copy_signature( PKT_signature *d, PKT_signature *s );
 PKT_user_id *scopy_user_id (PKT_user_id *sd );
+
 int cmp_public_keys( PKT_public_key *a, PKT_public_key *b );
 int cmp_signatures( PKT_signature *a, PKT_signature *b );
 int cmp_user_ids( PKT_user_id *a, PKT_user_id *b );
