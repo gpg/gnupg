@@ -3291,6 +3291,12 @@ cmd_keytocard (assuan_context_t ctx, char *line)
   force = has_option (line, "--force");
   line = skip_options (line);
 
+  /* Need a copy of LINE, since it might inquire to the frontend which
+     resulted original buffer overwritten.  */
+  line = xtrystrdup (line);
+  if (!line)
+    return gpg_error_from_syserror ();
+
   argc = split_fields (line, argv, DIM (argv));
   if (argc < 3)
     {
@@ -3410,6 +3416,7 @@ cmd_keytocard (assuan_context_t ctx, char *line)
   xfree (keydata);
 
  leave:
+  xfree (line);
   xfree (ecdh_params);
   gcry_sexp_release (s_skey);
   xfree (shadow_info);
