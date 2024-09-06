@@ -67,6 +67,12 @@ dearmor_file( const char *fname )
 	goto leave;
 
     iobuf_copy (out, inp);
+    if ((rc = iobuf_error (inp)))
+      log_error (_("error reading '%s': %s\n"),
+                 iobuf_get_fname_nonnull (inp), gpg_strerror (rc));
+    else if ((rc = iobuf_error (out)))
+      log_error (_("error writing '%s': %s\n"),
+                 iobuf_get_fname_nonnull (out), gpg_strerror (rc));
 
   leave:
     if( rc )
@@ -115,6 +121,12 @@ enarmor_file( const char *fname )
     push_armor_filter ( afx, out );
 
     iobuf_copy (out, inp);
+    if ((rc = iobuf_error (inp)))
+      log_error (_("error reading '%s': %s\n"),
+                 iobuf_get_fname_nonnull (inp), gpg_strerror (rc));
+    else if ((rc = iobuf_error (out)))
+      log_error (_("error writing '%s': %s\n"),
+                 iobuf_get_fname_nonnull (out), gpg_strerror (rc));
 
   leave:
     if( rc )
