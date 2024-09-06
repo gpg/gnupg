@@ -2483,9 +2483,8 @@ report_change (int slot, int old_status, int cur_status)
 
   homestr = make_filename (gnupg_homedir (), NULL);
 #ifdef HAVE_W32_SYSTEM
-  /* An environment block is terminated by two/four zero bytes.  It's
-   * four zero bytes for Unicode.  Let us always use four zero bytes.  */
-  if (gpgrt_asprintf (&envstr, "GNUPGHOME=%s%c%c%c", homestr, 0, 0, 0) < 0)
+  /* An environment block is terminated by two zero bytes.  */
+  if (gpgrt_asprintf (&envstr, "GNUPGHOME=%s%c", homestr, 0) < 0)
 #else
   if (gpgrt_asprintf (&envstr, "GNUPGHOME=%s", homestr) < 0)
 #endif
