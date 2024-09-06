@@ -633,9 +633,13 @@ encrypt_simple (const char *filename, int mode, int use_seskey)
     {
       /* User requested not to create a literal packet, so we copy the
          plain data.  */
-      rc = iobuf_copy (out, inp);
-      if (rc)
-        log_error ("copying input to output failed: %s\n", gpg_strerror (rc));
+      iobuf_copy (out, inp);
+      if ((rc = iobuf_error (inp)))
+        log_error (_("error reading '%s': %s\n"),
+                   iobuf_get_fname_nonnull (inp), gpg_strerror (rc));
+      else if ((rc = iobuf_error (out)))
+        log_error (_("error writing '%s': %s\n"),
+                   iobuf_get_fname_nonnull (out), gpg_strerror (rc));
     }
 
   /* Finish the stuff.  */
@@ -760,8 +764,8 @@ write_symkey_enc (STRING2KEY *symkey_s2k, aead_algo_t aead_algo,
  * The caller may provide a checked list of public keys in
  * PROVIDED_KEYS; if not the function builds a list of keys on its own.
  *
- * Note that FILEFD is currently only used by cmd_encrypt in the
- * not yet finished server.c.
+ * Note that FILEFD and OUTPUTFD are currently only used by
+ * cmd_encrypt in the not yet finished server.c.
  */
 int
 encrypt_crypt (ctrl_t ctrl, gnupg_fd_t filefd, const char *filename,
@@ -996,19 +1000,14 @@ encrypt_crypt (ctrl_t ctrl, gnupg_fd_t filefd, const char *filename,
     {
       /* User requested not to create a literal packet, so we copy the
          plain data. */
-      byte copy_buffer[4096];
-      int  bytes_copied;
-      while ((bytes_copied = iobuf_read (inp, copy_buffer, 4096)) != -1)
-        {
-          rc = iobuf_write (out, copy_buffer, bytes_copied);
-          if (rc)
-            {
-              log_error ("copying input to output failed: %s\n",
-                         gpg_strerror (rc));
-              break;
-            }
-        }
-      wipememory (copy_buffer, 4096); /* Burn the buffer. */
+      iobuf_copy (out, inp);
+      if ((rc = iobuf_error (inp)))
+        log_error (_("error reading '%s': %s\n"),
+                   iobuf_get_fname_nonnull (inp), gpg_strerror (rc));
+      else if ((rc = iobuf_error (out)))
+        log_error (_("error writing '%s': %s\n"),
+                   iobuf_get_fname_nonnull (out), gpg_strerror (rc));
+
     }
 
   /* Finish the stuff. */
