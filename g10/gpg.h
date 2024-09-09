@@ -122,6 +122,15 @@ struct server_control_s
   unsigned char *secret_keygrips;
   size_t secret_keygrips_len;
   int no_more_secret_keygrips;
+
+  /* This first flag is set to true if we are running a
+   * --add-recipients or --change-recipients command.  The second if
+   * it is --change-recipients.  */
+  unsigned int modify_recipients:1;
+  unsigned int clear_recipients:1;
+
+  /* Temporary used to pass the last read byte up the call chain.  */
+  int last_read_ctb;
 };
 
 

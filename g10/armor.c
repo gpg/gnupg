@@ -162,6 +162,14 @@ push_armor_filter (armor_filter_context_t *afx, iobuf_t iobuf)
 }
 
 
+/* This function returns true if the armor filter detected that the
+ * input was indeed armored.  Gives a valid result only after the
+ * first PGP packet has been read.  */
+int
+was_armored (armor_filter_context_t *afx)
+{
+  return (afx && !afx->inp_bypass);
+}
 
 
 

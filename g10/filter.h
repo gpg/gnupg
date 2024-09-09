@@ -175,6 +175,7 @@ void free_md_filter_context( md_filter_context_t *mfx );
 armor_filter_context_t *new_armor_context (void);
 void release_armor_context (armor_filter_context_t *afx);
 int push_armor_filter (armor_filter_context_t *afx, iobuf_t iobuf);
+int was_armored (armor_filter_context_t *afx);
 int use_armor_filter( iobuf_t a );
 
 /*-- compress.c --*/

@@ -46,6 +46,30 @@ static int encrypt_simple( const char *filename, int mode, int use_seskey );
 static int write_pubkey_enc_from_list (ctrl_t ctrl,
                                        PK_LIST pk_list, DEK *dek, iobuf_t out);
 
+
+/* Helper for show the "encrypted for USER" during encryption.
+ * PUBKEY_USAGE is used to figure out whether this is an ADSK key.  */
+static void
+show_encrypted_for_user_info (ctrl_t ctrl, unsigned int pubkey_usage,
+                              PKT_pubkey_enc *enc, DEK *dek)
+{
+  char *ustr = get_user_id_string_native (ctrl, enc->keyid);
+  if ((pubkey_usage & PUBKEY_USAGE_RENC))
+    {
+      char *tmpustr = xstrconcat (ustr, " [ADSK]", NULL);
+      xfree (ustr);
+      ustr = tmpustr;
+    }
+  log_info (_("%s/%s.%s encrypted for: \"%s\"\n"),
+            openpgp_pk_algo_name (enc->pubkey_algo),
+            openpgp_cipher_algo_name (dek->algo),
+            dek->use_aead? openpgp_aead_algo_name (dek->use_aead)
+            /**/         : "CFB",
+            ustr );
+  xfree (ustr);
+}
+
+
 /****************
  * Encrypt FILENAME with only the symmetric cipher.  Take input from
  * stdin if FILENAME is NULL.  If --force-aead is used we use an SKESK.
@@ -389,10 +413,11 @@ use_mdc (pk_list_t pk_list,int algo)
 }
 
 
-/* We don't want to use use_seskey yet because older gnupg versions
-   can't handle it, and there isn't really any point unless we're
-   making a message that can be decrypted by a public key or
-   passphrase. */
+/* This function handles the --symmetric only (MODE true) and --store
+ * (MODE false) cases.  We don't want to use USE_SESKEY by default
+ * very old gnupg versions can't handle it, and there isn't really any
+ * point unless we're making a message that can be decrypted by a
+ * public key or passphrase.  */
 static int
 encrypt_simple (const char *filename, int mode, int use_seskey)
 {
@@ -1034,6 +1059,90 @@ encrypt_crypt (ctrl_t ctrl, gnupg_fd_t filefd, const char *filename,
 }
 
 
+/* Re-encrypt files with a set of new recipients.  Note that this
+ * function is called by decrypt_message.  INFP is the iobuf from the
+ * input file which is positioned right after the pubkey_enc and
+ * symkey_enc packets.  */
+gpg_error_t
+reencrypt_to_new_recipients (ctrl_t ctrl, int armor, const char *filename,
+                             iobuf_t infp, strlist_t recipients,
+                             DEK *dek, struct pubkey_enc_list *pkenc_list)
+{
+  gpg_error_t err;
+  int save_no_encrypt_to;
+  pk_list_t newpk_list = NULL;
+  iobuf_t outfp = NULL;
+  armor_filter_context_t *outafx = NULL;
+  PACKET pkt;
+  struct pubkey_enc_list *el;
+  unsigned int count;
+
+  /* Get the keys for all additional recipients but do not encrypt to
+   * the encrypt-to keys. */
+  save_no_encrypt_to = opt.no_encrypt_to;
+  opt.no_encrypt_to = 1;
+  err = build_pk_list (ctrl, recipients, &newpk_list);
+  opt.no_encrypt_to = save_no_encrypt_to;
+  if (err)
+    goto leave;
+
+  /* Note that we use by default the suffixes .gpg or .asc */
+  err = open_outfile (GNUPG_INVALID_FD, filename, armor? 1:0, 0, &outfp);
+  if (err)
+    goto leave;
+
+  if (armor)
+    {
+      outafx = new_armor_context ();
+      push_armor_filter (outafx, outfp);
+    }
+
+  /* Write the new recipients first.  */
+  err = write_pubkey_enc_from_list (ctrl, newpk_list, dek, outfp);
+  if (err)
+    goto leave;
+
+  /* The write the old recipients in --add-recipients mode.  */
+  for (count=0, el = pkenc_list; el; el = el->next, count++)
+    if (!ctrl->clear_recipients)
+      {
+        if (opt.verbose)
+          show_encrypted_for_user_info (ctrl, 0, &el->d, dek);
+        init_packet (&pkt);
+        pkt.pkttype = PKT_PUBKEY_ENC;
+        pkt.pkt.pubkey_enc = &el->d;
+        err = build_packet (outfp, &pkt);
+        if (err)
+          log_error ("build_packet(pubkey_enc) failed: %s\n",
+                     gpg_strerror (err));
+      }
+  if (ctrl->clear_recipients && opt.verbose)
+    log_info (_("number of removed recipients: %u\n"), count);
+
+  iobuf_put (outfp, ctrl->last_read_ctb);
+
+  /* Finally copy the bulk of the message.  */
+  iobuf_copy (outfp, infp);
+  if ((err = iobuf_error (infp)))
+    log_error (_("error reading '%s': %s\n"),
+               iobuf_get_fname_nonnull (infp), gpg_strerror (err));
+  else if ((err = iobuf_error (outfp)))
+    log_error (_("error writing '%s': %s\n"),
+               iobuf_get_fname_nonnull (outfp), gpg_strerror (err));
+
+
+ leave:
+  if (err)
+    iobuf_cancel (outfp);
+  else
+    iobuf_close (outfp);
+  release_armor_context (outafx);
+  release_pk_list (newpk_list);
+  return err;
+}
+
+
+
 /*
  * Filter to do a complete public key encryption.
  */
@@ -1144,22 +1253,7 @@ write_pubkey_enc (ctrl_t ctrl,
   else
     {
       if ( opt.verbose )
-        {
-          char *ustr = get_user_id_string_native (ctrl, enc->keyid);
-          if ((pk->pubkey_usage & PUBKEY_USAGE_RENC))
-            {
-              char *tmpustr = xstrconcat (ustr, " [ADSK]", NULL);
-              xfree (ustr);
-              ustr = tmpustr;
-            }
-          log_info (_("%s/%s.%s encrypted for: \"%s\"\n"),
-                    openpgp_pk_algo_name (enc->pubkey_algo),
-                    openpgp_cipher_algo_name (dek->algo),
-                    dek->use_aead? openpgp_aead_algo_name (dek->use_aead)
-                    /**/         : "CFB",
-                    ustr );
-          xfree (ustr);
-        }
+        show_encrypted_for_user_info (ctrl, pk->pubkey_usage, enc, dek);
       /* And write it. */
       init_packet (&pkt);
       pkt.pkttype = PKT_PUBKEY_ENC;

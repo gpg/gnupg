@@ -115,6 +115,8 @@ enum cmd_and_opt_values
     oKnownNotation,
     aEncrFiles,
     aEncrSym,
+    aAddRecipients,
+    aChangeRecipients,
     aDecryptFiles,
     aClearsign,
     aStore,
@@ -481,6 +483,8 @@ static gpgrt_opt_t opts[] = {
   ARGPARSE_c (aDecryptFiles, "decrypt-files", "@"),
   ARGPARSE_c (aVerify, "verify"   , N_("verify a signature")),
   ARGPARSE_c (aVerifyFiles, "verify-files" , "@" ),
+  ARGPARSE_c (aAddRecipients, "add-recipients", "@" ),
+  ARGPARSE_c (aChangeRecipients, "change-recipients", "@" ),
   ARGPARSE_c (aListKeys, "list-keys", N_("list keys")),
   ARGPARSE_c (aListKeys, "list-public-keys", "@" ),
   ARGPARSE_c (aListSigs, "list-signatures", N_("list keys and signatures")),
@@ -2739,6 +2743,8 @@ main (int argc, char **argv)
 	  case aExportOwnerTrust:
 	  case aImportOwnerTrust:
           case aRebuildKeydbCaches:
+          case aAddRecipients:
+          case aChangeRecipients:
             set_cmd (&cmd, pargs.r_opt);
             break;
 
@@ -4168,6 +4174,12 @@ main (int argc, char **argv)
 	  case aStore:
 	    cmdname="--store";
 	    break;
+          case aAddRecipients:
+            cmdname="--add-recipients";
+            break;
+          case aChangeRecipients:
+            cmdname="--change-recipients";
+            break;
 	  default:
 	    cmdname=NULL;
 	    break;
@@ -4262,7 +4274,9 @@ main (int argc, char **argv)
 				      || cmd == aEncrSym
 				      || cmd == aSym
 				      || cmd == aSignSym
-				      || cmd == aSignEncrSym,
+				      || cmd == aSignEncrSym
+				      || cmd == aAddRecipients
+				      || cmd == aChangeRecipients,
 				      opt.def_cipher_algo,
 				      GCRY_CIPHER_MODE_NONE))
       log_error (_("cipher algorithm '%s' may not be used in %s mode\n"),
@@ -4509,6 +4523,26 @@ main (int argc, char **argv)
 	  }
 	break;
 
+      case aChangeRecipients: /* Change recipients of the encrypted file. */
+        ctrl->clear_recipients = 1;
+        /* fallthru */
+      case aAddRecipients:    /* Add recipients to the encrypted file.    */
+        ctrl->modify_recipients = 1;
+        if (argc > 1)
+          {
+            if (cmd == aAddRecipients)
+              wrong_args("--add-recipients [filename]");
+            else
+              wrong_args("--change-recipients [filename]");
+          }
+        if ((rc = decrypt_message (ctrl, fname, remusr)))
+          {
+            write_status_failure ("modify-recipients", rc);
+            log_error ("%s: modify recipients failed: %s\n",
+                       print_fname_stdin (fname), gpg_strerror (rc));
+          }
+	break;
+
       case aEncrSym:
 	/* This works with PGP 8 in the sense that it acts just like a
 	   symmetric message.  It doesn't work at all with 2 or 6.  It
@@ -4650,7 +4684,7 @@ main (int argc, char **argv)
 	  {
 	    if( argc > 1 )
 	      wrong_args("--decrypt [filename]");
-	    if( (rc = decrypt_message (ctrl, fname) ))
+	    if( (rc = decrypt_message (ctrl, fname, NULL) ))
               {
                 write_status_failure ("decrypt", rc);
                 log_error("decrypt_message failed: %s\n", gpg_strerror (rc) );

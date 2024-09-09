@@ -165,7 +165,7 @@ ask_outfile_name( const char *name, size_t namelen )
 
 /*
  * Make an output filename for the inputfile INAME.
- * Returns an IOBUF and an errorcode
+ * Returns an IOBUF at A and an errorcode
  * Mode 0 = use ".gpg"
  *	1 = use ".asc"
  *	2 = use ".sig"

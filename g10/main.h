@@ -248,6 +248,11 @@ int encrypt_crypt (ctrl_t ctrl, gnupg_fd_t filefd, const char *filename,
                    gnupg_fd_t outputfd);
 void encrypt_crypt_files (ctrl_t ctrl,
                           int nfiles, char **files, strlist_t remusr);
+gpg_error_t reencrypt_to_new_recipients (ctrl_t ctrl, int armor,
+                                         const char *filename, iobuf_t infp,
+                                         strlist_t recipients,
+                                         DEK *dek,
+                                         struct pubkey_enc_list *pkenc_list);
 int encrypt_filter (void *opaque, int control,
 		    iobuf_t a, byte *buf, size_t *ret_len);
 
@@ -501,7 +506,8 @@ void check_assert_signer_list (const char *mainpkhex, const char *pkhex);
 void check_assert_pubkey_algo (const char *algostr, const char *pkhex);
 
 /*-- decrypt.c --*/
-int decrypt_message (ctrl_t ctrl, const char *filename );
+gpg_error_t decrypt_message (ctrl_t ctrl, const char *filename,
+                             strlist_t remusr);
 gpg_error_t decrypt_message_fd (ctrl_t ctrl, gnupg_fd_t input_fd,
                                 gnupg_fd_t output_fd);
 void decrypt_messages (ctrl_t ctrl, int nfiles, char *files[]);

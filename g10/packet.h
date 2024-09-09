@@ -644,7 +644,10 @@ int proc_signature_packets (ctrl_t ctrl, void *ctx, iobuf_t a,
 			    strlist_t signedfiles, const char *sigfile );
 int proc_signature_packets_by_fd (ctrl_t ctrl, void *anchor, IOBUF a,
                                   gnupg_fd_t signed_data_fd);
-int proc_encryption_packets (ctrl_t ctrl, void *ctx, iobuf_t a);
+gpg_error_t proc_encryption_packets (ctrl_t ctrl, void *ctx, iobuf_t a,
+                                     DEK **r_dek,
+                                     struct pubkey_enc_list **r_list);
+
 int list_packets( iobuf_t a );
 
 const byte *issuer_fpr_raw (PKT_signature *sig, size_t *r_len);
@@ -673,7 +676,9 @@ struct parse_packet_ctx_s
   struct packet_struct last_pkt; /* The last parsed packet.  */
   int free_last_pkt; /* Indicates that LAST_PKT must be freed.  */
   int skip_meta;     /* Skip ring trust packets.  */
+  int only_fookey_enc;  /* Stop if the packet is not {sym,pub}key_enc. */
   unsigned int n_parsed_packets;	/* Number of parsed packets.  */
+  int last_ctb;      /* The last CTB read.  */
 };
 typedef struct parse_packet_ctx_s *parse_packet_ctx_t;
 
@@ -683,7 +688,9 @@ typedef struct parse_packet_ctx_s *parse_packet_ctx_t;
     (a)->last_pkt.pkt.generic= NULL;\
     (a)->free_last_pkt = 0;         \
     (a)->skip_meta = 0;             \
+    (a)->only_fookey_enc = 0;       \
     (a)->n_parsed_packets = 0;      \
+    (a)->last_ctb = 1;              \
   } while (0)
 
 #define deinit_parse_packet(a) do { \

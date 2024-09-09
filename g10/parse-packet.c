@@ -763,6 +763,7 @@ parse (parse_packet_ctx_t ctx, PACKET *pkt, int onlykeypkts, off_t * retpos,
       rc = -1;
       goto leave;
     }
+  ctx->last_ctb = ctb;
   hdrlen = 0;
   hdr[hdrlen++] = ctb;
 
@@ -774,18 +775,28 @@ parse (parse_packet_ctx_t ctx, PACKET *pkt, int onlykeypkts, off_t * retpos,
     }
 
   /* Immediately following the header is the length.  There are two
-     formats: the old format and the new format.  If bit 6 (where the
-     least significant bit is bit 0) is set in the tag, then we are
-     dealing with a new format packet.  Otherwise, it is an old format
-     packet.  */
+   * formats: the old format and the new format.  If bit 6 (where the
+   * least significant bit is bit 0) is set in the tag, then we are
+   * dealing with a new format packet.  Otherwise, it is an old format
+   * packet.  In the new format the packet's type is encoded in the 6
+   * least significant bits of the tag; in the old format it is
+   * encoded in bits 2-5.  */
   pktlen = 0;
   new_ctb = !!(ctb & 0x40);
   if (new_ctb)
-    {
-      /* Get the packet's type.  This is encoded in the 6 least
-	 significant bits of the tag.  */
-      pkttype = ctb & 0x3f;
+    pkttype = ctb & 0x3f;
+  else
+    pkttype = (ctb >> 2) & 0xf;
 
+  if (ctx->only_fookey_enc
+      && !(pkttype == PKT_SYMKEY_ENC || pkttype == PKT_PUBKEY_ENC))
+    {
+      rc = gpg_error (GPG_ERR_TRUE);
+      goto leave;
+    }
+
+  if (new_ctb)
+    {
       /* Extract the packet's length.  New format packets have 4 ways
 	 to encode the packet length.  The value of the first byte
 	 determines the encoding and partially determines the length.
@@ -855,12 +866,8 @@ parse (parse_packet_ctx_t ctx, PACKET *pkt, int onlykeypkts, off_t * retpos,
         }
 
     }
-  else
-    /* This is an old format packet.  */
+  else /* This is an old format packet.  */
     {
-      /* Extract the packet's type.  This is encoded in bits 2-5.  */
-      pkttype = (ctb >> 2) & 0xf;
-
       /* The type of length encoding is encoded in bits 0-1 of the
 	 tag.  */
       lenbytes = ((ctb & 3) == 3) ? 0 : (1 << (ctb & 3));

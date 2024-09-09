@@ -1,6 +1,7 @@
 /* decrypt.c - decrypt and verify data
  * Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,
  *               2007, 2009 Free Software Foundation, Inc.
+ * Copyright (C) 2024 g10 Code GmbH
  *
  * This file is part of GnuPG.
  *
@@ -16,6 +17,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, see <https://www.gnu.org/licenses/>.
+ * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
 #include <config.h>
@@ -35,19 +37,26 @@
 #include "../common/status.h"
 #include "../common/i18n.h"
 
+
+
 /* Assume that the input is an encrypted message and decrypt
  * (and if signed, verify the signature on) it.
  * This command differs from the default operation, as it never
  * writes to the filename which is included in the file and it
  * rejects files which don't begin with an encrypted message.
+ *
+ * REMUSR is only used in the modify_recipients mode and speicifies
+ * the additional or new recipients to use.
  */
-int
-decrypt_message (ctrl_t ctrl, const char *filename)
+gpg_error_t
+decrypt_message (ctrl_t ctrl, const char *filename, strlist_t remusr)
 {
-  IOBUF fp;
+  gpg_error_t err;
+  iobuf_t fp;
   armor_filter_context_t *afx = NULL;
   progress_filter_context_t *pfx;
-  int rc;
+  DEK *dek = NULL;
+  struct pubkey_enc_list *pkenc_list = NULL;
 
   pfx = new_progress_context ();
 
@@ -61,14 +70,18 @@ decrypt_message (ctrl_t ctrl, const char *filename)
     }
   if ( !fp )
     {
-      rc = gpg_error_from_syserror ();
+      err = gpg_error_from_syserror ();
       log_error (_("can't open '%s': %s\n"), print_fname_stdin(filename),
-                 gpg_strerror (rc));
+                 gpg_strerror (err));
       release_progress_context (pfx);
-      return rc;
+      return err;
     }
 
-  handle_progress (pfx, fp, filename);
+  /* Push the progress filter unless we are in add recipient mode.
+   * The latter may also work but for now we better avoid any possible
+   * complications.  */
+  if (!ctrl->modify_recipients)
+    handle_progress (pfx, fp, filename);
 
   if ( !opt.no_armor )
     {
@@ -86,19 +99,44 @@ decrypt_message (ctrl_t ctrl, const char *filename)
     }
   else
     opt.flags.dummy_outfile = 0;
-  rc = proc_encryption_packets (ctrl, NULL, fp );
+  if (!ctrl->modify_recipients)
+    err = proc_encryption_packets (ctrl, NULL, fp, NULL, NULL);
+  else
+    err = proc_encryption_packets (ctrl, NULL, fp, &dek, &pkenc_list);
   if (opt.flags.dummy_outfile)
     opt.outfile = NULL;
 
+  if (ctrl->modify_recipients && (err || !dek) )
+    log_error (_("modifiying the recipients is not possible: %s\n"),
+               err? gpg_strerror (err) : _("decryption failed"));
+  else if (ctrl->modify_recipients)
+    {
+      /* We apply an armor to the output if --armor was used or if the
+       * input was already armored and --no-armor was not given.  */
+      int armor = opt.armor || (was_armored (afx) && !opt.no_armor);
+
+      err = reencrypt_to_new_recipients (ctrl, armor, filename, fp,
+                                         remusr, dek, pkenc_list);
+    }
+
+  xfree (dek);
+  while (pkenc_list)
+    {
+      struct pubkey_enc_list *tmp = pkenc_list->next;
+
+      release_pubkey_enc_parts (&pkenc_list->d);
+      xfree (pkenc_list);
+      pkenc_list = tmp;
+    }
   iobuf_close (fp);
   release_armor_context (afx);
   release_progress_context (pfx);
-  return rc;
+  return err;
 }
 
 
 /* Same as decrypt_message but takes a file descriptor for input and
-   output.  */
+   output.  Only used by the unfinished server mode.  */
 gpg_error_t
 decrypt_message_fd (ctrl_t ctrl, gnupg_fd_t input_fd,
                     gnupg_fd_t output_fd)
@@ -173,7 +211,7 @@ decrypt_message_fd (ctrl_t ctrl, gnupg_fd_t input_fd,
 	}
     }
 
-  err = proc_encryption_packets (ctrl, NULL, fp );
+  err = proc_encryption_packets (ctrl, NULL, fp, NULL, NULL);
 
   iobuf_close (fp);
   es_fclose (opt.outfp);
