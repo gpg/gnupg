@@ -186,14 +186,14 @@ fi
 # Define the cleanup routine for osslsigncode
 cleanup()
 {
-    if [ -n "$outname" && -f "${outname}.tmp" ]; then
+    if [ -n "$outname" -a -f "${outname}.tmp" ]; then
         echo >&2 "Cleaning up: Removing ${outname}.tmp"
         rm -f "${outname}.tmp"
     fi
 }
 
 # Trap common signals and exit to run the cleanup
-trap cleanup 0 SIGINT SIGTERM
+trap cleanup 0 INT TERM
 
 for v in AUTHENTICODE_SIGNHOST AUTHENTICODE_TOOL AUTHENTICODE_TSURL \
          AUTHENTICODE_KEY AUTHENTICODE_CERTS VERSION_SIGNKEY \
