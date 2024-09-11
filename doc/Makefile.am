@@ -79,18 +79,23 @@ YAT2M_OPTIONS = -I $(srcdir) \
 myman_sources = gnupg7.texi gpg.texi gpgsm.texi gpg-agent.texi \
 	        dirmngr.texi scdaemon.texi tools.texi wks.texi \
                 gpg-card.texi
-myman_pages   = gpgsm.1 gpg-agent.1 dirmngr.8 scdaemon.1 \
+myman_pages   = gpg.1 gpgv.1 gpgsm.1 gpg-agent.1 dirmngr.8 scdaemon.1 \
                 watchgnupg.1 gpgconf.1 addgnupghome.8 gpg-preset-passphrase.1 \
 		gpg-connect-agent.1 gpgparsemail.1 gpgtar.1 gpg-mail-tube.1 \
 		applygnupgdefaults.8 gpg-wks-client.1 gpg-wks-server.1 \
 		dirmngr-client.1 gpg-card.1 gpg-check-pattern.1
-if USE_GPG2_HACK
-myman_pages += gpg2.1 gpgv2.1
-else
-myman_pages += gpg.1 gpgv.1
-endif
+myhtmlman_pages = \
+                gpg.1.html gpgv.1.html gpgsm.1.html \
+                gpg-agent.1.html dirmngr.8.html scdaemon.1.html \
+                watchgnupg.1.html gpgconf.1.html addgnupghome.8.html \
+                gpg-preset-passphrase.1.html \
+		gpg-connect-agent.1.html gpgparsemail.1.html \
+                gpgtar.1.html gpg-mail-tube.1.html \
+		applygnupgdefaults.8.html gpg-wks-client.1.html \
+                gpg-wks-server.1.html \
+		dirmngr-client.1.html gpg-card.1.html gpg-check-pattern.1.html
 
-man_MANS = $(myman_pages) gnupg.7
+man_MANS = $(myman_pages) gnupg.7 gnupg.7.html
 
 watchgnupg_SOURCE = gnupg.texi
 
@@ -98,7 +103,7 @@ watchgnupg_SOURCE = gnupg.texi
 CLEANFILES = yat2m mkdefsinc defs.inc
 
 DISTCLEANFILES = gnupg.tmp gnupg.ops yat2m-stamp.tmp yat2m-stamp \
-		 $(myman_pages) gnupg.7
+		 $(myman_pages) gnupg.7 $(myhtmlman_pages)
 
 yat2m: yat2m.c
 	$(CC_FOR_BUILD) -o $@ $(srcdir)/yat2m.c
