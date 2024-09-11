@@ -216,7 +216,10 @@ enum cmd_and_opt_values {
   oCompatibilityFlags,
   oKbxBufferSize,
   oAlwaysTrust,
-  oNoAutostart
+  oNoAutostart,
+  oAssertSigner,
+
+  oNoop
  };
 
 
@@ -310,6 +313,7 @@ static gpgrt_opt_t opts[] = {
                 N_("|FILE|take policy information from FILE")),
   ARGPARSE_s_s (oCompliance, "compliance",   "@"),
   ARGPARSE_p_u (oMinRSALength, "min-rsa-length", "@"),
+  ARGPARSE_s_s (oAssertSigner, "assert-signer", "@"),
   ARGPARSE_s_n (oNoCommonCertsImport, "no-common-certs-import", "@"),
   ARGPARSE_s_s (oIgnoreCertExtension, "ignore-cert-extension", "@"),
   ARGPARSE_s_s (oIgnoreCertWithOID, "ignore-cert-with-oid", "@"),
@@ -500,6 +504,9 @@ static struct compatibility_flags_s compatibility_flags [] =
 
 /* Global variable to keep an error count. */
 int gpgsm_errors_seen = 0;
+/* If opt.assert_signer_list is used and this variable is not true
+ * gpg will be forced to return EXIT_FAILURE.  */
+int assert_signer_true = 0;
 
 /* It is possible that we are currentlu running under setuid permissions */
 static int maybe_setuid = 1;
@@ -1517,6 +1524,12 @@ main ( int argc, char **argv)
           keybox_set_buffersize (pargs.r.ret_ulong, 0);
           break;
 
+        case oAssertSigner:
+          add_to_strlist (&opt.assert_signer_list, pargs.r.ret_str);
+          break;
+
+        case oNoop: break;
+
         default:
           if (configname)
             pargs.err = ARGPARSE_PRINT_WARNING;
@@ -2265,6 +2278,15 @@ emergency_cleanup (void)
 void
 gpgsm_exit (int rc)
 {
+  if (rc)
+    ;
+  else if (log_get_errorcount(0))
+    rc = 2;
+  else if (gpgsm_errors_seen)
+    rc = 1;
+  else if (opt.assert_signer_list && !assert_signer_true)
+    rc = 1;
+
   gcry_control (GCRYCTL_UPDATE_RANDOM_SEED_FILE);
   if (opt.debug & DBG_MEMSTAT_VALUE)
     {
@@ -2274,7 +2296,6 @@ gpgsm_exit (int rc)
   if (opt.debug)
     gcry_control (GCRYCTL_DUMP_SECMEM_STATS );
   emergency_cleanup ();
-  rc = rc? rc : log_get_errorcount(0)? 2 : gpgsm_errors_seen? 1 : 0;
   exit (rc);
 }
 

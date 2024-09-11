@@ -181,6 +181,10 @@ struct
    * attribute values.  */
   strlist_t attributes;
 
+  /* The list of --assert-signer option values.  Note: The values are
+   * modified to uppercase if they represent a fingerrint */
+  strlist_t assert_signer_list;
+
   /* Compatibility flags (COMPAT_FLAG_xxxx).  */
   unsigned int compat_flags;
 } opt;
@@ -312,6 +316,7 @@ struct rootca_flags_s
 
 /*-- gpgsm.c --*/
 extern int gpgsm_errors_seen;
+extern int assert_signer_true;
 
 void gpgsm_exit (int rc);
 void gpgsm_init_default_ctrl (struct server_control_s *ctrl);

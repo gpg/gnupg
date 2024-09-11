@@ -22,6 +22,8 @@ Noteworthy changes in version 2.4.6 (unreleased)
 
   * gpg: New option --proc-all-sigs.  [T7261]
 
+  * gpgsm: New option --assert-signer.  [T7286]
+
   * gpgsm: Emit user IDs with an empty Subject also in colon mode.
     [T7171]
 
