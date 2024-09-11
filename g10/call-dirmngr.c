@@ -1198,7 +1198,8 @@ gpg_dirmngr_dns_cert (ctrl_t ctrl, const char *name, const char *certtype,
   if (err)
     goto leave;
 
-  if (r_key)
+  /* Data line returned by dirmngr may be nothing.  Check if any.  */
+  if (es_ftell (parm.memfp) != 0 && r_key)
     {
       es_rewind (parm.memfp);
       *r_key = parm.memfp;
