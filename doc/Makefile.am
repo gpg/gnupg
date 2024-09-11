@@ -103,7 +103,7 @@ watchgnupg_SOURCE = gnupg.texi
 CLEANFILES = yat2m mkdefsinc defs.inc
 
 DISTCLEANFILES = gnupg.tmp gnupg.ops yat2m-stamp.tmp yat2m-stamp \
-		 $(myman_pages) gnupg.7 $(myhtmlman_pages)
+		 $(myman_pages) gnupg.7 gnupg.7.html $(myhtmlman_pages)
 
 yat2m: yat2m.c
 	$(CC_FOR_BUILD) -o $@ $(srcdir)/yat2m.c
@@ -140,7 +140,7 @@ yat2m-stamp: $(myman_sources) defs.inc
 	@rm -f yat2m-stamp.tmp
 	@touch yat2m-stamp.tmp
 	incd="`test -f defsincdate || echo '$(srcdir)/'`defsincdate"; \
-	for file in $(myman_sources) ; do \
+	for file in $(myman_sources); do \
               $(YAT2M) $(YAT2M_OPTIONS) --store \
                   --date "`cat $$incd 2>/dev/null`" \
 	          `test -f '$$file' || echo '$(srcdir)/'`$$file ; done
@@ -148,7 +148,7 @@ yat2m-stamp: $(myman_sources) defs.inc
 
 yat2m-stamp: $(YAT2M)
 
-$(myman_pages) gnupg.7 : yat2m-stamp defs.inc
+$(myman_pages) $(myhtmlman_pages) gnupg.7 gnupg.7.html : yat2m-stamp defs.inc
 	@if test -f $@; then :; else \
             trap 'rm -rf yat2m-stamp yat2m-lock' 1 2 13 15; \
                if mkdir yat2m-lock 2>/dev/null; then \
