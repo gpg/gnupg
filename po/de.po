@@ -9,7 +9,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnupg-2.4.1\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"PO-Revision-Date: 2024-07-05 14:33+0200\n"
+"PO-Revision-Date: 2024-09-11 14:29+0200\n"
 "Last-Translator: Werner Koch <wk@gnupg.org>\n"
 "Language-Team: German\n"
 "Language: de\n"
@@ -834,18 +834,6 @@ msgstr "Fehler beim Erzeugen einer \"Pipe\": %s\n"
 #, c-format
 msgid "error creating a stream for a pipe: %s\n"
 msgstr "Fehler beim Erzeugen eines \"streams\" zu einer \"pipe\": %s\n"
-
-#, c-format
-msgid "error forking process: %s\n"
-msgstr "Fehler beim \"Forken\" des Prozess: %s\n"
-
-#, c-format
-msgid "waiting for process %d to terminate failed: %s\n"
-msgstr "Das Warten auf die Beendigung des Prozesses %d schlug fehl: %s\n"
-
-#, c-format
-msgid "waiting for process to terminate failed: ec=%d\n"
-msgstr "Das Warten auf die Beendigung des Prozesses schlug fehl: ec=%d\n"
 
 #, c-format
 msgid "can't connect to '%s': %s\n"
@@ -1699,6 +1687,13 @@ msgid "Invalid command  (try \"help\")\n"
 msgstr "Ungültiger Befehl (versuchen Sie's mal mit \"help\")\n"
 
 #, c-format
+msgid "modifiying the recipients is not possible: %s\n"
+msgstr "Änderung der Empfänger ist nicht möglich: %s\n"
+
+msgid "decryption failed"
+msgstr "Entschlüsselung fehlgeschlagen"
+
+#, c-format
 msgid "--output doesn't work for this command\n"
 msgstr "--output funktioniert nicht bei diesem Befehl\n"
 
@@ -1784,6 +1779,10 @@ msgstr ""
 "entfernen.\n"
 
 #, c-format
+msgid "%s/%s.%s encrypted for: \"%s\"\n"
+msgstr "%s/%s.%s verschlüsselt für: \"%s\"\n"
+
+#, c-format
 msgid ""
 "WARNING: forcing symmetric cipher %s (%d) violates recipient preferences\n"
 msgstr ""
@@ -1847,8 +1846,8 @@ msgstr ""
 "Empfängervoreinstellungen.\n"
 
 #, c-format
-msgid "%s/%s.%s encrypted for: \"%s\"\n"
-msgstr "%s/%s.%s verschlüsselt für: \"%s\"\n"
+msgid "number of removed recipients: %u\n"
+msgstr "Anzahl der entfernten Empfänger: %u\n"
 
 #, c-format
 msgid "option '%s' may not be used in %s mode\n"
@@ -4244,6 +4243,10 @@ msgstr "  (%d) Vorhandener Schlüssel%s\n"
 msgid "  (%d) Existing key from card%s\n"
 msgstr "  (%d) Vorhandener Schlüssel auf der Karte%s\n"
 
+#, c-format
+msgid "  (%d) Kyber (encrypt only)%s\n"
+msgstr "  (%d) Kyber (nur verschlüsseln)%s\n"
+
 msgid "Enter the keygrip: "
 msgstr "Geben Sie den \"Keygrip\" ein: "
 
@@ -4531,7 +4534,8 @@ msgstr ""
 
 #, c-format
 msgid "Note: The key has been created with one or more ADSK!\n"
-msgstr "WARNUNG: Dieser Schlüssel wurde mit einem oder mehreren ADSK erzeugt!\n"
+msgstr ""
+"WARNUNG: Dieser Schlüssel wurde mit einem oder mehreren ADSK erzeugt!\n"
 
 #, c-format
 msgid ""
@@ -5592,6 +5596,10 @@ msgstr ""
 #, c-format
 msgid "Note: secret key %s expired at %s\n"
 msgstr "Hinweis: geheimer Schlüssel %s verfällt am %s\n"
+
+#, c-format
+msgid "Note: ADSK key has been used for decryption"
+msgstr "Hinweis: Der ADSK Schlüssel wurde zum Entschlüsseln benutzt"
 
 #, c-format
 msgid "Note: key has been revoked"
@@ -8501,6 +8509,10 @@ msgid "colons are not allowed in the socket name\n"
 msgstr "Doppelpunkte sind im Namen des Sockets nicht erlaubt\n"
 
 #, c-format
+msgid "error forking process: %s\n"
+msgstr "Fehler beim \"Forken\" des Prozess: %s\n"
+
+#, c-format
 msgid "fetching CRL from '%s' failed: %s\n"
 msgstr "Holen der CRL von `%s' fehlgeschlagen: %s\n"
 
@@ -9127,6 +9139,14 @@ msgid "manage the command history"
 msgstr "Verwaltung der Kommandohistorie"
 
 #, c-format
+#~ msgid "waiting for process %d to terminate failed: %s\n"
+#~ msgstr "Das Warten auf die Beendigung des Prozesses %d schlug fehl: %s\n"
+
+#, c-format
+#~ msgid "waiting for process to terminate failed: ec=%d\n"
+#~ msgstr "Das Warten auf die Beendigung des Prozesses schlug fehl: ec=%d\n"
+
+#, c-format
 #~ msgid "error running '%s': probably not installed\n"
 #~ msgstr "Fehler bei Ausführung von `%s': wahrscheinlich nicht installiert\n"
 
@@ -9587,7 +9607,8 @@ msgstr "Verwaltung der Kommandohistorie"
 
 #, fuzzy
 #~ msgid "error setting policy for key %s, user id \"%s\": %s"
-#~ msgstr "Fehler beim Setzen der Policy des öff. Schlüssels '%s', UID '%s': %s\n"
+#~ msgstr ""
+#~ "Fehler beim Setzen der Policy des öff. Schlüssels '%s', UID '%s': %s\n"
 
 #~ msgid "only SHA-1 is supported for OCSP responses\n"
 #~ msgstr "Lediglich SHA-1 wird bei OCSP Antworten unterstützt\n"
