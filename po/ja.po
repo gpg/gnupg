@@ -810,18 +810,6 @@ msgid "error creating a stream for a pipe: %s\n"
 msgstr "パイプのストリーム作成エラー: %s\n"
 
 #, c-format
-msgid "error forking process: %s\n"
-msgstr "プロセスforkエラー: %s\n"
-
-#, c-format
-msgid "waiting for process %d to terminate failed: %s\n"
-msgstr "プロセス%dの終了待ちが失敗: %s\n"
-
-#, c-format
-msgid "waiting for process to terminate failed: ec=%d\n"
-msgstr "プロセスの終了待ちが失敗: ec=%d\n"
-
-#, c-format
 msgid "can't connect to '%s': %s\n"
 msgstr "'%s'へ接続できません: %s\n"
 
@@ -1662,6 +1650,16 @@ msgstr "管理者コマンドは禁止されています\n"
 msgid "Invalid command  (try \"help\")\n"
 msgstr "無効なコマンド (\"help\"を参照)\n"
 
+#, fuzzy, c-format
+#| msgid "key operation not possible: %s\n"
+msgid "modifiying the recipients is not possible: %s\n"
+msgstr "鍵は操作できません: %s\n"
+
+#, fuzzy
+#| msgid "decryption failed: %s\n"
+msgid "decryption failed"
+msgstr "復号に失敗しました: %s\n"
+
 #, c-format
 msgid "--output doesn't work for this command\n"
 msgstr "このコマンドで--outputは機能しません\n"
@@ -1739,6 +1737,10 @@ msgid "use option \"--delete-secret-keys\" to delete it first.\n"
 msgstr "まず\"--delete-secret-keys\"オプションでこれを削除してください。\n"
 
 #, c-format
+msgid "%s/%s.%s encrypted for: \"%s\"\n"
+msgstr "%s/%s.%s 暗号化 受信者:\"%s\"\n"
+
+#, c-format
 msgid ""
 "WARNING: forcing symmetric cipher %s (%d) violates recipient preferences\n"
 msgstr ""
@@ -1795,9 +1797,10 @@ msgid ""
 msgstr ""
 "*警告*: 圧縮アルゴリズム %s (%d) の強制が、受取人の優先指定をそむきます\n"
 
-#, c-format
-msgid "%s/%s.%s encrypted for: \"%s\"\n"
-msgstr "%s/%s.%s 暗号化 受信者:\"%s\"\n"
+#, fuzzy, c-format
+#| msgid "Number of recipients"
+msgid "number of removed recipients: %u\n"
+msgstr "受取人の数"
 
 #, c-format
 msgid "option '%s' may not be used in %s mode\n"
@@ -4104,6 +4107,11 @@ msgstr "  (%d) 既存の鍵%s\n"
 msgid "  (%d) Existing key from card%s\n"
 msgstr "  (%d) カードに存在する鍵%s\n"
 
+#, fuzzy, c-format
+#| msgid "  (%d) ECC (encrypt only)%s\n"
+msgid "  (%d) Kyber (encrypt only)%s\n"
+msgstr "  (%d) ECC (暗号化のみ)%s\n"
+
 msgid "Enter the keygrip: "
 msgstr "keygripを入力: "
 
@@ -5387,6 +5395,11 @@ msgstr "*警告*: 暗号アルゴリズム%sは受取人の優先指定に入っ
 #, c-format
 msgid "Note: secret key %s expired at %s\n"
 msgstr "注意: 秘密鍵%sは%sで期限切れとなります\n"
+
+#, fuzzy, c-format
+#| msgid "certificate should not have been used for encryption\n"
+msgid "Note: ADSK key has been used for decryption"
+msgstr "証明書は暗号化のために使われるべきではありませんでした\n"
 
 #, c-format
 msgid "Note: key has been revoked"
@@ -8129,6 +8142,10 @@ msgid "colons are not allowed in the socket name\n"
 msgstr "コロンはソケット名に許されません\n"
 
 #, c-format
+msgid "error forking process: %s\n"
+msgstr "プロセスforkエラー: %s\n"
+
+#, c-format
 msgid "fetching CRL from '%s' failed: %s\n"
 msgstr "'%s'からCRLの取得の失敗: %s\n"
 
@@ -8747,6 +8764,14 @@ msgstr "Yubikey管理コマンド"
 
 msgid "manage the command history"
 msgstr "コマンド履歴を管理する"
+
+#, c-format
+#~ msgid "waiting for process %d to terminate failed: %s\n"
+#~ msgstr "プロセス%dの終了待ちが失敗: %s\n"
+
+#, c-format
+#~ msgid "waiting for process to terminate failed: ec=%d\n"
+#~ msgstr "プロセスの終了待ちが失敗: ec=%d\n"
 
 #, c-format
 #~ msgid "error running '%s': probably not installed\n"

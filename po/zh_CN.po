@@ -798,19 +798,6 @@ msgid "error creating a stream for a pipe: %s\n"
 msgstr "为管道创建流时出现错误： %s\n"
 
 #, c-format
-msgid "error forking process: %s\n"
-msgstr "在 fork 进程时出现错误： %s\n"
-
-#, c-format
-msgid "waiting for process %d to terminate failed: %s\n"
-msgstr "等待进程 %d 终止时失败： %s\n"
-
-#, fuzzy, c-format
-#| msgid "waiting for processes to terminate failed: %s\n"
-msgid "waiting for process to terminate failed: ec=%d\n"
-msgstr "等待进程终止时失败： %s\n"
-
-#, c-format
 msgid "can't connect to '%s': %s\n"
 msgstr "无法连接至‘%s’：%s\n"
 
@@ -1649,6 +1636,16 @@ msgstr "管理员命令不可用\n"
 msgid "Invalid command  (try \"help\")\n"
 msgstr "无效的命令  （尝试“help”）\n"
 
+#, fuzzy, c-format
+#| msgid "key operation not possible: %s\n"
+msgid "modifiying the recipients is not possible: %s\n"
+msgstr "密钥操作无法实现：%s\n"
+
+#, fuzzy
+#| msgid "decryption failed: %s\n"
+msgid "decryption failed"
+msgstr "解密失败：%s\n"
+
 #, c-format
 msgid "--output doesn't work for this command\n"
 msgstr "--output 在这个命令中不起作用\n"
@@ -1726,6 +1723,10 @@ msgid "use option \"--delete-secret-keys\" to delete it first.\n"
 msgstr "请先使用“--delete-secret-keys”选项来删除它。\n"
 
 #, c-format
+msgid "%s/%s.%s encrypted for: \"%s\"\n"
+msgstr "%s/%s.%s 已经加密给：“%s”\n"
+
+#, c-format
 msgid ""
 "WARNING: forcing symmetric cipher %s (%d) violates recipient preferences\n"
 msgstr "警告： 强制对称密文 %s (%d) 与接收者的偏好设置冲突\n"
@@ -1781,9 +1782,10 @@ msgid ""
 "preferences\n"
 msgstr "警告： 强制压缩算法 %s (%d) 与接收者的偏好设置冲突\n"
 
-#, c-format
-msgid "%s/%s.%s encrypted for: \"%s\"\n"
-msgstr "%s/%s.%s 已经加密给：“%s”\n"
+#, fuzzy, c-format
+#| msgid "Number of recipients"
+msgid "number of removed recipients: %u\n"
+msgstr "接收者数目"
 
 #, c-format
 msgid "option '%s' may not be used in %s mode\n"
@@ -4090,6 +4092,11 @@ msgstr "  (%d) 现有密钥 %s\n"
 msgid "  (%d) Existing key from card%s\n"
 msgstr " （%d）卡中现有密钥 %s\n"
 
+#, fuzzy, c-format
+#| msgid "  (%d) ECC (encrypt only)%s\n"
+msgid "  (%d) Kyber (encrypt only)%s\n"
+msgstr "  (%d) ECC（仅用于加密）%s\n"
+
 msgid "Enter the keygrip: "
 msgstr "输入 keygrip： "
 
@@ -5361,6 +5368,11 @@ msgstr "注意：接收者的偏好设置中找不到密文算法 %s\n"
 #, c-format
 msgid "Note: secret key %s expired at %s\n"
 msgstr "注意：私钥 %s 已于 %s 过期\n"
+
+#, fuzzy, c-format
+#| msgid "certificate should not have been used for encryption\n"
+msgid "Note: ADSK key has been used for decryption"
+msgstr "证书本不应被用于加密\n"
 
 #, c-format
 msgid "Note: key has been revoked"
@@ -8077,6 +8089,10 @@ msgid "colons are not allowed in the socket name\n"
 msgstr "套接字名称中不允许使用冒号\n"
 
 #, c-format
+msgid "error forking process: %s\n"
+msgstr "在 fork 进程时出现错误： %s\n"
+
+#, c-format
 msgid "fetching CRL from '%s' failed: %s\n"
 msgstr "从‘%s’处获取 CRL 时失败：%s\n"
 
@@ -8694,6 +8710,15 @@ msgstr "Yubikey 管理命令"
 
 msgid "manage the command history"
 msgstr "管理命令历史记录"
+
+#, c-format
+#~ msgid "waiting for process %d to terminate failed: %s\n"
+#~ msgstr "等待进程 %d 终止时失败： %s\n"
+
+#, fuzzy, c-format
+#~| msgid "waiting for processes to terminate failed: %s\n"
+#~ msgid "waiting for process to terminate failed: ec=%d\n"
+#~ msgstr "等待进程终止时失败： %s\n"
 
 #, c-format
 #~ msgid "error running '%s': probably not installed\n"

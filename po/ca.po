@@ -868,18 +868,6 @@ msgid "error creating a stream for a pipe: %s\n"
 msgstr "error en la creació de la contrasenya: %s\n"
 
 #, fuzzy, c-format
-msgid "error forking process: %s\n"
-msgstr "error en la lectura de «%s»: %s\n"
-
-#, c-format
-msgid "waiting for process %d to terminate failed: %s\n"
-msgstr ""
-
-#, fuzzy, c-format
-msgid "waiting for process to terminate failed: ec=%d\n"
-msgstr "ha fallat l'actualització: %s\n"
-
-#, fuzzy, c-format
 #| msgid "can't connect to `%s': %s\n"
 msgid "can't connect to '%s': %s\n"
 msgstr "no s'ha pogut connectar amb «%s»: %s\n"
@@ -1819,6 +1807,15 @@ msgstr ""
 msgid "Invalid command  (try \"help\")\n"
 msgstr "L'ordre no és vàlida (proveu «help»)\n"
 
+#, fuzzy, c-format
+msgid "modifiying the recipients is not possible: %s\n"
+msgstr "La generació de claus ha fallat: %s\n"
+
+#, fuzzy
+#| msgid "decryption failed: %s\n"
+msgid "decryption failed"
+msgstr "ha fallat el desxifratge: %s\n"
+
 #, c-format
 msgid "--output doesn't work for this command\n"
 msgstr "--output no funciona per a aquesta ordre\n"
@@ -1903,6 +1900,11 @@ msgid "use option \"--delete-secret-keys\" to delete it first.\n"
 msgstr "utilitzeu l'opció «--delete-secret-keys» per a eliminar-la primer.\n"
 
 #, fuzzy, c-format
+#| msgid "%s/%s encrypted for: \"%s\"\n"
+msgid "%s/%s.%s encrypted for: \"%s\"\n"
+msgstr "%s/%s xifrat per a: «%s»\n"
+
+#, fuzzy, c-format
 msgid ""
 "WARNING: forcing symmetric cipher %s (%d) violates recipient preferences\n"
 msgstr ""
@@ -1965,9 +1967,8 @@ msgstr ""
 "destinatari\n"
 
 #, fuzzy, c-format
-#| msgid "%s/%s encrypted for: \"%s\"\n"
-msgid "%s/%s.%s encrypted for: \"%s\"\n"
-msgstr "%s/%s xifrat per a: «%s»\n"
+msgid "number of removed recipients: %u\n"
+msgstr "(No es va donar una descripció)\n"
 
 #, fuzzy, c-format
 #| msgid "you may not use %s while in %s mode\n"
@@ -4548,6 +4549,11 @@ msgstr "  (%d) RSA (només xifrar)\n"
 msgid "  (%d) Existing key from card%s\n"
 msgstr "  (%d) RSA (només xifrar)\n"
 
+#, fuzzy, c-format
+#| msgid "   (%d) RSA (encrypt only)\n"
+msgid "  (%d) Kyber (encrypt only)%s\n"
+msgstr "  (%d) RSA (només xifrar)\n"
+
 #, fuzzy
 msgid "Enter the keygrip: "
 msgstr "Notació de signatura: "
@@ -5937,6 +5943,11 @@ msgstr "NOTA: no s'ha trobat l'algoritme de xifratge %d en les preferències\n"
 #, fuzzy, c-format
 msgid "Note: secret key %s expired at %s\n"
 msgstr "NOTA: la clau secreta %08lX caduca el %s\n"
+
+#, fuzzy, c-format
+#| msgid "NOTE: key has been revoked"
+msgid "Note: ADSK key has been used for decryption"
+msgstr "NOTA: aquesta clau ha estat revocada!"
 
 #, fuzzy, c-format
 #| msgid "NOTE: key has been revoked"
@@ -8871,6 +8882,10 @@ msgid "colons are not allowed in the socket name\n"
 msgstr "%s no és permés amb %s!\n"
 
 #, fuzzy, c-format
+msgid "error forking process: %s\n"
+msgstr "error en la lectura de «%s»: %s\n"
+
+#, fuzzy, c-format
 msgid "fetching CRL from '%s' failed: %s\n"
 msgstr "no s'ha pogut crear l'armadura: %s\n"
 
@@ -9518,6 +9533,10 @@ msgstr ""
 
 msgid "manage the command history"
 msgstr ""
+
+#, fuzzy, c-format
+#~ msgid "waiting for process to terminate failed: ec=%d\n"
+#~ msgstr "ha fallat l'actualització: %s\n"
 
 #, fuzzy, c-format
 #~ msgid "error running '%s': probably not installed\n"

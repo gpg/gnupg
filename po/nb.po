@@ -839,19 +839,6 @@ msgid "error creating a stream for a pipe: %s\n"
 msgstr "feil under opprettelse av strøm for datarør: %s\n"
 
 #, c-format
-msgid "error forking process: %s\n"
-msgstr "feil under kopiering av prosess: %s\n"
-
-#, c-format
-msgid "waiting for process %d to terminate failed: %s\n"
-msgstr "prosess %d avsluttet ikke i tide: %s\n"
-
-#, fuzzy, c-format
-#| msgid "waiting for processes to terminate failed: %s\n"
-msgid "waiting for process to terminate failed: ec=%d\n"
-msgstr "venting på avslutning av prosesser mislyktes: %s\n"
-
-#, c-format
 msgid "can't connect to '%s': %s\n"
 msgstr "klarte ikke å koble til «%s»: %s\n"
 
@@ -1727,6 +1714,16 @@ msgstr "Admin-kommandoer er ikke tillatt\n"
 msgid "Invalid command  (try \"help\")\n"
 msgstr "Ugyldig kommando  (prøv «help»)\n"
 
+#, fuzzy, c-format
+#| msgid "key operation not possible: %s\n"
+msgid "modifiying the recipients is not possible: %s\n"
+msgstr "klarte ikke å utføre nøkkelhandling: %s\n"
+
+#, fuzzy
+#| msgid "decryption failed: %s\n"
+msgid "decryption failed"
+msgstr "dekryptering mislyktes: %s\n"
+
 #, c-format
 msgid "--output doesn't work for this command\n"
 msgstr "«--output» virker ikke med denne kommandoen\n"
@@ -1804,6 +1801,11 @@ msgstr "det finnes en hemmelig nøkkel for offentlig nøkkel «%s».\n"
 msgid "use option \"--delete-secret-keys\" to delete it first.\n"
 msgstr "bruk valget «--delete-secret-keys» for å slette den først.\n"
 
+#, fuzzy, c-format
+#| msgid "%s/%s encrypted for: \"%s\"\n"
+msgid "%s/%s.%s encrypted for: \"%s\"\n"
+msgstr "%s/%s kryptert for: «%s»\n"
+
 #, c-format
 msgid ""
 "WARNING: forcing symmetric cipher %s (%d) violates recipient preferences\n"
@@ -1867,9 +1869,9 @@ msgstr ""
 "mottakers oppsett\n"
 
 #, fuzzy, c-format
-#| msgid "%s/%s encrypted for: \"%s\"\n"
-msgid "%s/%s.%s encrypted for: \"%s\"\n"
-msgstr "%s/%s kryptert for: «%s»\n"
+#| msgid "Number of recipients"
+msgid "number of removed recipients: %u\n"
+msgstr "Antall mottakere"
 
 #, c-format
 msgid "option '%s' may not be used in %s mode\n"
@@ -4280,6 +4282,11 @@ msgstr "  (%d) Nøkkel\n"
 msgid "  (%d) Existing key from card%s\n"
 msgstr "  (%d) Nøkkel fra kort\n"
 
+#, fuzzy, c-format
+#| msgid "  (%d) ECC (encrypt only)\n"
+msgid "  (%d) Kyber (encrypt only)%s\n"
+msgstr "  (%d) ECC (kun kryptering)\n"
+
 msgid "Enter the keygrip: "
 msgstr "Skriv inn nøkkelgrep: "
 
@@ -5605,6 +5612,11 @@ msgstr "ADVARSEL: fant ikke krypteringsalgoritme %s i mottakers oppsett\n"
 #, c-format
 msgid "Note: secret key %s expired at %s\n"
 msgstr "Merk: hemmelig nøkkel %s utgått %s\n"
+
+#, fuzzy, c-format
+#| msgid "certificate should not have been used for encryption\n"
+msgid "Note: ADSK key has been used for decryption"
+msgstr "sertifikatet skulle ikke vært brukt til kryptering\n"
 
 #, c-format
 msgid "Note: key has been revoked"
@@ -8436,6 +8448,10 @@ msgid "colons are not allowed in the socket name\n"
 msgstr "kolon tillates ikke i sokkelnavn\n"
 
 #, c-format
+msgid "error forking process: %s\n"
+msgstr "feil under kopiering av prosess: %s\n"
+
+#, c-format
 msgid "fetching CRL from '%s' failed: %s\n"
 msgstr "henting av CRL fra «%s» mislyktes: %s\n"
 
@@ -9073,6 +9089,15 @@ msgstr ""
 
 msgid "manage the command history"
 msgstr ""
+
+#, c-format
+#~ msgid "waiting for process %d to terminate failed: %s\n"
+#~ msgstr "prosess %d avsluttet ikke i tide: %s\n"
+
+#, fuzzy, c-format
+#~| msgid "waiting for processes to terminate failed: %s\n"
+#~ msgid "waiting for process to terminate failed: ec=%d\n"
+#~ msgstr "venting på avslutning av prosesser mislyktes: %s\n"
 
 #, c-format
 #~ msgid "error running '%s': probably not installed\n"

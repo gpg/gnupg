@@ -836,18 +836,6 @@ msgid "error creating a stream for a pipe: %s\n"
 msgstr "erro ao crea-lo contrasinal: %s\n"
 
 #, fuzzy, c-format
-msgid "error forking process: %s\n"
-msgstr "erro lendo `%s': %s\n"
-
-#, c-format
-msgid "waiting for process %d to terminate failed: %s\n"
-msgstr ""
-
-#, fuzzy, c-format
-msgid "waiting for process to terminate failed: ec=%d\n"
-msgstr "a actualización fallou: %s\n"
-
-#, fuzzy, c-format
 #| msgid "can't connect to `%s': %s\n"
 msgid "can't connect to '%s': %s\n"
 msgstr "non se puido conectar a `%s': %s\n"
@@ -1756,6 +1744,15 @@ msgstr "gravando a chave secreta en `%s'\n"
 msgid "Invalid command  (try \"help\")\n"
 msgstr "Comando incorrecto (tente \"help\")\n"
 
+#, fuzzy, c-format
+msgid "modifiying the recipients is not possible: %s\n"
+msgstr "A xeración da chave fallou: %s\n"
+
+#, fuzzy
+#| msgid "decryption failed: %s\n"
+msgid "decryption failed"
+msgstr "o descifrado fallou: %s\n"
+
 #, c-format
 msgid "--output doesn't work for this command\n"
 msgstr "--output non traballa con este comando\n"
@@ -1839,6 +1836,11 @@ msgid "use option \"--delete-secret-keys\" to delete it first.\n"
 msgstr "empregue a opción \"--delete-secret-keys\" para borrala primeiro.\n"
 
 #, fuzzy, c-format
+#| msgid "%s/%s encrypted for: \"%s\"\n"
+msgid "%s/%s.%s encrypted for: \"%s\"\n"
+msgstr "%s/%s cifrado para: \"%s\"\n"
+
+#, fuzzy, c-format
 msgid ""
 "WARNING: forcing symmetric cipher %s (%d) violates recipient preferences\n"
 msgstr ""
@@ -1901,9 +1903,8 @@ msgstr ""
 "destinatario\n"
 
 #, fuzzy, c-format
-#| msgid "%s/%s encrypted for: \"%s\"\n"
-msgid "%s/%s.%s encrypted for: \"%s\"\n"
-msgstr "%s/%s cifrado para: \"%s\"\n"
+msgid "number of removed recipients: %u\n"
+msgstr "(Non se deu unha descrición)\n"
 
 #, fuzzy, c-format
 #| msgid "you may not use %s while in %s mode\n"
@@ -4440,6 +4441,11 @@ msgstr "  (%d) RSA (só cifrar)\n"
 msgid "  (%d) Existing key from card%s\n"
 msgstr "  (%d) RSA (só cifrar)\n"
 
+#, fuzzy, c-format
+#| msgid "   (%d) RSA (encrypt only)\n"
+msgid "  (%d) Kyber (encrypt only)%s\n"
+msgstr "  (%d) RSA (só cifrar)\n"
+
 #, fuzzy
 msgid "Enter the keygrip: "
 msgstr "Notación de sinaturas: "
@@ -5811,6 +5817,11 @@ msgstr "NOTA: o algoritmo de cifrado %d non foi atopado nas preferencias\n"
 #, fuzzy, c-format
 msgid "Note: secret key %s expired at %s\n"
 msgstr "NOTA: a chave secreta %08lX caducou o %s\n"
+
+#, fuzzy, c-format
+#| msgid "NOTE: key has been revoked"
+msgid "Note: ADSK key has been used for decryption"
+msgstr "NOTA: a chave está revocada"
 
 #, fuzzy, c-format
 #| msgid "NOTE: key has been revoked"
@@ -8694,6 +8705,10 @@ msgid "colons are not allowed in the socket name\n"
 msgstr "¡%s non se admite con %s!\n"
 
 #, fuzzy, c-format
+msgid "error forking process: %s\n"
+msgstr "erro lendo `%s': %s\n"
+
+#, fuzzy, c-format
 msgid "fetching CRL from '%s' failed: %s\n"
 msgstr "non se puido poñe-la armadura: %s\n"
 
@@ -9337,6 +9352,10 @@ msgstr ""
 
 msgid "manage the command history"
 msgstr ""
+
+#, fuzzy, c-format
+#~ msgid "waiting for process to terminate failed: ec=%d\n"
+#~ msgstr "a actualización fallou: %s\n"
 
 #, fuzzy, c-format
 #~ msgid "error running '%s': probably not installed\n"

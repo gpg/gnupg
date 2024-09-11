@@ -940,19 +940,6 @@ msgstr "fel när ett rör skapades: %s\n"
 msgid "error creating a stream for a pipe: %s\n"
 msgstr "fel när ett rör skapades: %s\n"
 
-#, c-format
-msgid "error forking process: %s\n"
-msgstr "fel vid grening av process: %s\n"
-
-#, c-format
-msgid "waiting for process %d to terminate failed: %s\n"
-msgstr "misslyckades med att vänta på att processen %d skulle avslutas: %s\n"
-
-#, fuzzy, c-format
-#| msgid "waiting for process %d to terminate failed: %s\n"
-msgid "waiting for process to terminate failed: ec=%d\n"
-msgstr "misslyckades med att vänta på att processen %d skulle avslutas: %s\n"
-
 #, fuzzy, c-format
 #| msgid "can't connect to `%s': %s\n"
 msgid "can't connect to '%s': %s\n"
@@ -1885,6 +1872,16 @@ msgstr "Administrationskommandon tillåts inte\n"
 msgid "Invalid command  (try \"help\")\n"
 msgstr "Ogiltigt kommando (prova med \"help\")\n"
 
+#, fuzzy, c-format
+#| msgid "key operation not possible: %s\n"
+msgid "modifiying the recipients is not possible: %s\n"
+msgstr "nyckelåtgärden är inte möjlig: %s\n"
+
+#, fuzzy
+#| msgid "decryption failed: %s\n"
+msgid "decryption failed"
+msgstr "dekrypteringen misslyckades: %s\n"
+
 #, c-format
 msgid "--output doesn't work for this command\n"
 msgstr "--output kan inte användas för detta kommando\n"
@@ -1967,6 +1964,11 @@ msgstr "det finns en hemlig nyckel för denna publika nyckeln \"%s\"!\n"
 msgid "use option \"--delete-secret-keys\" to delete it first.\n"
 msgstr "använd flaggan \"--delete-secret-keys\"för att ta bort den först.\n"
 
+#, fuzzy, c-format
+#| msgid "%s/%s encrypted for: \"%s\"\n"
+msgid "%s/%s.%s encrypted for: \"%s\"\n"
+msgstr "%s/%s krypterad för: \"%s\"\n"
+
 #, c-format
 msgid ""
 "WARNING: forcing symmetric cipher %s (%d) violates recipient preferences\n"
@@ -2037,9 +2039,9 @@ msgstr ""
 "mottagarinställningarna\n"
 
 #, fuzzy, c-format
-#| msgid "%s/%s encrypted for: \"%s\"\n"
-msgid "%s/%s.%s encrypted for: \"%s\"\n"
-msgstr "%s/%s krypterad för: \"%s\"\n"
+#| msgid "Number of recipients"
+msgid "number of removed recipients: %u\n"
+msgstr "Antal mottagare"
 
 #, fuzzy, c-format
 #| msgid "you may not use %s while in %s mode\n"
@@ -4639,6 +4641,11 @@ msgstr "  (%d) Befintlig nyckel\n"
 msgid "  (%d) Existing key from card%s\n"
 msgstr "  (%d) Befintlig nyckel från kort\n"
 
+#, fuzzy, c-format
+#| msgid "   (%d) RSA (encrypt only)\n"
+msgid "  (%d) Kyber (encrypt only)%s\n"
+msgstr "  (%d) RSA (endast kryptering)\n"
+
 msgid "Enter the keygrip: "
 msgstr "Ange nyckelhashen: "
 
@@ -6050,6 +6057,11 @@ msgstr ""
 #| msgid "NOTE: secret key %s expired at %s\n"
 msgid "Note: secret key %s expired at %s\n"
 msgstr "OBSERVERA: hemliga nyckeln %s gick ut %s\n"
+
+#, fuzzy, c-format
+#| msgid "certificate should have not been used for encryption\n"
+msgid "Note: ADSK key has been used for decryption"
+msgstr "certifikatet skulle inte använts för kryptering\n"
 
 #, fuzzy, c-format
 #| msgid "NOTE: key has been revoked"
@@ -9148,6 +9160,10 @@ msgstr "användning: gpgsm [flaggor] "
 msgid "colons are not allowed in the socket name\n"
 msgstr "%s är inte tillåten tillsammans med %s!\n"
 
+#, c-format
+msgid "error forking process: %s\n"
+msgstr "fel vid grening av process: %s\n"
+
 #, fuzzy, c-format
 #| msgid "renaming `%s' to `%s' failed: %s\n"
 msgid "fetching CRL from '%s' failed: %s\n"
@@ -9877,6 +9893,17 @@ msgstr ""
 
 msgid "manage the command history"
 msgstr ""
+
+#, c-format
+#~ msgid "waiting for process %d to terminate failed: %s\n"
+#~ msgstr ""
+#~ "misslyckades med att vänta på att processen %d skulle avslutas: %s\n"
+
+#, fuzzy, c-format
+#~| msgid "waiting for process %d to terminate failed: %s\n"
+#~ msgid "waiting for process to terminate failed: ec=%d\n"
+#~ msgstr ""
+#~ "misslyckades med att vänta på att processen %d skulle avslutas: %s\n"
 
 #, fuzzy, c-format
 #~| msgid "error running `%s': probably not installed\n"

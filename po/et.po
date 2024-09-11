@@ -831,18 +831,6 @@ msgid "error creating a stream for a pipe: %s\n"
 msgstr "viga parooli loomisel: %s\n"
 
 #, fuzzy, c-format
-msgid "error forking process: %s\n"
-msgstr "viga `%s' lugemisel: %s\n"
-
-#, c-format
-msgid "waiting for process %d to terminate failed: %s\n"
-msgstr ""
-
-#, fuzzy, c-format
-msgid "waiting for process to terminate failed: ec=%d\n"
-msgstr "uuendamine ebaõnnestus: %s\n"
-
-#, fuzzy, c-format
 #| msgid "can't connect to `%s': %s\n"
 msgid "can't connect to '%s': %s\n"
 msgstr "ei õnnestu luua ühendust serveriga `%s': %s\n"
@@ -1746,6 +1734,15 @@ msgstr "kirjutan salajase võtme faili `%s'\n"
 msgid "Invalid command  (try \"help\")\n"
 msgstr "Vigane käsklus (proovige \"help\")\n"
 
+#, fuzzy, c-format
+msgid "modifiying the recipients is not possible: %s\n"
+msgstr "Võtme genereerimine ebaõnnestus: %s\n"
+
+#, fuzzy
+#| msgid "decryption failed: %s\n"
+msgid "decryption failed"
+msgstr "lahtikrüpteerimine ebaõnnestus: %s\n"
+
 #, c-format
 msgid "--output doesn't work for this command\n"
 msgstr "võti --output ei tööta selle käsuga\n"
@@ -1828,6 +1825,11 @@ msgid "use option \"--delete-secret-keys\" to delete it first.\n"
 msgstr "selle kustutamiseks kasutage võtit \"--delete-secret-keys\".\n"
 
 #, fuzzy, c-format
+#| msgid "%s/%s encrypted for: \"%s\"\n"
+msgid "%s/%s.%s encrypted for: \"%s\"\n"
+msgstr "%s/%s krüptitud kasutajale: \"%s\"\n"
+
+#, fuzzy, c-format
 msgid ""
 "WARNING: forcing symmetric cipher %s (%d) violates recipient preferences\n"
 msgstr ""
@@ -1890,9 +1892,8 @@ msgstr ""
 "pakkimise algoritmi %s (%d) kasutamine on vastuolus saaja eelistustega\n"
 
 #, fuzzy, c-format
-#| msgid "%s/%s encrypted for: \"%s\"\n"
-msgid "%s/%s.%s encrypted for: \"%s\"\n"
-msgstr "%s/%s krüptitud kasutajale: \"%s\"\n"
+msgid "number of removed recipients: %u\n"
+msgstr "(Kirjeldust ei antud)\n"
 
 #, fuzzy, c-format
 #| msgid "you may not use %s while in %s mode\n"
@@ -4404,6 +4405,11 @@ msgstr "  (%d) RSA (ainult krüpteerimiseks)\n"
 msgid "  (%d) Existing key from card%s\n"
 msgstr "  (%d) RSA (ainult krüpteerimiseks)\n"
 
+#, fuzzy, c-format
+#| msgid "   (%d) RSA (encrypt only)\n"
+msgid "  (%d) Kyber (encrypt only)%s\n"
+msgstr "  (%d) RSA (ainult krüpteerimiseks)\n"
+
 #, fuzzy
 msgid "Enter the keygrip: "
 msgstr "Allkirja noteerimine: "
@@ -5756,6 +5762,11 @@ msgstr "MÄRKUS: šifri algoritm %d puudub eelistustes\n"
 #, fuzzy, c-format
 msgid "Note: secret key %s expired at %s\n"
 msgstr "MÄRKUS: salajane võti %08lX aegus %s\n"
+
+#, fuzzy, c-format
+#| msgid "NOTE: key has been revoked"
+msgid "Note: ADSK key has been used for decryption"
+msgstr "MÄRKUS: võti on tühistatud"
 
 #, fuzzy, c-format
 #| msgid "NOTE: key has been revoked"
@@ -8614,6 +8625,10 @@ msgid "colons are not allowed in the socket name\n"
 msgstr "%s ja %s ei ole koos lubatud!\n"
 
 #, fuzzy, c-format
+msgid "error forking process: %s\n"
+msgstr "viga `%s' lugemisel: %s\n"
+
+#, fuzzy, c-format
 msgid "fetching CRL from '%s' failed: %s\n"
 msgstr "pakendamine ebaõnnestus: %s\n"
 
@@ -9257,6 +9272,10 @@ msgstr ""
 
 msgid "manage the command history"
 msgstr ""
+
+#, fuzzy, c-format
+#~ msgid "waiting for process to terminate failed: ec=%d\n"
+#~ msgstr "uuendamine ebaõnnestus: %s\n"
 
 #, fuzzy, c-format
 #~ msgid "error running '%s': probably not installed\n"

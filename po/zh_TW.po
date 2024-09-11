@@ -838,19 +838,6 @@ msgid "error creating a stream for a pipe: %s\n"
 msgstr "建立管道串流時出錯: %s\n"
 
 #, c-format
-msgid "error forking process: %s\n"
-msgstr "衍生執行程序時出錯: %s\n"
-
-#, c-format
-msgid "waiting for process %d to terminate failed: %s\n"
-msgstr "等候 %d 處理程序終止時失敗: %s\n"
-
-#, fuzzy, c-format
-#| msgid "waiting for process %d to terminate failed: %s\n"
-msgid "waiting for process to terminate failed: ec=%d\n"
-msgstr "等候 %d 處理程序終止時失敗: %s\n"
-
-#, c-format
 msgid "can't connect to '%s': %s\n"
 msgstr "無法連接至 '%s': %s\n"
 
@@ -1737,6 +1724,16 @@ msgstr "未允許使用管理者指令\n"
 msgid "Invalid command  (try \"help\")\n"
 msgstr "無效的指令  (試試看 \"help\")\n"
 
+#, fuzzy, c-format
+#| msgid "key operation not possible: %s\n"
+msgid "modifiying the recipients is not possible: %s\n"
+msgstr "不可能進行金鑰操作: %s\n"
+
+#, fuzzy
+#| msgid "decryption failed: %s\n"
+msgid "decryption failed"
+msgstr "解密失敗: %s\n"
+
 #, c-format
 msgid "--output doesn't work for this command\n"
 msgstr "--output 在這個指令中沒有作用\n"
@@ -1814,6 +1811,11 @@ msgstr "公鑰 \"%s\" 有相對應的私鑰!\n"
 msgid "use option \"--delete-secret-keys\" to delete it first.\n"
 msgstr "請先以 \"--delete-secret-keys\" 選項來刪除它.\n"
 
+#, fuzzy, c-format
+#| msgid "%s/%s encrypted for: \"%s\"\n"
+msgid "%s/%s.%s encrypted for: \"%s\"\n"
+msgstr "%s/%s 已加密給: \"%s\"\n"
+
 #, c-format
 msgid ""
 "WARNING: forcing symmetric cipher %s (%d) violates recipient preferences\n"
@@ -1876,9 +1878,9 @@ msgid ""
 msgstr "警告: 強迫使用 %s (%d) 壓縮演算法會違反收件者偏好設定\n"
 
 #, fuzzy, c-format
-#| msgid "%s/%s encrypted for: \"%s\"\n"
-msgid "%s/%s.%s encrypted for: \"%s\"\n"
-msgstr "%s/%s 已加密給: \"%s\"\n"
+#| msgid "Number of recipients"
+msgid "number of removed recipients: %u\n"
+msgstr "收件者數量"
 
 #, fuzzy, c-format
 #| msgid "you may not use %s while in %s mode\n"
@@ -4311,6 +4313,11 @@ msgstr "  (%d) 現有的金鑰\n"
 msgid "  (%d) Existing key from card%s\n"
 msgstr "  (%d) 卡片上現存的金鑰\n"
 
+#, fuzzy, c-format
+#| msgid "  (%d) ECC (encrypt only)\n"
+msgid "  (%d) Kyber (encrypt only)%s\n"
+msgstr "  (%d) ECC (僅能用於加密)\n"
+
 msgid "Enter the keygrip: "
 msgstr "請輸入金鑰鑰柄: "
 
@@ -5625,6 +5632,11 @@ msgstr "警告: 收件者偏好設定中找不到 %s 編密演算法\n"
 #, c-format
 msgid "Note: secret key %s expired at %s\n"
 msgstr "請注意: 私鑰 %s 已於 %s 過期\n"
+
+#, fuzzy, c-format
+#| msgid "certificate should not have been used for encryption\n"
+msgid "Note: ADSK key has been used for decryption"
+msgstr "憑證應該還未被用於加密\n"
 
 #, c-format
 msgid "Note: key has been revoked"
@@ -8424,6 +8436,10 @@ msgid "colons are not allowed in the socket name\n"
 msgstr "socket 名稱內不允許使用冒號\n"
 
 #, c-format
+msgid "error forking process: %s\n"
+msgstr "衍生執行程序時出錯: %s\n"
+
+#, c-format
 msgid "fetching CRL from '%s' failed: %s\n"
 msgstr "從 '%s' 取回 CRL 時失敗: %s\n"
 
@@ -9075,6 +9091,15 @@ msgstr ""
 
 msgid "manage the command history"
 msgstr ""
+
+#, c-format
+#~ msgid "waiting for process %d to terminate failed: %s\n"
+#~ msgstr "等候 %d 處理程序終止時失敗: %s\n"
+
+#, fuzzy, c-format
+#~| msgid "waiting for process %d to terminate failed: %s\n"
+#~ msgid "waiting for process to terminate failed: ec=%d\n"
+#~ msgstr "等候 %d 處理程序終止時失敗: %s\n"
 
 #, c-format
 #~ msgid "error running '%s': probably not installed\n"

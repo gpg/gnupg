@@ -836,18 +836,6 @@ msgid "error creating a stream for a pipe: %s\n"
 msgstr "chyba pri vytváraní hesla: %s\n"
 
 #, fuzzy, c-format
-msgid "error forking process: %s\n"
-msgstr "chyba pri čítaní `%s': %s\n"
-
-#, c-format
-msgid "waiting for process %d to terminate failed: %s\n"
-msgstr ""
-
-#, fuzzy, c-format
-msgid "waiting for process to terminate failed: ec=%d\n"
-msgstr "aktualizácia zlyhala: %s\n"
-
-#, fuzzy, c-format
 #| msgid "can't connect to `%s': %s\n"
 msgid "can't connect to '%s': %s\n"
 msgstr "nemôžem sa pripojiť k `%s': %s\n"
@@ -1754,6 +1742,15 @@ msgstr "zapisujem tajný kľúč do `%s'\n"
 msgid "Invalid command  (try \"help\")\n"
 msgstr "Neplatný príkaz (skúste \"help\")\n"
 
+#, fuzzy, c-format
+msgid "modifiying the recipients is not possible: %s\n"
+msgstr "Vytvorenie kľúča sa nepodarilo: %s\n"
+
+#, fuzzy
+#| msgid "decryption failed: %s\n"
+msgid "decryption failed"
+msgstr "dešifrovanie zlyhalo: %s\n"
+
 #, c-format
 msgid "--output doesn't work for this command\n"
 msgstr "--output pre tento príkaz nefunguje\n"
@@ -1836,6 +1833,11 @@ msgid "use option \"--delete-secret-keys\" to delete it first.\n"
 msgstr "aby ste ho zmazali, použite najprv prepínač \"--delete-secret-key\".\n"
 
 #, fuzzy, c-format
+#| msgid "%s/%s encrypted for: \"%s\"\n"
+msgid "%s/%s.%s encrypted for: \"%s\"\n"
+msgstr "%s/%s zašifrovaný pre: %s\n"
+
+#, fuzzy, c-format
 msgid ""
 "WARNING: forcing symmetric cipher %s (%d) violates recipient preferences\n"
 msgstr "vyžiadaná symetrická šifra %s (%d) nevyhovuje predvoľbám príjemcu\n"
@@ -1897,9 +1899,8 @@ msgstr ""
 "vyžiadaný kompresný algoritmus %s (%d) nevyhovuje predvoľbám príjemcu\n"
 
 #, fuzzy, c-format
-#| msgid "%s/%s encrypted for: \"%s\"\n"
-msgid "%s/%s.%s encrypted for: \"%s\"\n"
-msgstr "%s/%s zašifrovaný pre: %s\n"
+msgid "number of removed recipients: %u\n"
+msgstr "(Žiadny popis)\n"
 
 #, fuzzy, c-format
 #| msgid "you may not use %s while in %s mode\n"
@@ -4430,6 +4431,11 @@ msgstr "  (%d) RSA (len na šifrovanie)\n"
 msgid "  (%d) Existing key from card%s\n"
 msgstr "  (%d) RSA (len na šifrovanie)\n"
 
+#, fuzzy, c-format
+#| msgid "   (%d) RSA (encrypt only)\n"
+msgid "  (%d) Kyber (encrypt only)%s\n"
+msgstr "  (%d) RSA (len na šifrovanie)\n"
+
 #, fuzzy
 msgid "Enter the keygrip: "
 msgstr "Podpisová notácia: "
@@ -5796,6 +5802,11 @@ msgstr "POZNÁMKA: v predvoľbách nenájdený šifrovací algoritmus %d\n"
 #, fuzzy, c-format
 msgid "Note: secret key %s expired at %s\n"
 msgstr "POZNÁMKA: platnosť tajného kľúča %08lX skončila %s\n"
+
+#, fuzzy, c-format
+#| msgid "NOTE: key has been revoked"
+msgid "Note: ADSK key has been used for decryption"
+msgstr "POZNÁMKA: kľúč bol revokovaný"
 
 #, fuzzy, c-format
 #| msgid "NOTE: key has been revoked"
@@ -8674,6 +8685,10 @@ msgid "colons are not allowed in the socket name\n"
 msgstr "Nie je dovolené používať %s s %s!\n"
 
 #, fuzzy, c-format
+msgid "error forking process: %s\n"
+msgstr "chyba pri čítaní `%s': %s\n"
+
+#, fuzzy, c-format
 msgid "fetching CRL from '%s' failed: %s\n"
 msgstr "kódovanie do ASCII formátu zlyhalo: %s\n"
 
@@ -9317,6 +9332,10 @@ msgstr ""
 
 msgid "manage the command history"
 msgstr ""
+
+#, fuzzy, c-format
+#~ msgid "waiting for process to terminate failed: ec=%d\n"
+#~ msgstr "aktualizácia zlyhala: %s\n"
 
 #, fuzzy, c-format
 #~ msgid "error running '%s': probably not installed\n"

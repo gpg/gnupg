@@ -850,18 +850,6 @@ msgid "error creating a stream for a pipe: %s\n"
 msgstr "eroare la crearea frazei-parolă: %s\n"
 
 #, fuzzy, c-format
-msgid "error forking process: %s\n"
-msgstr "eroare la citire `%s': %s\n"
-
-#, c-format
-msgid "waiting for process %d to terminate failed: %s\n"
-msgstr ""
-
-#, fuzzy, c-format
-msgid "waiting for process to terminate failed: ec=%d\n"
-msgstr "actualizarea a eşuat: %s\n"
-
-#, fuzzy, c-format
 #| msgid "can't connect to `%s': %s\n"
 msgid "can't connect to '%s': %s\n"
 msgstr "nu mă pot conecta la `%s': %s\n"
@@ -1771,6 +1759,16 @@ msgstr "Nu sunt permise comenzi administrare\n"
 msgid "Invalid command  (try \"help\")\n"
 msgstr "Comandă invalidă  (încercaţi \"ajutor\")\n"
 
+#, fuzzy, c-format
+#| msgid "key operation not possible: %s\n"
+msgid "modifiying the recipients is not possible: %s\n"
+msgstr "operaţia pe cheie nu e posibilă: %s\n"
+
+#, fuzzy
+#| msgid "decryption failed: %s\n"
+msgid "decryption failed"
+msgstr "decriptarea a eşuat: %s\n"
+
 #, c-format
 msgid "--output doesn't work for this command\n"
 msgstr "--output nu merge pentru această comandă\n"
@@ -1853,6 +1851,11 @@ msgstr ""
 "folosiţi opţiunea \"--delete-secret-keys\" pentru a o şterge pe aceasta mai "
 "întâi.\n"
 
+#, fuzzy, c-format
+#| msgid "%s/%s encrypted for: \"%s\"\n"
+msgid "%s/%s.%s encrypted for: \"%s\"\n"
+msgstr "%s/%s cifrat pentru: \"%s\"\n"
+
 #, c-format
 msgid ""
 "WARNING: forcing symmetric cipher %s (%d) violates recipient preferences\n"
@@ -1921,9 +1924,8 @@ msgstr ""
 "destinatarului\n"
 
 #, fuzzy, c-format
-#| msgid "%s/%s encrypted for: \"%s\"\n"
-msgid "%s/%s.%s encrypted for: \"%s\"\n"
-msgstr "%s/%s cifrat pentru: \"%s\"\n"
+msgid "number of removed recipients: %u\n"
+msgstr "Destinatari curenţi:\n"
 
 #, fuzzy, c-format
 #| msgid "you may not use %s while in %s mode\n"
@@ -4478,6 +4480,11 @@ msgstr "   (2) Cheie de cifrare\n"
 msgid "  (%d) Existing key from card%s\n"
 msgstr "   (2) Cheie de cifrare\n"
 
+#, fuzzy, c-format
+#| msgid "   (%d) RSA (encrypt only)\n"
+msgid "  (%d) Kyber (encrypt only)%s\n"
+msgstr "  (%d) RSA (numai cifrare)\n"
+
 #, fuzzy
 msgid "Enter the keygrip: "
 msgstr "Notare semnătură: "
@@ -5868,6 +5875,11 @@ msgstr ""
 #| msgid "NOTE: secret key %s expired at %s\n"
 msgid "Note: secret key %s expired at %s\n"
 msgstr "NOTĂ: cheia secretă %s a expirat la %s\n"
+
+#, fuzzy, c-format
+#| msgid "NOTE: key has been revoked"
+msgid "Note: ADSK key has been used for decryption"
+msgstr "NOTĂ: cheia a fost revocată"
 
 #, fuzzy, c-format
 #| msgid "NOTE: key has been revoked"
@@ -8773,6 +8785,10 @@ msgid "colons are not allowed in the socket name\n"
 msgstr "%s nu este permis cu %s!\n"
 
 #, fuzzy, c-format
+msgid "error forking process: %s\n"
+msgstr "eroare la citire `%s': %s\n"
+
+#, fuzzy, c-format
 #| msgid "renaming `%s' to `%s' failed: %s\n"
 msgid "fetching CRL from '%s' failed: %s\n"
 msgstr "redenumirea `%s' ca `%s' a eşuat: %s\n"
@@ -9428,6 +9444,10 @@ msgstr ""
 
 msgid "manage the command history"
 msgstr ""
+
+#, fuzzy, c-format
+#~ msgid "waiting for process to terminate failed: ec=%d\n"
+#~ msgstr "actualizarea a eşuat: %s\n"
 
 #, fuzzy, c-format
 #~ msgid "error running '%s': probably not installed\n"

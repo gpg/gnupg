@@ -860,19 +860,6 @@ msgid "error creating a stream for a pipe: %s\n"
 msgstr "fout bij het creëren van een stroom voor een pijp: %s\n"
 
 #, c-format
-msgid "error forking process: %s\n"
-msgstr "fout bij het starten van een nieuw proces (fork): %s\n"
-
-#, c-format
-msgid "waiting for process %d to terminate failed: %s\n"
-msgstr "wachten op het einde van proces %d is mislukt: %s\n"
-
-#, fuzzy, c-format
-#| msgid "waiting for processes to terminate failed: %s\n"
-msgid "waiting for process to terminate failed: ec=%d\n"
-msgstr "wachten op beëindiging van processen is mislukt: %s\n"
-
-#, c-format
 msgid "can't connect to '%s': %s\n"
 msgstr "kan geen verbinding maken met '%s': %s\n"
 
@@ -1748,6 +1735,16 @@ msgstr "Beheerderscommando's zijn niet toegestaan\n"
 msgid "Invalid command  (try \"help\")\n"
 msgstr "Ongeldig commando  (probeer \"help\")\n"
 
+#, fuzzy, c-format
+#| msgid "key operation not possible: %s\n"
+msgid "modifiying the recipients is not possible: %s\n"
+msgstr "sleutelbewerking is niet mogelijk: %s\n"
+
+#, fuzzy
+#| msgid "decryption failed: %s\n"
+msgid "decryption failed"
+msgstr "ontcijferen mislukt: %s\n"
+
 #, c-format
 msgid "--output doesn't work for this command\n"
 msgstr "--output werkt niet voor dit commando\n"
@@ -1834,6 +1831,10 @@ msgstr ""
 "gebruik de optie \"--delete-secret-keys\" om hem eerst te verwijderen.\n"
 
 #, c-format
+msgid "%s/%s.%s encrypted for: \"%s\"\n"
+msgstr "%s/%s.%s versleuteld voor: \"%s\"\n"
+
+#, c-format
 msgid ""
 "WARNING: forcing symmetric cipher %s (%d) violates recipient preferences\n"
 msgstr ""
@@ -1895,9 +1896,10 @@ msgstr ""
 "WAARSCHUWING: het dwingend opleggen van het compressiealgoritme %s (%d) gaat "
 "in tegen de voorkeuren van de ontvanger\n"
 
-#, c-format
-msgid "%s/%s.%s encrypted for: \"%s\"\n"
-msgstr "%s/%s.%s versleuteld voor: \"%s\"\n"
+#, fuzzy, c-format
+#| msgid "Number of recipients"
+msgid "number of removed recipients: %u\n"
+msgstr "Aantal ontvangers"
 
 #, c-format
 msgid "option '%s' may not be used in %s mode\n"
@@ -4362,6 +4364,11 @@ msgstr "  (%d) Bestaande sleutel\n"
 msgid "  (%d) Existing key from card%s\n"
 msgstr "  (%d) Bestaande sleutel op de kaart\n"
 
+#, fuzzy, c-format
+#| msgid "  (%d) ECC (encrypt only)\n"
+msgid "  (%d) Kyber (encrypt only)%s\n"
+msgstr "  (%d) ECC (alleen versleutelen)\n"
+
 msgid "Enter the keygrip: "
 msgstr "Voer de sleutelhendel in: "
 
@@ -5735,6 +5742,11 @@ msgstr ""
 #, c-format
 msgid "Note: secret key %s expired at %s\n"
 msgstr "Let op: geheime sleutel %s verviel op %s\n"
+
+#, fuzzy, c-format
+#| msgid "certificate should not have been used for encryption\n"
+msgid "Note: ADSK key has been used for decryption"
+msgstr "het certificaat had niet gebruikt mogen worden om te versleutelen\n"
 
 #, c-format
 msgid "Note: key has been revoked"
@@ -8702,6 +8714,10 @@ msgid "colons are not allowed in the socket name\n"
 msgstr "dubbele punten zijn niet toegestaan in de socketnaam\n"
 
 #, c-format
+msgid "error forking process: %s\n"
+msgstr "fout bij het starten van een nieuw proces (fork): %s\n"
+
+#, c-format
 msgid "fetching CRL from '%s' failed: %s\n"
 msgstr "ophalen van lijst met intrekkingen uit '%s' is mislukt: %s\n"
 
@@ -9347,6 +9363,15 @@ msgstr ""
 
 msgid "manage the command history"
 msgstr ""
+
+#, c-format
+#~ msgid "waiting for process %d to terminate failed: %s\n"
+#~ msgstr "wachten op het einde van proces %d is mislukt: %s\n"
+
+#, fuzzy, c-format
+#~| msgid "waiting for processes to terminate failed: %s\n"
+#~ msgid "waiting for process to terminate failed: ec=%d\n"
+#~ msgstr "wachten op beëindiging van processen is mislukt: %s\n"
 
 #, c-format
 #~ msgid "detected card with S/N: %s\n"

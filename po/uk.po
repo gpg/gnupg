@@ -845,19 +845,6 @@ msgid "error creating a stream for a pipe: %s\n"
 msgstr "помилка під час спроби створення потоку для каналу: %s\n"
 
 #, c-format
-msgid "error forking process: %s\n"
-msgstr "помилка під час спроби розгалужування процесу: %s\n"
-
-#, c-format
-msgid "waiting for process %d to terminate failed: %s\n"
-msgstr "не вдалося дочекатися завершення процесу %d: %s\n"
-
-#, fuzzy, c-format
-#| msgid "waiting for processes to terminate failed: %s\n"
-msgid "waiting for process to terminate failed: ec=%d\n"
-msgstr "не вдалося дочекатися переривання процесу: %s\n"
-
-#, c-format
 msgid "can't connect to '%s': %s\n"
 msgstr "не вдалося встановити з’єднання з «%s»: %s\n"
 
@@ -1729,6 +1716,16 @@ msgstr "Команди адміністрування заборонено\n"
 msgid "Invalid command  (try \"help\")\n"
 msgstr "Некоректна команда  (скористайтеся командою «help»)\n"
 
+#, fuzzy, c-format
+#| msgid "key operation not possible: %s\n"
+msgid "modifiying the recipients is not possible: %s\n"
+msgstr "дія над ключем неможлива: %s\n"
+
+#, fuzzy
+#| msgid "decryption failed: %s\n"
+msgid "decryption failed"
+msgstr "невдала спроба розшифрування: %s\n"
+
 #, c-format
 msgid "--output doesn't work for this command\n"
 msgstr "--output не працює з цією командою\n"
@@ -1806,6 +1803,11 @@ msgid "use option \"--delete-secret-keys\" to delete it first.\n"
 msgstr ""
 "спершу скористайтеся параметром «--delete-secret-keys» для його вилучення.\n"
 
+#, fuzzy, c-format
+#| msgid "%s/%s encrypted for: \"%s\"\n"
+msgid "%s/%s.%s encrypted for: \"%s\"\n"
+msgstr "%s/%s зашифровано для «%s»\n"
+
 #, c-format
 msgid ""
 "WARNING: forcing symmetric cipher %s (%d) violates recipient preferences\n"
@@ -1871,9 +1873,9 @@ msgstr ""
 "параметрам отримувача\n"
 
 #, fuzzy, c-format
-#| msgid "%s/%s encrypted for: \"%s\"\n"
-msgid "%s/%s.%s encrypted for: \"%s\"\n"
-msgstr "%s/%s зашифровано для «%s»\n"
+#| msgid "Number of recipients"
+msgid "number of removed recipients: %u\n"
+msgstr "Кількість отримувачів"
 
 #, c-format
 msgid "option '%s' may not be used in %s mode\n"
@@ -4338,6 +4340,11 @@ msgstr "  (%d) Вже записаний ключ\n"
 msgid "  (%d) Existing key from card%s\n"
 msgstr "  (%d) Вже записаний ключ з картки\n"
 
+#, fuzzy, c-format
+#| msgid "  (%d) ECC (encrypt only)\n"
+msgid "  (%d) Kyber (encrypt only)%s\n"
+msgstr "  (%d) ECC (лише шифрування)\n"
+
 msgid "Enter the keygrip: "
 msgstr "Вкажіть keygrip: "
 
@@ -5687,6 +5694,11 @@ msgstr "УВАГА: не виявлено алгоритму шифруванн�
 #, c-format
 msgid "Note: secret key %s expired at %s\n"
 msgstr "ЗАУВАЖЕННЯ: строк дії закритого ключа %s завершився %s\n"
+
+#, fuzzy, c-format
+#| msgid "certificate should not have been used for encryption\n"
+msgid "Note: ADSK key has been used for decryption"
+msgstr "сертифікат не мав використовуватися для шифрування\n"
 
 #, c-format
 msgid "Note: key has been revoked"
@@ -8627,6 +8639,10 @@ msgid "colons are not allowed in the socket name\n"
 msgstr "не можна використовувати двокрапки у назві сокета\n"
 
 #, c-format
+msgid "error forking process: %s\n"
+msgstr "помилка під час спроби розгалужування процесу: %s\n"
+
+#, c-format
 msgid "fetching CRL from '%s' failed: %s\n"
 msgstr "помилка під час спроби отримання CRL з «%s»: %s\n"
 
@@ -9267,6 +9283,15 @@ msgstr ""
 
 msgid "manage the command history"
 msgstr ""
+
+#, c-format
+#~ msgid "waiting for process %d to terminate failed: %s\n"
+#~ msgstr "не вдалося дочекатися завершення процесу %d: %s\n"
+
+#, fuzzy, c-format
+#~| msgid "waiting for processes to terminate failed: %s\n"
+#~ msgid "waiting for process to terminate failed: ec=%d\n"
+#~ msgstr "не вдалося дочекатися переривання процесу: %s\n"
 
 #, c-format
 #~ msgid "error running '%s': probably not installed\n"

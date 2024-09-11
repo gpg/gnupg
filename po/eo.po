@@ -833,18 +833,6 @@ msgid "error creating a stream for a pipe: %s\n"
 msgstr "eraro dum kreado de pasfrazo: %s\n"
 
 #, fuzzy, c-format
-msgid "error forking process: %s\n"
-msgstr "eraro dum legado de '%s': %s\n"
-
-#, c-format
-msgid "waiting for process %d to terminate failed: %s\n"
-msgstr ""
-
-#, fuzzy, c-format
-msgid "waiting for process to terminate failed: ec=%d\n"
-msgstr "aktualigo malsukcesis: %s\n"
-
-#, fuzzy, c-format
 #| msgid "can't connect to `%s': %s\n"
 msgid "can't connect to '%s': %s\n"
 msgstr "ne povas konektiĝi al '%s': %s\n"
@@ -1749,6 +1737,15 @@ msgstr "skribas sekretan ŝlosilon al '%s'\n"
 msgid "Invalid command  (try \"help\")\n"
 msgstr "Nevalida komando (provu per \"helpo\")\n"
 
+#, fuzzy, c-format
+msgid "modifiying the recipients is not possible: %s\n"
+msgstr "Kreado de ŝlosiloj malsukcesis: %s\n"
+
+#, fuzzy
+#| msgid "decryption failed: %s\n"
+msgid "decryption failed"
+msgstr "malĉifrado malsukcesis: %s\n"
+
 #, c-format
 msgid "--output doesn't work for this command\n"
 msgstr "--output ne funkcias por ĉi tiu komando\n"
@@ -1830,6 +1827,10 @@ msgid "use option \"--delete-secret-keys\" to delete it first.\n"
 msgstr "uzu la opcion \"--delete-secret-key\" por forviŝi ĝin unue.\n"
 
 #, fuzzy, c-format
+msgid "%s/%s.%s encrypted for: \"%s\"\n"
+msgstr "%s/%s-ĉifrita por: %s\n"
+
+#, fuzzy, c-format
 msgid ""
 "WARNING: forcing symmetric cipher %s (%d) violates recipient preferences\n"
 msgstr "NOTO: ĉifrad-metodo %d ne trovita en preferoj\n"
@@ -1888,8 +1889,8 @@ msgid ""
 msgstr "NOTO: ĉifrad-metodo %d ne trovita en preferoj\n"
 
 #, fuzzy, c-format
-msgid "%s/%s.%s encrypted for: \"%s\"\n"
-msgstr "%s/%s-ĉifrita por: %s\n"
+msgid "number of removed recipients: %u\n"
+msgstr "nevalida respondo de agento\n"
 
 #, fuzzy, c-format
 msgid "option '%s' may not be used in %s mode\n"
@@ -4408,6 +4409,11 @@ msgstr "  (%d) RSA (nur ĉifri)\n"
 msgid "  (%d) Existing key from card%s\n"
 msgstr "  (%d) RSA (nur ĉifri)\n"
 
+#, fuzzy, c-format
+#| msgid "   (%d) RSA (encrypt only)\n"
+msgid "  (%d) Kyber (encrypt only)%s\n"
+msgstr "  (%d) RSA (nur ĉifri)\n"
+
 #, fuzzy
 msgid "Enter the keygrip: "
 msgstr "Subskribo-notacio: "
@@ -5757,6 +5763,10 @@ msgstr "NOTO: ĉifrad-metodo %d ne trovita en preferoj\n"
 #, fuzzy, c-format
 msgid "Note: secret key %s expired at %s\n"
 msgstr "NOTO: sekreta ŝlosilo %08lX eksvalidiĝis je %s\n"
+
+#, fuzzy, c-format
+msgid "Note: ADSK key has been used for decryption"
+msgstr "ŝlosilo %08lX: ŝlosilo estas revokita!\n"
 
 #, fuzzy, c-format
 msgid "Note: key has been revoked"
@@ -8610,6 +8620,10 @@ msgid "colons are not allowed in the socket name\n"
 msgstr "%s ne eblas kun %s!\n"
 
 #, fuzzy, c-format
+msgid "error forking process: %s\n"
+msgstr "eraro dum legado de '%s': %s\n"
+
+#, fuzzy, c-format
 msgid "fetching CRL from '%s' failed: %s\n"
 msgstr "enkirasigo malsukcesis: %s\n"
 
@@ -9253,6 +9267,10 @@ msgstr ""
 
 msgid "manage the command history"
 msgstr ""
+
+#, fuzzy, c-format
+#~ msgid "waiting for process to terminate failed: ec=%d\n"
+#~ msgstr "aktualigo malsukcesis: %s\n"
 
 #, fuzzy, c-format
 #~ msgid "error running '%s': probably not installed\n"

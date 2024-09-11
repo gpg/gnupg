@@ -1713,6 +1713,16 @@ msgstr "Comandos de Admin não são permitidos\n"
 msgid "Invalid command  (try \"help\")\n"
 msgstr "Comando inválido (tente \"help\")\n"
 
+#, fuzzy, c-format
+#| msgid "key operation not possible: %s\n"
+msgid "modifiying the recipients is not possible: %s\n"
+msgstr "operação de chave não é possível: %s\n"
+
+#, fuzzy
+#| msgid "decryption failed: %s\n"
+msgid "decryption failed"
+msgstr "decifração falhou: %s\n"
+
 #, c-format
 msgid "--output doesn't work for this command\n"
 msgstr "--output não funciona para este comando\n"
@@ -1791,6 +1801,10 @@ msgid "use option \"--delete-secret-keys\" to delete it first.\n"
 msgstr "usar a opção \"--delete-secret-keys\" para apagá-la primeiro.\n"
 
 #, c-format
+msgid "%s/%s.%s encrypted for: \"%s\"\n"
+msgstr "%s/%s.%s cifrado para: \"%s\"\n"
+
+#, c-format
 msgid ""
 "WARNING: forcing symmetric cipher %s (%d) violates recipient preferences\n"
 msgstr ""
@@ -1849,9 +1863,10 @@ msgstr ""
 "AVISO: forçar o algoritmo de compressão %s (%d) viola as preferências do "
 "destinatário\n"
 
-#, c-format
-msgid "%s/%s.%s encrypted for: \"%s\"\n"
-msgstr "%s/%s.%s cifrado para: \"%s\"\n"
+#, fuzzy, c-format
+#| msgid "Number of recipients"
+msgid "number of removed recipients: %u\n"
+msgstr "Número de destinatários"
 
 #, c-format
 msgid "option '%s' may not be used in %s mode\n"
@@ -4222,6 +4237,11 @@ msgstr "  (%d) Chave existente%s\n"
 msgid "  (%d) Existing key from card%s\n"
 msgstr "  (%d) Chave do cartão existente%s\n"
 
+#, fuzzy, c-format
+#| msgid "  (%d) ECC (encrypt only)%s\n"
+msgid "  (%d) Kyber (encrypt only)%s\n"
+msgstr "  (%d) ECC (apenas de cifrar)%s\n"
+
 msgid "Enter the keygrip: "
 msgstr "Introduzir o keygrip: "
 
@@ -5540,6 +5560,11 @@ msgstr ""
 #, c-format
 msgid "Note: secret key %s expired at %s\n"
 msgstr "Nota: a chave secreta %s expirou em %s\n"
+
+#, fuzzy, c-format
+#| msgid "certificate should not have been used for encryption\n"
+msgid "Note: ADSK key has been used for decryption"
+msgstr "certificado não deveria ter sido usado para a cifração\n"
 
 #, c-format
 msgid "Note: key has been revoked"

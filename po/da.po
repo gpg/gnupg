@@ -927,19 +927,6 @@ msgstr "fejl ved oprettelse af datakanal: %s\n"
 msgid "error creating a stream for a pipe: %s\n"
 msgstr "fejl ved oprettelse af datakanal: %s\n"
 
-#, c-format
-msgid "error forking process: %s\n"
-msgstr "fejl ved forgrening af proces: %s\n"
-
-#, c-format
-msgid "waiting for process %d to terminate failed: %s\n"
-msgstr "ventning på at proces %d skulle terminere mislykkedes: %s\n"
-
-#, fuzzy, c-format
-#| msgid "waiting for process %d to terminate failed: %s\n"
-msgid "waiting for process to terminate failed: ec=%d\n"
-msgstr "ventning på at proces %d skulle terminere mislykkedes: %s\n"
-
 #, fuzzy, c-format
 #| msgid "can't connect to `%s': %s\n"
 msgid "can't connect to '%s': %s\n"
@@ -1855,6 +1842,16 @@ msgstr "Administratorkommandoer er ikke tilladt\n"
 msgid "Invalid command  (try \"help\")\n"
 msgstr "Ugyldig kommando (prøv »help«)\n"
 
+#, fuzzy, c-format
+#| msgid "key operation not possible: %s\n"
+msgid "modifiying the recipients is not possible: %s\n"
+msgstr "nøglehandling er ikke mulig: %s\n"
+
+#, fuzzy
+#| msgid "decryption failed: %s\n"
+msgid "decryption failed"
+msgstr "afkryptering mislykkedes: %s\n"
+
 #, c-format
 msgid "--output doesn't work for this command\n"
 msgstr "--output virker ikke for denne kommando\n"
@@ -1936,6 +1933,11 @@ msgstr "der er en hemmelig nøgle for offentlig nøgle »%s«!\n"
 msgid "use option \"--delete-secret-keys\" to delete it first.\n"
 msgstr "brug tilvalget »--delete-secret-keys« for at slette den først.\n"
 
+#, fuzzy, c-format
+#| msgid "%s/%s encrypted for: \"%s\"\n"
+msgid "%s/%s.%s encrypted for: \"%s\"\n"
+msgstr "%s/%s krypteret for: »%s«\n"
+
 #, c-format
 msgid ""
 "WARNING: forcing symmetric cipher %s (%d) violates recipient preferences\n"
@@ -2005,9 +2007,9 @@ msgstr ""
 "præferencer\n"
 
 #, fuzzy, c-format
-#| msgid "%s/%s encrypted for: \"%s\"\n"
-msgid "%s/%s.%s encrypted for: \"%s\"\n"
-msgstr "%s/%s krypteret for: »%s«\n"
+#| msgid "Number of recipients"
+msgid "number of removed recipients: %u\n"
+msgstr "Antal modtagere"
 
 #, fuzzy, c-format
 #| msgid "you may not use %s while in %s mode\n"
@@ -4568,6 +4570,11 @@ msgstr "  (%d) Eksisterende nøgle\n"
 msgid "  (%d) Existing key from card%s\n"
 msgstr "  (%d) Eksisterende nøgle fra kort\n"
 
+#, fuzzy, c-format
+#| msgid "   (%d) RSA (encrypt only)\n"
+msgid "  (%d) Kyber (encrypt only)%s\n"
+msgstr "  (%d) RSA (kun krypter)\n"
+
 # key grip
 # chiefly  ( US ) See also grip the person in charge of moving and setting up camera
 # tracks and scenery in a film or television studio
@@ -5965,6 +5972,11 @@ msgstr "ADVARSEL: chifferalgoritme %s ikke fundet i modtagerpræferencer\n"
 #| msgid "NOTE: secret key %s expired at %s\n"
 msgid "Note: secret key %s expired at %s\n"
 msgstr "BEMÆRK: hemmelig nøgle %s udløb den %s\n"
+
+#, fuzzy, c-format
+#| msgid "certificate should not have been used for encryption\n"
+msgid "Note: ADSK key has been used for decryption"
+msgstr "certifikat burde ikke være brugt for kryptering\n"
 
 #, fuzzy, c-format
 #| msgid "NOTE: key has been revoked"
@@ -9010,6 +9022,10 @@ msgstr "brug: gpgsm [tilvalg] "
 msgid "colons are not allowed in the socket name\n"
 msgstr "%s ikke tilladt med %s!\n"
 
+#, c-format
+msgid "error forking process: %s\n"
+msgstr "fejl ved forgrening af proces: %s\n"
+
 #, fuzzy, c-format
 #| msgid "renaming `%s' to `%s' failed: %s\n"
 msgid "fetching CRL from '%s' failed: %s\n"
@@ -9736,6 +9752,15 @@ msgstr ""
 
 msgid "manage the command history"
 msgstr ""
+
+#, c-format
+#~ msgid "waiting for process %d to terminate failed: %s\n"
+#~ msgstr "ventning på at proces %d skulle terminere mislykkedes: %s\n"
+
+#, fuzzy, c-format
+#~| msgid "waiting for process %d to terminate failed: %s\n"
+#~ msgid "waiting for process to terminate failed: ec=%d\n"
+#~ msgstr "ventning på at proces %d skulle terminere mislykkedes: %s\n"
 
 #, fuzzy, c-format
 #~| msgid "error running `%s': probably not installed\n"

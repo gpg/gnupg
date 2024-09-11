@@ -878,19 +878,6 @@ msgid "error creating a stream for a pipe: %s\n"
 msgstr "error al crear stream para una tubería: %s\n"
 
 #, c-format
-msgid "error forking process: %s\n"
-msgstr "error bifurcando procesos: %s\n"
-
-#, c-format
-msgid "waiting for process %d to terminate failed: %s\n"
-msgstr "fallo esperando que el proceso %d terminara: %s\n"
-
-#, fuzzy, c-format
-#| msgid "waiting for processes to terminate failed: %s\n"
-msgid "waiting for process to terminate failed: ec=%d\n"
-msgstr "fallo esperando que el proceso termine: %s\n"
-
-#, c-format
 msgid "can't connect to '%s': %s\n"
 msgstr "no se puede conectar con '%s': %s\n"
 
@@ -1758,6 +1745,16 @@ msgstr "No se permiten órdenes de administrador\n"
 msgid "Invalid command  (try \"help\")\n"
 msgstr "Orden inválida (pruebe \"help\")\n"
 
+#, fuzzy, c-format
+#| msgid "key operation not possible: %s\n"
+msgid "modifiying the recipients is not possible: %s\n"
+msgstr "la operación con la clave no es posible: %s\n"
+
+#, fuzzy
+#| msgid "decryption failed: %s\n"
+msgid "decryption failed"
+msgstr "descifrado fallido: %s\n"
+
 #, c-format
 msgid "--output doesn't work for this command\n"
 msgstr "--output no funciona con esta orden\n"
@@ -1834,6 +1831,11 @@ msgstr "¡hay una clave secreta para esta clave pública! \"%s\"!\n"
 msgid "use option \"--delete-secret-keys\" to delete it first.\n"
 msgstr "use antes la opción \"--delete-secret-key\" para borrarla.\n"
 
+#, fuzzy, c-format
+#| msgid "%s/%s encrypted for: \"%s\"\n"
+msgid "%s/%s.%s encrypted for: \"%s\"\n"
+msgstr "%s/%s cifrado para: \"%s\"\n"
+
 #, c-format
 msgid ""
 "WARNING: forcing symmetric cipher %s (%d) violates recipient preferences\n"
@@ -1899,9 +1901,9 @@ msgstr ""
 "de las preferencias del receptor\n"
 
 #, fuzzy, c-format
-#| msgid "%s/%s encrypted for: \"%s\"\n"
-msgid "%s/%s.%s encrypted for: \"%s\"\n"
-msgstr "%s/%s cifrado para: \"%s\"\n"
+#| msgid "Number of recipients"
+msgid "number of removed recipients: %u\n"
+msgstr "Número de destinatarios"
 
 #, c-format
 msgid "option '%s' may not be used in %s mode\n"
@@ -4311,6 +4313,11 @@ msgstr "  (%d) Clave existente\n"
 msgid "  (%d) Existing key from card%s\n"
 msgstr "  (%d) Clave existente de la tarjeta\n"
 
+#, fuzzy, c-format
+#| msgid "  (%d) ECC (encrypt only)\n"
+msgid "  (%d) Kyber (encrypt only)%s\n"
+msgstr "  (%d) ECC (sólo cifrar)\n"
+
 msgid "Enter the keygrip: "
 msgstr "Introduzca keygrip: "
 
@@ -5654,6 +5661,11 @@ msgstr "NOTA: el cifrado %s no aparece en las preferencias del receptor\n"
 #, c-format
 msgid "Note: secret key %s expired at %s\n"
 msgstr "NOTA: clave secreta %s caducó el %s\n"
+
+#, fuzzy, c-format
+#| msgid "certificate should not have been used for encryption\n"
+msgid "Note: ADSK key has been used for decryption"
+msgstr "el certificado no debería haberse usado para cifrar\n"
 
 #, c-format
 msgid "Note: key has been revoked"
@@ -8536,6 +8548,10 @@ msgid "colons are not allowed in the socket name\n"
 msgstr "los dos puntos(:) no están permitidos en el nombre del socket\n"
 
 #, c-format
+msgid "error forking process: %s\n"
+msgstr "error bifurcando procesos: %s\n"
+
+#, c-format
 msgid "fetching CRL from '%s' failed: %s\n"
 msgstr "fallo al intentar descargar CRL desde '%s': %s\n"
 
@@ -9185,6 +9201,15 @@ msgstr ""
 
 msgid "manage the command history"
 msgstr ""
+
+#, c-format
+#~ msgid "waiting for process %d to terminate failed: %s\n"
+#~ msgstr "fallo esperando que el proceso %d terminara: %s\n"
+
+#, fuzzy, c-format
+#~| msgid "waiting for processes to terminate failed: %s\n"
+#~ msgid "waiting for process to terminate failed: ec=%d\n"
+#~ msgstr "fallo esperando que el proceso termine: %s\n"
 
 #, c-format
 #~ msgid "error running '%s': probably not installed\n"

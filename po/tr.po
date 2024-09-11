@@ -819,19 +819,6 @@ msgid "error creating a stream for a pipe: %s\n"
 msgstr "veri yolu için bir akım oluşturulurken hata: %s\n"
 
 #, c-format
-msgid "error forking process: %s\n"
-msgstr "işlem çatallanırken hata: %s\n"
-
-#, c-format
-msgid "waiting for process %d to terminate failed: %s\n"
-msgstr "%d işleminin sonlanmasını bekleme başarısız: %s\n"
-
-#, fuzzy, c-format
-#| msgid "waiting for processes to terminate failed: %s\n"
-msgid "waiting for process to terminate failed: ec=%d\n"
-msgstr "işlemin sonlanmasını bekleme başarısız: %s\n"
-
-#, c-format
 msgid "can't connect to '%s': %s\n"
 msgstr "'%s' sunucusuna bağlanılamıyor: %s\n"
 
@@ -1675,6 +1662,16 @@ msgstr "Yönetici komutlarına izin verilmez\n"
 msgid "Invalid command  (try \"help\")\n"
 msgstr "Komut geçersiz (\"help\" komutunu deneyin)\n"
 
+#, fuzzy, c-format
+#| msgid "key operation not possible: %s\n"
+msgid "modifiying the recipients is not possible: %s\n"
+msgstr "anahtar işlemi olanaklı değil: %s\n"
+
+#, fuzzy
+#| msgid "decryption failed: %s\n"
+msgid "decryption failed"
+msgstr "şifre çözme başarısız: %s\n"
+
 #, c-format
 msgid "--output doesn't work for this command\n"
 msgstr "--output seçeneği bu komutla çalışmaz\n"
@@ -1752,6 +1749,10 @@ msgid "use option \"--delete-secret-keys\" to delete it first.\n"
 msgstr "onu önce \"--delete-secret-keys\" ile silmelisiniz.\n"
 
 #, c-format
+msgid "%s/%s.%s encrypted for: \"%s\"\n"
+msgstr "%s/%s.%s, şunun için şifrelendi: \"%s\"\n"
+
+#, c-format
 msgid ""
 "WARNING: forcing symmetric cipher %s (%d) violates recipient preferences\n"
 msgstr "UYARI: Simetrik şifreleme %s (%d), alıcı tercihlerine karşı geliyor\n"
@@ -1808,9 +1809,10 @@ msgstr ""
 "UYARI: %s (%d) sıkıştırma algoritmasını zorlamak alıcı tercihlerine karşı "
 "geliyor\n"
 
-#, c-format
-msgid "%s/%s.%s encrypted for: \"%s\"\n"
-msgstr "%s/%s.%s, şunun için şifrelendi: \"%s\"\n"
+#, fuzzy, c-format
+#| msgid "Number of recipients"
+msgid "number of removed recipients: %u\n"
+msgstr "Alıcı sayısı"
 
 #, c-format
 msgid "option '%s' may not be used in %s mode\n"
@@ -4197,6 +4199,11 @@ msgstr "  (%d) Var olan anahtar%s\n"
 msgid "  (%d) Existing key from card%s\n"
 msgstr "  (%d) Karttaki var olan anahtar%s\n"
 
+#, fuzzy, c-format
+#| msgid "  (%d) ECC (encrypt only)%s\n"
+msgid "  (%d) Kyber (encrypt only)%s\n"
+msgstr "  (%d) RSA (yalnızca şifreleme)%s\n"
+
 msgid "Enter the keygrip: "
 msgstr "Anahtar maşasını girin: "
 
@@ -5510,6 +5517,11 @@ msgstr "UYARI: %s şifre algoritması alıcı tercihlerinde bulunamadı\n"
 #, c-format
 msgid "Note: secret key %s expired at %s\n"
 msgstr "Not: %s gizli anahtarının %s tarihinde kullanım süresi doldu\n"
+
+#, fuzzy, c-format
+#| msgid "certificate should not have been used for encryption\n"
+msgid "Note: ADSK key has been used for decryption"
+msgstr "sertifika, şifreleme için kullanılmamalıydı\n"
 
 #, c-format
 msgid "Note: key has been revoked"
@@ -8320,6 +8332,10 @@ msgid "colons are not allowed in the socket name\n"
 msgstr "soket adında iki noktaya izin verilmiyor\n"
 
 #, c-format
+msgid "error forking process: %s\n"
+msgstr "işlem çatallanırken hata: %s\n"
+
+#, c-format
 msgid "fetching CRL from '%s' failed: %s\n"
 msgstr "'%s' konumundan CRL getirilemedi: %s\n"
 
@@ -8939,6 +8955,15 @@ msgstr "Yubikey yönetim konsolu"
 
 msgid "manage the command history"
 msgstr "komut geçmişini yönet"
+
+#, c-format
+#~ msgid "waiting for process %d to terminate failed: %s\n"
+#~ msgstr "%d işleminin sonlanmasını bekleme başarısız: %s\n"
+
+#, fuzzy, c-format
+#~| msgid "waiting for processes to terminate failed: %s\n"
+#~ msgid "waiting for process to terminate failed: ec=%d\n"
+#~ msgstr "işlemin sonlanmasını bekleme başarısız: %s\n"
 
 #, c-format
 #~ msgid "error running '%s': probably not installed\n"

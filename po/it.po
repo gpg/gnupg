@@ -828,19 +828,6 @@ msgid "error creating a stream for a pipe: %s\n"
 msgstr "errore durante la creazione di un flusso per una pipe: %s\n"
 
 #, c-format
-msgid "error forking process: %s\n"
-msgstr "errore durante il processo di forking: %s\n"
-
-#, c-format
-msgid "waiting for process %d to terminate failed: %s\n"
-msgstr "in attesa della terminazione del processo %d non riuscita: %s\n"
-
-#, fuzzy, c-format
-#| msgid "waiting for processes to terminate failed: %s\n"
-msgid "waiting for process to terminate failed: ec=%d\n"
-msgstr "attesa della terminazione dei processi non riuscita: %s\n"
-
-#, c-format
 msgid "can't connect to '%s': %s\n"
 msgstr "impossibile connettersi a '%s': %s\n"
 
@@ -1693,6 +1680,16 @@ msgstr "I comandi di amministrazione non sono consentiti\n"
 msgid "Invalid command  (try \"help\")\n"
 msgstr "Comando non valido  (prova \"help\")\n"
 
+#, fuzzy, c-format
+#| msgid "key operation not possible: %s\n"
+msgid "modifiying the recipients is not possible: %s\n"
+msgstr "operazione chiave non possibile: %s\n"
+
+#, fuzzy
+#| msgid "decryption failed: %s\n"
+msgid "decryption failed"
+msgstr "decifratura fallita: %s\n"
+
 #, c-format
 msgid "--output doesn't work for this command\n"
 msgstr "--output non funziona con questo comando\n"
@@ -1775,6 +1772,10 @@ msgid "use option \"--delete-secret-keys\" to delete it first.\n"
 msgstr "usa prima l'opzione \"--delete-secret-keys\" per cancellarla.\n"
 
 #, c-format
+msgid "%s/%s.%s encrypted for: \"%s\"\n"
+msgstr "%s/%s.%s è crittografato per: \"%s\"\n"
+
+#, c-format
 msgid ""
 "WARNING: forcing symmetric cipher %s (%d) violates recipient preferences\n"
 msgstr ""
@@ -1837,9 +1838,10 @@ msgstr ""
 "AVVISO: l'algoritmo di compressione %s (%d) viola le preferenze dei "
 "destinatari\n"
 
-#, c-format
-msgid "%s/%s.%s encrypted for: \"%s\"\n"
-msgstr "%s/%s.%s è crittografato per: \"%s\"\n"
+#, fuzzy, c-format
+#| msgid "Number of recipients"
+msgid "number of removed recipients: %u\n"
+msgstr "Numero di destinatari"
 
 #, c-format
 msgid "option '%s' may not be used in %s mode\n"
@@ -4243,6 +4245,11 @@ msgstr "  (%d) Chiave esistente%s\n"
 msgid "  (%d) Existing key from card%s\n"
 msgstr "  (%d) Chiave esistente dalla carta%s\n"
 
+#, fuzzy, c-format
+#| msgid "  (%d) ECC (encrypt only)%s\n"
+msgid "  (%d) Kyber (encrypt only)%s\n"
+msgstr "  (%d) ECC (solo crittografia)%s\n"
+
 msgid "Enter the keygrip: "
 msgstr "Immettere il keygrip: "
 
@@ -5583,6 +5590,11 @@ msgstr ""
 #, c-format
 msgid "Note: secret key %s expired at %s\n"
 msgstr "Nota: chiave segreta %s scaduta alle %s\n"
+
+#, fuzzy, c-format
+#| msgid "certificate should not have been used for encryption\n"
+msgid "Note: ADSK key has been used for decryption"
+msgstr "certificato non avrebbe dovuto essere utilizzato per la crittografia\n"
 
 #, c-format
 msgid "Note: key has been revoked"
@@ -8470,6 +8482,10 @@ msgid "colons are not allowed in the socket name\n"
 msgstr "due punti non sono consentiti nel nome del socket\n"
 
 #, c-format
+msgid "error forking process: %s\n"
+msgstr "errore durante il processo di forking: %s\n"
+
+#, c-format
 msgid "fetching CRL from '%s' failed: %s\n"
 msgstr "recupero CRL da '%s' non riuscito: %s\n"
 
@@ -9097,6 +9113,15 @@ msgstr "Comandi di gestione Yubikey"
 
 msgid "manage the command history"
 msgstr "gestire la cronologia dei comandi"
+
+#, c-format
+#~ msgid "waiting for process %d to terminate failed: %s\n"
+#~ msgstr "in attesa della terminazione del processo %d non riuscita: %s\n"
+
+#, fuzzy, c-format
+#~| msgid "waiting for processes to terminate failed: %s\n"
+#~ msgid "waiting for process to terminate failed: ec=%d\n"
+#~ msgstr "attesa della terminazione dei processi non riuscita: %s\n"
 
 #, c-format
 #~ msgid "error running '%s': probably not installed\n"

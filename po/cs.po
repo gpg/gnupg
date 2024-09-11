@@ -842,19 +842,6 @@ msgid "error creating a stream for a pipe: %s\n"
 msgstr "chyba při vytváření proudu pro rouru: %s\n"
 
 #, c-format
-msgid "error forking process: %s\n"
-msgstr "chyba při rozdvojování procesu: %s\n"
-
-#, c-format
-msgid "waiting for process %d to terminate failed: %s\n"
-msgstr "čekání na konec procesu %d se nezdařilo: %s\n"
-
-#, fuzzy, c-format
-#| msgid "waiting for processes to terminate failed: %s\n"
-msgid "waiting for process to terminate failed: ec=%d\n"
-msgstr "čekání na ukončení procesu se nezdařilo: %s\n"
-
-#, c-format
 msgid "can't connect to '%s': %s\n"
 msgstr "nelze se připojit k „%s“: %s\n"
 
@@ -1700,6 +1687,16 @@ msgstr "Příkazy správce nejsou povoleny\n"
 msgid "Invalid command  (try \"help\")\n"
 msgstr "Neplatný příkaz (zkuste „help“)\n"
 
+#, fuzzy, c-format
+#| msgid "key operation not possible: %s\n"
+msgid "modifiying the recipients is not possible: %s\n"
+msgstr "operace s klíčem není možná: %s\n"
+
+#, fuzzy
+#| msgid "decryption failed: %s\n"
+msgid "decryption failed"
+msgstr "dešifrování selhalo: %s\n"
+
 #, c-format
 msgid "--output doesn't work for this command\n"
 msgstr "--output pro tento příkaz není platný\n"
@@ -1783,6 +1780,10 @@ msgstr ""
 "abyste ho smazal(a), použijte nejprve parametr „--delete-secret-key“.\n"
 
 #, c-format
+msgid "%s/%s.%s encrypted for: \"%s\"\n"
+msgstr "zašifrováno pomocí %s/%s.%s pro: „%s“\n"
+
+#, c-format
 msgid ""
 "WARNING: forcing symmetric cipher %s (%d) violates recipient preferences\n"
 msgstr ""
@@ -1840,9 +1841,10 @@ msgstr ""
 "POZOR: vyžádaný komprimační algoritmus %s (%d) nevyhovuje předvolbám "
 "příjemce\n"
 
-#, c-format
-msgid "%s/%s.%s encrypted for: \"%s\"\n"
-msgstr "zašifrováno pomocí %s/%s.%s pro: „%s“\n"
+#, fuzzy, c-format
+#| msgid "Number of recipients"
+msgid "number of removed recipients: %u\n"
+msgstr "Počet příjemců"
 
 #, c-format
 msgid "option '%s' may not be used in %s mode\n"
@@ -4197,6 +4199,11 @@ msgstr "  (%d) Existující klíč%s\n"
 msgid "  (%d) Existing key from card%s\n"
 msgstr "  (%d) Klíč existující na kartě%s\n"
 
+#, fuzzy, c-format
+#| msgid "  (%d) ECC (encrypt only)%s\n"
+msgid "  (%d) Kyber (encrypt only)%s\n"
+msgstr "  (%d) ECC (pouze pro šifrování)%s\n"
+
 msgid "Enter the keygrip: "
 msgstr "Vložte keygrip: "
 
@@ -5515,6 +5522,11 @@ msgstr "POZOR: v předvolbách příjemce nenalezen šifrovací algoritmus %s\n"
 #, c-format
 msgid "Note: secret key %s expired at %s\n"
 msgstr "Poznámka: platnost tajného klíče %s skončila v %s\n"
+
+#, fuzzy, c-format
+#| msgid "certificate should not have been used for encryption\n"
+msgid "Note: ADSK key has been used for decryption"
+msgstr "certifikát neměl použit pro šifrování\n"
 
 #, c-format
 msgid "Note: key has been revoked"
@@ -8382,6 +8394,10 @@ msgid "colons are not allowed in the socket name\n"
 msgstr "dvojtečky v názvu socketu jsou nepřípustné\n"
 
 #, c-format
+msgid "error forking process: %s\n"
+msgstr "chyba při rozdvojování procesu: %s\n"
+
+#, c-format
 msgid "fetching CRL from '%s' failed: %s\n"
 msgstr "stahování CRL z „%s“ selhalo: %s\n"
 
@@ -9002,6 +9018,15 @@ msgstr "Příkazy pro správu Yubikey"
 
 msgid "manage the command history"
 msgstr "spravuje historii příkazů"
+
+#, c-format
+#~ msgid "waiting for process %d to terminate failed: %s\n"
+#~ msgstr "čekání na konec procesu %d se nezdařilo: %s\n"
+
+#, fuzzy, c-format
+#~| msgid "waiting for processes to terminate failed: %s\n"
+#~ msgid "waiting for process to terminate failed: ec=%d\n"
+#~ msgstr "čekání na ukončení procesu se nezdařilo: %s\n"
 
 #, c-format
 #~ msgid "error running '%s': probably not installed\n"

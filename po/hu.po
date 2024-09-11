@@ -831,18 +831,6 @@ msgid "error creating a stream for a pipe: %s\n"
 msgstr "Hiba a jelszó létrehozásakor: %s.\n"
 
 #, fuzzy, c-format
-msgid "error forking process: %s\n"
-msgstr "Hiba \"%s\" olvasásakor: %s\n"
-
-#, c-format
-msgid "waiting for process %d to terminate failed: %s\n"
-msgstr ""
-
-#, fuzzy, c-format
-msgid "waiting for process to terminate failed: ec=%d\n"
-msgstr "Frissítés sikertelen: %s.\n"
-
-#, fuzzy, c-format
 #| msgid "can't connect to `%s': %s\n"
 msgid "can't connect to '%s': %s\n"
 msgstr "Nem tudok kapcsolódni \"%s\" objektumhoz: %s\n"
@@ -1746,6 +1734,15 @@ msgstr "Írom a titkos kulcsot a %s állományba.\n"
 msgid "Invalid command  (try \"help\")\n"
 msgstr "Érvénytelen parancs! (Próbálja a súgót: \"help\".)\n"
 
+#, fuzzy, c-format
+msgid "modifiying the recipients is not possible: %s\n"
+msgstr "Kulcsgenerálás sikertelen: %s\n"
+
+#, fuzzy
+#| msgid "decryption failed: %s\n"
+msgid "decryption failed"
+msgstr "Visszafejtés sikertelen: %s.\n"
+
 #, c-format
 msgid "--output doesn't work for this command\n"
 msgstr "Az --output opció nem működik ehhez a parancshoz.\n"
@@ -1828,6 +1825,11 @@ msgid "use option \"--delete-secret-keys\" to delete it first.\n"
 msgstr "Először azt törölje a \"--delete-secret-keys\" opcióval!\n"
 
 #, fuzzy, c-format
+#| msgid "%s/%s encrypted for: \"%s\"\n"
+msgid "%s/%s.%s encrypted for: \"%s\"\n"
+msgstr "%s/%s titkosítva \"%s\" számára\n"
+
+#, fuzzy, c-format
 msgid ""
 "WARNING: forcing symmetric cipher %s (%d) violates recipient preferences\n"
 msgstr "A %s (%d) rejtjelező használata sérti a címzett preferenciáit!\n"
@@ -1891,9 +1893,8 @@ msgid ""
 msgstr "A %s (%d) tömörítés használata sérti a címzett preferenciáit!\n"
 
 #, fuzzy, c-format
-#| msgid "%s/%s encrypted for: \"%s\"\n"
-msgid "%s/%s.%s encrypted for: \"%s\"\n"
-msgstr "%s/%s titkosítva \"%s\" számára\n"
+msgid "number of removed recipients: %u\n"
+msgstr "(Nincs leírás.)\n"
 
 #, fuzzy, c-format
 #| msgid "you may not use %s while in %s mode\n"
@@ -4409,6 +4410,11 @@ msgstr "  (%d) RSA (csak titkosítás)\n"
 msgid "  (%d) Existing key from card%s\n"
 msgstr "  (%d) RSA (csak titkosítás)\n"
 
+#, fuzzy, c-format
+#| msgid "   (%d) RSA (encrypt only)\n"
+msgid "  (%d) Kyber (encrypt only)%s\n"
+msgstr "  (%d) RSA (csak titkosítás)\n"
+
 #, fuzzy
 msgid "Enter the keygrip: "
 msgstr "Aláírás-jelölés: "
@@ -5776,6 +5782,11 @@ msgstr "MEGJEGYZÉS: %d rejtjelező algoritmus nincs a preferenciák között.\n
 #, fuzzy, c-format
 msgid "Note: secret key %s expired at %s\n"
 msgstr "MEGJEGYZÉS: %08lX titkos kulcs %s-kor lejárt.\n"
+
+#, fuzzy, c-format
+#| msgid "NOTE: key has been revoked"
+msgid "Note: ADSK key has been used for decryption"
+msgstr "MEGJEGYZÉS: A kulcsot visszavonták."
 
 #, fuzzy, c-format
 #| msgid "NOTE: key has been revoked"
@@ -8641,6 +8652,10 @@ msgid "colons are not allowed in the socket name\n"
 msgstr "%s és %s nem használható együtt!\n"
 
 #, fuzzy, c-format
+msgid "error forking process: %s\n"
+msgstr "Hiba \"%s\" olvasásakor: %s\n"
+
+#, fuzzy, c-format
 msgid "fetching CRL from '%s' failed: %s\n"
 msgstr "Páncélozás nem sikerült: %s\n"
 
@@ -9284,6 +9299,10 @@ msgstr ""
 
 msgid "manage the command history"
 msgstr ""
+
+#, fuzzy, c-format
+#~ msgid "waiting for process to terminate failed: ec=%d\n"
+#~ msgstr "Frissítés sikertelen: %s.\n"
 
 #, fuzzy, c-format
 #~ msgid "error running '%s': probably not installed\n"
