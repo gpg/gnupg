@@ -37,6 +37,11 @@
 #include "../common/i18n.h"
 #include "../common/compliance.h"
 
+
+static void check_assert_signer_list (ctrl_t ctrl, const char *pkhex);
+
+
+
 static char *
 strtimestamp_r (ksba_isotime_t atime)
 {
@@ -647,6 +652,8 @@ gpgsm_verify (ctrl_t ctrl, estream_t in_fp, estream_t data_fp,
                          *keyexptime? keyexptime : "0",
                          info_pkalgo, algo);
         xfree (tstr);
+        /* Handle the --assert-signer option.  */
+        check_assert_signer_list (ctrl, fpr);
         xfree (fpr);
         gpgsm_status (ctrl, STATUS_VALIDSIG, buf);
         xfree (buf);
@@ -746,4 +753,131 @@ gpgsm_verify (ctrl_t ctrl, estream_t in_fp, estream_t data_fp,
     }
 
   return rc;
+}
+
+
+
+static int
+is_x509_fingerprint (const char *string)
+{
+  int n;
+
+  if (!string || !*string)
+    return 0;
+  for (n=0; hexdigitp (string); string++)
+    n++;
+  if (!*string && (n == 40 || n == 64))
+    return 1;  /* SHA1 or SHA256 fingerprint.  */
+
+  return 0;
+}
+
+
+/* This function shall be called with the X.509 fingerprint iff a
+ * signature is fully valid.  If the option --assert-signer is active
+ * it check whether the signing key matches one of the keys given by
+ * this option and if so, sets a global flag.
+ *
+ * Note: This function is mainly a copy of the fucntion from gpg.  The
+ * status emit function and the single X.509 fingerprint makes the
+ * differences.
+ */
+static void
+check_assert_signer_list (ctrl_t ctrl, const char *pkhex)
+{
+  gpg_error_t err;
+  strlist_t item;
+  const char *fname;
+  estream_t fp = NULL;
+  int lnr;
+  int n, c;
+  char *p, *pend;
+  char line[256];
+
+  if (!opt.assert_signer_list)
+    return;  /* Nothing to do.  */
+  if (assert_signer_true)
+    return;  /* Already one valid signature seen.  */
+
+  for (item = opt.assert_signer_list; item; item = item->next)
+    {
+      if (is_x509_fingerprint (item->d))
+        {
+          ascii_strupr (item->d);
+          if (!strcmp (item->d, pkhex))
+            {
+              assert_signer_true = 1;
+              gpgsm_status (ctrl, STATUS_ASSERT_SIGNER, item->d);
+              if (!opt.quiet)
+                log_info ("asserted signer '%s'\n", item->d);
+              goto leave;
+            }
+        }
+      else  /* Assume this is a file - read and compare.  */
+        {
+          fname = item->d;
+          es_fclose (fp);
+          fp = es_fopen (fname, "r");
+          if (!fp)
+            {
+              err = gpg_error_from_syserror ();
+              log_error (_("error opening '%s': %s\n"),
+                         fname, gpg_strerror (err));
+              continue;
+            }
+
+          lnr = 0;
+          err = 0;
+          while (es_fgets (line, DIM(line)-1, fp))
+            {
+              lnr++;
+
+              n = strlen (line);
+              if (!n || line[n-1] != '\n')
+                {
+                  /* Eat until end of line. */
+                  while ( (c=es_getc (fp)) != EOF && c != '\n')
+                    ;
+                  err = gpg_error (GPG_ERR_INCOMPLETE_LINE);
+                  log_error (_("file '%s', line %d: %s\n"),
+                             fname, lnr, gpg_strerror (err));
+                  continue;
+                }
+              line[--n] = 0; /* Chop the LF. */
+              if (n && line[n-1] == '\r')
+                line[--n] = 0; /* Chop an optional CR. */
+
+              /* Allow for empty lines and spaces */
+              for (p=line; spacep (p); p++)
+                ;
+              if (!*p || *p == '#')
+                continue;
+
+              /* Get the first token and ignore trailing stuff.  */
+              for (pend = p; *pend && !spacep (pend); pend++)
+                ;
+              *pend = 0;
+              ascii_strupr (p);
+
+              if (!strcmp (p, pkhex))
+                {
+                  assert_signer_true = 1;
+                  gpgsm_status (ctrl, STATUS_ASSERT_SIGNER, p);
+                  if (!opt.quiet)
+                    log_info ("asserted signer '%s' (%s:%d)\n",
+                              p, fname, lnr);
+                  goto leave;
+                }
+            }
+          if (!err && !es_feof (fp))
+            {
+              err = gpg_error_from_syserror ();
+              log_error (_("error reading '%s', line %d: %s\n"),
+                         fname, lnr, gpg_strerror (err));
+            }
+        }
+    }
+
+ leave:
+  es_fclose (fp);
 }

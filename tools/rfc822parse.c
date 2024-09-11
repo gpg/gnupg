@@ -725,7 +725,6 @@ const char *
 rfc822parse_enum_header_lines (rfc822parse_t msg, void **context)
 {
   HDR_LINE l;
-  part_t part;
 
   if (!msg) /* Close. */
     return NULL;

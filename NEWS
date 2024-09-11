@@ -1,7 +1,13 @@
 Noteworthy changes in version 2.5.1 (unreleased)
 ------------------------------------------------
 
- * gpg: New option --proc-all-sigs.  [T7261]
+  * gpg: The support for composite Kyber+ECC public key algorithms
+    does now use the final FIPS-203 and LibrePGP specifications.  The
+    experimental keys from 2.5.0 are no longer supported.  [T6815]
+
+  * gpg: New option --proc-all-sigs.  [T7261]
+
+  * gpgsm: New option --assert-signer.  [T7286]
 
 
   Release-info: https://dev.gnupg.org/T7191

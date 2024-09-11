@@ -732,6 +732,21 @@ instead to make sure that the gpgsm process exits with a failure if
 the compliance rules are not fulfilled.  Note that this option has
 currently an effect only in "de-vs" mode.
 
+@item --assert-signer @var{fpr_or_file}
+@opindex assert-signer
+This option checks whether at least one valid signature on a file has
+been made with the specified key.  The key is either specified as a
+fingerprint or a file listing fingerprints.  The fingerprint must be
+given or listed in compact format (no colons or spaces in between).
+As of now only SHA-1 fingerprints are allowed.  This option can be
+given multiple times and each fingerprint is checked against the
+signing key as well as the corresponding primary key.  If
+@var{fpr_or_file} specifies a file, empty lines are ignored as well as
+all lines starting with a hash sign.  With this option gpgsm is
+guaranteed to return with an exit code of 0 if and only if a signature
+has been encountered, is valid, and the key matches one of the
+fingerprints given by this option.
+
 @item --always-trust
 @opindex always-trust
 Force encryption to the specified certificates without any validation
