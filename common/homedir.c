@@ -1864,20 +1864,10 @@ gnupg_module_name (int which)
       X(bindir, "sm", "gpgsm");
 
     case GNUPG_MODULE_NAME_GPG:
-#if USE_GPG2_HACK
-      if (! gnupg_build_directory)
-        X(bindir, "g10", GPG_NAME "2");
-      else
-#endif
-        X(bindir, "g10", GPG_NAME);
+      X(bindir, "g10", GPG_NAME);
 
     case GNUPG_MODULE_NAME_GPGV:
-#if USE_GPG2_HACK
-      if (! gnupg_build_directory)
-        X(bindir, "g10", GPG_NAME "v2");
-      else
-#endif
-        X(bindir, "g10", GPG_NAME "v");
+      X(bindir, "g10", GPG_NAME "v");
 
     case GNUPG_MODULE_NAME_CONNECT_AGENT:
       X(bindir, "tools", "gpg-connect-agent");

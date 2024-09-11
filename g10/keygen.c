@@ -5859,11 +5859,7 @@ generate_keypair (ctrl_t ctrl, int full, const char *fname,
 
       tty_printf ( _("Note: Use \"%s %s\""
                      " for a full featured key generation dialog.\n"),
-#if USE_GPG2_HACK
-                   GPG_NAME "2"
-#else
                    GPG_NAME
-#endif
                    , "--full-generate-key" );
 
       err = parse_key_parameter_string (ctrl, NULL, -1, 0,

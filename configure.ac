@@ -233,18 +233,6 @@ test -n "$GNUPG_DIRMNGR_LDAP_PGM" \
       && show_gnupg_dirmngr_ldap_pgm="$GNUPG_DIRMNGR_LDAP_PGM"
 
 
-#
-# For a long time gpg 2.x was installed as gpg2.  This changed with
-# 2.2.  This option can be used to install gpg under the name gpg2.
-#
-AC_ARG_ENABLE(gpg-is-gpg2,
-    AS_HELP_STRING([--enable-gpg-is-gpg2],[Set installed name of gpg to gpg2]),
-    gpg_is_gpg2=$enableval)
-if test "$gpg_is_gpg2" = "yes"; then
-   AC_DEFINE(USE_GPG2_HACK, 1, [Define to install gpg as gpg2])
-fi
-AM_CONDITIONAL(USE_GPG2_HACK, test "$gpg_is_gpg2" = "yes")
-
 
 # SELinux support includes tracking of sensitive files to avoid
 # leaking their contents through processing these files by gpg itself

@@ -12,8 +12,6 @@
 @cindex options, GPG command
 
 
-@c Begin standard stuff
-@ifclear gpgtwohack
 @manpage gpg.1
 @ifset manverb
 .B gpg
@@ -31,30 +29,6 @@
 .I command
 .RI [ args ]
 @end ifset
-@end ifclear
-@c End standard stuff
-
-@c Begin gpg2 hack stuff
-@ifset gpgtwohack
-@manpage gpg2.1
-@ifset manverb
-.B gpg2
-\- OpenPGP encryption and signing tool
-@end ifset
-
-@mansect synopsis
-@ifset manverb
-.B  gpg2
-.RB [ \-\-homedir
-.IR dir ]
-.RB [ \-\-options
-.IR file ]
-.RI [ options ]
-.I command
-.RI [ args ]
-@end ifset
-@end ifset
-@c End gpg2 hack stuff
 
 
 @mansect description
@@ -68,18 +42,11 @@ There are two main versions of GnuPG: GnuPG 1.x and GnuPG 2.x.  GnuPG
 2.x supports modern encryption algorithms and thus should be preferred
 over GnuPG 1.x.  You only need to use GnuPG 1.x if your platform
 doesn't support GnuPG 2.x, or you need support for some features that
-GnuPG 2.x has deprecated, e.g., decrypting data created with PGP-2
-keys.
+GnuPG 2.x has deprecated for security reasons, e.g., decrypting data
+created with PGP-2 keys.
 
-@ifclear gpgtwohack
 If you are looking for version 1 of GnuPG, you may find that version
 installed under the name @command{gpg1}.
-@end ifclear
-@ifset gpgtwohack
-In contrast to the standalone command @command{gpg} from GnuPG 1.x,
-the 2.x version is commonly installed under the name
-@command{@gpgname}.
-@end ifset
 
 @manpause
 

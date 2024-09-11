@@ -8,8 +8,6 @@
 
 @include defs.inc
 
-@c Begin standard stuff
-@ifclear gpgtwohack
 @manpage gpgv.1
 @node gpgv
 @section Verify OpenPGP signatures
@@ -25,28 +23,6 @@
 .I sigfile
 .RI [ datafiles ]
 @end ifset
-@end ifclear
-@c End standard stuff
-
-@c Begin gpg2 hack stuff
-@ifset gpgtwohack
-@manpage gpgv2.1
-@node gpgv
-@section Verify OpenPGP signatures
-@ifset manverb
-.B gpgv2
-\- Verify OpenPGP signatures
-@end ifset
-
-@mansect synopsis
-@ifset manverb
-.B  gpgv2
-.RI [ options ]
-.I sigfile
-.RI [ datafiles ]
-@end ifset
-@end ifset
-@c End gpg2 hack stuff
 
 @mansect description
 @code{@gpgvname} is an OpenPGP signature verification tool.
