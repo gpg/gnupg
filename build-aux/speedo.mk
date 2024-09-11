@@ -409,7 +409,7 @@ gitrep = ${HOME}/s
 
 # The tarball directories
 pkgrep = https://gnupg.org/ftp/gcrypt
-pkg10rep = ftp://ftp.g10code.com/g10code
+pkg10rep = foo://no-default-repo.local
 pkg2rep = $(TARBALLS)
 
 # For each package, the following variables can be defined:
@@ -420,10 +420,11 @@ pkg2rep = $(TARBALLS)
 # speedo_pkg_PACKAGE_tar: URL to the tar file that should be built.
 #
 # Exactly one of the above variables is required.  Note that this
-# version of speedo does not cache repositories or tar files, and does
-# not test the integrity of the downloaded software.  If you care
-# about this, you can also specify filenames to locally verified files.
-# Filenames are differentiated from URLs by starting with a slash '/'.
+# version of speedo does not cache repositories or tar files.  The
+# integrity of the downloaded software is checked using the SWDB.
+# Note that you you can also specify filenames to already downloaded
+# files.  Filenames are differentiated from URLs by testing whether
+# the character is a slash ('/').
 #
 # speedo_pkg_PACKAGE_configure: Extra arguments to configure.
 #
