@@ -1,15 +1,45 @@
-Noteworthy changes in version 2.5.1 (unreleased)
+Noteworthy changes in version 2.5.1 (2024-09-12)
 ------------------------------------------------
 
   * gpg: The support for composite Kyber+ECC public key algorithms
     does now use the final FIPS-203 and LibrePGP specifications.  The
     experimental keys from 2.5.0 are no longer supported.  [T6815]
 
+  * gpg: New commands --add-recipients and --change-recipients.
+    [T1825]
+
   * gpg: New option --proc-all-sigs.  [T7261]
+
+  * gpg: Fix a regression in 2.5.0 in gpgme's tests.  [T7195]
+
+  * gpg: Make --no-literal work again for -c and --store.  [T5852]
+
+  * gpg: Improve detection of input data read errors.  [T6528]
+
+  * gpg: Fix getting key by IPGP record (rfc-4398).  [T7288]
 
   * gpgsm: New option --assert-signer.  [T7286]
 
+  * gpgsm: More improvements to PKCS#12 parsing to cope with latest
+    IVBB changes.  [T7213]
 
+  * agent: Fix KEYTOCARD command when used with a loopback pinentry.
+    [T7283]
+
+  * gpg-mail-tube: Make sure GNUPGHOME is set in vsd mode.  New option
+    --as-attach.  [rG4511997e9e1b]
+
+  * Now uses the process spawn API from libgpg-error.  [T7192,T7194]
+
+  * Removed the --enable-gpg-is-gpg2 configure time option.
+    [rG2125f228d36c]
+
+  * Die Windows version will now be build for 64-Bit Windows and with
+    the corresponding changes to the installation directory and
+    Registry keys.
+
+
+  See-also: gnupg-announce/2024q3/000485.html
   Release-info: https://dev.gnupg.org/T7191
 
 
