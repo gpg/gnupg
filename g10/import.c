@@ -959,7 +959,8 @@ read_block( IOBUF a, unsigned int options,
       else if (rc ) /* (ignore errors) */
         {
           skip_sigs = 0;
-          if (gpg_err_code (rc) == GPG_ERR_UNKNOWN_PACKET)
+          if (gpg_err_code (rc) == GPG_ERR_UNKNOWN_PACKET
+              || gpg_err_code (rc) == GPG_ERR_UNKNOWN_VERSION)
             ; /* Do not show a diagnostic.  */
           else if (gpg_err_code (rc) == GPG_ERR_INV_PACKET
                    && (pkt->pkttype == PKT_USER_ID

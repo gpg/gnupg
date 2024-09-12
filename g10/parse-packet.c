@@ -2474,7 +2474,10 @@ parse_key (IOBUF inp, int pkttype, unsigned long pktlen,
     }
   else
     {
-      log_error ("packet(%d) with unknown version %d\n", pkttype, version);
+      if (version == 5)
+        log_info ("packet(%d) with unsupported version %d\n", pkttype, version);
+      else
+        log_error ("packet(%d) with unsupported version %d\n", pkttype,version);
       if (list_mode)
         es_fputs (":key packet: [unknown version]\n", listfp);
       err = gpg_error (GPG_ERR_UNKNOWN_VERSION);
