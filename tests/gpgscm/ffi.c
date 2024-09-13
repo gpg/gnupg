@@ -936,10 +936,18 @@ do_process_spawn_io (scheme *sc, pointer args)
 
   err = gpgrt_process_spawn (argv[0], (const char **) &argv[1],
                              flags, NULL, &proc);
-  err = gpgrt_process_get_streams (proc, 0, &infp, NULL, NULL);
+  if (err)
+    {
+      xfree (argv);
+      FFI_RETURN_ERR (sc, err);
+    }
 
-  err = es_write (infp, a_input, strlen (a_input), NULL);
-  es_fclose (infp);
+  err = gpgrt_process_get_streams (proc, 0, &infp, NULL, NULL);
+  if (!err)
+    {
+      err = es_write (infp, a_input, strlen (a_input), NULL);
+      es_fclose (infp);
+    }
   if (err)
     {
       gpgrt_process_release (proc);
@@ -1198,6 +1206,8 @@ do_process_spawn_fd (scheme *sc, pointer args)
   err = gpgrt_process_spawn (argv[0], (const char **)&argv[1], 0, act, &proc);
   gpgrt_spawn_actions_release (act);
   xfree (argv);
+  if (err)
+    FFI_RETURN_ERR (sc, err);
   FFI_RETURN_POINTER (sc, proc_wrap (sc, proc));
 }
 
