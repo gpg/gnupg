@@ -63,7 +63,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnupg\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"PO-Revision-Date: 2024-08-02 14:16+0100\n"
+"PO-Revision-Date: 2024-09-16 20:49+0100\n"
 "Last-Translator: Daniel Cerqueira <dan.git@brilhante.top>\n"
 "Language-Team: pt <dan.git@brilhante.top>\n"
 "Language: pt\n"
@@ -1713,15 +1713,12 @@ msgstr "Comandos de Admin não são permitidos\n"
 msgid "Invalid command  (try \"help\")\n"
 msgstr "Comando inválido (tente \"help\")\n"
 
-#, fuzzy, c-format
-#| msgid "key operation not possible: %s\n"
+#, c-format
 msgid "modifiying the recipients is not possible: %s\n"
-msgstr "operação de chave não é possível: %s\n"
+msgstr "não é possível modificar os destinatários: %s\n"
 
-#, fuzzy
-#| msgid "decryption failed: %s\n"
 msgid "decryption failed"
-msgstr "decifração falhou: %s\n"
+msgstr "decifração falhou"
 
 #, c-format
 msgid "--output doesn't work for this command\n"
@@ -1863,10 +1860,9 @@ msgstr ""
 "AVISO: forçar o algoritmo de compressão %s (%d) viola as preferências do "
 "destinatário\n"
 
-#, fuzzy, c-format
-#| msgid "Number of recipients"
+#, c-format
 msgid "number of removed recipients: %u\n"
-msgstr "Número de destinatários"
+msgstr "número de destinatários removidos: %u\n"
 
 #, c-format
 msgid "option '%s' may not be used in %s mode\n"
@@ -4237,10 +4233,9 @@ msgstr "  (%d) Chave existente%s\n"
 msgid "  (%d) Existing key from card%s\n"
 msgstr "  (%d) Chave do cartão existente%s\n"
 
-#, fuzzy, c-format
-#| msgid "  (%d) ECC (encrypt only)%s\n"
+#, c-format
 msgid "  (%d) Kyber (encrypt only)%s\n"
-msgstr "  (%d) ECC (apenas de cifrar)%s\n"
+msgstr "  (%d) Kyber (apenas de cifrar)%s\n"
 
 msgid "Enter the keygrip: "
 msgstr "Introduzir o keygrip: "
@@ -5561,10 +5556,9 @@ msgstr ""
 msgid "Note: secret key %s expired at %s\n"
 msgstr "Nota: a chave secreta %s expirou em %s\n"
 
-#, fuzzy, c-format
-#| msgid "certificate should not have been used for encryption\n"
+#, c-format
 msgid "Note: ADSK key has been used for decryption"
-msgstr "certificado não deveria ter sido usado para a cifração\n"
+msgstr "Nota: chave ADSK foi usada para decifração"
 
 #, c-format
 msgid "Note: key has been revoked"
@@ -9019,14 +9013,3 @@ msgstr "comandos de gerir uma Yubikey"
 
 msgid "manage the command history"
 msgstr "gerir o histórico de comandos"
-
-#, c-format
-#~ msgid "waiting for process %d to terminate failed: %s\n"
-#~ msgstr "falha ao aguardar pelo encerramento do processo %d: %s\n"
-
-#, c-format
-#~ msgid "waiting for process to terminate failed: ec=%d\n"
-#~ msgstr "falha ao esperar que o processo terminasse: ec=%d\n"
-
-#~ msgid "use canonical text mode"
-#~ msgstr "usar modo de texto canónico"
