@@ -325,7 +325,7 @@ read_one_trustfile (const char *fname, int systrust,
             ti->flags.cm = 1;
           else if (n == 4 && !memcmp (p, "qual", 4) && systrust)
             ti->flags.qual = 1;
-          else if (n == 4 && !memcmp (p, "de-vs", 4) && systrust)
+          else if (n == 5 && !memcmp (p, "de-vs", 5) && systrust)
             ti->flags.de_vs = 1;
           else
             log_error ("flag '%.*s' in '%s', line %d ignored\n",
