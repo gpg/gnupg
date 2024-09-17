@@ -97,7 +97,15 @@ my_error (int errcode)
   return gpg_err_make (default_errsource, errcode);
 }
 
-
+/*
+ * get_max_fds, close_all_fds and get_all_open_fds are functions for
+ * POSIX, not Windows.  After fork and before exec on POSIX, those are
+ * used when spawning a child process so that the child process
+ * doesn't keep having file descriptors not needed for it.  On
+ * Windows, spawn API has a different semantics (than fork + exec).
+ */
+#undef EXPORT_UNUSED_FUNCTIONS
+#ifdef EXPORT_UNUSED_FUNCTIONS
 /* Return the maximum number of currently allowed open file
    descriptors.  Only useful on POSIX systems but returns a value on
    other systems too.  */
@@ -178,7 +186,7 @@ get_all_open_fds (void)
 #endif /*HAVE_STAT*/
   return array;
 }
-
+#endif
 
 /* Helper function to build_w32_commandline. */
 static char *

@@ -31,6 +31,7 @@
 #define GNUPG_COMMON_EXECHELP_H
 
 
+#ifndef HAVE_W32_SYSTEM
 /* Return the maximum number of currently allowed file descriptors.
    Only useful on POSIX systems.  */
 int get_max_fds (void);
@@ -49,6 +50,7 @@ void close_all_fds (int first, int *except);
    use of this function right at startup even before libgcrypt has
    been initialized.  Returns NULL on error and sets ERRNO accordingly.  */
 int *get_all_open_fds (void);
+#endif
 
 
 /* Portable function to create a pipe.  Under Windows the write end is
