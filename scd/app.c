@@ -25,6 +25,10 @@
 #include <unistd.h>
 #include <npth.h>
 
+#ifndef HAVE_W32_SYSTEM
+#include <fcntl.h>		/* F_SETFD F_GETFL F_SETFL O_NONBLOCK fcntl(2) */
+#endif
+
 #include "scdaemon.h"
 #include "../common/exechelp.h"
 #include "iso7816.h"
@@ -2654,6 +2658,11 @@ initialize_module_command (void)
       log_error ("pipe creation failed: %s\n", gpg_strerror (ret));
       return err;
     }
+  /* There may be multiple clients for DEVINFO --watch.
+   * O_NONBLOCK allows multiple accesses, not blocking at read(2).  */
+  if (fcntl (card_list_lock.notify_pipe[0], F_SETFL, O_NONBLOCK) < 0)
+    log_error ("fcntl failed: %s\n",
+               gpg_strerror (gpg_error_from_syserror ()));
 #endif
 
   return apdu_init ();
