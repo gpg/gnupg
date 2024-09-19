@@ -22,10 +22,19 @@ Noteworthy changes in version 2.4.6 (unreleased)
 
   * gpg: New option --proc-all-sigs.  [T7261]
 
+  * gpg: Fix a wrong decryption failed status for signed and OCB
+    encrypted messages without a signature verification key.  [T7042]
+
+  * gpg: Make --no-literal work again for -c and --store.  [T5852]
+
+  * gpg: Fix getting key by IPGP.  [T7288]
+
   * gpgsm: New option --assert-signer.  [T7286]
 
   * gpgsm: Emit user IDs with an empty Subject also in colon mode.
     [T7171]
+
+  * keyboxd: Fix a race condition on the database handle.  [T7294]
 
   * agent: Consider an empty pattern file as valid.  [rGc27534de95]
 
@@ -35,6 +44,8 @@ Noteworthy changes in version 2.4.6 (unreleased)
     [T7129, rG19d93a239d]
 
   * agent: Make "SCD DEVINFO --watch" more robust.  [T7151]
+
+  * agent: Fix detection of the yet unused trustflag de-vs.  [T5079]
 
   * scd: Improve KDF data object handling for OpenPGP cards.  [T7058]
 
