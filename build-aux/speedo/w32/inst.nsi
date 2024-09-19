@@ -46,7 +46,7 @@ Unicode true
 !define PRETTY_PACKAGE "GNU Privacy Guard"
 !define PRETTY_PACKAGE_SHORT "GnuPG"
 !define COMPANY "The GnuPG Project"
-!define COPYRIGHT "Copyright (C) 2021 g10 Code GmbH"
+!define COPYRIGHT "Copyright (C) 2024 g10 Code GmbH"
 !define DESCRIPTION "GnuPG: The GNU Privacy Guard for Windows"
 
 !define INSTALL_DIR "GnuPG"
@@ -63,13 +63,13 @@ Unicode true
   GnuPG includes an advanced key management facility and is compliant \
   with the OpenPGP Internet standard as described in RFC-4880. \
   \r\n\r\n$_CLICK \
-  \r\n\r\n\r\n\r\n\r\nThis is GnuPG version ${VERSION}.\r\n\
+  \r\n\r\n\r\n\r\n\r\nThis is GnuPG version ${VERSION} (32 bit).\r\n\
   File version: ${PROD_VERSION}\r\n\
   Release date: ${BUILD_ISODATE}"
 !define ABOUT_GERMAN \
  "GnuPG is die häufigst verwendete Software zur Mail- und Datenverschlüsselung.\
    \r\n\r\n$_CLICK \
-   \r\n\r\n\r\n\r\n\r\nDies ist GnuPG Version ${VERSION}.\r\n\
+   \r\n\r\n\r\n\r\n\r\nDies ist GnuPG Version ${VERSION} (32 bit).\r\n\
    Dateiversion: ${PROD_VERSION}\r\n\
    Releasedatum: ${BUILD_ISODATE}"
 
@@ -250,7 +250,7 @@ LangString T_About ${LANG_GERMAN} "${ABOUT_GERMAN}"
 LangString T_GPLHeader ${LANG_ENGLISH} \
   "This software is licensed under the terms of the GNU General Public \
    License (GNU GPL)."
-LangString T_GPLHeader ${LANG_GERMAN}} \
+LangString T_GPLHeader ${LANG_GERMAN} \
   "Diese Software ist unter der GNU General Public License \
    (GNU GPL) lizensiert."
 
@@ -590,23 +590,6 @@ Section "-gnupginst"
 
   WriteRegStr SHCTX "Software\GnuPG" "Install Directory" $INSTDIR
 
-  # If we are reinstalling, try to kill a possible running gpa using
-  # an already installed gpa.
-  ifFileExists "$INSTDIR\bin\launch-gpa.exe"  0 no_uiserver
-    nsExec::ExecToLog '"$INSTDIR\bin\launch-gpa" "--stop-server"'
-
-  no_uiserver:
-
-  # If we are reinstalling, try to kill a possible running agent using
-  # an already installed gpgconf.
-
-  ifFileExists "$INSTDIR\bin\gpgconf.exe"  0 no_gpgconf
-    nsExec::ExecToLog '"$INSTDIR\bin\gpgconf" "--kill" "dirmngr"'
-    nsExec::ExecToLog '"$INSTDIR\bin\gpgconf" "--kill" "gpg-agent"'
-    nsExec::ExecToLog '"$INSTDIR\bin\gpgconf" "--kill" "keyboxd"'
-
-  no_gpgconf:
-
   # Add the bin directory to the PATH
   Push "$INSTDIR\bin"
   Call AddToPath
@@ -851,6 +834,11 @@ SectionEnd
 Section "-sqlite" SEC_sqlite
   SetOutPath "$INSTDIR\bin"
   File bin/libsqlite3-0.dll
+SectionEnd
+
+Section "-ntbtls" SEC_ntbtls
+  SetOutPath "$INSTDIR\bin"
+  File bin/libntbtls-0.dll
 SectionEnd
 
 !ifdef WITH_GUI
@@ -1436,6 +1424,10 @@ Section "-un.sqlite"
   Delete "$INSTDIR\bin\libsqlite3-0.dll"
 SectionEnd
 
+Section "-un.ntbtls"
+  Delete "$INSTDIR\bin\libntbtls-0.dll"
+SectionEnd
+
 Section "-un.gnupginst"
   # Delete standard stuff.
   Delete "$INSTDIR\README.txt"
@@ -1464,18 +1456,6 @@ Function .onInit
   !insertmacro MUI_LANGDLL_DISPLAY
 
   Call G4wRunOnce
-
-  SetOutPath $TEMP
-#!ifdef SOURCES
-#  File /oname=gpgspltmp.bmp "${TOP_SRCDIR}/doc/logo/gnupg-logo-400px.bmp"
-#  # We play the tune only for the soruce installer
-#  File /oname=gpgspltmp.wav "${TOP_SRCDIR}/src/gnupg-splash.wav"
-#  g4wihelp::playsound $TEMP\gpgspltmp.wav
-#  g4wihelp::showsplash 2500 $TEMP\gpgspltmp.bmp
-
-#  Delete $TEMP\gpgspltmp.bmp
-#  # Note that we delete gpgspltmp.wav in .onInst{Failed,Success}
-#!endif
 
   # We can't use TOP_SRCDIR dir as the name of the file needs to be
   # the same while building and running the installer.  Thus we
@@ -1619,11 +1599,7 @@ Section
   WriteRegExpandStr SHCTX $MYTMP "UninstallString" '"$INSTDIR\gnupg-uninstall.exe"'
   WriteRegExpandStr SHCTX $MYTMP "InstallLocation" "$INSTDIR"
   WriteRegStr       SHCTX $MYTMP "DisplayName"     "${PRETTY_PACKAGE}"
-!ifdef WITH_GUI
-  WriteRegStr       SHCTX $MYTMP "DisplayIcon"     "$INSTDIR\bin\gpa.exe,0"
-!else
   WriteRegStr       SHCTX $MYTMP "DisplayIcon"     "$INSTDIR\bin\gpg.exe,0"
-!endif
   WriteRegStr       SHCTX $MYTMP "DisplayVersion"  "${VERSION}"
   WriteRegStr       SHCTX $MYTMP "Publisher"       "The GnuPG Project"
   WriteRegStr       SHCTX $MYTMP "URLInfoAbout"    "https://gnupg.org"
