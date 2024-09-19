@@ -798,15 +798,12 @@ proc_encrypted (CTX c, PACKET *pkt)
         compliance_de_vs |= 2;
     }
 
-  /* Trigger the deferred error.  The second condition makes sure that a
-   * log_error printed in the cry_cipher_checktag never gets ignored.  */
+  /* Trigger the deferred error.  */
   if (!result && early_plaintext)
     result = gpg_error (GPG_ERR_BAD_DATA);
   else if (!result && opt.show_only_session_key)
     result = -1;
-  else if (!result && pkt->pkt.encrypted->aead_algo
-           && log_get_errorcount (0))
-    result = gpg_error (GPG_ERR_BAD_SIGNATURE);
+
 
   if (result == -1)
     ;
