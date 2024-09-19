@@ -73,6 +73,9 @@ struct decode_filter_context_s
    *   3 = premature EOF (general)       */
   unsigned int eof_seen : 2;
 
+  /* Flag to convey an error from aead_checktag.  */
+  unsigned int checktag_failed : 1;
+
   /* The actually used cipher algo for AEAD.  */
   byte cipher_algo;
 
@@ -207,6 +210,7 @@ aead_checktag (decode_filter_ctx_t dfx, int final, const void *tagbuf)
       log_error ("gcry_cipher_checktag%s failed: %s\n",
                  final? " (final)":"", gpg_strerror (err));
       write_status_error ("aead_checktag", err);
+      dfx->checktag_failed = 1;
       return err;
     }
   if (DBG_FILTER)
@@ -479,6 +483,7 @@ decrypt_data (ctrl_t ctrl, void *procctx, PKT_encrypted *ed, DEK *dek,
   dfx->refcount++;
   dfx->partial = !!ed->is_partial;
   dfx->length = ed->len;
+  dfx->checktag_failed = 0;
   if (ed->aead_algo)
     iobuf_push_filter ( ed->buf, aead_decode_filter, dfx );
   else if (ed->mdc_method)
@@ -524,6 +529,10 @@ decrypt_data (ctrl_t ctrl, void *procctx, PKT_encrypted *ed, DEK *dek,
   ed->buf = NULL;
   if (dfx->eof_seen > 1 )
     rc = gpg_error (GPG_ERR_INV_PACKET);
+  else if (dfx->checktag_failed)
+    {
+      rc = gpg_error (GPG_ERR_BAD_SIGNATURE);
+    }
   else if ( ed->mdc_method )
     {
       /* We used to let parse-packet.c handle the MDC packet but this
