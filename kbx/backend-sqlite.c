@@ -568,10 +568,13 @@ create_or_open_database (ctrl_t ctrl, const char *filename)
   int dbversion;
   int setdbversion = 0;
 
-  if (database_hd)
-    return 0;  /* Already initialized.  */
-
   acquire_mutex ();
+
+  if (database_hd)
+    {
+      release_mutex ();
+      return 0;  /* Already initialized.  */
+    }
 
   /* To avoid races with other temporary instances of keyboxd trying
    * to create or update the database, we run the database with a lock
