@@ -40,6 +40,7 @@ Options:
                        (default if not used in the GnuPG tree)
     --find-sha1sum     Print the name of the sha1sum utility
     --find-sha256sum   Print the name of the sha256sum utility
+    --wgetopt STRING   Pass STRING as options to wget
     --help             Print this help.
 
 Example:
@@ -53,6 +54,7 @@ EOF
 #
 # Parse options
 #
+WGETOPT=
 skip_download=no
 skip_verify=no
 skip_selfcheck=no
@@ -90,6 +92,9 @@ while test $# -gt 0; do
             ;;
         --find-sha256sum)
             find_sha256sum=yes
+            ;;
+        --wgetopt|--wgetopt=*)
+            WGETOPT=$optarg
             ;;
         --info)
             info_mode=yes
@@ -192,12 +197,12 @@ else
       exit 1
   fi
 
-  if ! $WGET -q -O swdb.lst "$urlbase/swdb.lst" ; then
+  if ! $WGET ${WGETOPT} -q -O swdb.lst "$urlbase/swdb.lst" ; then
       echo "download of swdb.lst failed." >&2
       exit 1
   fi
   if [ $skip_verify = no ]; then
-    if ! $WGET -q -O swdb.lst.sig "$urlbase/swdb.lst.sig" ; then
+    if ! $WGET ${WGETOPT} -q -O swdb.lst.sig "$urlbase/swdb.lst.sig" ; then
       echo "download of swdb.lst.sig failed." >&2
       exit 1
     fi
@@ -235,13 +240,13 @@ download_pkg () {
     local url="$1"
     local file="${url##*/}"
 
-    if ! $WGET -q -O -  "$url" >"${file}.tmp" ; then
+    if ! $WGET ${WGETOPT} -q -O -  "$url" >"${file}.tmp" ; then
       echo "download of $file failed." >&2
       [ -f "${file}.tmp" ] && rm "${file}.tmp"
       return 1
     fi
     if [ $skip_verify = no ]; then
-        if ! $WGET -q -O - "${url}.sig" >"${file}.tmpsig" ; then
+        if ! $WGET ${WGETOPT} -q -O - "${url}.sig" >"${file}.tmpsig" ; then
             echo "download of $file.sig failed." >&2
             [ -f "${file}.tmpsig" ] && rm "${file}.tmpsig"
             return 1

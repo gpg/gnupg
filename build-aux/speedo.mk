@@ -185,6 +185,10 @@ MAKE_J = $(shell if command -v nproc >/dev/null 2>&1; then \
            nproc; else echo 6; \
          fi)
 
+# Extra options for wget(1)
+WGETOPT= --retry-connrefused  --retry-on-host-error
+
+
 # Name to use for the w32 installer and sources
 
 
@@ -309,6 +313,7 @@ endif
 ifeq ($(SELFCHECK),0)
 getswdb_options += --skip-selfcheck
 endif
+getswdb_options += --wgetopt="$(WGETOPT)"
 ifeq ($(UPD_SWDB),1)
 SWDB := $(shell $(topsrc)/build-aux/getswdb.sh $(getswdb_options) && echo okay)
 ifeq ($(strip $(SWDB)),)
@@ -865,7 +870,7 @@ $(stampdir)/stamp-$(1)-00-unpack: $(stampdir)/stamp-directories
            [ -f tmp.tgz ] && rm tmp.tgz;                \
            case "$$$${tar}" in				\
 	     /*) $$$${pretar} < $$$${tar} | tar xf - ;;	\
-	     *)  wget -q -O - $$$${tar} | tee tmp.tgz   \
+	     *)  wget $(WGETOPT) -q -O - $$$${tar} | tee tmp.tgz   \
                   | $$$${pretar} | tar x$$$${opt}f - ;; \
 	   esac;					\
 	   if [ -f tmp.tgz ]; then                      \
