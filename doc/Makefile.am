@@ -143,7 +143,11 @@ yat2m-stamp: $(myman_sources) defs.inc
 	for file in $(myman_sources); do \
               $(YAT2M) $(YAT2M_OPTIONS) --store \
                   --date "`cat $$incd 2>/dev/null`" \
-	          `test -f '$$file' || echo '$(srcdir)/'`$$file ; done
+	          `test -f '$$file' || echo '$(srcdir)/'`$$file ; \
+              $(YAT2M) $(YAT2M_OPTIONS) --store --html --gnupgorg \
+                  --date "`cat $$incd 2>/dev/null`" \
+	          `test -f '$$file' || echo '$(srcdir)/'`$$file ;\
+        done
 	@mv -f yat2m-stamp.tmp $@
 
 yat2m-stamp: $(YAT2M)

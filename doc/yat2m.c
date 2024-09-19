@@ -1583,6 +1583,13 @@ main (int argc, char **argv)
           opt_store = 1;
           argc--; argv++;
         }
+      else if (!strcmp (*argv, "--html") || !strcmp (*argv, "--gnupgorg"))
+        {
+          /* These are dummy options to keep the Makefile simple.  It
+           * is not expected that the HTML files for upload are
+           * created with this included version of yat2m.  */
+          argc--; argv++;
+        }
       else if (!strcmp (*argv, "--select"))
         {
           argc--; argv++;
