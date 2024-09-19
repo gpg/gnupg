@@ -7,9 +7,9 @@
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: gnupg-2.4.1\n"
+"Project-Id-Version: gnupg-2.4\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"PO-Revision-Date: 2024-03-07 13:56+0100\n"
+"PO-Revision-Date: 2024-09-19 14:32+0200\n"
 "Last-Translator: Werner Koch <wk@gnupg.org>\n"
 "Language-Team: German\n"
 "Language: de\n"
@@ -2357,6 +2357,9 @@ msgstr "Das Ablaufdatum mit den Signaturen anlisten"
 msgid "show preferences"
 msgstr "Voreinstellungen anzeigen"
 
+msgid "show ownertrust"
+msgstr "Den \"Ownertrust\" anzeigen"
+
 #, c-format
 msgid "unknown TOFU policy '%s'\n"
 msgstr "Unbekannte TOFU Regel '%s'\n"
@@ -2485,6 +2488,10 @@ msgstr "ungültige \"auto-key-locate\"-Liste\n"
 #, c-format
 msgid "invalid argument for option \"%.50s\"\n"
 msgstr "Ungültiges Argument für Option \"%.50s\"\n"
+
+#, c-format
+msgid "error parsing value for option '%s': %s\n"
+msgstr "Fehler beim Parsen des Wertes der Option '%s': %s\n"
 
 #, c-format
 msgid "WARNING: program may create a core file!\n"
@@ -3707,6 +3714,10 @@ msgid "setting the primary user ID failed: %s\n"
 msgstr "Fehler beim Setzen der Haupt-User-ID: %s\n"
 
 #, c-format
+msgid "setting the ownertrust to '%s' failed: %s\n"
+msgstr "Setzen der \"Ownertrust\" auf '%s' schlug fehl: %s\n"
+
+#, c-format
 msgid "\"%s\" is not a fingerprint\n"
 msgstr "\"%s\" ist kein Fingerabdruck\n"
 
@@ -4535,6 +4546,11 @@ msgstr ""
 "Unterschlüssel für diesem Zweck erzeugen.\n"
 
 #, c-format
+msgid "Note: The key has been created with one or more ADSK!\n"
+msgstr ""
+"WARNUNG: Dieser Schlüssel wurde mit einem oder mehreren ADSK erzeugt!\n"
+
+#, c-format
 msgid ""
 "key has been created %lu second in future (time warp or clock problem)\n"
 msgstr ""
@@ -4613,6 +4629,9 @@ msgstr[1] "WARNUNG: %lu Schlüssel übersprungen, da sie zu groß sind\n"
 
 msgid "Keyring"
 msgstr "Schlüsselbund"
+
+msgid "Revocable by: "
+msgstr "Widerrufbar durch: "
 
 msgid "Primary key fingerprint:"
 msgstr "Haupt-Fingerabdruck  ="
@@ -5582,6 +5601,10 @@ msgstr ""
 #, c-format
 msgid "Note: secret key %s expired at %s\n"
 msgstr "Hinweis: geheimer Schlüssel %s verfällt am %s\n"
+
+#, c-format
+msgid "Note: ADSK key has been used for decryption"
+msgstr "Hinweis: Der ADSK Schlüssel wurde zum Entschlüsseln benutzt"
 
 #, c-format
 msgid "Note: key has been revoked"
