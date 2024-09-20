@@ -58,8 +58,8 @@ struct mrsw_lock
   HANDLE the_event;
 #else
   int notify_pipe[2];
-  int notify_watchers;
 #endif
+  int notify_watchers;  /* Used only for W32 but let's define it always.  */
 };
 
 /* MRSW lock to protect the list of cards.
