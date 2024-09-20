@@ -58,6 +58,7 @@ struct mrsw_lock
   HANDLE the_event;
 #else
   int notify_pipe[2];
+  int notify_watchers;
 #endif
 };
 
@@ -380,7 +381,10 @@ card_list_signal (void)
     log_error ("SetEvent for card_list_signal failed: %s\n",
                w32_strerror (-1));
 #else
-  write (card_list_lock.notify_pipe[1], "", 1);
+  npth_mutex_lock (&card_list_lock.lock);
+  if (card_list_lock.notify_watchers)
+    write (card_list_lock.notify_pipe[1], "", 1);
+  npth_mutex_unlock (&card_list_lock.lock);
 #endif
 }
 
@@ -400,7 +404,7 @@ card_list_wait (ctrl_t ctrl)
   npth_mutex_lock (&card_list_lock.lock);
   card_list_lock.writer_active--;
   npth_cond_broadcast (&card_list_lock.cond);
-
+  card_list_lock.notify_watchers++;
   npth_mutex_unlock (&card_list_lock.lock);
 
   while (1)
@@ -448,7 +452,7 @@ card_list_wait (ctrl_t ctrl)
     }
 
   npth_mutex_lock (&card_list_lock.lock);
-
+  card_list_lock.notify_watchers--;
   card_list_lock.num_writers_waiting++;
   while (card_list_lock.num_readers_active
          || card_list_lock.writer_active)
