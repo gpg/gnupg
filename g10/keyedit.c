@@ -3526,7 +3526,7 @@ keyedit_quick_set_expire (ctrl_t ctrl, const char *fpr, const char *expirestr,
                   && !pk->flags.revoked )
                 {
                   fingerprint_from_pk (pk, fprbin, &fprlen);
-                  if (fprlen == 20 && !memcmp (fprbin, desc.u.fpr, 20))
+                  if (fprlen == desc.fprlen && !memcmp (fprbin, desc.u.fpr, fprlen))
                     {
                       node->flag |= NODFLG_SELKEY;
                       any = 1;
