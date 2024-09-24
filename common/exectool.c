@@ -484,6 +484,13 @@ gnupg_exec_tool_stream (const char *pgmname, const char *argv[],
           log_debug ("unexpected timeout while polling '%s'\n", pgmname);
           break;
         }
+      for (i=0; i < 4; i++)
+        if (!fds[i].ignore && fds[i].got_nval)
+          {
+            /* This should never happen.  */
+            log_debug ("closed fd passed to poll at idx %d - ignored\n", i);
+            fds[i].ignore = 1;
+          }
 
       if (fds[0].got_write)
         {
