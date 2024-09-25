@@ -331,7 +331,7 @@ gnupg_exec_tool_stream (const char *pgmname, const char *argv[],
 #else
   int exceptclose[2];
 #endif
-  gnupg_fd_t extrapipe;
+  gnupg_fd_t extrapipe = GNUPG_INVALID_FD;
   char extrafdbuf[20];
   const char *argsave = NULL;
   int argsaveidx;
