@@ -95,6 +95,24 @@ new_key_item (void)
   return k;
 }
 
+static struct key_item *
+copy_key_item (struct key_item *k0)
+{
+  struct key_item *k;
+
+  k = xmalloc_clear (sizeof *k);
+  k->ownertrust = k0->ownertrust;
+  k->min_ownertrust = k0->min_ownertrust;
+  k->trust_depth = k0->trust_depth;
+  k->trust_value = k0->trust_value;
+  if (k0->trust_regexp)
+    k->trust_regexp = xstrdup (k0->trust_regexp);
+  k->kid[0] = k0->kid[0];
+  k->kid[1] = k0->kid[1];
+
+  return k;
+}
+
 static void
 release_key_items (struct key_item *k)
 {
@@ -2138,6 +2156,7 @@ validate_keys (ctrl_t ctrl, int interactive)
 {
   int rc = 0;
   int quit=0;
+  struct key_item *valid_utk_list = NULL;
   struct key_item *klist = NULL;
   struct key_item *k;
   struct key_array *keys = NULL;
@@ -2170,18 +2189,12 @@ validate_keys (ctrl_t ctrl, int interactive)
   /* Step 1 */
   /* Fixme: Instead of always building a UTK list, we could just build it
    * here when needed */
-  if (!utk_list)
-    {
-      if (!opt.quiet)
-        log_info (_("no ultimately trusted keys found\n"));
-      goto leave;
-    }
 
-  /* mark all UTKs as used and fully_trusted and set validity to
-     ultimate */
+  /* Mark all usable UTKs as used and fully_trusted and set validity
+   * to ultimate.  Create a list of these UTKs for further processing.  */
   for (k=utk_list; k; k = k->next)
     {
-      KBNODE keyblock;
+      kbnode_t keyblock;
       PKT_public_key *pk;
 
       keyblock = get_pubkeyblock (ctrl, k->kid);
@@ -2192,6 +2205,19 @@ validate_keys (ctrl_t ctrl, int interactive)
           continue;
         }
       pk = keyblock->pkt->pkt.public_key;
+      if (pk->has_expired)
+        {
+          log_error (_("Note: ultimately trusted key %s expired\n"),
+                     keystr(k->kid));
+          continue;
+        }
+
+      {
+        struct key_item *ki = copy_key_item (k);
+        ki->next = valid_utk_list;
+        valid_utk_list = ki;
+      }
+
       mark_keyblock_seen (used, keyblock);
       mark_keyblock_seen (full_trust, keyblock);
       for (node=keyblock; node; node = node->next)
@@ -2213,7 +2239,13 @@ validate_keys (ctrl_t ctrl, int interactive)
   if (opt.trust_model == TM_TOFU)
     goto leave;
 
-  klist = utk_list;
+  if (!valid_utk_list)
+    {
+      if (!opt.quiet)
+        log_info (_("no ultimately trusted keys found\n"));
+      goto leave;
+    }
+  klist = valid_utk_list;
 
   if (!opt.quiet)
     log_info ("marginals needed: %d  completes needed: %d  trust model: %s\n",
@@ -2286,7 +2318,7 @@ validate_keys (ctrl_t ctrl, int interactive)
 	  valids++;
         }
 
-      /* Step 4: Find all keys which are signed by a key in kdlist */
+      /* Step 4: Find all keys which are signed by a key in klist */
       keys = validate_key_list (ctrl, kdb, full_trust, klist,
 				start_time, &next_expire);
       if (!keys)
@@ -2312,8 +2344,8 @@ validate_keys (ctrl_t ctrl, int interactive)
                   depth, valids, key_count, ot_unknown, ot_undefined,
                   ot_never, ot_marginal, ot_full, ot_ultimate );
 
-      /* Step 8: Build a new kdlist from all fully valid keys in KEYS */
-      if (klist != utk_list)
+      /* Step 8: Build a new klist from all fully valid keys in KEYS */
+      if (klist != valid_utk_list)
         release_key_items (klist);
       klist = NULL;
       for (kar=keys; kar->keyblock; kar++)
@@ -2366,8 +2398,9 @@ validate_keys (ctrl_t ctrl, int interactive)
  leave:
   keydb_release (kdb);
   release_key_array (keys);
-  if (klist != utk_list)
+  if (klist != valid_utk_list)
     release_key_items (klist);
+  release_key_items (valid_utk_list);
   release_key_hash_table (full_trust);
   release_key_hash_table (used);
   if (!rc && !quit) /* mark trustDB as checked */
