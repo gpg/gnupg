@@ -9,9 +9,9 @@
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: gnupg 2.4.3\n"
+"Project-Id-Version: gnupg 2.4.5\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"PO-Revision-Date: 2024-03-07 13:59+0100\n"
+"PO-Revision-Date: 2024-09-25 14:12+0900\n"
 "Last-Translator: NIIBE Yutaka <gniibe@fsij.org>\n"
 "Language-Team: none\n"
 "Language: ja\n"
@@ -2289,6 +2289,9 @@ msgstr "署名の一覧時に有効期限の日付を表示する"
 msgid "show preferences"
 msgstr "優先指定の表示"
 
+msgid "show ownertrust"
+msgstr "所有者信用の表示"
+
 #, c-format
 msgid "unknown TOFU policy '%s'\n"
 msgstr "不明のTOFUポリシー'%s'\n"
@@ -2415,6 +2418,10 @@ msgstr "無効な auto-key-locate リストです\n"
 #, c-format
 msgid "invalid argument for option \"%.50s\"\n"
 msgstr "オプション\"%.50s\"には無効な引数です\n"
+
+#, c-format
+msgid "error parsing value for option '%s': %s\n"
+msgstr "オプション'%s'の値の構文解析エラー: %s\n"
 
 #, c-format
 msgid "WARNING: program may create a core file!\n"
@@ -3583,6 +3590,10 @@ msgid "setting the primary user ID failed: %s\n"
 msgstr "プライマリ・ユーザIDの設定に失敗しました: %s\n"
 
 #, c-format
+msgid "setting the ownertrust to '%s' failed: %s\n"
+msgstr "所有者信用の'%s'への設定に失敗しました: %s\n"
+
+#, c-format
 msgid "\"%s\" is not a fingerprint\n"
 msgstr "\"%s\"はフィンガープリントではありません\n"
 
@@ -4393,6 +4404,10 @@ msgstr ""
 "\"--edit-key\"コマンドを使って副鍵を生成してください。\n"
 
 #, c-format
+msgid "Note: The key has been created with one or more ADSK!\n"
+msgstr "注意: この鍵は一つ以上のADSKで作られています!\n"
+
+#, c-format
 msgid ""
 "key has been created %lu second in future (time warp or clock problem)\n"
 msgstr "鍵は%lu秒未来にできました (時間歪曲か時計の障害でしょう)\n"
@@ -4464,6 +4479,9 @@ msgstr[0] "警告: %lu個の鍵がその大きさのためスキップされま�
 
 msgid "Keyring"
 msgstr "鍵リング"
+
+msgid "Revocable by: "
+msgstr "失効可能:"
 
 msgid "Primary key fingerprint:"
 msgstr " 主鍵フィンガープリント:"
@@ -5379,6 +5397,10 @@ msgid "Note: secret key %s expired at %s\n"
 msgstr "注意: 秘密鍵%sは%sで期限切れとなります\n"
 
 #, c-format
+msgid "Note: ADSK key has been used for decryption"
+msgstr "注意: ADSK鍵が復号に使用されました"
+
+#, c-format
 msgid "Note: key has been revoked"
 msgstr "注意: 鍵は失効済みです"
 
@@ -5679,7 +5701,7 @@ msgid "invalid fingerprint"
 msgstr "無効なフィンガープリント"
 
 msgid "ownertrust value missing"
-msgstr "所有者信用度がありません"
+msgstr "所有者信用の値がありません"
 
 #, c-format
 msgid "error finding trust record in '%s': %s\n"
