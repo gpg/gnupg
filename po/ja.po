@@ -9,9 +9,9 @@
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: gnupg 2.4.3\n"
+"Project-Id-Version: gnupg 2.5.0\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"PO-Revision-Date: 2024-03-07 13:59+0100\n"
+"PO-Revision-Date: 2024-09-25 14:25+0900\n"
 "Last-Translator: NIIBE Yutaka <gniibe@fsij.org>\n"
 "Language-Team: none\n"
 "Language: ja\n"
@@ -1650,15 +1650,12 @@ msgstr "管理者コマンドは禁止されています\n"
 msgid "Invalid command  (try \"help\")\n"
 msgstr "無効なコマンド (\"help\"を参照)\n"
 
-#, fuzzy, c-format
-#| msgid "key operation not possible: %s\n"
+#, c-format
 msgid "modifiying the recipients is not possible: %s\n"
-msgstr "鍵は操作できません: %s\n"
+msgstr "受取人を変更することはできません: %s\n"
 
-#, fuzzy
-#| msgid "decryption failed: %s\n"
 msgid "decryption failed"
-msgstr "復号に失敗しました: %s\n"
+msgstr "復号に失敗しました"
 
 #, c-format
 msgid "--output doesn't work for this command\n"
@@ -1797,10 +1794,9 @@ msgid ""
 msgstr ""
 "*警告*: 圧縮アルゴリズム %s (%d) の強制が、受取人の優先指定をそむきます\n"
 
-#, fuzzy, c-format
-#| msgid "Number of recipients"
+#, c-format
 msgid "number of removed recipients: %u\n"
-msgstr "受取人の数"
+msgstr "削除された受取人の数: %u\n"
 
 #, c-format
 msgid "option '%s' may not be used in %s mode\n"
@@ -4107,10 +4103,9 @@ msgstr "  (%d) 既存の鍵%s\n"
 msgid "  (%d) Existing key from card%s\n"
 msgstr "  (%d) カードに存在する鍵%s\n"
 
-#, fuzzy, c-format
-#| msgid "  (%d) ECC (encrypt only)%s\n"
+#, c-format
 msgid "  (%d) Kyber (encrypt only)%s\n"
-msgstr "  (%d) ECC (暗号化のみ)%s\n"
+msgstr "  (%d) Kyber (暗号化のみ)%s\n"
 
 msgid "Enter the keygrip: "
 msgstr "keygripを入力: "
@@ -5396,10 +5391,9 @@ msgstr "*警告*: 暗号アルゴリズム%sは受取人の優先指定に入っ
 msgid "Note: secret key %s expired at %s\n"
 msgstr "注意: 秘密鍵%sは%sで期限切れとなります\n"
 
-#, fuzzy, c-format
-#| msgid "certificate should not have been used for encryption\n"
+#, c-format
 msgid "Note: ADSK key has been used for decryption"
-msgstr "証明書は暗号化のために使われるべきではありませんでした\n"
+msgstr "注意: ADSK鍵が復号に使用されました"
 
 #, c-format
 msgid "Note: key has been revoked"
