@@ -1055,7 +1055,7 @@ update_validity (ctrl_t ctrl, PKT_public_key *pk, PKT_user_id *uid,
       trec.rectype = RECTYPE_TRUST;
       fingerprint_from_pk (pk, trec.r.trust.fingerprint, &dummy);
       trec.r.trust.ownertrust = 0;
-      }
+    }
 
   /* locate an existing one */
   recno = trec.r.trust.validlist;
@@ -1604,11 +1604,12 @@ dump_key_array (int depth, struct key_array *keys)
 }
 
 
+/* Store the validation status as given by the node flags of the
+ * KEYBLOCK in the trustdb.  */
 static void
-store_validation_status (ctrl_t ctrl, int depth,
-                         kbnode_t keyblock, KeyHashTable stored)
+store_validation_status (ctrl_t ctrl, int depth, kbnode_t keyblock)
 {
-  KBNODE node;
+  kbnode_t node;
   int status;
   int any = 0;
 
@@ -1617,6 +1618,7 @@ store_validation_status (ctrl_t ctrl, int depth,
       if (node->pkt->pkttype == PKT_USER_ID)
         {
           PKT_user_id *uid = node->pkt->pkt.user_id;
+
           if (node->flag & 4)
             status = TRUST_FULLY;
           else if (node->flag & 2)
@@ -1630,9 +1632,6 @@ store_validation_status (ctrl_t ctrl, int depth,
             {
               update_validity (ctrl, keyblock->pkt->pkt.public_key,
 			       uid, depth, status);
-
-	      mark_keyblock_seen(stored,keyblock);
-
               any = 1;
             }
         }
@@ -1754,7 +1753,7 @@ check_regexp (const char *expr,const char *string)
 }
 
 
-/*
+/* This implements steps 6 as described for validate_keys.
  * Return true if the key is signed by one of the keys in the given
  * key ID list.  User IDs with a valid signature are marked by node
  * flags as follows:
@@ -1939,12 +1938,13 @@ search_skipfnc (void *opaque, u32 *kid, int dummy_uid_no)
 }
 
 
-/*
+/* This implements steps 4 to 7 as described for validate_keys.
+ *
  * Scan all keys and return a key_array of all suitable keys from
- * kllist.  The caller has to pass keydb handle so that we don't use
+ * klist.  The caller has to pass keydb handle so that we don't need
  * to create our own.  Returns either a key_array or NULL in case of
  * an error.  No results found are indicated by an empty array.
- * Caller hast to release the returned array.
+ * Caller has to release the returned array.
  */
 static struct key_array *
 validate_key_list (ctrl_t ctrl, KEYDB_HANDLE hd, KeyHashTable full_trust,
@@ -1956,7 +1956,7 @@ validate_key_list (ctrl_t ctrl, KEYDB_HANDLE hd, KeyHashTable full_trust,
   int rc;
   KEYDB_SEARCH_DESC desc;
 
-  maxkeys = 1000;
+  maxkeys = 1000;  /* Initially allocate space for 1000 keys.  */
   keys = xmalloc ((maxkeys+1) * sizeof *keys);
   nkeys = 0;
 
@@ -2011,13 +2011,16 @@ validate_key_list (ctrl_t ctrl, KEYDB_HANDLE hd, KeyHashTable full_trust,
       pk = keyblock->pkt->pkt.public_key;
       if (pk->has_expired || pk->flags.revoked)
         {
-          /* it does not make sense to look further at those keys */
+          /* Step 5: Mark revoked and expired keys.
+           * (it does not make sense to look further at those keys.) */
           mark_keyblock_seen (full_trust, keyblock);
         }
       else if (validate_one_keyblock (ctrl, keyblock, klist,
                                       curtime, next_expire))
         {
-	  KBNODE node;
+          /* Step 6 has been done by validate_one_keyblock.  This here
+           * is step 7.  */
+	  kbnode_t node;
 
           if (pk->expiredate && pk->expiredate >= curtime
               && pk->expiredate < *next_expire)
@@ -2112,7 +2115,7 @@ reset_trust_records (ctrl_t ctrl)
  * This works this way:
  * Step 1: Find all ultimately trusted keys (UTK).
  *         mark them all as seen and put them into klist.
- * Step 2: loop max_cert_times
+ * Step 2: loop max_cert_depth
  * Step 3:   if OWNERTRUST of any key in klist is undefined
  *             ask user to assign ownertrust
  * Step 4:   Loop over all keys in the keyDB which are not marked seen
@@ -2143,7 +2146,7 @@ validate_keys (ctrl_t ctrl, int interactive)
   KBNODE node;
   int depth;
   int ot_unknown, ot_undefined, ot_never, ot_marginal, ot_full, ot_ultimate;
-  KeyHashTable stored,used,full_trust;
+  KeyHashTable used, full_trust;
   u32 start_time, next_expire;
 
   /* Make sure we have all sigs cached.  TODO: This is going to
@@ -2159,12 +2162,12 @@ validate_keys (ctrl_t ctrl, int interactive)
 
   start_time = make_timestamp ();
   next_expire = 0xffffffff; /* set next expire to the year 2106 */
-  stored = new_key_hash_table ();
   used = new_key_hash_table ();
   full_trust = new_key_hash_table ();
 
   reset_trust_records (ctrl);
 
+  /* Step 1 */
   /* Fixme: Instead of always building a UTK list, we could just build it
    * here when needed */
   if (!utk_list)
@@ -2184,14 +2187,13 @@ validate_keys (ctrl_t ctrl, int interactive)
       keyblock = get_pubkeyblock (ctrl, k->kid);
       if (!keyblock)
         {
-          log_error (_("public key of ultimately"
-                       " trusted key %s not found\n"), keystr(k->kid));
+          log_error (_("Note: ultimately trusted key %s not found\n"),
+                     keystr(k->kid));
           continue;
         }
-      mark_keyblock_seen (used, keyblock);
-      mark_keyblock_seen (stored, keyblock);
-      mark_keyblock_seen (full_trust, keyblock);
       pk = keyblock->pkt->pkt.public_key;
+      mark_keyblock_seen (used, keyblock);
+      mark_keyblock_seen (full_trust, keyblock);
       for (node=keyblock; node; node = node->next)
         {
           if (node->pkt->pkttype == PKT_USER_ID)
@@ -2206,9 +2208,9 @@ validate_keys (ctrl_t ctrl, int interactive)
       do_sync ();
     }
 
+  /* In the TOFU trust model, we only need to save the ultimately
+     trusted keys.  */
   if (opt.trust_model == TM_TOFU)
-    /* In the TOFU trust model, we only need to save the ultimately
-       trusted keys.  */
     goto leave;
 
   klist = utk_list;
@@ -2218,11 +2220,14 @@ validate_keys (ctrl_t ctrl, int interactive)
               opt.marginals_needed, opt.completes_needed,
               trust_model_string (opt.trust_model));
 
+  /* Step 2 */
   for (depth=0; depth < opt.max_cert_depth; depth++)
     {
-      int valids=0,key_count;
-      /* See whether we should assign ownertrust values to the keys in
-         klist.  */
+      int valids = 0;
+      int key_count;
+
+      /* Step 3: See whether we should assign ownertrust values to the
+       * keys in klist.  */
       ot_unknown = ot_undefined = ot_never = 0;
       ot_marginal = ot_full = ot_ultimate = 0;
       for (k=klist; k; k = k->next)
@@ -2281,7 +2286,7 @@ validate_keys (ctrl_t ctrl, int interactive)
 	  valids++;
         }
 
-      /* Find all keys which are signed by a key in kdlist */
+      /* Step 4: Find all keys which are signed by a key in kdlist */
       keys = validate_key_list (ctrl, kdb, full_trust, klist,
 				start_time, &next_expire);
       if (!keys)
@@ -2299,7 +2304,7 @@ validate_keys (ctrl_t ctrl, int interactive)
         dump_key_array (depth, keys);
 
       for (kar=keys; kar->keyblock; kar++)
-        store_validation_status (ctrl, depth, kar->keyblock, stored);
+        store_validation_status (ctrl, depth, kar->keyblock);
 
       if (!opt.quiet)
         log_info (_("depth: %d  valid: %3d  signed: %3d"
@@ -2307,7 +2312,7 @@ validate_keys (ctrl_t ctrl, int interactive)
                   depth, valids, key_count, ot_unknown, ot_undefined,
                   ot_never, ot_marginal, ot_full, ot_ultimate );
 
-      /* Build a new kdlist from all fully valid keys in KEYS */
+      /* Step 8: Build a new kdlist from all fully valid keys in KEYS */
       if (klist != utk_list)
         release_key_items (klist);
       klist = NULL;
@@ -2365,7 +2370,6 @@ validate_keys (ctrl_t ctrl, int interactive)
     release_key_items (klist);
   release_key_hash_table (full_trust);
   release_key_hash_table (used);
-  release_key_hash_table (stored);
   if (!rc && !quit) /* mark trustDB as checked */
     {
       int rc2;
