@@ -125,6 +125,8 @@ struct
 
   const char *def_new_key_algo;
 
+  strlist_t def_new_key_adsks;  /* Option --default-new-key-adsk.  */
+
   /* Options to be passed to the gpg-agent */
   session_env_t session_env;
   char *lc_ctype;

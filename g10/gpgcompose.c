@@ -3122,3 +3122,13 @@ keyedit_print_one_sig (ctrl_t ctrl, estream_t fp,
   (void) extended;
   return 0;
 }
+
+
+gpg_error_t
+append_adsk_to_key (ctrl_t ctrl, kbnode_t keyblock, PKT_public_key *adsk)
+{
+  (void)ctrl;
+  (void)keyblock;
+  (void)adsk;
+  return GPG_ERR_NOT_IMPLEMENTED;
+}

@@ -55,6 +55,8 @@ void keyedit_quick_set_expire (ctrl_t ctrl,
 void keyedit_quick_set_primary (ctrl_t ctrl, const char *username,
                                 const char *primaryuid);
 void keyedit_quick_update_pref (ctrl_t ctrl, const char *username);
+gpg_error_t append_adsk_to_key (ctrl_t ctrl, kbnode_t keyblock,
+                                PKT_public_key *adsk);
 void show_basic_key_info (ctrl_t ctrl, kbnode_t keyblock, int print_sec);
 int keyedit_print_one_sig (ctrl_t ctrl, estream_t fp,
                            int rc, kbnode_t keyblock,

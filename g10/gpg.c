@@ -422,6 +422,7 @@ enum cmd_and_opt_values
     oTOFUDefaultPolicy,
     oTOFUDBFormat,
     oDefaultNewKeyAlgo,
+    oDefaultNewKeyADSK,
     oWeakDigest,
     oUnwrap,
     oOnlySignTextIDs,
@@ -627,6 +628,7 @@ static ARGPARSE_OPTS opts[] = {
   ARGPARSE_s_n (oPGP7, "pgp7", "@"),
   ARGPARSE_s_n (oPGP8, "pgp8", "@"),
   ARGPARSE_s_s (oDefaultNewKeyAlgo, "default-new-key-algo", "@"),
+  ARGPARSE_s_s (oDefaultNewKeyADSK, "default-new-key-adsk", "@"),
   ARGPARSE_p_u (oMinRSALength, "min-rsa-length", "@"),
 #ifndef NO_TRUST_MODELS
   ARGPARSE_s_n (oAlwaysTrust, "always-trust", "@"),
@@ -2309,6 +2311,7 @@ main (int argc, char **argv)
     const char *fname;
     char *username;
     int may_coredump;
+    gpg_error_t tmperr;
     strlist_t sl;
     strlist_t remusr = NULL;
     strlist_t locusr = NULL;
@@ -3646,6 +3649,16 @@ main (int argc, char **argv)
 
 	  case oDefaultNewKeyAlgo:
             opt.def_new_key_algo = pargs.r.ret_str;
+            break;
+
+          case oDefaultNewKeyADSK:
+            if (!strcmp (pargs.r.ret_str, "clear"))
+              FREE_STRLIST (opt.def_new_key_adsks);
+            else if (!tokenize_to_strlist (&opt.def_new_key_adsks,
+                                           pargs.r.ret_str, " \t,")
+                && (tmperr = gpg_err_code_from_syserror()) != GPG_ERR_ENOENT)
+              log_info (_("error parsing value for option '%s': %s\n"),
+                        "--default-new-key-algo", gpg_strerror (tmperr));
             break;
 
           case oUseOnlyOpenPGPCard:

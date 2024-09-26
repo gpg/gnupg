@@ -1729,13 +1729,26 @@ this option at all (e.g. due to the @option{--no-options} option).
 @opindex add-desig-revoker
 Add the key specified by @var{fingerprint} as a designated revoker to
 newly created keys.  If the fingerprint is prefixed with the keyword
-``sensitive:'' that info is normally not exported wit the key.  This
-option may be given several time to add more than one designated
+``sensitive:'' that info is normally not exported with the key.  This
+option may be given several times to add more than one designated
 revoker.  If the keyword ``clear'' is used instead of a fingerprint,
-all designated options previously encountered are discarded.
-Designated revokers are marked on the key as non-revocable.  Note that
-a designated revoker specified using a parameter file will also be
-added to the key.
+all previously given fingerprints are discarded.  Designated revokers
+are marked on the key as non-revocable.  Note that a designated
+revoker specified using a parameter file will also be added to the
+key.
+
+@item --default-new-key-adsk @var{fingerprint}
+@opindex default-new-key-adsk
+Add the subkey specified by @var{fingerprint} as an Additional
+Decryption Subkey (ADSK) to newly created keys.  This option may be
+given several time to add more than one ADSK.  It is also possible to
+give several fingerprints delimited by space or comma as value to this
+option.  If the keyword ``clear'' is used instead of a fingerprint,
+all previously specified fingerprints are discarded (useful to
+override options given in a config file).  The fingerprint is expected
+to specify a subkey and it does not need an exclamation mark as
+suffix; it must be given in cmpact format (40 or 64 hex-digits without
+any spaces).
 
 
 @item --trust-model @{pgp|classic|tofu|tofu+pgp|direct|always|auto@}

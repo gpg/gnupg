@@ -189,10 +189,10 @@ copy_prefs (const prefitem_t *prefs)
 
 
 /* Copy the public key S to D.  If D is NULL allocate a new public key
-   structure.  If S has seckret key infos, only the public stuff is
-   copied.  */
+ * structure.  Only the basic stuff is copied; not any ancillary
+ * data.  */
 PKT_public_key *
-copy_public_key (PKT_public_key *d, PKT_public_key *s)
+copy_public_key_basics (PKT_public_key *d, PKT_public_key *s)
 {
   int n, i;
 
@@ -200,8 +200,8 @@ copy_public_key (PKT_public_key *d, PKT_public_key *s)
     d = xmalloc (sizeof *d);
   memcpy (d, s, sizeof *d);
   d->seckey_info = NULL;
-  d->user_id = scopy_user_id (s->user_id);
-  d->prefs = copy_prefs (s->prefs);
+  d->user_id = NULL;
+  d->prefs = NULL;
 
   n = pubkey_get_npkey (s->pubkey_algo);
   i = 0;
@@ -214,6 +214,24 @@ copy_public_key (PKT_public_key *d, PKT_public_key *s)
     }
   for (; i < PUBKEY_MAX_NSKEY; i++)
     d->pkey[i] = NULL;
+
+  d->revkey = NULL;
+  d->serialno = NULL;
+  d->updateurl = NULL;
+
+  return d;
+}
+
+
+/* Copy the public key S to D.  If D is NULL allocate a new public key
+   structure.  If S has seckret key infos, only the public stuff is
+   copied.  */
+PKT_public_key *
+copy_public_key (PKT_public_key *d, PKT_public_key *s)
+{
+  d = copy_public_key_basics (d, s);
+  d->user_id = scopy_user_id (s->user_id);
+  d->prefs = copy_prefs (s->prefs);
 
   if (!s->revkey && s->numrevkeys)
     BUG();

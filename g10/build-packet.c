@@ -1123,19 +1123,23 @@ build_sig_subpkt (PKT_signature *sig, sigsubpkttype_t type,
 
 /*
  * Put all the required stuff from SIG into subpackets of sig.
- * PKSK is the signing key.
+ * PKSK is the signing key.  SIGNHINTS are various flags like
+ * SIGNHINT_ADSK.
  * Hmmm, should we delete those subpackets which are in a wrong area?
  */
 void
-build_sig_subpkt_from_sig (PKT_signature *sig, PKT_public_key *pksk)
+build_sig_subpkt_from_sig (PKT_signature *sig, PKT_public_key *pksk,
+                           unsigned int signhints)
 {
     u32  u;
     byte buf[1+MAX_FINGERPRINT_LEN];
     size_t fprlen;
 
     /* For v4 keys we need to write the ISSUER subpacket.  We do not
-     * want that for a future v5 format.  */
-    if (pksk->version < 5)
+     * want that for a future v5 format.  We also don't write it if
+     * only the new RENC keyflag is set (implementations with support
+     * for this key flag should understand the ISSUER_FPR).  */
+    if (pksk->version < 5 && !(signhints & SIGNHINT_ADSK))
       {
         u = sig->keyid[0];
         buf[0] = (u >> 24) & 0xff;
