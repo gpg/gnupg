@@ -2048,9 +2048,22 @@ do_validate_chain (ctrl_t ctrl, ksba_cert_t cert, ksba_isotime_t checktime_arg,
     {
       gpg_error_t err;
       chain_item_t ci;
+      unsigned int blobflags;
+      size_t userdatalen;
 
       for (ci = chain; ci; ci = ci->next)
         {
+          /* First do a quick check by looking at the blob flags to
+           * see whether the certificate is flagged ephemeral.  This
+           * avoids the overhead of looking up the certificate again
+           * just to decide that there is no need to clear it.  */
+          if (!ksba_cert_get_user_data (cert, "keydb.blobflags",
+                                        &blobflags, sizeof (blobflags),
+                                        &userdatalen)
+              && userdatalen == sizeof blobflags
+              && !(blobflags & KEYBOX_FLAG_BLOB_EPHEMERAL))
+            continue;
+
           /* Note that it is possible for the last certificate in the
              chain (i.e. our target certificate) that it has not yet
              been stored in the keybox and thus the flag can't be set.

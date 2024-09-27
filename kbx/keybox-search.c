@@ -1196,6 +1196,7 @@ keybox_get_cert (KEYBOX_HANDLE hd, ksba_cert_t *r_cert)
   size_t cert_off, cert_len;
   ksba_reader_t reader = NULL;
   ksba_cert_t cert = NULL;
+  unsigned int blobflags;
   int rc;
 
   if (!hd)
@@ -1239,6 +1240,17 @@ keybox_get_cert (KEYBOX_HANDLE hd, ksba_cert_t *r_cert)
       ksba_reader_release (reader);
       /* fixme: need to map the error codes */
       return gpg_error (GPG_ERR_GENERAL);
+    }
+
+  rc = get_flag_from_image (buffer, length, KEYBOX_FLAG_BLOB, &blobflags);
+  if (!rc)
+    rc = ksba_cert_set_user_data (cert, "keydb.blobflags",
+                                  &blobflags, sizeof blobflags);
+  if (rc)
+    {
+      ksba_cert_release (cert);
+      ksba_reader_release (reader);
+      return gpg_error (rc);
     }
 
   *r_cert = cert;
