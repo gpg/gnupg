@@ -1326,10 +1326,7 @@ main (int argc, char **argv)
           break;
 
         case oAutoExpandSecmem:
-          /* Try to enable this option.  It will officially only be
-           * supported by Libgcrypt 1.9 but 1.8.2 already supports it
-           * on the quiet and thus we use the numeric value value.  */
-          gcry_control (78 /*GCRYCTL_AUTO_EXPAND_SECMEM*/,
+          gcry_control (GCRYCTL_AUTO_EXPAND_SECMEM,
                         (unsigned int)pargs.r.ret_ulong,  0);
           break;
 
