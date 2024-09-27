@@ -850,6 +850,8 @@ unprotect (ctrl_t ctrl, const char *cache_nonce, const char *desc_text,
               *keybuf = result;
               return 0;
             }
+          else if (opt.verbose)
+            log_info (_("Unprotecting key failed: %s\n"), gpg_strerror (rc));
           xfree (pw);
         }
     }
