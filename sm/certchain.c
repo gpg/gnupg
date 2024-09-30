@@ -795,6 +795,7 @@ static int
 find_up_dirmngr (ctrl_t ctrl, KEYDB_HANDLE kh,
                  ksba_sexp_t serialno, const char *issuer, int subject_mode)
 {
+  static int no_dirmngr;
   int rc;
   strlist_t names = NULL;
   struct find_up_store_certs_s find_up_store_certs_parm;
@@ -804,6 +805,12 @@ find_up_dirmngr (ctrl_t ctrl, KEYDB_HANDLE kh,
 
   find_up_store_certs_parm.ctrl = ctrl;
   find_up_store_certs_parm.count = 0;
+
+  if (no_dirmngr)
+    {
+      rc = GPG_ERR_NO_DIRMNGR;
+      goto leave;
+    }
 
   if (opt.verbose)
     log_info (_("looking up issuer from the Dirmngr cache\n"));
@@ -834,8 +841,13 @@ find_up_dirmngr (ctrl_t ctrl, KEYDB_HANDLE kh,
     log_info (_("number of matching certificates: %d\n"),
               find_up_store_certs_parm.count);
   if (rc && opt.verbose)
-    log_info (_("dirmngr cache-only key lookup failed: %s\n"),
-              gpg_strerror (rc));
+    {
+      log_info (_("dirmngr cache-only key lookup failed: %s\n"),
+                gpg_strerror (rc));
+    }
+  if (gpg_err_code (rc) == GPG_ERR_NO_DIRMNGR)
+    no_dirmngr = 1;
+ leave:
   return ((!rc && find_up_store_certs_parm.count)
           ? 0 : gpg_error (GPG_ERR_NOT_FOUND));
 }
