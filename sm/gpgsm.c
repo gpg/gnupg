@@ -469,6 +469,7 @@ static struct debug_flags_s debug_flags [] =
 static struct compatibility_flags_s compatibility_flags [] =
   {
     { COMPAT_ALLOW_KA_TO_ENCR, "allow-ka-to-encr" },
+    { COMPAT_NO_CHAIN_CACHE, "no-chain-cache"     },
     { 0, NULL }
   };
 
@@ -498,6 +499,9 @@ static int default_include_certs = DEFAULT_INCLUDE_CERTS;
 
 /* Whether the chain mode shall be used for validation.  */
 static int default_validation_model;
+
+/* Counter used to convey data from deinit_ctrl to gpgsm_exit.  */
+static unsigned int parent_cache_stats;
 
 /* The default cipher algo.  */
 #define DEFAULT_CIPHER_ALGO "AES256"
@@ -2111,6 +2115,7 @@ main ( int argc, char **argv)
     }
 
   /* cleanup */
+  gpgsm_deinit_default_ctrl (&ctrl);
   free_strlist (opt.keyserver);
   opt.keyserver = NULL;
   gpgsm_release_certlist (recplist);
@@ -2135,6 +2140,7 @@ gpgsm_exit (int rc)
   gcry_control (GCRYCTL_UPDATE_RANDOM_SEED_FILE);
   if (opt.debug & DBG_MEMSTAT_VALUE)
     {
+      log_info ("cert_chain_cache: cached=%u\n", parent_cache_stats);
       gcry_control( GCRYCTL_DUMP_MEMORY_STATS );
       gcry_control( GCRYCTL_DUMP_RANDOM_STATS );
     }
@@ -2153,6 +2159,27 @@ gpgsm_init_default_ctrl (struct server_control_s *ctrl)
   ctrl->use_ocsp = opt.enable_ocsp;
   ctrl->validation_model = default_validation_model;
   ctrl->offline = opt.disable_dirmngr;
+}
+
+
+/* This function is called to deinitialize a control object.  The
+ * control object is is not released, though.  */
+void
+gpgsm_deinit_default_ctrl (ctrl_t ctrl)
+{
+  unsigned int n;
+
+  n = 0;
+  while (ctrl->parent_cert_cache)
+    {
+      cert_cache_item_t next = ctrl->parent_cert_cache->next;
+      ksba_cert_release (ctrl->parent_cert_cache->result);
+      xfree (ctrl->parent_cert_cache);
+      ctrl->parent_cert_cache = next;
+      n++;
+    }
+  if (n > parent_cache_stats)
+    parent_cache_stats = n;
 }
 
 

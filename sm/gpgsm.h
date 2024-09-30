@@ -183,10 +183,22 @@ struct
  *  policies: 1.3.6.1.4.1.7924.1.1:N:
  */
 #define COMPAT_ALLOW_KA_TO_ENCR   1
-
+/* Not actually a compatibiliy flag but useful to limit the
+ * required memory for a validated key listing.  */
+#define COMPAT_NO_CHAIN_CACHE     2
 
 /* Forward declaration for an object defined in server.c */
 struct server_local_s;
+
+/* On object used to keep a track of already known certificates.  */
+struct cert_cache_item_s
+{
+  struct cert_cache_item_s *next;
+  unsigned char fpr[20]; /* The certificate's fingerprint.  */
+  ksba_cert_t result;    /* The resulting certificate (ie. the issuer).  */
+};
+typedef struct cert_cache_item_s *cert_cache_item_t;
+
 
 /* Session control object.  This object is passed down to most
    functions.  Note that the default values for it are set by
@@ -236,6 +248,9 @@ struct server_control_s
 
   /* The current time.  Used as a helper in certchain.c.  */
   ksba_isotime_t current_time;
+
+  /* The cache used to find the parent cert.  */
+  cert_cache_item_t parent_cert_cache;
 };
 
 
@@ -271,6 +286,7 @@ extern int gpgsm_errors_seen;
 
 void gpgsm_exit (int rc);
 void gpgsm_init_default_ctrl (struct server_control_s *ctrl);
+void gpgsm_deinit_default_ctrl (ctrl_t ctrl);
 int  gpgsm_parse_validation_model (const char *model);
 
 /*-- server.c --*/
