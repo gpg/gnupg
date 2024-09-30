@@ -1056,15 +1056,10 @@ gpgsm_walk_cert_chain (ctrl_t ctrl, ksba_cert_t start, ksba_cert_t *r_next)
   gpg_error_t err = 0;
   char *issuer = NULL;
   char *subject = NULL;
-  KEYDB_HANDLE kh = keydb_new (ctrl);
+  KEYDB_HANDLE kh = NULL;
+  cert_cache_item_t ci;
 
   *r_next = NULL;
-  if (!kh)
-    {
-      log_error (_("failed to allocate keyDB handle\n"));
-      err = gpg_error (GPG_ERR_GENERAL);
-      goto leave;
-    }
 
   issuer = ksba_cert_get_issuer (start, 0);
   subject = ksba_cert_get_subject (start, 0);
@@ -1087,6 +1082,30 @@ gpgsm_walk_cert_chain (ctrl_t ctrl, ksba_cert_t start, ksba_cert_t *r_next)
       goto leave;
     }
 
+  if (!(opt.compat_flags & COMPAT_NO_CHAIN_CACHE))
+    {
+      unsigned char fpr[20];
+
+      gpgsm_get_fingerprint (start, GCRY_MD_SHA1, fpr, NULL);
+      for (ci = ctrl->parent_cert_cache; ci; ci = ci->next)
+        {
+          if (!memcmp (fpr, ci->fpr, 20) && ci->result)
+            {
+              /* Found in the cache.  */
+              ksba_cert_ref ((*r_next = ci->result));
+              goto leave;
+            }
+        }
+    }
+
+  kh = keydb_new (ctrl);
+  if (!kh)
+    {
+      log_error (_("failed to allocate keyDB handle\n"));
+      err = gpg_error (GPG_ERR_GENERAL);
+      goto leave;
+    }
+
   err = find_up (ctrl, kh, start, issuer, 0);
   if (err)
     {
@@ -1105,6 +1124,22 @@ gpgsm_walk_cert_chain (ctrl_t ctrl, ksba_cert_t start, ksba_cert_t *r_next)
       log_error ("keydb_get_cert failed in %s: %s <%s>\n",
                  __func__, gpg_strerror (err), gpg_strsource (err));
       err = gpg_error (GPG_ERR_GENERAL);
+      goto leave;
+    }
+
+  /* Cache it. */
+  if (!(opt.compat_flags & COMPAT_NO_CHAIN_CACHE))
+    {
+      ci = xtrycalloc (1, sizeof *ci);
+      if (!ci)
+        {
+          err = gpg_error_from_syserror ();
+          goto leave;
+        }
+      gpgsm_get_fingerprint (start, GCRY_MD_SHA1, ci->fpr, NULL);
+      ksba_cert_ref ((ci->result = *r_next));
+      ci->next = ctrl->parent_cert_cache;
+      ctrl->parent_cert_cache = ci;
     }
 
  leave:
@@ -1852,6 +1887,24 @@ do_validate_chain (ctrl_t ctrl, ksba_cert_t cert, ksba_isotime_t checktime_arg,
         }
 
       /* Find the next cert up the tree. */
+      if (!(opt.compat_flags & COMPAT_NO_CHAIN_CACHE))
+        {
+          cert_cache_item_t ci;
+          unsigned char fpr[20];
+
+          gpgsm_get_fingerprint (subject_cert, GCRY_MD_SHA1, fpr, NULL);
+          for (ci = ctrl->parent_cert_cache; ci; ci = ci->next)
+            {
+              if (!memcmp (fpr, ci->fpr, 20) && ci->result)
+                {
+                  /* Found in the cache.  */
+                  ksba_cert_release (issuer_cert);
+                  ksba_cert_ref ((issuer_cert = ci->result));
+                  goto found_in_cache;
+                }
+            }
+        }
+
       keydb_search_reset (kh);
       rc = find_up (ctrl, kh, subject_cert, issuer, 0);
       if (rc)
@@ -1882,6 +1935,26 @@ do_validate_chain (ctrl_t ctrl, ksba_cert_t cert, ksba_isotime_t checktime_arg,
           rc = gpg_error (GPG_ERR_GENERAL);
           goto leave;
         }
+
+      /* Cache it.  The chain->next is here so that the leaf
+       * certificates are not cached. */
+      if (!(opt.compat_flags & COMPAT_NO_CHAIN_CACHE) && chain->next)
+        {
+          cert_cache_item_t ci;
+
+          ci = xtrycalloc (1, sizeof *ci);
+          if (!ci)
+            {
+              rc = gpg_error_from_syserror ();
+              goto leave;
+            }
+          gpgsm_get_fingerprint (subject_cert, GCRY_MD_SHA1, ci->fpr, NULL);
+          ksba_cert_ref ((ci->result = issuer_cert));
+          ci->next = ctrl->parent_cert_cache;
+          ctrl->parent_cert_cache = ci;
+      }
+
+    found_in_cache:
 
     try_another_cert:
       if (DBG_X509)

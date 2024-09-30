@@ -220,7 +220,9 @@ struct
  *  policies: 1.3.6.1.4.1.7924.1.1:N:
  */
 #define COMPAT_ALLOW_KA_TO_ENCR   1
-
+/* Not actually a compatibiliy flag but useful to limit the
+ * required memory for a validated key listing.  */
+#define COMPAT_NO_CHAIN_CACHE     2
 
 /* Forward declaration for an object defined in server.c */
 struct server_local_s;
@@ -228,6 +230,16 @@ struct server_local_s;
 /* Object used to keep state locally in keydb.c  */
 struct keydb_local_s;
 typedef struct keydb_local_s *keydb_local_t;
+
+
+/* On object used to keep a track of already known certificates.  */
+struct cert_cache_item_s
+{
+  struct cert_cache_item_s *next;
+  unsigned char fpr[20]; /* The certificate's fingerprint.  */
+  ksba_cert_t result;    /* The resulting certificate (ie. the issuer).  */
+};
+typedef struct cert_cache_item_s *cert_cache_item_t;
 
 
 /* Session control object.  This object is passed down to most
@@ -284,6 +296,9 @@ struct server_control_s
   /* The revocation info.  Used as a helper inc ertchain.c */
   gnupg_isotime_t revoked_at;
   char *revocation_reason;
+
+  /* The cache used to find the parent cert.  */
+  cert_cache_item_t parent_cert_cache;
 };
 
 
