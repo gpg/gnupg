@@ -1527,13 +1527,17 @@ ask_marktrusted (ctrl_t ctrl, ksba_cert_t cert, int listmode)
 {
   static int no_more_questions;
   int rc;
-  char *fpr;
   int success = 0;
 
-  fpr = gpgsm_get_fingerprint_string (cert, GCRY_MD_SHA1);
-  es_fflush (es_stdout);
-  log_info (_("fingerprint=%s\n"), fpr? fpr : "?");
-  xfree (fpr);
+  if (opt.quiet || no_more_questions)
+    es_fflush (es_stdout);
+  else
+    {
+      char *fpr = gpgsm_get_fingerprint_string (cert, GCRY_MD_SHA1);
+      es_fflush (es_stdout);
+      log_info (_("fingerprint=%s\n"), fpr? fpr : "?");
+      xfree (fpr);
+    }
 
   if (no_more_questions)
     rc = gpg_error (GPG_ERR_NOT_SUPPORTED);
