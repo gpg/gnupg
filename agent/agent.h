@@ -556,7 +556,8 @@ gpg_error_t agent_write_shadow_key (const unsigned char *grip,
 /*-- trustlist.c --*/
 void initialize_module_trustlist (void);
 gpg_error_t agent_istrusted (ctrl_t ctrl, const char *fpr, int *r_disabled);
-gpg_error_t agent_listtrusted (void *assuan_context);
+gpg_error_t agent_listtrusted (ctrl_t ctrl, void *assuan_context,
+                               int status_mode);
 gpg_error_t agent_marktrusted (ctrl_t ctrl, const char *name,
                                const char *fpr, int flag);
 void agent_reload_trustlist (void);
