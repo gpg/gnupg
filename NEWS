@@ -1,7 +1,34 @@
 Noteworthy changes in version 2.2.45 (unreleased)
 -------------------------------------------------
 
+  * gpg: New command --quick-add-adsk  [T6395]
+
+  * gpg: New option --default-new-key-adsk and "addadsk" for
+    --edit-key.  [T6882]
+
   * gpg: New option --proc-all-sigs.  [T7261]
+
+  * gpg: Allow import of keys with unknown subkey packet versions.
+    [rGb357ff2aa6]
+
+  * gpg: Avoid a wrong decryption failed status if a messages is
+    signed and OCB encrypted but the pubkey for verification is
+    missing.  [T7042]
+
+  * gpg: Validate the trustdb after the import of a trusted key.
+    [T7200]
+
+  * gpg: Exclude expired trusted keys from the key validation process.
+    [T7200]
+
+  * gpgsm: Nearly fourfold speedup of validated certificate listings.
+    [T7308]
+
+  * agent: Fix KEYTOCARD for the use case with loopback pinentry.
+    [T7283]
+
+  * gpgconf: Allow listing of options --trusted-key,
+    add-desig-revoker, and default-new-key-adsk.  [T6882]
 
   Release-info: https://dev.gnupg.org/T7255
 
