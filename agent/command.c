@@ -569,22 +569,24 @@ cmd_istrusted (assuan_context_t ctx, char *line)
 
 
 static const char hlp_listtrusted[] =
-  "LISTTRUSTED\n"
+  "LISTTRUSTED [--status]\n"
   "\n"
-  "List all entries from the trustlist.";
+  "List all entries from the trustlist.  With --status the\n"
+  "keys are listed using status line similar to ISTRUSTED";
 static gpg_error_t
 cmd_listtrusted (assuan_context_t ctx, char *line)
 {
   ctrl_t ctrl = assuan_get_pointer (ctx);
-  int rc;
+  gpg_error_t err;
+  int opt_status;
 
-  (void)line;
+  opt_status = has_option (line, "--status");
 
   if (ctrl->restricted)
     return leave_cmd (ctx, gpg_error (GPG_ERR_FORBIDDEN));
 
-  rc = agent_listtrusted (ctx);
-  return leave_cmd (ctx, rc);
+  err = agent_listtrusted (ctrl, ctx, opt_status);
+  return leave_cmd (ctx, err);
 }
 
 

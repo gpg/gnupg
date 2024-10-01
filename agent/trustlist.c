@@ -430,10 +430,13 @@ read_trustfiles (void)
 
 
 /* Check whether the given fpr is in our trustdb.  We expect FPR to be
-   an all uppercase hexstring of 40 characters.  If ALREADY_LOCKED is
-   true the function assumes that the trusttable is already locked. */
+ * an all uppercase hexstring of 40 characters.  If ALREADY_LOCKED is
+ * true the function assumes that the trusttable is already locked.
+ * If LISTMODE is set, a status line TRUSTLISTFPR is emitted first and
+ * disabled keys are not listed.
+ */
 static gpg_error_t
-istrusted_internal (ctrl_t ctrl, const char *fpr, int *r_disabled,
+istrusted_internal (ctrl_t ctrl, const char *fpr, int listmode, int *r_disabled,
                     int already_locked)
 {
   gpg_error_t err = 0;
@@ -472,6 +475,8 @@ istrusted_internal (ctrl_t ctrl, const char *fpr, int *r_disabled,
       for (ti=trusttable, len = trusttablesize; len; ti++, len--)
         if (!memcmp (ti->fpr, fprbin, 20))
           {
+            if (listmode && ti->flags.disabled)
+              continue;
             if (ti->flags.disabled && r_disabled)
               *r_disabled = 1;
 
@@ -485,7 +490,13 @@ istrusted_internal (ctrl_t ctrl, const char *fpr, int *r_disabled,
                 unlock_trusttable ();
                 locked = 0;
                 err = 0;
-                if (ti->flags.relax)
+                if (listmode)
+                  {
+                    char hexfpr[2*20+1];
+                    bin2hex (ti->fpr, 20, hexfpr);
+                    err = agent_write_status (ctrl,"TRUSTLISTFPR", hexfpr,NULL);
+                  }
+                if (!err && ti->flags.relax)
                   err = agent_write_status (ctrl,"TRUSTLISTFLAG", "relax",NULL);
                 if (!err && ti->flags.cm)
                   err = agent_write_status (ctrl,"TRUSTLISTFLAG", "cm", NULL);
@@ -514,20 +525,24 @@ istrusted_internal (ctrl_t ctrl, const char *fpr, int *r_disabled,
 gpg_error_t
 agent_istrusted (ctrl_t ctrl, const char *fpr, int *r_disabled)
 {
-  return istrusted_internal (ctrl, fpr, r_disabled, 0);
+  return istrusted_internal (ctrl, fpr, 0, r_disabled, 0);
 }
 
 
 /* Write all trust entries to FP. */
 gpg_error_t
-agent_listtrusted (void *assuan_context)
+agent_listtrusted (ctrl_t ctrl, void *assuan_context, int status_mode)
 {
   trustitem_t *ti;
   char key[51];
+  int table_locked;
   gpg_error_t err;
   size_t len;
+  strlist_t allhexgrips = NULL;
+  strlist_t sl;
 
   lock_trusttable ();
+  table_locked = 1;
   if (!trusttable)
     {
       err = read_trustfiles ();
@@ -539,6 +554,7 @@ agent_listtrusted (void *assuan_context)
         }
     }
 
+  err = 0;
   if (trusttable)
     {
       for (ti=trusttable, len = trusttablesize; len; ti++, len--)
@@ -546,6 +562,15 @@ agent_listtrusted (void *assuan_context)
           if (ti->flags.disabled)
             continue;
           bin2hex (ti->fpr, 20, key);
+          if (status_mode)
+            {
+              if (!add_to_strlist_try (&allhexgrips, key))
+                {
+                  err = gpg_error_from_syserror ();
+                  goto leave;
+                }
+              continue;
+            }
           key[40] = ' ';
           key[41] = ((ti->flags.for_smime && ti->flags.for_pgp)? '*'
                      : ti->flags.for_smime? 'S': ti->flags.for_pgp? 'P':' ');
@@ -555,8 +580,24 @@ agent_listtrusted (void *assuan_context)
         }
     }
 
-  unlock_trusttable ();
-  return 0;
+  if (status_mode)
+    {
+      unlock_trusttable ();
+      table_locked = 0;
+
+      /* The back and forth converting of the fingerprint and all the
+       * locking and unlocking is somewhat clumsy but helps to re-use
+       * existing code.  */
+      for (sl = allhexgrips; sl; sl = sl->next)
+        if ((err = istrusted_internal (ctrl, sl->d, 1, NULL, 0)))
+          goto leave;
+    }
+
+ leave:
+  if (table_locked)
+    unlock_trusttable ();
+  free_strlist (allhexgrips);
+  return err;
 }
 
 
@@ -770,7 +811,7 @@ agent_marktrusted (ctrl_t ctrl, const char *name, const char *fpr, int flag)
      sure that nobody else plays with our file and force a reread.  */
   lock_trusttable ();
   clear_trusttable ();
-  if (!istrusted_internal (ctrl, fpr, &is_disabled, 1) || is_disabled)
+  if (!istrusted_internal (ctrl, fpr, 0, &is_disabled, 1) || is_disabled)
     {
       unlock_trusttable ();
       xfree (fprformatted);
