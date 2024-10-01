@@ -2779,12 +2779,14 @@ ask_algo (ctrl_t ctrl, int addmode, int *r_subkey_algo, unsigned int *r_usage,
                   const char *keyref = kpi->idstr;
                   int any = 0;
 
-                  if (keyref
-                      && !agent_scd_readkey (ctrl, keyref, &s_pkey, NULL))
-                    {
-                      algostr = pubkey_algo_string (s_pkey, &algoid);
-                      gcry_sexp_release (s_pkey);
-                    }
+                  if (!keyref)
+                    continue;
+
+                  if (!agent_scd_readkey (ctrl, keyref, &s_pkey, NULL))
+                    continue;
+
+                  algostr = pubkey_algo_string (s_pkey, &algoid);
+                  gcry_sexp_release (s_pkey);
 
                   /* We need to tweak the algo in case GCRY_PK_ECC is
                    * returned because pubkey_algo_string is not aware
@@ -2857,9 +2859,9 @@ ask_algo (ctrl_t ctrl, int addmode, int *r_subkey_algo, unsigned int *r_usage,
           for (count=1,kpi=keypairlist; kpi; kpi = kpi->next, count++)
             if (count == selection)
               break;
-          if (!kpi)
+          if (!kpi || !kpi->algo)
             {
-              /* Just in case COUNT is zero (no keys).  */
+              /* Just in case no good key.  */
               free_keypair_info (keypairlist);
               goto ask_again;
             }
