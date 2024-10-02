@@ -98,6 +98,9 @@ static istrusted_cache_t istrusted_cache;
 static int istrusted_cache_valid;
 static int istrusted_cache_disabled;
 
+/* Flag indicating that we can't use the keyinfo cache at all.  The
+ * actual cache is stored in CTRL.  */
+static int keyinfo_cache_disabled;
 
 
 
@@ -120,6 +123,33 @@ flush_istrusted_cache (void)
     }
 }
 
+
+/* Release all items in *CACHEP and set CACHEP to NULL  */
+static void
+release_a_keyinfo_cache (keyinfo_cache_item_t *cachep)
+{
+  keyinfo_cache_item_t mycache;
+
+  /* First unlink the cache to be npth safe.  */
+  mycache = *cachep;
+  *cachep = NULL;
+
+  while (mycache)
+    {
+      keyinfo_cache_item_t next = mycache->next;
+      xfree (mycache);
+      mycache = next;
+    }
+}
+
+
+/* Flush the keyinfo cache for the session CTRL.  */
+void
+gpgsm_flush_keyinfo_cache (ctrl_t ctrl)
+{
+  ctrl->keyinfo_cache_valid = 0;
+  release_a_keyinfo_cache (&ctrl->keyinfo_cache);
+}
 
 /* Print a warning if the server's version number is less than our
    version number.  Returns an error code on a connection problem.  */
@@ -990,9 +1020,10 @@ gpgsm_agent_istrusted (ctrl_t ctrl, ksba_cert_t cert, const char *hexfpr,
       if (rc)
         {
           if (gpg_err_code (rc) != GPG_ERR_FORBIDDEN)
-            log_error ("filling istrusted cache failed: %s\n",
+            log_info ("filling istrusted cache failed: %s\n",
                        gpg_strerror (rc));
           istrusted_cache_disabled = 1;
+          flush_istrusted_cache ();
           rc = 0;  /* Fallback to single requests.  */
         }
       else
@@ -1330,42 +1361,79 @@ gpgsm_agent_send_nop (ctrl_t ctrl)
 
 
 
+struct keyinfo_status_parm_s
+{
+  char *serialno;
+  int fill_mode;  /* True if we want to fill the cache.  */
+  keyinfo_cache_item_t cache;
+};
+
 static gpg_error_t
 keyinfo_status_cb (void *opaque, const char *line)
 {
-  char **serialno = opaque;
-  const char *s, *s2;
+  struct keyinfo_status_parm_s *parm = opaque;
+  const char *s0, *s, *s2;
 
-  if ((s = has_leading_keyword (line, "KEYINFO")) && !*serialno)
+  if ((s0 = has_leading_keyword (line, "KEYINFO"))
+      && (!parm->serialno || parm->fill_mode))
     {
-      s = strchr (s, ' ');
+      s = strchr (s0, ' ');
+      xfree (parm->serialno);
+      parm->serialno = NULL;
       if (s && s[1] == 'T' && s[2] == ' ' && s[3])
         {
           s += 3;
           s2 = strchr (s, ' ');
           if ( s2 > s )
             {
-              *serialno = xtrymalloc ((s2 - s)+1);
-              if (*serialno)
+              parm->serialno = xtrymalloc ((s2 - s)+1);
+              if (parm->serialno)
                 {
-                  memcpy (*serialno, s, s2 - s);
-                  (*serialno)[s2 - s] = 0;
+                  memcpy (parm->serialno, s, s2 - s);
+                  parm->serialno[s2 - s] = 0;
                 }
             }
         }
+
+      if (parm->fill_mode && *s0)
+        {
+          keyinfo_cache_item_t ci;
+          size_t n;
+
+          n = s? (s - s0) : strlen (s0);
+          ci = xtrymalloc (sizeof *ci + n);
+          if (!ci)
+            return gpg_error_from_syserror ();
+          memcpy (ci->hexgrip, s0, n);
+          ci->hexgrip[n] = 0;
+          ci->serialno = parm->serialno;
+          parm->serialno = NULL;
+          ci->next = parm->cache;
+          parm->cache = ci;
+        }
+
     }
   return 0;
 }
 
+
 /* Return the serial number for a secret key.  If the returned serial
-   number is NULL, the key is not stored on a smartcard.  Caller needs
-   to free R_SERIALNO.  */
+ * number is NULL, the key is not stored on a smartcard.  Caller needs
+ * to free R_SERIALNO.
+ *
+ * Take care: The cache is currently only used in the key listing and
+ * it should not interfere with import or creation of new keys because
+ * we assume that is done by another process.  However we assume that
+ * in server mode the key listing is not directly followed by an import
+ * and another key listing.
+ */
 gpg_error_t
 gpgsm_agent_keyinfo (ctrl_t ctrl, const char *hexkeygrip, char **r_serialno)
 {
   gpg_error_t err;
   char line[ASSUAN_LINELENGTH];
-  char *serialno = NULL;
+  keyinfo_cache_item_t ci;
+  struct keyinfo_status_parm_s parm = { NULL };
 
   *r_serialno = NULL;
 
@@ -1376,20 +1444,70 @@ gpgsm_agent_keyinfo (ctrl_t ctrl, const char *hexkeygrip, char **r_serialno)
   if (!hexkeygrip || strlen (hexkeygrip) != 40)
     return gpg_error (GPG_ERR_INV_VALUE);
 
-  snprintf (line, DIM(line), "KEYINFO %s", hexkeygrip);
+  /* First try to fill the cache.  */
+  if (!keyinfo_cache_disabled && !ctrl->keyinfo_cache_valid)
+    {
+      parm.fill_mode = 1;
+      err = assuan_transact (agent_ctx, "KEYINFO --list",
+                            NULL, NULL, NULL, NULL,
+                            keyinfo_status_cb, &parm);
+      if (err)
+        {
+          if (gpg_err_code (err) != GPG_ERR_FORBIDDEN)
+            log_error ("filling keyinfo cache failed: %s\n",
+                       gpg_strerror (err));
+          keyinfo_cache_disabled = 1;
+          release_a_keyinfo_cache (&parm.cache);
+          err = 0;  /* Fallback to single requests.  */
+        }
+      else
+        {
+          ctrl->keyinfo_cache_valid = 1;
+          ctrl->keyinfo_cache = parm.cache;
+          parm.cache = NULL;
+        }
+    }
 
-  err = assuan_transact (agent_ctx, line, NULL, NULL, NULL, NULL,
-                         keyinfo_status_cb, &serialno);
-  if (!err && serialno)
+  /* Then consult the cache or send a query  */
+  if (ctrl->keyinfo_cache_valid)
+    {
+      for (ci = ctrl->keyinfo_cache; ci; ci = ci->next)
+        if (!strcmp (hexkeygrip, ci->hexgrip))
+          break;
+      if (ci)
+        {
+          xfree (parm.serialno);
+          parm.serialno = NULL;
+          err = 0;
+          if (ci->serialno)
+            {
+              parm.serialno = xtrystrdup (ci->serialno);
+              if (!parm.serialno)
+                err = gpg_error_from_syserror ();
+            }
+        }
+      else
+        err = gpg_error (GPG_ERR_NOT_FOUND);
+    }
+  else
+    {
+      snprintf (line, DIM(line), "KEYINFO %s", hexkeygrip);
+      parm.fill_mode = 0;
+      err = assuan_transact (agent_ctx, line, NULL, NULL, NULL, NULL,
+                             keyinfo_status_cb, &parm);
+    }
+
+  if (!err && parm.serialno)
     {
       /* Sanity check for bad characters.  */
-      if (strpbrk (serialno, ":\n\r"))
-        err = GPG_ERR_INV_VALUE;
+      if (strpbrk (parm.serialno, ":\n\r"))
+        err = gpg_error (GPG_ERR_INV_VALUE);
     }
+
   if (err)
-    xfree (serialno);
+    xfree (parm.serialno);
   else
-    *r_serialno = serialno;
+    *r_serialno = parm.serialno;
   return err;
 }
 

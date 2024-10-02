@@ -2169,6 +2169,7 @@ gpgsm_deinit_default_ctrl (ctrl_t ctrl)
 {
   unsigned int n;
 
+  gpgsm_flush_keyinfo_cache (ctrl);
   n = 0;
   while (ctrl->parent_cert_cache)
     {
