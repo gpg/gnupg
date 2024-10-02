@@ -327,6 +327,7 @@ reset_notify (assuan_context_t ctx, char *line)
 
   (void) line;
 
+  gpgsm_flush_keyinfo_cache (ctrl);
   gpgsm_release_certlist (ctrl->server_local->recplist);
   gpgsm_release_certlist (ctrl->server_local->signerlist);
   ctrl->server_local->recplist = NULL;

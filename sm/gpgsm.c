@@ -2389,6 +2389,7 @@ gpgsm_deinit_default_ctrl (ctrl_t ctrl)
   unsigned int n;
 
   gpgsm_keydb_deinit_session_data (ctrl);
+  gpgsm_flush_keyinfo_cache (ctrl);
   xfree (ctrl->revocation_reason);
   ctrl->revocation_reason = NULL;
   n = 0;
