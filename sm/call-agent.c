@@ -82,7 +82,45 @@ struct default_inq_parm_s
   assuan_context_t ctx;
 };
 
+
+/* An object and variable to cache ISTRUSTED calls.  The cache is
+ * global and reset with each mark trusted.  We also have a disabled
+ * flag here in case the gpg-agent did not allow us to query all
+ * trusted keys at once.  */
+struct istrusted_cache_s
+{
+  struct istrusted_cache_s *next;
+  struct rootca_flags_s flags; /* The flags of this fingerprint.  */
+  char fpr[1];  /* The fingerprint of the trusted key in hex format.  */
+};
+typedef struct istrusted_cache_s *istrusted_cache_t;
+static istrusted_cache_t istrusted_cache;
+static int istrusted_cache_valid;
+static int istrusted_cache_disabled;
+
+
+
 
+static void
+flush_istrusted_cache (void)
+{
+  istrusted_cache_t mycache;
+
+  /* First unlink the cache to be npth safe.  Note that we don't clear
+   * the the disabled flag - this is considered a permantent error. */
+  mycache = istrusted_cache;
+  istrusted_cache = NULL;
+  istrusted_cache_valid = 0;
+
+  while (mycache)
+    {
+      istrusted_cache_t next = mycache->next;
+      xfree (mycache);
+      mycache = next;
+    }
+}
+
+
 /* Print a warning if the server's version number is less than our
    version number.  Returns an error code on a connection problem.  */
 static gpg_error_t
@@ -861,27 +899,49 @@ gpgsm_agent_scd_keypairinfo (ctrl_t ctrl, strlist_t *r_list)
 
 
 
+struct istrusted_status_parm_s
+{
+  struct rootca_flags_s flags;
+  istrusted_cache_t cache;
+};
+
+
 static gpg_error_t
 istrusted_status_cb (void *opaque, const char *line)
 {
-  struct rootca_flags_s *flags = opaque;
+  struct istrusted_status_parm_s *parm = opaque;
   const char *s;
 
   if ((s = has_leading_keyword (line, "TRUSTLISTFLAG")))
     {
       line = s;
       if (has_leading_keyword (line, "relax"))
-        flags->relax = 1;
+        parm->flags.relax = 1;
       else if (has_leading_keyword (line, "cm"))
-        flags->chain_model = 1;
+        parm->flags.chain_model = 1;
       else if (has_leading_keyword (line, "qual"))
-        flags->qualified = 1;
+        parm->flags.qualified = 1;
       else if (has_leading_keyword (line, "de-vs"))
-        flags->de_vs = 1;
+        parm->flags.de_vs = 1;
+
+      /* Copy the current flags to the current list item.  */
+      if (parm->cache)
+        parm->cache->flags = parm->flags;
+    }
+  else if ((s = has_leading_keyword (line, "TRUSTLISTFPR")) && *s)
+    {
+      istrusted_cache_t ci;
+
+      ci = xtrymalloc (sizeof *ci + strlen (s));
+      if (!ci)
+        return gpg_error_from_syserror ();
+      strcpy (ci->fpr, s);
+      memset (&ci->flags, 0, sizeof ci->flags);
+      ci->next = parm->cache;
+      parm->cache = ci;
     }
   return 0;
 }
-
 
 
 /* Ask the agent whether the certificate is in the list of trusted
@@ -894,8 +954,12 @@ gpgsm_agent_istrusted (ctrl_t ctrl, ksba_cert_t cert, const char *hexfpr,
 {
   int rc;
   char line[ASSUAN_LINELENGTH];
+  char *fpr_buffer = NULL;
+  struct istrusted_status_parm_s parm;
+  istrusted_cache_t ci;
 
   memset (rootca_flags, 0, sizeof *rootca_flags);
+  memset (&parm, 0, sizeof parm);
 
   if (cert && hexfpr)
     return gpg_error (GPG_ERR_INV_ARG);
@@ -904,29 +968,64 @@ gpgsm_agent_istrusted (ctrl_t ctrl, ksba_cert_t cert, const char *hexfpr,
   if (rc)
     return rc;
 
-  if (hexfpr)
+  if (!hexfpr)
     {
-      snprintf (line, DIM(line), "ISTRUSTED %s", hexfpr);
-    }
-  else
-    {
-      char *fpr;
-
-      fpr = gpgsm_get_fingerprint_hexstring (cert, GCRY_MD_SHA1);
-      if (!fpr)
+      fpr_buffer = gpgsm_get_fingerprint_hexstring (cert, GCRY_MD_SHA1);
+      if (!fpr_buffer)
         {
           log_error ("error getting the fingerprint\n");
-          return gpg_error (GPG_ERR_GENERAL);
+          rc = gpg_error (GPG_ERR_GENERAL);
+          goto leave;
         }
-
-      snprintf (line, DIM(line), "ISTRUSTED %s", fpr);
-      xfree (fpr);
+      hexfpr = fpr_buffer;
     }
 
+  /* First try to get the info from the cache.  */
+  if (!istrusted_cache_disabled && !istrusted_cache_valid)
+    {
+      /* Cache is empty - fill it.  */
+      rc = assuan_transact (agent_ctx, "LISTTRUSTED --status",
+                            NULL, NULL, NULL, NULL,
+                            istrusted_status_cb, &parm);
+      if (rc)
+        {
+          if (gpg_err_code (rc) != GPG_ERR_FORBIDDEN)
+            log_error ("filling istrusted cache failed: %s\n",
+                       gpg_strerror (rc));
+          istrusted_cache_disabled = 1;
+          rc = 0;  /* Fallback to single requests.  */
+        }
+      else
+        istrusted_cache_valid = 1;
+    }
+
+  if (istrusted_cache_valid)
+    {
+      for (ci = istrusted_cache; ci; ci = ci->next)
+        if (!strcmp (ci->fpr, hexfpr))
+          break;  /* Found.  */
+      if (ci)
+        {
+          *rootca_flags = ci->flags;
+          rootca_flags->valid = 1;
+          rc = 0;
+        }
+      else
+        rc = gpg_error (GPG_ERR_NOT_TRUSTED);
+      goto leave;
+    }
+
+  snprintf (line, DIM(line), "ISTRUSTED %s", hexfpr);
   rc = assuan_transact (agent_ctx, line, NULL, NULL, NULL, NULL,
-                        istrusted_status_cb, rootca_flags);
+                        istrusted_status_cb, &parm);
   if (!rc)
-    rootca_flags->valid = 1;
+    {
+      *rootca_flags = parm.flags;
+      rootca_flags->valid = 1;
+    }
+
+ leave:
+  xfree (fpr_buffer);
   return rc;
 }
 
@@ -968,6 +1067,10 @@ gpgsm_agent_marktrusted (ctrl_t ctrl, ksba_cert_t cert)
 
   rc = assuan_transact (agent_ctx, line, NULL, NULL,
                         default_inq_cb, &inq_parm, NULL, NULL);
+  /* Marktrusted changes the trustlist and thus we need to flush the
+   * cache.   */
+  if (!rc)
+    flush_istrusted_cache ();
   return rc;
 }
 
