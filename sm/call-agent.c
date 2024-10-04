@@ -1011,6 +1011,9 @@ gpgsm_agent_istrusted (ctrl_t ctrl, ksba_cert_t cert, const char *hexfpr,
     }
 
   /* First try to get the info from the cache.  */
+  if ((opt.compat_flags & COMPAT_NO_KEYINFO_CACHE))
+    istrusted_cache_disabled = 1;
+
   if (!istrusted_cache_disabled && !istrusted_cache_valid)
     {
       /* Cache is empty - fill it.  */
@@ -1445,6 +1448,9 @@ gpgsm_agent_keyinfo (ctrl_t ctrl, const char *hexkeygrip, char **r_serialno)
     return gpg_error (GPG_ERR_INV_VALUE);
 
   /* First try to fill the cache.  */
+  if ((opt.compat_flags & COMPAT_NO_KEYINFO_CACHE))
+    keyinfo_cache_disabled = 1;
+
   if (!keyinfo_cache_disabled && !ctrl->keyinfo_cache_valid)
     {
       parm.fill_mode = 1;
