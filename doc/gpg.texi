@@ -4205,6 +4205,14 @@ Operation is further controlled by a few environment variables:
   A numeric decimal value is expected.  Bit 0 enables general
   diagnostics, bit 1 enables certain warnings on Windows.
 
+
+  @item GNUPG_ASSUME_COMPLIANCE
+  @efindex GNUPG_ASSUME_COMPLIANCE
+  Debug helper to set the system into an assume compliance state.  For
+  example in de-vs mode this will return 2023 as identifier instead of
+  23.
+
+
 @end table
 
 When calling the gpg-agent component @command{@gpgname} sends a set of

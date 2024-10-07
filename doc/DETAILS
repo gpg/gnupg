@@ -257,6 +257,8 @@ described here.
 
     - 8  :: The key is compliant with RFC4880bis
     - 23 :: The key is compliant with compliance mode "de-vs".
+    - 2023 :: The key is compliant with a compliance mode "de-vs" but
+              the software has not yet been approved.
     - 6001 :: Screening hit on the ROCA vulnerability.
 
 *** Field 19 - Last update

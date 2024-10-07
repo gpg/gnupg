@@ -40,6 +40,11 @@
 static int initialized;
 static int module;
 
+
+/* The next variable and the code in get_compliance_cache should be
+ * removed after the software suite has been approved.  */
+static int assumed_de_vs_compliance = -1;
+
 /* This value is used by DSA and RSA checks in addition to the hard
  * coded length checks.  It allows one to increase the required key length
  * using a config file.  */
@@ -69,6 +74,19 @@ get_compliance_cache (enum gnupg_compliance_mode compliance, int for_rng)
     case CO_PGP8:    ptr = for_rng? &r_pgp8    : &s_pgp8   ; break;
     case CO_DE_VS:   ptr = for_rng? &r_de_vs   : &s_de_vs  ; break;
     }
+
+  /* Remove this code after approval.  */
+  if (ptr && compliance == CO_DE_VS)
+    {
+      if (assumed_de_vs_compliance == -1)
+        {
+          const char *s = getenv ("GNUPG_ASSUME_COMPLIANCE");
+          assumed_de_vs_compliance = (s && !strcmp (s, "de-vs"));
+        }
+      if (assumed_de_vs_compliance)
+        *ptr = 1;
+    }
+
 
   return ptr;
 }
@@ -667,7 +685,7 @@ gnupg_status_compliance_flag (enum gnupg_compliance_mode compliance)
     case CO_PGP8:
       log_assert (!"no status code assigned for this compliance mode");
     case CO_DE_VS:
-      return "23";
+      return assumed_de_vs_compliance ? "2023" : "23";
     }
   log_assert (!"invalid compliance mode");
 }
