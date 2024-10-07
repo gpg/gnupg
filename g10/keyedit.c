@@ -5044,6 +5044,7 @@ menu_addadsk (ctrl_t ctrl, kbnode_t pub_keyblock, const char *adskfpr)
                                NULL, adsk_pk, answer, &adsk_keyblock, NULL, 1);
       if (err)
         {
+          write_status_error ("add_adsk", err);
           log_info (_("key \"%s\" not found: %s\n"), answer,
                     gpg_strerror (err));
           if ((!opt.batch || adskfpr) && !opt.quiet
@@ -5069,6 +5070,7 @@ menu_addadsk (ctrl_t ctrl, kbnode_t pub_keyblock, const char *adskfpr)
         }
       if (!node)
         {
+          write_status_error ("add_adsk", err);
           err = gpg_error (GPG_ERR_WRONG_KEY_USAGE);
           log_info (_("key \"%s\" not found: %s\n"), answer,
                     gpg_strerror (err));
