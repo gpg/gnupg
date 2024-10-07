@@ -4282,6 +4282,7 @@ prepare_adsk (ctrl_t ctrl, const char *name)
     {
       if (namebuffer && (p=strchr (namebuffer, '!')))
         *p = 0; /* Strip the ! for the diagnostic.  */
+      write_status_error ("add_adsk", err);
       log_error ("invalid ADSK '%s' specified: %s\n", name, gpg_strerror (err));
     }
   free_public_key (adsk_pk);
