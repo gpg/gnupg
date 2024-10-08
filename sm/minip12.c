@@ -2596,7 +2596,7 @@ build_ecc_key_sequence (gcry_mpi_t *kparms, int mode, size_t *r_length)
   /* We need to use our OpenPGP mapping to turn a curve name into its
    * canonical numerical OID.  We should have a Libgcrypt function to
    * do this; see bug report #4926.  */
-  curve = openpgp_curve_to_oid (p, &curvebits, NULL);
+  curve = openpgp_curve_to_oid (p, &curvebits, NULL, 1);
   xfree (p);
   if (!curve)
     {

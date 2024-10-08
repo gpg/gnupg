@@ -443,9 +443,11 @@ openpgp_oid_is_cv448 (gcry_mpi_t a)
    curve names.  If R_ALGO is not NULL and a specific ECC algorithm is
    required for this curve its OpenPGP algorithm number is stored
    there; otherwise 0 is stored which indicates that ECDSA or ECDH can
-   be used. */
+   be used.  SELECTOR specifies which OID should be returned: -1 for
+   don't care, 0 for old OID, 1 for new OID.  */
 const char *
-openpgp_curve_to_oid (const char *name, unsigned int *r_nbits, int *r_algo)
+openpgp_curve_to_oid (const char *name, unsigned int *r_nbits, int *r_algo,
+                      int selector)
 {
   int i;
   unsigned int nbits = 0;
@@ -477,6 +479,14 @@ openpgp_curve_to_oid (const char *name, unsigned int *r_nbits, int *r_algo)
                 break;
               }
         }
+    }
+
+  /* Special handling for Curve25519, where we have two valid OIDs.  */
+  if (algo && i == 0)
+    {
+      /* Select new OID, if wanted.  */
+      if (selector > 0)
+        oidstr = oidtable[2].oidstr;
     }
 
   if (r_nbits)

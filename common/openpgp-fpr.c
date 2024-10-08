@@ -231,7 +231,8 @@ compute_openpgp_fpr_ecc (int keyversion, unsigned long timestamp,
   unsigned char nbits_q[2];
   unsigned int n;
 
-  curveoidstr = openpgp_curve_to_oid (curvename, &curvebits, &pgpalgo);
+  curveoidstr = openpgp_curve_to_oid (curvename, &curvebits, &pgpalgo,
+                                      (keyversion > 4));
   err = openpgp_oid_from_str (curveoidstr, &curveoid);
   if (err)
     goto leave;

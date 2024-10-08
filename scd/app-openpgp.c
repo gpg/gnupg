@@ -1759,7 +1759,7 @@ ecdh_params (const char *curve)
 {
   unsigned int nbits;
 
-  openpgp_curve_to_oid (curve, &nbits, NULL);
+  openpgp_curve_to_oid (curve, &nbits, NULL, -1);
 
   /* See RFC-6637 for those constants.
          0x03: Number of bytes
@@ -1801,7 +1801,7 @@ ecc_read_pubkey (app_t app, ctrl_t ctrl, int meta_update,
     }
 
   curve = app->app_local->keyattr[keyno].ecc.curve;
-  oidstr = openpgp_curve_to_oid (curve, NULL, NULL);
+  oidstr = openpgp_curve_to_oid (curve, NULL, NULL, 0);
   err = openpgp_oid_from_str (oidstr, &oid);
   if (err)
     return err;
@@ -4194,7 +4194,7 @@ change_keyattr_from_string (app_t app, ctrl_t ctrl,
       else
         {
           nbits = 0;
-          oidstr = openpgp_curve_to_oid (keyalgo, NULL, &algo);
+          oidstr = openpgp_curve_to_oid (keyalgo, NULL, &algo, 0);
           if (!oidstr)
             {
               err = gpg_error (GPG_ERR_INV_DATA);
@@ -4244,7 +4244,7 @@ change_keyattr_from_string (app_t app, ctrl_t ctrl,
       else if (algo == PUBKEY_ALGO_ECDH || algo == PUBKEY_ALGO_ECDSA
                || algo == PUBKEY_ALGO_EDDSA)
         {
-          oidstr = openpgp_curve_to_oid (string+n, NULL, NULL);
+          oidstr = openpgp_curve_to_oid (string+n, NULL, NULL, 0);
           if (!oidstr)
             {
               err = gpg_error (GPG_ERR_INV_DATA);
@@ -4821,7 +4821,7 @@ ecc_writekey (app_t app, ctrl_t ctrl,
       ecdh_param_len = 4;
     }
 
-  oidstr = openpgp_curve_to_oid (curve, &n, NULL);
+  oidstr = openpgp_curve_to_oid (curve, &n, NULL, 0);
   ecc_d_fixed_len = (n+7)/8;
   err = openpgp_oid_from_str (oidstr, &oid);
   if (err)
@@ -5552,7 +5552,7 @@ gen_challenge (app_t app, const void **r_data, size_t *r_datalen)
     {
       unsigned int n;
 
-      openpgp_curve_to_oid (app->app_local->keyattr[2].ecc.curve, &n, NULL);
+      openpgp_curve_to_oid (app->app_local->keyattr[2].ecc.curve, &n, NULL, -1);
       /* No hash algo header, and appropriate length of random octets,
          determined by field size of the curve.  */
       datalen = (n+7)/8;

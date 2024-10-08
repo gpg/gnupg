@@ -218,7 +218,7 @@ ecdh_encrypt (DEK dek, gcry_sexp_t s_pkey, gcry_sexp_t *r_encval)
    * canonical numerical OID.  We also use this to get the size of the
    * curve which we need to figure out a suitable hash algo.  We
    * should have a Libgcrypt function to do this; see bug report #4926.  */
-  curve = openpgp_curve_to_oid (curvebuf, &curvebits, NULL);
+  curve = openpgp_curve_to_oid (curvebuf, &curvebits, NULL, -1);
   if (!curve)
     {
       err = gpg_error (GPG_ERR_UNKNOWN_CURVE);

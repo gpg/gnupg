@@ -585,7 +585,7 @@ match_curve_skey_pk (gcry_sexp_t s_key, PKT_public_key *pk)
     }
   if (!strcmp (curve_str, "Ed448"))
     is_eddsa = 1;
-  oidstr = openpgp_curve_to_oid (curve_str, NULL, NULL);
+  oidstr = openpgp_curve_to_oid (curve_str, NULL, NULL, (pk->version > 4));
   if (!oidstr)
     {
       log_error ("no OID known for curve '%s'\n", curve_str);
@@ -1280,7 +1280,7 @@ transfer_format_to_openpgp (gcry_sexp_t s_pgp, PKT_public_key *pk)
           goto leave;
         }
 
-      oidstr = openpgp_curve_to_oid (curve, NULL, NULL);
+      oidstr = openpgp_curve_to_oid (curve, NULL, NULL, (pk->version > 4));
       if (!oidstr)
         {
           log_error ("no OID known for curve '%s'\n", curve);

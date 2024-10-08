@@ -230,7 +230,8 @@ int openpgp_oid_is_cv448 (gcry_mpi_t a);
 int openpgp_oid_is_ed448 (gcry_mpi_t a);
 enum gcry_kem_algos openpgp_oid_to_kem_algo (const char *oidname);
 const char *openpgp_curve_to_oid (const char *name,
-                                  unsigned int *r_nbits, int *r_algo);
+                                  unsigned int *r_nbits, int *r_algo,
+                                  int selector);
 const char *openpgp_oid_to_curve (const char *oid, int mode);
 const char *openpgp_oid_or_name_to_curve (const char *oidname, int canon);
 const char *openpgp_enum_curves (int *idxp);
