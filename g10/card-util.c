@@ -631,13 +631,7 @@ current_card_status (ctrl_t ctrl, estream_t fp,
                 const char *curve_for_print = "?";
 
                 if (info.key_attr[i].curve)
-                  {
-                    const char *oid;
-                    oid = openpgp_curve_to_oid (info.key_attr[i].curve,
-                                                NULL, NULL);
-                    if (oid)
-                      curve_for_print = openpgp_oid_to_curve (oid, 0);
-                  }
+                  curve_for_print = openpgp_oid_or_name_to_curve (info.key_attr[i].curve, 0);
                 tty_fprintf (fp, " %s", curve_for_print);
               }
           tty_fprintf (fp, "\n");
@@ -1524,7 +1518,6 @@ ask_card_keyattr (int keyno, const struct key_attr *current)
   else
     {
       const char *curve;
-      const char *oid_str;
 
       if (current->algo == PUBKEY_ALGO_RSA)
         {
@@ -1545,8 +1538,7 @@ ask_card_keyattr (int keyno, const struct key_attr *current)
       if (curve)
         {
           key_attr->algo = algo;
-          oid_str = openpgp_curve_to_oid (curve, NULL, NULL);
-          key_attr->curve = openpgp_oid_to_curve (oid_str, 0);
+          key_attr->curve = openpgp_oid_or_name_to_curve (curve, 0);
         }
       else
         {

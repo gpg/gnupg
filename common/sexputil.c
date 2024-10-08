@@ -1104,8 +1104,7 @@ pubkey_algo_string (gcry_sexp_t s_pkey, enum gcry_pk_algos *r_algoid)
   else if (prefix)
     {
       const char *curve = gcry_pk_get_curve (s_pkey, 0, NULL);
-      const char *name = openpgp_oid_to_curve
-        (openpgp_curve_to_oid (curve, NULL, NULL), 0);
+      const char *name = openpgp_oid_or_name_to_curve (curve, 0);
 
       if (name)
         result = xtrystrdup (name);

@@ -268,8 +268,7 @@ gpgsm_get_key_algo_info (ksba_cert_t cert, unsigned int *nbits, char **r_curve)
       curve = gcry_pk_get_curve (l1, 0, NULL);
       if (curve)
         {
-          name = openpgp_oid_to_curve (openpgp_curve_to_oid (curve,
-                                                             NULL, NULL), 0);
+          name = openpgp_oid_or_name_to_curve (curve, 0);
           *r_curve = xtrystrdup (name? name : curve);
           if (!*r_curve)
             {
