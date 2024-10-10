@@ -1037,6 +1037,8 @@ gpgsm_agent_istrusted (ctrl_t ctrl, ksba_cert_t cert, const char *hexfpr,
       rc = assuan_transact (agent_ctx, "LISTTRUSTED --status",
                             NULL, NULL, NULL, NULL,
                             istrusted_status_cb, &parm);
+      istrusted_cache = parm.cache;
+      parm.cache = NULL;
       if (rc)
         {
           if (gpg_err_code (rc) != GPG_ERR_FORBIDDEN)
