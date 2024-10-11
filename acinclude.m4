@@ -53,67 +53,6 @@ AC_DEFUN([GNUPG_CHECK_GNUMAKE],
   ])
 
 
-dnl GNUPG_CHECK_ENDIAN
-dnl define either LITTLE_ENDIAN_HOST or BIG_ENDIAN_HOST
-dnl
-AC_DEFUN([GNUPG_CHECK_ENDIAN],
-  [
-    tmp_assumed_endian=big
-    tmp_assume_warn=""
-    if test "$cross_compiling" = yes; then
-      case "$host_cpu" in
-         i@<:@345678@:>@* )
-            tmp_assumed_endian=little
-            ;;
-         *)
-            ;;
-      esac
-    fi
-    AC_MSG_CHECKING(endianness)
-    AC_CACHE_VAL(gnupg_cv_c_endian,
-      [ gnupg_cv_c_endian=unknown
-        # See if sys/param.h defines the BYTE_ORDER macro.
-        AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[#include <sys/types.h>
-        #include <sys/param.h>]], [[
-        #if !BYTE_ORDER || !BIG_ENDIAN || !LITTLE_ENDIAN
-         bogus endian macros
-        #endif]])], [# It does; now see whether it defined to BIG_ENDIAN or not.
-        AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[#include <sys/types.h>
-        #include <sys/param.h>]], [[
-        #if BYTE_ORDER != BIG_ENDIAN
-         not big endian
-        #endif]])], gnupg_cv_c_endian=big, gnupg_cv_c_endian=little)])
-        if test "$gnupg_cv_c_endian" = unknown; then
-            AC_RUN_IFELSE([AC_LANG_SOURCE([[main () {
-              /* Are we little or big endian?  From Harbison&Steele.  */
-              union
-              {
-                long l;
-                char c[sizeof (long)];
-              } u;
-              u.l = 1;
-              exit (u.c[sizeof (long) - 1] == 1);
-              }]])],
-              gnupg_cv_c_endian=little,
-              gnupg_cv_c_endian=big,
-              gnupg_cv_c_endian=$tmp_assumed_endian
-              tmp_assumed_warn=" (assumed)"
-            )
-        fi
-      ])
-    AC_MSG_RESULT([${gnupg_cv_c_endian}${tmp_assumed_warn}])
-    if test "$gnupg_cv_c_endian" = little; then
-      AC_DEFINE(LITTLE_ENDIAN_HOST,1,
-                [Defined if the host has little endian byte ordering])
-    else
-      AC_DEFINE(BIG_ENDIAN_HOST,1,
-                [Defined if the host has big endian byte ordering])
-    fi
-  ])
-
-
-
-
 # GNUPG_BUILD_PROGRAM(NAME,DEFAULT)
 # Add a --enable-NAME option to configure an set the
 # shell variable build_NAME either to "yes" or "no".  DEFAULT must
