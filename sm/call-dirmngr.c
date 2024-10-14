@@ -1143,6 +1143,8 @@ gpgsm_dirmngr_run_command (ctrl_t ctrl, const char *command,
   struct run_command_parm_s parm;
 
   rc = start_dirmngr (ctrl);
+  if (gpg_err_code (rc) == GPG_ERR_NO_DIRMNGR)
+    fputs (_("no dirmngr running in this session\n"), stdout);
   if (rc)
     return rc;
 

@@ -1,6 +1,8 @@
 Noteworthy changes in version 2.5.2 (unreleased)
 ------------------------------------------------
 
+  * dirmngr: A list of used URLs for loaded CRLs is printed first in
+    the output of the LISTCRL command.  [T7337]
 
   See-also: gnupg-announce/2024q4/000xxx.html
   Release-info: https://dev.gnupg.org/T7289
