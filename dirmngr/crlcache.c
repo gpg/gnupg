@@ -2638,6 +2638,11 @@ crl_cache_list (estream_t fp)
   gpg_error_t err = 0;
 
   for (entry = cache->entries;
+       entry && !entry->deleted;
+       entry = entry->next )
+      es_fprintf (fp, "URL: %s\n", entry->url );
+
+  for (entry = cache->entries;
        entry && !entry->deleted && !err;
        entry = entry->next )
     err = list_one_crl_entry (cache, entry, fp);

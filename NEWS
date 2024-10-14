@@ -27,6 +27,9 @@ Noteworthy changes in version 2.2.45 (unreleased)
   * agent: Fix KEYTOCARD for the use case with loopback pinentry.
     [T7283]
 
+  * dirmngr: A list of used URLs for loaded CRLs is printed first in
+    the output of the LISTCRL command.  [T7337]
+
   * gpgconf: Allow listing of options --trusted-key,
     add-desig-revoker, and default-new-key-adsk.  [T6882]
 
