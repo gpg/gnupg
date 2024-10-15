@@ -702,7 +702,7 @@ ifeq ($(TARGETOS),w32)
             --build-w64)
   speedo_host_build_option := --host=$(host) --build=$(build)
   speedo_host_build_option6 := --host=$(host6) --build=$(build)
-  speedo_w32_cflags := -mms-bitfields
+  speedo_w32_cflags := -fcf-protection=full
 else
   speedo_autogen_buildopt :=
   host :=
