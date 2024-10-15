@@ -9,7 +9,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnupg-2.4\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"PO-Revision-Date: 2024-09-19 14:32+0200\n"
+"PO-Revision-Date: 2024-10-15 13:40+0200\n"
 "Last-Translator: Werner Koch <wk@gnupg.org>\n"
 "Language-Team: German\n"
 "Language: de\n"
@@ -6487,12 +6487,16 @@ msgstr[0] " (%d Validity Zähler gelöscht)\n"
 msgstr[1] " (%d Validity Zähler gelöscht)\n"
 
 #, c-format
-msgid "no ultimately trusted keys found\n"
-msgstr "keine ultimativ vertrauenswürdigen Schlüssel gefunden\n"
+msgid "Note: ultimately trusted key %s not found\n"
+msgstr "Hinweis: Ultimativ vertrauenswürdigen Schlüssel %s nicht gefunden\n"
 
 #, c-format
-msgid "public key of ultimately trusted key %s not found\n"
-msgstr "öff. Schlüssel des ultimativ vertrauten Schlüssel %s nicht gefunden\n"
+msgid "Note: ultimately trusted key %s expired\n"
+msgstr "Hinweis: Ultimativ vertrauenswürdiger Schlüssel %s is abgelaufen\n"
+
+#, c-format
+msgid "no ultimately trusted keys found\n"
+msgstr "keine ultimativ vertrauenswürdigen Schlüssel gefunden\n"
 
 #, c-format
 msgid ""
@@ -9135,6 +9139,11 @@ msgstr "Verwaltungskommandos für Yubikeys"
 
 msgid "manage the command history"
 msgstr "Verwaltung der Kommandohistorie"
+
+#, c-format
+#~ msgid "public key of ultimately trusted key %s not found\n"
+#~ msgstr ""
+#~ "öff. Schlüssel des ultimativ vertrauten Schlüssel %s nicht gefunden\n"
 
 #~ msgid "use canonical text mode"
 #~ msgstr "Textmodus benutzen"
