@@ -971,6 +971,7 @@ _gnupg_socketdir_internal (int skip_checks, unsigned *r_info)
 {
 #if defined(HAVE_W32_SYSTEM)
   char *name;
+  gpg_err_code_t ec;
 
   (void)skip_checks;
 
@@ -1048,7 +1049,8 @@ _gnupg_socketdir_internal (int skip_checks, unsigned *r_info)
           else if (!skip_checks)
             {
               /* Try to create the directory and check again.  */
-              if (gnupg_mkdir (name, "-rwx"))
+              ec = gnupg_mkdir (name, "-rwx");
+              if (ec && ec != GPG_ERR_EEXIST)
                 *r_info |= 16; /* mkdir failed.  */
               else if (gnupg_stat (name, &sb))
                 {
@@ -1105,6 +1107,7 @@ _gnupg_socketdir_internal (int skip_checks, unsigned *r_info)
   const char *prefix;
   const char *s;
   char *name = NULL;
+  gpg_err_code_t ec;
 
   *r_info = 0;
 
@@ -1161,8 +1164,14 @@ _gnupg_socketdir_internal (int skip_checks, unsigned *r_info)
           goto leave;
         }
 
-      /* Try to create the directory and check again.  */
-      if (gnupg_mkdir (prefix, "-rwx"))
+      /* Try to create the directory and check again.
+       * Here comes a possible race condition:
+       *     stat(2) above failed by ENOENT, but another process does
+       *     mkdir(2) before we do mkdir(2)
+       * So, an error with EEXIST should be handled.
+       */
+      ec = gnupg_mkdir (prefix, "-rwx");
+      if (ec && ec != GPG_ERR_EEXIST)
         {
           *r_info |= 16; /* mkdir failed.  */
           goto leave;
@@ -1221,7 +1230,8 @@ _gnupg_socketdir_internal (int skip_checks, unsigned *r_info)
           else if (!skip_checks)
             {
               /* Try to create the directory and check again.  */
-              if (gnupg_mkdir (name, "-rwx"))
+              ec = gnupg_mkdir (name, "-rwx");
+              if (ec && ec != GPG_ERR_EEXIST)
                 *r_info |= 16; /* mkdir failed.  */
               else if (stat (prefix, &sb))
                 {
