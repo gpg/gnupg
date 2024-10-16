@@ -86,7 +86,7 @@ static void
 transform (rmd160_context_t *hd, const unsigned char *data)
 {
   u32 a,b,c,d,e,aa,bb,cc,dd,ee,t;
-#ifdef BIG_ENDIAN_HOST
+#ifdef WORDS_BIGENDIAN
   u32 x[16];
   {
     int i;

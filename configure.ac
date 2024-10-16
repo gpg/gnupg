@@ -544,6 +544,19 @@ AH_BOTTOM([
 #endif
 
 
+/* If the configure check for endianness has been disabled, get it from
+   OS macros.  This is intended for making fat binary builds on OS X.  */
+#ifdef DISABLED_ENDIAN_CHECK
+# if defined(__BIG_ENDIAN__)
+#  define WORDS_BIGENDIAN 1
+# elif defined(__LITTLE_ENDIAN__)
+#  undef WORDS_BIGENDIAN
+# else
+#  error "No endianness found"
+# endif
+#endif /*DISABLED_ENDIAN_CHECK*/
+
+
 /* Hack used for W32: ldap.m4 also tests for the ASCII version of
    ldap_start_tls_s because that is the actual symbol used in the
    library.  winldap.h redefines it to our commonly used value,
@@ -1319,10 +1332,15 @@ AC_MSG_NOTICE([checking for system characteristics])
 AC_C_CONST
 AC_C_INLINE
 AC_C_VOLATILE
-AC_C_BIGENDIAN([AC_DEFINE(BIG_ENDIAN_HOST,1,
-                [Defined if the host has big endian byte ordering])],
-               [AC_DEFINE(LITTLE_ENDIAN_HOST,1,
-                [Defined if the host has little endian byte ordering])])
+AC_ARG_ENABLE(endian-check,
+              AS_HELP_STRING([--disable-endian-check],
+              [disable the endian check and trust the OS provided macros]),
+	      endiancheck=$enableval,endiancheck=yes)
+if test x"$endiancheck" = xyes ; then
+  AC_C_BIGENDIAN
+else
+  AC_DEFINE(DISABLED_ENDIAN_CHECK,1,[configure did not test for endianness])
+fi
 AC_TYPE_SIZE_T
 AC_TYPE_MODE_T
 AC_CHECK_FUNCS([sigdescr_np])
