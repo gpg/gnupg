@@ -685,7 +685,7 @@ gnupg_status_compliance_flag (enum gnupg_compliance_mode compliance)
     case CO_PGP8:
       log_assert (!"no status code assigned for this compliance mode");
     case CO_DE_VS:
-      return assumed_de_vs_compliance ? "2023" : "23";
+      return assumed_de_vs_compliance > 0 ? "2023" : "23";
     }
   log_assert (!"invalid compliance mode");
 }
