@@ -2550,6 +2550,11 @@ msgstr "%s:%d: niepoprawna lista auto-key-locate\n"
 msgid "invalid auto-key-locate list\n"
 msgstr "Niepoprawna lista auto-key-locate\n"
 
+#, fuzzy, c-format
+#| msgid "error parsing key specification '%s': %s\n"
+msgid "error parsing value for option '%s': %s\n"
+msgstr "błąd analizy specyfikacji klucza ,,%s'': %s\n"
+
 #, c-format
 msgid "WARNING: program may create a core file!\n"
 msgstr "OSTRZEŻENIE: program może stworzyć plik zrzutu pamięci!\n"
@@ -3540,6 +3545,11 @@ msgstr "usunięcie wybranych podkluczy"
 msgid "add a revocation key"
 msgstr "dodanie klucza unieważniającego"
 
+#, fuzzy
+#| msgid "Data decryption succeeded"
+msgid "add an additional decryption subkey"
+msgstr "Odszyfrowywanie danych zakończone"
+
 msgid "delete signatures from the selected user IDs"
 msgstr "usunięcie podpisów z wybranych identyfikatorów użytkownika"
 
@@ -3964,6 +3974,19 @@ msgstr ""
 msgid ""
 "Are you sure you want to appoint this key as a designated revoker? (y/N) "
 msgstr "Czy na pewno chcesz wyznaczyć ten klucz jako unieważniający? (t/N) "
+
+msgid "Enter the fingerprint of the additional decryption subkey: "
+msgstr ""
+
+#, fuzzy, c-format
+#| msgid "(unless you specify the key by fingerprint)\n"
+msgid "Did you specify the fingerprint of a subkey?\n"
+msgstr "(chyba, że klucz zostaje wybrany przez podanie odcisku)\n"
+
+#, fuzzy, c-format
+#| msgid "Subkey %s is already revoked.\n"
+msgid "key \"%s\" is already on this keyblock\n"
+msgstr "Podklucz %s jest już unieważniony.\n"
 
 msgid ""
 "Are you sure you want to change the expiration time for multiple subkeys? (y/"
@@ -4557,6 +4580,11 @@ msgid ""
 msgstr ""
 "Ten klucz nie może być wykorzystany do szyfrowania. Komendą \"--edit-key\"\n"
 "można dodać do niego podklucz szyfrujący.\n"
+
+#, fuzzy, c-format
+#| msgid "WARNING: This key has been revoked by its owner!\n"
+msgid "Note: The key has been created with one or more ADSK!\n"
+msgstr "OSTRZEŻENIE: Ten klucz został unieważniony przez właściciela!\n"
 
 #, c-format
 msgid ""
@@ -6425,13 +6453,19 @@ msgstr[0] " (skasowano %d licznik zaufania)\n"
 msgstr[1] " (skasowano %d liczniki zaufania)\n"
 msgstr[2] " (skasowano %d liczników zaufania)\n"
 
-#, c-format
-msgid "no ultimately trusted keys found\n"
+#, fuzzy, c-format
+#| msgid "no ultimately trusted keys found\n"
+msgid "Note: ultimately trusted key %s not found\n"
+msgstr "brak absolutnie zaufanych kluczy\n"
+
+#, fuzzy, c-format
+#| msgid "no ultimately trusted keys found\n"
+msgid "Note: ultimately trusted key %s expired\n"
 msgstr "brak absolutnie zaufanych kluczy\n"
 
 #, c-format
-msgid "public key of ultimately trusted key %s not found\n"
-msgstr "klucz publiczny absolutnie zaufanego klucza %s nie odnaleziony\n"
+msgid "no ultimately trusted keys found\n"
+msgstr "brak absolutnie zaufanych kluczy\n"
 
 #, c-format
 msgid ""
@@ -8924,6 +8958,10 @@ msgid ""
 msgstr ""
 "Składnia: gpg-check-pattern [opcje] plik-wzorców\n"
 "Sprawdzanie hasła ze standardowego wejścia względem pliku wzorców\n"
+
+#, c-format
+#~ msgid "public key of ultimately trusted key %s not found\n"
+#~ msgstr "klucz publiczny absolutnie zaufanego klucza %s nie odnaleziony\n"
 
 #~ msgid "%s/%s encrypted for: \"%s\"\n"
 #~ msgstr "%s/%s zaszyfrowany dla: ,,%s''\n"

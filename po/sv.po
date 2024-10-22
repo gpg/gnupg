@@ -2834,6 +2834,11 @@ msgstr "%s:%d: ogiltig auto-key-locate-lista\n"
 msgid "invalid auto-key-locate list\n"
 msgstr "ogiltig auto-key-locate-lista\n"
 
+#, fuzzy, c-format
+#| msgid "error storing certificate: %s\n"
+msgid "error parsing value for option '%s': %s\n"
+msgstr "fel vid lagring av certifikat: %s\n"
+
 # Programmet skapar en avbildning (image) av minnet för att lättare kunna spåra fel.
 #, c-format
 msgid "WARNING: program may create a core file!\n"
@@ -3867,6 +3872,11 @@ msgstr "ta bort valda undernycklar"
 msgid "add a revocation key"
 msgstr "lägg till en spärrnyckel"
 
+#, fuzzy
+#| msgid "Data decryption succeeded"
+msgid "add an additional decryption subkey"
+msgstr "Datadekryptering lyckades"
+
 msgid "delete signatures from the selected user IDs"
 msgstr "ta bort signaturer från valda användaridentiteter"
 
@@ -4320,6 +4330,19 @@ msgid ""
 "Are you sure you want to appoint this key as a designated revoker? (y/N) "
 msgstr ""
 "Är du säker på att du vill använda den här nyckeln för spärrning? (j/N) "
+
+msgid "Enter the fingerprint of the additional decryption subkey: "
+msgstr ""
+
+#, fuzzy, c-format
+#| msgid "(unless you specify the key by fingerprint)\n"
+msgid "Did you specify the fingerprint of a subkey?\n"
+msgstr "(om du inte anger nyckeln med hjälp av fingeravtrycket)\n"
+
+#, fuzzy, c-format
+#| msgid "Subkey %s is already revoked.\n"
+msgid "key \"%s\" is already on this keyblock\n"
+msgstr "Undernyckeln %s är redan spärrad.\n"
 
 # designated = angiven (utnämnd, utpekad, bestämd, utsedd, avsedd, angiven, designerad)
 #, fuzzy
@@ -4945,6 +4968,11 @@ msgstr ""
 "Observera att denna nyckel inte kan användas för kryptering. Du kanske\n"
 "vill använda flaggan \"--edit-key\" för att skapa en undernyckel för detta "
 "syfte.\n"
+
+#, fuzzy, c-format
+#| msgid "WARNING: This key has been revoked by its owner!\n"
+msgid "Note: The key has been created with one or more ADSK!\n"
+msgstr "VARNING: Denna nyckel har spärrats av sin ägare!\n"
 
 # c-format behövs inte i singularis
 #, c-format
@@ -6856,13 +6884,19 @@ msgid_plural " (%d validity counts cleared)\n"
 msgstr[0] "%d nycklar behandlade (%d validity counts rensade)\n"
 msgstr[1] "%d nycklar behandlade (%d validity counts rensade)\n"
 
-#, c-format
-msgid "no ultimately trusted keys found\n"
+#, fuzzy, c-format
+#| msgid "no ultimately trusted keys found\n"
+msgid "Note: ultimately trusted key %s not found\n"
+msgstr "hittade inga nycklar med förbehållslöst förtroende\n"
+
+#, fuzzy, c-format
+#| msgid "no ultimately trusted keys found\n"
+msgid "Note: ultimately trusted key %s expired\n"
 msgstr "hittade inga nycklar med förbehållslöst förtroende\n"
 
 #, c-format
-msgid "public key of ultimately trusted key %s not found\n"
-msgstr "publik nyckel för förbehållslöst betrodda nyckeln %s hittades inte\n"
+msgid "no ultimately trusted keys found\n"
+msgstr "hittade inga nycklar med förbehållslöst förtroende\n"
 
 #, c-format
 msgid ""
@@ -9639,6 +9673,11 @@ msgid ""
 msgstr ""
 "Syntax: gpg-check-pattern [flaggor] mönsterfil\n"
 "Kontrollera en lösenfras angiven på standard in mot mönsterfilen\n"
+
+#, c-format
+#~ msgid "public key of ultimately trusted key %s not found\n"
+#~ msgstr ""
+#~ "publik nyckel för förbehållslöst betrodda nyckeln %s hittades inte\n"
 
 #~ msgid "%s/%s encrypted for: \"%s\"\n"
 #~ msgstr "%s/%s krypterad för: \"%s\"\n"

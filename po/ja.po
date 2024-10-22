@@ -2486,6 +2486,11 @@ msgstr "%s:%d: 無効な auto-key-locate リストです\n"
 msgid "invalid auto-key-locate list\n"
 msgstr "無効な auto-key-locate リストです\n"
 
+#, fuzzy, c-format
+#| msgid "error parsing key specification '%s': %s\n"
+msgid "error parsing value for option '%s': %s\n"
+msgstr "鍵指定'%s'の構文解析エラー: %s\n"
+
 #, c-format
 msgid "WARNING: program may create a core file!\n"
 msgstr "*警告*: プログラムはcoreファイルを作成することがあります!\n"
@@ -3441,6 +3446,11 @@ msgstr "選択した副鍵の削除"
 msgid "add a revocation key"
 msgstr "失効鍵の追加"
 
+#, fuzzy
+#| msgid "Data decryption succeeded"
+msgid "add an additional decryption subkey"
+msgstr "データ復号に成功しました"
+
 msgid "delete signatures from the selected user IDs"
 msgstr "選択したユーザIDから署名を削除する"
 
@@ -3844,6 +3854,19 @@ msgstr "*警告*: ある鍵を指名失効者に設定すると、元に戻せ�
 msgid ""
 "Are you sure you want to appoint this key as a designated revoker? (y/N) "
 msgstr "本当にこの鍵を指名失効者に任命しますか? (y/N) "
+
+msgid "Enter the fingerprint of the additional decryption subkey: "
+msgstr ""
+
+#, fuzzy, c-format
+#| msgid "(unless you specify the key by fingerprint)\n"
+msgid "Did you specify the fingerprint of a subkey?\n"
+msgstr "(フィンガー・プリントで鍵を指定してない限り)\n"
+
+#, fuzzy, c-format
+#| msgid "Subkey %s is already revoked.\n"
+msgid "key \"%s\" is already on this keyblock\n"
+msgstr "副鍵 %s は、もう失効されています。\n"
 
 msgid ""
 "Are you sure you want to change the expiration time for multiple subkeys? (y/"
@@ -4417,6 +4440,11 @@ msgid ""
 msgstr ""
 "この鍵は暗号化には使用できないことに注意してください。暗号化を行うには、\n"
 "\"--edit-key\"コマンドを使って副鍵を生成してください。\n"
+
+#, fuzzy, c-format
+#| msgid "WARNING: This key has been revoked by its owner!\n"
+msgid "Note: The key has been created with one or more ADSK!\n"
+msgstr "*警告*: この鍵は所有者によって失効されています!\n"
 
 #, c-format
 msgid ""
@@ -6140,13 +6168,19 @@ msgid " (%d validity count cleared)\n"
 msgid_plural " (%d validity counts cleared)\n"
 msgstr[0] " (うち%d本の有効性数をクリア)\n"
 
-#, c-format
-msgid "no ultimately trusted keys found\n"
+#, fuzzy, c-format
+#| msgid "no ultimately trusted keys found\n"
+msgid "Note: ultimately trusted key %s not found\n"
+msgstr "究極的に信用する鍵が見つかりません\n"
+
+#, fuzzy, c-format
+#| msgid "no ultimately trusted keys found\n"
+msgid "Note: ultimately trusted key %s expired\n"
 msgstr "究極的に信用する鍵が見つかりません\n"
 
 #, c-format
-msgid "public key of ultimately trusted key %s not found\n"
-msgstr "究極的に信用する鍵%sの公開鍵が見つかりません\n"
+msgid "no ultimately trusted keys found\n"
+msgstr "究極的に信用する鍵が見つかりません\n"
 
 #, c-format
 msgid ""
@@ -8597,6 +8631,10 @@ msgid ""
 msgstr ""
 "形式: gpg-check-pattern [オプション] パターンファイル\n"
 "パターンファイルに対して標準入力のパスフレーズを確認する\n"
+
+#, c-format
+#~ msgid "public key of ultimately trusted key %s not found\n"
+#~ msgstr "究極的に信用する鍵%sの公開鍵が見つかりません\n"
 
 #, c-format
 #~ msgid "continuing verification anyway due to option %s\n"

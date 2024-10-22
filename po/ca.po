@@ -2768,6 +2768,10 @@ msgstr "%s:%d opcions d'exportació no vàlides\n"
 msgid "invalid auto-key-locate list\n"
 msgstr ""
 
+#, fuzzy, c-format
+msgid "error parsing value for option '%s': %s\n"
+msgstr "error en la creació de la contrasenya: %s\n"
+
 #, c-format
 msgid "WARNING: program may create a core file!\n"
 msgstr "AVÍS: el programa podria crear un fitxer core!\n"
@@ -3805,6 +3809,9 @@ msgstr "esborra una clau secundària"
 msgid "add a revocation key"
 msgstr "afegeix una clau de revocació"
 
+msgid "add an additional decryption subkey"
+msgstr ""
+
 #, fuzzy
 msgid "delete signatures from the selected user IDs"
 msgstr ""
@@ -4267,6 +4274,18 @@ msgid ""
 "Are you sure you want to appoint this key as a designated revoker? (y/N) "
 msgstr ""
 "Esteu segur que voleu nominar aquesta clau com a revocador designat? (s/N): "
+
+msgid "Enter the fingerprint of the additional decryption subkey: "
+msgstr ""
+
+#, fuzzy, c-format
+#| msgid "(unless you specify the key by fingerprint)\n"
+msgid "Did you specify the fingerprint of a subkey?\n"
+msgstr "(a no ser que especifiqueu la clau per la empremta digital)\n"
+
+#, fuzzy, c-format
+msgid "key \"%s\" is already on this keyblock\n"
+msgstr "l'ID d'usuari «%s» ja està revocat\n"
 
 #, fuzzy
 msgid ""
@@ -4882,6 +4901,11 @@ msgid ""
 msgstr ""
 "Noteu que aquesta clau no serveix per a xifrar. Potser vulgueu usar l'ordre\n"
 "\"--edit-key\" per a generar una clau secundària per a tal propòsit.\n"
+
+#, fuzzy, c-format
+#| msgid "WARNING: This key has been revoked by its owner!\n"
+msgid "Note: The key has been created with one or more ADSK!\n"
+msgstr "AVÍS: Aquesta clau ha estat revocada pel propietari!\n"
 
 # Werner FIXME: Use ngettext. jm
 #, c-format
@@ -6757,14 +6781,19 @@ msgid_plural " (%d validity counts cleared)\n"
 msgstr[0] "s'han processat %d claus (s'han netejat %d comptes de validesa)\n"
 msgstr[1] "s'han processat %d claus (s'han netejat %d comptes de validesa)\n"
 
-#, c-format
-msgid "no ultimately trusted keys found\n"
+#, fuzzy, c-format
+#| msgid "no ultimately trusted keys found\n"
+msgid "Note: ultimately trusted key %s not found\n"
 msgstr "no s'han trobat claus amb confiança absoluta\n"
 
 #, fuzzy, c-format
-msgid "public key of ultimately trusted key %s not found\n"
-msgstr ""
-"no s'ha trobat la clau pública de la clau amb confiança absoluta %08lX\n"
+#| msgid "no ultimately trusted keys found\n"
+msgid "Note: ultimately trusted key %s expired\n"
+msgstr "no s'han trobat claus amb confiança absoluta\n"
+
+#, c-format
+msgid "no ultimately trusted keys found\n"
+msgstr "no s'han trobat claus amb confiança absoluta\n"
 
 #, c-format
 msgid ""
@@ -9340,6 +9369,11 @@ msgid ""
 "Syntax: gpg-check-pattern [options] patternfile\n"
 "Check a passphrase given on stdin against the patternfile\n"
 msgstr ""
+
+#, fuzzy, c-format
+#~ msgid "public key of ultimately trusted key %s not found\n"
+#~ msgstr ""
+#~ "no s'ha trobat la clau pública de la clau amb confiança absoluta %08lX\n"
 
 #~ msgid "%s/%s encrypted for: \"%s\"\n"
 #~ msgstr "%s/%s xifrat per a: «%s»\n"

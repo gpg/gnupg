@@ -2677,6 +2677,10 @@ msgstr "%s:%d: opções de exportação inválidas\n"
 msgid "invalid auto-key-locate list\n"
 msgstr ""
 
+#, fuzzy, c-format
+msgid "error parsing value for option '%s': %s\n"
+msgstr "erro na criação da frase secreta: %s\n"
+
 #, c-format
 msgid "WARNING: program may create a core file!\n"
 msgstr "AVISO: O programa pode criar um ficheiro core!\n"
@@ -3694,6 +3698,9 @@ msgstr "remove uma chave secundária"
 msgid "add a revocation key"
 msgstr "adiciona uma chave de revocação"
 
+msgid "add an additional decryption subkey"
+msgstr ""
+
 #, fuzzy
 msgid "delete signatures from the selected user IDs"
 msgstr ""
@@ -4143,6 +4150,18 @@ msgstr "não pode escolher uma chave como revogadora de si mesmo\n"
 msgid ""
 "Are you sure you want to appoint this key as a designated revoker? (y/N) "
 msgstr "não pode escolher uma chave como revogadora de si mesmo\n"
+
+msgid "Enter the fingerprint of the additional decryption subkey: "
+msgstr ""
+
+#, fuzzy, c-format
+#| msgid "(unless you specify the key by fingerprint)\n"
+msgid "Did you specify the fingerprint of a subkey?\n"
+msgstr "(a não ser que escolha a chave pela sua impressão digital)\n"
+
+#, fuzzy, c-format
+msgid "key \"%s\" is already on this keyblock\n"
+msgstr "o utilizador com o id \"%s\" já está revocado\n"
 
 #, fuzzy
 msgid ""
@@ -4750,6 +4769,11 @@ msgid ""
 msgstr ""
 "Note que esta chave não pode ser usada para cifragem. Você pode usar\n"
 "o comando \"--edit-key\" para gerar uma chave secundária para esse fim.\n"
+
+#, fuzzy, c-format
+#| msgid "WARNING: This key has been revoked by its owner!\n"
+msgid "Note: The key has been created with one or more ADSK!\n"
+msgstr "AVISO: Esta chave foi revogada pelo seu dono!\n"
 
 #, c-format
 msgid ""
@@ -6568,12 +6592,17 @@ msgstr[0] ""
 msgstr[1] ""
 
 #, fuzzy, c-format
-msgid "no ultimately trusted keys found\n"
+msgid "Note: ultimately trusted key %s not found\n"
 msgstr ""
 "chave pública da chave absolutamente de confiança %08lX não encontrada\n"
 
 #, fuzzy, c-format
-msgid "public key of ultimately trusted key %s not found\n"
+msgid "Note: ultimately trusted key %s expired\n"
+msgstr ""
+"chave pública da chave absolutamente de confiança %08lX não encontrada\n"
+
+#, fuzzy, c-format
+msgid "no ultimately trusted keys found\n"
 msgstr ""
 "chave pública da chave absolutamente de confiança %08lX não encontrada\n"
 
@@ -9107,6 +9136,11 @@ msgid ""
 "Syntax: gpg-check-pattern [options] patternfile\n"
 "Check a passphrase given on stdin against the patternfile\n"
 msgstr ""
+
+#, fuzzy, c-format
+#~ msgid "public key of ultimately trusted key %s not found\n"
+#~ msgstr ""
+#~ "chave pública da chave absolutamente de confiança %08lX não encontrada\n"
 
 #~ msgid "%s/%s encrypted for: \"%s\"\n"
 #~ msgstr "%s/%s cifrado para: \"%s\"\n"

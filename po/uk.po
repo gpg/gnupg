@@ -2595,6 +2595,11 @@ msgstr "%s:%d: некоректний список auto-key-locate\n"
 msgid "invalid auto-key-locate list\n"
 msgstr "некоректний список auto-key-locate\n"
 
+#, fuzzy, c-format
+#| msgid "error parsing key specification '%s': %s\n"
+msgid "error parsing value for option '%s': %s\n"
+msgstr "помилка під час спроби обробки специфікації ключа «%s»: %s\n"
+
 #, c-format
 msgid "WARNING: program may create a core file!\n"
 msgstr "УВАГА: можливе створення дампу пам’яті програми!\n"
@@ -3589,6 +3594,11 @@ msgstr "вилучити вибрані підключі"
 msgid "add a revocation key"
 msgstr "додати ключ відкликання"
 
+#, fuzzy
+#| msgid "Data decryption succeeded"
+msgid "add an additional decryption subkey"
+msgstr "Дані розшифровано"
+
 msgid "delete signatures from the selected user IDs"
 msgstr "вилучити підписи з вибраних ідентифікаторів користувача"
 
@@ -4015,6 +4025,19 @@ msgid ""
 msgstr ""
 "Ви справді бажаєте призначити цей ключ як підписане відкликання? (y/N або т/"
 "Н) "
+
+msgid "Enter the fingerprint of the additional decryption subkey: "
+msgstr ""
+
+#, fuzzy, c-format
+#| msgid "(unless you specify the key by fingerprint)\n"
+msgid "Did you specify the fingerprint of a subkey?\n"
+msgstr "(якщо ключ не задано відбитком)\n"
+
+#, fuzzy, c-format
+#| msgid "Subkey %s is already revoked.\n"
+msgid "key \"%s\" is already on this keyblock\n"
+msgstr "Підключ %s вже відкликано.\n"
 
 msgid ""
 "Are you sure you want to change the expiration time for multiple subkeys? (y/"
@@ -4605,6 +4628,11 @@ msgid ""
 msgstr ""
 "Зауважте, що цей ключ не може бути використано для шифрування. Ви можете\n"
 "скористатися командою «--edit-key» для створення підключа з цією метою.\n"
+
+#, fuzzy, c-format
+#| msgid "WARNING: This key has been revoked by its owner!\n"
+msgid "Note: The key has been created with one or more ADSK!\n"
+msgstr "УВАГА: цей ключ було відкликано власником!\n"
 
 #, c-format
 msgid ""
@@ -6484,13 +6512,19 @@ msgstr[0] " (очищено %d значення чинності)\n"
 msgstr[1] " (очищено %d значення чинності)\n"
 msgstr[2] " (очищено %d значень чинності)\n"
 
-#, c-format
-msgid "no ultimately trusted keys found\n"
+#, fuzzy, c-format
+#| msgid "no ultimately trusted keys found\n"
+msgid "Note: ultimately trusted key %s not found\n"
+msgstr "не знайдено ключів з необмеженою довірою\n"
+
+#, fuzzy, c-format
+#| msgid "no ultimately trusted keys found\n"
+msgid "Note: ultimately trusted key %s expired\n"
 msgstr "не знайдено ключів з необмеженою довірою\n"
 
 #, c-format
-msgid "public key of ultimately trusted key %s not found\n"
-msgstr "не знайдено відкритий ключ ключа з необмеженою довірою %s\n"
+msgid "no ultimately trusted keys found\n"
+msgstr "не знайдено ключів з необмеженою довірою\n"
 
 #, c-format
 msgid ""
@@ -9005,6 +9039,10 @@ msgid ""
 msgstr ""
 "Синтаксис: gpg-check-pattern [параметри] файл_шаблонів\n"
 "Перевірити пароль, вказаний у stdin, за допомогою файла_шаблонів\n"
+
+#, c-format
+#~ msgid "public key of ultimately trusted key %s not found\n"
+#~ msgstr "не знайдено відкритий ключ ключа з необмеженою довірою %s\n"
 
 #~ msgid "%s/%s encrypted for: \"%s\"\n"
 #~ msgstr "%s/%s зашифровано для «%s»\n"

@@ -2705,6 +2705,11 @@ msgstr "%s : %d : liste de recherche automatique de clef incorrecte\n"
 msgid "invalid auto-key-locate list\n"
 msgstr "liste de recherche automatique de clef incorrecte\n"
 
+#, fuzzy, c-format
+#| msgid "error loading certificate '%s': %s\n"
+msgid "error parsing value for option '%s': %s\n"
+msgstr "erreur de chargement du certificat « %s » : %s\n"
+
 #, c-format
 msgid "WARNING: program may create a core file!\n"
 msgstr "Attention : le programme pourrait créer un fichier « core ».\n"
@@ -3702,6 +3707,11 @@ msgstr "supprimer les sous-clefs sélectionnées"
 msgid "add a revocation key"
 msgstr "ajouter une clef de révocation"
 
+#, fuzzy
+#| msgid "Data decryption succeeded"
+msgid "add an additional decryption subkey"
+msgstr "Déchiffrement des données réussi"
+
 msgid "delete signatures from the selected user IDs"
 msgstr "supprimer les signatures des identités sélectionnées"
 
@@ -4139,6 +4149,19 @@ msgid ""
 "Are you sure you want to appoint this key as a designated revoker? (y/N) "
 msgstr ""
 "Voulez-vous vraiment rendre cette clef comme révocateur désigné ? (o/N) "
+
+msgid "Enter the fingerprint of the additional decryption subkey: "
+msgstr ""
+
+#, fuzzy, c-format
+#| msgid "(unless you specify the key by fingerprint)\n"
+msgid "Did you specify the fingerprint of a subkey?\n"
+msgstr "(à moins d'indiquer la clef par son empreinte)\n"
+
+#, fuzzy, c-format
+#| msgid "Subkey %s is already revoked.\n"
+msgid "key \"%s\" is already on this keyblock\n"
+msgstr "La sous-clef %s est déjà révoquée.\n"
 
 #, fuzzy
 #| msgid ""
@@ -4743,6 +4766,11 @@ msgstr ""
 "Remarquez que cette clef ne peut pas être utilisée pour chiffrer. Vous "
 "pouvez\n"
 "utiliser la commande « --edit-key » pour générer une sous-clef à cette fin.\n"
+
+#, fuzzy, c-format
+#| msgid "WARNING: This key has been revoked by its owner!\n"
+msgid "Note: The key has been created with one or more ADSK!\n"
+msgstr "Attention : cette clef à été révoquée par son propriétaire.\n"
 
 #, c-format
 msgid ""
@@ -6660,13 +6688,19 @@ msgid_plural " (%d validity counts cleared)\n"
 msgstr[0] "%d clefs traitées (%d comptes de validité réinitialisés)\n"
 msgstr[1] "%d clefs traitées (%d comptes de validité réinitialisés)\n"
 
-#, c-format
-msgid "no ultimately trusted keys found\n"
+#, fuzzy, c-format
+#| msgid "no ultimately trusted keys found\n"
+msgid "Note: ultimately trusted key %s not found\n"
+msgstr "aucune clef de confiance ultime n'a été trouvée\n"
+
+#, fuzzy, c-format
+#| msgid "no ultimately trusted keys found\n"
+msgid "Note: ultimately trusted key %s expired\n"
 msgstr "aucune clef de confiance ultime n'a été trouvée\n"
 
 #, c-format
-msgid "public key of ultimately trusted key %s not found\n"
-msgstr "la clef publique de la clef de confiance ultime %s est introuvable\n"
+msgid "no ultimately trusted keys found\n"
+msgstr "aucune clef de confiance ultime n'a été trouvée\n"
 
 #, c-format
 msgid ""
@@ -9275,6 +9309,11 @@ msgstr ""
 "Syntaxe : gpg-check-pattern [options] ficmotif\n"
 "Vérifier une phrase secrète donnée sur l'entrée standard par rapport à "
 "ficmotif\n"
+
+#, c-format
+#~ msgid "public key of ultimately trusted key %s not found\n"
+#~ msgstr ""
+#~ "la clef publique de la clef de confiance ultime %s est introuvable\n"
 
 #~ msgid "%s/%s encrypted for: \"%s\"\n"
 #~ msgstr "%s/%s chiffré pour : « %s »\n"

@@ -2677,6 +2677,10 @@ msgstr "%s:%d: Érvénytelen export opciók!\n"
 msgid "invalid auto-key-locate list\n"
 msgstr ""
 
+#, fuzzy, c-format
+msgid "error parsing value for option '%s': %s\n"
+msgstr "Hiba a jelszó létrehozásakor: %s.\n"
+
 #, c-format
 msgid "WARNING: program may create a core file!\n"
 msgstr "FIGYELEM: A program core állományt hozhat létre!\n"
@@ -3691,6 +3695,9 @@ msgstr "másodlagos kulcs törlése"
 msgid "add a revocation key"
 msgstr "visszavonó kulcs hozzáadása"
 
+msgid "add an additional decryption subkey"
+msgstr ""
+
 #, fuzzy
 msgid "delete signatures from the selected user IDs"
 msgstr "Valóban frissíti a kijelölt felhasználóazonosítók preferenciáit? "
@@ -4140,6 +4147,18 @@ msgstr ""
 msgid ""
 "Are you sure you want to appoint this key as a designated revoker? (y/N) "
 msgstr "Biztosan ez a kulcs legyen a kijelölt visszavonó? (i/N): "
+
+msgid "Enter the fingerprint of the additional decryption subkey: "
+msgstr ""
+
+#, fuzzy, c-format
+#| msgid "(unless you specify the key by fingerprint)\n"
+msgid "Did you specify the fingerprint of a subkey?\n"
+msgstr "(Kivéve, ha megad egy kulcsot az ujjlenyomatával.)\n"
+
+#, fuzzy, c-format
+msgid "key \"%s\" is already on this keyblock\n"
+msgstr "\"%s\" felhasználói azonosítót már visszavonták.\n"
 
 #, fuzzy
 msgid ""
@@ -4741,6 +4760,11 @@ msgstr ""
 "Ez a kulcs nem használható titkosításra. Ha egy másodlagos kulcsot\n"
 "kíván ilyen célra létrehozni, azt az \"--edit-key\" parancs segítségével\n"
 "teheti meg.\n"
+
+#, fuzzy, c-format
+#| msgid "WARNING: This key has been revoked by its owner!\n"
+msgid "Note: The key has been created with one or more ADSK!\n"
+msgstr "FIGYELEM: Ezt a kulcsot a tulajdonosa visszavonta!\n"
 
 #, c-format
 msgid ""
@@ -6575,13 +6599,19 @@ msgid_plural " (%d validity counts cleared)\n"
 msgstr[0] "%d kulcsot feldolgoztam (%d érvényességszámlálót töröltem)\n"
 msgstr[1] "%d kulcsot feldolgoztam (%d érvényességszámlálót töröltem)\n"
 
-#, c-format
-msgid "no ultimately trusted keys found\n"
+#, fuzzy, c-format
+#| msgid "no ultimately trusted keys found\n"
+msgid "Note: ultimately trusted key %s not found\n"
 msgstr "Nem találtam alapvetően megbízható kulcsot.\n"
 
 #, fuzzy, c-format
-msgid "public key of ultimately trusted key %s not found\n"
-msgstr "Nem találom az alapvetően megbízható %08lX kulcs nyilvános kulcsát!\n"
+#| msgid "no ultimately trusted keys found\n"
+msgid "Note: ultimately trusted key %s expired\n"
+msgstr "Nem találtam alapvetően megbízható kulcsot.\n"
+
+#, c-format
+msgid "no ultimately trusted keys found\n"
+msgstr "Nem találtam alapvetően megbízható kulcsot.\n"
 
 #, c-format
 msgid ""
@@ -9112,6 +9142,11 @@ msgid ""
 "Syntax: gpg-check-pattern [options] patternfile\n"
 "Check a passphrase given on stdin against the patternfile\n"
 msgstr ""
+
+#, fuzzy, c-format
+#~ msgid "public key of ultimately trusted key %s not found\n"
+#~ msgstr ""
+#~ "Nem találom az alapvetően megbízható %08lX kulcs nyilvános kulcsát!\n"
 
 #~ msgid "%s/%s encrypted for: \"%s\"\n"
 #~ msgstr "%s/%s titkosítva \"%s\" számára\n"

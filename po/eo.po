@@ -2665,6 +2665,10 @@ msgstr "AVERTO: '%s' estas malplena dosiero\n"
 msgid "invalid auto-key-locate list\n"
 msgstr ""
 
+#, fuzzy, c-format
+msgid "error parsing value for option '%s': %s\n"
+msgstr "eraro dum kreado de pasfrazo: %s\n"
+
 #, c-format
 msgid "WARNING: program may create a core file!\n"
 msgstr "AVERTO: programo povas krei core-dosieron!\n"
@@ -3689,6 +3693,9 @@ msgstr "forviŝi flankan ŝlosilon"
 msgid "add a revocation key"
 msgstr "aldoni flankan ŝlosilon"
 
+msgid "add an additional decryption subkey"
+msgstr ""
+
 #, fuzzy
 msgid "delete signatures from the selected user IDs"
 msgstr "Ĉu vere aktualigi la preferojn por la elektitaj uzantidentigiloj? "
@@ -4134,6 +4141,17 @@ msgstr ""
 msgid ""
 "Are you sure you want to appoint this key as a designated revoker? (y/N) "
 msgstr "Ĉu vi estas certa, ke vi ankoraŭ volas subskribi ĝin?\n"
+
+msgid "Enter the fingerprint of the additional decryption subkey: "
+msgstr ""
+
+#, fuzzy, c-format
+msgid "Did you specify the fingerprint of a subkey?\n"
+msgstr "malsukcesis doni komencajn valorojn al fido-datenaro: %s\n"
+
+#, fuzzy, c-format
+msgid "key \"%s\" is already on this keyblock\n"
+msgstr "Uzantidentigilo \"%s\" estas revokita.\n"
 
 #, fuzzy
 msgid ""
@@ -4736,6 +4754,11 @@ msgid ""
 msgstr ""
 "Notu, ke ĉi tiu ŝlosilo ne estas uzebla por ĉifrado. Vi eble volos\n"
 "uzi la komandon \"--edit-key\" por krei flankan ŝlosilon por tiu celo.\n"
+
+#, fuzzy, c-format
+#| msgid "WARNING: This key has been revoked by its owner!\n"
+msgid "Note: The key has been created with one or more ADSK!\n"
+msgstr "AVERTO: Ĉi tiu ŝlosilo estas revokita de sia posedanto!\n"
 
 #, c-format
 msgid ""
@@ -6545,11 +6568,15 @@ msgstr[0] ""
 msgstr[1] ""
 
 #, fuzzy, c-format
-msgid "no ultimately trusted keys found\n"
+msgid "Note: ultimately trusted key %s not found\n"
 msgstr "publika ŝlosilo de absolute fidata ŝlosilo %08lX ne trovita\n"
 
 #, fuzzy, c-format
-msgid "public key of ultimately trusted key %s not found\n"
+msgid "Note: ultimately trusted key %s expired\n"
+msgstr "publika ŝlosilo de absolute fidata ŝlosilo %08lX ne trovita\n"
+
+#, fuzzy, c-format
+msgid "no ultimately trusted keys found\n"
 msgstr "publika ŝlosilo de absolute fidata ŝlosilo %08lX ne trovita\n"
 
 #, c-format
@@ -9084,6 +9111,10 @@ msgid ""
 "Syntax: gpg-check-pattern [options] patternfile\n"
 "Check a passphrase given on stdin against the patternfile\n"
 msgstr ""
+
+#, fuzzy, c-format
+#~ msgid "public key of ultimately trusted key %s not found\n"
+#~ msgstr "publika ŝlosilo de absolute fidata ŝlosilo %08lX ne trovita\n"
 
 #, fuzzy
 #~ msgid "%s/%s encrypted for: \"%s\"\n"

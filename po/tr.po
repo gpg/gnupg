@@ -2772,6 +2772,11 @@ msgstr "%s:%d: özdevinimli anahtar konumlama listesi geçersiz\n"
 msgid "invalid auto-key-locate list\n"
 msgstr "özdevinimli anahtar konumlama listesi geçersiz\n"
 
+#, fuzzy, c-format
+#| msgid "error storing certificate: %s\n"
+msgid "error parsing value for option '%s': %s\n"
+msgstr "serifika saklanırken hata: %s\n"
+
 #, c-format
 msgid "WARNING: program may create a core file!\n"
 msgstr "UYARI: program bir \"core\" dosyası oluşturabilir!\n"
@@ -3796,6 +3801,11 @@ msgstr "seçili yardımcı anahtarları siler"
 msgid "add a revocation key"
 msgstr "bir yürürlükten kaldırma anahtarı ekler"
 
+#, fuzzy
+#| msgid "Data decryption succeeded"
+msgid "add an additional decryption subkey"
+msgstr "Verinin şifresinin çözülmesi başarılı"
+
 msgid "delete signatures from the selected user IDs"
 msgstr "seçili kullanıcı kimliklerden imzaları siler"
 
@@ -4269,6 +4279,19 @@ msgid ""
 msgstr ""
 "Bu anahtarın, yürürlükten kaldıran anahtar olmasını istediğinizden emin "
 "misiniz? (e/H ya da y/N) "
+
+msgid "Enter the fingerprint of the additional decryption subkey: "
+msgstr ""
+
+#, fuzzy, c-format
+#| msgid "(unless you specify the key by fingerprint)\n"
+msgid "Did you specify the fingerprint of a subkey?\n"
+msgstr "(anahtarı parmak izi ile belirtmedikçe)\n"
+
+#, fuzzy, c-format
+#| msgid "Subkey %s is already revoked.\n"
+msgid "key \"%s\" is already on this keyblock\n"
+msgstr "Yardımcı anahtar %s zaten yürürlükten kaldırılmış.\n"
 
 #, fuzzy
 #| msgid ""
@@ -4891,6 +4914,11 @@ msgid ""
 msgstr ""
 "Bu anahtar şifreleme için kullanılamaz. Şifreleme için yardımcı anahtarı\n"
 "\"--edit-key\" seçeneğini kullanarak üretebilirsiniz.\n"
+
+#, fuzzy, c-format
+#| msgid "WARNING: This key has been revoked by its owner!\n"
+msgid "Note: The key has been created with one or more ADSK!\n"
+msgstr "UYARI: Bu anahtar sahibi tarafından yürürlükten kaldırılmıştı!\n"
 
 #, c-format
 msgid ""
@@ -6772,13 +6800,19 @@ msgid_plural " (%d validity counts cleared)\n"
 msgstr[0] "%d anahtar işlendi (%d doğrulama temizlendi)\n"
 msgstr[1] "%d anahtar işlendi (%d doğrulama temizlendi)\n"
 
-#, c-format
-msgid "no ultimately trusted keys found\n"
+#, fuzzy, c-format
+#| msgid "no ultimately trusted keys found\n"
+msgid "Note: ultimately trusted key %s not found\n"
+msgstr "son derece güvenli bir anahtar yok\n"
+
+#, fuzzy, c-format
+#| msgid "no ultimately trusted keys found\n"
+msgid "Note: ultimately trusted key %s expired\n"
 msgstr "son derece güvenli bir anahtar yok\n"
 
 #, c-format
-msgid "public key of ultimately trusted key %s not found\n"
-msgstr "son derece güvenli %s için genel anahtar yok\n"
+msgid "no ultimately trusted keys found\n"
+msgstr "son derece güvenli bir anahtar yok\n"
 
 #, c-format
 msgid ""
@@ -9537,6 +9571,10 @@ msgstr ""
 "Kullanım: gpg-check-pattern [seçenekler] örüntüdosyası\n"
 "Standart girdiden verilen anahtar parolasını örüntü dosyasıyla "
 "karşılaştırır\n"
+
+#, c-format
+#~ msgid "public key of ultimately trusted key %s not found\n"
+#~ msgstr "son derece güvenli %s için genel anahtar yok\n"
 
 #~ msgid "%s/%s encrypted for: \"%s\"\n"
 #~ msgstr "%s/%s \"%s\" için şifrelendi\n"

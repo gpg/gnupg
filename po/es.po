@@ -2592,6 +2592,11 @@ msgstr "%s:%d: lista de auto-localización de claves inválida\n"
 msgid "invalid auto-key-locate list\n"
 msgstr "lista de auto-localización de claves inválida\n"
 
+#, fuzzy, c-format
+#| msgid "error parsing key specification '%s': %s\n"
+msgid "error parsing value for option '%s': %s\n"
+msgstr "error al leer la especificación de clave '%s': %s\n"
+
 #, c-format
 msgid "WARNING: program may create a core file!\n"
 msgstr "ATENCIÓN: ¡el programa podría volcar un fichero core!\n"
@@ -3569,6 +3574,11 @@ msgstr "borrar clave secundaria"
 msgid "add a revocation key"
 msgstr "añadir una clave de revocación"
 
+#, fuzzy
+#| msgid "Data decryption succeeded"
+msgid "add an additional decryption subkey"
+msgstr "Datos descifrados correctamente"
+
 msgid "delete signatures from the selected user IDs"
 msgstr "borrar firmas de los ID seleccionados"
 
@@ -3982,6 +3992,19 @@ msgid ""
 "Are you sure you want to appoint this key as a designated revoker? (y/N) "
 msgstr ""
 "¿Está seguro de querer elegir esta clave como revocador designado? (s/N) "
+
+msgid "Enter the fingerprint of the additional decryption subkey: "
+msgstr ""
+
+#, fuzzy, c-format
+#| msgid "(unless you specify the key by fingerprint)\n"
+msgid "Did you specify the fingerprint of a subkey?\n"
+msgstr "(excepto si especifica la clave dando su huella digital)\n"
+
+#, fuzzy, c-format
+#| msgid "Subkey %s is already revoked.\n"
+msgid "key \"%s\" is already on this keyblock\n"
+msgstr "La subclave %s ya ha sido revocada.\n"
 
 msgid ""
 "Are you sure you want to change the expiration time for multiple subkeys? (y/"
@@ -4562,6 +4585,11 @@ msgid ""
 msgstr ""
 "Tenga en cuenta que esta clave no puede ser usada para cifrar. Puede usar\n"
 "la orden \"--edit-key\" para crear una subclave con este propósito.\n"
+
+#, fuzzy, c-format
+#| msgid "WARNING: This key has been revoked by its owner!\n"
+msgid "Note: The key has been created with one or more ADSK!\n"
+msgstr "ATENCIÓN: ¡Esta clave ha sido revocada por su propietario!\n"
 
 #, c-format
 msgid ""
@@ -6392,13 +6420,19 @@ msgid_plural " (%d validity counts cleared)\n"
 msgstr[0] " (%d validación de cuenta borrada)\n"
 msgstr[1] " (%d validaciones de cuenta borradas)\n"
 
-#, c-format
-msgid "no ultimately trusted keys found\n"
+#, fuzzy, c-format
+#| msgid "no ultimately trusted keys found\n"
+msgid "Note: ultimately trusted key %s not found\n"
+msgstr "no se encuentran claves absolutamente fiables\n"
+
+#, fuzzy, c-format
+#| msgid "no ultimately trusted keys found\n"
+msgid "Note: ultimately trusted key %s expired\n"
 msgstr "no se encuentran claves absolutamente fiables\n"
 
 #, c-format
-msgid "public key of ultimately trusted key %s not found\n"
-msgstr "clave pública de la clave absolutamente fiable %s no encontrada\n"
+msgid "no ultimately trusted keys found\n"
+msgstr "no se encuentran claves absolutamente fiables\n"
 
 #, c-format
 msgid ""
@@ -8903,6 +8937,10 @@ msgstr ""
 "Sintaxis: gpg-check-pattern [opciones] fichero_de_patrones\n"
 "Compara frase contraseña dada en entrada estándar con un fichero de "
 "patrones\n"
+
+#, c-format
+#~ msgid "public key of ultimately trusted key %s not found\n"
+#~ msgstr "clave pública de la clave absolutamente fiable %s no encontrada\n"
 
 #~ msgid "%s/%s encrypted for: \"%s\"\n"
 #~ msgstr "%s/%s cifrado para: \"%s\"\n"

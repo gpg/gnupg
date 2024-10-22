@@ -2470,6 +2470,11 @@ msgstr "%s%d: 无效的 auto-key-locate 列表\n"
 msgid "invalid auto-key-locate list\n"
 msgstr "无效的 auto-key-locate 列表\n"
 
+#, fuzzy, c-format
+#| msgid "error parsing key specification '%s': %s\n"
+msgid "error parsing value for option '%s': %s\n"
+msgstr "解析密钥指定‘%s’时出现错误：%s\n"
+
 #, c-format
 msgid "WARNING: program may create a core file!\n"
 msgstr "警告：程序可能会创建核心内存转储文件！\n"
@@ -3414,6 +3419,11 @@ msgstr "删除选定的子密钥"
 msgid "add a revocation key"
 msgstr "增加一个吊销用密钥"
 
+#, fuzzy
+#| msgid "Data decryption succeeded"
+msgid "add an additional decryption subkey"
+msgstr "数据解密成功"
+
 msgid "delete signatures from the selected user IDs"
 msgstr "从所选用户标识上删除签名"
 
@@ -3815,6 +3825,19 @@ msgstr "警告：将某把密钥设置为指定吊销者的操作无法撤销！
 msgid ""
 "Are you sure you want to appoint this key as a designated revoker? (y/N) "
 msgstr "您确定要将这个密钥设置为指定吊销者吗？(y/N)： "
+
+msgid "Enter the fingerprint of the additional decryption subkey: "
+msgstr ""
+
+#, fuzzy, c-format
+#| msgid "(unless you specify the key by fingerprint)\n"
+msgid "Did you specify the fingerprint of a subkey?\n"
+msgstr "（除非您用指纹指定密钥）\n"
+
+#, fuzzy, c-format
+#| msgid "Subkey %s is already revoked.\n"
+msgid "key \"%s\" is already on this keyblock\n"
+msgstr "子密钥 %s 已被吊销。\n"
 
 msgid ""
 "Are you sure you want to change the expiration time for multiple subkeys? (y/"
@@ -4385,6 +4408,11 @@ msgid ""
 msgstr ""
 "请注意这个密钥不能用于加密。您可能想要使用“--edit-key”命令来\n"
 "生成一个用于此用途的子密钥。\n"
+
+#, fuzzy, c-format
+#| msgid "WARNING: This key has been revoked by its owner!\n"
+msgid "Note: The key has been created with one or more ADSK!\n"
+msgstr "警告：此密钥已经被它的所有者吊销了！\n"
 
 #, c-format
 msgid ""
@@ -6087,13 +6115,19 @@ msgid " (%d validity count cleared)\n"
 msgid_plural " (%d validity counts cleared)\n"
 msgstr[0] " （%d 个有效计数已被清除）\n"
 
-#, c-format
-msgid "no ultimately trusted keys found\n"
+#, fuzzy, c-format
+#| msgid "no ultimately trusted keys found\n"
+msgid "Note: ultimately trusted key %s not found\n"
+msgstr "未找到任何绝对信任的密钥\n"
+
+#, fuzzy, c-format
+#| msgid "no ultimately trusted keys found\n"
+msgid "Note: ultimately trusted key %s expired\n"
 msgstr "未找到任何绝对信任的密钥\n"
 
 #, c-format
-msgid "public key of ultimately trusted key %s not found\n"
-msgstr "绝对信任密钥 %s 的公钥未找到\n"
+msgid "no ultimately trusted keys found\n"
+msgstr "未找到任何绝对信任的密钥\n"
 
 #, c-format
 msgid ""
@@ -8529,6 +8563,10 @@ msgid ""
 msgstr ""
 "语法：gpg-check-pattern [选项] patternfile\n"
 "按照 patternfile 检查一个由标准输入（stdin）给定的密码\n"
+
+#, c-format
+#~ msgid "public key of ultimately trusted key %s not found\n"
+#~ msgstr "绝对信任密钥 %s 的公钥未找到\n"
 
 #, c-format
 #~ msgid "continuing verification anyway due to option %s\n"

@@ -2546,6 +2546,11 @@ msgstr "%s:%d: недопустимый список auto-key-locate\n"
 msgid "invalid auto-key-locate list\n"
 msgstr "недопустимый список auto-key-locate\n"
 
+#, fuzzy, c-format
+#| msgid "error parsing key specification '%s': %s\n"
+msgid "error parsing value for option '%s': %s\n"
+msgstr "ошибка синтаксического анализа спецификации ключа '%s': %s\n"
+
 #, c-format
 msgid "WARNING: program may create a core file!\n"
 msgstr "Внимание: возможно создание файла образа памяти!\n"
@@ -3524,6 +3529,11 @@ msgstr "удалить выбранные подключи"
 msgid "add a revocation key"
 msgstr "добавить ключ отзыва"
 
+#, fuzzy
+#| msgid "Data decryption succeeded"
+msgid "add an additional decryption subkey"
+msgstr "Данные успешно расшифрованы"
+
 msgid "delete signatures from the selected user IDs"
 msgstr "удалить подписи с выбранных идентификаторов пользователя"
 
@@ -3952,6 +3962,19 @@ msgstr "Внимание: назначение ключа отзывающим �
 msgid ""
 "Are you sure you want to appoint this key as a designated revoker? (y/N) "
 msgstr "Вы уверены, что хотите назначить данный ключ отзывающим? (y/N) "
+
+msgid "Enter the fingerprint of the additional decryption subkey: "
+msgstr ""
+
+#, fuzzy, c-format
+#| msgid "(unless you specify the key by fingerprint)\n"
+msgid "Did you specify the fingerprint of a subkey?\n"
+msgstr "(если только ключ не задан отпечатком)\n"
+
+#, fuzzy, c-format
+#| msgid "Subkey %s is already revoked.\n"
+msgid "key \"%s\" is already on this keyblock\n"
+msgstr "Подключ %s уже отозван.\n"
 
 msgid ""
 "Are you sure you want to change the expiration time for multiple subkeys? (y/"
@@ -4535,6 +4558,11 @@ msgid ""
 msgstr ""
 "Учтите, что данный ключ не может использоваться для шифрования. Можно\n"
 "воспользоваться командой \"--edit-key\" и создать подключ для этих целей.\n"
+
+#, fuzzy, c-format
+#| msgid "WARNING: This key has been revoked by its owner!\n"
+msgid "Note: The key has been created with one or more ADSK!\n"
+msgstr "Внимание: Данный ключ отозван его владельцем!\n"
 
 #, c-format
 msgid ""
@@ -6376,13 +6404,19 @@ msgstr[0] " (сброшен %d счетчик достоверности)\n"
 msgstr[1] " (сброшены %d счетчика достоверности)\n"
 msgstr[2] " (сброшено %d счетчиков достоверности)\n"
 
-#, c-format
-msgid "no ultimately trusted keys found\n"
+#, fuzzy, c-format
+#| msgid "no ultimately trusted keys found\n"
+msgid "Note: ultimately trusted key %s not found\n"
+msgstr "абсолютно доверенных ключей не найдено\n"
+
+#, fuzzy, c-format
+#| msgid "no ultimately trusted keys found\n"
+msgid "Note: ultimately trusted key %s expired\n"
 msgstr "абсолютно доверенных ключей не найдено\n"
 
 #, c-format
-msgid "public key of ultimately trusted key %s not found\n"
-msgstr "открытый ключ для абсолютно доверенного ключа %s не найден\n"
+msgid "no ultimately trusted keys found\n"
+msgstr "абсолютно доверенных ключей не найдено\n"
 
 #, c-format
 msgid ""
@@ -8888,6 +8922,10 @@ msgid ""
 msgstr ""
 "Синтаксис: gpg-check-pattern [параметры] файл_образцов\n"
 "Проверить фразу-пароль, поступающую из stdin, по файлу образцов\n"
+
+#, c-format
+#~ msgid "public key of ultimately trusted key %s not found\n"
+#~ msgstr "открытый ключ для абсолютно доверенного ключа %s не найден\n"
 
 #~ msgid "%s/%s encrypted for: \"%s\"\n"
 #~ msgstr "%s/%s зашифровано для пользователя \"%s\"\n"

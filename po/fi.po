@@ -2694,6 +2694,10 @@ msgstr "%s:%d: virheelliset vientivalitsimet\n"
 msgid "invalid auto-key-locate list\n"
 msgstr ""
 
+#, fuzzy, c-format
+msgid "error parsing value for option '%s': %s\n"
+msgstr "virhe luotaessa salasanaa: %s\n"
+
 #, c-format
 msgid "WARNING: program may create a core file!\n"
 msgstr "VAROITUS: ohjelma voi luoda core-tiedoston!\n"
@@ -3713,6 +3717,9 @@ msgstr "poista toissijainen avain"
 msgid "add a revocation key"
 msgstr "lisää mitätöintiavain"
 
+msgid "add an additional decryption subkey"
+msgstr ""
+
 #, fuzzy
 msgid "delete signatures from the selected user IDs"
 msgstr "Varmastiko päivitä valinnat näille käyttäjätunnuksille? "
@@ -4160,6 +4167,18 @@ msgid ""
 "Are you sure you want to appoint this key as a designated revoker? (y/N) "
 msgstr ""
 "Haluatko varmasti nimittää tämän avaimen määrätyksi mitätöijäksi? (k/E): "
+
+msgid "Enter the fingerprint of the additional decryption subkey: "
+msgstr ""
+
+#, fuzzy, c-format
+#| msgid "(unless you specify the key by fingerprint)\n"
+msgid "Did you specify the fingerprint of a subkey?\n"
+msgstr "(ellet määritä avainta sormenjäljen perusteella)\n"
+
+#, fuzzy, c-format
+msgid "key \"%s\" is already on this keyblock\n"
+msgstr "käyttäjätunnus \"%s\" on jo mitätöity\n"
 
 #, fuzzy
 msgid ""
@@ -4766,6 +4785,11 @@ msgid ""
 msgstr ""
 "Huomaa, että tätä avainta ei voida käyttää salaamiseen.  Käytä komentoa\n"
 "\"--edit-key\" luodaksesi toissijaisen avaimen salaustarkoitukseen.\n"
+
+#, fuzzy, c-format
+#| msgid "WARNING: This key has been revoked by its owner!\n"
+msgid "Note: The key has been created with one or more ADSK!\n"
+msgstr "VAROITUS: Tämän avaimen haltija on mitätöinyt avaimen!\n"
 
 #, c-format
 msgid ""
@@ -6611,13 +6635,19 @@ msgid_plural " (%d validity counts cleared)\n"
 msgstr[0] "%d avainta käsitelty (%d kelpoisuuslaskuria tyhjätty)\n"
 msgstr[1] "%d avainta käsitelty (%d kelpoisuuslaskuria tyhjätty)\n"
 
-#, c-format
-msgid "no ultimately trusted keys found\n"
+#, fuzzy, c-format
+#| msgid "no ultimately trusted keys found\n"
+msgid "Note: ultimately trusted key %s not found\n"
 msgstr "ehdottomasti luotettavia avaimia ei löytynyt\n"
 
 #, fuzzy, c-format
-msgid "public key of ultimately trusted key %s not found\n"
-msgstr "ehdottomasti luotettu julkinen avain %08lX ei löytynyt\n"
+#| msgid "no ultimately trusted keys found\n"
+msgid "Note: ultimately trusted key %s expired\n"
+msgstr "ehdottomasti luotettavia avaimia ei löytynyt\n"
+
+#, c-format
+msgid "no ultimately trusted keys found\n"
+msgstr "ehdottomasti luotettavia avaimia ei löytynyt\n"
 
 #, c-format
 msgid ""
@@ -9152,6 +9182,10 @@ msgid ""
 "Syntax: gpg-check-pattern [options] patternfile\n"
 "Check a passphrase given on stdin against the patternfile\n"
 msgstr ""
+
+#, fuzzy, c-format
+#~ msgid "public key of ultimately trusted key %s not found\n"
+#~ msgstr "ehdottomasti luotettu julkinen avain %08lX ei löytynyt\n"
 
 #~ msgid "%s/%s encrypted for: \"%s\"\n"
 #~ msgstr "%s/%s salattu vastaanottajalle: \"%s\"\n"
