@@ -1,4 +1,4 @@
-Noteworthy changes in version 2.2.45 (unreleased)
+Noteworthy changes in version 2.2.45 (2024-10-22)
 -------------------------------------------------
 
   * gpg: New command --quick-add-adsk  [T6395]

@@ -26,7 +26,9 @@
   GNU General Public License.
 
   Note that the 2.2 series of GnuPG is our current long term support
-  branch.  The regular stable series is 2.3 (will be renamed to 2.4).
+  branch.  The regular stable series is 2.4.  For end of life
+  statements see https://gnupg.org/download/index.html#end-of-life .
+
 
 * BUILD INSTRUCTIONS
 
@@ -195,7 +197,6 @@
   "https://gnupg.org/faq/whats-new-in-2.1.html" .
 
   The primary WWW page is "https://gnupg.org"
-             or using Tor "http://ic6au7wa3f6naxjq.onion"
   The primary FTP site is "https://gnupg.org/ftp/gcrypt/"
 
   See [[https://gnupg.org/download/mirrors.html]] for a list of
@@ -211,12 +212,6 @@
 
      gnupg-users@gnupg.org      For general user discussion and
                                 help (English).
-
-     gnupg-de@gnupg.org         German speaking counterpart of
-                                gnupg-users.
-
-     gnupg-ru@gnupg.org         Russian speaking counterpart of
-                                gnupg-users.
 
      gnupg-devel@gnupg.org      GnuPG developers main forum.
 
@@ -241,8 +236,7 @@
   German company owned and headed by GnuPG's principal author Werner
   Koch and Gpg4win maintainer Andre Heinecke, is bearing the majority
   of these costs.  Under the brand https://gnupg.com g10 Code GmbH
-  does now provide commercial offers.  Donations are also appreciated;
-  see https://gnupg.org/donate/ .
+  does now provide commercial offers.
 
 
 # This file is Free Software; as a special exception the authors gives
