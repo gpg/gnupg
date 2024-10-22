@@ -9,7 +9,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnupg-2.1.0\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"PO-Revision-Date: 2024-08-12 16:45+0200\n"
+"PO-Revision-Date: 2024-10-22 15:47+0200\n"
 "Last-Translator: Werner Koch <wk@gnupg.org>\n"
 "Language-Team: German <de@li.org>\n"
 "Language: de\n"
@@ -2558,6 +2558,10 @@ msgid "invalid auto-key-locate list\n"
 msgstr "ungültige \"auto-key-locate\"-Liste\n"
 
 #, c-format
+msgid "error parsing value for option '%s': %s\n"
+msgstr "Fehler beim Parsen des Wertes der Option '%s': %s\n"
+
+#, c-format
 msgid "WARNING: program may create a core file!\n"
 msgstr "WARNUNG: Programm könnte eine core-dump-Datei schreiben!\n"
 
@@ -3553,6 +3557,9 @@ msgstr "ausgewählte Unterschlüssel entfernen"
 msgid "add a revocation key"
 msgstr "Einen Widerrufschlüssel hinzufügen"
 
+msgid "add an additional decryption subkey"
+msgstr "Einen ADSK hinzufügen"
+
 msgid "delete signatures from the selected user IDs"
 msgstr "Beglaubigungen der ausgewählten User-IDs entfernen"
 
@@ -3981,6 +3988,17 @@ msgid ""
 msgstr ""
 "Möchten Sie diesen Schlüssel wirklich als vorgesehenen Widerrufer festlegen? "
 "(j/N): "
+
+msgid "Enter the fingerprint of the additional decryption subkey: "
+msgstr "Geben Sie den Fingerprint des ADSK an: "
+
+#, c-format
+msgid "Did you specify the fingerprint of a subkey?\n"
+msgstr "Haben Sie den Fingerprint des Unterschlüssels angegeben?\n"
+
+#, c-format
+msgid "key \"%s\" is already on this keyblock\n"
+msgstr "Den Schlüssel \"%s\" gibt es bereits in diesem Schlüsselblock\n"
 
 msgid ""
 "Are you sure you want to change the expiration time for multiple subkeys? (y/"
@@ -4559,6 +4577,11 @@ msgstr ""
 "Bitte beachten Sie, daß dieser Schlüssel nicht zum Verschlüsseln benutzt\n"
 "werden kann.  Sie können aber mit dem Befehl \"--edit-key\" einen\n"
 "Unterschlüssel für diesem Zweck erzeugen.\n"
+
+#, c-format
+msgid "Note: The key has been created with one or more ADSK!\n"
+msgstr ""
+"WARNUNG: Dieser Schlüssel wurde mit einem oder mehreren ADSK erzeugt!\n"
 
 #, c-format
 msgid ""
@@ -6440,12 +6463,16 @@ msgstr[0] " (%d Validity Zähler gelöscht)\n"
 msgstr[1] " (%d Validity Zähler gelöscht)\n"
 
 #, c-format
-msgid "no ultimately trusted keys found\n"
-msgstr "keine ultimativ vertrauenswürdigen Schlüssel gefunden\n"
+msgid "Note: ultimately trusted key %s not found\n"
+msgstr "öff. Schlüssel des ultimativ vertrauten Schlüssel %s nicht gefunden\n"
 
 #, c-format
-msgid "public key of ultimately trusted key %s not found\n"
-msgstr "öff. Schlüssel des ultimativ vertrauten Schlüssel %s nicht gefunden\n"
+msgid "Note: ultimately trusted key %s expired\n"
+msgstr "öff. Schlüssel des ultimativ vertrauten Schlüssel %s ist abgelaufen\n"
+
+#, c-format
+msgid "no ultimately trusted keys found\n"
+msgstr "keine ultimativ vertrauenswürdigen Schlüssel gefunden\n"
 
 #, c-format
 msgid ""
@@ -8970,6 +8997,11 @@ msgid ""
 msgstr ""
 "Syntax: gpg-check-pattern [optionen] Musterdatei\n"
 "Das von stdin gelesene Passwort gegen die Musterdatei prüfen\n"
+
+#, c-format
+#~ msgid "public key of ultimately trusted key %s not found\n"
+#~ msgstr ""
+#~ "öff. Schlüssel des ultimativ vertrauten Schlüssel %s nicht gefunden\n"
 
 #, c-format
 #~ msgid "continuing verification anyway due to option %s\n"
