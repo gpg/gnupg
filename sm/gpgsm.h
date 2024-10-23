@@ -355,12 +355,14 @@ int  gpgsm_parse_validation_model (const char *model);
 
 /*-- server.c --*/
 void gpgsm_server (certlist_t default_recplist);
+void gpgsm_init_statusfp (ctrl_t ctrl);
 gpg_error_t gpgsm_status (ctrl_t ctrl, int no, const char *text);
 gpg_error_t gpgsm_status2 (ctrl_t ctrl, int no, ...) GPGRT_ATTR_SENTINEL(0);
 gpg_error_t gpgsm_status_with_err_code (ctrl_t ctrl, int no, const char *text,
                                         gpg_err_code_t ec);
 gpg_error_t gpgsm_status_with_error (ctrl_t ctrl, int no, const char *text,
                                      gpg_error_t err);
+void gpgsm_exit_failure_status (void);
 gpg_error_t gpgsm_progress_cb (ctrl_t ctrl, uint64_t current, uint64_t total);
 gpg_error_t gpgsm_proxy_pinentry_notify (ctrl_t ctrl,
                                          const unsigned char *line);

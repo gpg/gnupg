@@ -1663,6 +1663,7 @@ list_internal_keys (ctrl_t ctrl, strlist_t names, estream_t fp,
 
       resname = keydb_get_resource_name (hd);
 
+      es_clearerr (fp);
       if (lastresname != resname )
         {
           int i;
@@ -1716,6 +1717,20 @@ list_internal_keys (ctrl_t ctrl, strlist_t names, estream_t fp,
       ksba_cert_release (lastcert);
       lastcert = cert;
       cert = NULL;
+
+      if (es_ferror (fp))
+        rc = gpg_error_from_syserror ();
+
+      /* For faster key listings we flush the output after each cert
+       * only if we list secret keys.  */
+      if ((mode & 2) && es_fflush (fp) && !rc)
+        rc = gpg_error_from_syserror ();
+
+      if (rc)
+        {
+          log_error (_("error writing to output: %s\n"), gpg_strerror (rc));
+          goto leave;
+        }
     }
   if (gpg_err_code (rc) == GPG_ERR_NOT_FOUND)
     rc = 0;

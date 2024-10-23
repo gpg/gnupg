@@ -37,6 +37,11 @@
 #define set_error(e,t) assuan_set_error (ctx, gpg_error (e), (t))
 
 
+/* Used to track whether we printed any FAILURE status in non-server
+ * mode.  */
+static int any_failure_printed;
+
+
 /* The filepointer for status message used in non-server mode */
 static FILE *statusfp;
 
@@ -1515,6 +1520,24 @@ gpgsm_server (certlist_t default_recplist)
 }
 
 
+void
+gpgsm_init_statusfp (ctrl_t ctrl)
+{
+  if (statusfp || ctrl->status_fd == -1)
+    return;
+
+  if (ctrl->status_fd == 1)
+    statusfp = stdout;
+  else if (ctrl->status_fd == 2)
+    statusfp = stderr;
+  else
+    statusfp = fdopen (ctrl->status_fd, "w");
+
+  if (!statusfp)
+    log_fatal ("can't open fd %d for status output: %s\n",
+               ctrl->status_fd, strerror(errno));
+}
+
 
 gpg_error_t
 gpgsm_status2 (ctrl_t ctrl, int no, ...)
@@ -1527,23 +1550,11 @@ gpgsm_status2 (ctrl_t ctrl, int no, ...)
 
   if (ctrl->no_server && ctrl->status_fd == -1)
     ; /* No status wanted. */
+  else if (ctrl->no_server && no == STATUS_FAILURE && any_failure_printed)
+    ; /* Don't emit FAILURE a second time.  */
   else if (ctrl->no_server)
     {
-      if (!statusfp)
-        {
-          if (ctrl->status_fd == 1)
-            statusfp = stdout;
-          else if (ctrl->status_fd == 2)
-            statusfp = stderr;
-          else
-            statusfp = fdopen (ctrl->status_fd, "w");
-
-          if (!statusfp)
-            {
-              log_fatal ("can't open fd %d for status output: %s\n",
-                         ctrl->status_fd, strerror(errno));
-            }
-        }
+      gpgsm_init_statusfp (ctrl);
 
       fputs ("[GNUPG:] ", statusfp);
       fputs (get_status_string (no), statusfp);
@@ -1562,6 +1573,10 @@ gpgsm_status2 (ctrl_t ctrl, int no, ...)
             }
         }
       putc ('\n', statusfp);
+
+      if (no == STATUS_FAILURE)
+        any_failure_printed = 1;
+
       if (ferror (statusfp))
         err = gpg_error_from_syserror ();
       else
@@ -1611,6 +1626,23 @@ gpgsm_status_with_error (ctrl_t ctrl, int no, const char *text,
     return gpgsm_status2 (ctrl, no, text, buf, NULL);
   else
     return gpgsm_status2 (ctrl, no, buf, NULL);
+}
+
+
+/* Function to print a FAILURE status line on exit.  */
+void
+gpgsm_exit_failure_status (void)
+{
+  /* stderr is used as a last but possible wrong resort if no status
+   * has yet been printed. */
+  FILE *fp = statusfp? statusfp : stderr;
+
+  if (any_failure_printed)
+    return;
+
+  fputs ("[GNUPG:] ", fp);
+  fputs (get_status_string (STATUS_FAILURE), fp);
+  fputs (" gpgsm-exit 50331649\n", fp);
 }
 
 

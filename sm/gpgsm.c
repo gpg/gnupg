@@ -1803,6 +1803,10 @@ main ( int argc, char **argv)
       gnupg_inhibit_set_foregound_window (1);
     }
 
+  /* Better make sure that we have a statusfp so that a failure status
+   * in gpgsm_exit can work even w/o any preeding status messages. */
+  gpgsm_init_statusfp (&ctrl);
+
   /* Add default keybox. */
   if (!nrings && default_keyring && !opt.use_keyboxd)
     {
@@ -2355,6 +2359,12 @@ gpgsm_exit (int rc)
     rc = 1;
   else if (opt.assert_signer_list && !assert_signer_true)
     rc = 1;
+
+  /* If we had an error but not printed an error message, do it now.
+   * Note that the function will never print a second failure status
+   * line. */
+  if (rc)
+    gpgsm_exit_failure_status ();
 
   gcry_control (GCRYCTL_UPDATE_RANDOM_SEED_FILE);
   if (opt.debug & DBG_MEMSTAT_VALUE)
