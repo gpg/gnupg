@@ -1,4 +1,4 @@
-Noteworthy changes in version 2.4.6 (unreleased)
+Noteworthy changes in version 2.4.6 (2024-10-29)
 ------------------------------------------------
 
   * gpg: New command --quick-set-ownertrust.  [rG967678d972]
@@ -28,6 +28,12 @@ Noteworthy changes in version 2.4.6 (unreleased)
   * gpg: Make --no-literal work again for -c and --store.  [T5852]
 
   * gpg: Fix getting key by IPGP.  [T7288]
+
+  * gpg: Validate the trustdb after the import of a trusted key.
+    [T7200]
+
+  * gpg: Exclude expired trusted keys from the key validation process.
+    [T7200]
 
   * gpgsm: New option --assert-signer.  [T7286]
 
@@ -60,6 +66,8 @@ Noteworthy changes in version 2.4.6 (unreleased)
 
   * gpg-mail-tube: New tool to apply PGP/MIME encryption to a mail.
     [rGa564a9f66c]
+
+  * Fix a race condition in creating the socket directory.  [T7332]
 
   * Fix some uninitialized variables and double frees in error code
     paths.  [T7129]
