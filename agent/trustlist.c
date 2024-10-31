@@ -485,8 +485,8 @@ istrusted_internal (ctrl_t ctrl, const char *fpr, int listmode, int *r_disabled,
                in a locked state.  */
             if (already_locked)
               ;
-            else if (ti->flags.relax || ti->flags.cm || ti->flags.qual
-                     || ti->flags.de_vs)
+            else if (listmode || ti->flags.relax || ti->flags.cm
+                     || ti->flags.qual || ti->flags.de_vs)
               {
                 unlock_trusttable ();
                 locked = 0;
