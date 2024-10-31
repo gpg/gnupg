@@ -4935,8 +4935,8 @@ append_adsk_to_key (ctrl_t ctrl, kbnode_t keyblock, PKT_public_key *adsk)
 
   /* Prepare and append the adsk.  */
   keyid_from_pk (main_pk, adsk->main_keyid); /* Fixup main keyid.  */
-  log_assert ((adsk->pubkey_usage & PUBKEY_USAGE_ENC));
-  adsk->pubkey_usage = PUBKEY_USAGE_RENC;    /* 'e' -> 'r'         */
+  log_assert ((adsk->pubkey_usage & PUBKEY_USAGE_XENC_MASK));
+  adsk->pubkey_usage = PUBKEY_USAGE_RENC;    /* 'e' or 'r' -> 'r'  */
   pkt = xtrycalloc (1, sizeof *pkt);
   if (!pkt)
     {

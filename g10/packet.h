@@ -400,11 +400,10 @@ typedef struct
      when serializing.  (Serialized.)  */
   byte    version;
   byte    selfsigversion; /* highest version of all of the self-sigs */
-  /* The public key algorithm.  (Serialized.)  */
-  byte    pubkey_algo;
-  u16     pubkey_usage;   /* carries the usage info.            */
-  byte    req_usage;      /* hack to pass a request to getkey() */
   byte    fprlen;         /* 0 or length of FPR.  */
+  byte    pubkey_algo;    /* The public key algorithm.  (PGP format)  */
+  u16     pubkey_usage;   /* carries the usage info.            */
+  u16     req_usage;      /* hack to pass a request to getkey() */
   u32     has_expired;    /* set to the expiration date if expired */
   /* keyid of the primary key.  Never access this value directly.
      Instead, use pk_main_keyid().  */
