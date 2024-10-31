@@ -77,7 +77,8 @@ struct getkey_ctx_s
   /* Part of the search criteria: The type of the requested key.  A
      mask of PUBKEY_USAGE_SIG, PUBKEY_USAGE_ENC and PUBKEY_USAGE_CERT.
      If non-zero, then for a key to match, it must implement one of
-     the required uses.  */
+     the required uses.  FWIW: the req_usage field in PKT_public_key
+     used to be an u8 but meanwhile is an u16.  */
   int req_usage;
 
   /* The database handle.  */
@@ -978,7 +979,12 @@ key_byname (ctrl_t ctrl, GETKEY_CTX *retctx, strlist_t namelist,
 
   if (pk)
     {
+      /* It is a bit tricky to allow returning an ADSK key: lookup
+       * masks the req_usage flags using the standard usage maps and
+       * only if ctx->allow_adsk is set, sets the RENC flag again.  */
       ctx->req_usage = pk->req_usage;
+      if ((pk->req_usage & PUBKEY_USAGE_RENC))
+        ctx->allow_adsk = 1;
     }
 
   rc = lookup (ctrl, ctx, want_secret, ret_kb, &found_key);
@@ -3702,7 +3708,7 @@ finish_lookup (kbnode_t keyblock, unsigned int req_usage, int want_exact,
 
 #define USAGE_MASK  (PUBKEY_USAGE_SIG|PUBKEY_USAGE_ENC|PUBKEY_USAGE_CERT)
   req_usage &= USAGE_MASK;
-  /* In allow ADSK mode make sure both encryption bis are set.  */
+  /* In allow ADSK mode make sure both encryption bits are set.  */
   if (allow_adsk && (req_usage & PUBKEY_USAGE_XENC_MASK))
     req_usage |= PUBKEY_USAGE_XENC_MASK;
 
@@ -3807,7 +3813,8 @@ finish_lookup (kbnode_t keyblock, unsigned int req_usage, int want_exact,
 		log_debug ("\tsubkey not valid\n");
 	      continue;
 	    }
-	  if (!((pk->pubkey_usage & USAGE_MASK) & req_usage))
+	  if (!((pk->pubkey_usage & (USAGE_MASK | PUBKEY_USAGE_RENC))
+                & req_usage))
 	    {
 	      if (DBG_LOOKUP)
 		log_debug ("\tusage does not match: want=%x have=%x\n",
