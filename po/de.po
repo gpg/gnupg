@@ -1,3 +1,4 @@
+# SOME DESCRIPTIVE TITLE.
 # GnuPG German translation
 # Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005,
 #               2006, 2007, 2008, 2009, 2011 Free Software Foundation, Inc.
@@ -9,7 +10,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnupg-2.4\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"PO-Revision-Date: 2024-10-15 13:40+0200\n"
+"PO-Revision-Date: 2024-11-05 11:46+0100\n"
 "Last-Translator: Werner Koch <wk@gnupg.org>\n"
 "Language-Team: German\n"
 "Language: de\n"
@@ -710,10 +711,7 @@ msgstr "Fehler beim Lesen der Liste vertrauenswürdiger Wurzelzertifikate\n"
 msgid ""
 "Do you ultimately trust%%0A  \"%s\"%%0Ato correctly certify user "
 "certificates?"
-msgstr ""
-"Wenn Sie vollständiges Vertrauen haben, daß%%0A  "
-"\"%s\"%%0ABenutzerzertifikate verläßlich zertifiziert, so antworten Sie mit "
-"\"Ja\"."
+msgstr "Vertrauen Sie darauf, daß%%0A  \"%s\"%%0AZertifikate korrekt ausstellt?"
 
 msgid "Yes"
 msgstr "Ja"
