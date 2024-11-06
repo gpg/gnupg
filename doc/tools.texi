@@ -2060,7 +2060,8 @@ implemented.
 @item --batch
 @opindex batch
 Use batch mode.  Never ask but use the default action.  This option is
-passed directly to @command{gpg}.
+passed directly to @command{gpg}.  This option is also required to
+activate the @option{log-file} in @file{common.conf} for this program.
 
 @item --yes
 @opindex yes

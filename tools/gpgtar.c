@@ -496,8 +496,11 @@ main (int argc, char **argv)
   if (log_get_errorcount (0))
     exit (2);
 
-  /* Get a log file from common.conf.  */
-  if (!parse_comopt (GNUPG_MODULE_NAME_GPGTAR, any_debug) && comopt.logfile)
+  /* Get a log file from common.conf but use it only in --batch mode
+   * because people expect to see the verbose output here even if they
+   * have a log-file in their common.conf.  */
+  if (!parse_comopt (GNUPG_MODULE_NAME_GPGTAR, any_debug) && comopt.logfile
+      && opt.batch)
     log_set_file (comopt.logfile);
 
   /* Print a warning if an argument looks like an option.  */
