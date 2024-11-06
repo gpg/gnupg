@@ -2742,6 +2742,9 @@ send_card_and_app_list (ctrl_t ctrl, card_t wantcard, int with_apps)
   card_t *cardlist = NULL;
   int n, ncardlist;
 
+  if (wantcard)
+    return send_serialno_and_app_status (wantcard, with_apps, ctrl);
+
   card_list_r_lock ();
   for (n=0, c = card_top; c; c = c->next)
     n++;
@@ -2766,7 +2769,6 @@ send_card_and_app_list (ctrl_t ctrl, card_t wantcard, int with_apps)
 
       if (wantcard && wantcard != card)
         continue;
-
       lock_card (card, ctrl);
       err = send_serialno_and_app_status (card, with_apps, ctrl);
       unlock_card (card);
