@@ -2762,9 +2762,14 @@ send_card_and_app_list (ctrl_t ctrl, card_t wantcard, int with_apps)
 
   for (n=0; n < ncardlist; n++)
     {
-      if (wantcard && wantcard != cardlist[n])
+      card_t card = cardlist[n];
+
+      if (wantcard && wantcard != card)
         continue;
-      err = send_serialno_and_app_status (cardlist[n], with_apps, ctrl);
+
+      lock_card (card, ctrl);
+      err = send_serialno_and_app_status (card, with_apps, ctrl);
+      unlock_card (card);
       if (err)
         goto leave;
     }
