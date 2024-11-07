@@ -412,7 +412,7 @@ mail_tube_encrypt (estream_t fpin, strlist_t recipients)
   pid_t pid = (pid_t)(-1);
   int exitcode;
   int i, found;
-  int ct_text = 0;
+  int ct_is_text = 0;
 
   ctx->msg = rfc822parse_open (mail_tube_message_cb, ctx);
   if (!ctx->msg)
@@ -485,9 +485,12 @@ mail_tube_encrypt (estream_t fpin, strlist_t recipients)
       const char *media;
 
       field = rfc822parse_parse_field (ctx->msg, "Content-Type", -1);
-      if (field && (media = rfc822parse_query_media_type (field, NULL))
-          && !strcmp (media, "text"))
-        ct_text = 1;
+      if (!field)
+        ct_is_text = 1;  /* Assumed CT is text/plain.  */
+      else if ((media = rfc822parse_query_media_type (field, NULL))
+               && !strcmp (media, "text"))
+        ct_is_text = 1;
+
       rfc822parse_release_field (field);
     }
 
@@ -540,14 +543,14 @@ mail_tube_encrypt (estream_t fpin, strlist_t recipients)
                   "\r\n"
                   "--=-=mt-%s=-=\r\n",
                   boundary,
-                  ct_text? "file":"message",
+                  ct_is_text? "file":"message",
                   boundary);
-      if (ct_text)
+      if (ct_is_text)
         es_fprintf (es_stdout,
                     "Content-Type: text/plain; charset=us-ascii\r\n"
                     "Content-Description: PGP encrypted file\r\n"
                     "Content-Disposition: attachment; filename=\"%s\"\r\n"
-                    "\r\n", "pgp-encrypted-file.asc");
+                    "\r\n", "pgp-encrypted-file.txt.asc");
       else
         es_fprintf (es_stdout,
                     "Content-Type: message/rfc822\r\n"
@@ -579,18 +582,19 @@ mail_tube_encrypt (estream_t fpin, strlist_t recipients)
       goto leave;
     }
 
-  if (opt.as_attach && ct_text)
+  if (opt.as_attach && ct_is_text)
     {
       /* No headers at all; write as plain file and ignore the encoding.  */
       /* FIXME: Should we do a base64 or QP decoding?  */
     }
   else
     {
-      /* Write new mime headers using the old content-* values.  */
+      /* Write new mime headers using the original content-* values.  */
       for (i=0; i < DIM (ct_names); i++)
         {
           line = rfc822parse_get_field (ctx->msg, ct_names[i], -1, NULL);
-          log_debug ("OLD CT is '%s'\n", line);
+          if (opt.verbose)
+            log_info ("original Content-type is '%s'\n", line);
           if (line)
             {
               es_fprintf (gpginfp, "%s\r\n", line);
