@@ -68,6 +68,60 @@ check_suspicious_name (const char *name, tarinfo_t info)
 }
 
 
+/* This is our version of mkdir -p.  DIRECTORY is the full filename of
+ * the directory and PREFIXLEN is the length of an intial directory
+ * part which already exists.  If STRIP is set filename is removed.
+ * If VERBOSE is set a diagnostic is printed to show the created
+ * directory.  */
+static gpg_error_t
+try_mkdir_p (const char *directory, size_t prefixlen, int strip, int verbose)
+{
+  gpg_error_t err = 0;
+  char *fname;
+  char *p;
+
+  fname = xtrystrdup (directory);
+  if (!fname)
+    return gpg_error_from_syserror ();
+
+  if (strip) /* Strip last file name. */
+    {
+      p = strrchr (fname, '/');
+      if (p)
+        *p = 0;
+    }
+  else /* Remove a possible trailing slash.  */
+    {
+      if (fname[strlen (fname)-1] == '/')
+        fname[strlen (fname)-1] = 0;
+    }
+
+  if (prefixlen >= strlen (fname))
+    goto leave; /* Nothing to create */
+
+  for (p = fname+prefixlen; (p = strchr (p, '/')); p++)
+    {
+      *p = 0;
+      err = gnupg_mkdir (fname, "-rwx------");
+      if (gpg_err_code (err) == GPG_ERR_EEXIST)
+        err = 0;
+      *p = '/';
+      if (err)
+        goto leave;
+    }
+  err = gnupg_mkdir (fname, "-rwx------");
+  if (gpg_err_code (err) == GPG_ERR_EEXIST)
+    err = 0;
+  if (!err && verbose)
+    log_info ("created   '%s/'\n", fname);
+
+ leave:
+  xfree (fname);
+  return err;
+}
+
+
+
 static gpg_error_t
 extract_regular (estream_t stream, const char *dirname,
                  tarinfo_t info, tar_header_t hdr, strlist_t exthdr)
@@ -98,7 +152,6 @@ extract_regular (estream_t stream, const char *dirname,
     }
   fname = fname_buffer;
 
-
   if (opt.dry_run)
     outfp = es_fopen ("/dev/null", "wb");
   else
@@ -106,8 +159,18 @@ extract_regular (estream_t stream, const char *dirname,
   if (!outfp)
     {
       err = gpg_error_from_syserror ();
-      log_error ("error creating '%s': %s\n", fname, gpg_strerror (err));
-      goto leave;
+      /* On ENOENT, try afain after trying to create the directories.  */
+      if (!opt.dry_run && gpg_err_code (GPG_ERR_ENOENT)
+          && !try_mkdir_p (fname, strlen (dirname) + 1, 1, opt.verbose))
+        {
+          outfp = es_fopen (fname, "wb,sysopen");
+          err = outfp? 0 : gpg_error_from_syserror ();
+        }
+      if (err)
+        {
+          log_error ("error creating '%s': %s\n", fname, gpg_strerror (err));
+          goto leave;
+        }
     }
 
   for (n=0; n < hdr->nrecords;)
@@ -180,40 +243,20 @@ extract_directory (const char *dirname, tarinfo_t info,
   if (fname[strlen (fname)-1] == '/')
     fname[strlen (fname)-1] = 0;
 
-  if (! opt.dry_run && gnupg_mkdir (fname, "-rwx------"))
+  if (!opt.dry_run && gnupg_mkdir (fname, "-rwx------"))
     {
       err = gpg_error_from_syserror ();
+      /* Ignore existing directories while extracting.  */
       if (gpg_err_code (err) == GPG_ERR_EEXIST)
-        {
-          /* Ignore existing directories while extracting.  */
-          err = 0;
-        }
-
-      if (gpg_err_code (err) == GPG_ERR_ENOENT)
+        err = 0;
+      else if (gpg_err_code (err) == GPG_ERR_ENOENT)
         {
           /* Try to create the directory with parents but keep the
              original error code in case of a failure.  */
-          int rc = 0;
-          char *p;
-          size_t prefixlen;
-
-          /* (PREFIXLEN is the length of the new directory we use to
-           *  extract the tarball.)  */
-          prefixlen = strlen (dirname) + 1;
-
-          for (p = fname+prefixlen; (p = strchr (p, '/')); p++)
-            {
-              *p = 0;
-              rc = gnupg_mkdir (fname, "-rwx------");
-              if (gpg_err_code (rc) == GPG_ERR_EEXIST)
-                rc = 0;
-              *p = '/';
-              if (rc)
-                break;
-            }
-          if (!rc && !gnupg_mkdir (fname, "-rwx------"))
+          if (!try_mkdir_p (fname, strlen (dirname) + 1, 0, 0))
             err = 0;
         }
+
       if (err)
         log_error ("error creating directory '%s': %s\n",
                    fname, gpg_strerror (err));

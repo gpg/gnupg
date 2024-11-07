@@ -1,6 +1,7 @@
 Noteworthy changes in version 2.4.7 (unreleased)
 ------------------------------------------------
 
+  * gpgtar: Fix directory creation during extraction.  [T7380]
 
   Release-info: https://dev.gnupg.org/T7353
 
