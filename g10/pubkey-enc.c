@@ -449,8 +449,8 @@ get_it (ctrl_t ctrl,
 
     if (!pkb)
       {
-        err = -1;
-        log_error ("oops: public key not found for preference check\n");
+        err = gpg_error (GPG_ERR_UNEXPECTED);
+        log_info ("oops: public key not found for preference check\n");
       }
     else if (pkb->pkt->pkt.public_key->selfsigversion > 3
              && dek->algo != CIPHER_ALGO_3DES
