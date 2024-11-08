@@ -2156,7 +2156,7 @@ are available for all keyserver types, some common options are:
   retrieving keys by subkey id.
 
   @item only-pubkeys
-  Do now allow to import secret keys.
+  Do not import secret keys.
 
   @item timeout
   @itemx http-proxy=@var{value}

@@ -212,7 +212,8 @@ parse_import_options(char *str,unsigned int *options,int noisy)
       /* New options.  Right now, without description string.  */
       {"ignore-attributes", IMPORT_IGNORE_ATTRIBUTES, NULL, NULL},
 
-      {"only-pubkeys", IMPORT_ONLY_PUBKEYS, NULL, NULL},
+      {"only-pubkeys", IMPORT_ONLY_PUBKEYS, NULL,
+       N_("do not import secret keys")},
 
       /* Hidden options which are enabled by default and are provided
        * in case of problems with the respective implementation.  */
