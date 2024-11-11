@@ -999,7 +999,10 @@ readcert_from_ef (app_t app, int fid, unsigned char **cert, size_t *certlen)
   else if ( class == CLASS_UNIVERSAL && tag == TAG_SET && constructed )
     rootca = 1;
   else
-    return gpg_error (GPG_ERR_INV_OBJ);
+    {
+      err = gpg_error (GPG_ERR_INV_OBJ);
+      goto leave;
+    }
   totobjlen = objlen + hdrlen;
   log_assert (totobjlen <= buflen);
 
@@ -1030,7 +1033,10 @@ readcert_from_ef (app_t app, int fid, unsigned char **cert, size_t *certlen)
       if (err)
         goto leave;
       if ( !(class == CLASS_UNIVERSAL && tag == TAG_SEQUENCE && constructed) )
-        return gpg_error (GPG_ERR_INV_OBJ);
+        {
+          err = gpg_error (GPG_ERR_INV_OBJ);
+          goto leave;
+        }
       totobjlen = objlen + hdrlen;
       log_assert (save_p + totobjlen <= buffer + buflen);
       memmove (buffer, save_p, totobjlen);
@@ -1144,7 +1150,7 @@ iterate_over_filelist (app_t app, const char *want_keygripstr, int capability,
                 continue;
             }
 
-          /* Found.  Return but save the last idenx of the loop.  */
+          /* Found.  Return but save the last index of the loop.  */
           *idx_p = idx;
           return 0;
         }
