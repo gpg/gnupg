@@ -226,7 +226,10 @@ do_readcert (app_t app, const char *certid,
   else if ( class == CLASS_UNIVERSAL && tag == TAG_SET && constructed )
     rootca = 1;
   else
-    return gpg_error (GPG_ERR_INV_OBJ);
+    {
+      err = gpg_error (GPG_ERR_INV_OBJ);
+      goto leave;
+    }
   totobjlen = objlen + hdrlen;
   log_assert (totobjlen <= buflen);
 
