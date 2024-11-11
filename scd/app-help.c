@@ -250,6 +250,7 @@ app_help_read_length_of_cert (int slot, int fid, size_t *r_certoff)
          && (tag == TAG_SEQUENCE || tag == TAG_SET)))
     {
       log_info ("data at FID 0x%04X does not look like a certificate\n", fid);
+      xfree (buffer);
       return 0;
     }
 
@@ -261,6 +262,7 @@ app_help_read_length_of_cert (int slot, int fid, size_t *r_certoff)
 
       err = parse_ber_header (&p, &n, &class, &tag, &constructed,
                               &ndef, &objlen, &hdrlen);
+      xfree (buffer);
       if (err)
         return 0;
 
@@ -279,6 +281,8 @@ app_help_read_length_of_cert (int slot, int fid, size_t *r_certoff)
       else
         *r_certoff = 0;
     }
+  else
+    xfree (buffer);
 
   return resultlen;
 }
