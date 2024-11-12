@@ -549,6 +549,7 @@ mail_tube_encrypt (estream_t fpin, strlist_t recipients)
   /* Output the plain or PGP/MIME boilerplate.  */
   if (opt.as_attach)
     {
+      /* FIXME: Need to have a configurable message here.  */
       es_fprintf (es_stdout,
                   "\r\n"
                   "\r\n"
@@ -570,12 +571,12 @@ mail_tube_encrypt (estream_t fpin, strlist_t recipients)
                     "\r\n", "pgp-encrypted-file.txt.asc");
       else
         es_fprintf (es_stdout,
-                    "Content-Type: message/rfc822\r\n"
+                    "Content-Type: text/plain; charset=us-ascii\r\n"
                     "Content-Description: PGP encrypted message\r\n"
                     "Content-Disposition: attachment; filename=\"%s\"\r\n"
                     "\r\n", "pgp-encrypted-msg.eml.asc");
     }
-  else
+  else /* PGP/MIME */
     es_fprintf (es_stdout,
               "\r\n"
               "\r\n"
