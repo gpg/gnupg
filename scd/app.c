@@ -2735,15 +2735,12 @@ send_serialno_and_app_status (card_t card, int with_apps, ctrl_t ctrl)
 
 /* Common code for app_send_card_list and app_send_active_apps.  */
 static gpg_error_t
-send_card_and_app_list (ctrl_t ctrl, card_t wantcard, int with_apps)
+send_card_and_app_list (ctrl_t ctrl, int with_apps)
 {
   gpg_error_t err;
   card_t c;
   card_t *cardlist = NULL;
   int n, ncardlist;
-
-  if (wantcard)
-    return send_serialno_and_app_status (wantcard, with_apps, ctrl);
 
   card_list_r_lock ();
   for (n=0, c = card_top; c; c = c->next)
@@ -2767,8 +2764,6 @@ send_card_and_app_list (ctrl_t ctrl, card_t wantcard, int with_apps)
     {
       card_t card = cardlist[n];
 
-      if (wantcard && wantcard != card)
-        continue;
       lock_card (card, ctrl);
       err = send_serialno_and_app_status (card, with_apps, ctrl);
       unlock_card (card);
@@ -2789,7 +2784,7 @@ send_card_and_app_list (ctrl_t ctrl, card_t wantcard, int with_apps)
 gpg_error_t
 app_send_card_list (ctrl_t ctrl)
 {
-  return send_card_and_app_list (ctrl, NULL, 0);
+  return send_card_and_app_list (ctrl, 0);
 }
 
 
@@ -2798,7 +2793,10 @@ app_send_card_list (ctrl_t ctrl)
 gpg_error_t
 app_send_active_apps (card_t card, ctrl_t ctrl)
 {
-  return send_card_and_app_list (ctrl, card, 1);
+  if (!card)
+    return send_card_and_app_list (ctrl, 1);
+  else
+    return send_serialno_and_app_status (card, 1, ctrl);
 }
 
 
