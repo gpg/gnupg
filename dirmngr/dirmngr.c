@@ -2567,7 +2567,10 @@ gpgconf_versions (void)
   const char *s;
   int n;
 
-  /* Unfortunately Npth has no way to get the version.  */
+#if NPTH_VERSION_NUMBER >= 0x010800
+  es_fprintf (es_stdout, "* nPth %s (%s)\n\n",
+              npth_get_version (NULL), npth_get_version ("\x01\x02"));
+#endif /*NPTH_VERSION_NUMBER*/
 
   s = get_revision_from_blurb (assuan_check_version ("\x01\x01"), &n);
   es_fprintf (es_stdout, "* Libassuan %s (%.*s)\n\n",
