@@ -54,7 +54,9 @@
  * keep the values set in generate_subkeypair in sync.  */
 #define DEFAULT_STD_KEY_PARAM  "ed25519/cert,sign+cv25519/encr"
 #define FUTURE_STD_KEY_PARAM   "ed25519/cert,sign+cv25519/encr"
-#define PQC_STD_KEY_PARAM      "bp384/cert,sign+kyber768_bp256/encr"
+#define PQC_STD_KEY_PARAM_PRI  "bp384/cert,sign"
+#define PQC_STD_KEY_PARAM_SUB  "kyber768_bp256/encr"
+#define PQC_STD_KEY_PARAM      PQC_STD_KEY_PARAM_PRI "+" PQC_STD_KEY_PARAM_SUB
 
 /* When generating keys using the streamlined key generation dialog,
    use this as a default expiration interval.  */
@@ -2181,8 +2183,9 @@ gen_kyber (int algo, unsigned int nbits, const char *curve, kbnode_t pub_root,
 
   *keygen_flags |= KEYGEN_FLAG_CREATE_V5_KEY;
 
-  if (!strcmp (curve, "Curve25519"))
+  if (!strcmp (curve, "Curve25519") || !ascii_strcasecmp (curve, "cv25519"))
     {
+      curve = "Curve25519";
       keyparms1 = xtryasprintf
         ("(genkey(ecc(curve %zu:%s)(flags djb-tweak comp%s)))",
          strlen (curve), curve,
@@ -2190,8 +2193,9 @@ gen_kyber (int algo, unsigned int nbits, const char *curve, kbnode_t pub_root,
            && (*keygen_flags & KEYGEN_FLAG_NO_PROTECTION))?
           " transient-key" : ""));
     }
-  else if (!strcmp (curve, "X448"))
+  else if (!strcmp (curve, "X448") || !ascii_strcasecmp (curve, "cv448"))
     {
+      curve = "X448";
       keyparms1 = xtryasprintf
         ("(genkey(ecc(curve %zu:%s)(flags comp%s)))",
          strlen (curve), curve,
@@ -2591,10 +2595,11 @@ ask_algo (ctrl_t ctrl, int addmode, int *r_subkey_algo, unsigned int *r_usage,
   if (r_keygrip)
     tty_printf (_("  (%d) Existing key from card%s\n"), 14, "");
 
-  /* Reserve 15 for ECC or Dilithium primary + Kyber subkey.  */
+  /* Reserve 15 for Dilithium primary + Kyber subkey.  */
+  tty_printf (_("  (%d) ECC and Kyber%s\n"), 16, "");
   if (addmode)
     {
-      tty_printf (_("  (%d) Kyber (encrypt only)%s\n"), 16, "");
+      tty_printf (_("  (%d) Kyber (encrypt only)%s\n"), 17, "");
     }
 
   for (;;)
@@ -2882,7 +2887,13 @@ ask_algo (ctrl_t ctrl, int addmode, int *r_subkey_algo, unsigned int *r_usage,
           free_keypair_info (keypairlist);
           break;
 	}
-      else if ((algo == 16 || !strcmp (answer, "kyber")) && addmode)
+      else if ((algo == 16 || !strcmp (answer, "ecc+kyber")) && !addmode)
+        {
+          algo = PUBKEY_ALGO_ECDSA;
+          *r_subkey_algo = PUBKEY_ALGO_KYBER;
+          break;
+	}
+      else if ((algo == 17 || !strcmp (answer, "kyber")) && addmode)
         {
           algo = PUBKEY_ALGO_KYBER;
           *r_usage = PUBKEY_USAGE_ENC;
@@ -3214,6 +3225,77 @@ ask_curve (int *algo, int *subkey_algo, const char *current)
 
   if (!result)
     result = curves[0].name;
+
+  return result;
+}
+
+
+/* Ask for the Kyber variant.  Returns a const algo string like
+ * kyber768_bp256 or NULL on error.  */
+const char *
+ask_kyber_variant (void)
+{
+  struct {
+    const char *desc;           /* e.g. "Kyber 768"       */
+    const char *variant;        /* e.g. "kyber768_bp256"  */
+    unsigned int de_vs : 1;     /* Allowed in CO_DE_VS.   */
+  } table[] = {
+    { "Kyber 768",      "kyber768_bp256", 1 },
+    { "Kyber 1024",     "kyber1024_bp384", 1 },
+    { "Kyber 768 (X25519)",  "kyber768_cv25519", 0 },
+    { "Kyber 1024 (X448)",   "kyber1024_cv448", 0 },
+  };
+  int idx;
+  char *answer;
+  const char *result = NULL;
+
+  tty_printf (_("Please select the %s variant you want:\n"), "Kyber");
+
+  for (idx=0; idx < DIM(table); idx++)
+    {
+      if (opt.compliance==CO_DE_VS)
+        {
+          if (!table[idx].de_vs)
+            continue; /* Not allowed.  */
+        }
+
+      tty_printf ("   (%d) %s%s\n", idx + 1,
+                  table[idx].desc,
+                  idx == 0? _(" *default*"):"");
+    }
+
+  for (;;)
+    {
+      answer = cpr_get ("keygen.kyber_variant", _("Your selection? "));
+      cpr_kill_prompt ();
+      idx = *answer? atoi (answer) : 1 /* default */;
+      if (*answer && !idx)
+        {
+          /* See whether the user entered the name of the algo.  */
+          for (idx=0; idx < DIM(table); idx++)
+            {
+              if (!stricmp (table[idx].variant, answer))
+                break;
+            }
+          if (idx == DIM(table))
+            idx = -1;
+        }
+      else
+        idx--;  /* Map back to 0 based index.  */
+      xfree(answer);
+      answer = NULL;
+      if (idx < 0 || idx >= DIM (table)
+          || (opt.compliance==CO_DE_VS && !table[idx].de_vs))
+        tty_printf (_("Invalid selection.\n"));
+      else
+        {
+          result = table[idx].variant;
+          break;
+        }
+    }
+
+  if (!result)
+    result = table[0].variant;
 
   return result;
 }
@@ -5296,7 +5378,7 @@ quickgen_set_para (struct para_data_s *para, int for_subkey,
     }
 
   /* Always store the size - although not required for ECC it is
-   * required for compiste algos.  Should not harm anyway.  */
+   * required for composite algos.  Should not harm anyway.  */
   r = xmalloc_clear (sizeof *r + 20);
   r->key = for_subkey? pSUBKEYLENGTH : pKEYLENGTH;
   sprintf (r->u.value, "%u", nbits);
@@ -5699,7 +5781,82 @@ generate_keypair (ctrl_t ctrl, int full, const char *fname,
         {
           const char *curve = NULL;
 
-          if (subkey_algo)
+          if (algo == PUBKEY_ALGO_ECDSA && subkey_algo == PUBKEY_ALGO_KYBER)
+            {
+              /* Create primary and subkey at once.  */
+              const char *subalgostr;
+              const char *s;
+              const char *pricurve;
+              int prialgo = PUBKEY_ALGO_ECDSA;
+
+              both = 1;
+              subalgostr = ask_kyber_variant ();
+              if (!subalgostr)  /* Should not happen.  */
+                subalgostr = PQC_STD_KEY_PARAM_SUB;
+
+              /* Determine the primary key algo from the subkey algo.  */
+              if (strstr (subalgostr, "bp384"))
+                pricurve = "brainpoolP384r1";
+              else if (strstr (subalgostr, "bp256"))
+                pricurve = "brainpoolP256r1";
+              else if (strstr (subalgostr, "cv448"))
+                {
+                  pricurve = "Ed448";
+                  prialgo = PUBKEY_ALGO_EDDSA;
+                }
+              else
+                {
+                  pricurve = "Ed25519";
+                  prialgo = PUBKEY_ALGO_EDDSA;
+                }
+
+              r = xmalloc_clear (sizeof *r + 20);
+              r->key = pKEYTYPE;
+              sprintf (r->u.value, "%d", prialgo);
+              r->next = para;
+              para = r;
+
+              r = xmalloc_clear (sizeof *r + strlen (pricurve));
+              r->key = pKEYCURVE;
+              strcpy (r->u.value, pricurve);
+              r->next = para;
+              para = r;
+
+              r = xmalloc_clear (sizeof *r + 20);
+              r->key = pKEYUSAGE;
+              strcpy (r->u.value, "sign");
+              r->next = para;
+              para = r;
+
+              r = xmalloc_clear (sizeof *r + 20);
+              r->key = pSUBKEYTYPE;
+              sprintf (r->u.value, "%d", PUBKEY_ALGO_KYBER);
+              r->next = para;
+              para = r;
+
+              r = xmalloc_clear (sizeof *r + 20);
+              r->key = pSUBKEYLENGTH;
+              sprintf (r->u.value, "%u",
+                       strstr (subalgostr, "768_")? 768 : 1024);
+              r->next = para;
+              para = r;
+
+              s = strchr (subalgostr, '_');
+              log_assert (s && s[1]);
+              s++;
+              r = xmalloc_clear (sizeof *r + strlen (s));
+              r->key = pSUBKEYCURVE;
+              strcpy (r->u.value, s);
+              r->next = para;
+              para = r;
+
+              r = xmalloc_clear (sizeof *r + 20);
+              r->key = pSUBKEYUSAGE;
+              strcpy( r->u.value, "encrypt" );
+              r->next = para;
+              para = r;
+            }
+          else if (subkey_algo)
             {
               /* Create primary and subkey at once.  */
               both = 1;

@@ -1,6 +1,8 @@
 Noteworthy changes in version 2.5.2 (unreleased)
 ------------------------------------------------
 
+  * gpg: Add option 16 to --full-gen-key to create ECC+Kyber.  [T6638]
+
   * dirmngr: A list of used URLs for loaded CRLs is printed first in
     the output of the LISTCRL command.  [T7337]
 
