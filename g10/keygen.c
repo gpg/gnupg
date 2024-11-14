@@ -4551,6 +4551,8 @@ get_parameter_algo (ctrl_t ctrl, struct para_data_s *para, enum para_name key,
     i = PUBKEY_ALGO_ECDSA;
   else if (!ascii_strcasecmp (r->u.value, "ECDH"))
     i = PUBKEY_ALGO_ECDH;
+  else if (!ascii_strcasecmp (r->u.value, "KYBER"))
+    i = PUBKEY_ALGO_KYBER;
   else
     i = map_gcry_pk_to_openpgp (gcry_pk_map_name (r->u.value));
 
