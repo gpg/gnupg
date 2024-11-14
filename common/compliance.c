@@ -41,14 +41,30 @@ static int initialized;
 static int module;
 
 
-/* The next variable and the code in get_compliance_cache should be
- * removed after the software suite has been approved.  */
-static int assumed_de_vs_compliance = -1;
-
 /* This value is used by DSA and RSA checks in addition to the hard
  * coded length checks.  It allows one to increase the required key length
  * using a config file.  */
 static unsigned int min_compliant_rsa_length;
+
+
+/* Kludge to allow testing of the compliance options while not yet
+ * approved. */
+static int
+get_assumed_de_vs_compliance (void)
+{
+#if 0  /* Set to 1 if the software suite has been approved.  */
+  return 0;
+#else
+  static int value = -1;
+
+  if (value == -1)
+    {
+      const char *s = getenv ("GNUPG_ASSUME_COMPLIANCE");
+      value = (s && !strcmp (s, "de-vs"));
+    }
+  return value > 0;
+#endif
+}
 
 /* Return the address of a compliance cache variable for COMPLIANCE.
  * If no such variable exists NULL is returned.  FOR_RNG returns the
@@ -75,15 +91,9 @@ get_compliance_cache (enum gnupg_compliance_mode compliance, int for_rng)
     case CO_DE_VS:   ptr = for_rng? &r_de_vs   : &s_de_vs  ; break;
     }
 
-  /* Remove this code after approval.  */
   if (ptr && compliance == CO_DE_VS)
     {
-      if (assumed_de_vs_compliance == -1)
-        {
-          const char *s = getenv ("GNUPG_ASSUME_COMPLIANCE");
-          assumed_de_vs_compliance = (s && !strcmp (s, "de-vs"));
-        }
-      if (assumed_de_vs_compliance)
+      if (get_assumed_de_vs_compliance ())
         *ptr = 1;
     }
 
@@ -250,7 +260,20 @@ gnupg_pk_is_compliant (enum gnupg_compliance_mode compliance, int algo,
           break;
 
         case is_kem:
-          result = 0;
+          if (!curvename && key)
+            {
+              curve = openpgp_oid_to_str (key[0]);
+              curvename = openpgp_oid_to_curve (curve, 0);
+              if (!curvename)
+                curvename = curve;
+            }
+
+          result = (curvename
+                    && (keylength == 768 || keylength == 1024)
+                    && (algo == PUBKEY_ALGO_KYBER)
+                    && (!strcmp (curvename, "brainpoolP256r1")
+                        || !strcmp (curvename, "brainpoolP384r1")
+                        || !strcmp (curvename, "brainpoolP512r1")));
           break;
 
         default:
@@ -390,6 +413,31 @@ gnupg_pk_is_allowed (enum gnupg_compliance_mode compliance,
           else /* We may not create such signatures in de-vs mode.  */
             result = 0;
 	  break;
+
+	case PUBKEY_ALGO_KYBER:
+	  if (use == PK_USE_DECRYPTION)
+            result = 1;
+          else if (use == PK_USE_ENCRYPTION)
+            {
+              char *curve = NULL;
+
+              if (!curvename && key)
+                {
+                  curve = openpgp_oid_to_str (key[0]);
+                  curvename = openpgp_oid_to_curve (curve, 0);
+                  if (!curvename)
+                    curvename = curve;
+                }
+
+              result = (curvename
+                        && (keylength == 768 || keylength == 1024)
+                        && (!strcmp (curvename, "brainpoolP256r1")
+                            || !strcmp (curvename, "brainpoolP384r1")
+                            || !strcmp (curvename, "brainpoolP512r1")));
+
+              xfree (curve);
+            }
+          break;
 
 	default:
 	  break;
@@ -685,7 +733,7 @@ gnupg_status_compliance_flag (enum gnupg_compliance_mode compliance)
     case CO_PGP8:
       log_assert (!"no status code assigned for this compliance mode");
     case CO_DE_VS:
-      return assumed_de_vs_compliance > 0 ? "2023" : "23";
+      return get_assumed_de_vs_compliance ()? "2023" : "23";
     }
   log_assert (!"invalid compliance mode");
 }
