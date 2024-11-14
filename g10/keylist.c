@@ -1882,6 +1882,7 @@ list_keyblock_colon (ctrl_t ctrl, kbnode_t keyblock,
   unsigned int keylength;
   char *curve = NULL;
   const char *curvename = NULL;
+  char pkstrbuf[PUBKEY_STRING_SIZE];
 
   /* Get the keyid from the keyblock.  */
   node = find_kbnode (keyblock, PKT_PUBLIC_KEY);
@@ -1970,6 +1971,14 @@ list_keyblock_colon (ctrl_t ctrl, kbnode_t keyblock,
       if (!curvename)
         curvename = curve;
       es_fputs (curvename, es_stdout);
+    }
+  else if (pk->pubkey_algo == PUBKEY_ALGO_KYBER)
+    {
+      /* Note that Kyber should actually not appear here because it is
+       * the primary key and Kyber is not able to certify.  But we
+       * prepare it here for future composite algorithms and in case
+       * of faulty packets. */
+      es_fputs (pubkey_string (pk, pkstrbuf, sizeof pkstrbuf), es_stdout);
     }
   es_putc (':', es_stdout);		/* End of field 17. */
   print_compliance_flags (pk, keylength, curvename);
@@ -2121,6 +2130,11 @@ list_keyblock_colon (ctrl_t ctrl, kbnode_t keyblock,
               if (!curvename)
                 curvename = curve;
               es_fputs (curvename, es_stdout);
+            }
+          else if (pk2->pubkey_algo == PUBKEY_ALGO_KYBER)
+            {
+              es_fputs (pubkey_string (pk2, pkstrbuf, sizeof pkstrbuf),
+                        es_stdout);
             }
           es_putc (':', es_stdout);	/* End of field 17. */
           print_compliance_flags (pk2, keylength, curvename);

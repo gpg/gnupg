@@ -245,8 +245,9 @@ described here.
 *** Field 17 - Curve name
 
     For pub, sub, sec, ssb, crt, and crs records this field is used
-    for the ECC curve name.  For combined algorithms the first and the
-    second algorithm name, delimited by an underscore are put here.
+    for the ECC curve name.  For composite algorithms the first and
+    the second algorithm name, delimited by an underscore, are put
+    here.
 
 *** Field 18 - Compliance flags
 
