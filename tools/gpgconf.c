@@ -433,7 +433,7 @@ valid_swdb_name_p (const char *name)
  *           'c' :: The version is Current
  *           'n' :: The current version is already Newer than the
  *                  available one.
- * urgency :: If the value is greater than zero an urgent update is required.
+ * minvers :: The minimal secure version.
  * error   :: 0 on success or an gpg_err_code_t
  *            Common codes seen:
  *            GPG_ERR_TOO_OLD :: The SWDB file is to old to be used.
@@ -464,6 +464,7 @@ query_swdb (estream_t out, const char *name, const char *current_version)
   gnupg_isotime_t filedate = {0};
   gnupg_isotime_t verified = {0};
   char *value_ver = NULL;
+  char *value_minver = NULL;
   gnupg_isotime_t value_date = {0};
   char *value_size = NULL;
   char *value_sha2 = NULL;
@@ -566,6 +567,8 @@ query_swdb (estream_t out, const char *name, const char *current_version)
             value_size = xstrdup (fields[1]);
           else if (!strcmp (p, "sha2") && !value_sha2)
             value_sha2 = xstrdup (fields[1]);
+          else if (!strcmp (p, "minver") && !value_minver)
+            value_minver = xstrdup (fields[1]);
         }
     }
   if (len < 0 || es_ferror (fp))
@@ -616,10 +619,11 @@ query_swdb (estream_t out, const char *name, const char *current_version)
   else
     status = 'n';
 
-  es_fprintf (out, "%s:%s:%c::%d:%s:%s:%s:%s:%lu:%s:\n",
+  es_fprintf (out, "%s:%s:%c:%s:%d:%s:%s:%s:%s:%lu:%s:\n",
               name,
               current_version? current_version : "",
               status,
+              value_minver? value_minver : value_ver,
               err,
               filedate,
               verified,
@@ -629,6 +633,7 @@ query_swdb (estream_t out, const char *name, const char *current_version)
               value_sha2? value_sha2 : "");
 
  leave:
+  xfree (value_minver);
   xfree (value_ver);
   xfree (value_size);
   xfree (value_sha2);
