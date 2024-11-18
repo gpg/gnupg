@@ -63,6 +63,8 @@ struct mrsw_lock
   int notify_watchers;  /* Used only for W32 but let's define it always.  */
 };
 
+static npth_mutex_t new_card_lock;
+
 /* MRSW lock to protect the list of cards.
  *
  * This structure is used for serializing access to the list of cards
@@ -940,8 +942,6 @@ select_application (ctrl_t ctrl, const char *name,
   gpg_error_t err = 0;
   card_t card, card_prev = NULL;
 
-  card_list_w_lock ();
-
   ctrl->card_ctx = NULL;
 
   if (scan || !card_top)
@@ -949,11 +949,12 @@ select_application (ctrl_t ctrl, const char *name,
       struct dev_list *l;
       int new_card = 0;
 
+      npth_mutex_lock (&new_card_lock);
       /* Scan the devices to find new device(s).  */
       err = apdu_dev_list_start (opt.reader_port, &l);
       if (err)
         {
-          card_list_w_unlock ();
+          npth_mutex_unlock (&new_card_lock);
           return err;
         }
 
@@ -974,8 +975,10 @@ select_application (ctrl_t ctrl, const char *name,
             }
           else
             {
+              card_list_w_lock ();
               err = app_new_register (slot, ctrl, name,
                                       periodical_check_needed_this);
+              card_list_w_unlock ();
               new_card++;
             }
 
@@ -987,12 +990,14 @@ select_application (ctrl_t ctrl, const char *name,
         }
 
       apdu_dev_list_finish (l);
+      npth_mutex_unlock (&new_card_lock);
 
       /* If new device(s), kick the scdaemon loop.  */
       if (new_card)
         scd_kick_the_loop ();
     }
 
+  card_list_w_lock ();
   for (card = card_top; card; card = card->next)
     {
       lock_card (card, ctrl);
@@ -1039,7 +1044,6 @@ select_application (ctrl_t ctrl, const char *name,
     }
   else
     err = gpg_error (GPG_ERR_ENODEV);
-
   card_list_w_unlock ();
 
   return err;
@@ -2632,6 +2636,13 @@ initialize_module_command (void)
 #ifndef HAVE_W32_SYSTEM
   int ret;
 #endif
+
+  if (npth_mutex_init (&new_card_lock, NULL))
+    {
+      err = gpg_error_from_syserror ();
+      log_error ("app: error initializing mutex: %s\n", gpg_strerror (err));
+      return err;
+    }
 
   card_list_lock.num_readers_active = 0;
   card_list_lock.num_writers_waiting = 0;
