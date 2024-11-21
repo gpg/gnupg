@@ -1,6 +1,8 @@
 Noteworthy changes in version 2.2.46 (unreleased)
 -------------------------------------------------
 
+  * gpg: Add the AEAD algo number to the DECRYPTION_INFO status line.
+    [T7398]
 
   Release-info: https://dev.gnupg.org/T7314
 

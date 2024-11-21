@@ -282,7 +282,7 @@ decrypt_data (ctrl_t ctrl, void *procctx, PKT_encrypted *ed, DEK *dek,
     }
 
   write_status_printf (STATUS_DECRYPTION_INFO, "%d %d %d",
-                       ed->mdc_method, dek->algo, 0);
+                       ed->mdc_method, dek->algo, ed->aead_algo);
 
   if (opt.show_session_key)
     {
