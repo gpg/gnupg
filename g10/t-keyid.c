@@ -60,6 +60,11 @@ test_compare_pubkey_string (void)
     { "brainpoolP384r1", ">brainpoolp384r1" , 0 },
     { "brainpoolP384r1", ">=brainpoolp384r1", 1 },
     { "brainpoolP384r1", ">=brainpoolp384"  , 1 },
+    { "ed25519", ">ed448", 0 },
+    { "cv25519", ">cv448", 0 },
+    { "ed448", ">ed25519", 1 },
+    { "ed448", ">=ed25519", 1 },
+    { "cv448", ">cv25519", 1 },
     { "",  "", 0}
   };
   int idx;
