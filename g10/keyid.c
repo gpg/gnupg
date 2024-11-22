@@ -190,6 +190,23 @@ parse_one_algo_string (const char *str, size_t *pfxlen, unsigned int *number,
   return result;
 }
 
+
+/* Return an extra algo strength offset to handle peculiarities like
+ * ed448 > ed25519.  */
+static size_t
+extra_algo_strength_offset (const char *string)
+{
+  if (!string || !*string)
+    return 0;
+  if (!ascii_strcasecmp (string, "ed448"))
+    return 50000; /* (ed)50448 is larger (ed)25519.  */
+  if (!ascii_strcasecmp (string, "cv448"))
+    return 50000; /* (cv)50448 is larger (cv)25519.  */
+  return 0;
+}
+
+
+
 /* Helper for compare_pubkey_string.  If BPARSED is set to 0 on
  * return, an error in ASTR or BSTR was found and further checks are
  * not possible.  */
@@ -206,9 +223,11 @@ compare_pubkey_string_part (const char *astr, const char *bstr_arg,
   astr = parse_one_algo_string (astr, &apfxlen, &anumber, &alen, &condition);
   if (!astr)
     return 0;  /* Invalid algorithm name.  */
+  anumber += extra_algo_strength_offset (astr);
   bstr = parse_one_algo_string (bstr, &bpfxlen, &bnumber, &blen, &condition);
   if (!bstr)
     return 0;  /* Invalid algorithm name.  */
+  bnumber += extra_algo_strength_offset (bstr);
   *bparsed = blen + (bstr - bstr_arg);
   if (apfxlen != bpfxlen || ascii_strncasecmp (astr, bstr, apfxlen))
     return 0;  /* false.  */
