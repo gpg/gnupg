@@ -954,16 +954,20 @@ like this:
 
 @item qualified.txt
 @efindex qualified.txt
-This is the list of root certificates used for qualified certificates.
-They are defined as certificates capable of creating legally binding
-signatures in the same way as handwritten signatures are.  Comments
-start with a hash mark and empty lines are ignored.  Lines do have a
-length limit but this is not a serious limitation as the format of the
-entries is fixed and checked by @command{gpgsm}: A non-comment line starts with
-optional whitespace, followed by exactly 40 hex characters, white space
-and a lowercased 2 letter country code.  Additional data delimited with
-by a white space is current ignored but might late be used for other
-purposes.
+This is the legacy method to mark root certificates as usable for
+qualified certificates.  Qualified certificates are capable of
+creating legally binding signatures in the same way as handwritten
+signatures.  The modern method to mark such root certificates is to
+use the "qual" flag in the system trustlist.txt; see the gpg-agent man
+page for details.
+
+Comments int his file start with a hash mark and empty lines are
+ignored.  Lines do have a length limit but this is not a serious
+limitation as the format of the entries is fixed and checked by
+@command{gpgsm}: A non-comment line starts with optional whitespace,
+followed by exactly 40 hex characters, white space and a lowercased 2
+letter country code.  Additional data delimited with by a white space
+is current ignored but might late be used for other purposes.
 
 Note that even if a certificate is listed in this file, this does not
 mean that the certificate is trusted; in general the certificates listed
