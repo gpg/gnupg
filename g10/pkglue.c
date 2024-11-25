@@ -331,9 +331,18 @@ pk_verify (pubkey_algo_t pkalgo, gcry_mpi_t hash,
             rc = gpg_error (GPG_ERR_BAD_MPI);
           else
             {
+              r = gcry_mpi_copy (r);
+              s = gcry_mpi_copy (s);
+
+              if (!r || !s)
+                {
+                  rc = gpg_error_from_syserror ();
+                  goto leave;
+                }
+
               /* We need to fixup the length in case of leading zeroes.
                * OpenPGP does not allow leading zeroes and the parser for
-               * the signature packet has no information on the use curve,
+               * the signature packet has no information on the used curve,
                * thus we need to do it here.  We won't do it for opaque
                * MPIs under the assumption that they are known to be fine;
                * we won't see them here anyway but the check is anyway
@@ -343,12 +352,13 @@ pk_verify (pubkey_algo_t pkalgo, gcry_mpi_t hash,
 
               if (rlen < neededfixedlen
                   && !gcry_mpi_get_flag (r, GCRYMPI_FLAG_OPAQUE)
-                  && !(rc=gcry_mpi_print (GCRYMPI_FMT_USG, buf, sizeof buf, &n, r)))
+                  && !(rc=gcry_mpi_print (GCRYMPI_FMT_USG,
+                                          buf, sizeof buf, &n, r)))
                 {
                   log_assert (n < neededfixedlen);
                   memmove (buf + (neededfixedlen - n), buf, n);
                   memset (buf, 0, neededfixedlen - n);
-                  r = gcry_mpi_set_opaque_copy (NULL, buf, neededfixedlen * 8);
+                  gcry_mpi_set_opaque_copy (r, buf, neededfixedlen * 8);
                 }
               else if (rlen < neededfixedlen
                        && gcry_mpi_get_flag (r, GCRYMPI_FLAG_OPAQUE))
@@ -361,14 +371,18 @@ pk_verify (pubkey_algo_t pkalgo, gcry_mpi_t hash,
                   memset (buf, 0, neededfixedlen - n);
                   gcry_mpi_set_opaque_copy (r, buf, neededfixedlen * 8);
                 }
-              if (slen < neededfixedlen
+
+              if (rc)
+                ;
+              else if (slen < neededfixedlen
                   && !gcry_mpi_get_flag (s, GCRYMPI_FLAG_OPAQUE)
-                  && !(rc=gcry_mpi_print (GCRYMPI_FMT_USG, buf, sizeof buf, &n, s)))
+                  && !(rc=gcry_mpi_print (GCRYMPI_FMT_USG,
+                                          buf, sizeof buf, &n, s)))
                 {
                   log_assert (n < neededfixedlen);
                   memmove (buf + (neededfixedlen - n), buf, n);
                   memset (buf, 0, neededfixedlen - n);
-                  s = gcry_mpi_set_opaque_copy (NULL, buf, neededfixedlen * 8);
+                  gcry_mpi_set_opaque_copy (s, buf, neededfixedlen * 8);
                 }
               else if (slen < neededfixedlen
                        && gcry_mpi_get_flag (s, GCRYMPI_FLAG_OPAQUE))
@@ -416,6 +430,7 @@ pk_verify (pubkey_algo_t pkalgo, gcry_mpi_t hash,
   if (!rc)
     rc = gcry_pk_verify (s_sig, s_hash, s_pkey);
 
+ leave:
   gcry_sexp_release (s_sig);
   gcry_sexp_release (s_hash);
   gcry_sexp_release (s_pkey);
