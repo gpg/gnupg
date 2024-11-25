@@ -54,9 +54,9 @@
 
 /* The time we wait until the agent or the dirmngr are ready for
    operation after we started them before giving up.  */
-#define SECS_TO_WAIT_FOR_AGENT 5
-#define SECS_TO_WAIT_FOR_KEYBOXD 5
-#define SECS_TO_WAIT_FOR_DIRMNGR 5
+#define SECS_TO_WAIT_FOR_AGENT 8
+#define SECS_TO_WAIT_FOR_KEYBOXD 8
+#define SECS_TO_WAIT_FOR_DIRMNGR 8
 
 /* A bitfield that specifies the assuan categories to log.  This is
    identical to the default log handler of libassuan.  We need to do
