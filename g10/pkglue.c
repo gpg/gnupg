@@ -331,6 +331,15 @@ pk_verify (pubkey_algo_t pkalgo, gcry_mpi_t hash,
             rc = gpg_error (GPG_ERR_BAD_MPI);
           else
             {
+              r = gcry_mpi_copy (r);
+              s = gcry_mpi_copy (s);
+
+              if (!r || !s)
+                {
+                  rc = gpg_error_from_syserror ();
+                  goto leave;
+                }
+
               /* We need to fixup the length in case of leading zeroes.
                * OpenPGP does not allow leading zeroes and the parser for
                * the signature packet has no information on the use curve,
@@ -416,6 +425,7 @@ pk_verify (pubkey_algo_t pkalgo, gcry_mpi_t hash,
   if (!rc)
     rc = gcry_pk_verify (s_sig, s_hash, s_pkey);
 
+ leave:
   gcry_sexp_release (s_sig);
   gcry_sexp_release (s_hash);
   gcry_sexp_release (s_pkey);
