@@ -2513,6 +2513,11 @@ msgstr "montrer les dates d'expiration en affichant les signatures"
 msgid "show preferences"
 msgstr "afficher les préférences (expert)"
 
+#, fuzzy
+#| msgid "change the ownertrust"
+msgid "show ownertrust"
+msgstr "modifier la confiance du propriétaire"
+
 #, fuzzy, c-format
 #| msgid "unknown option '%s'\n"
 msgid "unknown TOFU policy '%s'\n"
@@ -2646,6 +2651,11 @@ msgstr "liste de recherche automatique de clef incorrecte\n"
 #, c-format
 msgid "invalid argument for option \"%.50s\"\n"
 msgstr "argument incorrect pour l'option « %.50s »\n"
+
+#, fuzzy, c-format
+#| msgid "error loading certificate '%s': %s\n"
+msgid "error parsing value for option '%s': %s\n"
+msgstr "erreur de chargement du certificat « %s » : %s\n"
 
 #, c-format
 msgid "WARNING: program may create a core file!\n"
@@ -3881,6 +3891,11 @@ msgstr "échec de vérification de la liste de confiance : %s\n"
 msgid "setting the primary user ID failed: %s\n"
 msgstr "échec de vérification de la liste de confiance : %s\n"
 
+#, fuzzy, c-format
+#| msgid "checking the trust list failed: %s\n"
+msgid "setting the ownertrust to '%s' failed: %s\n"
+msgstr "échec de vérification de la liste de confiance : %s\n"
+
 #, c-format
 msgid "\"%s\" is not a fingerprint\n"
 msgstr "« %s » n’est pas une empreinte\n"
@@ -4757,6 +4772,11 @@ msgstr ""
 "pouvez\n"
 "utiliser la commande « --edit-key » pour générer une sous-clef à cette fin.\n"
 
+#, fuzzy, c-format
+#| msgid "WARNING: This key has been revoked by its owner!\n"
+msgid "Note: The key has been created with one or more ADSK!\n"
+msgstr "Attention : cette clef à été révoquée par son propriétaire.\n"
+
 #, c-format
 msgid ""
 "key has been created %lu second in future (time warp or clock problem)\n"
@@ -4842,6 +4862,9 @@ msgstr[1] "Attention : %lu clefs ignorées en raison de leur grande taille\n"
 
 msgid "Keyring"
 msgstr "Porte-clefs"
+
+msgid "Revocable by: "
+msgstr ""
 
 msgid "Primary key fingerprint:"
 msgstr "Empreinte de clef principale :"
@@ -5850,6 +5873,11 @@ msgstr ""
 msgid "Note: secret key %s expired at %s\n"
 msgstr "Remarque : la clef secrète %s a expiré le %s\n"
 
+#, fuzzy, c-format
+#| msgid "certificate should not have been used for encryption\n"
+msgid "Note: ADSK key has been used for decryption"
+msgstr "le certificat n'aurait pas dû être utilisé pour le chiffrement\n"
+
 #, c-format
 msgid "Note: key has been revoked"
 msgstr "Remarque : la clef a été révoquée"
@@ -6738,13 +6766,19 @@ msgid_plural " (%d validity counts cleared)\n"
 msgstr[0] "%d clefs traitées (%d comptes de validité réinitialisés)\n"
 msgstr[1] "%d clefs traitées (%d comptes de validité réinitialisés)\n"
 
-#, c-format
-msgid "no ultimately trusted keys found\n"
+#, fuzzy, c-format
+#| msgid "no ultimately trusted keys found\n"
+msgid "Note: ultimately trusted key %s not found\n"
+msgstr "aucune clef de confiance ultime n'a été trouvée\n"
+
+#, fuzzy, c-format
+#| msgid "no ultimately trusted keys found\n"
+msgid "Note: ultimately trusted key %s expired\n"
 msgstr "aucune clef de confiance ultime n'a été trouvée\n"
 
 #, c-format
-msgid "public key of ultimately trusted key %s not found\n"
-msgstr "la clef publique de la clef de confiance ultime %s est introuvable\n"
+msgid "no ultimately trusted keys found\n"
+msgstr "aucune clef de confiance ultime n'a été trouvée\n"
 
 #, c-format
 msgid ""
@@ -9521,6 +9555,11 @@ msgstr ""
 
 msgid "manage the command history"
 msgstr ""
+
+#, c-format
+#~ msgid "public key of ultimately trusted key %s not found\n"
+#~ msgstr ""
+#~ "la clef publique de la clef de confiance ultime %s est introuvable\n"
 
 #~ msgid "use canonical text mode"
 #~ msgstr "utiliser le mode texte canonique"

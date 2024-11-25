@@ -2589,6 +2589,11 @@ msgstr "vis udløbsdatoer under underskriftvisninger"
 msgid "show preferences"
 msgstr "vis præferencer (ekspert)"
 
+#, fuzzy
+#| msgid "change the ownertrust"
+msgid "show ownertrust"
+msgstr "ændr ejertroværdigheden"
+
 #, fuzzy, c-format
 #| msgid "unknown option `%s'\n"
 msgid "unknown TOFU policy '%s'\n"
@@ -2724,6 +2729,11 @@ msgstr "ugyldig liste for auto-key-locate\n"
 #| msgid "missing argument for option \"%.50s\"\n"
 msgid "invalid argument for option \"%.50s\"\n"
 msgstr "manglende parameter for indstilling »%.50s«\n"
+
+#, fuzzy, c-format
+#| msgid "error storing certificate: %s\n"
+msgid "error parsing value for option '%s': %s\n"
+msgstr "fejl ved lagring af certifikat: %s\n"
 
 #, c-format
 msgid "WARNING: program may create a core file!\n"
@@ -3989,6 +3999,11 @@ msgid "setting the primary user ID failed: %s\n"
 msgstr "kontrol af troværdighedslisten mislykkedes: %s\n"
 
 #, fuzzy, c-format
+#| msgid "checking the trust list failed: %s\n"
+msgid "setting the ownertrust to '%s' failed: %s\n"
+msgstr "kontrol af troværdighedslisten mislykkedes: %s\n"
+
+#, fuzzy, c-format
 #| msgid "invalid fingerprint"
 msgid "\"%s\" is not a fingerprint\n"
 msgstr "ugyldig fingeraftryk"
@@ -4872,6 +4887,11 @@ msgstr ""
 "Bemærk at denne nøgle ikke kan bruges til kryptering. Du kan bruge\n"
 "kommandoen »--edit-key« til at oprette en undernøgle til dette formål.\n"
 
+#, fuzzy, c-format
+#| msgid "WARNING: This key has been revoked by its owner!\n"
+msgid "Note: The key has been created with one or more ADSK!\n"
+msgstr "ADVARSEL: Denne nøgle er blevet tilbagekaldt af dets ejer!\n"
+
 #, c-format
 msgid ""
 "key has been created %lu second in future (time warp or clock problem)\n"
@@ -4955,6 +4975,9 @@ msgstr[1] ""
 
 msgid "Keyring"
 msgstr "Nøglering"
+
+msgid "Revocable by: "
+msgstr ""
 
 msgid "Primary key fingerprint:"
 msgstr "Primær nøglefingeraftryk:"
@@ -5954,6 +5977,11 @@ msgid "Note: secret key %s expired at %s\n"
 msgstr "BEMÆRK: hemmelig nøgle %s udløb den %s\n"
 
 #, fuzzy, c-format
+#| msgid "certificate should not have been used for encryption\n"
+msgid "Note: ADSK key has been used for decryption"
+msgstr "certifikat burde ikke være brugt for kryptering\n"
+
+#, fuzzy, c-format
 #| msgid "NOTE: key has been revoked"
 msgid "Note: key has been revoked"
 msgstr "BEMÆRK: nøgle er blevet tilbagekaldt"
@@ -6814,13 +6842,19 @@ msgid_plural " (%d validity counts cleared)\n"
 msgstr[0] "%d nøgler behandlet (%d validiteter ryddet)\n"
 msgstr[1] "%d nøgler behandlet (%d validiteter ryddet)\n"
 
-#, c-format
-msgid "no ultimately trusted keys found\n"
+#, fuzzy, c-format
+#| msgid "no ultimately trusted keys found\n"
+msgid "Note: ultimately trusted key %s not found\n"
+msgstr "ingen ultimativ troværdige nøgler fundet\n"
+
+#, fuzzy, c-format
+#| msgid "no ultimately trusted keys found\n"
+msgid "Note: ultimately trusted key %s expired\n"
 msgstr "ingen ultimativ troværdige nøgler fundet\n"
 
 #, c-format
-msgid "public key of ultimately trusted key %s not found\n"
-msgstr "offentlig nøgle for ultimativ troværdig nøgle %s blev ikke fundet\n"
+msgid "no ultimately trusted keys found\n"
+msgstr "ingen ultimativ troværdige nøgler fundet\n"
 
 #, c-format
 msgid ""
@@ -9718,6 +9752,10 @@ msgstr ""
 
 msgid "manage the command history"
 msgstr ""
+
+#, c-format
+#~ msgid "public key of ultimately trusted key %s not found\n"
+#~ msgstr "offentlig nøgle for ultimativ troværdig nøgle %s blev ikke fundet\n"
 
 #~ msgid "use canonical text mode"
 #~ msgstr "brug kanonisk teksttilstand"

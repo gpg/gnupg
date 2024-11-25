@@ -2386,6 +2386,11 @@ msgstr "vis utløpsdatoer i nøkkelvisning"
 msgid "show preferences"
 msgstr "vis innstillinger (avansert)"
 
+#, fuzzy
+#| msgid "change the ownertrust"
+msgid "show ownertrust"
+msgstr "endre eiertillit"
+
 #, c-format
 msgid "unknown TOFU policy '%s'\n"
 msgstr "«%s» er et ukjent TOFU-regelverk\n"
@@ -2513,6 +2518,11 @@ msgstr "ugyldig «auto-key-locate»-liste\n"
 #, c-format
 msgid "invalid argument for option \"%.50s\"\n"
 msgstr "ugyldig argument for valget «%.50s»\n"
+
+#, fuzzy, c-format
+#| msgid "error parsing key specification '%s': %s\n"
+msgid "error parsing value for option '%s': %s\n"
+msgstr "feil under tolking av nøkkelspesifikasjon «%s»: %s\n"
 
 #, c-format
 msgid "WARNING: program may create a core file!\n"
@@ -3720,6 +3730,11 @@ msgstr "opphevelse av bruker-id mislyktes: %s\n"
 msgid "setting the primary user ID failed: %s\n"
 msgstr "endring av primær bruker-ID mislyktes: %s\n"
 
+#, fuzzy, c-format
+#| msgid "checking the trust list failed: %s\n"
+msgid "setting the ownertrust to '%s' failed: %s\n"
+msgstr "kontroll av tillitsliste mislyktes: %s\n"
+
 #, c-format
 msgid "\"%s\" is not a fingerprint\n"
 msgstr "«%s» er ikke et fingeravtrykk\n"
@@ -4567,6 +4582,11 @@ msgstr ""
 "vurdere å bruke kommandoen «--edit-key» for å lage en\n"
 "undernøkkel til dette formålet.\n"
 
+#, fuzzy, c-format
+#| msgid "WARNING: This key has been revoked by its owner!\n"
+msgid "Note: The key has been created with one or more ADSK!\n"
+msgstr "ADVARSEL: denne nøkkelen er opphevet av eieren.\n"
+
 #, c-format
 msgid ""
 "key has been created %lu second in future (time warp or clock problem)\n"
@@ -4647,6 +4667,9 @@ msgstr[1] "Advarsel: hoppet over %lu nøkler pga. for høy størrelse\n"
 
 msgid "Keyring"
 msgstr "Nøkkelknippe"
+
+msgid "Revocable by: "
+msgstr ""
 
 msgid "Primary key fingerprint:"
 msgstr "Fingeravtrykk for primærnøkkel:"
@@ -5591,6 +5614,11 @@ msgstr "ADVARSEL: fant ikke krypteringsalgoritme %s i mottakers oppsett\n"
 msgid "Note: secret key %s expired at %s\n"
 msgstr "Merk: hemmelig nøkkel %s utgått %s\n"
 
+#, fuzzy, c-format
+#| msgid "certificate should not have been used for encryption\n"
+msgid "Note: ADSK key has been used for decryption"
+msgstr "sertifikatet skulle ikke vært brukt til kryptering\n"
+
 #, c-format
 msgid "Note: key has been revoked"
 msgstr "Merk: nøkkelen er opphevet"
@@ -6426,13 +6454,19 @@ msgid_plural " (%d validity counts cleared)\n"
 msgstr[0] "(%d gyldighetsantall klarert)\n"
 msgstr[1] "(%d gyldighetsantall klarert)\n"
 
-#, c-format
-msgid "no ultimately trusted keys found\n"
+#, fuzzy, c-format
+#| msgid "no ultimately trusted keys found\n"
+msgid "Note: ultimately trusted key %s not found\n"
+msgstr "fant ingen nøkler med absolutt («ultimat») pålitelighet\n"
+
+#, fuzzy, c-format
+#| msgid "no ultimately trusted keys found\n"
+msgid "Note: ultimately trusted key %s expired\n"
 msgstr "fant ingen nøkler med absolutt («ultimat») pålitelighet\n"
 
 #, c-format
-msgid "public key of ultimately trusted key %s not found\n"
-msgstr "fant ikke offentlig nøkkel for absolutt pålitelig nøkkel %s\n"
+msgid "no ultimately trusted keys found\n"
+msgstr "fant ingen nøkler med absolutt («ultimat») pålitelighet\n"
 
 #, c-format
 msgid ""
@@ -9053,6 +9087,10 @@ msgstr ""
 
 msgid "manage the command history"
 msgstr ""
+
+#, c-format
+#~ msgid "public key of ultimately trusted key %s not found\n"
+#~ msgstr "fant ikke offentlig nøkkel for absolutt pålitelig nøkkel %s\n"
 
 #~ msgid "use canonical text mode"
 #~ msgstr "bruk kanonisk tekstmodus"

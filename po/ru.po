@@ -2384,6 +2384,11 @@ msgstr "показывать в списке подписей сроки дей�
 msgid "show preferences"
 msgstr "список предпочтений (экспертам)"
 
+#, fuzzy
+#| msgid "change the ownertrust"
+msgid "show ownertrust"
+msgstr "изменить уровень доверия владельцу"
+
 #, c-format
 msgid "unknown TOFU policy '%s'\n"
 msgstr "неизвестные правила TOFU '%s'\n"
@@ -2514,6 +2519,11 @@ msgstr "недопустимый список auto-key-locate\n"
 #, c-format
 msgid "invalid argument for option \"%.50s\"\n"
 msgstr "недопустимый аргумент для параметра \"%.50s\"\n"
+
+#, fuzzy, c-format
+#| msgid "error parsing key specification '%s': %s\n"
+msgid "error parsing value for option '%s': %s\n"
+msgstr "ошибка синтаксического анализа спецификации ключа '%s': %s\n"
 
 #, c-format
 msgid "WARNING: program may create a core file!\n"
@@ -3731,6 +3741,11 @@ msgstr "сбой отзыва идентификатора пользовате�
 msgid "setting the primary user ID failed: %s\n"
 msgstr "сбой установки первичного идентификатора пользователя: %s\n"
 
+#, fuzzy, c-format
+#| msgid "checking the trust list failed: %s\n"
+msgid "setting the ownertrust to '%s' failed: %s\n"
+msgstr "сбой проверки списка доверия: %s\n"
+
 #, c-format
 msgid "\"%s\" is not a fingerprint\n"
 msgstr "\"%s\" - не отпечаток\n"
@@ -4580,6 +4595,11 @@ msgstr ""
 "Учтите, что данный ключ не может использоваться для шифрования. Можно\n"
 "воспользоваться командой \"--edit-key\" и создать подключ для этих целей.\n"
 
+#, fuzzy, c-format
+#| msgid "WARNING: This key has been revoked by its owner!\n"
+msgid "Note: The key has been created with one or more ADSK!\n"
+msgstr "Внимание: Данный ключ отозван его владельцем!\n"
+
 #, c-format
 msgid ""
 "key has been created %lu second in future (time warp or clock problem)\n"
@@ -4662,6 +4682,9 @@ msgstr[2] "Внимание: %lu ключей пропущено из-за бо�
 
 msgid "Keyring"
 msgstr "Таблица ключей"
+
+msgid "Revocable by: "
+msgstr ""
 
 msgid "Primary key fingerprint:"
 msgstr "Отпечаток первичного ключа:"
@@ -5608,6 +5631,11 @@ msgstr ""
 msgid "Note: secret key %s expired at %s\n"
 msgstr "Замечание: секретный ключ %s просрочен с %s\n"
 
+#, fuzzy, c-format
+#| msgid "certificate should not have been used for encryption\n"
+msgid "Note: ADSK key has been used for decryption"
+msgstr "сертификат не следовало использовать для шифрования\n"
+
 #, c-format
 msgid "Note: key has been revoked"
 msgstr "Замечание: ключ был отозван"
@@ -6483,13 +6511,19 @@ msgstr[0] " (сброшен %d счетчик достоверности)\n"
 msgstr[1] " (сброшены %d счетчика достоверности)\n"
 msgstr[2] " (сброшено %d счетчиков достоверности)\n"
 
-#, c-format
-msgid "no ultimately trusted keys found\n"
+#, fuzzy, c-format
+#| msgid "no ultimately trusted keys found\n"
+msgid "Note: ultimately trusted key %s not found\n"
+msgstr "абсолютно доверенных ключей не найдено\n"
+
+#, fuzzy, c-format
+#| msgid "no ultimately trusted keys found\n"
+msgid "Note: ultimately trusted key %s expired\n"
 msgstr "абсолютно доверенных ключей не найдено\n"
 
 #, c-format
-msgid "public key of ultimately trusted key %s not found\n"
-msgstr "открытый ключ для абсолютно доверенного ключа %s не найден\n"
+msgid "no ultimately trusted keys found\n"
+msgstr "абсолютно доверенных ключей не найдено\n"
 
 #, c-format
 msgid ""
@@ -9154,6 +9188,10 @@ msgstr ""
 
 msgid "manage the command history"
 msgstr ""
+
+#, c-format
+#~ msgid "public key of ultimately trusted key %s not found\n"
+#~ msgstr "открытый ключ для абсолютно доверенного ключа %s не найден\n"
 
 #~ msgid "use canonical text mode"
 #~ msgstr "использовать канонический текстовый режим"

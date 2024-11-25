@@ -2461,6 +2461,11 @@ msgstr "Tidak ada signature koresponden di ring rahasia\n"
 msgid "show preferences"
 msgstr "set daftar preferensi"
 
+#, fuzzy
+#| msgid "change the ownertrust"
+msgid "show ownertrust"
+msgstr "ubah ownertrust"
+
 #, fuzzy, c-format
 msgid "unknown TOFU policy '%s'\n"
 msgstr "penerima baku tidak dikenal `%s'\n"
@@ -2592,6 +2597,10 @@ msgstr ""
 #, fuzzy, c-format
 msgid "invalid argument for option \"%.50s\"\n"
 msgstr "opsi impor tidak valid\n"
+
+#, fuzzy, c-format
+msgid "error parsing value for option '%s': %s\n"
+msgstr "kesalahan penciptaan passphrase: %s\n"
 
 #, c-format
 msgid "WARNING: program may create a core file!\n"
@@ -3854,6 +3863,10 @@ msgid "setting the primary user ID failed: %s\n"
 msgstr "Gagal memeriksa signature yang dibuat: %s\n"
 
 #, fuzzy, c-format
+msgid "setting the ownertrust to '%s' failed: %s\n"
+msgstr "Gagal memeriksa signature yang dibuat: %s\n"
+
+#, fuzzy, c-format
 msgid "\"%s\" is not a fingerprint\n"
 msgstr "kesalahan: fingerprint tidak valid\n"
 
@@ -4720,6 +4733,11 @@ msgstr ""
 "mungkin ingin menggunakan perintah \"--edit-key\" untuk membuat kunci kedua "
 "untuk tujuan ini.\n"
 
+#, fuzzy, c-format
+#| msgid "WARNING: This key has been revoked by its owner!\n"
+msgid "Note: The key has been created with one or more ADSK!\n"
+msgstr "PERINGATAN: Kunci ini telah dibatalkan oleh pemiliknya!\n"
+
 #, c-format
 msgid ""
 "key has been created %lu second in future (time warp or clock problem)\n"
@@ -4801,6 +4819,9 @@ msgstr[1] ""
 
 msgid "Keyring"
 msgstr "Keyring"
+
+msgid "Revocable by: "
+msgstr ""
 
 msgid "Primary key fingerprint:"
 msgstr "Fingerprint kunci primer:"
@@ -5766,6 +5787,11 @@ msgstr "CATATAN: kunci pribadi %08lX berakhir pada %s\n"
 
 #, fuzzy, c-format
 #| msgid "NOTE: key has been revoked"
+msgid "Note: ADSK key has been used for decryption"
+msgstr "CATATAN: kunci telah dibatalkan"
+
+#, fuzzy, c-format
+#| msgid "NOTE: key has been revoked"
 msgid "Note: key has been revoked"
 msgstr "CATATAN: kunci telah dibatalkan"
 
@@ -6598,13 +6624,19 @@ msgid_plural " (%d validity counts cleared)\n"
 msgstr[0] "%d kunci diproses (%d hitungan validitas dihapus)\n"
 msgstr[1] "%d kunci diproses (%d hitungan validitas dihapus)\n"
 
-#, c-format
-msgid "no ultimately trusted keys found\n"
+#, fuzzy, c-format
+#| msgid "no ultimately trusted keys found\n"
+msgid "Note: ultimately trusted key %s not found\n"
 msgstr "tidak ditemukan kunci yang benar-benar terpercaya\n"
 
 #, fuzzy, c-format
-msgid "public key of ultimately trusted key %s not found\n"
-msgstr "kunci publik yang sangat terpercaya %08lX tidak ditemukan\n"
+#| msgid "no ultimately trusted keys found\n"
+msgid "Note: ultimately trusted key %s expired\n"
+msgstr "tidak ditemukan kunci yang benar-benar terpercaya\n"
+
+#, c-format
+msgid "no ultimately trusted keys found\n"
+msgstr "tidak ditemukan kunci yang benar-benar terpercaya\n"
 
 #, c-format
 msgid ""
@@ -9266,6 +9298,10 @@ msgstr ""
 
 msgid "manage the command history"
 msgstr ""
+
+#, fuzzy, c-format
+#~ msgid "public key of ultimately trusted key %s not found\n"
+#~ msgstr "kunci publik yang sangat terpercaya %08lX tidak ditemukan\n"
 
 #~ msgid "use canonical text mode"
 #~ msgstr "gunakan mode teks kanonikal"

@@ -2465,6 +2465,11 @@ msgstr "Non hai unha sinatura correspondiente no chaveiro secreto\n"
 msgid "show preferences"
 msgstr "estabrece-la lista de preferencias"
 
+#, fuzzy
+#| msgid "change the ownertrust"
+msgid "show ownertrust"
+msgstr "cambia-la confianza sobre o dono"
+
 #, fuzzy, c-format
 msgid "unknown TOFU policy '%s'\n"
 msgstr "destinatario por defecto `%s' descoñecido\n"
@@ -2596,6 +2601,10 @@ msgstr ""
 #, fuzzy, c-format
 msgid "invalid argument for option \"%.50s\"\n"
 msgstr "opcións de importación non válidas\n"
+
+#, fuzzy, c-format
+msgid "error parsing value for option '%s': %s\n"
+msgstr "erro ao crea-lo contrasinal: %s\n"
 
 #, c-format
 msgid "WARNING: program may create a core file!\n"
@@ -3871,6 +3880,10 @@ msgid "setting the primary user ID failed: %s\n"
 msgstr "fallou a comprobación da sinatura creada: %s\n"
 
 #, fuzzy, c-format
+msgid "setting the ownertrust to '%s' failed: %s\n"
+msgstr "fallou a comprobación da sinatura creada: %s\n"
+
+#, fuzzy, c-format
 msgid "\"%s\" is not a fingerprint\n"
 msgstr "erro: pegada dactilar non válida\n"
 
@@ -4744,6 +4757,11 @@ msgstr ""
 "queira emprega-lo comando \"--edit-key\" para xerar unha chave secundaria\n"
 "con esa finalidade.\n"
 
+#, fuzzy, c-format
+#| msgid "WARNING: This key has been revoked by its owner!\n"
+msgid "Note: The key has been created with one or more ADSK!\n"
+msgstr "AVISO: ¡Esta chave está revocada polo propietario!\n"
+
 #, c-format
 msgid ""
 "key has been created %lu second in future (time warp or clock problem)\n"
@@ -4827,6 +4845,9 @@ msgstr[1] ""
 
 msgid "Keyring"
 msgstr "Chaveiro"
+
+msgid "Revocable by: "
+msgstr ""
 
 msgid "Primary key fingerprint:"
 msgstr "Pegada dactilar da chave primaria:"
@@ -5801,6 +5822,11 @@ msgstr "NOTA: a chave secreta %08lX caducou o %s\n"
 
 #, fuzzy, c-format
 #| msgid "NOTE: key has been revoked"
+msgid "Note: ADSK key has been used for decryption"
+msgstr "NOTA: a chave está revocada"
+
+#, fuzzy, c-format
+#| msgid "NOTE: key has been revoked"
 msgid "Note: key has been revoked"
 msgstr "NOTA: a chave está revocada"
 
@@ -6636,13 +6662,19 @@ msgid_plural " (%d validity counts cleared)\n"
 msgstr[0] "procesáronse %d chaves (marcáronse %d contas de validez)\n"
 msgstr[1] "procesáronse %d chaves (marcáronse %d contas de validez)\n"
 
-#, c-format
-msgid "no ultimately trusted keys found\n"
+#, fuzzy, c-format
+#| msgid "no ultimately trusted keys found\n"
+msgid "Note: ultimately trusted key %s not found\n"
 msgstr "non se atoparon chaves de confianza absoluta\n"
 
 #, fuzzy, c-format
-msgid "public key of ultimately trusted key %s not found\n"
-msgstr "non se atopou a chave pública da clave de confianza absoluta %08lX\n"
+#| msgid "no ultimately trusted keys found\n"
+msgid "Note: ultimately trusted key %s expired\n"
+msgstr "non se atoparon chaves de confianza absoluta\n"
+
+#, c-format
+msgid "no ultimately trusted keys found\n"
+msgstr "non se atoparon chaves de confianza absoluta\n"
 
 #, c-format
 msgid ""
@@ -9320,6 +9352,11 @@ msgstr ""
 
 msgid "manage the command history"
 msgstr ""
+
+#, fuzzy, c-format
+#~ msgid "public key of ultimately trusted key %s not found\n"
+#~ msgstr ""
+#~ "non se atopou a chave pública da clave de confianza absoluta %08lX\n"
 
 #~ msgid "use canonical text mode"
 #~ msgstr "usar modo de texto canónico"

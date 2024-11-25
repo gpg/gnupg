@@ -2550,6 +2550,11 @@ msgstr "No hi ha cap signatura corresponent en l'anell secret\n"
 msgid "show preferences"
 msgstr "estableix la llista de preferències"
 
+#, fuzzy
+#| msgid "change the ownertrust"
+msgid "show ownertrust"
+msgstr "canvia la confiança"
+
 #, fuzzy, c-format
 msgid "unknown TOFU policy '%s'\n"
 msgstr "el destinatari predeterminat és desconegut «%s»\n"
@@ -2681,6 +2686,10 @@ msgstr ""
 #, fuzzy, c-format
 msgid "invalid argument for option \"%.50s\"\n"
 msgstr "opcions d'importació no vàlides\n"
+
+#, fuzzy, c-format
+msgid "error parsing value for option '%s': %s\n"
+msgstr "error en la creació de la contrasenya: %s\n"
 
 #, c-format
 msgid "WARNING: program may create a core file!\n"
@@ -3973,6 +3982,10 @@ msgid "setting the primary user ID failed: %s\n"
 msgstr "no s'ha pogut comprovar la signatura creada: %s\n"
 
 #, fuzzy, c-format
+msgid "setting the ownertrust to '%s' failed: %s\n"
+msgstr "no s'ha pogut comprovar la signatura creada: %s\n"
+
+#, fuzzy, c-format
 msgid "\"%s\" is not a fingerprint\n"
 msgstr "error: l'empremta digital és invàlida\n"
 
@@ -4855,6 +4868,11 @@ msgstr ""
 "Noteu que aquesta clau no serveix per a xifrar. Potser vulgueu usar l'ordre\n"
 "\"--edit-key\" per a generar una clau secundària per a tal propòsit.\n"
 
+#, fuzzy, c-format
+#| msgid "WARNING: This key has been revoked by its owner!\n"
+msgid "Note: The key has been created with one or more ADSK!\n"
+msgstr "AVÍS: Aquesta clau ha estat revocada pel propietari!\n"
+
 # Werner FIXME: Use ngettext. jm
 #, c-format
 msgid ""
@@ -4940,6 +4958,9 @@ msgstr[1] ""
 
 msgid "Keyring"
 msgstr "Anell"
+
+msgid "Revocable by: "
+msgstr ""
 
 msgid "Primary key fingerprint:"
 msgstr "Empremtes digital de la clau primària:"
@@ -5927,6 +5948,11 @@ msgstr "NOTA: la clau secreta %08lX caduca el %s\n"
 
 #, fuzzy, c-format
 #| msgid "NOTE: key has been revoked"
+msgid "Note: ADSK key has been used for decryption"
+msgstr "NOTA: aquesta clau ha estat revocada!"
+
+#, fuzzy, c-format
+#| msgid "NOTE: key has been revoked"
 msgid "Note: key has been revoked"
 msgstr "NOTA: aquesta clau ha estat revocada!"
 
@@ -6786,14 +6812,19 @@ msgid_plural " (%d validity counts cleared)\n"
 msgstr[0] "s'han processat %d claus (s'han netejat %d comptes de validesa)\n"
 msgstr[1] "s'han processat %d claus (s'han netejat %d comptes de validesa)\n"
 
-#, c-format
-msgid "no ultimately trusted keys found\n"
+#, fuzzy, c-format
+#| msgid "no ultimately trusted keys found\n"
+msgid "Note: ultimately trusted key %s not found\n"
 msgstr "no s'han trobat claus amb confiança absoluta\n"
 
 #, fuzzy, c-format
-msgid "public key of ultimately trusted key %s not found\n"
-msgstr ""
-"no s'ha trobat la clau pública de la clau amb confiança absoluta %08lX\n"
+#| msgid "no ultimately trusted keys found\n"
+msgid "Note: ultimately trusted key %s expired\n"
+msgstr "no s'han trobat claus amb confiança absoluta\n"
+
+#, c-format
+msgid "no ultimately trusted keys found\n"
+msgstr "no s'han trobat claus amb confiança absoluta\n"
 
 #, c-format
 msgid ""
@@ -9501,6 +9532,11 @@ msgstr ""
 
 msgid "manage the command history"
 msgstr ""
+
+#, fuzzy, c-format
+#~ msgid "public key of ultimately trusted key %s not found\n"
+#~ msgstr ""
+#~ "no s'ha trobat la clau pública de la clau amb confiança absoluta %08lX\n"
 
 #~ msgid "use canonical text mode"
 #~ msgstr "usa el mode de text canònic"

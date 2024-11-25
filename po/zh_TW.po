@@ -2414,6 +2414,11 @@ msgstr "列出簽章時顯示有效期限"
 msgid "show preferences"
 msgstr "列出偏好 (專家模式)"
 
+#, fuzzy
+#| msgid "change the ownertrust"
+msgid "show ownertrust"
+msgstr "更改主觀信任"
+
 #, fuzzy, c-format
 #| msgid "unknown option '%s'\n"
 msgid "unknown TOFU policy '%s'\n"
@@ -2544,6 +2549,11 @@ msgstr "無效的自動金鑰定址清單\n"
 #, c-format
 msgid "invalid argument for option \"%.50s\"\n"
 msgstr "選項 \"%.50s\" 的引數無效\n"
+
+#, fuzzy, c-format
+#| msgid "error loading certificate '%s': %s\n"
+msgid "error parsing value for option '%s': %s\n"
+msgstr "載入憑證 '%s' 時出錯: %s\n"
 
 #, c-format
 msgid "WARNING: program may create a core file!\n"
@@ -3747,6 +3757,11 @@ msgstr "檢查信任清單時失敗: %s\n"
 msgid "setting the primary user ID failed: %s\n"
 msgstr "檢查信任清單時失敗: %s\n"
 
+#, fuzzy, c-format
+#| msgid "checking the trust list failed: %s\n"
+msgid "setting the ownertrust to '%s' failed: %s\n"
+msgstr "檢查信任清單時失敗: %s\n"
+
 #, c-format
 msgid "\"%s\" is not a fingerprint\n"
 msgstr "\"%s\" 不是指紋\n"
@@ -4594,6 +4609,11 @@ msgstr ""
 "請注意這把金鑰不能用於加密.  也許你會想藉由 \"--edit-key\" 指令\n"
 "來產生加密用的子鑰.\n"
 
+#, fuzzy, c-format
+#| msgid "WARNING: This key has been revoked by its owner!\n"
+msgid "Note: The key has been created with one or more ADSK!\n"
+msgstr "警告: 這把金鑰已被其持有人所撤銷!\n"
+
 #, c-format
 msgid ""
 "key has been created %lu second in future (time warp or clock problem)\n"
@@ -4669,6 +4689,9 @@ msgstr[0] "警告: %lu 把金鑰因尺寸太大已跳過\n"
 
 msgid "Keyring"
 msgstr "鑰匙圈"
+
+msgid "Revocable by: "
+msgstr ""
 
 msgid "Primary key fingerprint:"
 msgstr "               主鑰指紋:"
@@ -5611,6 +5634,11 @@ msgstr "警告: 收件者偏好設定中找不到 %s 編密演算法\n"
 msgid "Note: secret key %s expired at %s\n"
 msgstr "請注意: 私鑰 %s 已於 %s 過期\n"
 
+#, fuzzy, c-format
+#| msgid "certificate should not have been used for encryption\n"
+msgid "Note: ADSK key has been used for decryption"
+msgstr "憑證應該還未被用於加密\n"
+
 #, c-format
 msgid "Note: key has been revoked"
 msgstr "請注意: 金鑰已撤銷"
@@ -6426,13 +6454,19 @@ msgid " (%d validity count cleared)\n"
 msgid_plural " (%d validity counts cleared)\n"
 msgstr[0] "已經處理了 %d 把金鑰 (共計已解決了 %d 份有效性)\n"
 
-#, c-format
-msgid "no ultimately trusted keys found\n"
+#, fuzzy, c-format
+#| msgid "no ultimately trusted keys found\n"
+msgid "Note: ultimately trusted key %s not found\n"
+msgstr "沒有找到任何徹底信任的金鑰\n"
+
+#, fuzzy, c-format
+#| msgid "no ultimately trusted keys found\n"
+msgid "Note: ultimately trusted key %s expired\n"
 msgstr "沒有找到任何徹底信任的金鑰\n"
 
 #, c-format
-msgid "public key of ultimately trusted key %s not found\n"
-msgstr "找不到徹底信任金鑰 %s 的公鑰\n"
+msgid "no ultimately trusted keys found\n"
+msgstr "沒有找到任何徹底信任的金鑰\n"
 
 #, c-format
 msgid ""
@@ -9055,6 +9089,10 @@ msgstr ""
 
 msgid "manage the command history"
 msgstr ""
+
+#, c-format
+#~ msgid "public key of ultimately trusted key %s not found\n"
+#~ msgstr "找不到徹底信任金鑰 %s 的公鑰\n"
 
 #~ msgid "use canonical text mode"
 #~ msgstr "使用標準的文字模式"

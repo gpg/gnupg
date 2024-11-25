@@ -2450,6 +2450,11 @@ msgstr "Mankas responda subskribo en sekreta ŝlosilaro\n"
 msgid "show preferences"
 msgstr "agordi liston de preferoj"
 
+#, fuzzy
+#| msgid "change the ownertrust"
+msgid "show ownertrust"
+msgstr "ŝanĝi la posedantofidon"
+
 #, fuzzy, c-format
 msgid "unknown TOFU policy '%s'\n"
 msgstr "nekonata implicita ricevonto '%s'\n"
@@ -2581,6 +2586,10 @@ msgstr ""
 #, fuzzy, c-format
 msgid "invalid argument for option \"%.50s\"\n"
 msgstr "nevalida kiraso"
+
+#, fuzzy, c-format
+msgid "error parsing value for option '%s': %s\n"
+msgstr "eraro dum kreado de pasfrazo: %s\n"
 
 #, c-format
 msgid "WARNING: program may create a core file!\n"
@@ -3852,6 +3861,10 @@ msgid "setting the primary user ID failed: %s\n"
 msgstr "kontrolo de kreita subskribo malsukcesis: %s\n"
 
 #, fuzzy, c-format
+msgid "setting the ownertrust to '%s' failed: %s\n"
+msgstr "kontrolo de kreita subskribo malsukcesis: %s\n"
+
+#, fuzzy, c-format
 msgid "\"%s\" is not a fingerprint\n"
 msgstr "%s: nevalida dosiero-versio %d\n"
 
@@ -4707,6 +4720,11 @@ msgstr ""
 "Notu, ke ĉi tiu ŝlosilo ne estas uzebla por ĉifrado. Vi eble volos\n"
 "uzi la komandon \"--edit-key\" por krei flankan ŝlosilon por tiu celo.\n"
 
+#, fuzzy, c-format
+#| msgid "WARNING: This key has been revoked by its owner!\n"
+msgid "Note: The key has been created with one or more ADSK!\n"
+msgstr "AVERTO: Ĉi tiu ŝlosilo estas revokita de sia posedanto!\n"
+
 #, c-format
 msgid ""
 "key has been created %lu second in future (time warp or clock problem)\n"
@@ -4792,6 +4810,9 @@ msgstr[1] ""
 
 msgid "Keyring"
 msgstr "Ŝlosilaro"
+
+msgid "Revocable by: "
+msgstr ""
 
 #, fuzzy
 msgid "Primary key fingerprint:"
@@ -5746,6 +5767,10 @@ msgid "Note: secret key %s expired at %s\n"
 msgstr "NOTO: sekreta ŝlosilo %08lX eksvalidiĝis je %s\n"
 
 #, fuzzy, c-format
+msgid "Note: ADSK key has been used for decryption"
+msgstr "ŝlosilo %08lX: ŝlosilo estas revokita!\n"
+
+#, fuzzy, c-format
 msgid "Note: key has been revoked"
 msgstr "ŝlosilo %08lX: ŝlosilo estas revokita!\n"
 
@@ -6566,11 +6591,15 @@ msgstr[0] ""
 msgstr[1] ""
 
 #, fuzzy, c-format
-msgid "no ultimately trusted keys found\n"
+msgid "Note: ultimately trusted key %s not found\n"
 msgstr "publika ŝlosilo de absolute fidata ŝlosilo %08lX ne trovita\n"
 
 #, fuzzy, c-format
-msgid "public key of ultimately trusted key %s not found\n"
+msgid "Note: ultimately trusted key %s expired\n"
+msgstr "publika ŝlosilo de absolute fidata ŝlosilo %08lX ne trovita\n"
+
+#, fuzzy, c-format
+msgid "no ultimately trusted keys found\n"
 msgstr "publika ŝlosilo de absolute fidata ŝlosilo %08lX ne trovita\n"
 
 #, c-format
@@ -9236,6 +9265,10 @@ msgstr ""
 
 msgid "manage the command history"
 msgstr ""
+
+#, fuzzy, c-format
+#~ msgid "public key of ultimately trusted key %s not found\n"
+#~ msgstr "publika ŝlosilo de absolute fidata ŝlosilo %08lX ne trovita\n"
 
 #~ msgid "use canonical text mode"
 #~ msgstr "uzi tekstan reĝimon"

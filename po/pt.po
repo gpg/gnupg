@@ -6412,13 +6412,19 @@ msgid_plural " (%d validity counts cleared)\n"
 msgstr[0] " (%d contagem da validade limpa)\n"
 msgstr[1] " (%d contagens das validades limpas)\n"
 
-#, c-format
-msgid "no ultimately trusted keys found\n"
+#, fuzzy, c-format
+#| msgid "no ultimately trusted keys found\n"
+msgid "Note: ultimately trusted key %s not found\n"
+msgstr "nenhumas chaves plenamente confiáveis encontradas\n"
+
+#, fuzzy, c-format
+#| msgid "no ultimately trusted keys found\n"
+msgid "Note: ultimately trusted key %s expired\n"
 msgstr "nenhumas chaves plenamente confiáveis encontradas\n"
 
 #, c-format
-msgid "public key of ultimately trusted key %s not found\n"
-msgstr "chave pública da chave plenamente confiável %s não encontrada\n"
+msgid "no ultimately trusted keys found\n"
+msgstr "nenhumas chaves plenamente confiáveis encontradas\n"
 
 #, c-format
 msgid ""
@@ -9015,6 +9021,10 @@ msgstr "comandos de gerir uma Yubikey"
 
 msgid "manage the command history"
 msgstr "gerir o histórico de comandos"
+
+#, c-format
+#~ msgid "public key of ultimately trusted key %s not found\n"
+#~ msgstr "chave pública da chave plenamente confiável %s não encontrada\n"
 
 #, c-format
 #~ msgid "error writing to stdout: %s\n"

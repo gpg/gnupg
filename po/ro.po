@@ -2516,6 +2516,11 @@ msgstr "Nici o semnătură corespunzătoare în inelul secret\n"
 msgid "show preferences"
 msgstr "showpref"
 
+#, fuzzy
+#| msgid "change the ownertrust"
+msgid "show ownertrust"
+msgstr "schimbă încrederea pentru proprietar"
+
 #, fuzzy, c-format
 #| msgid "unknown option `%s'\n"
 msgid "unknown TOFU policy '%s'\n"
@@ -2652,6 +2657,10 @@ msgstr ""
 #, fuzzy, c-format
 msgid "invalid argument for option \"%.50s\"\n"
 msgstr "opţiuni enumerare invalide\n"
+
+#, fuzzy, c-format
+msgid "error parsing value for option '%s': %s\n"
+msgstr "eroare la obţinerea numărului serial: %s\n"
 
 #, c-format
 msgid "WARNING: program may create a core file!\n"
@@ -3902,6 +3911,10 @@ msgid "setting the primary user ID failed: %s\n"
 msgstr "verificarea semnăturii create a eşuat: %s\n"
 
 #, fuzzy, c-format
+msgid "setting the ownertrust to '%s' failed: %s\n"
+msgstr "verificarea semnăturii create a eşuat: %s\n"
+
+#, fuzzy, c-format
 #| msgid "invalid fingerprint"
 msgid "\"%s\" is not a fingerprint\n"
 msgstr "amprentă invalidă"
@@ -4781,6 +4794,11 @@ msgstr ""
 "să folosiţi comanda \"--edit-key\" pentru a genera o subcheie secundară\n"
 "pentru acest scop.\n"
 
+#, fuzzy, c-format
+#| msgid "WARNING: This key has been revoked by its owner!\n"
+msgid "Note: The key has been created with one or more ADSK!\n"
+msgstr "AVERTISMENT: Această cheie a fost revocată de proprietarul ei!\n"
+
 #, c-format
 msgid ""
 "key has been created %lu second in future (time warp or clock problem)\n"
@@ -4863,6 +4881,9 @@ msgstr[1] ""
 
 msgid "Keyring"
 msgstr "Inel de chei"
+
+msgid "Revocable by: "
+msgstr ""
 
 msgid "Primary key fingerprint:"
 msgstr "Amprentă cheie primară:"
@@ -5858,6 +5879,11 @@ msgstr "NOTĂ: cheia secretă %s a expirat la %s\n"
 
 #, fuzzy, c-format
 #| msgid "NOTE: key has been revoked"
+msgid "Note: ADSK key has been used for decryption"
+msgstr "NOTĂ: cheia a fost revocată"
+
+#, fuzzy, c-format
+#| msgid "NOTE: key has been revoked"
 msgid "Note: key has been revoked"
 msgstr "NOTĂ: cheia a fost revocată"
 
@@ -6704,13 +6730,19 @@ msgid_plural " (%d validity counts cleared)\n"
 msgstr[0] "%d chei procesate (%d numărători valide anulate)\n"
 msgstr[1] "%d chei procesate (%d numărători valide anulate)\n"
 
-#, c-format
-msgid "no ultimately trusted keys found\n"
+#, fuzzy, c-format
+#| msgid "no ultimately trusted keys found\n"
+msgid "Note: ultimately trusted key %s not found\n"
+msgstr "nu am găsit nici o cheie cu încredere supremă\n"
+
+#, fuzzy, c-format
+#| msgid "no ultimately trusted keys found\n"
+msgid "Note: ultimately trusted key %s expired\n"
 msgstr "nu am găsit nici o cheie cu încredere supremă\n"
 
 #, c-format
-msgid "public key of ultimately trusted key %s not found\n"
-msgstr "cheia publică a cheii cu încredere supremă %s nu a fost găsită\n"
+msgid "no ultimately trusted keys found\n"
+msgstr "nu am găsit nici o cheie cu încredere supremă\n"
 
 #, c-format
 msgid ""
@@ -9411,6 +9443,10 @@ msgstr ""
 
 msgid "manage the command history"
 msgstr ""
+
+#, c-format
+#~ msgid "public key of ultimately trusted key %s not found\n"
+#~ msgstr "cheia publică a cheii cu încredere supremă %s nu a fost găsită\n"
 
 #~ msgid "use canonical text mode"
 #~ msgstr "foloseşte modul text canonic"

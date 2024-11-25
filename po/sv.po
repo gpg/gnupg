@@ -2634,6 +2634,12 @@ msgstr "visa utgångsdatum under signaturlistningar"
 msgid "show preferences"
 msgstr "lista inställningar (expertläge)"
 
+# originalet borde ha ett value
+#, fuzzy
+#| msgid "change the ownertrust"
+msgid "show ownertrust"
+msgstr "ändra ägartillitsvärdet"
+
 #, fuzzy, c-format
 #| msgid "unknown option `%s'\n"
 msgid "unknown TOFU policy '%s'\n"
@@ -2769,6 +2775,11 @@ msgstr "ogiltig auto-key-locate-lista\n"
 #| msgid "missing argument for option \"%.50s\"\n"
 msgid "invalid argument for option \"%.50s\"\n"
 msgstr "argument för flaggan \"%.50s\" saknas\n"
+
+#, fuzzy, c-format
+#| msgid "error storing certificate: %s\n"
+msgid "error parsing value for option '%s': %s\n"
+msgstr "fel vid lagring av certifikat: %s\n"
 
 # Programmet skapar en avbildning (image) av minnet för att lättare kunna spåra fel.
 #, c-format
@@ -4051,6 +4062,11 @@ msgid "setting the primary user ID failed: %s\n"
 msgstr "kontroll mot tillitslistan misslyckades: %s\n"
 
 #, fuzzy, c-format
+#| msgid "checking the trust list failed: %s\n"
+msgid "setting the ownertrust to '%s' failed: %s\n"
+msgstr "kontroll mot tillitslistan misslyckades: %s\n"
+
+#, fuzzy, c-format
 #| msgid "invalid fingerprint"
 msgid "\"%s\" is not a fingerprint\n"
 msgstr "ogiltigt fingeravtryck"
@@ -4947,6 +4963,11 @@ msgstr ""
 "vill använda flaggan \"--edit-key\" för att skapa en undernyckel för detta "
 "syfte.\n"
 
+#, fuzzy, c-format
+#| msgid "WARNING: This key has been revoked by its owner!\n"
+msgid "Note: The key has been created with one or more ADSK!\n"
+msgstr "VARNING: Denna nyckel har spärrats av sin ägare!\n"
+
 # c-format behövs inte i singularis
 #, c-format
 msgid ""
@@ -5030,6 +5051,9 @@ msgstr[1] ""
 
 msgid "Keyring"
 msgstr "Nyckelring"
+
+msgid "Revocable by: "
+msgstr ""
 
 msgid "Primary key fingerprint:"
 msgstr "Primära nyckelns fingeravtryck:"
@@ -6038,6 +6062,11 @@ msgid "Note: secret key %s expired at %s\n"
 msgstr "OBSERVERA: hemliga nyckeln %s gick ut %s\n"
 
 #, fuzzy, c-format
+#| msgid "certificate should have not been used for encryption\n"
+msgid "Note: ADSK key has been used for decryption"
+msgstr "certifikatet skulle inte använts för kryptering\n"
+
+#, fuzzy, c-format
 #| msgid "NOTE: key has been revoked"
 msgid "Note: key has been revoked"
 msgstr "OBSERVERA: nyckeln har spärrats"
@@ -6920,13 +6949,19 @@ msgid_plural " (%d validity counts cleared)\n"
 msgstr[0] "%d nycklar behandlade (%d validity counts rensade)\n"
 msgstr[1] "%d nycklar behandlade (%d validity counts rensade)\n"
 
-#, c-format
-msgid "no ultimately trusted keys found\n"
+#, fuzzy, c-format
+#| msgid "no ultimately trusted keys found\n"
+msgid "Note: ultimately trusted key %s not found\n"
+msgstr "hittade inga nycklar med förbehållslöst förtroende\n"
+
+#, fuzzy, c-format
+#| msgid "no ultimately trusted keys found\n"
+msgid "Note: ultimately trusted key %s expired\n"
 msgstr "hittade inga nycklar med förbehållslöst förtroende\n"
 
 #, c-format
-msgid "public key of ultimately trusted key %s not found\n"
-msgstr "publik nyckel för förbehållslöst betrodda nyckeln %s hittades inte\n"
+msgid "no ultimately trusted keys found\n"
+msgstr "hittade inga nycklar med förbehållslöst förtroende\n"
 
 #, c-format
 msgid ""
@@ -9858,6 +9893,11 @@ msgstr ""
 
 msgid "manage the command history"
 msgstr ""
+
+#, c-format
+#~ msgid "public key of ultimately trusted key %s not found\n"
+#~ msgstr ""
+#~ "publik nyckel för förbehållslöst betrodda nyckeln %s hittades inte\n"
 
 #~ msgid "use canonical text mode"
 #~ msgstr "använd \"ursprunglig text\"-läget"

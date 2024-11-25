@@ -2469,6 +2469,11 @@ msgstr "Δεν βρέθηκε αντίστοιχη υπογραφή στη μυ�
 msgid "show preferences"
 msgstr "ορισμός απεικόνισης επιλογών"
 
+#, fuzzy
+#| msgid "change the ownertrust"
+msgid "show ownertrust"
+msgstr "αλλαγή της εμπιστοσύνης ιδιοκτήτη"
+
 #, fuzzy, c-format
 msgid "unknown TOFU policy '%s'\n"
 msgstr "άγνωστος προκαθορισμένος παραλήπτης `%s'\n"
@@ -2600,6 +2605,10 @@ msgstr ""
 #, fuzzy, c-format
 msgid "invalid argument for option \"%.50s\"\n"
 msgstr "μη έγκυρες επιλογές ειγαγωγής\n"
+
+#, fuzzy, c-format
+msgid "error parsing value for option '%s': %s\n"
+msgstr "σφάλμα στη δημιουργία της φράσης κλειδί: %s\n"
 
 #, c-format
 msgid "WARNING: program may create a core file!\n"
@@ -3875,6 +3884,10 @@ msgid "setting the primary user ID failed: %s\n"
 msgstr "απέτυχε ο έλεγχος της υπογραφής που δημιουργήθηκε: %s\n"
 
 #, fuzzy, c-format
+msgid "setting the ownertrust to '%s' failed: %s\n"
+msgstr "απέτυχε ο έλεγχος της υπογραφής που δημιουργήθηκε: %s\n"
+
+#, fuzzy, c-format
 msgid "\"%s\" is not a fingerprint\n"
 msgstr "σφάλμα: μη έγκυρο αποτύπωμα\n"
 
@@ -4746,6 +4759,11 @@ msgstr ""
 "Μπορείτε να χρησιμοποιήσετε την εντολή \"--edit-key\" για να δημιουργηθεί\n"
 "ένα δευτερεύον κλειδί για αυτό το λόγο.\n"
 
+#, fuzzy, c-format
+#| msgid "WARNING: This key has been revoked by its owner!\n"
+msgid "Note: The key has been created with one or more ADSK!\n"
+msgstr "ΠΡΟΕΙΔΟΠΟΙΗΣΗ: Αυτό το κλειδί έχει ανακληθεί από τον ιδιοκτήτη του!\n"
+
 #, c-format
 msgid ""
 "key has been created %lu second in future (time warp or clock problem)\n"
@@ -4831,6 +4849,9 @@ msgstr[1] ""
 
 msgid "Keyring"
 msgstr "Κλειδοθήκη"
+
+msgid "Revocable by: "
+msgstr ""
 
 msgid "Primary key fingerprint:"
 msgstr "Αποτύπωμα πρωτεύοντος κλειδιού:"
@@ -5809,6 +5830,11 @@ msgstr "ΣΗΜΕΙΩΣΗ: το μυστικό κλειδί %08lX έληξε στ
 
 #, fuzzy, c-format
 #| msgid "NOTE: key has been revoked"
+msgid "Note: ADSK key has been used for decryption"
+msgstr "ΣΗΜΕΙΩΣΗ: το κλειδί έχει ανακληθεί"
+
+#, fuzzy, c-format
+#| msgid "NOTE: key has been revoked"
 msgid "Note: key has been revoked"
 msgstr "ΣΗΜΕΙΩΣΗ: το κλειδί έχει ανακληθεί"
 
@@ -6652,14 +6678,19 @@ msgid_plural " (%d validity counts cleared)\n"
 msgstr[0] "%d κλειδιά επεξεργάστηκαν (%d μετρήσεις εγγυρότητας πέρασαν)\n"
 msgstr[1] "%d κλειδιά επεξεργάστηκαν (%d μετρήσεις εγγυρότητας πέρασαν)\n"
 
-#, c-format
-msgid "no ultimately trusted keys found\n"
+#, fuzzy, c-format
+#| msgid "no ultimately trusted keys found\n"
+msgid "Note: ultimately trusted key %s not found\n"
 msgstr "δε βρέθηκαν απόλυτα εμπιστεύσιμα κλειδιά\n"
 
 #, fuzzy, c-format
-msgid "public key of ultimately trusted key %s not found\n"
-msgstr ""
-"δε βρέθηκε το δημόσιο κλειδί του απόλυτα εμπιστεύσιμου κλειδιού %08lX\n"
+#| msgid "no ultimately trusted keys found\n"
+msgid "Note: ultimately trusted key %s expired\n"
+msgstr "δε βρέθηκαν απόλυτα εμπιστεύσιμα κλειδιά\n"
+
+#, c-format
+msgid "no ultimately trusted keys found\n"
+msgstr "δε βρέθηκαν απόλυτα εμπιστεύσιμα κλειδιά\n"
 
 #, c-format
 msgid ""
@@ -9325,6 +9356,11 @@ msgstr ""
 
 msgid "manage the command history"
 msgstr ""
+
+#, fuzzy, c-format
+#~ msgid "public key of ultimately trusted key %s not found\n"
+#~ msgstr ""
+#~ "δε βρέθηκε το δημόσιο κλειδί του απόλυτα εμπιστεύσιμου κλειδιού %08lX\n"
 
 #~ msgid "use canonical text mode"
 #~ msgstr "χρήση κανονικής κατάστασης κειμένου"

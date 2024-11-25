@@ -2355,6 +2355,11 @@ msgstr "mostra date di scadenza durante le inserzioni delle firme"
 msgid "show preferences"
 msgstr "elenca le preferenze (per esperti)"
 
+#, fuzzy
+#| msgid "change the ownertrust"
+msgid "show ownertrust"
+msgstr "cambia il valore di fiducia"
+
 #, c-format
 msgid "unknown TOFU policy '%s'\n"
 msgstr "criterio TOFU sconosciuto '%s'\n"
@@ -2482,6 +2487,11 @@ msgstr "elenco di individuazione automatica delle chiavi non valido\n"
 #, c-format
 msgid "invalid argument for option \"%.50s\"\n"
 msgstr "argomento non valido per l'opzione \"%.50s\"\n"
+
+#, fuzzy, c-format
+#| msgid "error parsing key specification '%s': %s\n"
+msgid "error parsing value for option '%s': %s\n"
+msgstr "errore durante l'analisi della specifica della chiave '%s': %s\n"
 
 #, c-format
 msgid "WARNING: program may create a core file!\n"
@@ -3696,6 +3706,11 @@ msgstr "revoca dell'ID utente non riuscita: %s\n"
 msgid "setting the primary user ID failed: %s\n"
 msgstr "impostazione dell'ID utente primario non riuscita: %s\n"
 
+#, fuzzy, c-format
+#| msgid "checking the trust list failed: %s\n"
+msgid "setting the ownertrust to '%s' failed: %s\n"
+msgstr "controllo dell'elenco di attendibilità non riuscito: %s\n"
+
 #, c-format
 msgid "\"%s\" is not a fingerprint\n"
 msgstr "\"%s\" non è un'impronta digitale\n"
@@ -4530,6 +4545,11 @@ msgstr ""
 "consiglia di utilizzare\n"
 "il comando \"--edit-key\" per generare una sottochiave a questo scopo.\n"
 
+#, fuzzy, c-format
+#| msgid "WARNING: This key has been revoked by its owner!\n"
+msgid "Note: The key has been created with one or more ADSK!\n"
+msgstr "ATTENZIONE: questa chiave è stata revocata dal suo proprietario!\n"
+
 #, c-format
 msgid ""
 "key has been created %lu second in future (time warp or clock problem)\n"
@@ -4612,6 +4632,9 @@ msgstr[1] "Avviso: chiavi %lu ignorate a causa delle dimensioni grandi\n"
 
 msgid "Keyring"
 msgstr "Portachiavi"
+
+msgid "Revocable by: "
+msgstr ""
 
 msgid "Primary key fingerprint:"
 msgstr "Impronta digitale della chiave primaria:"
@@ -5568,6 +5591,11 @@ msgstr ""
 msgid "Note: secret key %s expired at %s\n"
 msgstr "Nota: chiave segreta %s scaduta alle %s\n"
 
+#, fuzzy, c-format
+#| msgid "certificate should not have been used for encryption\n"
+msgid "Note: ADSK key has been used for decryption"
+msgstr "certificato non avrebbe dovuto essere utilizzato per la crittografia\n"
+
 #, c-format
 msgid "Note: key has been revoked"
 msgstr "Nota: la chiave è stata revocata"
@@ -6422,13 +6450,19 @@ msgid_plural " (%d validity counts cleared)\n"
 msgstr[0] " (%d conteggio di validità cancellato)\n"
 msgstr[1] " (%d conteggi di validità cancellati)\n"
 
-#, c-format
-msgid "no ultimately trusted keys found\n"
+#, fuzzy, c-format
+#| msgid "no ultimately trusted keys found\n"
+msgid "Note: ultimately trusted key %s not found\n"
+msgstr "non è stata trovata alcuna chiave definitivamente affidabile\n"
+
+#, fuzzy, c-format
+#| msgid "no ultimately trusted keys found\n"
+msgid "Note: ultimately trusted key %s expired\n"
 msgstr "non è stata trovata alcuna chiave definitivamente affidabile\n"
 
 #, c-format
-msgid "public key of ultimately trusted key %s not found\n"
-msgstr "chiave pubblica della chiave attendibile %s non trovata\n"
+msgid "no ultimately trusted keys found\n"
+msgstr "non è stata trovata alcuna chiave definitivamente affidabile\n"
 
 #, c-format
 msgid ""
@@ -9076,6 +9110,10 @@ msgstr "Comandi di gestione Yubikey"
 
 msgid "manage the command history"
 msgstr "gestire la cronologia dei comandi"
+
+#, c-format
+#~ msgid "public key of ultimately trusted key %s not found\n"
+#~ msgstr "chiave pubblica della chiave attendibile %s non trovata\n"
 
 #~ msgid "use canonical text mode"
 #~ msgstr "usa il modo testo canonico"

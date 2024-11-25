@@ -2280,6 +2280,11 @@ msgstr "列出签名时显示过期日期"
 msgid "show preferences"
 msgstr "列出偏好设置（专家模式）"
 
+#, fuzzy
+#| msgid "change the ownertrust"
+msgid "show ownertrust"
+msgstr "变更信任度"
+
 #, c-format
 msgid "unknown TOFU policy '%s'\n"
 msgstr "未知的 TOFU 政策‘%s’\n"
@@ -2406,6 +2411,11 @@ msgstr "无效的 auto-key-locate 列表\n"
 #, c-format
 msgid "invalid argument for option \"%.50s\"\n"
 msgstr "选项 “%.50s” 的参数无效\n"
+
+#, fuzzy, c-format
+#| msgid "error parsing key specification '%s': %s\n"
+msgid "error parsing value for option '%s': %s\n"
+msgstr "解析密钥指定‘%s’时出现错误：%s\n"
 
 #, c-format
 msgid "WARNING: program may create a core file!\n"
@@ -3566,6 +3576,11 @@ msgstr "吊销用户标识时出现错误：%s\n"
 msgid "setting the primary user ID failed: %s\n"
 msgstr "设置主要用户标识时出现错误：%s\n"
 
+#, fuzzy, c-format
+#| msgid "checking the trust list failed: %s\n"
+msgid "setting the ownertrust to '%s' failed: %s\n"
+msgstr "检查信任列表时失败：%s\n"
+
 #, c-format
 msgid "\"%s\" is not a fingerprint\n"
 msgstr "\"%s\" 不是一个指纹\n"
@@ -4372,6 +4387,11 @@ msgstr ""
 "请注意这个密钥不能用于加密。您可能想要使用“--edit-key”命令来\n"
 "生成一个用于此用途的子密钥。\n"
 
+#, fuzzy, c-format
+#| msgid "WARNING: This key has been revoked by its owner!\n"
+msgid "Note: The key has been created with one or more ADSK!\n"
+msgstr "警告：此密钥已经被它的所有者吊销了！\n"
+
 #, c-format
 msgid ""
 "key has been created %lu second in future (time warp or clock problem)\n"
@@ -4444,6 +4464,9 @@ msgstr[0] "警告：%lu 把密钥因尺寸大而被跳过\n"
 
 msgid "Keyring"
 msgstr "钥匙环"
+
+msgid "Revocable by: "
+msgstr ""
 
 msgid "Primary key fingerprint:"
 msgstr "主密钥指纹："
@@ -5346,6 +5369,11 @@ msgstr "注意：接收者的偏好设置中找不到密文算法 %s\n"
 msgid "Note: secret key %s expired at %s\n"
 msgstr "注意：私钥 %s 已于 %s 过期\n"
 
+#, fuzzy, c-format
+#| msgid "certificate should not have been used for encryption\n"
+msgid "Note: ADSK key has been used for decryption"
+msgstr "证书本不应被用于加密\n"
+
 #, c-format
 msgid "Note: key has been revoked"
 msgstr "注意：密钥已被吊销"
@@ -6115,13 +6143,19 @@ msgid " (%d validity count cleared)\n"
 msgid_plural " (%d validity counts cleared)\n"
 msgstr[0] " （%d 个有效计数已被清除）\n"
 
-#, c-format
-msgid "no ultimately trusted keys found\n"
+#, fuzzy, c-format
+#| msgid "no ultimately trusted keys found\n"
+msgid "Note: ultimately trusted key %s not found\n"
+msgstr "未找到任何绝对信任的密钥\n"
+
+#, fuzzy, c-format
+#| msgid "no ultimately trusted keys found\n"
+msgid "Note: ultimately trusted key %s expired\n"
 msgstr "未找到任何绝对信任的密钥\n"
 
 #, c-format
-msgid "public key of ultimately trusted key %s not found\n"
-msgstr "绝对信任密钥 %s 的公钥未找到\n"
+msgid "no ultimately trusted keys found\n"
+msgstr "未找到任何绝对信任的密钥\n"
 
 #, c-format
 msgid ""
@@ -8673,6 +8707,10 @@ msgstr "Yubikey 管理命令"
 
 msgid "manage the command history"
 msgstr "管理命令历史记录"
+
+#, c-format
+#~ msgid "public key of ultimately trusted key %s not found\n"
+#~ msgstr "绝对信任密钥 %s 的公钥未找到\n"
 
 #~ msgid "use canonical text mode"
 #~ msgstr "使用规范的文本模式"

@@ -2457,6 +2457,11 @@ msgstr "Nincs megfelelő aláírás a titkoskulcs-karikán.\n"
 msgid "show preferences"
 msgstr "preferencialista beállítása"
 
+#, fuzzy
+#| msgid "change the ownertrust"
+msgid "show ownertrust"
+msgstr "kulcstulajdonos megbízhatóságának beállítása"
+
 #, fuzzy, c-format
 msgid "unknown TOFU policy '%s'\n"
 msgstr "Ismeretlen alapértelmezett címzett: \"%s\"\n"
@@ -2588,6 +2593,10 @@ msgstr ""
 #, fuzzy, c-format
 msgid "invalid argument for option \"%.50s\"\n"
 msgstr "Érvénytelen import opciók!\n"
+
+#, fuzzy, c-format
+msgid "error parsing value for option '%s': %s\n"
+msgstr "Hiba a jelszó létrehozásakor: %s.\n"
 
 #, c-format
 msgid "WARNING: program may create a core file!\n"
@@ -3848,6 +3857,10 @@ msgid "setting the primary user ID failed: %s\n"
 msgstr "A létrehozott aláírás ellenőrzése sikertelen: %s.\n"
 
 #, fuzzy, c-format
+msgid "setting the ownertrust to '%s' failed: %s\n"
+msgstr "A létrehozott aláírás ellenőrzése sikertelen: %s.\n"
+
+#, fuzzy, c-format
 msgid "\"%s\" is not a fingerprint\n"
 msgstr "Hiba: Érvénytelen ujjlenyomat.\n"
 
@@ -4709,6 +4722,11 @@ msgstr ""
 "kíván ilyen célra létrehozni, azt az \"--edit-key\" parancs segítségével\n"
 "teheti meg.\n"
 
+#, fuzzy, c-format
+#| msgid "WARNING: This key has been revoked by its owner!\n"
+msgid "Note: The key has been created with one or more ADSK!\n"
+msgstr "FIGYELEM: Ezt a kulcsot a tulajdonosa visszavonta!\n"
+
 #, c-format
 msgid ""
 "key has been created %lu second in future (time warp or clock problem)\n"
@@ -4791,6 +4809,9 @@ msgstr[1] ""
 
 msgid "Keyring"
 msgstr "Kulcskarika"
+
+msgid "Revocable by: "
+msgstr ""
 
 msgid "Primary key fingerprint:"
 msgstr "Elsődlegeskulcs-ujjlenyomat:"
@@ -5766,6 +5787,11 @@ msgstr "MEGJEGYZÉS: %08lX titkos kulcs %s-kor lejárt.\n"
 
 #, fuzzy, c-format
 #| msgid "NOTE: key has been revoked"
+msgid "Note: ADSK key has been used for decryption"
+msgstr "MEGJEGYZÉS: A kulcsot visszavonták."
+
+#, fuzzy, c-format
+#| msgid "NOTE: key has been revoked"
 msgid "Note: key has been revoked"
 msgstr "MEGJEGYZÉS: A kulcsot visszavonták."
 
@@ -6599,13 +6625,19 @@ msgid_plural " (%d validity counts cleared)\n"
 msgstr[0] "%d kulcsot feldolgoztam (%d érvényességszámlálót töröltem)\n"
 msgstr[1] "%d kulcsot feldolgoztam (%d érvényességszámlálót töröltem)\n"
 
-#, c-format
-msgid "no ultimately trusted keys found\n"
+#, fuzzy, c-format
+#| msgid "no ultimately trusted keys found\n"
+msgid "Note: ultimately trusted key %s not found\n"
 msgstr "Nem találtam alapvetően megbízható kulcsot.\n"
 
 #, fuzzy, c-format
-msgid "public key of ultimately trusted key %s not found\n"
-msgstr "Nem találom az alapvetően megbízható %08lX kulcs nyilvános kulcsát!\n"
+#| msgid "no ultimately trusted keys found\n"
+msgid "Note: ultimately trusted key %s expired\n"
+msgstr "Nem találtam alapvetően megbízható kulcsot.\n"
+
+#, c-format
+msgid "no ultimately trusted keys found\n"
+msgstr "Nem találtam alapvetően megbízható kulcsot.\n"
 
 #, c-format
 msgid ""
@@ -9267,6 +9299,11 @@ msgstr ""
 
 msgid "manage the command history"
 msgstr ""
+
+#, fuzzy, c-format
+#~ msgid "public key of ultimately trusted key %s not found\n"
+#~ msgstr ""
+#~ "Nem találom az alapvetően megbízható %08lX kulcs nyilvános kulcsát!\n"
 
 #~ msgid "use canonical text mode"
 #~ msgstr "kanonikus szöveges mód használata"

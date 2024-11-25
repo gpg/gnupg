@@ -2315,6 +2315,11 @@ msgstr "pokazywanie dat wygaśnięcia przy wypisywaniu podpisów"
 msgid "show preferences"
 msgstr "pokazanie ustawień"
 
+#, fuzzy
+#| msgid "change the ownertrust"
+msgid "show ownertrust"
+msgstr "zmiana zaufania właściciela"
+
 #, c-format
 msgid "unknown TOFU policy '%s'\n"
 msgstr "nieznana polityka TOFU „%s”\n"
@@ -2444,6 +2449,11 @@ msgstr "Niepoprawna lista auto-key-locate\n"
 #, c-format
 msgid "invalid argument for option \"%.50s\"\n"
 msgstr "błędny argument dla opcji „%.50s”\n"
+
+#, fuzzy, c-format
+#| msgid "error parsing key specification '%s': %s\n"
+msgid "error parsing value for option '%s': %s\n"
+msgstr "błąd analizy specyfikacji klucza „%s”: %s\n"
 
 #, c-format
 msgid "WARNING: program may create a core file!\n"
@@ -3660,6 +3670,11 @@ msgstr "unieważnienie identyfikatora użytkownika nie powiodło się: %s\n"
 msgid "setting the primary user ID failed: %s\n"
 msgstr "ustawienie głównego identyfikatora użytkownika nie powiodło się: %s\n"
 
+#, fuzzy, c-format
+#| msgid "checking the trust list failed: %s\n"
+msgid "setting the ownertrust to '%s' failed: %s\n"
+msgstr "sprawdzenie listy zaufania nie powiodło się: %s\n"
+
 #, c-format
 msgid "\"%s\" is not a fingerprint\n"
 msgstr "„%s” nie jest odciskiem\n"
@@ -4494,6 +4509,11 @@ msgstr ""
 "Ten klucz nie może być wykorzystany do szyfrowania. Komendą \"--edit-key\"\n"
 "można dodać do niego podklucz szyfrujący.\n"
 
+#, fuzzy, c-format
+#| msgid "WARNING: This key has been revoked by its owner!\n"
+msgid "Note: The key has been created with one or more ADSK!\n"
+msgstr "OSTRZEŻENIE: Ten klucz został unieważniony przez właściciela!\n"
+
 #, c-format
 msgid ""
 "key has been created %lu second in future (time warp or clock problem)\n"
@@ -4577,6 +4597,9 @@ msgstr[2] "Ostrzeżenie: %lu kluczy pominięto z powodu dużego rozmiaru\n"
 
 msgid "Keyring"
 msgstr "Zbiór kluczy"
+
+msgid "Revocable by: "
+msgstr ""
 
 msgid "Primary key fingerprint:"
 msgstr "Odcisk klucza głównego:"
@@ -5520,6 +5543,11 @@ msgstr "OSTRZEŻENIE: brak algorytmu szyfrującego %s w ustawieniach odbiorcy\n"
 msgid "Note: secret key %s expired at %s\n"
 msgstr "Uwaga: ważność klucza tajnego %s wygasła %s\n"
 
+#, fuzzy, c-format
+#| msgid "certificate should not have been used for encryption\n"
+msgid "Note: ADSK key has been used for decryption"
+msgstr "certyfikat nie powinien być używany do szyfrowania\n"
+
 #, c-format
 msgid "Note: key has been revoked"
 msgstr "Uwaga: klucz został unieważniony"
@@ -6405,13 +6433,19 @@ msgstr[0] " (skasowano %d licznik zaufania)\n"
 msgstr[1] " (skasowano %d liczniki zaufania)\n"
 msgstr[2] " (skasowano %d liczników zaufania)\n"
 
-#, c-format
-msgid "no ultimately trusted keys found\n"
+#, fuzzy, c-format
+#| msgid "no ultimately trusted keys found\n"
+msgid "Note: ultimately trusted key %s not found\n"
+msgstr "brak absolutnie zaufanych kluczy\n"
+
+#, fuzzy, c-format
+#| msgid "no ultimately trusted keys found\n"
+msgid "Note: ultimately trusted key %s expired\n"
 msgstr "brak absolutnie zaufanych kluczy\n"
 
 #, c-format
-msgid "public key of ultimately trusted key %s not found\n"
-msgstr "klucz publiczny absolutnie zaufanego klucza %s nie odnaleziony\n"
+msgid "no ultimately trusted keys found\n"
+msgstr "brak absolutnie zaufanych kluczy\n"
 
 #, c-format
 msgid ""
@@ -9018,6 +9052,10 @@ msgstr "polecenia zarządzające kluczami Yubikey"
 
 msgid "manage the command history"
 msgstr "zarządzanie historią poleceń"
+
+#, c-format
+#~ msgid "public key of ultimately trusted key %s not found\n"
+#~ msgstr "klucz publiczny absolutnie zaufanego klucza %s nie odnaleziony\n"
 
 #~ msgid "use canonical text mode"
 #~ msgstr "kanoniczny format tekstowy"

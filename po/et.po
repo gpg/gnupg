@@ -2457,6 +2457,11 @@ msgstr "Vastavat allkirja salajaste võtmete hoidlas pole\n"
 msgid "show preferences"
 msgstr "sea eelistuste nimekiri"
 
+#, fuzzy
+#| msgid "change the ownertrust"
+msgid "show ownertrust"
+msgstr "muuda omaniku usaldust"
+
 #, fuzzy, c-format
 msgid "unknown TOFU policy '%s'\n"
 msgstr "tundmatu vaikimisi saaja `%s'\n"
@@ -2588,6 +2593,10 @@ msgstr ""
 #, fuzzy, c-format
 msgid "invalid argument for option \"%.50s\"\n"
 msgstr "vigased impordi võtmed\n"
+
+#, fuzzy, c-format
+msgid "error parsing value for option '%s': %s\n"
+msgstr "viga parooli loomisel: %s\n"
 
 #, c-format
 msgid "WARNING: program may create a core file!\n"
@@ -3847,6 +3856,10 @@ msgid "setting the primary user ID failed: %s\n"
 msgstr "Loodud allkirja ei õnnestu kontrollida: %s\n"
 
 #, fuzzy, c-format
+msgid "setting the ownertrust to '%s' failed: %s\n"
+msgstr "Loodud allkirja ei õnnestu kontrollida: %s\n"
+
+#, fuzzy, c-format
 msgid "\"%s\" is not a fingerprint\n"
 msgstr "viga: vigane sõrmejälg\n"
 
@@ -4704,6 +4717,11 @@ msgstr ""
 "Krüptimiseks tuleb genereerida teine võti, seda saate teha\n"
 "kasutades võtit \"--edit-key\".\n"
 
+#, fuzzy, c-format
+#| msgid "WARNING: This key has been revoked by its owner!\n"
+msgid "Note: The key has been created with one or more ADSK!\n"
+msgstr "HOIATUS: See võti on omaniku poolt tühistatud!\n"
+
 #, c-format
 msgid ""
 "key has been created %lu second in future (time warp or clock problem)\n"
@@ -4783,6 +4801,9 @@ msgstr[1] ""
 
 msgid "Keyring"
 msgstr "Võtmehoidla"
+
+msgid "Revocable by: "
+msgstr ""
 
 msgid "Primary key fingerprint:"
 msgstr "Primaarse võtme sõrmejälg:"
@@ -5746,6 +5767,11 @@ msgstr "MÄRKUS: salajane võti %08lX aegus %s\n"
 
 #, fuzzy, c-format
 #| msgid "NOTE: key has been revoked"
+msgid "Note: ADSK key has been used for decryption"
+msgstr "MÄRKUS: võti on tühistatud"
+
+#, fuzzy, c-format
+#| msgid "NOTE: key has been revoked"
 msgid "Note: key has been revoked"
 msgstr "MÄRKUS: võti on tühistatud"
 
@@ -6573,13 +6599,19 @@ msgid_plural " (%d validity counts cleared)\n"
 msgstr[0] "%d võtit töödeldud (%d kehtivust puhastatud)\n"
 msgstr[1] "%d võtit töödeldud (%d kehtivust puhastatud)\n"
 
-#, c-format
-msgid "no ultimately trusted keys found\n"
+#, fuzzy, c-format
+#| msgid "no ultimately trusted keys found\n"
+msgid "Note: ultimately trusted key %s not found\n"
 msgstr "absoluutselt usaldatavaid võtmeid pole\n"
 
 #, fuzzy, c-format
-msgid "public key of ultimately trusted key %s not found\n"
-msgstr "puudub absoluutselt usaldatava võtme %08lX avalik võti\n"
+#| msgid "no ultimately trusted keys found\n"
+msgid "Note: ultimately trusted key %s expired\n"
+msgstr "absoluutselt usaldatavaid võtmeid pole\n"
+
+#, c-format
+msgid "no ultimately trusted keys found\n"
+msgstr "absoluutselt usaldatavaid võtmeid pole\n"
 
 #, c-format
 msgid ""
@@ -9240,6 +9272,10 @@ msgstr ""
 
 msgid "manage the command history"
 msgstr ""
+
+#, fuzzy, c-format
+#~ msgid "public key of ultimately trusted key %s not found\n"
+#~ msgstr "puudub absoluutselt usaldatava võtme %08lX avalik võti\n"
 
 #~ msgid "use canonical text mode"
 #~ msgstr "kasuta kanoonilist tekstimoodi"

@@ -6181,13 +6181,19 @@ msgid " (%d validity count cleared)\n"
 msgid_plural " (%d validity counts cleared)\n"
 msgstr[0] " (うち%d本の有効性数をクリア)\n"
 
-#, c-format
-msgid "no ultimately trusted keys found\n"
+#, fuzzy, c-format
+#| msgid "no ultimately trusted keys found\n"
+msgid "Note: ultimately trusted key %s not found\n"
+msgstr "究極的に信用する鍵が見つかりません\n"
+
+#, fuzzy, c-format
+#| msgid "no ultimately trusted keys found\n"
+msgid "Note: ultimately trusted key %s expired\n"
 msgstr "究極的に信用する鍵が見つかりません\n"
 
 #, c-format
-msgid "public key of ultimately trusted key %s not found\n"
-msgstr "究極的に信用する鍵%sの公開鍵が見つかりません\n"
+msgid "no ultimately trusted keys found\n"
+msgstr "究極的に信用する鍵が見つかりません\n"
 
 #, c-format
 msgid ""
@@ -8756,6 +8762,10 @@ msgstr "Yubikey管理コマンド"
 
 msgid "manage the command history"
 msgstr "コマンド履歴を管理する"
+
+#, c-format
+#~ msgid "public key of ultimately trusted key %s not found\n"
+#~ msgstr "究極的に信用する鍵%sの公開鍵が見つかりません\n"
 
 #~ msgid "use canonical text mode"
 #~ msgstr "正準テキスト・モードを使用"

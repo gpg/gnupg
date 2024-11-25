@@ -2474,6 +2474,11 @@ msgstr "Salaisesta avainrenkaasta ei löydy vastaavaa allekirjoitusta\n"
 msgid "show preferences"
 msgstr "näytä valinnat"
 
+#, fuzzy
+#| msgid "change the ownertrust"
+msgid "show ownertrust"
+msgstr "muuta luottamusastetta"
+
 #, fuzzy, c-format
 msgid "unknown TOFU policy '%s'\n"
 msgstr "tuntematon oletusvastaanottaja \"%s\"\n"
@@ -2605,6 +2610,10 @@ msgstr ""
 #, fuzzy, c-format
 msgid "invalid argument for option \"%.50s\"\n"
 msgstr "virheelliset tuontivalitsimet\n"
+
+#, fuzzy, c-format
+msgid "error parsing value for option '%s': %s\n"
+msgstr "virhe luotaessa salasanaa: %s\n"
 
 #, c-format
 msgid "WARNING: program may create a core file!\n"
@@ -3871,6 +3880,10 @@ msgid "setting the primary user ID failed: %s\n"
 msgstr "luodun allekirjoituksen tarkistus epäonnistui: %s\n"
 
 #, fuzzy, c-format
+msgid "setting the ownertrust to '%s' failed: %s\n"
+msgstr "luodun allekirjoituksen tarkistus epäonnistui: %s\n"
+
+#, fuzzy, c-format
 msgid "\"%s\" is not a fingerprint\n"
 msgstr "virhe: sormenjälki on väärä\n"
 
@@ -4734,6 +4747,11 @@ msgstr ""
 "Huomaa, että tätä avainta ei voida käyttää salaamiseen.  Käytä komentoa\n"
 "\"--edit-key\" luodaksesi toissijaisen avaimen salaustarkoitukseen.\n"
 
+#, fuzzy, c-format
+#| msgid "WARNING: This key has been revoked by its owner!\n"
+msgid "Note: The key has been created with one or more ADSK!\n"
+msgstr "VAROITUS: Tämän avaimen haltija on mitätöinyt avaimen!\n"
+
 #, c-format
 msgid ""
 "key has been created %lu second in future (time warp or clock problem)\n"
@@ -4817,6 +4835,9 @@ msgstr[1] ""
 
 msgid "Keyring"
 msgstr "Avainrengas"
+
+msgid "Revocable by: "
+msgstr ""
 
 msgid "Primary key fingerprint:"
 msgstr "Ensisijaisen avaimen sormenjälki:"
@@ -5799,6 +5820,11 @@ msgstr "HUOM: salainen avain %08lX vanheni %s\n"
 
 #, fuzzy, c-format
 #| msgid "NOTE: key has been revoked"
+msgid "Note: ADSK key has been used for decryption"
+msgstr "HUOM: avain on mitätöity!"
+
+#, fuzzy, c-format
+#| msgid "NOTE: key has been revoked"
 msgid "Note: key has been revoked"
 msgstr "HUOM: avain on mitätöity!"
 
@@ -6636,13 +6662,19 @@ msgid_plural " (%d validity counts cleared)\n"
 msgstr[0] "%d avainta käsitelty (%d kelpoisuuslaskuria tyhjätty)\n"
 msgstr[1] "%d avainta käsitelty (%d kelpoisuuslaskuria tyhjätty)\n"
 
-#, c-format
-msgid "no ultimately trusted keys found\n"
+#, fuzzy, c-format
+#| msgid "no ultimately trusted keys found\n"
+msgid "Note: ultimately trusted key %s not found\n"
 msgstr "ehdottomasti luotettavia avaimia ei löytynyt\n"
 
 #, fuzzy, c-format
-msgid "public key of ultimately trusted key %s not found\n"
-msgstr "ehdottomasti luotettu julkinen avain %08lX ei löytynyt\n"
+#| msgid "no ultimately trusted keys found\n"
+msgid "Note: ultimately trusted key %s expired\n"
+msgstr "ehdottomasti luotettavia avaimia ei löytynyt\n"
+
+#, c-format
+msgid "no ultimately trusted keys found\n"
+msgstr "ehdottomasti luotettavia avaimia ei löytynyt\n"
 
 #, c-format
 msgid ""
@@ -9308,6 +9340,10 @@ msgstr ""
 
 msgid "manage the command history"
 msgstr ""
+
+#, fuzzy, c-format
+#~ msgid "public key of ultimately trusted key %s not found\n"
+#~ msgstr "ehdottomasti luotettu julkinen avain %08lX ei löytynyt\n"
 
 #~ msgid "use canonical text mode"
 #~ msgstr "käytä tekstimuotoa"

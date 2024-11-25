@@ -2347,6 +2347,11 @@ msgstr "ukazovat data expirace během výpisu podpisů"
 msgid "show preferences"
 msgstr "vypsat předvolby"
 
+#, fuzzy
+#| msgid "change the ownertrust"
+msgid "show ownertrust"
+msgstr "změnit důvěryhodnost vlastníka klíče"
+
 #, c-format
 msgid "unknown TOFU policy '%s'\n"
 msgstr "neznámá TOFU politika „%s“\n"
@@ -2473,6 +2478,11 @@ msgstr "neplatný seznam auto-key-locate\n"
 #, c-format
 msgid "invalid argument for option \"%.50s\"\n"
 msgstr "neplatný argument u volby „%.50s“\n"
+
+#, fuzzy, c-format
+#| msgid "error parsing key specification '%s': %s\n"
+msgid "error parsing value for option '%s': %s\n"
+msgstr "chyba při rozboru názvu klíče „%s“: %s\n"
 
 #, c-format
 msgid "WARNING: program may create a core file!\n"
@@ -3667,6 +3677,11 @@ msgstr "odvolání ID uživatele se nepodařilo: %s\n"
 msgid "setting the primary user ID failed: %s\n"
 msgstr "nastavení primárního ID uživatele se nepodařilo: %s\n"
 
+#, fuzzy, c-format
+#| msgid "checking the trust list failed: %s\n"
+msgid "setting the ownertrust to '%s' failed: %s\n"
+msgstr "kontrola seznamu důvěry se nepodařila: %s\n"
+
 #, c-format
 msgid "\"%s\" is not a fingerprint\n"
 msgstr "„%s“ není otisk\n"
@@ -4485,6 +4500,11 @@ msgstr ""
 "Tento klíč nemůže být použitý pro šifrování. K vytvoření\n"
 "sekundárního klíče pro tento účel můžete použít příkaz „--edit-key“.\n"
 
+#, fuzzy, c-format
+#| msgid "WARNING: This key has been revoked by its owner!\n"
+msgid "Note: The key has been created with one or more ADSK!\n"
+msgstr "POZOR: Tento klíč byl revokován svým vlastníkem!\n"
+
 #, c-format
 msgid ""
 "key has been created %lu second in future (time warp or clock problem)\n"
@@ -4567,6 +4587,9 @@ msgstr[2] "Pozor: %lu klíčů přeskočeno kvůli jejich přílišné velikosti
 
 msgid "Keyring"
 msgstr "Soubor klíčů (keyring)"
+
+msgid "Revocable by: "
+msgstr ""
 
 msgid "Primary key fingerprint:"
 msgstr "Otisk primárního klíče:"
@@ -5500,6 +5523,11 @@ msgstr "POZOR: v předvolbách příjemce nenalezen šifrovací algoritmus %s\n"
 msgid "Note: secret key %s expired at %s\n"
 msgstr "Poznámka: platnost tajného klíče %s skončila v %s\n"
 
+#, fuzzy, c-format
+#| msgid "certificate should not have been used for encryption\n"
+msgid "Note: ADSK key has been used for decryption"
+msgstr "certifikát neměl použit pro šifrování\n"
+
 #, c-format
 msgid "Note: key has been revoked"
 msgstr "Poznámka: klíč byl odvolán"
@@ -6369,13 +6397,19 @@ msgstr[0] " (vymazáno %d počítadlo platnosti)\n"
 msgstr[1] " (vymazána %d počítadla platnosti)\n"
 msgstr[2] " (vymazáno %d počítadel platnosti)\n"
 
-#, c-format
-msgid "no ultimately trusted keys found\n"
+#, fuzzy, c-format
+#| msgid "no ultimately trusted keys found\n"
+msgid "Note: ultimately trusted key %s not found\n"
+msgstr "žádný absolutně důvěryhodný klíč nebyl nalezen\n"
+
+#, fuzzy, c-format
+#| msgid "no ultimately trusted keys found\n"
+msgid "Note: ultimately trusted key %s expired\n"
 msgstr "žádný absolutně důvěryhodný klíč nebyl nalezen\n"
 
 #, c-format
-msgid "public key of ultimately trusted key %s not found\n"
-msgstr "veřejný klíč k absolutně důvěryhodnému klíči %s nebyl nalezen\n"
+msgid "no ultimately trusted keys found\n"
+msgstr "žádný absolutně důvěryhodný klíč nebyl nalezen\n"
 
 #, c-format
 msgid ""
@@ -8981,6 +9015,10 @@ msgstr "Příkazy pro správu Yubikey"
 
 msgid "manage the command history"
 msgstr "spravuje historii příkazů"
+
+#, c-format
+#~ msgid "public key of ultimately trusted key %s not found\n"
+#~ msgstr "veřejný klíč k absolutně důvěryhodnému klíči %s nebyl nalezen\n"
 
 #~ msgid "use canonical text mode"
 #~ msgstr "použít kanonický textový režim"

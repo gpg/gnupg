@@ -2311,6 +2311,11 @@ msgstr "imza listelemesi sırasında zaman aşımı tarihleri göster"
 msgid "show preferences"
 msgstr "tercihleri göster"
 
+#, fuzzy
+#| msgid "change the ownertrust"
+msgid "show ownertrust"
+msgstr "iye güvencesini değiştir"
+
 #, c-format
 msgid "unknown TOFU policy '%s'\n"
 msgstr "bilinmeyen TOFU poliçesi '%s'\n"
@@ -2440,6 +2445,11 @@ msgstr "geçersiz auto-key-locate listesi\n"
 #, c-format
 msgid "invalid argument for option \"%.50s\"\n"
 msgstr "\"%.50s\" seçeneği için geçersiz argüman\n"
+
+#, fuzzy, c-format
+#| msgid "error parsing key specification '%s': %s\n"
+msgid "error parsing value for option '%s': %s\n"
+msgstr "'%s' anahtar belirtimi ayrıştırılırken hata: %s\n"
 
 #, c-format
 msgid "WARNING: program may create a core file!\n"
@@ -3649,6 +3659,11 @@ msgstr "kullanıcı kimliğinin yürürlükten kaldırılması başarısız: %s\
 msgid "setting the primary user ID failed: %s\n"
 msgstr "asıl kullanıcı kimliğini ayarlama başarısız: %s\n"
 
+#, fuzzy, c-format
+#| msgid "checking the trust list failed: %s\n"
+msgid "setting the ownertrust to '%s' failed: %s\n"
+msgstr "güvence listesinin sınanması başarısız: %s\n"
+
 #, c-format
 msgid "\"%s\" is not a fingerprint\n"
 msgstr "\"%s\", bir parmak izi değil\n"
@@ -4483,6 +4498,11 @@ msgstr ""
 "Bu anahtar şifreleme için kullanılamaz. Şifreleme için yardımcı anahtarı\n"
 "\"--edit-key\" seçeneğini kullanarak üretebilirsiniz.\n"
 
+#, fuzzy, c-format
+#| msgid "WARNING: This key has been revoked by its owner!\n"
+msgid "Note: The key has been created with one or more ADSK!\n"
+msgstr "UYARI: Bu anahtar iyesi tarafından yürürlükten kaldırılmış!\n"
+
 #, c-format
 msgid ""
 "key has been created %lu second in future (time warp or clock problem)\n"
@@ -4561,6 +4581,9 @@ msgstr[1] "Uyarı: %lu imza, büyük boyut nedeniyle atlandı\n"
 
 msgid "Keyring"
 msgstr "Anahtar zinciri"
+
+msgid "Revocable by: "
+msgstr ""
 
 msgid "Primary key fingerprint:"
 msgstr "    Asıl anahtar parmak izi:"
@@ -5494,6 +5517,11 @@ msgstr "UYARI: %s şifre algoritması alıcı tercihlerinde bulunamadı\n"
 msgid "Note: secret key %s expired at %s\n"
 msgstr "Not: %s gizli anahtarının %s tarihinde kullanım süresi doldu\n"
 
+#, fuzzy, c-format
+#| msgid "certificate should not have been used for encryption\n"
+msgid "Note: ADSK key has been used for decryption"
+msgstr "sertifika, şifreleme için kullanılmamalıydı\n"
+
 #, c-format
 msgid "Note: key has been revoked"
 msgstr "Not: Anahtar yürürlükten kaldırılmış"
@@ -6335,13 +6363,19 @@ msgid_plural " (%d validity counts cleared)\n"
 msgstr[0] " (%d doğrulama sayımı temizlendi)\n"
 msgstr[1] " (%d doğrulama sayımı temizlendi)\n"
 
-#, c-format
-msgid "no ultimately trusted keys found\n"
+#, fuzzy, c-format
+#| msgid "no ultimately trusted keys found\n"
+msgid "Note: ultimately trusted key %s not found\n"
+msgstr "son derece güvenli bir anahtar bulunamadı\n"
+
+#, fuzzy, c-format
+#| msgid "no ultimately trusted keys found\n"
+msgid "Note: ultimately trusted key %s expired\n"
 msgstr "son derece güvenli bir anahtar bulunamadı\n"
 
 #, c-format
-msgid "public key of ultimately trusted key %s not found\n"
-msgstr "son derece güvenli %s için genel anahtar bulunamadı\n"
+msgid "no ultimately trusted keys found\n"
+msgstr "son derece güvenli bir anahtar bulunamadı\n"
 
 #, c-format
 msgid ""
@@ -8917,6 +8951,10 @@ msgstr "Yubikey yönetim konsolu"
 
 msgid "manage the command history"
 msgstr "komut geçmişini yönet"
+
+#, c-format
+#~ msgid "public key of ultimately trusted key %s not found\n"
+#~ msgstr "son derece güvenli %s için genel anahtar bulunamadı\n"
 
 #~ msgid "use canonical text mode"
 #~ msgstr "kurallı metin kipini kullan"

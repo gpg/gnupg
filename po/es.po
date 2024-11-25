@@ -2426,6 +2426,11 @@ msgstr "mostrar fechas de caducidad al listar firmas"
 msgid "show preferences"
 msgstr "verpref"
 
+#, fuzzy
+#| msgid "change the ownertrust"
+msgid "show ownertrust"
+msgstr "cambia valores de confianza"
+
 #, c-format
 msgid "unknown TOFU policy '%s'\n"
 msgstr "política TOFU desconocida '%s'\n"
@@ -2552,6 +2557,11 @@ msgstr "lista de auto-localización de claves inválida\n"
 #, c-format
 msgid "invalid argument for option \"%.50s\"\n"
 msgstr "parámetro incorrecto para la opción \"%.50s\"\n"
+
+#, fuzzy, c-format
+#| msgid "error parsing key specification '%s': %s\n"
+msgid "error parsing value for option '%s': %s\n"
+msgstr "error al leer la especificación de clave '%s': %s\n"
 
 #, c-format
 msgid "WARNING: program may create a core file!\n"
@@ -3755,6 +3765,11 @@ msgstr "la revocación del identificador de usuario ha fallado: %s\n"
 msgid "setting the primary user ID failed: %s\n"
 msgstr "la configuración del ID de usuario primario ha fallado: %s\n"
 
+#, fuzzy, c-format
+#| msgid "checking the trust list failed: %s\n"
+msgid "setting the ownertrust to '%s' failed: %s\n"
+msgstr "la comprobación de la lista de confianza falló: %s\n"
+
 #, c-format
 msgid "\"%s\" is not a fingerprint\n"
 msgstr "\"%s\" no es una huella digital\n"
@@ -4598,6 +4613,11 @@ msgstr ""
 "Tenga en cuenta que esta clave no puede ser usada para cifrar. Puede usar\n"
 "la orden \"--edit-key\" para crear una subclave con este propósito.\n"
 
+#, fuzzy, c-format
+#| msgid "WARNING: This key has been revoked by its owner!\n"
+msgid "Note: The key has been created with one or more ADSK!\n"
+msgstr "ATENCIÓN: ¡Esta clave ha sido revocada por su propietario!\n"
+
 #, c-format
 msgid ""
 "key has been created %lu second in future (time warp or clock problem)\n"
@@ -4678,6 +4698,9 @@ msgstr[1] "Advertencia: claves %lu no usadas por su gran tamaño\n"
 
 msgid "Keyring"
 msgstr "Anillo de claves"
+
+msgid "Revocable by: "
+msgstr ""
 
 msgid "Primary key fingerprint:"
 msgstr "Huellas dactilares de la clave primaria:"
@@ -5639,6 +5662,11 @@ msgstr "NOTA: el cifrado %s no aparece en las preferencias del receptor\n"
 msgid "Note: secret key %s expired at %s\n"
 msgstr "NOTA: clave secreta %s caducó el %s\n"
 
+#, fuzzy, c-format
+#| msgid "certificate should not have been used for encryption\n"
+msgid "Note: ADSK key has been used for decryption"
+msgstr "el certificado no debería haberse usado para cifrar\n"
+
 #, c-format
 msgid "Note: key has been revoked"
 msgstr "NOTA: la clave ha sido revocada"
@@ -6495,13 +6523,19 @@ msgid_plural " (%d validity counts cleared)\n"
 msgstr[0] " (%d validación de cuenta borrada)\n"
 msgstr[1] " (%d validaciones de cuenta borradas)\n"
 
-#, c-format
-msgid "no ultimately trusted keys found\n"
+#, fuzzy, c-format
+#| msgid "no ultimately trusted keys found\n"
+msgid "Note: ultimately trusted key %s not found\n"
+msgstr "no se encuentran claves absolutamente fiables\n"
+
+#, fuzzy, c-format
+#| msgid "no ultimately trusted keys found\n"
+msgid "Note: ultimately trusted key %s expired\n"
 msgstr "no se encuentran claves absolutamente fiables\n"
 
 #, c-format
-msgid "public key of ultimately trusted key %s not found\n"
-msgstr "clave pública de la clave absolutamente fiable %s no encontrada\n"
+msgid "no ultimately trusted keys found\n"
+msgstr "no se encuentran claves absolutamente fiables\n"
 
 #, c-format
 msgid ""
@@ -9164,6 +9198,10 @@ msgstr ""
 
 msgid "manage the command history"
 msgstr ""
+
+#, c-format
+#~ msgid "public key of ultimately trusted key %s not found\n"
+#~ msgstr "clave pública de la clave absolutamente fiable %s no encontrada\n"
 
 #~ msgid "use canonical text mode"
 #~ msgstr "usa modo de texto canónico"

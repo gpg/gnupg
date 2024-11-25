@@ -2473,6 +2473,11 @@ msgstr "V súbore tajných kľúčov chýba zodpovedajúci podpis\n"
 msgid "show preferences"
 msgstr "nastaviť zoznam predvolieb"
 
+#, fuzzy
+#| msgid "change the ownertrust"
+msgid "show ownertrust"
+msgstr "zmeniť dôveryhodnosť vlastníka kľúča"
+
 #, fuzzy, c-format
 msgid "unknown TOFU policy '%s'\n"
 msgstr "neznámy implicitný adresát `%s'\n"
@@ -2604,6 +2609,10 @@ msgstr ""
 #, fuzzy, c-format
 msgid "invalid argument for option \"%.50s\"\n"
 msgstr "neplatný parameter pre import\n"
+
+#, fuzzy, c-format
+msgid "error parsing value for option '%s': %s\n"
+msgstr "chyba pri vytváraní hesla: %s\n"
 
 #, c-format
 msgid "WARNING: program may create a core file!\n"
@@ -3874,6 +3883,10 @@ msgid "setting the primary user ID failed: %s\n"
 msgstr "kontrola vytvoreného podpisu sa nepodarila: %s\n"
 
 #, fuzzy, c-format
+msgid "setting the ownertrust to '%s' failed: %s\n"
+msgstr "kontrola vytvoreného podpisu sa nepodarila: %s\n"
+
+#, fuzzy, c-format
 msgid "\"%s\" is not a fingerprint\n"
 msgstr "chyba: neplatný odtlačok\n"
 
@@ -4730,6 +4743,11 @@ msgstr ""
 "Tento kľúč nemôže byť použitý na šifrovanie. Pre vytvorenie\n"
 "sekundárneho kľúča na tento účel môžete použiť príkaz \"--edit-key\".\n"
 
+#, fuzzy, c-format
+#| msgid "WARNING: This key has been revoked by its owner!\n"
+msgid "Note: The key has been created with one or more ADSK!\n"
+msgstr "VAROVANIE: Tento kľúč bol revokovaný jeho vlastníkom!\n"
+
 #, c-format
 msgid ""
 "key has been created %lu second in future (time warp or clock problem)\n"
@@ -4813,6 +4831,9 @@ msgstr[1] ""
 
 msgid "Keyring"
 msgstr "súbor kľúčov (keyring)"
+
+msgid "Revocable by: "
+msgstr ""
 
 msgid "Primary key fingerprint:"
 msgstr "Primárny fingerprint kľúča:"
@@ -5786,6 +5807,11 @@ msgstr "POZNÁMKA: platnosť tajného kľúča %08lX skončila %s\n"
 
 #, fuzzy, c-format
 #| msgid "NOTE: key has been revoked"
+msgid "Note: ADSK key has been used for decryption"
+msgstr "POZNÁMKA: kľúč bol revokovaný"
+
+#, fuzzy, c-format
+#| msgid "NOTE: key has been revoked"
 msgid "Note: key has been revoked"
 msgstr "POZNÁMKA: kľúč bol revokovaný"
 
@@ -6625,13 +6651,19 @@ msgid_plural " (%d validity counts cleared)\n"
 msgstr[0] "%d kľúčov spracovaných (%d počtov platnosti vymazaných)\n"
 msgstr[1] "%d kľúčov spracovaných (%d počtov platnosti vymazaných)\n"
 
-#, c-format
-msgid "no ultimately trusted keys found\n"
+#, fuzzy, c-format
+#| msgid "no ultimately trusted keys found\n"
+msgid "Note: ultimately trusted key %s not found\n"
 msgstr "neboli nájdené žiadne absolútne dôveryhodné kľúče\n"
 
 #, fuzzy, c-format
-msgid "public key of ultimately trusted key %s not found\n"
-msgstr "verejný kľúč k absolútne dôveryhodnému kľúču  %08lX nebol nájdený\n"
+#| msgid "no ultimately trusted keys found\n"
+msgid "Note: ultimately trusted key %s expired\n"
+msgstr "neboli nájdené žiadne absolútne dôveryhodné kľúče\n"
+
+#, c-format
+msgid "no ultimately trusted keys found\n"
+msgstr "neboli nájdené žiadne absolútne dôveryhodné kľúče\n"
 
 #, c-format
 msgid ""
@@ -9300,6 +9332,10 @@ msgstr ""
 
 msgid "manage the command history"
 msgstr ""
+
+#, fuzzy, c-format
+#~ msgid "public key of ultimately trusted key %s not found\n"
+#~ msgstr "verejný kľúč k absolútne dôveryhodnému kľúču  %08lX nebol nájdený\n"
 
 #~ msgid "use canonical text mode"
 #~ msgstr "použiť kánonický textový mód"
