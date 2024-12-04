@@ -61,6 +61,18 @@ get_assumed_de_vs_compliance (void)
     {
       const char *s = getenv ("GNUPG_ASSUME_COMPLIANCE");
       value = (s && !strcmp (s, "de-vs"));
+#ifdef HAVE_W32_SYSTEM
+      if (!value)
+        {
+          char *tmp;
+          tmp = read_w32_registry_string (NULL,
+                                          gnupg_registry_dir (),
+                                          "GNUPG_ASSUME_COMPLIANCE");
+          if (tmp && !strcmp (tmp, "de-vs"))
+            value = 1;
+          xfree (tmp);
+        }
+#endif /* W32 */
     }
   return value > 0;
 #endif
