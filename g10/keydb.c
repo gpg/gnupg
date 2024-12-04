@@ -1422,6 +1422,8 @@ internal_keydb_update_keyblock (ctrl_t ctrl, KEYDB_HANDLE hd, kbnode_t kb)
 
 #ifdef USE_TOFU
   tofu_notice_key_changed (ctrl, kb);
+#else
+  (void)ctrl;
 #endif
 
   memset (&desc, 0, sizeof (desc));

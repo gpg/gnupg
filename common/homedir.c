@@ -292,7 +292,9 @@ create_common_conf (const char *dname)
                     gpg_strerror (gpg_error_from_syserror ()));
         }
     }
-#endif /* BUILD_WITH_KEYBOXD */
+#else /* BUILD_WITH_KEYBOXD */
+  (void)dname;
+#endif /* !BUILD_WITH_KEYBOXD */
 }
 
 
