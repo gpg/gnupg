@@ -471,6 +471,33 @@ hash_algo_option (int algo)
 }
 
 
+static int
+prepare_setdata (ctrl_t ctrl, const unsigned char *indata, size_t indatalen)
+{
+  int rc;
+  char *p, line[ASSUAN_LINELENGTH];
+  size_t len;
+  int i;
+
+  for (len = 0; len < indatalen;)
+    {
+      p = stpcpy (line, "SETDATA ");
+      if (len)
+        p = stpcpy (p, "--append ");
+      for (i=0; len < indatalen && (i*2 < DIM(line)-50); i++, len++)
+        {
+          sprintf (p, "%02X", indata[len]);
+          p += 2;
+        }
+      rc = assuan_transact (daemon_ctx (ctrl), line,
+                            NULL, NULL, NULL, NULL, NULL, NULL);
+      if (rc)
+        return rc;
+    }
+
+  return 0;
+}
+
 /* Create a signature using the current card.  MDALGO is either 0 or
  * gives the digest algorithm.  DESC_TEXT is an additional parameter
  * passed to GETPIN_CB. */
@@ -500,13 +527,7 @@ agent_card_pksign (ctrl_t ctrl,
   if (!mdalgo)
     return gpg_error (GPG_ERR_NOT_IMPLEMENTED);
 
-  if (indatalen*2 + 50 > DIM(line))
-    return unlock_scd (ctrl, gpg_error (GPG_ERR_GENERAL));
-
-  bin2hex (indata, indatalen, stpcpy (line, "SETDATA "));
-
-  rc = assuan_transact (daemon_ctx (ctrl), line,
-                        NULL, NULL, NULL, NULL, pincache_put_cb, NULL);
+  rc = prepare_setdata (ctrl, indata, indatalen);
   if (rc)
     return unlock_scd (ctrl, rc);
 
@@ -594,21 +615,9 @@ agent_card_pkdecrypt (ctrl_t ctrl,
 
   /* FIXME: use secure memory where appropriate */
 
-  for (len = 0; len < indatalen;)
-    {
-      p = stpcpy (line, "SETDATA ");
-      if (len)
-        p = stpcpy (p, "--append ");
-      for (i=0; len < indatalen && (i*2 < DIM(line)-50); i++, len++)
-        {
-          sprintf (p, "%02X", indata[len]);
-          p += 2;
-        }
-      rc = assuan_transact (daemon_ctx (ctrl), line,
-                            NULL, NULL, NULL, NULL, NULL, NULL);
-      if (rc)
-        return unlock_scd (ctrl, rc);
-    }
+  rc = prepare_setdata (ctrl, indata, indatalen);
+  if (rc)
+    return unlock_scd (ctrl, rc);
 
   init_membuf (&data, 1024);
   inqparm.ctx = daemon_ctx (ctrl);
