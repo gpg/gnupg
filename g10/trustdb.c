@@ -2240,15 +2240,17 @@ validate_keys (ctrl_t ctrl, int interactive)
       keyblock = get_pubkeyblock (ctrl, k->kid);
       if (!keyblock)
         {
-          log_info (_("Note: ultimately trusted key %s not found\n"),
-                     keystr(k->kid));
+          if (!opt.quiet)
+            log_info (_("Note: ultimately trusted key %s not found\n"),
+                      keystr(k->kid));
           continue;
         }
       pk = keyblock->pkt->pkt.public_key;
       if (pk->has_expired)
         {
-          log_info (_("Note: ultimately trusted key %s expired\n"),
-                     keystr(k->kid));
+          if (!opt.quiet)
+            log_info (_("Note: ultimately trusted key %s expired\n"),
+                      keystr(k->kid));
           continue;
         }
 
