@@ -6496,7 +6496,8 @@ msgstr[1] " (%d Validity Zähler gelöscht)\n"
 
 #, c-format
 msgid "Note: ultimately trusted key %s not found\n"
-msgstr "Hinweis: Der ultimativ vertrauenswürdige Schlüssel %s wurde nicht gefunden\n"
+msgstr ""
+"Hinweis: Der ultimativ vertrauenswürdige Schlüssel %s wurde nicht gefunden\n"
 
 #, c-format
 msgid "Note: ultimately trusted key %s expired\n"

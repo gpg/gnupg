@@ -1,4 +1,4 @@
-Noteworthy changes in version 2.5.2 (unreleased)
+Noteworthy changes in version 2.5.2 (2024-12-05)
 ------------------------------------------------
 
   * gpg: Add option 16 to --full-gen-key to create ECC+Kyber.  [T6638]
@@ -6,10 +6,78 @@ Noteworthy changes in version 2.5.2 (unreleased)
   * gpg: For composite algos add the algo string to the colons
     listings.  [T6638]
 
+  * gpg: Validate the trustdb after the import of a trusted key.
+    [T7200]
+
+  * gpg: Exclude expired trusted keys from the key validation process.
+    [T7200]
+
+  * gpg: Fix a wrong decryption failed status for signed and OCB
+    encrypted messages without a signature verification key.  [T7042]
+
+  * gpg: Retain binary representation for import->export with Ed25519
+    key signatures.  [T7426]
+
+  * gpg: Fix comparing ed448 to ed25519 with --assert-pubkey-algo.
+    [T7425]
+
+  * gpg: Avoid a failure exit code for expired ultimately trusted
+    keys.  [T7351]
+
+  * gpg: Emit status error for an invalid ADSK.  [T7322]
+
+  * gpg: Allow the use of an ADSK subkey as ADSK subkey.  [T6882]
+
+  * gpg: Fix --quick-set-expire for V5 subkey fingerprints.  [T7298]
+
+  * gpg: Robust error handling for SCD READKEY.  [T7309]
+
+  * gpg: Fix cv25519 v5 export regression.  [T7316]
+
+  * gpgsm: Nearly fourfold speedup of validated certificate listings.
+    [T7308]
+
+  * gpgsm: Improvement for some rare P12 files.  [rGf50dde6269]
+
+  * gpgsm: Terminate key listing on output write error.  [T6185]
+
+  * agent: Add option --status to the LISTRUSTED command.
+    [rG4275d5fa7a]
+
+  * agent: Fix detection of the yet unused trustflag de-vs.  [T5079]
+
+  * agent: Allow ssh to sign data larger than the Assuan line length.
+    [T7436]
+
+  * keyboxd: Fix a race condition on the database handle.  [T7294]
+
   * dirmngr: A list of used URLs for loaded CRLs is printed first in
     the output of the LISTCRL command.  [T7337]
 
-  See-also: gnupg-announce/2024q4/000xxx.html
+  * scd: More mitigations against lock ups with multiple cards or
+    apps.  [T7323, T7402]
+
+  * gpgtar: Use log-file from common.conf only in --batch mode.
+    [rGb389e04ef5]
+
+  * gpgtar: Fix directory creation during extraction.  [T7380]
+
+  * gpg-mail-tube: Minor fixes.
+
+  * gpgconf: Add list flag to trusted-key et al.  [T7313]
+
+  * Implement GNUPG_ASSUME_COMPLIANCE envvar and registry key for
+    testing de-vs compliance mode.  [rGb287fb5775,rG7b0be541a9]
+
+  * Enable additional runtime protections in speedo builds for
+    Windows.  [rG39aa206dc5]
+
+  * Fix a race condition in creating the socket directory.  [T7332]
+
+  * Fix a build problem on macOS (missing unistd.h).  [T7193]
+
+
+  See-also: gnupg-announce/2024q4/000488.html
   Release-info: https://dev.gnupg.org/T7289
 
 
