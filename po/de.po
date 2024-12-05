@@ -9,7 +9,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnupg-2.4.1\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"PO-Revision-Date: 2024-11-05 11:46+0100\n"
+"PO-Revision-Date: 2024-12-05 11:07+0100\n"
 "Last-Translator: Werner Koch <wk@gnupg.org>\n"
 "Language-Team: German\n"
 "Language: de\n"
@@ -710,7 +710,8 @@ msgstr "Fehler beim Lesen der Liste vertrauenswürdiger Wurzelzertifikate\n"
 msgid ""
 "Do you ultimately trust%%0A  \"%s\"%%0Ato correctly certify user "
 "certificates?"
-msgstr "Vertrauen Sie darauf, daß%%0A  \"%s\"%%0AZertifikate korrekt ausstellt?"
+msgstr ""
+"Vertrauen Sie darauf, daß%%0A  \"%s\"%%0AZertifikate korrekt ausstellt?"
 
 msgid "Yes"
 msgstr "Ja"
@@ -762,6 +763,10 @@ msgstr "Das Passwort ändern"
 
 msgid "I'll change it later"
 msgstr "Ich werde sie später ändern"
+
+#, c-format
+msgid "Unprotecting key failed: %s\n"
+msgstr "Entfernen des Schutzes eines Schlüssels schlug fehl: %s\n"
 
 msgid "Please insert the card with serial number"
 msgstr "Bitte legen Sie die Karte mit der folgenden Seriennummer ein"
@@ -2737,6 +2742,9 @@ msgstr "Eingabedaten sind im GnuPG Datensicherungsformat für Schlüssel"
 msgid "repair keys on import"
 msgstr "Schlüssel beim Import reparieren"
 
+msgid "do not import secret keys"
+msgstr "Geheime Schlüssel nicht importieren"
+
 #, c-format
 msgid "skipping block of type %d\n"
 msgstr "überspringe den Block vom Typ %d\n"
@@ -4241,6 +4249,10 @@ msgid "  (%d) Existing key from card%s\n"
 msgstr "  (%d) Vorhandener Schlüssel auf der Karte%s\n"
 
 #, c-format
+msgid "  (%d) ECC and Kyber%s\n"
+msgstr "  (%d) ECC und Kyber%s\n"
+
+#, c-format
 msgid "  (%d) Kyber (encrypt only)%s\n"
 msgstr "  (%d) Kyber (nur verschlüsseln)%s\n"
 
@@ -4283,6 +4295,10 @@ msgstr "Die verlangte Schlüssellänge beträgt %u Bit\n"
 
 msgid "Please select which elliptic curve you want:\n"
 msgstr "Bitte wählen Sie, welche elliptische Kurve Sie möchten:\n"
+
+#, c-format
+msgid "Please select the %s variant you want:\n"
+msgstr "Bitte wählen Sie, welche Art von %s Schlüssel Sie möchten:\n"
 
 msgid ""
 "Please specify how long the key should be valid.\n"
@@ -6479,12 +6495,16 @@ msgstr[0] " (%d Validity Zähler gelöscht)\n"
 msgstr[1] " (%d Validity Zähler gelöscht)\n"
 
 #, c-format
-msgid "no ultimately trusted keys found\n"
-msgstr "keine ultimativ vertrauenswürdigen Schlüssel gefunden\n"
+msgid "Note: ultimately trusted key %s not found\n"
+msgstr "Hinweis: Der ultimativ vertrauenswürdige Schlüssel %s wurde nicht gefunden\n"
 
 #, c-format
-msgid "public key of ultimately trusted key %s not found\n"
-msgstr "öff. Schlüssel des ultimativ vertrauten Schlüssel %s nicht gefunden\n"
+msgid "Note: ultimately trusted key %s expired\n"
+msgstr "Hinweis: Der ultimativ vertrauenswürdige Schlüssel %s ist abgelaufen\n"
+
+#, c-format
+msgid "no ultimately trusted keys found\n"
+msgstr "keine ultimativ vertrauenswürdigen Schlüssel gefunden\n"
 
 #, c-format
 msgid ""
@@ -7636,6 +7656,10 @@ msgstr "Fehler beim Speichern der Flags: %s\n"
 
 msgid "Error - "
 msgstr "Fehler - "
+
+#, c-format
+msgid "error writing to output: %s\n"
+msgstr "Fehler beim Schreiben auf die Ausgabe: %s\n"
 
 #, c-format
 msgid "GPG_TTY has not been set - using maybe bogus default\n"
@@ -9136,6 +9160,11 @@ msgid "manage the command history"
 msgstr "Verwaltung der Kommandohistorie"
 
 #, c-format
+#~ msgid "public key of ultimately trusted key %s not found\n"
+#~ msgstr ""
+#~ "öff. Schlüssel des ultimativ vertrauten Schlüssel %s nicht gefunden\n"
+
+#, c-format
 #~ msgid "waiting for process %d to terminate failed: %s\n"
 #~ msgstr "Das Warten auf die Beendigung des Prozesses %d schlug fehl: %s\n"
 
@@ -9450,9 +9479,6 @@ msgstr "Verwaltung der Kommandohistorie"
 
 #~ msgid "elevate the trust of signatures with valid PKA data"
 #~ msgstr "Werte das Vertrauen zu Signaturen durch gültige PKA-Daten auf"
-
-#~ msgid "   (%d) ECC and ECC\n"
-#~ msgstr "   (%d) ECC und ECC\n"
 
 #~ msgid "honor the PKA record set on a key when retrieving keys"
 #~ msgstr "Die im Schlüssel enthaltenen PKA-Daten beim Schlüsselholen beachten"
