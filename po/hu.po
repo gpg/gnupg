@@ -765,6 +765,10 @@ msgstr "jelszóváltoztatás"
 msgid "I'll change it later"
 msgstr ""
 
+#, fuzzy, c-format
+msgid "Unprotecting key failed: %s\n"
+msgstr "A kulcsblokk törlése sikertelen: %s.\n"
+
 msgid "Please insert the card with serial number"
 msgstr ""
 
@@ -2854,6 +2858,11 @@ msgstr ""
 msgid "repair keys on import"
 msgstr "megmutatja az ujjlenyomatot"
 
+#, fuzzy
+#| msgid "list secret keys"
+msgid "do not import secret keys"
+msgstr "titkos kulcsok listázása"
+
 #, c-format
 msgid "skipping block of type %d\n"
 msgstr "%d típusú blokkot kihagyom.\n"
@@ -4411,6 +4420,10 @@ msgid "  (%d) Existing key from card%s\n"
 msgstr "  (%d) RSA (csak titkosítás)\n"
 
 #, fuzzy, c-format
+msgid "  (%d) ECC and Kyber%s\n"
+msgstr "   (%d) DSA és ElGamal (alapértelmezés)\n"
+
+#, fuzzy, c-format
 #| msgid "   (%d) RSA (encrypt only)\n"
 msgid "  (%d) Kyber (encrypt only)%s\n"
 msgstr "  (%d) RSA (csak titkosítás)\n"
@@ -4459,6 +4472,11 @@ msgstr "A kívánt kulcsméret %u bit.\n"
 #, fuzzy
 #| msgid "Please select what kind of key you want:\n"
 msgid "Please select which elliptic curve you want:\n"
+msgstr "Kérem, adja meg, milyen kulcsot kíván:\n"
+
+#, fuzzy, c-format
+#| msgid "Please select what kind of key you want:\n"
+msgid "Please select the %s variant you want:\n"
 msgstr "Kérem, adja meg, milyen kulcsot kíván:\n"
 
 msgid ""
@@ -6623,13 +6641,19 @@ msgid_plural " (%d validity counts cleared)\n"
 msgstr[0] "%d kulcsot feldolgoztam (%d érvényességszámlálót töröltem)\n"
 msgstr[1] "%d kulcsot feldolgoztam (%d érvényességszámlálót töröltem)\n"
 
-#, c-format
-msgid "no ultimately trusted keys found\n"
+#, fuzzy, c-format
+#| msgid "no ultimately trusted keys found\n"
+msgid "Note: ultimately trusted key %s not found\n"
 msgstr "Nem találtam alapvetően megbízható kulcsot.\n"
 
 #, fuzzy, c-format
-msgid "public key of ultimately trusted key %s not found\n"
-msgstr "Nem találom az alapvetően megbízható %08lX kulcs nyilvános kulcsát!\n"
+#| msgid "no ultimately trusted keys found\n"
+msgid "Note: ultimately trusted key %s expired\n"
+msgstr "Nem találtam alapvetően megbízható kulcsot.\n"
+
+#, c-format
+msgid "no ultimately trusted keys found\n"
+msgstr "Nem találtam alapvetően megbízható kulcsot.\n"
 
 #, c-format
 msgid ""
@@ -7804,6 +7828,10 @@ msgstr "Hiba \"%s\" olvasásakor: %s\n"
 
 msgid "Error - "
 msgstr ""
+
+#, fuzzy, c-format
+msgid "error writing to output: %s\n"
+msgstr "Hiba a \"%s\" kulcskarika írásakor: %s\n"
 
 #, c-format
 msgid "GPG_TTY has not been set - using maybe bogus default\n"
@@ -9301,6 +9329,11 @@ msgid "manage the command history"
 msgstr ""
 
 #, fuzzy, c-format
+#~ msgid "public key of ultimately trusted key %s not found\n"
+#~ msgstr ""
+#~ "Nem találom az alapvetően megbízható %08lX kulcs nyilvános kulcsát!\n"
+
+#, fuzzy, c-format
 #~ msgid "waiting for process to terminate failed: ec=%d\n"
 #~ msgstr "Frissítés sikertelen: %s.\n"
 
@@ -9551,10 +9584,6 @@ msgstr ""
 
 #~ msgid "unable to read external program response: %s\n"
 #~ msgstr "Nem tudom beolvasni a külső program válaszát: %s\n"
-
-#, fuzzy
-#~ msgid "   (%d) ECC and ECC\n"
-#~ msgstr "   (%d) DSA és ElGamal (alapértelmezés)\n"
 
 #, fuzzy
 #~ msgid "run without asking a user"

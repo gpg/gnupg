@@ -770,6 +770,10 @@ msgstr "zmeniť heslo"
 msgid "I'll change it later"
 msgstr ""
 
+#, fuzzy, c-format
+msgid "Unprotecting key failed: %s\n"
+msgstr "zmazanie bloku kľúča sa nepodarilo:  %s\n"
+
 msgid "Please insert the card with serial number"
 msgstr ""
 
@@ -2874,6 +2878,11 @@ msgstr ""
 msgid "repair keys on import"
 msgstr "vypísať fingerprint"
 
+#, fuzzy
+#| msgid "list secret keys"
+msgid "do not import secret keys"
+msgstr "vypísať zoznam tajných kľúčov"
+
 #, c-format
 msgid "skipping block of type %d\n"
 msgstr "blok typu %d bol preskočený\n"
@@ -4432,6 +4441,10 @@ msgid "  (%d) Existing key from card%s\n"
 msgstr "  (%d) RSA (len na šifrovanie)\n"
 
 #, fuzzy, c-format
+msgid "  (%d) ECC and Kyber%s\n"
+msgstr "   (%d) DSA a ElGamal (implicitný)\n"
+
+#, fuzzy, c-format
 #| msgid "   (%d) RSA (encrypt only)\n"
 msgid "  (%d) Kyber (encrypt only)%s\n"
 msgstr "  (%d) RSA (len na šifrovanie)\n"
@@ -4480,6 +4493,11 @@ msgstr "Požadovaná dĺžka kľúča je %u bitov.\n"
 #, fuzzy
 #| msgid "Please select what kind of key you want:\n"
 msgid "Please select which elliptic curve you want:\n"
+msgstr "Prosím, vyberte druh kľúča, ktorý chcete:\n"
+
+#, fuzzy, c-format
+#| msgid "Please select what kind of key you want:\n"
+msgid "Please select the %s variant you want:\n"
 msgstr "Prosím, vyberte druh kľúča, ktorý chcete:\n"
 
 msgid ""
@@ -6649,13 +6667,19 @@ msgid_plural " (%d validity counts cleared)\n"
 msgstr[0] "%d kľúčov spracovaných (%d počtov platnosti vymazaných)\n"
 msgstr[1] "%d kľúčov spracovaných (%d počtov platnosti vymazaných)\n"
 
-#, c-format
-msgid "no ultimately trusted keys found\n"
+#, fuzzy, c-format
+#| msgid "no ultimately trusted keys found\n"
+msgid "Note: ultimately trusted key %s not found\n"
 msgstr "neboli nájdené žiadne absolútne dôveryhodné kľúče\n"
 
 #, fuzzy, c-format
-msgid "public key of ultimately trusted key %s not found\n"
-msgstr "verejný kľúč k absolútne dôveryhodnému kľúču  %08lX nebol nájdený\n"
+#| msgid "no ultimately trusted keys found\n"
+msgid "Note: ultimately trusted key %s expired\n"
+msgstr "neboli nájdené žiadne absolútne dôveryhodné kľúče\n"
+
+#, c-format
+msgid "no ultimately trusted keys found\n"
+msgstr "neboli nájdené žiadne absolútne dôveryhodné kľúče\n"
 
 #, c-format
 msgid ""
@@ -7833,6 +7857,10 @@ msgstr "chyba pri čítaní `%s': %s\n"
 
 msgid "Error - "
 msgstr ""
+
+#, fuzzy, c-format
+msgid "error writing to output: %s\n"
+msgstr "chyba pri zápise súboru kľúčov (keyring)  `%s': %s\n"
 
 #, c-format
 msgid "GPG_TTY has not been set - using maybe bogus default\n"
@@ -9334,6 +9362,10 @@ msgid "manage the command history"
 msgstr ""
 
 #, fuzzy, c-format
+#~ msgid "public key of ultimately trusted key %s not found\n"
+#~ msgstr "verejný kľúč k absolútne dôveryhodnému kľúču  %08lX nebol nájdený\n"
+
+#, fuzzy, c-format
 #~ msgid "waiting for process to terminate failed: ec=%d\n"
 #~ msgstr "aktualizácia zlyhala: %s\n"
 
@@ -9585,10 +9617,6 @@ msgstr ""
 
 #~ msgid "unable to read external program response: %s\n"
 #~ msgstr "nemožno cítať odozvu externého programu: %s\n"
-
-#, fuzzy
-#~ msgid "   (%d) ECC and ECC\n"
-#~ msgstr "   (%d) DSA a ElGamal (implicitný)\n"
 
 #, fuzzy
 #~ msgid "run without asking a user"

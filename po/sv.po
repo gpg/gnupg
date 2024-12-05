@@ -871,6 +871,11 @@ msgstr "ändra lösenfras"
 msgid "I'll change it later"
 msgstr "Jag ändrar den senare"
 
+#, fuzzy, c-format
+#| msgid "receiving line failed: %s\n"
+msgid "Unprotecting key failed: %s\n"
+msgstr "mottagande rad misslyckades: %s\n"
+
 msgid "Please insert the card with serial number"
 msgstr "Mata in kortet med serienummer"
 
@@ -3054,6 +3059,11 @@ msgstr "anta att inmatning är i binärformat"
 msgid "repair keys on import"
 msgstr "visa nyckelns fingeravtryck"
 
+#, fuzzy
+#| msgid "list secret keys"
+msgid "do not import secret keys"
+msgstr "lista hemliga nycklar"
+
 #, c-format
 msgid "skipping block of type %d\n"
 msgstr "hoppar över block av typen %d\n"
@@ -4642,6 +4652,11 @@ msgid "  (%d) Existing key from card%s\n"
 msgstr "  (%d) Befintlig nyckel från kort\n"
 
 #, fuzzy, c-format
+#| msgid "   (%d) DSA and Elgamal\n"
+msgid "  (%d) ECC and Kyber%s\n"
+msgstr "   (%d) DSA och Elgamal\n"
+
+#, fuzzy, c-format
 #| msgid "   (%d) RSA (encrypt only)\n"
 msgid "  (%d) Kyber (encrypt only)%s\n"
 msgstr "  (%d) RSA (endast kryptering)\n"
@@ -4687,6 +4702,11 @@ msgstr "Den efterfrågade nyckelstorleken är %u bitar\n"
 #, fuzzy
 #| msgid "Please select what kind of key you want:\n"
 msgid "Please select which elliptic curve you want:\n"
+msgstr "Välj vilken typ av nyckel du vill ha:\n"
+
+#, fuzzy, c-format
+#| msgid "Please select what kind of key you want:\n"
+msgid "Please select the %s variant you want:\n"
 msgstr "Välj vilken typ av nyckel du vill ha:\n"
 
 # borde kolla upp möjligheterna i källkoden att använda v m å istället för wmy
@@ -6946,13 +6966,19 @@ msgid_plural " (%d validity counts cleared)\n"
 msgstr[0] "%d nycklar behandlade (%d validity counts rensade)\n"
 msgstr[1] "%d nycklar behandlade (%d validity counts rensade)\n"
 
-#, c-format
-msgid "no ultimately trusted keys found\n"
+#, fuzzy, c-format
+#| msgid "no ultimately trusted keys found\n"
+msgid "Note: ultimately trusted key %s not found\n"
+msgstr "hittade inga nycklar med förbehållslöst förtroende\n"
+
+#, fuzzy, c-format
+#| msgid "no ultimately trusted keys found\n"
+msgid "Note: ultimately trusted key %s expired\n"
 msgstr "hittade inga nycklar med förbehållslöst förtroende\n"
 
 #, c-format
-msgid "public key of ultimately trusted key %s not found\n"
-msgstr "publik nyckel för förbehållslöst betrodda nyckeln %s hittades inte\n"
+msgid "no ultimately trusted keys found\n"
+msgstr "hittade inga nycklar med förbehållslöst förtroende\n"
 
 #, c-format
 msgid ""
@@ -8194,6 +8220,11 @@ msgstr "fel vid lagring av flaggor: %s\n"
 
 msgid "Error - "
 msgstr "Fel - "
+
+#, fuzzy, c-format
+#| msgid "error writing to %s: %s\n"
+msgid "error writing to output: %s\n"
+msgstr "fel vid skrivning till %s: %s\n"
 
 #, c-format
 msgid "GPG_TTY has not been set - using maybe bogus default\n"
@@ -9895,6 +9926,11 @@ msgid "manage the command history"
 msgstr ""
 
 #, c-format
+#~ msgid "public key of ultimately trusted key %s not found\n"
+#~ msgstr ""
+#~ "publik nyckel för förbehållslöst betrodda nyckeln %s hittades inte\n"
+
+#, c-format
 #~ msgid "waiting for process %d to terminate failed: %s\n"
 #~ msgstr ""
 #~ "misslyckades med att vänta på att processen %d skulle avslutas: %s\n"
@@ -10199,11 +10235,6 @@ msgstr ""
 
 #~ msgid "elevate the trust of signatures with valid PKA data"
 #~ msgstr "öka tillit på signaturer med giltigt PKA-data"
-
-#, fuzzy
-#~| msgid "   (%d) DSA and Elgamal\n"
-#~ msgid "   (%d) ECC and ECC\n"
-#~ msgstr "   (%d) DSA och Elgamal\n"
 
 #~ msgid "honor the PKA record set on a key when retrieving keys"
 #~ msgstr "respektera PKA-posten inställd på en nyckel när nycklar hämtas"

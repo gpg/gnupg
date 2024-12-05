@@ -853,6 +853,11 @@ msgstr "Ændr adgangsfrasen"
 msgid "I'll change it later"
 msgstr "Jeg ændrer den senere"
 
+#, fuzzy, c-format
+#| msgid "receiving line failed: %s\n"
+msgid "Unprotecting key failed: %s\n"
+msgstr "modtagelse af linje mislykkedes: %s\n"
+
 msgid "Please insert the card with serial number"
 msgstr "Indsæt venligst kortet med serielnummeret"
 
@@ -2994,6 +2999,11 @@ msgstr "antag inddata er i binært format"
 msgid "repair keys on import"
 msgstr "vis nøglefingeraftryk"
 
+#, fuzzy
+#| msgid "list secret keys"
+msgid "do not import secret keys"
+msgstr "vis hemmelige nøgler"
+
 #, c-format
 msgid "skipping block of type %d\n"
 msgstr "     udelader bloktype %d\n"
@@ -4571,6 +4581,11 @@ msgid "  (%d) Existing key from card%s\n"
 msgstr "  (%d) Eksisterende nøgle fra kort\n"
 
 #, fuzzy, c-format
+#| msgid "   (%d) DSA and Elgamal\n"
+msgid "  (%d) ECC and Kyber%s\n"
+msgstr "   (%d) DSA og Elgamal\n"
+
+#, fuzzy, c-format
 #| msgid "   (%d) RSA (encrypt only)\n"
 msgid "  (%d) Kyber (encrypt only)%s\n"
 msgstr "  (%d) RSA (kun krypter)\n"
@@ -4619,6 +4634,11 @@ msgstr "Ønsket nøglestørrelse er %u bit\n"
 #, fuzzy
 #| msgid "Please select what kind of key you want:\n"
 msgid "Please select which elliptic curve you want:\n"
+msgstr "Vælg venligst hvilken slags nøgle du vil have:\n"
+
+#, fuzzy, c-format
+#| msgid "Please select what kind of key you want:\n"
+msgid "Please select the %s variant you want:\n"
 msgstr "Vælg venligst hvilken slags nøgle du vil have:\n"
 
 msgid ""
@@ -6839,13 +6859,19 @@ msgid_plural " (%d validity counts cleared)\n"
 msgstr[0] "%d nøgler behandlet (%d validiteter ryddet)\n"
 msgstr[1] "%d nøgler behandlet (%d validiteter ryddet)\n"
 
-#, c-format
-msgid "no ultimately trusted keys found\n"
+#, fuzzy, c-format
+#| msgid "no ultimately trusted keys found\n"
+msgid "Note: ultimately trusted key %s not found\n"
+msgstr "ingen ultimativ troværdige nøgler fundet\n"
+
+#, fuzzy, c-format
+#| msgid "no ultimately trusted keys found\n"
+msgid "Note: ultimately trusted key %s expired\n"
 msgstr "ingen ultimativ troværdige nøgler fundet\n"
 
 #, c-format
-msgid "public key of ultimately trusted key %s not found\n"
-msgstr "offentlig nøgle for ultimativ troværdig nøgle %s blev ikke fundet\n"
+msgid "no ultimately trusted keys found\n"
+msgstr "ingen ultimativ troværdige nøgler fundet\n"
 
 #, c-format
 msgid ""
@@ -8059,6 +8085,11 @@ msgstr "fejl ved lagring af flag: %s\n"
 
 msgid "Error - "
 msgstr "Fejl - "
+
+#, fuzzy, c-format
+#| msgid "error writing to %s: %s\n"
+msgid "error writing to output: %s\n"
+msgstr "fejl ved skrivning til »%s«: %s\n"
 
 #, c-format
 msgid "GPG_TTY has not been set - using maybe bogus default\n"
@@ -9754,6 +9785,10 @@ msgid "manage the command history"
 msgstr ""
 
 #, c-format
+#~ msgid "public key of ultimately trusted key %s not found\n"
+#~ msgstr "offentlig nøgle for ultimativ troværdig nøgle %s blev ikke fundet\n"
+
+#, c-format
 #~ msgid "waiting for process %d to terminate failed: %s\n"
 #~ msgstr "ventning på at proces %d skulle terminere mislykkedes: %s\n"
 
@@ -10050,11 +10085,6 @@ msgstr ""
 
 #~ msgid "elevate the trust of signatures with valid PKA data"
 #~ msgstr "hæv troværdigheden for underskrifter med gyldige PKA-data"
-
-#, fuzzy
-#~| msgid "   (%d) DSA and Elgamal\n"
-#~ msgid "   (%d) ECC and ECC\n"
-#~ msgstr "   (%d) DSA og Elgamal\n"
 
 #~ msgid "honor the PKA record set on a key when retrieving keys"
 #~ msgstr "overhold PKA-posten angivet på en nøgle når der hentes nøgler"

@@ -733,6 +733,11 @@ msgstr "更改密码"
 msgid "I'll change it later"
 msgstr "稍后修改"
 
+#, fuzzy, c-format
+#| msgid "receiving line failed: %s\n"
+msgid "Unprotecting key failed: %s\n"
+msgstr "接收行失败：%s\n"
+
 msgid "Please insert the card with serial number"
 msgstr "请插入具有以下序列号的卡"
 
@@ -2659,6 +2664,11 @@ msgstr "假定为 GnuPG 密钥备份格式"
 msgid "repair keys on import"
 msgstr "在导入期间修复密钥"
 
+#, fuzzy
+#| msgid "list secret keys"
+msgid "do not import secret keys"
+msgstr "列出私钥"
+
 #, c-format
 msgid "skipping block of type %d\n"
 msgstr "跳过 %d 类型的块\n"
@@ -4093,6 +4103,11 @@ msgid "  (%d) Existing key from card%s\n"
 msgstr " （%d）卡中现有密钥 %s\n"
 
 #, fuzzy, c-format
+#| msgid "   (%d) ECC and ECC\n"
+msgid "  (%d) ECC and Kyber%s\n"
+msgstr "   (%d) ECC 和 ECC\n"
+
+#, fuzzy, c-format
 #| msgid "  (%d) ECC (encrypt only)%s\n"
 msgid "  (%d) Kyber (encrypt only)%s\n"
 msgstr "  (%d) ECC（仅用于加密）%s\n"
@@ -4136,6 +4151,11 @@ msgstr "请求的密钥长度是 %u 位\n"
 
 msgid "Please select which elliptic curve you want:\n"
 msgstr "请选择您想要使用的椭圆曲线：\n"
+
+#, fuzzy, c-format
+#| msgid "Please select what kind of key you want:\n"
+msgid "Please select the %s variant you want:\n"
+msgstr "请选择您要使用的密钥类型：\n"
 
 msgid ""
 "Please specify how long the key should be valid.\n"
@@ -6143,13 +6163,19 @@ msgid " (%d validity count cleared)\n"
 msgid_plural " (%d validity counts cleared)\n"
 msgstr[0] " （%d 个有效计数已被清除）\n"
 
-#, c-format
-msgid "no ultimately trusted keys found\n"
+#, fuzzy, c-format
+#| msgid "no ultimately trusted keys found\n"
+msgid "Note: ultimately trusted key %s not found\n"
+msgstr "未找到任何绝对信任的密钥\n"
+
+#, fuzzy, c-format
+#| msgid "no ultimately trusted keys found\n"
+msgid "Note: ultimately trusted key %s expired\n"
 msgstr "未找到任何绝对信任的密钥\n"
 
 #, c-format
-msgid "public key of ultimately trusted key %s not found\n"
-msgstr "绝对信任密钥 %s 的公钥未找到\n"
+msgid "no ultimately trusted keys found\n"
+msgstr "未找到任何绝对信任的密钥\n"
 
 #, c-format
 msgid ""
@@ -7262,6 +7288,11 @@ msgstr "存储选项时出现错误：%s\n"
 
 msgid "Error - "
 msgstr "错误 - "
+
+#, fuzzy, c-format
+#| msgid "error writing to stdout: %s\n"
+msgid "error writing to output: %s\n"
+msgstr "写入到标准输出（stdout）时出现错误：%s\n"
 
 #, c-format
 msgid "GPG_TTY has not been set - using maybe bogus default\n"
@@ -8712,6 +8743,10 @@ msgid "manage the command history"
 msgstr "管理命令历史记录"
 
 #, c-format
+#~ msgid "public key of ultimately trusted key %s not found\n"
+#~ msgstr "绝对信任密钥 %s 的公钥未找到\n"
+
+#, c-format
 #~ msgid "waiting for process %d to terminate failed: %s\n"
 #~ msgstr "等待进程 %d 终止时失败： %s\n"
 
@@ -8996,9 +9031,6 @@ msgstr "管理命令历史记录"
 
 #~ msgid "elevate the trust of signatures with valid PKA data"
 #~ msgstr "提升带有有效 PKA 数据的签名的信任度"
-
-#~ msgid "   (%d) ECC and ECC\n"
-#~ msgstr "   (%d) ECC 和 ECC\n"
 
 #~ msgid "honor the PKA record set on a key when retrieving keys"
 #~ msgstr "获取密钥时使用密钥上的 PKA 记录"

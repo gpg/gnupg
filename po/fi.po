@@ -782,6 +782,10 @@ msgstr "muuta salasanaa"
 msgid "I'll change it later"
 msgstr ""
 
+#, fuzzy, c-format
+msgid "Unprotecting key failed: %s\n"
+msgstr "avainlohkojen poisto epäonnistui: %s\n"
+
 msgid "Please insert the card with serial number"
 msgstr ""
 
@@ -2872,6 +2876,11 @@ msgstr ""
 msgid "repair keys on import"
 msgstr "näytä sormenjälki"
 
+#, fuzzy
+#| msgid "list secret keys"
+msgid "do not import secret keys"
+msgstr "näytä salaiset avaimet"
+
 #, c-format
 msgid "skipping block of type %d\n"
 msgstr "ohitetaan tyypin %d lohko\n"
@@ -4435,6 +4444,10 @@ msgid "  (%d) Existing key from card%s\n"
 msgstr "  (%d) RSA (vain salaus)\n"
 
 #, fuzzy, c-format
+msgid "  (%d) ECC and Kyber%s\n"
+msgstr "   (%d) DSA ja ElGamal (oletus)\n"
+
+#, fuzzy, c-format
 #| msgid "   (%d) RSA (encrypt only)\n"
 msgid "  (%d) Kyber (encrypt only)%s\n"
 msgstr "  (%d) RSA (vain salaus)\n"
@@ -4483,6 +4496,11 @@ msgstr "Halutun avaimen koko on %u bittiä\n"
 #, fuzzy
 #| msgid "Please select what kind of key you want:\n"
 msgid "Please select which elliptic curve you want:\n"
+msgstr "Valitse millaisen avaimen haluat:\n"
+
+#, fuzzy, c-format
+#| msgid "Please select what kind of key you want:\n"
+msgid "Please select the %s variant you want:\n"
 msgstr "Valitse millaisen avaimen haluat:\n"
 
 msgid ""
@@ -6660,13 +6678,19 @@ msgid_plural " (%d validity counts cleared)\n"
 msgstr[0] "%d avainta käsitelty (%d kelpoisuuslaskuria tyhjätty)\n"
 msgstr[1] "%d avainta käsitelty (%d kelpoisuuslaskuria tyhjätty)\n"
 
-#, c-format
-msgid "no ultimately trusted keys found\n"
+#, fuzzy, c-format
+#| msgid "no ultimately trusted keys found\n"
+msgid "Note: ultimately trusted key %s not found\n"
 msgstr "ehdottomasti luotettavia avaimia ei löytynyt\n"
 
 #, fuzzy, c-format
-msgid "public key of ultimately trusted key %s not found\n"
-msgstr "ehdottomasti luotettu julkinen avain %08lX ei löytynyt\n"
+#| msgid "no ultimately trusted keys found\n"
+msgid "Note: ultimately trusted key %s expired\n"
+msgstr "ehdottomasti luotettavia avaimia ei löytynyt\n"
+
+#, c-format
+msgid "no ultimately trusted keys found\n"
+msgstr "ehdottomasti luotettavia avaimia ei löytynyt\n"
 
 #, c-format
 msgid ""
@@ -7841,6 +7865,10 @@ msgstr "virhe luettaessa tiedostoa \"%s\": %s\n"
 
 msgid "Error - "
 msgstr ""
+
+#, fuzzy, c-format
+msgid "error writing to output: %s\n"
+msgstr "virhe kirjoitettaessa avainrenkaaseen \"%s\": %s\n"
 
 #, c-format
 msgid "GPG_TTY has not been set - using maybe bogus default\n"
@@ -9342,6 +9370,10 @@ msgid "manage the command history"
 msgstr ""
 
 #, fuzzy, c-format
+#~ msgid "public key of ultimately trusted key %s not found\n"
+#~ msgstr "ehdottomasti luotettu julkinen avain %08lX ei löytynyt\n"
+
+#, fuzzy, c-format
 #~ msgid "waiting for process to terminate failed: ec=%d\n"
 #~ msgstr "päivitys epäonnistui: %s\n"
 
@@ -9591,10 +9623,6 @@ msgstr ""
 
 #~ msgid "unable to read external program response: %s\n"
 #~ msgstr "ulkoisen ohjelman vastausta ei voi lukea: %s\n"
-
-#, fuzzy
-#~ msgid "   (%d) ECC and ECC\n"
-#~ msgstr "   (%d) DSA ja ElGamal (oletus)\n"
 
 #, fuzzy
 #~ msgid "run without asking a user"

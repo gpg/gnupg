@@ -765,6 +765,10 @@ msgstr "muuda parooli"
 msgid "I'll change it later"
 msgstr ""
 
+#, fuzzy, c-format
+msgid "Unprotecting key failed: %s\n"
+msgstr "võtmebloki kustutamine ebaõnnestus: %s\n"
+
 msgid "Please insert the card with serial number"
 msgstr ""
 
@@ -2854,6 +2858,11 @@ msgstr ""
 msgid "repair keys on import"
 msgstr "näita sõrmejälge"
 
+#, fuzzy
+#| msgid "list secret keys"
+msgid "do not import secret keys"
+msgstr "näita salajasi võtmeid"
+
 #, c-format
 msgid "skipping block of type %d\n"
 msgstr "jätan bloki tüübiga %d vahele\n"
@@ -4406,6 +4415,10 @@ msgid "  (%d) Existing key from card%s\n"
 msgstr "  (%d) RSA (ainult krüpteerimiseks)\n"
 
 #, fuzzy, c-format
+msgid "  (%d) ECC and Kyber%s\n"
+msgstr "   (%d) DSA ja ElGamal (vaikimisi)\n"
+
+#, fuzzy, c-format
 #| msgid "   (%d) RSA (encrypt only)\n"
 msgid "  (%d) Kyber (encrypt only)%s\n"
 msgstr "  (%d) RSA (ainult krüpteerimiseks)\n"
@@ -4454,6 +4467,11 @@ msgstr "Soovitud võtmepikkus on %u bitti\n"
 #, fuzzy
 #| msgid "Please select what kind of key you want:\n"
 msgid "Please select which elliptic curve you want:\n"
+msgstr "Palun valige, millist võtmetüüpi te soovite:\n"
+
+#, fuzzy, c-format
+#| msgid "Please select what kind of key you want:\n"
+msgid "Please select the %s variant you want:\n"
 msgstr "Palun valige, millist võtmetüüpi te soovite:\n"
 
 msgid ""
@@ -6597,13 +6615,19 @@ msgid_plural " (%d validity counts cleared)\n"
 msgstr[0] "%d võtit töödeldud (%d kehtivust puhastatud)\n"
 msgstr[1] "%d võtit töödeldud (%d kehtivust puhastatud)\n"
 
-#, c-format
-msgid "no ultimately trusted keys found\n"
+#, fuzzy, c-format
+#| msgid "no ultimately trusted keys found\n"
+msgid "Note: ultimately trusted key %s not found\n"
 msgstr "absoluutselt usaldatavaid võtmeid pole\n"
 
 #, fuzzy, c-format
-msgid "public key of ultimately trusted key %s not found\n"
-msgstr "puudub absoluutselt usaldatava võtme %08lX avalik võti\n"
+#| msgid "no ultimately trusted keys found\n"
+msgid "Note: ultimately trusted key %s expired\n"
+msgstr "absoluutselt usaldatavaid võtmeid pole\n"
+
+#, c-format
+msgid "no ultimately trusted keys found\n"
+msgstr "absoluutselt usaldatavaid võtmeid pole\n"
 
 #, c-format
 msgid ""
@@ -7777,6 +7801,10 @@ msgstr "viga `%s' lugemisel: %s\n"
 
 msgid "Error - "
 msgstr ""
+
+#, fuzzy, c-format
+msgid "error writing to output: %s\n"
+msgstr "viga võtmehoidlasse `%s' kirjutamisel: %s\n"
 
 #, c-format
 msgid "GPG_TTY has not been set - using maybe bogus default\n"
@@ -9274,6 +9302,10 @@ msgid "manage the command history"
 msgstr ""
 
 #, fuzzy, c-format
+#~ msgid "public key of ultimately trusted key %s not found\n"
+#~ msgstr "puudub absoluutselt usaldatava võtme %08lX avalik võti\n"
+
+#, fuzzy, c-format
 #~ msgid "waiting for process to terminate failed: ec=%d\n"
 #~ msgstr "uuendamine ebaõnnestus: %s\n"
 
@@ -9524,10 +9556,6 @@ msgstr ""
 
 #~ msgid "unable to read external program response: %s\n"
 #~ msgstr "ei õnnestu lugeda välise programmi vastust: %s\n"
-
-#, fuzzy
-#~ msgid "   (%d) ECC and ECC\n"
-#~ msgstr "   (%d) DSA ja ElGamal (vaikimisi)\n"
 
 #, fuzzy
 #~ msgid "run without asking a user"

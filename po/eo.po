@@ -767,6 +767,10 @@ msgstr "ŝanĝi la pasfrazon"
 msgid "I'll change it later"
 msgstr ""
 
+#, fuzzy, c-format
+msgid "Unprotecting key failed: %s\n"
+msgstr "forviŝo de ŝlosilbloko malsukcesis: %s\n"
+
 msgid "Please insert the card with serial number"
 msgstr ""
 
@@ -2844,6 +2848,11 @@ msgstr ""
 msgid "repair keys on import"
 msgstr "montri fingrospuron"
 
+#, fuzzy
+#| msgid "list secret keys"
+msgid "do not import secret keys"
+msgstr "listigi sekretajn ŝlosilojn"
+
 #, c-format
 msgid "skipping block of type %d\n"
 msgstr "ignoras blokon de speco %d\n"
@@ -4410,6 +4419,10 @@ msgid "  (%d) Existing key from card%s\n"
 msgstr "  (%d) RSA (nur ĉifri)\n"
 
 #, fuzzy, c-format
+msgid "  (%d) ECC and Kyber%s\n"
+msgstr "   (%d) DSA kaj ElGamal (implicita elekto)\n"
+
+#, fuzzy, c-format
 #| msgid "   (%d) RSA (encrypt only)\n"
 msgid "  (%d) Kyber (encrypt only)%s\n"
 msgstr "  (%d) RSA (nur ĉifri)\n"
@@ -4458,6 +4471,11 @@ msgstr "Petita ŝlosilgrando estas %u bitoj\n"
 #, fuzzy
 #| msgid "Please select what kind of key you want:\n"
 msgid "Please select which elliptic curve you want:\n"
+msgstr "Bonvolu elekti, kian ŝlosilon vi deziras:\n"
+
+#, fuzzy, c-format
+#| msgid "Please select what kind of key you want:\n"
+msgid "Please select the %s variant you want:\n"
 msgstr "Bonvolu elekti, kian ŝlosilon vi deziras:\n"
 
 msgid ""
@@ -6589,11 +6607,15 @@ msgstr[0] ""
 msgstr[1] ""
 
 #, fuzzy, c-format
-msgid "no ultimately trusted keys found\n"
+msgid "Note: ultimately trusted key %s not found\n"
 msgstr "publika ŝlosilo de absolute fidata ŝlosilo %08lX ne trovita\n"
 
 #, fuzzy, c-format
-msgid "public key of ultimately trusted key %s not found\n"
+msgid "Note: ultimately trusted key %s expired\n"
+msgstr "publika ŝlosilo de absolute fidata ŝlosilo %08lX ne trovita\n"
+
+#, fuzzy, c-format
+msgid "no ultimately trusted keys found\n"
 msgstr "publika ŝlosilo de absolute fidata ŝlosilo %08lX ne trovita\n"
 
 #, c-format
@@ -7775,6 +7797,10 @@ msgstr "eraro dum legado de '%s': %s\n"
 
 msgid "Error - "
 msgstr ""
+
+#, fuzzy, c-format
+msgid "error writing to output: %s\n"
+msgstr "eraro dum skribado de ŝlosilaro '%s': %s\n"
 
 #, c-format
 msgid "GPG_TTY has not been set - using maybe bogus default\n"
@@ -9269,6 +9295,10 @@ msgid "manage the command history"
 msgstr ""
 
 #, fuzzy, c-format
+#~ msgid "public key of ultimately trusted key %s not found\n"
+#~ msgstr "publika ŝlosilo de absolute fidata ŝlosilo %08lX ne trovita\n"
+
+#, fuzzy, c-format
 #~ msgid "waiting for process to terminate failed: ec=%d\n"
 #~ msgstr "aktualigo malsukcesis: %s\n"
 
@@ -9497,10 +9527,6 @@ msgstr ""
 #, fuzzy
 #~ msgid "unable to execute program '%s': %s\n"
 #~ msgstr "Averto: malsekura posedeco sur %s \"%s\"\n"
-
-#, fuzzy
-#~ msgid "   (%d) ECC and ECC\n"
-#~ msgstr "   (%d) DSA kaj ElGamal (implicita elekto)\n"
 
 #, fuzzy
 #~ msgid "run without asking a user"

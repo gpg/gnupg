@@ -801,6 +801,10 @@ msgstr "canvia la contrasenya"
 msgid "I'll change it later"
 msgstr ""
 
+#, fuzzy, c-format
+msgid "Unprotecting key failed: %s\n"
+msgstr "no s'ha pogut eliminar el bloc de claus: %s\n"
+
 msgid "Please insert the card with serial number"
 msgstr ""
 
@@ -2953,6 +2957,11 @@ msgstr ""
 msgid "repair keys on import"
 msgstr "mostra empremta"
 
+#, fuzzy
+#| msgid "list secret keys"
+msgid "do not import secret keys"
+msgstr "llista claus secretes"
+
 #, c-format
 msgid "skipping block of type %d\n"
 msgstr "es descarta un bloc de tipus %d\n"
@@ -4550,6 +4559,10 @@ msgid "  (%d) Existing key from card%s\n"
 msgstr "  (%d) RSA (només xifrar)\n"
 
 #, fuzzy, c-format
+msgid "  (%d) ECC and Kyber%s\n"
+msgstr "   (%d) DSA i ElGamal (predeterminat)\n"
+
+#, fuzzy, c-format
 #| msgid "   (%d) RSA (encrypt only)\n"
 msgid "  (%d) Kyber (encrypt only)%s\n"
 msgstr "  (%d) RSA (només xifrar)\n"
@@ -4598,6 +4611,11 @@ msgstr "La grandària sol·licitada és %u bits\n"
 #, fuzzy
 #| msgid "Please select what kind of key you want:\n"
 msgid "Please select which elliptic curve you want:\n"
+msgstr "Seleccioneu quin tipus de clau voleu:\n"
+
+#, fuzzy, c-format
+#| msgid "Please select what kind of key you want:\n"
+msgid "Please select the %s variant you want:\n"
 msgstr "Seleccioneu quin tipus de clau voleu:\n"
 
 msgid ""
@@ -6810,14 +6828,19 @@ msgid_plural " (%d validity counts cleared)\n"
 msgstr[0] "s'han processat %d claus (s'han netejat %d comptes de validesa)\n"
 msgstr[1] "s'han processat %d claus (s'han netejat %d comptes de validesa)\n"
 
-#, c-format
-msgid "no ultimately trusted keys found\n"
+#, fuzzy, c-format
+#| msgid "no ultimately trusted keys found\n"
+msgid "Note: ultimately trusted key %s not found\n"
 msgstr "no s'han trobat claus amb confiança absoluta\n"
 
 #, fuzzy, c-format
-msgid "public key of ultimately trusted key %s not found\n"
-msgstr ""
-"no s'ha trobat la clau pública de la clau amb confiança absoluta %08lX\n"
+#| msgid "no ultimately trusted keys found\n"
+msgid "Note: ultimately trusted key %s expired\n"
+msgstr "no s'han trobat claus amb confiança absoluta\n"
+
+#, c-format
+msgid "no ultimately trusted keys found\n"
+msgstr "no s'han trobat claus amb confiança absoluta\n"
 
 #, c-format
 msgid ""
@@ -8021,6 +8044,10 @@ msgstr "error en la lectura de «%s»: %s\n"
 
 msgid "Error - "
 msgstr ""
+
+#, fuzzy, c-format
+msgid "error writing to output: %s\n"
+msgstr "error mentre s'escrivia l'anell «%s»: %s\n"
 
 #, c-format
 msgid "GPG_TTY has not been set - using maybe bogus default\n"
@@ -9535,6 +9562,11 @@ msgid "manage the command history"
 msgstr ""
 
 #, fuzzy, c-format
+#~ msgid "public key of ultimately trusted key %s not found\n"
+#~ msgstr ""
+#~ "no s'ha trobat la clau pública de la clau amb confiança absoluta %08lX\n"
+
+#, fuzzy, c-format
 #~ msgid "waiting for process to terminate failed: ec=%d\n"
 #~ msgstr "ha fallat l'actualització: %s\n"
 
@@ -9789,10 +9821,6 @@ msgstr ""
 
 #~ msgid "unable to read external program response: %s\n"
 #~ msgstr "no s'ha pogut llegir la resposta del programa extern: %s\n"
-
-#, fuzzy
-#~ msgid "   (%d) ECC and ECC\n"
-#~ msgstr "   (%d) DSA i ElGamal (predeterminat)\n"
 
 #, fuzzy
 #~ msgid "run without asking a user"

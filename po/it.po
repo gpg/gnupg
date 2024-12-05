@@ -757,6 +757,11 @@ msgstr "Modifica passphrase"
 msgid "I'll change it later"
 msgstr "Lo cambierò più tardi"
 
+#, fuzzy, c-format
+#| msgid "receiving line failed: %s\n"
+msgid "Unprotecting key failed: %s\n"
+msgstr "linea di ricezione non riuscita: %s\n"
+
 msgid "Please insert the card with serial number"
 msgstr "Inserire la scheda con il numero di serie"
 
@@ -2744,6 +2749,11 @@ msgstr "assumere il formato di backup della chiave GnuPG"
 msgid "repair keys on import"
 msgstr "ripristinare le chiavi all'importazione"
 
+#, fuzzy
+#| msgid "list secret keys"
+msgid "do not import secret keys"
+msgstr "elenca le chiavi segrete"
+
 #, c-format
 msgid "skipping block of type %d\n"
 msgstr "salto un blocco di tipo %d\n"
@@ -4246,6 +4256,11 @@ msgid "  (%d) Existing key from card%s\n"
 msgstr "  (%d) Chiave esistente dalla carta%s\n"
 
 #, fuzzy, c-format
+#| msgid "   (%d) ECC and ECC\n"
+msgid "  (%d) ECC and Kyber%s\n"
+msgstr "   (%d) ECC ed ECC\n"
+
+#, fuzzy, c-format
 #| msgid "  (%d) ECC (encrypt only)%s\n"
 msgid "  (%d) Kyber (encrypt only)%s\n"
 msgstr "  (%d) ECC (solo crittografia)%s\n"
@@ -4289,6 +4304,11 @@ msgstr "La dimensione richiesta della chiave è %u bit\n"
 
 msgid "Please select which elliptic curve you want:\n"
 msgstr "Selezionare la curva ellittica desiderata:\n"
+
+#, fuzzy, c-format
+#| msgid "Please select what kind of key you want:\n"
+msgid "Please select the %s variant you want:\n"
+msgstr "Per favore scegli che tipo di chiave vuoi:\n"
 
 msgid ""
 "Please specify how long the key should be valid.\n"
@@ -6450,13 +6470,19 @@ msgid_plural " (%d validity counts cleared)\n"
 msgstr[0] " (%d conteggio di validità cancellato)\n"
 msgstr[1] " (%d conteggi di validità cancellati)\n"
 
-#, c-format
-msgid "no ultimately trusted keys found\n"
+#, fuzzy, c-format
+#| msgid "no ultimately trusted keys found\n"
+msgid "Note: ultimately trusted key %s not found\n"
+msgstr "non è stata trovata alcuna chiave definitivamente affidabile\n"
+
+#, fuzzy, c-format
+#| msgid "no ultimately trusted keys found\n"
+msgid "Note: ultimately trusted key %s expired\n"
 msgstr "non è stata trovata alcuna chiave definitivamente affidabile\n"
 
 #, c-format
-msgid "public key of ultimately trusted key %s not found\n"
-msgstr "chiave pubblica della chiave attendibile %s non trovata\n"
+msgid "no ultimately trusted keys found\n"
+msgstr "non è stata trovata alcuna chiave definitivamente affidabile\n"
 
 #, c-format
 msgid ""
@@ -7613,6 +7639,11 @@ msgstr "errore durante l'archiviazione dei flag: %s\n"
 
 msgid "Error - "
 msgstr "Errore - "
+
+#, fuzzy, c-format
+#| msgid "error writing to stdout: %s\n"
+msgid "error writing to output: %s\n"
+msgstr "errore durante la scrittura in stdout: %s\n"
 
 #, c-format
 msgid "GPG_TTY has not been set - using maybe bogus default\n"
@@ -9115,6 +9146,10 @@ msgid "manage the command history"
 msgstr "gestire la cronologia dei comandi"
 
 #, c-format
+#~ msgid "public key of ultimately trusted key %s not found\n"
+#~ msgstr "chiave pubblica della chiave attendibile %s non trovata\n"
+
+#, c-format
 #~ msgid "waiting for process %d to terminate failed: %s\n"
 #~ msgstr "in attesa della terminazione del processo %d non riuscita: %s\n"
 
@@ -9381,9 +9416,6 @@ msgstr "gestire la cronologia dei comandi"
 
 #~ msgid "elevate the trust of signatures with valid PKA data"
 #~ msgstr "elevare la fiducia delle firme con dati PKA validi"
-
-#~ msgid "   (%d) ECC and ECC\n"
-#~ msgstr "   (%d) ECC ed ECC\n"
 
 #~ msgid "honor the PKA record set on a key when retrieving keys"
 #~ msgstr ""

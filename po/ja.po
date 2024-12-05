@@ -745,6 +745,11 @@ msgstr "パスフレーズを変更する"
 msgid "I'll change it later"
 msgstr "後で変更する"
 
+#, fuzzy, c-format
+#| msgid "receiving line failed: %s\n"
+msgid "Unprotecting key failed: %s\n"
+msgstr "行の受信に失敗しました: %s\n"
+
 msgid "Please insert the card with serial number"
 msgstr "以下のシリアル番号のカードを挿入してください"
 
@@ -2663,6 +2668,11 @@ msgstr "GnuPGの鍵のバックアップフォーマットを仮定します"
 msgid "repair keys on import"
 msgstr "インポートの際、鍵を修復する"
 
+#, fuzzy
+#| msgid "list secret keys"
+msgid "do not import secret keys"
+msgstr "秘密鍵の一覧"
+
 #, c-format
 msgid "skipping block of type %d\n"
 msgstr "型%dのブロックをスキップします\n"
@@ -4103,6 +4113,11 @@ msgstr "  (%d) 既存の鍵%s\n"
 msgid "  (%d) Existing key from card%s\n"
 msgstr "  (%d) カードに存在する鍵%s\n"
 
+#, fuzzy, c-format
+#| msgid "   (%d) ECC and ECC\n"
+msgid "  (%d) ECC and Kyber%s\n"
+msgstr "   (%d) ECC と ECC\n"
+
 #, c-format
 msgid "  (%d) Kyber (encrypt only)%s\n"
 msgstr "  (%d) Kyber (暗号化のみ)%s\n"
@@ -4146,6 +4161,11 @@ msgstr "要求された鍵長は%uビット\n"
 
 msgid "Please select which elliptic curve you want:\n"
 msgstr "ご希望の楕円曲線を選択してください:\n"
+
+#, fuzzy, c-format
+#| msgid "Please select what kind of key you want:\n"
+msgid "Please select the %s variant you want:\n"
+msgstr "ご希望の鍵の種類を選択してください:\n"
 
 msgid ""
 "Please specify how long the key should be valid.\n"
@@ -6176,13 +6196,19 @@ msgid " (%d validity count cleared)\n"
 msgid_plural " (%d validity counts cleared)\n"
 msgstr[0] " (うち%d本の有効性数をクリア)\n"
 
-#, c-format
-msgid "no ultimately trusted keys found\n"
+#, fuzzy, c-format
+#| msgid "no ultimately trusted keys found\n"
+msgid "Note: ultimately trusted key %s not found\n"
+msgstr "究極的に信用する鍵が見つかりません\n"
+
+#, fuzzy, c-format
+#| msgid "no ultimately trusted keys found\n"
+msgid "Note: ultimately trusted key %s expired\n"
 msgstr "究極的に信用する鍵が見つかりません\n"
 
 #, c-format
-msgid "public key of ultimately trusted key %s not found\n"
-msgstr "究極的に信用する鍵%sの公開鍵が見つかりません\n"
+msgid "no ultimately trusted keys found\n"
+msgstr "究極的に信用する鍵が見つかりません\n"
 
 #, c-format
 msgid ""
@@ -7304,6 +7330,11 @@ msgstr "フラグの保存エラー: %s\n"
 
 msgid "Error - "
 msgstr "エラー - "
+
+#, fuzzy, c-format
+#| msgid "error writing to stdout: %s\n"
+msgid "error writing to output: %s\n"
+msgstr "stdoutへの書き込みエラー: %s\n"
 
 #, c-format
 msgid "GPG_TTY has not been set - using maybe bogus default\n"
@@ -8760,6 +8791,10 @@ msgid "manage the command history"
 msgstr "コマンド履歴を管理する"
 
 #, c-format
+#~ msgid "public key of ultimately trusted key %s not found\n"
+#~ msgstr "究極的に信用する鍵%sの公開鍵が見つかりません\n"
+
+#, c-format
 #~ msgid "waiting for process %d to terminate failed: %s\n"
 #~ msgstr "プロセス%dの終了待ちが失敗: %s\n"
 
@@ -9044,9 +9079,6 @@ msgstr "コマンド履歴を管理する"
 
 #~ msgid "elevate the trust of signatures with valid PKA data"
 #~ msgstr "有効なPKAデータで署名の信用度を上昇させる"
-
-#~ msgid "   (%d) ECC and ECC\n"
-#~ msgstr "   (%d) ECC と ECC\n"
 
 #~ msgid "honor the PKA record set on a key when retrieving keys"
 #~ msgstr "鍵に設定されたPKAレコードを鍵の取得時に与える"

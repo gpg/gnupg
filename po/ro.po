@@ -779,6 +779,10 @@ msgstr "schimbă fraza-parolă"
 msgid "I'll change it later"
 msgstr ""
 
+#, fuzzy, c-format
+msgid "Unprotecting key failed: %s\n"
+msgstr "citirea cheii publice a eşuat: %s\n"
+
 #, fuzzy
 msgid "Please insert the card with serial number"
 msgstr ""
@@ -2927,6 +2931,11 @@ msgstr ""
 msgid "repair keys on import"
 msgstr "afişează amprenta cheii"
 
+#, fuzzy
+#| msgid "list secret keys"
+msgid "do not import secret keys"
+msgstr "enumeră chei secrete"
+
 #, c-format
 msgid "skipping block of type %d\n"
 msgstr "bloc de tip %d sărit\n"
@@ -4481,6 +4490,10 @@ msgid "  (%d) Existing key from card%s\n"
 msgstr "   (2) Cheie de cifrare\n"
 
 #, fuzzy, c-format
+msgid "  (%d) ECC and Kyber%s\n"
+msgstr "   (%d) DSA şi Elgamal (implicit)\n"
+
+#, fuzzy, c-format
 #| msgid "   (%d) RSA (encrypt only)\n"
 msgid "  (%d) Kyber (encrypt only)%s\n"
 msgstr "  (%d) RSA (numai cifrare)\n"
@@ -4529,6 +4542,11 @@ msgstr "Lungimea cheii necesară este %u biţi\n"
 #, fuzzy
 #| msgid "Please select what kind of key you want:\n"
 msgid "Please select which elliptic curve you want:\n"
+msgstr "Selectaţi ce fel de cheie doriţi:\n"
+
+#, fuzzy, c-format
+#| msgid "Please select what kind of key you want:\n"
+msgid "Please select the %s variant you want:\n"
 msgstr "Selectaţi ce fel de cheie doriţi:\n"
 
 msgid ""
@@ -6729,13 +6747,19 @@ msgid_plural " (%d validity counts cleared)\n"
 msgstr[0] "%d chei procesate (%d numărători valide anulate)\n"
 msgstr[1] "%d chei procesate (%d numărători valide anulate)\n"
 
-#, c-format
-msgid "no ultimately trusted keys found\n"
+#, fuzzy, c-format
+#| msgid "no ultimately trusted keys found\n"
+msgid "Note: ultimately trusted key %s not found\n"
+msgstr "nu am găsit nici o cheie cu încredere supremă\n"
+
+#, fuzzy, c-format
+#| msgid "no ultimately trusted keys found\n"
+msgid "Note: ultimately trusted key %s expired\n"
 msgstr "nu am găsit nici o cheie cu încredere supremă\n"
 
 #, c-format
-msgid "public key of ultimately trusted key %s not found\n"
-msgstr "cheia publică a cheii cu încredere supremă %s nu a fost găsită\n"
+msgid "no ultimately trusted keys found\n"
+msgstr "nu am găsit nici o cheie cu încredere supremă\n"
 
 #, c-format
 msgid ""
@@ -7925,6 +7949,10 @@ msgstr "eroare la citire `%s': %s\n"
 
 msgid "Error - "
 msgstr ""
+
+#, fuzzy, c-format
+msgid "error writing to output: %s\n"
+msgstr "eroare la scrierea inelului de chei `%s': %s\n"
 
 #, c-format
 msgid "GPG_TTY has not been set - using maybe bogus default\n"
@@ -9445,6 +9473,10 @@ msgstr ""
 msgid "manage the command history"
 msgstr ""
 
+#, c-format
+#~ msgid "public key of ultimately trusted key %s not found\n"
+#~ msgstr "cheia publică a cheii cu încredere supremă %s nu a fost găsită\n"
+
 #, fuzzy, c-format
 #~ msgid "waiting for process to terminate failed: ec=%d\n"
 #~ msgstr "actualizarea a eşuat: %s\n"
@@ -9713,10 +9745,6 @@ msgstr ""
 
 #~ msgid "unable to read external program response: %s\n"
 #~ msgstr "nu pot citi răspunsul programului extern: %s\n"
-
-#, fuzzy
-#~ msgid "   (%d) ECC and ECC\n"
-#~ msgstr "   (%d) DSA şi Elgamal (implicit)\n"
 
 #, fuzzy
 #~| msgid "Quit without saving? (y/N) "

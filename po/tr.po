@@ -750,6 +750,11 @@ msgstr "Anahtar parolasını değiştir"
 msgid "I'll change it later"
 msgstr "Sonra değiştireceğim"
 
+#, fuzzy, c-format
+#| msgid "receiving line failed: %s\n"
+msgid "Unprotecting key failed: %s\n"
+msgstr "satır alımı başarısız: %s\n"
+
 msgid "Please insert the card with serial number"
 msgstr "Lütfen seri numarayı içeren kartı takın"
 
@@ -2697,6 +2702,11 @@ msgstr "GnuPG anahtar yedekleme biçimini varsay"
 msgid "repair keys on import"
 msgstr "içe aktarırken anahtarları onar"
 
+#, fuzzy
+#| msgid "list secret keys"
+msgid "do not import secret keys"
+msgstr "gizli anahtarları listele"
+
 #, c-format
 msgid "skipping block of type %d\n"
 msgstr "%d türündeki blok atlanıyor\n"
@@ -4200,6 +4210,11 @@ msgid "  (%d) Existing key from card%s\n"
 msgstr "  (%d) Karttaki var olan anahtar%s\n"
 
 #, fuzzy, c-format
+#| msgid "   (%d) ECC (sign and encrypt)%s\n"
+msgid "  (%d) ECC and Kyber%s\n"
+msgstr "   (%d) ECC (imza ve şifreleme)%s\n"
+
+#, fuzzy, c-format
 #| msgid "  (%d) ECC (encrypt only)%s\n"
 msgid "  (%d) Kyber (encrypt only)%s\n"
 msgstr "  (%d) RSA (yalnızca şifreleme)%s\n"
@@ -4243,6 +4258,11 @@ msgstr "İstenen anahtar boyutu: %u bit\n"
 
 msgid "Please select which elliptic curve you want:\n"
 msgstr "Lütfen hangi eliptik eğriyi istediğinizi seçin:\n"
+
+#, fuzzy, c-format
+#| msgid "Please select what kind of key you want:\n"
+msgid "Please select the %s variant you want:\n"
+msgstr "Lütfen istediğiniz anahtar türünü seçin:\n"
 
 msgid ""
 "Please specify how long the key should be valid.\n"
@@ -6364,13 +6384,19 @@ msgid_plural " (%d validity counts cleared)\n"
 msgstr[0] " (%d doğrulama sayımı temizlendi)\n"
 msgstr[1] " (%d doğrulama sayımı temizlendi)\n"
 
-#, c-format
-msgid "no ultimately trusted keys found\n"
+#, fuzzy, c-format
+#| msgid "no ultimately trusted keys found\n"
+msgid "Note: ultimately trusted key %s not found\n"
+msgstr "son derece güvenli bir anahtar bulunamadı\n"
+
+#, fuzzy, c-format
+#| msgid "no ultimately trusted keys found\n"
+msgid "Note: ultimately trusted key %s expired\n"
 msgstr "son derece güvenli bir anahtar bulunamadı\n"
 
 #, c-format
-msgid "public key of ultimately trusted key %s not found\n"
-msgstr "son derece güvenli %s için genel anahtar bulunamadı\n"
+msgid "no ultimately trusted keys found\n"
+msgstr "son derece güvenli bir anahtar bulunamadı\n"
 
 #, c-format
 msgid ""
@@ -7498,6 +7524,11 @@ msgstr "bayraklar saklanırken hata: %s\n"
 
 msgid "Error - "
 msgstr "Hata - "
+
+#, fuzzy, c-format
+#| msgid "error writing to '%s': %s\n"
+msgid "error writing to output: %s\n"
+msgstr "'%s' konumuna yazılırken hata: %s\n"
 
 #, c-format
 msgid "GPG_TTY has not been set - using maybe bogus default\n"
@@ -8955,6 +8986,10 @@ msgstr "Yubikey yönetim konsolu"
 
 msgid "manage the command history"
 msgstr "komut geçmişini yönet"
+
+#, c-format
+#~ msgid "public key of ultimately trusted key %s not found\n"
+#~ msgstr "son derece güvenli %s için genel anahtar bulunamadı\n"
 
 #, c-format
 #~ msgid "waiting for process %d to terminate failed: %s\n"

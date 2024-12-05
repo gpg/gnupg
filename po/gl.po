@@ -770,6 +770,10 @@ msgstr "cambia-lo contrasinal"
 msgid "I'll change it later"
 msgstr ""
 
+#, fuzzy, c-format
+msgid "Unprotecting key failed: %s\n"
+msgstr "fallou o borrado do bloque de chaves: %s\n"
+
 msgid "Please insert the card with serial number"
 msgstr ""
 
@@ -2862,6 +2866,11 @@ msgstr ""
 msgid "repair keys on import"
 msgstr "amosar fingerprint"
 
+#, fuzzy
+#| msgid "list secret keys"
+msgid "do not import secret keys"
+msgstr "ve-la lista de chaves secretas"
+
 #, c-format
 msgid "skipping block of type %d\n"
 msgstr "pasando por alto un bloque de tipo %d\n"
@@ -4442,6 +4451,10 @@ msgid "  (%d) Existing key from card%s\n"
 msgstr "  (%d) RSA (só cifrar)\n"
 
 #, fuzzy, c-format
+msgid "  (%d) ECC and Kyber%s\n"
+msgstr "   (%d) DSA e ElGamal (por defecto)\n"
+
+#, fuzzy, c-format
 #| msgid "   (%d) RSA (encrypt only)\n"
 msgid "  (%d) Kyber (encrypt only)%s\n"
 msgstr "  (%d) RSA (só cifrar)\n"
@@ -4490,6 +4503,11 @@ msgstr "O tamaño de chave requerido son %u bits\n"
 #, fuzzy
 #| msgid "Please select what kind of key you want:\n"
 msgid "Please select which elliptic curve you want:\n"
+msgstr "Por favor, seleccione o tipo de chave que quere:\n"
+
+#, fuzzy, c-format
+#| msgid "Please select what kind of key you want:\n"
+msgid "Please select the %s variant you want:\n"
 msgstr "Por favor, seleccione o tipo de chave que quere:\n"
 
 msgid ""
@@ -6660,13 +6678,19 @@ msgid_plural " (%d validity counts cleared)\n"
 msgstr[0] "procesáronse %d chaves (marcáronse %d contas de validez)\n"
 msgstr[1] "procesáronse %d chaves (marcáronse %d contas de validez)\n"
 
-#, c-format
-msgid "no ultimately trusted keys found\n"
+#, fuzzy, c-format
+#| msgid "no ultimately trusted keys found\n"
+msgid "Note: ultimately trusted key %s not found\n"
 msgstr "non se atoparon chaves de confianza absoluta\n"
 
 #, fuzzy, c-format
-msgid "public key of ultimately trusted key %s not found\n"
-msgstr "non se atopou a chave pública da clave de confianza absoluta %08lX\n"
+#| msgid "no ultimately trusted keys found\n"
+msgid "Note: ultimately trusted key %s expired\n"
+msgstr "non se atoparon chaves de confianza absoluta\n"
+
+#, c-format
+msgid "no ultimately trusted keys found\n"
+msgstr "non se atoparon chaves de confianza absoluta\n"
 
 #, c-format
 msgid ""
@@ -7851,6 +7875,10 @@ msgstr "erro lendo `%s': %s\n"
 
 msgid "Error - "
 msgstr ""
+
+#, fuzzy, c-format
+msgid "error writing to output: %s\n"
+msgstr "erro escribindo no chaveiro `%s': %s\n"
 
 #, c-format
 msgid "GPG_TTY has not been set - using maybe bogus default\n"
@@ -9354,6 +9382,11 @@ msgid "manage the command history"
 msgstr ""
 
 #, fuzzy, c-format
+#~ msgid "public key of ultimately trusted key %s not found\n"
+#~ msgstr ""
+#~ "non se atopou a chave pública da clave de confianza absoluta %08lX\n"
+
+#, fuzzy, c-format
 #~ msgid "waiting for process to terminate failed: ec=%d\n"
 #~ msgstr "a actualización fallou: %s\n"
 
@@ -9604,10 +9637,6 @@ msgstr ""
 
 #~ msgid "unable to read external program response: %s\n"
 #~ msgstr "non se puido le-la resposta do programa externo: %s\n"
-
-#, fuzzy
-#~ msgid "   (%d) ECC and ECC\n"
-#~ msgstr "   (%d) DSA e ElGamal (por defecto)\n"
 
 #, fuzzy
 #~ msgid "run without asking a user"

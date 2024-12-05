@@ -768,6 +768,11 @@ msgstr "Endre passordfrase"
 msgid "I'll change it later"
 msgstr "Jeg endrer senere"
 
+#, fuzzy, c-format
+#| msgid "receiving line failed: %s\n"
+msgid "Unprotecting key failed: %s\n"
+msgstr "linjemottak mislyktes: %s\n"
+
 msgid "Please insert the card with serial number"
 msgstr "Sett inn kort med serienummer"
 
@@ -2773,6 +2778,11 @@ msgstr "forvent GnuPG-format på sikkerhetskopierte nøkler"
 msgid "repair keys on import"
 msgstr "reparer nøkler under importering"
 
+#, fuzzy
+#| msgid "list secret keys"
+msgid "do not import secret keys"
+msgstr "vis hemmelige nøkler"
+
 #, c-format
 msgid "skipping block of type %d\n"
 msgstr "hopper over blokk av typen %d\n"
@@ -4283,6 +4293,11 @@ msgid "  (%d) Existing key from card%s\n"
 msgstr "  (%d) Nøkkel fra kort\n"
 
 #, fuzzy, c-format
+#| msgid "   (%d) ECC and ECC\n"
+msgid "  (%d) ECC and Kyber%s\n"
+msgstr "   (%d) ECC og ECC\n"
+
+#, fuzzy, c-format
 #| msgid "  (%d) ECC (encrypt only)\n"
 msgid "  (%d) Kyber (encrypt only)%s\n"
 msgstr "  (%d) ECC (kun kryptering)\n"
@@ -4326,6 +4341,11 @@ msgstr "Forespurt nøkkelstørrelse er %u bit\n"
 
 msgid "Please select which elliptic curve you want:\n"
 msgstr "Velg elliptisk kurve:\n"
+
+#, fuzzy, c-format
+#| msgid "Please select what kind of key you want:\n"
+msgid "Please select the %s variant you want:\n"
+msgstr "Velg hvilken type nøkkel du vil ha:\n"
 
 msgid ""
 "Please specify how long the key should be valid.\n"
@@ -6453,13 +6473,19 @@ msgid_plural " (%d validity counts cleared)\n"
 msgstr[0] "(%d gyldighetsantall klarert)\n"
 msgstr[1] "(%d gyldighetsantall klarert)\n"
 
-#, c-format
-msgid "no ultimately trusted keys found\n"
+#, fuzzy, c-format
+#| msgid "no ultimately trusted keys found\n"
+msgid "Note: ultimately trusted key %s not found\n"
+msgstr "fant ingen nøkler med absolutt («ultimat») pålitelighet\n"
+
+#, fuzzy, c-format
+#| msgid "no ultimately trusted keys found\n"
+msgid "Note: ultimately trusted key %s expired\n"
 msgstr "fant ingen nøkler med absolutt («ultimat») pålitelighet\n"
 
 #, c-format
-msgid "public key of ultimately trusted key %s not found\n"
-msgstr "fant ikke offentlig nøkkel for absolutt pålitelig nøkkel %s\n"
+msgid "no ultimately trusted keys found\n"
+msgstr "fant ingen nøkler med absolutt («ultimat») pålitelighet\n"
 
 #, c-format
 msgid ""
@@ -7606,6 +7632,11 @@ msgstr "feil under lagring av valg: %s\n"
 
 msgid "Error - "
 msgstr "Feil - "
+
+#, fuzzy, c-format
+#| msgid "error writing to stdout: %s\n"
+msgid "error writing to output: %s\n"
+msgstr "feil under skriving til std.utkanal: %s\n"
 
 #, c-format
 msgid "GPG_TTY has not been set - using maybe bogus default\n"
@@ -9091,6 +9122,10 @@ msgid "manage the command history"
 msgstr ""
 
 #, c-format
+#~ msgid "public key of ultimately trusted key %s not found\n"
+#~ msgstr "fant ikke offentlig nøkkel for absolutt pålitelig nøkkel %s\n"
+
+#, c-format
 #~ msgid "waiting for process %d to terminate failed: %s\n"
 #~ msgstr "prosess %d avsluttet ikke i tide: %s\n"
 
@@ -9392,9 +9427,6 @@ msgstr ""
 
 #~ msgid "elevate the trust of signatures with valid PKA data"
 #~ msgstr "øk tillitsnivå for signaturer med gyldige PKA-data"
-
-#~ msgid "   (%d) ECC and ECC\n"
-#~ msgstr "   (%d) ECC og ECC\n"
 
 #~ msgid "honor the PKA record set on a key when retrieving keys"
 #~ msgstr "bruk nøklers PKA-oppføring når du henter dem"

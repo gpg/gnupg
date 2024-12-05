@@ -773,6 +773,11 @@ msgstr "Змінити пароль"
 msgid "I'll change it later"
 msgstr "Я зміню його пізніше"
 
+#, fuzzy, c-format
+#| msgid "receiving line failed: %s\n"
+msgid "Unprotecting key failed: %s\n"
+msgstr "помилка під час спроби отримання рядка: %s\n"
+
 msgid "Please insert the card with serial number"
 msgstr "Будь ласка, вставте картку з серійним номером"
 
@@ -2814,6 +2819,11 @@ msgstr "припускати формат резервних копій ключ
 msgid "repair keys on import"
 msgstr "відновлювати ключі при імпортуванні"
 
+#, fuzzy
+#| msgid "list secret keys"
+msgid "do not import secret keys"
+msgstr "показати список закритих ключів"
+
 #, c-format
 msgid "skipping block of type %d\n"
 msgstr "пропускаємо блок типу %d\n"
@@ -4341,6 +4351,11 @@ msgid "  (%d) Existing key from card%s\n"
 msgstr "  (%d) Вже записаний ключ з картки\n"
 
 #, fuzzy, c-format
+#| msgid "   (%d) ECC and ECC\n"
+msgid "  (%d) ECC and Kyber%s\n"
+msgstr "   (%d) ECC та ECC\n"
+
+#, fuzzy, c-format
 #| msgid "  (%d) ECC (encrypt only)\n"
 msgid "  (%d) Kyber (encrypt only)%s\n"
 msgstr "  (%d) ECC (лише шифрування)\n"
@@ -4384,6 +4399,11 @@ msgstr "Запитана довжина ключа — %u бітів\n"
 
 msgid "Please select which elliptic curve you want:\n"
 msgstr "Вкажіть потрібну вам еліптичну криву:\n"
+
+#, fuzzy, c-format
+#| msgid "Please select what kind of key you want:\n"
+msgid "Please select the %s variant you want:\n"
+msgstr "Вкажіть потрібний вам тип ключа:\n"
 
 msgid ""
 "Please specify how long the key should be valid.\n"
@@ -6595,13 +6615,19 @@ msgstr[0] " (очищено %d значення чинності)\n"
 msgstr[1] " (очищено %d значення чинності)\n"
 msgstr[2] " (очищено %d значень чинності)\n"
 
-#, c-format
-msgid "no ultimately trusted keys found\n"
+#, fuzzy, c-format
+#| msgid "no ultimately trusted keys found\n"
+msgid "Note: ultimately trusted key %s not found\n"
+msgstr "не знайдено ключів з необмеженою довірою\n"
+
+#, fuzzy, c-format
+#| msgid "no ultimately trusted keys found\n"
+msgid "Note: ultimately trusted key %s expired\n"
 msgstr "не знайдено ключів з необмеженою довірою\n"
 
 #, c-format
-msgid "public key of ultimately trusted key %s not found\n"
-msgstr "не знайдено відкритий ключ ключа з необмеженою довірою %s\n"
+msgid "no ultimately trusted keys found\n"
+msgstr "не знайдено ключів з необмеженою довірою\n"
 
 #, c-format
 msgid ""
@@ -7784,6 +7810,11 @@ msgstr "помилка під час спроби збереження позн�
 
 msgid "Error - "
 msgstr "Помилка - "
+
+#, fuzzy, c-format
+#| msgid "error writing to stdout: %s\n"
+msgid "error writing to output: %s\n"
+msgstr "помилка під час спроби запису до stdout: %s\n"
 
 #, c-format
 msgid "GPG_TTY has not been set - using maybe bogus default\n"
@@ -9285,6 +9316,10 @@ msgid "manage the command history"
 msgstr ""
 
 #, c-format
+#~ msgid "public key of ultimately trusted key %s not found\n"
+#~ msgstr "не знайдено відкритий ключ ключа з необмеженою довірою %s\n"
+
+#, c-format
 #~ msgid "waiting for process %d to terminate failed: %s\n"
 #~ msgstr "не вдалося дочекатися завершення процесу %d: %s\n"
 
@@ -9590,9 +9625,6 @@ msgstr ""
 
 #~ msgid "elevate the trust of signatures with valid PKA data"
 #~ msgstr "підняти рівень довіри до підписів з коректними даними PKA"
-
-#~ msgid "   (%d) ECC and ECC\n"
-#~ msgstr "   (%d) ECC та ECC\n"
 
 #~ msgid "honor the PKA record set on a key when retrieving keys"
 #~ msgstr ""

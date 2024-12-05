@@ -777,6 +777,11 @@ msgstr "Změnit heslo"
 msgid "I'll change it later"
 msgstr "Změním jej později"
 
+#, fuzzy, c-format
+#| msgid "receiving line failed: %s\n"
+msgid "Unprotecting key failed: %s\n"
+msgstr "přijímání řádku se nezdařilo: %s\n"
+
 msgid "Please insert the card with serial number"
 msgstr "Prosím, vložte kartu se sériovým číslem"
 
@@ -2731,6 +2736,11 @@ msgstr "předpokládat vstup ve formátu zálohy klíčů GnuPG"
 msgid "repair keys on import"
 msgstr "při importu opravit klíče"
 
+#, fuzzy
+#| msgid "list secret keys"
+msgid "do not import secret keys"
+msgstr "vypsat seznam tajných klíčů"
+
 #, c-format
 msgid "skipping block of type %d\n"
 msgstr "blok typu %d byl přeskočen\n"
@@ -4200,6 +4210,11 @@ msgid "  (%d) Existing key from card%s\n"
 msgstr "  (%d) Klíč existující na kartě%s\n"
 
 #, fuzzy, c-format
+#| msgid "   (%d) ECC and ECC\n"
+msgid "  (%d) ECC and Kyber%s\n"
+msgstr "   (%d) ECC a ECC\n"
+
+#, fuzzy, c-format
 #| msgid "  (%d) ECC (encrypt only)%s\n"
 msgid "  (%d) Kyber (encrypt only)%s\n"
 msgstr "  (%d) ECC (pouze pro šifrování)%s\n"
@@ -4243,6 +4258,11 @@ msgstr "Požadovaná délka klíče je %u bitů.\n"
 
 msgid "Please select which elliptic curve you want:\n"
 msgstr "Prosím, vyberte, kterou eliptickou křivku chcete:\n"
+
+#, fuzzy, c-format
+#| msgid "Please select what kind of key you want:\n"
+msgid "Please select the %s variant you want:\n"
+msgstr "Prosím, vyberte druh klíče, který chcete:\n"
 
 msgid ""
 "Please specify how long the key should be valid.\n"
@@ -6397,13 +6417,19 @@ msgstr[0] " (vymazáno %d počítadlo platnosti)\n"
 msgstr[1] " (vymazána %d počítadla platnosti)\n"
 msgstr[2] " (vymazáno %d počítadel platnosti)\n"
 
-#, c-format
-msgid "no ultimately trusted keys found\n"
+#, fuzzy, c-format
+#| msgid "no ultimately trusted keys found\n"
+msgid "Note: ultimately trusted key %s not found\n"
+msgstr "žádný absolutně důvěryhodný klíč nebyl nalezen\n"
+
+#, fuzzy, c-format
+#| msgid "no ultimately trusted keys found\n"
+msgid "Note: ultimately trusted key %s expired\n"
 msgstr "žádný absolutně důvěryhodný klíč nebyl nalezen\n"
 
 #, c-format
-msgid "public key of ultimately trusted key %s not found\n"
-msgstr "veřejný klíč k absolutně důvěryhodnému klíči %s nebyl nalezen\n"
+msgid "no ultimately trusted keys found\n"
+msgstr "žádný absolutně důvěryhodný klíč nebyl nalezen\n"
 
 #, c-format
 msgid ""
@@ -7546,6 +7572,11 @@ msgstr "chyba při ukládání příznaků: %s\n"
 
 msgid "Error - "
 msgstr "Chyba – "
+
+#, fuzzy, c-format
+#| msgid "error writing to stdout: %s\n"
+msgid "error writing to output: %s\n"
+msgstr "chyba při zápisu na standardní výstup: %s\n"
 
 #, c-format
 msgid "GPG_TTY has not been set - using maybe bogus default\n"
@@ -9020,6 +9051,10 @@ msgid "manage the command history"
 msgstr "spravuje historii příkazů"
 
 #, c-format
+#~ msgid "public key of ultimately trusted key %s not found\n"
+#~ msgstr "veřejný klíč k absolutně důvěryhodnému klíči %s nebyl nalezen\n"
+
+#, c-format
 #~ msgid "waiting for process %d to terminate failed: %s\n"
 #~ msgstr "čekání na konec procesu %d se nezdařilo: %s\n"
 
@@ -9169,9 +9204,6 @@ msgstr "spravuje historii příkazů"
 
 #~ msgid "elevate the trust of signatures with valid PKA data"
 #~ msgstr "vyzvednout důvěru podpisů s platnými daty PKA"
-
-#~ msgid "   (%d) ECC and ECC\n"
-#~ msgstr "   (%d) ECC a ECC\n"
 
 #~ msgid "honor the PKA record set on a key when retrieving keys"
 #~ msgstr "respektovat PKA záznamy klíče při získávání klíčů"

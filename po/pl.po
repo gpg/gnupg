@@ -744,6 +744,11 @@ msgstr "Zmiana hasła"
 msgid "I'll change it later"
 msgstr "Zmienię je później"
 
+#, fuzzy, c-format
+#| msgid "receiving line failed: %s\n"
+msgid "Unprotecting key failed: %s\n"
+msgstr "odbieranie linii nie powiodło się: %s\n"
+
 msgid "Please insert the card with serial number"
 msgstr "Proszę włożyć kartę z numerem seryjnym"
 
@@ -2700,6 +2705,11 @@ msgstr "przyjęcie wejścia w formacie kopii zapasowej klucza GnuPG"
 msgid "repair keys on import"
 msgstr "naprawienie kluczy przy imporcie"
 
+#, fuzzy
+#| msgid "list secret keys"
+msgid "do not import secret keys"
+msgstr "lista kluczy prywatnych"
+
 #, c-format
 msgid "skipping block of type %d\n"
 msgstr "blok typu %d zostaje pominięty\n"
@@ -4202,6 +4212,11 @@ msgid "  (%d) Existing key from card%s\n"
 msgstr "  (%d) Istniejący klucz z karty%s\n"
 
 #, fuzzy, c-format
+#| msgid "   (%d) ECC (sign and encrypt)%s\n"
+msgid "  (%d) ECC and Kyber%s\n"
+msgstr "   (%d) ECC (podpisywanie i szyfrowanie)%s\n"
+
+#, fuzzy, c-format
 #| msgid "  (%d) ECC (encrypt only)%s\n"
 msgid "  (%d) Kyber (encrypt only)%s\n"
 msgstr "  (%d) ECC (tylko do szyfrowania)%s\n"
@@ -4245,6 +4260,11 @@ msgstr "Żądana długość klucza to %u bitów.\n"
 
 msgid "Please select which elliptic curve you want:\n"
 msgstr "Proszę wybrać rodzaj krzywej eliptycznej:\n"
+
+#, fuzzy, c-format
+#| msgid "Please select what kind of key you want:\n"
+msgid "Please select the %s variant you want:\n"
+msgstr "Proszę wybrać rodzaj klucza:\n"
 
 msgid ""
 "Please specify how long the key should be valid.\n"
@@ -6434,13 +6454,19 @@ msgstr[0] " (skasowano %d licznik zaufania)\n"
 msgstr[1] " (skasowano %d liczniki zaufania)\n"
 msgstr[2] " (skasowano %d liczników zaufania)\n"
 
-#, c-format
-msgid "no ultimately trusted keys found\n"
+#, fuzzy, c-format
+#| msgid "no ultimately trusted keys found\n"
+msgid "Note: ultimately trusted key %s not found\n"
+msgstr "brak absolutnie zaufanych kluczy\n"
+
+#, fuzzy, c-format
+#| msgid "no ultimately trusted keys found\n"
+msgid "Note: ultimately trusted key %s expired\n"
 msgstr "brak absolutnie zaufanych kluczy\n"
 
 #, c-format
-msgid "public key of ultimately trusted key %s not found\n"
-msgstr "klucz publiczny absolutnie zaufanego klucza %s nie odnaleziony\n"
+msgid "no ultimately trusted keys found\n"
+msgstr "brak absolutnie zaufanych kluczy\n"
 
 #, c-format
 msgid ""
@@ -7581,6 +7607,11 @@ msgstr "błąd zapisywania flag: %s\n"
 
 msgid "Error - "
 msgstr "Błąd - "
+
+#, fuzzy, c-format
+#| msgid "error writing to '%s': %s\n"
+msgid "error writing to output: %s\n"
+msgstr "błąd zapisu do „%s”: %s\n"
 
 #, c-format
 msgid "GPG_TTY has not been set - using maybe bogus default\n"
@@ -9056,6 +9087,10 @@ msgstr "polecenia zarządzające kluczami Yubikey"
 
 msgid "manage the command history"
 msgstr "zarządzanie historią poleceń"
+
+#, c-format
+#~ msgid "public key of ultimately trusted key %s not found\n"
+#~ msgstr "klucz publiczny absolutnie zaufanego klucza %s nie odnaleziony\n"
 
 #, c-format
 #~ msgid "waiting for process %d to terminate failed: %s\n"

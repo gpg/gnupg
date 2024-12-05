@@ -788,6 +788,11 @@ msgstr "De wachtwoordzin wijzigen"
 msgid "I'll change it later"
 msgstr "Ik zal hem later wijzigen"
 
+#, fuzzy, c-format
+#| msgid "receiving line failed: %s\n"
+msgid "Unprotecting key failed: %s\n"
+msgstr "ontvangen van regel is mislukt: %s\n"
+
 msgid "Please insert the card with serial number"
 msgstr "Voer de kaart met het serienummer in"
 
@@ -2817,6 +2822,11 @@ msgstr "ervan uitgaan dat de indeling in GnuPG sleutelback-up is"
 msgid "repair keys on import"
 msgstr "sleutels repareren bij import"
 
+#, fuzzy
+#| msgid "list secret keys"
+msgid "do not import secret keys"
+msgstr "geheime sleutels tonen"
+
 #, c-format
 msgid "skipping block of type %d\n"
 msgstr "blok van het type %d wordt overgeslagen\n"
@@ -4365,6 +4375,11 @@ msgid "  (%d) Existing key from card%s\n"
 msgstr "  (%d) Bestaande sleutel op de kaart\n"
 
 #, fuzzy, c-format
+#| msgid "   (%d) ECC and ECC\n"
+msgid "  (%d) ECC and Kyber%s\n"
+msgstr "   (%d) ECC en ECC\n"
+
+#, fuzzy, c-format
 #| msgid "  (%d) ECC (encrypt only)\n"
 msgid "  (%d) Kyber (encrypt only)%s\n"
 msgstr "  (%d) ECC (alleen versleutelen)\n"
@@ -4410,6 +4425,11 @@ msgstr "Gevraagde sleutellengte is %u bits\n"
 
 msgid "Please select which elliptic curve you want:\n"
 msgstr "Selecteer welke elliptische curve u wilt:\n"
+
+#, fuzzy, c-format
+#| msgid "Please select what kind of key you want:\n"
+msgid "Please select the %s variant you want:\n"
+msgstr "Selecteer het soort sleutel dat u wilt:\n"
 
 msgid ""
 "Please specify how long the key should be valid.\n"
@@ -6618,13 +6638,19 @@ msgid_plural " (%d validity counts cleared)\n"
 msgstr[0] " (%d geldigheidsteller op nul gezet)\n"
 msgstr[1] " (%d geldigheidstellers op nul gezet)\n"
 
-#, c-format
-msgid "no ultimately trusted keys found\n"
+#, fuzzy, c-format
+#| msgid "no ultimately trusted keys found\n"
+msgid "Note: ultimately trusted key %s not found\n"
+msgstr "geen uitermate vertrouwde sleutels gevonden\n"
+
+#, fuzzy, c-format
+#| msgid "no ultimately trusted keys found\n"
+msgid "Note: ultimately trusted key %s expired\n"
 msgstr "geen uitermate vertrouwde sleutels gevonden\n"
 
 #, c-format
-msgid "public key of ultimately trusted key %s not found\n"
-msgstr "publieke sleutel van uitermate vertrouwde sleutel %s niet gevonden\n"
+msgid "no ultimately trusted keys found\n"
+msgstr "geen uitermate vertrouwde sleutels gevonden\n"
 
 #, c-format
 msgid ""
@@ -7823,6 +7849,11 @@ msgstr "fout bij het opslaan van de vlaggen: %s\n"
 
 msgid "Error - "
 msgstr "Fout - "
+
+#, fuzzy, c-format
+#| msgid "error writing to '%s': %s\n"
+msgid "error writing to output: %s\n"
+msgstr "fout bij het schrijven naar '%s': %s\n"
 
 #, c-format
 msgid "GPG_TTY has not been set - using maybe bogus default\n"
@@ -9365,6 +9396,11 @@ msgid "manage the command history"
 msgstr ""
 
 #, c-format
+#~ msgid "public key of ultimately trusted key %s not found\n"
+#~ msgstr ""
+#~ "publieke sleutel van uitermate vertrouwde sleutel %s niet gevonden\n"
+
+#, c-format
 #~ msgid "waiting for process %d to terminate failed: %s\n"
 #~ msgstr "wachten op het einde van proces %d is mislukt: %s\n"
 
@@ -9505,10 +9541,6 @@ msgstr ""
 #~ msgid "elevate the trust of signatures with valid PKA data"
 #~ msgstr ""
 #~ "de betrouwbaarheid van handtekeningen verhogen met geldige PKA-gegevens"
-
-#, c-format
-#~ msgid "   (%d) ECC and ECC\n"
-#~ msgstr "   (%d) ECC en ECC\n"
 
 #~ msgid "Name may not start with a digit\n"
 #~ msgstr "Een naam mag niet met een cijfer beginnen\n"
