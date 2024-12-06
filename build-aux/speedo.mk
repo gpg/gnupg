@@ -73,7 +73,7 @@ help:
 	@echo 'Use WIXPREFIX to provide the WIX binaries for the MSI package.'
 	@echo '    Using WIX also requires wine with installed wine mono.'
 	@echo '    See help-wixlib for more information'
-	@echo 'Set W32VERSION=w64 to build a 64 bit Windows version.'
+	@echo 'Set W32VERSION=w32 to build a 32 bit Windows version.'
 
 help-wixlib:
 	@echo 'The buildsystem can create a wixlib to build MSI packages.'
@@ -161,8 +161,8 @@ WHAT=git
 # Set target to "native" or "w32".
 TARGETOS=
 
-# To build a 64 bit Windows version also change this to "w64"
-W32VERSION=w32
+# To build a 32 bit Windows version also change this to "w32"
+W32VERSION=w64
 
 # Set to 1 to use a pre-installed swdb.lst instead of the online version.
 CUSTOM_SWDB=0
