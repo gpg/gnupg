@@ -2281,12 +2281,12 @@ parse_signature (IOBUF inp, int pkttype, unsigned long pktlen,
       pktlen -= 2;  /* Length of hashed data. */
       if (pktlen < n)
 	goto underflow;
-      if (n > 10000)
+      if (n > 30000)
 	{
-	  log_error ("signature packet: hashed data too long\n");
+	  log_error ("signature packet: hashed data too long (%u)\n", n);
           if (list_mode)
-            es_fputs (":signature packet: [hashed data too long]\n", listfp);
-	  rc = GPG_ERR_INV_PACKET;
+            es_fprintf (listfp,
+                        ":signature packet: [hashed data too long (%u)]\n", n);
 	  goto leave;
 	}
       if (n)
@@ -2313,10 +2313,11 @@ parse_signature (IOBUF inp, int pkttype, unsigned long pktlen,
 	goto underflow;
       if (n > 10000)
 	{
-	  log_error ("signature packet: unhashed data too long\n");
+	  log_error ("signature packet: unhashed data too long (%u)\n", n);
           if (list_mode)
-            es_fputs (":signature packet: [unhashed data too long]\n", listfp);
-	  rc = GPG_ERR_INV_PACKET;
+            es_fprintf (listfp,
+                        ":signature packet: [unhashed data too long (%u)]\n",
+                        n);
 	  goto leave;
 	}
       if (n)
