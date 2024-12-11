@@ -1326,6 +1326,8 @@ Section "-un.gnupg"
 
   Delete "$INSTDIR\share\doc\gnupg\examples\pwpattern.list"
   RMDir  "$INSTDIR\share\doc\gnupg\examples"
+  RMDir  "$INSTDIR\share\doc\gnupg"
+  RMDir  "$INSTDIR\share\doc"
 
   Delete "$INSTDIR\share\gnupg\sks-keyservers.netCA.pem"
   Delete "$INSTDIR\share\gnupg\dirmngr-conf.skel"
