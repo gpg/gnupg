@@ -750,10 +750,9 @@ msgstr "Anahtar parolasını değiştir"
 msgid "I'll change it later"
 msgstr "Sonra değiştireceğim"
 
-#, fuzzy, c-format
-#| msgid "receiving line failed: %s\n"
+#, c-format
 msgid "Unprotecting key failed: %s\n"
-msgstr "satır alımı başarısız: %s\n"
+msgstr "Anahtar koruması kaldırılamadı: %s\n"
 
 msgid "Please insert the card with serial number"
 msgstr "Lütfen seri numarayı içeren kartı takın"
@@ -1667,15 +1666,12 @@ msgstr "Yönetici komutlarına izin verilmez\n"
 msgid "Invalid command  (try \"help\")\n"
 msgstr "Komut geçersiz (\"help\" komutunu deneyin)\n"
 
-#, fuzzy, c-format
-#| msgid "key operation not possible: %s\n"
+#, c-format
 msgid "modifiying the recipients is not possible: %s\n"
-msgstr "anahtar işlemi olanaklı değil: %s\n"
+msgstr "alıcılarda değişiklik yapmak olanaklı değil: %s\n"
 
-#, fuzzy
-#| msgid "decryption failed: %s\n"
 msgid "decryption failed"
-msgstr "şifre çözme başarısız: %s\n"
+msgstr "şifre çözülemedi"
 
 #, c-format
 msgid "--output doesn't work for this command\n"
@@ -1814,10 +1810,9 @@ msgstr ""
 "UYARI: %s (%d) sıkıştırma algoritmasını zorlamak alıcı tercihlerine karşı "
 "geliyor\n"
 
-#, fuzzy, c-format
-#| msgid "Number of recipients"
+#, c-format
 msgid "number of removed recipients: %u\n"
-msgstr "Alıcı sayısı"
+msgstr "kaldırılan alıcıların sayısı: %u\n"
 
 #, c-format
 msgid "option '%s' may not be used in %s mode\n"
@@ -2303,10 +2298,8 @@ msgstr "imza listelemesi sırasında zaman aşımı tarihleri göster"
 msgid "show preferences"
 msgstr "tercihleri göster"
 
-#, fuzzy
-#| msgid "change the ownertrust"
 msgid "show ownertrust"
-msgstr "iye güvencesini değiştir"
+msgstr "iye güvencesini göster"
 
 #, c-format
 msgid "unknown TOFU policy '%s'\n"
@@ -2438,10 +2431,9 @@ msgstr "geçersiz auto-key-locate listesi\n"
 msgid "invalid argument for option \"%.50s\"\n"
 msgstr "\"%.50s\" seçeneği için geçersiz argüman\n"
 
-#, fuzzy, c-format
-#| msgid "error parsing key specification '%s': %s\n"
+#, c-format
 msgid "error parsing value for option '%s': %s\n"
-msgstr "'%s' anahtar belirtimi ayrıştırılırken hata: %s\n"
+msgstr "'%s' seçeneği için değer ayrıştırılırken hata: %s\n"
 
 #, c-format
 msgid "WARNING: program may create a core file!\n"
@@ -2702,10 +2694,8 @@ msgstr "GnuPG anahtar yedekleme biçimini varsay"
 msgid "repair keys on import"
 msgstr "içe aktarırken anahtarları onar"
 
-#, fuzzy
-#| msgid "list secret keys"
 msgid "do not import secret keys"
-msgstr "gizli anahtarları listele"
+msgstr "gizli anahtarlar içe aktarma"
 
 #, c-format
 msgid "skipping block of type %d\n"
@@ -3656,10 +3646,9 @@ msgstr "kullanıcı kimliğinin yürürlükten kaldırılması başarısız: %s\
 msgid "setting the primary user ID failed: %s\n"
 msgstr "asıl kullanıcı kimliğini ayarlama başarısız: %s\n"
 
-#, fuzzy, c-format
-#| msgid "checking the trust list failed: %s\n"
+#, c-format
 msgid "setting the ownertrust to '%s' failed: %s\n"
-msgstr "güvence listesinin sınanması başarısız: %s\n"
+msgstr "iye güvencesi '%s' olarak ayarlanamadı: %s\n"
 
 #, c-format
 msgid "\"%s\" is not a fingerprint\n"
@@ -3784,10 +3773,9 @@ msgstr "UYARI: Şifreleme yardımcı anahtarının yakın zamanda süresi dolaca
 msgid "You may want to change its expiration date too.\n"
 msgstr "Son kullanma tarihini de değiştirmek isteyebilirsiniz.\n"
 
-#, fuzzy, c-format
-#| msgid "WARNING: Your encryption subkey expires soon.\n"
+#, c-format
 msgid "WARNING: No valid encryption subkey left over.\n"
-msgstr "UYARI: Şifreleme yardımcı anahtarının yakın zamanda süresi dolacak.\n"
+msgstr "UYARI: Kalan geçerli şifreleme alt anahtarı yok.\n"
 
 msgid ""
 "WARNING: This is a PGP2-style key.  Adding a photo ID may cause some "
@@ -4209,15 +4197,13 @@ msgstr "  (%d) Var olan anahtar%s\n"
 msgid "  (%d) Existing key from card%s\n"
 msgstr "  (%d) Karttaki var olan anahtar%s\n"
 
-#, fuzzy, c-format
-#| msgid "   (%d) ECC (sign and encrypt)%s\n"
+#, c-format
 msgid "  (%d) ECC and Kyber%s\n"
-msgstr "   (%d) ECC (imza ve şifreleme)%s\n"
+msgstr "   (%d) ECC ve Kyber%s\n"
 
-#, fuzzy, c-format
-#| msgid "  (%d) ECC (encrypt only)%s\n"
+#, c-format
 msgid "  (%d) Kyber (encrypt only)%s\n"
-msgstr "  (%d) RSA (yalnızca şifreleme)%s\n"
+msgstr "  (%d) Kyber (yalnızca şifreleme)%s\n"
 
 msgid "Enter the keygrip: "
 msgstr "Anahtar maşasını girin: "
@@ -4259,10 +4245,9 @@ msgstr "İstenen anahtar boyutu: %u bit\n"
 msgid "Please select which elliptic curve you want:\n"
 msgstr "Lütfen hangi eliptik eğriyi istediğinizi seçin:\n"
 
-#, fuzzy, c-format
-#| msgid "Please select what kind of key you want:\n"
+#, c-format
 msgid "Please select the %s variant you want:\n"
-msgstr "Lütfen istediğiniz anahtar türünü seçin:\n"
+msgstr "Lütfen istediğiniz %s çeşidini seçin:\n"
 
 msgid ""
 "Please specify how long the key should be valid.\n"
@@ -4516,10 +4501,9 @@ msgstr ""
 "Bu anahtar şifreleme için kullanılamaz. Şifreleme için yardımcı anahtarı\n"
 "\"--edit-key\" seçeneğini kullanarak üretebilirsiniz.\n"
 
-#, fuzzy, c-format
-#| msgid "WARNING: This key has been revoked by its owner!\n"
+#, c-format
 msgid "Note: The key has been created with one or more ADSK!\n"
-msgstr "UYARI: Bu anahtar iyesi tarafından yürürlükten kaldırılmış!\n"
+msgstr "UYARI: Anahtar bir veya daha çok ADSK ile oluşturulmuş!\n"
 
 #, c-format
 msgid ""
@@ -4601,12 +4585,11 @@ msgid "Keyring"
 msgstr "Anahtar zinciri"
 
 msgid "Revocable by: "
-msgstr ""
+msgstr "Yürürlükten kaldırabilir: "
 
-#, fuzzy, c-format
-#| msgid "error writing to '%s': %s\n"
+#, c-format
 msgid "error writing to stdout: %s\n"
-msgstr "'%s' konumuna yazılırken hata: %s\n"
+msgstr "stdout'a yazılırken hata: %s\n"
 
 msgid "Primary key fingerprint:"
 msgstr "    Asıl anahtar parmak izi:"
@@ -4766,7 +4749,7 @@ msgstr "%s anahtarı ve %s kullanıcı kimliği ile şifrelendi\n"
 
 #, c-format
 msgid "WARNING: key is not quantum-resistant\n"
-msgstr ""
+msgstr "UYARI: Anahtar quantum dirençli değil"
 
 #, c-format
 msgid "WARNING: multiple plaintexts seen\n"
@@ -5549,10 +5532,9 @@ msgstr "UYARI: %s şifre algoritması alıcı tercihlerinde bulunamadı\n"
 msgid "Note: secret key %s expired at %s\n"
 msgstr "Not: %s gizli anahtarının %s tarihinde kullanım süresi doldu\n"
 
-#, fuzzy, c-format
-#| msgid "certificate should not have been used for encryption\n"
+#, c-format
 msgid "Note: ADSK key has been used for decryption"
-msgstr "sertifika, şifreleme için kullanılmamalıydı\n"
+msgstr "Not: Şifre çözümü için ADSK anahtarı kullanılmış\n"
 
 #, c-format
 msgid "Note: key has been revoked"
@@ -6395,15 +6377,13 @@ msgid_plural " (%d validity counts cleared)\n"
 msgstr[0] " (%d doğrulama sayımı temizlendi)\n"
 msgstr[1] " (%d doğrulama sayımı temizlendi)\n"
 
-#, fuzzy, c-format
-#| msgid "no ultimately trusted keys found\n"
+#, c-format
 msgid "Note: ultimately trusted key %s not found\n"
-msgstr "son derece güvenli bir anahtar bulunamadı\n"
+msgstr "Not: Son derece güvenilir %s anahtarı bulunamadı\n"
 
-#, fuzzy, c-format
-#| msgid "no ultimately trusted keys found\n"
+#, c-format
 msgid "Note: ultimately trusted key %s expired\n"
-msgstr "son derece güvenli bir anahtar bulunamadı\n"
+msgstr "Not: Son derece güvenilir %s anahtarının süresi dolmuş\n"
 
 #, c-format
 msgid "no ultimately trusted keys found\n"
@@ -6727,16 +6707,14 @@ msgid "access to admin commands is not configured\n"
 msgstr "yönetici komutlarına erişim yapılandırılmamış\n"
 
 msgid "||Please enter the PIN"
-msgstr "||Lütfen PIN'i giriniz"
+msgstr "||Lütfen PIN'i girin"
 
-#, fuzzy
-#| msgid "||Please enter the Reset Code for the card"
 msgid "|R|Please enter the Reset Code for the card"
-msgstr "||Lütfen kart için Sıfırlama Kodunu giriniz"
+msgstr "|R|Lütfen kart için olan sıfırlama kodunu girin"
 
 #, c-format
 msgid "Reset Code is too short; minimum length is %d\n"
-msgstr "Sıfırlama Kodu çok kısa; gereken en kısa uzunluk %d\n"
+msgstr "Sıfırlama kodu çok kısa; gereken en kısa uzunluk %d\n"
 
 #. TRANSLATORS: Do not translate the "|*|" prefixes but
 #. keep it at the start of the string.  We need this elsewhere
@@ -7295,10 +7273,8 @@ msgstr " (isteğe bağlı; boş bir satır ile sonlandır):\n"
 msgid "Enter URIs"
 msgstr "URI'leri girin"
 
-#, fuzzy
-#| msgid "Enter the notation: "
 msgid "Enter extensions"
-msgstr "Simgelemi giriniz: "
+msgstr "Uzantıları girin"
 
 msgid "Create self-signed certificate? (y/N) "
 msgstr "Öz imzalı bir sertifika üretilsin mi? (e/H) "
@@ -7536,10 +7512,9 @@ msgstr "bayraklar saklanırken hata: %s\n"
 msgid "Error - "
 msgstr "Hata - "
 
-#, fuzzy, c-format
-#| msgid "error writing to '%s': %s\n"
+#, c-format
 msgid "error writing to output: %s\n"
-msgstr "'%s' konumuna yazılırken hata: %s\n"
+msgstr "çıktıya yazılırken hata: %s\n"
 
 #, c-format
 msgid "GPG_TTY has not been set - using maybe bogus default\n"
@@ -8990,42 +8965,10 @@ msgid "store a private key to a data object"
 msgstr "bir veri nesnesine bir özel anahtar depola"
 
 msgid "run various checks on the keys"
-msgstr ""
+msgstr "anahtarlarda çeşitli denetimler çalıştır"
 
 msgid "Yubikey management commands"
 msgstr "Yubikey yönetim konsolu"
 
 msgid "manage the command history"
 msgstr "komut geçmişini yönet"
-
-#, c-format
-#~ msgid "public key of ultimately trusted key %s not found\n"
-#~ msgstr "son derece güvenli %s için genel anahtar bulunamadı\n"
-
-#, c-format
-#~ msgid "waiting for process %d to terminate failed: %s\n"
-#~ msgstr "%d işleminin sonlanmasını bekleme başarısız: %s\n"
-
-#, fuzzy, c-format
-#~| msgid "waiting for processes to terminate failed: %s\n"
-#~ msgid "waiting for process to terminate failed: ec=%d\n"
-#~ msgstr "işlemin sonlanmasını bekleme başarısız: %s\n"
-
-#, c-format
-#~ msgid "error running '%s': probably not installed\n"
-#~ msgstr "'%s' çalıştırılırken hata: Muhtemelen kurulu değil\n"
-
-#, c-format
-#~ msgid "error running '%s': exit status %d\n"
-#~ msgstr "'%s' çalıştırılırken hata: Çıkış durumu: %d\n"
-
-#, c-format
-#~ msgid "error running '%s': terminated\n"
-#~ msgstr "'%s' çalıştırılırken hata: Sonlandırıldı\n"
-
-#, c-format
-#~ msgid "error getting exit code of process %d: %s\n"
-#~ msgstr "%d işleminin çıkış kodu alınırken hata: %s\n"
-
-#~ msgid "use canonical text mode"
-#~ msgstr "kurallı metin kipini kullan"
