@@ -600,8 +600,8 @@ agent_card_pkdecrypt (ctrl_t ctrl,
                       const unsigned char *indata, size_t indatalen,
                       char **r_buf, size_t *r_buflen, int *r_padding)
 {
-  int rc, i;
-  char *p, line[ASSUAN_LINELENGTH];
+  int rc;
+  char line[ASSUAN_LINELENGTH];
   membuf_t data;
   struct inq_needpin_parm_s inqparm;
   size_t len;
