@@ -2515,7 +2515,7 @@ ask_algo (ctrl_t ctrl, int addmode, int *r_subkey_algo, unsigned int *r_usage,
                   if (!keyref)
                     continue;
 
-                  if (!agent_scd_readkey (ctrl, keyref, &s_pkey, NULL))
+                  if (agent_scd_readkey (ctrl, keyref, &s_pkey, NULL))
                     continue;
 
                   algostr = pubkey_algo_string (s_pkey, &algoid);
