@@ -9,9 +9,9 @@
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: gnupg 2.5.0\n"
+"Project-Id-Version: gnupg 2.5.2\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"PO-Revision-Date: 2024-09-25 14:25+0900\n"
+"PO-Revision-Date: 2024-12-20 11:54+0900\n"
 "Last-Translator: NIIBE Yutaka <gniibe@fsij.org>\n"
 "Language-Team: none\n"
 "Language: ja\n"
@@ -745,10 +745,9 @@ msgstr "パスフレーズを変更する"
 msgid "I'll change it later"
 msgstr "後で変更する"
 
-#, fuzzy, c-format
-#| msgid "receiving line failed: %s\n"
+#, c-format
 msgid "Unprotecting key failed: %s\n"
-msgstr "行の受信に失敗しました: %s\n"
+msgstr "鍵の保護解除に失敗しました: %s\n"
 
 msgid "Please insert the card with serial number"
 msgstr "以下のシリアル番号のカードを挿入してください"
@@ -2668,10 +2667,8 @@ msgstr "GnuPGの鍵のバックアップフォーマットを仮定します"
 msgid "repair keys on import"
 msgstr "インポートの際、鍵を修復する"
 
-#, fuzzy
-#| msgid "list secret keys"
 msgid "do not import secret keys"
-msgstr "秘密鍵の一覧"
+msgstr "秘密鍵をインポートしない"
 
 #, c-format
 msgid "skipping block of type %d\n"
@@ -4113,10 +4110,9 @@ msgstr "  (%d) 既存の鍵%s\n"
 msgid "  (%d) Existing key from card%s\n"
 msgstr "  (%d) カードに存在する鍵%s\n"
 
-#, fuzzy, c-format
-#| msgid "   (%d) ECC and ECC\n"
+#, c-format
 msgid "  (%d) ECC and Kyber%s\n"
-msgstr "   (%d) ECC と ECC\n"
+msgstr "   (%d) ECC と Kyber%s\n"
 
 #, c-format
 msgid "  (%d) Kyber (encrypt only)%s\n"
@@ -4162,10 +4158,9 @@ msgstr "要求された鍵長は%uビット\n"
 msgid "Please select which elliptic curve you want:\n"
 msgstr "ご希望の楕円曲線を選択してください:\n"
 
-#, fuzzy, c-format
-#| msgid "Please select what kind of key you want:\n"
+#, c-format
 msgid "Please select the %s variant you want:\n"
-msgstr "ご希望の鍵の種類を選択してください:\n"
+msgstr "ご希望の種類 %s を選択してください:\n"
 
 msgid ""
 "Please specify how long the key should be valid.\n"
@@ -6196,15 +6191,13 @@ msgid " (%d validity count cleared)\n"
 msgid_plural " (%d validity counts cleared)\n"
 msgstr[0] " (うち%d本の有効性数をクリア)\n"
 
-#, fuzzy, c-format
-#| msgid "no ultimately trusted keys found\n"
+#, c-format
 msgid "Note: ultimately trusted key %s not found\n"
-msgstr "究極的に信用する鍵が見つかりません\n"
+msgstr "注意: 究極的に信用する鍵 %s が見つかりません\n"
 
-#, fuzzy, c-format
-#| msgid "no ultimately trusted keys found\n"
+#, c-format
 msgid "Note: ultimately trusted key %s expired\n"
-msgstr "究極的に信用する鍵が見つかりません\n"
+msgstr "注意: 究極的に信用する鍵 %s が失効しています\n"
 
 #, c-format
 msgid "no ultimately trusted keys found\n"
@@ -7331,10 +7324,9 @@ msgstr "フラグの保存エラー: %s\n"
 msgid "Error - "
 msgstr "エラー - "
 
-#, fuzzy, c-format
-#| msgid "error writing to stdout: %s\n"
+#, c-format
 msgid "error writing to output: %s\n"
-msgstr "stdoutへの書き込みエラー: %s\n"
+msgstr "出力への書き込みエラー: %s\n"
 
 #, c-format
 msgid "GPG_TTY has not been set - using maybe bogus default\n"
