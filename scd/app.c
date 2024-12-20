@@ -2494,12 +2494,7 @@ report_change (int slot, int old_status, int cur_status)
   xfree (fname);
 
   homestr = make_filename (gnupg_homedir (), NULL);
-#ifdef HAVE_W32_SYSTEM
-  /* An environment block is terminated by two zero bytes.  */
-  if (gpgrt_asprintf (&envstr, "GNUPGHOME=%s%c", homestr, 0) < 0)
-#else
   if (gpgrt_asprintf (&envstr, "GNUPGHOME=%s", homestr) < 0)
-#endif
     log_error ("out of core while building environment\n");
   else
     {
@@ -2527,12 +2522,9 @@ report_change (int slot, int old_status, int cur_status)
       err = gpgrt_spawn_actions_new (&act);
       if (!err)
         {
-#ifdef HAVE_W32_SYSTEM
-          gpgrt_spawn_actions_set_envvars (act, envstr);
-#else
-          char *env[2] = { envstr, NULL };
-          gpgrt_spawn_actions_set_environ (act, env);
-#endif
+          const char *envchange[2] = { envstr, NULL };
+
+          gpgrt_spawn_actions_set_env_rev (act, envchange);
           err = gpgrt_process_spawn (fname, args, GPGRT_PROCESS_DETACHED,
                                      act, NULL);
           gpgrt_spawn_actions_release (act);
