@@ -307,13 +307,9 @@ get_it (ctrl_t ctrl,
 
   if (sk->pubkey_algo == PUBKEY_ALGO_KYBER)
     {
-      /* We expect a 32 byte session key.  We should not see this
-       * error here because due to the KEM mode the agent_pkdecrypt
-       * should have already failed.  */
-      if (nframe != 32)
+      if (nframe != 32 && opt.flags.require_pqc_encryption)
         {
-          err = gpg_error (GPG_ERR_WRONG_SECKEY);
-          goto leave;
+          log_info (_("WARNING: session key is not quantum-resistant\n"));
         }
       dek->keylen = nframe;
       dek->algo = enc->d.seskey_algo;
