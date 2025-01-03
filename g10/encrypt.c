@@ -139,6 +139,25 @@ create_dek_with_warnings (pk_list_t pk_list)
       dek->algo = opt.def_cipher_algo;
     }
 
+  if (dek->algo != CIPHER_ALGO_AES256)
+    {
+      /* If quantum resistance was explicitly required, we force the
+       * use of AES256 no matter what. Otherwise, we force AES256 if we
+       * encrypt to Kyber keys only and the user did not explicity
+       * request another another algo. */
+      if (opt.flags.require_pqc_encryption)
+        dek->algo = CIPHER_ALGO_AES256;
+      else if (!opt.def_cipher_algo)
+        {
+          int non_kyber_pk = 0;
+          for ( ; pk_list; pk_list = pk_list->next)
+            if (pk_list->pk->pubkey_algo != PUBKEY_ALGO_KYBER)
+              non_kyber_pk += 1;
+          if (!non_kyber_pk)
+            dek->algo = CIPHER_ALGO_AES256;
+        }
+    }
+
   return dek;
 }
 

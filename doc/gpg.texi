@@ -3149,10 +3149,12 @@ keys into non-VS-NfD compliant keys.
 @opindex require-pqc-encryption
 This option forces the use of quantum-resistant encryption algorithms.
 If not all public keys are quantum-resistant the encryption will fail.
-On decryption a warning is printed for all non-quantum-resistant keys.
-As of now the Kyber (ML-KEM768 and ML-KEM1024) algorithms are
-considered quantum-resistant; Kyber is always used in a composite
-scheme along with a classic ECC algorithm.
+The use of the symmetric encryption algorithm AES-256 is also enforced
+by this option.  On decryption a warning is printed for all
+non-quantum-resistant keys.  As of now the Kyber (ML-KEM768 and
+ML-KEM1024) algorithms and AES-256 are considered quantum-resistant;
+Kyber is always used in a composite scheme along with a classic ECC
+algorithm.
 
 @item --require-compliance
 @opindex require-compliance
