@@ -1,11 +1,17 @@
-Noteworthy changes in version 2.2.46 (unreleased)
+Noteworthy changes in version 2.2.46 (2025-01-07)
 -------------------------------------------------
 
   * gpg: Add the AEAD algo number to the DECRYPTION_INFO status line.
     [T7398]
 
-  Release-info: https://dev.gnupg.org/T7314
+  * gpgtar: Make sure to create upper directories for regular files.
+    [T7380]
 
+  * gpg: Allow the use of an ADSK subkey as ADSK subkey.  [T6882]
+
+  * agent: Fix status output for LISTTRUSTED.  [T7363]
+
+  Release-info: https://dev.gnupg.org/T7314
 
 
 Noteworthy changes in version 2.2.45 (2024-10-22)

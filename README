@@ -1,10 +1,10 @@
                        The GNU Privacy Guard
                       =======================
-                         Version 2.2 (LTS)
+                     Version 2.2 (Extended LTS)
 
           Copyright 1997-2019 Werner Koch
           Copyright 1998-2021 Free Software Foundation, Inc.
-          Copyright 2003-2024 g10 Code GmbH
+          Copyright 2003-2025 g10 Code GmbH
 
 
 * INTRODUCTION
@@ -25,9 +25,12 @@
   can be freely used, modified and distributed under the terms of the
   GNU General Public License.
 
-  Note that the 2.2 series of GnuPG is our current long term support
-  branch.  The regular stable series is 2.4.  For end of life
-  statements see https://gnupg.org/download/index.html#end-of-life .
+  Note that the 2.2 series of GnuPG reached end-of-life on 2024-12-31
+  and no further updates will be released to the public.  However,
+  costomers of g10 Code with extended long term support contracts will
+  still be served with updates if necessary.  Everyone else please
+  switch to GnuPG 2.4.  For end of life statements see
+  https://gnupg.org/download/index.html#end-of-life .
 
 
 * BUILD INSTRUCTIONS
