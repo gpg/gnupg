@@ -1,6 +1,19 @@
 Noteworthy changes in version 2.5.3 (unreleased)
 ------------------------------------------------
 
+  * gpg: Allow for signature subpackets of up to 30000 octets.
+    [rG36dbca3e69]
+
+  * gpg: Silence expired trusted-key diagnostics in quiet mode.  [T7351]
+
+  * gpg: Allow smaller session keys with Kyber and enforce the use of
+    AES-256 if useful.  [T7472]
+
+  * gpg: Fix regression in key generation from existing card key.
+    [T7309,T7457]
+
+  * gpg: Print a warning if the card backup key could not be written.
+    [T2169]
 
   See-also: gnupg-announce/2024q4/000xxx.html
   Release-info: https://dev.gnupg.org/T7442

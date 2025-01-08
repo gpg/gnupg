@@ -86,15 +86,20 @@
 ** Quick build method on Unix
 
   To quickly build all required software without installing it, the
-  Speedo target may be used:
+  Speedo target may be used.  But first you need to make sure that the
+  toolchain is installed.  On a Debian based system it should be
+  sufficient to run as root:
+
+    apt-get install build-essential libusb-1.0-0-dev libsqlite3-dev patchelf
+
+  Then as regular user run
 
     make -f build-aux/speedo.mk native
 
   This target downloads all required libraries and does a native build
-  of GnuPG to PLAY/inst/.  GNU make and the patchelf tool are
-  required.  After the build the entire software including all
-  libraries can be installed into an arbitrary location using for
-  example:
+  of GnuPG to PLAY/inst/.  After the build the entire software
+  including all libraries can be installed into an arbitrary location
+  using for example:
 
     make -f build-aux/speedo.mk install SYSROOT=/usr/local/gnupg26
 
@@ -105,6 +110,17 @@
   which will also start any daemon from the same directory.  Make sure
   to stop already running daemons or use a different GNUPGHOME.
 
+  If you want to use the gnupg-w32-n.m.n_somedate.tar.xz tarball you
+  only need to change the first make invocation to
+
+      make -f build-aux/speedo.mk this-native
+
+  The advantage of this alternative tarball is that all libraries are
+  included and thus the Makefile does not need to download new
+  tarballs.  Note that in any case all downloaded files come with
+  signatures which are verified by the Makefile commands.  The
+  patchelf command is required to change the search path for the
+  shared libraries in the binaries to relative directories.
 
 ** Specific build problems on some machines:
 
