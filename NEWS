@@ -19,6 +19,7 @@ Noteworthy changes in version 2.5.3 (unreleased)
     renamed to --deprecated-supervised as preparation for their
     removal.  [rGa019a0fcd8]
 
+  * There is no more default for a keyserver.
 
   See-also: gnupg-announce/2024q4/000xxx.html
   Release-info: https://dev.gnupg.org/T7442

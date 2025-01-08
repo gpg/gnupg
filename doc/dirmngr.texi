@@ -345,9 +345,7 @@ service (.onion), Dirmngr selects the keyserver to use depending on
 whether Tor is locally running or not.  The check for a running Tor is
 done for each new connection.
 
-If no keyserver is explicitly configured, dirmngr will use the
-built-in default of @code{https://keyserver.ubuntu.com}.  To avoid the
-use of a default keyserver the value @code{none} can be used.
+There is no default keyserver since version 2.5.3.
 
 Windows users with a keyserver running on their Active Directory
 may use the short form @code{ldap:///} for @var{name} to access this directory.

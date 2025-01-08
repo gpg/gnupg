@@ -2209,8 +2209,10 @@ ensure_keyserver (ctrl_t ctrl)
   if (!opt.keyserver)
     {
       /* No global option set.  Fall back to default:  */
-      return make_keyserver_item (DIRMNGR_DEFAULT_KEYSERVER,
-                                  &ctrl->server_local->keyservers);
+      /* return make_keyserver_item (DIRMNGR_DEFAULT_KEYSERVER, */
+      /*                             &ctrl->server_local->keyservers); */
+      err = gpg_error (GPG_ERR_NO_KEYSERVER);  /* No more default.  */
+      goto leave;
     }
 
   for (sl = opt.keyserver; sl; sl = sl->next)
