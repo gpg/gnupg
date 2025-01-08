@@ -169,7 +169,7 @@ static gpgrt_opt_t opts[] = {
   ARGPARSE_s_n (oDaemon,  "daemon", N_("run in daemon mode (background)")),
   ARGPARSE_s_n (oServer,  "server", N_("run in server mode (foreground)")),
 #ifndef HAVE_W32_SYSTEM
-  ARGPARSE_s_n (oSupervised,  "supervised", "@"),
+  ARGPARSE_s_n (oSupervised,  "deprecated-supervised", "@"),
 #endif
   ARGPARSE_s_n (oNoDetach,  "no-detach", N_("do not detach from the console")),
   ARGPARSE_s_n (oSh,	  "sh",        N_("sh-style command output")),
@@ -714,10 +714,10 @@ map_supervised_sockets (gnupg_fd_t *r_fd,
   envvar = getenv ("LISTEN_PID");
   if (!envvar)
     log_error ("no LISTEN_PID environment variable found in "
-               "--supervised mode (ignoring)\n");
+               "--deprecated-supervised mode (ignoring)\n");
   else if (strtoul (envvar, NULL, 10) != (unsigned long)getpid ())
     log_error ("environment variable LISTEN_PID (%lu) does not match"
-               " our pid (%lu) in --supervised mode (ignoring)\n",
+               " our pid (%lu) in --deprecated-supervised mode (ignoring)\n",
                (unsigned long)strtoul (envvar, NULL, 10),
                (unsigned long)getpid ());
 
@@ -747,21 +747,23 @@ map_supervised_sockets (gnupg_fd_t *r_fd,
     fd_count = atoi (envvar);
   else if (fdnames)
     {
-      log_error ("no LISTEN_FDS environment variable found in --supervised"
+      log_error ("no LISTEN_FDS environment variable found in"
+                 " --deprecated-supervised"
                  " mode (relying on LISTEN_FDNAMES instead)\n");
       fd_count = nfdnames;
     }
   else
     {
       log_error ("no LISTEN_FDS or LISTEN_FDNAMES environment variables "
-                "found in --supervised mode"
+                "found in --deprecated-supervised mode"
                 " (assuming 1 active descriptor)\n");
       fd_count = 1;
     }
 
   if (fd_count < 1)
     {
-      log_error ("--supervised mode expects at least one file descriptor"
+      log_error ("--deprecated-supervised mode expects at least"
+                 " one file descriptor"
                  " (was told %d, carrying on as though it were 1)\n",
                  fd_count);
       fd_count = 1;
@@ -774,11 +776,12 @@ map_supervised_sockets (gnupg_fd_t *r_fd,
 
       if (fd_count != 1)
         log_error ("no LISTEN_FDNAMES and LISTEN_FDS (%d) != 1"
-                   " in --supervised mode."
+                   " in --deprecated-supervised mode."
                    " (ignoring all sockets but the first one)\n",
                    fd_count);
       if (fstat (3, &statbuf) == -1 && errno ==EBADF)
-        log_fatal ("file descriptor 3 must be valid in --supervised mode"
+        log_fatal ("file descriptor 3 must be valid in"
+                   " --depreacted-supervised mode"
                    " if LISTEN_FDNAMES is not set\n");
       *r_fd = 3;
       socket_name = gnupg_get_socket_name (3);
@@ -786,7 +789,7 @@ map_supervised_sockets (gnupg_fd_t *r_fd,
   else if (fd_count != nfdnames)
     {
       log_fatal ("number of items in LISTEN_FDNAMES (%d) does not match "
-                 "LISTEN_FDS (%d) in --supervised mode\n",
+                 "LISTEN_FDS (%d) in --deprecated-supervised mode\n",
                  nfdnames, fd_count);
     }
   else

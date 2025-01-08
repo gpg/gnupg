@@ -86,11 +86,13 @@ This is the way @command{dirmngr} is started on demand by the other
 GnuPG components.  To force starting @command{dirmngr} it is in
 general best to use @code{gpgconf --launch dirmngr}.
 
-@item --supervised
+@item --deprecated-supervised
 @opindex supervised
 Run in the foreground, sending logs to stderr, and listening on file
 descriptor 3, which must already be bound to a listening socket.  This
-option is deprecated and not supported on Windows.
+option is not supported on Windows and deprecated since version 2.3.6.
+To clarify its deprecation the option has been renamed with version
+2.5.3.
 
 @item --list-crls
 @opindex list-crls

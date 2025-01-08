@@ -167,21 +167,17 @@ gpg-agent: @code{gpg-agent --daemon /bin/sh}.  This way you get a new
 shell with the environment setup properly; after you exit from this
 shell, gpg-agent terminates within a few seconds.
 
-@item --supervised
+@item --deprecated-supervised
 @opindex supervised
 Run in the foreground, sending logs by default to stderr, and
 listening on provided file descriptors, which must already be bound to
-listening sockets.  This option is deprecated and not supported on
-Windows.
+listening sockets.  This option is not supported on Windows and
+deprecated since version 2.3.6.  To clarify its deprecation the option
+has been renamed with version 2.5.3.
 
 If in @file{common.conf} the option @option{no-autostart} is set, any
 start attempts will be ignored.
 
-In @option{--supervised} mode, different file descriptors can be provided for
-use as different socket types (e.g., ssh, extra) as long as they are
-identified in the environment variable @code{LISTEN_FDNAMES} (see
-sd_listen_fds(3) on some Linux distributions for more information on
-this convention).
 @end table
 
 @mansect options

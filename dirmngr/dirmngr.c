@@ -177,7 +177,7 @@ static gpgrt_opt_t opts[] = {
   ARGPARSE_c (aServer,   "server",  N_("run in server mode (foreground)") ),
   ARGPARSE_c (aDaemon,   "daemon",  N_("run in daemon mode (background)") ),
 #ifndef HAVE_W32_SYSTEM
-  ARGPARSE_c (aSupervised,  "supervised", "@"),
+  ARGPARSE_c (aSupervised,  "deprecated-supervised", "@"),
 #endif
   ARGPARSE_c (aListCRLs, "list-crls", N_("list the contents of the CRL cache")),
   ARGPARSE_c (aLoadCRL,  "load-crl", N_("|FILE|load CRL from FILE into cache")),
