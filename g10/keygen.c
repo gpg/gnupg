@@ -6094,7 +6094,6 @@ static gpg_error_t
 card_write_key_to_backup_file (PKT_public_key *sk, const char *backup_dir)
 {
   gpg_error_t err = 0;
-  int rc;
   char keyid_buffer[2 * 8 + 1];
   char name_buffer[50];
   char *fname;
@@ -6129,10 +6128,10 @@ card_write_key_to_backup_file (PKT_public_key *sk, const char *backup_dir)
   pkt->pkttype = PKT_SECRET_KEY;
   pkt->pkt.secret_key = sk;
 
-  rc = build_packet (fp, pkt);
-  if (rc)
+  err = build_packet (fp, pkt);
+  if (err)
     {
-      log_error ("build packet failed: %s\n", gpg_strerror (rc));
+      log_error ("build packet failed: %s\n", gpg_strerror (err));
       iobuf_cancel (fp);
     }
   else
@@ -6176,6 +6175,7 @@ card_store_key_with_backup (ctrl_t ctrl, PKT_public_key *sub_psk,
   void *kek = NULL;
   size_t keklen;
   char *ecdh_param_str = NULL;
+  int key_is_on_card = 0;
 
   memset (&info, 0, sizeof (info));
 
@@ -6210,6 +6210,7 @@ card_store_key_with_backup (ctrl_t ctrl, PKT_public_key *sub_psk,
   if (err)
     goto leave;
 
+  key_is_on_card = 1;
   err = agent_keywrap_key (ctrl, 1, &kek, &keklen);
   if (err)
     {
@@ -6247,6 +6248,15 @@ card_store_key_with_backup (ctrl_t ctrl, PKT_public_key *sub_psk,
     }
 
  leave:
+  if (err && key_is_on_card)
+    {
+      tty_printf (_(
+ "Warning: Although the key has been written to the card, a backup file was\n"
+ "         not properly written to the disk.  You may want to repeat the\n"
+ "         entire operation or just create a new encryption key on the card.\n"
+                    ));
+    }
+
   xfree (info.serialno);
   xfree (ecdh_param_str);
   xfree (cache_nonce);
