@@ -107,7 +107,7 @@ static gpgrt_opt_t opts[] = {
                                " a record oriented format"},
   { oProxy,    "proxy",     2,
                 "|NAME|ignore host part and connect through NAME"},
-  { oStartTLS, "starttls",  0, "use STARTLS for the connection"},
+  { oStartTLS, "starttls",  0, "use STARTTLS for the connection"},
   { oLdapTLS,  "ldaptls",   0, "use a TLS for the connection"},
   { oNtds,     "ntds",      0, "authenticate using AD"},
   { oARecOnly, "areconly",  0, "do only an A record lookup"},
