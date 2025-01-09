@@ -215,6 +215,10 @@ if [ -n "$dryrun" ]; then
 
     echo >&2 "$PGM: would sign: '$inname' to '$outname'"
 
+elif [ $(wc -c < "$inname" ) -lt 256 ]; then
+
+    echo >&2 "$PGM: skipping '$inname' which is too short"
+
 elif [ -n "$AUTHENTICODE_SIGNHOST" ]; then
 
     echo >&2 "$PGM: Signing via host $AUTHENTICODE_SIGNHOST"
@@ -232,6 +236,12 @@ elif [ -n "$AUTHENTICODE_SIGNHOST" ]; then
 elif [ "$AUTHENTICODE_KEY" = card ]; then
 
     echo >&2 "$PGM: Signing using a card: '$inname'"
+
+    if echo "$inname" | egrep 'dll-e?x$' >/dev/null ; then
+        # osslsignecode does not like *.dll-x and *.dll-ex
+        cp "$inname" "$inname.tmp.dll"
+        inname="$inname.tmp.dll"
+    fi
 
     while ! "$OSSLSIGNCODE" sign \
        -pkcs11engine "$OSSLPKCS11ENGINE" \
@@ -253,6 +263,7 @@ elif [ "$AUTHENTICODE_KEY" = card ]; then
       sleep $waittime
       waittime=$(( $waittime * 2 ))
     done
+    [ -f "$inname.tmp.dll" ] && rm "$inname.tmp.dll"
     rm "$outname.tmp.log"
     cp "$outname.tmp" "$outname"
     rm "$outname.tmp"
