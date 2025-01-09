@@ -1,4 +1,4 @@
-Noteworthy changes in version 2.5.3 (unreleased)
+Noteworthy changes in version 2.5.3 (2025-01-09)
 ------------------------------------------------
 
   * gpg: Allow for signature subpackets of up to 30000 octets.
@@ -21,7 +21,7 @@ Noteworthy changes in version 2.5.3 (unreleased)
 
   * There is no more default for a keyserver.
 
-  See-also: gnupg-announce/2024q4/000xxx.html
+  See-also: gnupg-announce/2025q1/000489.html
   Release-info: https://dev.gnupg.org/T7442
 
 
