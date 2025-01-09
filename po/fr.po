@@ -767,6 +767,11 @@ msgstr "Modifier la phrase secrète"
 msgid "I'll change it later"
 msgstr "Je la modifierai plus tard"
 
+#, fuzzy, c-format
+#| msgid "receiving line failed: %s\n"
+msgid "Unprotecting key failed: %s\n"
+msgstr "échec de réception de ligne : %s\n"
+
 msgid "Please insert the card with serial number"
 msgstr "Veuillez insérer la carte de numéro de série"
 
@@ -932,8 +937,7 @@ msgstr "attente pour permettre au dirmngr d'arriver… (%d s)\n"
 
 #, c-format
 msgid "waiting for the keyboxd to come up ... (%ds)\n"
-msgstr ""
-"attente pour permettre au démon keyboxd d'arriver… (%d s)\n"
+msgstr "attente pour permettre au démon keyboxd d'arriver… (%d s)\n"
 
 #, c-format
 msgid "waiting for the agent to come up ... (%ds)\n"
@@ -2664,7 +2668,8 @@ msgstr "erreur d'analyse des spécifications de la clef « %s » : %s\n"
 
 #, c-format
 msgid "'%s' does not appear to be a valid key ID, fingerprint or keygrip\n"
-msgstr "« %s » n'est pas un identifiant valable de clef, empreinte ou keygrip\n"
+msgstr ""
+"« %s » n'est pas un identifiant valable de clef, empreinte ou keygrip\n"
 
 #, c-format
 msgid "WARNING: no command supplied.  Trying to guess what you mean ...\n"
@@ -2760,6 +2765,11 @@ msgstr "présumer le format GnuPG de sauvegarde de clef"
 
 msgid "repair keys on import"
 msgstr "réparer les clefs lors de l'importation"
+
+#, fuzzy
+#| msgid "list secret keys"
+msgid "do not import secret keys"
+msgstr "afficher les clefs secrètes"
 
 #, c-format
 msgid "skipping block of type %d\n"
@@ -3179,17 +3189,13 @@ msgstr "clef %s :\n"
 msgid "%d duplicate signature removed\n"
 msgid_plural "%d duplicate signatures removed\n"
 msgstr[0] "%d signature dupliquée supprimée\n"
-msgstr[1] ""
-"%d signatures dupliquées supprimées\n"
-
+msgstr[1] "%d signatures dupliquées supprimées\n"
 
 #, c-format
 msgid "%d signature not checked due to a missing key\n"
 msgid_plural "%d signatures not checked due to missing keys\n"
 msgstr[0] "%d signature non vérifiée à cause d'une clef manquante\n"
-msgstr[1] ""
-"%d signatures non vérifiées à cause de clefs manquantes\n"
-
+msgstr[1] "%d signatures non vérifiées à cause de clefs manquantes\n"
 
 #, c-format
 msgid "%d bad signature\n"
@@ -4264,6 +4270,11 @@ msgstr "  (%d) Clef existante%s\n"
 msgid "  (%d) Existing key from card%s\n"
 msgstr "  (%d) Clef existante sur la carte%s\n"
 
+#, fuzzy, c-format
+#| msgid "   (%d) ECC and ECC\n"
+msgid "  (%d) ECC and Kyber%s\n"
+msgstr "   (%d) ECC et ECC\n"
+
 #, c-format
 msgid "  (%d) Kyber (encrypt only)%s\n"
 msgstr "  (%d) Kyber (chiffrement seul)%s\n"
@@ -4307,6 +4318,11 @@ msgstr "La taille demandée est %u bits\n"
 
 msgid "Please select which elliptic curve you want:\n"
 msgstr "Sélectionnez le type de courbe elliptique désiré :\n"
+
+#, fuzzy, c-format
+#| msgid "Please select what kind of key you want:\n"
+msgid "Please select the %s variant you want:\n"
+msgstr "Sélectionnez le type de clef désiré :\n"
 
 msgid ""
 "Please specify how long the key should be valid.\n"
@@ -4539,6 +4555,12 @@ msgstr "impossible de créer le fichier de sauvegarde « %s » : %s\n"
 msgid "Note: backup of card key saved to '%s'\n"
 msgstr "Remarque : sauvegarde de la clef de la carte dans « %s »\n"
 
+msgid ""
+"Warning: Although the key has been written to the card, a backup file was\n"
+"         not properly written to the disk.  You may want to repeat the\n"
+"         entire operation or just create a new encryption key on the card.\n"
+msgstr ""
+
 #, c-format
 msgid "writing public key to '%s'\n"
 msgstr "écriture de la clef publique dans « %s »\n"
@@ -4638,9 +4660,7 @@ msgstr[1] "%d bonnes signatures\n"
 msgid "%d signature not checked due to an error\n"
 msgid_plural "%d signatures not checked due to errors\n"
 msgstr[0] "%d signature non vérifiée à cause d'une erreur\n"
-msgstr[1] ""
-"%d signatures non vérifiées à cause d'erreurs\n"
-
+msgstr[1] "%d signatures non vérifiées à cause d'erreurs\n"
 
 #, c-format
 msgid "Warning: %lu key skipped due to its large size\n"
@@ -4698,9 +4718,7 @@ msgstr[1] "clefs %lu mises en cache"
 msgid " (%lu signature)\n"
 msgid_plural " (%lu signatures)\n"
 msgstr[0] "(signature %lu)\n"
-msgstr[1] ""
-"(signatures %lu)\n"
-
+msgstr[1] "(signatures %lu)\n"
 
 #, c-format
 msgid "%s: keyring created\n"
@@ -5054,8 +5072,8 @@ msgstr "Remarque : les signatures utilisant l’algorithme %s sont rejetées\n
 #, c-format
 msgid "Note: third-party key signatures using the %s algorithm are rejected\n"
 msgstr ""
-"Remarque : les signatures de clef de tierces parties utilisant l’algorithme %s sont "
-"rejetées\n"
+"Remarque : les signatures de clef de tierces parties utilisant "
+"l’algorithme %s sont rejetées\n"
 
 #, c-format
 msgid "(reported error: %s)\n"
@@ -5390,7 +5408,8 @@ msgstr "Cette clef nous appartient\n"
 
 #, c-format
 msgid "%s: This key is bad!  It has been marked as untrusted!\n"
-msgstr "%s : Cette clef est mauvaise ! Elle a été marquée indigne de confiance\n"
+msgstr ""
+"%s : Cette clef est mauvaise ! Elle a été marquée indigne de confiance\n"
 
 msgid ""
 "This key is bad!  It has been marked as untrusted!  If you\n"
@@ -5401,7 +5420,6 @@ msgstr ""
 " Si vous savez *vraiment* ce que vous faites,\n"
 " vous pouvez répondre oui à la prochaine question.\n"
 
-
 msgid ""
 "It is NOT certain that the key belongs to the person named\n"
 "in the user ID.  If you *really* know what you are doing,\n"
@@ -5410,7 +5428,6 @@ msgstr ""
 "La clef n'appartient PAS forcément à la personne nommée\n"
 "dans l'identité. Si vous savez *vraiment* ce que vous\n"
 "faites, vous pouvez répondre oui à la prochaine question.\n"
-
 
 msgid "Use this key anyway? (y/N) "
 msgstr "Faut-il quand même utiliser cette clef ? (o/N) "
@@ -5626,6 +5643,11 @@ msgstr "la clef utilisée n'est pas marquée utilisable pour le chiffrement\n"
 #, c-format
 msgid "okay, we are the anonymous recipient.\n"
 msgstr "d'accord, nous sommes le destinataire anonyme.\n"
+
+#, fuzzy, c-format
+#| msgid "WARNING: key is not quantum-resistant\n"
+msgid "WARNING: session key is not quantum-resistant\n"
+msgstr "ATTENTION : cette clef n'est pas « quantum-resistant »\n"
 
 #, c-format
 msgid "old encoding of the DEK is not supported\n"
@@ -5882,11 +5904,13 @@ msgstr "Remarque : la clef de signature %s a été révoquée\n"
 
 #, c-format
 msgid "bad key signature from key %s: %s (0x%02x, 0x%x)\n"
-msgstr "mauvaise signature de clef à partir de la clef %s : %s (0x%02x, 0x%x)\n"
+msgstr ""
+"mauvaise signature de clef à partir de la clef %s : %s (0x%02x, 0x%x)\n"
 
 #, c-format
 msgid "bad data signature from key %s: %s (0x%02x, 0x%x)\n"
-msgstr "mauvaise signature de données à partir de la clef %s : %s (0x%02x, 0x%x)\n"
+msgstr ""
+"mauvaise signature de données à partir de la clef %s : %s (0x%02x, 0x%x)\n"
 
 #, c-format
 msgid "assuming bad signature from key %s due to an unknown critical bit\n"
@@ -6520,13 +6544,19 @@ msgid_plural " (%d validity counts cleared)\n"
 msgstr[0] "(%d compte de validité nettoyé)\n"
 msgstr[1] "(%d comptes de validité nettoyés)\n"
 
-#, c-format
-msgid "no ultimately trusted keys found\n"
+#, fuzzy, c-format
+#| msgid "no ultimately trusted keys found\n"
+msgid "Note: ultimately trusted key %s not found\n"
+msgstr "aucune clef de confiance ultime n'a été trouvée\n"
+
+#, fuzzy, c-format
+#| msgid "no ultimately trusted keys found\n"
+msgid "Note: ultimately trusted key %s expired\n"
 msgstr "aucune clef de confiance ultime n'a été trouvée\n"
 
 #, c-format
-msgid "public key of ultimately trusted key %s not found\n"
-msgstr "la clef publique de la clef de confiance ultime %s est introuvable\n"
+msgid "no ultimately trusted keys found\n"
+msgstr "aucune clef de confiance ultime n'a été trouvée\n"
 
 #, c-format
 msgid ""
@@ -7242,7 +7272,8 @@ msgstr "modèle de validation utilisé : %s"
 
 #, c-format
 msgid "a %u bit hash is not valid for a %u bit %s key\n"
-msgstr "un hachage de %1$u bits n'est pas valable pour une clef %3$s de %2$u bits\n"
+msgstr ""
+"un hachage de %1$u bits n'est pas valable pour une clef %3$s de %2$u bits\n"
 
 #, c-format
 msgid "out of core\n"
@@ -7671,9 +7702,7 @@ msgstr "erreur de lecture de l'entrée : %s\n"
 
 #, c-format
 msgid "no keyboxd running in this session\n"
-msgstr ""
-"aucun démon keyboxd n'est en cours d'exécution dans cette "
-"session\n"
+msgstr "aucun démon keyboxd n'est en cours d'exécution dans cette session\n"
 
 #, c-format
 msgid "error opening key DB: %s\n"
@@ -7701,6 +7730,11 @@ msgstr "erreur de stockage des options : %s\n"
 
 msgid "Error - "
 msgstr "Erreur — "
+
+#, fuzzy, c-format
+#| msgid "error writing to stdout: %s\n"
+msgid "error writing to output: %s\n"
+msgstr "erreur d'écriture sur la sortie standard : %s\n"
 
 #, c-format
 msgid "GPG_TTY has not been set - using maybe bogus default\n"
@@ -8153,8 +8187,8 @@ msgstr ""
 #, c-format
 msgid "update times of this CRL: this=%s next=%s\n"
 msgstr ""
-"dates de mises à jour de la liste de révocations de certificat : celle-ci =%s "
-"prochaine =%s\n"
+"dates de mises à jour de la liste de révocations de certificat : celle-"
+"ci =%s prochaine =%s\n"
 
 #, c-format
 msgid "nextUpdate not given; assuming a validity period of one day\n"
@@ -9112,7 +9146,8 @@ msgid "apply global default values"
 msgstr "appliquer les valeurs par défaut globales"
 
 msgid "|FILE|update configuration files using FILE"
-msgstr "|FICHIER|mise à jour des fichiers de configuration en utilisant FICHIER"
+msgstr ""
+"|FICHIER|mise à jour des fichiers de configuration en utilisant FICHIER"
 
 msgid "get the configuration directories for @GPGCONF@"
 msgstr "aff. répertoires de configuration pour @GPGCONF@"
@@ -9233,6 +9268,11 @@ msgstr "commandes de gestion de Yubikey"
 
 msgid "manage the command history"
 msgstr "gérer l'historique des commandes"
+
+#, c-format
+#~ msgid "public key of ultimately trusted key %s not found\n"
+#~ msgstr ""
+#~ "la clef publique de la clef de confiance ultime %s est introuvable\n"
 
 #, c-format
 #~ msgid "waiting for process %d to terminate failed: %s\n"
@@ -9542,9 +9582,6 @@ msgstr "gérer l'historique des commandes"
 
 #~ msgid "elevate the trust of signatures with valid PKA data"
 #~ msgstr "augmenter la confiance des signatures avec des données PKA valables"
-
-#~ msgid "   (%d) ECC and ECC\n"
-#~ msgstr "   (%d) ECC et ECC\n"
 
 #~ msgid "honor the PKA record set on a key when retrieving keys"
 #~ msgstr ""

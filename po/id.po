@@ -4715,6 +4715,12 @@ msgstr "tidak dapat membuat %s: %s\n"
 msgid "Note: backup of card key saved to '%s'\n"
 msgstr "CATATAN: kunci pribadi %08lX berakhir pada %s\n"
 
+msgid ""
+"Warning: Although the key has been written to the card, a backup file was\n"
+"         not properly written to the disk.  You may want to repeat the\n"
+"         entire operation or just create a new encryption key on the card.\n"
+msgstr ""
+
 #, fuzzy, c-format
 #| msgid "writing public key to `%s'\n"
 msgid "writing public key to '%s'\n"
@@ -5784,6 +5790,10 @@ msgstr "kunci %08lX: tidak ada ID user\n"
 #, c-format
 msgid "okay, we are the anonymous recipient.\n"
 msgstr "baik, kita adalah penerima anonim.\n"
+
+#, fuzzy, c-format
+msgid "WARNING: session key is not quantum-resistant\n"
+msgstr "PERINGATAN: subkey penandatangan %08lX tidak tersertifikasi silang\n"
 
 #, c-format
 msgid "old encoding of the DEK is not supported\n"

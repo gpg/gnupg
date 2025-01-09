@@ -4383,6 +4383,12 @@ msgstr "バックアップ・ファイル'%s'が作成できません: %s\n"
 msgid "Note: backup of card key saved to '%s'\n"
 msgstr "注意: カード鍵のバックアップが'%s'へ保存されます\n"
 
+msgid ""
+"Warning: Although the key has been written to the card, a backup file was\n"
+"         not properly written to the disk.  You may want to repeat the\n"
+"         entire operation or just create a new encryption key on the card.\n"
+msgstr ""
+
 #, c-format
 msgid "writing public key to '%s'\n"
 msgstr "'%s'へ公開鍵を書き込みます\n"
@@ -5389,6 +5395,11 @@ msgstr "使用された鍵は暗号化の使用のためにマークされてい
 #, c-format
 msgid "okay, we are the anonymous recipient.\n"
 msgstr "終了。匿名の受取人用です。\n"
+
+#, fuzzy, c-format
+#| msgid "WARNING: key is not quantum-resistant\n"
+msgid "WARNING: session key is not quantum-resistant\n"
+msgstr "*警告*: 鍵は耐量子ではありません\n"
 
 #, c-format
 msgid "old encoding of the DEK is not supported\n"

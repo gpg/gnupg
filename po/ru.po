@@ -4585,6 +4585,12 @@ msgstr "не могу создать архивную копию, файл '%s':
 msgid "Note: backup of card key saved to '%s'\n"
 msgstr "Замечание: архивная копия ключа с карты сохранена в '%s'\n"
 
+msgid ""
+"Warning: Although the key has been written to the card, a backup file was\n"
+"         not properly written to the disk.  You may want to repeat the\n"
+"         entire operation or just create a new encryption key on the card.\n"
+msgstr ""
+
 #, c-format
 msgid "writing public key to '%s'\n"
 msgstr "сохранение открытого ключа в '%s'\n"
@@ -5633,6 +5639,11 @@ msgstr "ключ %s не пригоден для расшифрования в �
 #, c-format
 msgid "okay, we are the anonymous recipient.\n"
 msgstr "отлично, мы - анонимный получатель.\n"
+
+#, fuzzy, c-format
+#| msgid "WARNING: signing subkey %s is not cross-certified\n"
+msgid "WARNING: session key is not quantum-resistant\n"
+msgstr "Внимание: подписывающий подключ %s не был перекрестно заверен\n"
 
 #, c-format
 msgid "old encoding of the DEK is not supported\n"

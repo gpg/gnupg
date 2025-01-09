@@ -9,7 +9,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnupg-2.4.1\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"PO-Revision-Date: 2024-12-05 11:07+0100\n"
+"PO-Revision-Date: 2025-01-09 09:12+0100\n"
 "Last-Translator: Werner Koch <wk@gnupg.org>\n"
 "Language-Team: German\n"
 "Language: de\n"
@@ -4522,6 +4522,17 @@ msgstr "Sicherungsdatei '%s' kann nicht erzeugt werden: %s\n"
 msgid "Note: backup of card key saved to '%s'\n"
 msgstr "Hinweis: Sicherung des Kartenschlüssels wurde auf `%s' gespeichert\n"
 
+msgid ""
+"Warning: Although the key has been written to the card, a backup file was\n"
+"         not properly written to the disk.  You may want to repeat the\n"
+"         entire operation or just create a new encryption key on the card.\n"
+msgstr ""
+"WARNUNG: Obgleich der Schlüssel auf die Karte geschrieben wurde konnte\n"
+"         keine Sicherungskopie auf die Festplatte geschrieben werden.\n"
+"         Sie sollten entweder den gesamten Vorgang wiederholen oder\n"
+"         lediglich einen neuen Verschlüsselungssschlüssel für die\n"
+"         Karte erzeugen.\n"
+
 #, c-format
 msgid "writing public key to '%s'\n"
 msgstr "schreiben des öffentlichen Schlüssels nach '%s'\n"
@@ -5591,6 +5602,10 @@ msgstr "Der Schlüssel ist zum Entschlüsseln nicht gekennzeichnet.\n"
 #, c-format
 msgid "okay, we are the anonymous recipient.\n"
 msgstr "Alles klar, wir sind der ungenannte Empfänger.\n"
+
+#, c-format
+msgid "WARNING: session key is not quantum-resistant\n"
+msgstr "WARNUNG: Der Sitzungsschlüssel ist nicht quantenresistent\n"
 
 #, c-format
 msgid "old encoding of the DEK is not supported\n"

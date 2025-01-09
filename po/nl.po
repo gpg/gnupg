@@ -4658,6 +4658,12 @@ msgstr "kan reservebestand '%s' niet aanmaken: %s\n"
 msgid "Note: backup of card key saved to '%s'\n"
 msgstr "Let op: reservebestand van de kaartsleutel opgeslagen naar '%s'\n"
 
+msgid ""
+"Warning: Although the key has been written to the card, a backup file was\n"
+"         not properly written to the disk.  You may want to repeat the\n"
+"         entire operation or just create a new encryption key on the card.\n"
+msgstr ""
+
 #, c-format
 msgid "writing public key to '%s'\n"
 msgstr "publieke sleutel wordt weggeschreven naar '%s'\n"
@@ -5744,6 +5750,13 @@ msgstr "sleutel %s is niet geschikt voor ontcijfering in %s-modus\n"
 #, c-format
 msgid "okay, we are the anonymous recipient.\n"
 msgstr "oké, wij zijn de anonieme ontvanger.\n"
+
+#, fuzzy, c-format
+#| msgid "WARNING: signing subkey %s is not cross-certified\n"
+msgid "WARNING: session key is not quantum-resistant\n"
+msgstr ""
+"WAARSCHUWING: er is geen kruiscertificering gebeurd\n"
+"              van de ondertekenende subsleutel %s\n"
 
 #, c-format
 msgid "old encoding of the DEK is not supported\n"

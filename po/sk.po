@@ -4726,6 +4726,12 @@ msgstr "nemôžem vytvoriť `%s': %s\n"
 msgid "Note: backup of card key saved to '%s'\n"
 msgstr "POZNÁMKA: platnosť tajného kľúča %08lX skončila %s\n"
 
+msgid ""
+"Warning: Although the key has been written to the card, a backup file was\n"
+"         not properly written to the disk.  You may want to repeat the\n"
+"         entire operation or just create a new encryption key on the card.\n"
+msgstr ""
+
 #, fuzzy, c-format
 #| msgid "writing public key to `%s'\n"
 msgid "writing public key to '%s'\n"
@@ -5804,6 +5810,10 @@ msgstr "kľúč %08lX: chyba identifikátor užívateľa\n"
 #, c-format
 msgid "okay, we are the anonymous recipient.\n"
 msgstr "o.k., my sme anonymný adresát.\n"
+
+#, fuzzy, c-format
+msgid "WARNING: session key is not quantum-resistant\n"
+msgstr "VAROVANIE: podpisovací podkľúč %08lX nie je krížovo certifikovaný\n"
 
 #, c-format
 msgid "old encoding of the DEK is not supported\n"

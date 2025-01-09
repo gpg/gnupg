@@ -4704,6 +4704,12 @@ msgstr "Nem tudom létrehozni a(z) \"%s\" állományt: %s.\n"
 msgid "Note: backup of card key saved to '%s'\n"
 msgstr "MEGJEGYZÉS: %08lX titkos kulcs %s-kor lejárt.\n"
 
+msgid ""
+"Warning: Although the key has been written to the card, a backup file was\n"
+"         not properly written to the disk.  You may want to repeat the\n"
+"         entire operation or just create a new encryption key on the card.\n"
+msgstr ""
+
 #, fuzzy, c-format
 #| msgid "writing public key to `%s'\n"
 msgid "writing public key to '%s'\n"
@@ -5784,6 +5790,10 @@ msgstr "%08lX kulcs: Nincs felhasználói azonosító.\n"
 #, c-format
 msgid "okay, we are the anonymous recipient.\n"
 msgstr "Rendben, mi vagyunk az anonim címzett.\n"
+
+#, fuzzy, c-format
+msgid "WARNING: session key is not quantum-resistant\n"
+msgstr "FIGYELEM: %08lX aláíró alkulcs nem kereszthitelesített.\n"
 
 #, c-format
 msgid "old encoding of the DEK is not supported\n"

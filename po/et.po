@@ -4699,6 +4699,12 @@ msgstr "`%s' ei õnnestu luua: %s\n"
 msgid "Note: backup of card key saved to '%s'\n"
 msgstr "MÄRKUS: salajane võti %08lX aegus %s\n"
 
+msgid ""
+"Warning: Although the key has been written to the card, a backup file was\n"
+"         not properly written to the disk.  You may want to repeat the\n"
+"         entire operation or just create a new encryption key on the card.\n"
+msgstr ""
+
 #, fuzzy, c-format
 #| msgid "writing public key to `%s'\n"
 msgid "writing public key to '%s'\n"
@@ -5764,6 +5770,10 @@ msgstr "võti %08lX: kasutaja ID puudub\n"
 #, c-format
 msgid "okay, we are the anonymous recipient.\n"
 msgstr "ok, me oleme anonüümne teate saaja.\n"
+
+#, fuzzy, c-format
+msgid "WARNING: session key is not quantum-resistant\n"
+msgstr "HOIATUS: allkirjastamise alamvõti %08lX ei ole rist-sertifitseeritud\n"
 
 #, c-format
 msgid "old encoding of the DEK is not supported\n"

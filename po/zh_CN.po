@@ -4377,6 +4377,12 @@ msgstr "不能创建备份文件‘%s’：%s\n"
 msgid "Note: backup of card key saved to '%s'\n"
 msgstr "注意：卡片密钥的备份已保存到‘%s’\n"
 
+msgid ""
+"Warning: Although the key has been written to the card, a backup file was\n"
+"         not properly written to the disk.  You may want to repeat the\n"
+"         entire operation or just create a new encryption key on the card.\n"
+msgstr ""
+
 #, c-format
 msgid "writing public key to '%s'\n"
 msgstr "正在将公钥写至‘%s’\n"
@@ -5372,6 +5378,11 @@ msgstr "使用的密钥未被标记为加密用途。\n"
 #, c-format
 msgid "okay, we are the anonymous recipient.\n"
 msgstr "很好，我们就是匿名接收者。\n"
+
+#, fuzzy, c-format
+#| msgid "WARNING: signing subkey %s is not cross-certified\n"
+msgid "WARNING: session key is not quantum-resistant\n"
+msgstr "警告：签名的子密钥 %s 未经交叉验证\n"
 
 #, c-format
 msgid "old encoding of the DEK is not supported\n"
