@@ -40,6 +40,11 @@
 #include "call-agent.h"
 
 #define CONTROL_D ('D' - 'A' + 1)
+#define USER_PIN_DEFAULT "123456"
+#define ADMIN_PIN_DEFAULT "12345678"
+
+#define KDF_DATA_LENGTH_MIN  90
+#define KDF_DATA_LENGTH_MAX 110
 
 
 static void
@@ -716,6 +721,26 @@ current_card_status (ctrl_t ctrl, estream_t fp,
 }
 
 
+static void
+show_pin_hint (void)
+{
+  static int shown;
+
+  if (shown)
+    return;
+  shown = 1;
+
+  /* If no displayed name has been set, we assume that this is a fresh
+     card and print a hint about the default PINs.  */
+  tty_printf ("\n");
+  tty_printf (_("Please note that the factory settings of the PINs are\n"
+                "   PIN = '%s'     Admin PIN = '%s'\n"
+                "You should change them using the command --change-pin\n"),
+              USER_PIN_DEFAULT, ADMIN_PIN_DEFAULT);
+  tty_printf ("\n");
+}
+
+
 /* Print all available information for specific card with SERIALNO.
    Print all available information for current card when SERIALNO is NULL.
    Or print for all cards when SERIALNO is "all".  */
@@ -849,6 +874,8 @@ change_name (void)
       rc = gpg_error (GPG_ERR_TOO_LARGE);
       goto leave;
     }
+
+  show_pin_hint ();
 
   rc = agent_scd_setattr ("DISP-NAME", isoname, strlen (isoname));
   if (rc)
@@ -1405,6 +1432,7 @@ show_keysize_warning (void)
 }
 
 
+
 /* Ask for the size of a card key.  NBITS is the current size
    configured for the card.  Returns 0 to use the default size
    (i.e. NBITS) or the selected size.  */
@@ -1590,6 +1618,8 @@ do_change_keyattr (int keyno, const struct key_attr *key_attr)
       return gpg_error (GPG_ERR_PUBKEY_ALGO);
     }
 
+  show_pin_hint ();
+
   err = agent_scd_setattr ("KEY-ATTR", args, strlen (args));
   if (err)
     log_error (_("error changing key attribute for key %d: %s\n"),
@@ -1621,6 +1651,7 @@ key_attr (void)
   for (keyno = 0; keyno < DIM (info.key_attr); keyno++)
     {
       struct key_attr *key_attr;
+
 
       if ((key_attr = ask_card_keyattr (keyno, &info.key_attr[keyno])))
         {
@@ -1687,15 +1718,7 @@ generate_card_keys (ctrl_t ctrl)
   /* If no displayed name has been set, we assume that this is a fresh
      card and print a hint about the default PINs.  */
   if (!info.disp_name || !*info.disp_name)
-    {
-      tty_printf ("\n");
-      tty_printf (_("Please note that the factory settings of the PINs are\n"
-                    "   PIN = '%s'     Admin PIN = '%s'\n"
-                    "You should change them using the command --change-pin\n"),
-                  "123456", "12345678");
-      tty_printf ("\n");
-    }
-
+    show_pin_hint ();
 
   if (check_pin_for_key_operation (&info, &forced_chv1))
     goto leave;
@@ -2059,11 +2082,6 @@ factory_reset (void)
   agent_release_card_info (&info);
 }
 
-
-#define USER_PIN_DEFAULT "123456"
-#define ADMIN_PIN_DEFAULT "12345678"
-#define KDF_DATA_LENGTH_MIN  90
-#define KDF_DATA_LENGTH_MAX 110
 
 /* Generate KDF data.  */
 static gpg_error_t
