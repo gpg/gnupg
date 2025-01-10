@@ -5,13 +5,13 @@
 # Yoshihiro Kajiki <kajiki@ylug.org>, 1999.
 # Takashi P.KATOH, 2002.
 # NIIBE Yutaka <gniibe@fsij.org>, 2013, 2014, 2015, 2016, 2017, 2018, 2019,
-# 2020, 2021, 2022, 2023, 2024.
+# 2020, 2021, 2022, 2023, 2024, 2025.
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: gnupg 2.5.2\n"
+"Project-Id-Version: gnupg 2.5.3\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"PO-Revision-Date: 2024-12-20 11:54+0900\n"
+"PO-Revision-Date: 2025-01-10 15:04+0900\n"
 "Last-Translator: NIIBE Yutaka <gniibe@fsij.org>\n"
 "Language-Team: none\n"
 "Language: ja\n"
@@ -3386,7 +3386,7 @@ msgid "add a revocation key"
 msgstr "失効鍵の追加"
 
 msgid "add an additional decryption subkey"
-msgstr "追加の復号用の副鍵を足す"
+msgstr "追加復号用の副鍵を足す"
 
 msgid "delete signatures from the selected user IDs"
 msgstr "選択したユーザIDから署名を削除する"
@@ -3801,7 +3801,7 @@ msgid ""
 msgstr "本当にこの鍵を指名失効者に任命しますか? (y/N) "
 
 msgid "Enter the fingerprint of the additional decryption subkey: "
-msgstr "追加の復号用の副鍵のフィンガー・プリントを入力してください:"
+msgstr "追加復号用の副鍵のフィンガー・プリントを入力してください:"
 
 #, c-format
 msgid "Did you specify the fingerprint of a subkey?\n"
@@ -4388,6 +4388,9 @@ msgid ""
 "         not properly written to the disk.  You may want to repeat the\n"
 "         entire operation or just create a new encryption key on the card.\n"
 msgstr ""
+"警告: カードに鍵は書き込まれましたが、バックアップファイルはディスクに正し\n"
+"         く書き込まれませんでした。全体の操作を繰り返すか、新しい暗号鍵を\n"
+"         カードで作成したいでしょう。\n"
 
 #, c-format
 msgid "writing public key to '%s'\n"
@@ -5396,10 +5399,9 @@ msgstr "使用された鍵は暗号化の使用のためにマークされてい
 msgid "okay, we are the anonymous recipient.\n"
 msgstr "終了。匿名の受取人用です。\n"
 
-#, fuzzy, c-format
-#| msgid "WARNING: key is not quantum-resistant\n"
+#, c-format
 msgid "WARNING: session key is not quantum-resistant\n"
-msgstr "*警告*: 鍵は耐量子ではありません\n"
+msgstr "*警告*: セッション鍵は耐量子ではありません\n"
 
 #, c-format
 msgid "old encoding of the DEK is not supported\n"
