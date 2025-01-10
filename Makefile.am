@@ -314,6 +314,7 @@ sign-release:
 	  cat $(RELEASE_NAME).swdb >swdb.snippet;\
 	  echo '#+macro: gnupg26_branch  master' >>swdb.snippet;\
 	  cat  $${release_w32_name}.exe.swdb >>swdb.snippet;\
+	  echo "#+macro: gnupg26_w32_ssiz $$(wc -c <$${release_w32_name}.tar.xz|awk '{print int($$1/1024)}')k" >>swdb.snippet ;\
 	  echo >>swdb.snippet ;\
 	  sha1sum $${files1} >>swdb.snippet ;\
           cat "../$(RELEASE_NAME).buildlog" swdb.snippet \
