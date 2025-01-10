@@ -5,13 +5,13 @@
 # Yoshihiro Kajiki <kajiki@ylug.org>, 1999.
 # Takashi P.KATOH, 2002.
 # NIIBE Yutaka <gniibe@fsij.org>, 2013, 2014, 2015, 2016, 2017, 2018, 2019,
-# 2020, 2021, 2022, 2023.
+# 2020, 2021, 2022, 2023, 2024, 2025.
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: gnupg 2.2.40\n"
+"Project-Id-Version: gnupg 2.2.46\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"PO-Revision-Date: 2024-04-09 13:32+0200\n"
+"PO-Revision-Date: 2025-01-10 14:57+0900\n"
 "Last-Translator: NIIBE Yutaka <gniibe@fsij.org>\n"
 "Language-Team: none\n"
 "Language: ja\n"
@@ -2486,10 +2486,9 @@ msgstr "%s:%d: 無効な auto-key-locate リストです\n"
 msgid "invalid auto-key-locate list\n"
 msgstr "無効な auto-key-locate リストです\n"
 
-#, fuzzy, c-format
-#| msgid "error parsing key specification '%s': %s\n"
+#, c-format
 msgid "error parsing value for option '%s': %s\n"
-msgstr "鍵指定'%s'の構文解析エラー: %s\n"
+msgstr "オプション'%s'の値の構文解析エラー: %s\n"
 
 #, c-format
 msgid "WARNING: program may create a core file!\n"
@@ -3446,10 +3445,8 @@ msgstr "選択した副鍵の削除"
 msgid "add a revocation key"
 msgstr "失効鍵の追加"
 
-#, fuzzy
-#| msgid "Data decryption succeeded"
 msgid "add an additional decryption subkey"
-msgstr "データ復号に成功しました"
+msgstr "追加復号用の副鍵を足す"
 
 msgid "delete signatures from the selected user IDs"
 msgstr "選択したユーザIDから署名を削除する"
@@ -3856,17 +3853,15 @@ msgid ""
 msgstr "本当にこの鍵を指名失効者に任命しますか? (y/N) "
 
 msgid "Enter the fingerprint of the additional decryption subkey: "
-msgstr ""
+msgstr "追加復号用の副鍵のフィンガー・プリントを入力してください:"
 
-#, fuzzy, c-format
-#| msgid "(unless you specify the key by fingerprint)\n"
+#, c-format
 msgid "Did you specify the fingerprint of a subkey?\n"
-msgstr "(フィンガー・プリントで鍵を指定してない限り)\n"
+msgstr "副鍵のフィンガー・プリントを指定しましたか?\n"
 
-#, fuzzy, c-format
-#| msgid "Subkey %s is already revoked.\n"
+#, c-format
 msgid "key \"%s\" is already on this keyblock\n"
-msgstr "副鍵 %s は、もう失効されています。\n"
+msgstr "鍵 \"%s\" は、もうこの鍵ブロックにあります。\n"
 
 msgid ""
 "Are you sure you want to change the expiration time for multiple subkeys? (y/"
@@ -4441,10 +4436,9 @@ msgstr ""
 "この鍵は暗号化には使用できないことに注意してください。暗号化を行うには、\n"
 "\"--edit-key\"コマンドを使って副鍵を生成してください。\n"
 
-#, fuzzy, c-format
-#| msgid "WARNING: This key has been revoked by its owner!\n"
+#, c-format
 msgid "Note: The key has been created with one or more ADSK!\n"
-msgstr "*警告*: この鍵は所有者によって失効されています!\n"
+msgstr "注意: この鍵はひとつあるいは複数のADSKで作成されています!\n"
 
 #, c-format
 msgid ""
@@ -5382,10 +5376,9 @@ msgstr "*警告*: 暗号アルゴリズム%sは受取人の優先指定に入っ
 msgid "Note: secret key %s expired at %s\n"
 msgstr "注意: 秘密鍵%sは%sで期限切れとなります\n"
 
-#, fuzzy, c-format
-#| msgid "certificate should not have been used for encryption\n"
+#, c-format
 msgid "Note: ADSK key has been used for decryption"
-msgstr "証明書は暗号化のために使われるべきではありませんでした\n"
+msgstr "注意: ADSK鍵が復号に使用されました"
 
 #, c-format
 msgid "Note: key has been revoked"
@@ -6168,15 +6161,13 @@ msgid " (%d validity count cleared)\n"
 msgid_plural " (%d validity counts cleared)\n"
 msgstr[0] " (うち%d本の有効性数をクリア)\n"
 
-#, fuzzy, c-format
-#| msgid "no ultimately trusted keys found\n"
+#, c-format
 msgid "Note: ultimately trusted key %s not found\n"
-msgstr "究極的に信用する鍵が見つかりません\n"
+msgstr "注意: 究極的に信用する鍵 %s が見つかりません\n"
 
-#, fuzzy, c-format
-#| msgid "no ultimately trusted keys found\n"
+#, c-format
 msgid "Note: ultimately trusted key %s expired\n"
-msgstr "究極的に信用する鍵が見つかりません\n"
+msgstr "注意: 究極的に信用する鍵 %s が失効しています\n"
 
 #, c-format
 msgid "no ultimately trusted keys found\n"
