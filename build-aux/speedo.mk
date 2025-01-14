@@ -1200,6 +1200,9 @@ clean-speedo:
 # {{{
 ifeq ($(TARGETOS),w32)
 
+# The exclude '*.[ao]' takes care of the zlib and bzip2 peculiarity
+# which keeps the build files in the source directory.  See also the
+# speedo_make_only_style macro.
 dist-source: installer
 	for i in 00 01 02 03; do sleep 1;touch PLAY/stamps/stamp-*-${i}-*;done
 	(set -e;\
@@ -1210,6 +1213,7 @@ dist-source: installer
              --anchored --exclude './PLAY' . ;\
 	 tar --totals -rf "$$tarname" --exclude-backups --exclude-vcs \
               --transform='s,^,$(INST_NAME)-$(INST_VERSION)/,' \
+              --exclude='*.[ao]' \
 	     PLAY/stamps/stamp-*-00-unpack PLAY/src swdb.lst swdb.lst.sig ;\
 	 [ -f "$$tarname".xz ] && rm "$$tarname".xz;\
          xz -T0 "$$tarname" ;\
