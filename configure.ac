@@ -593,9 +593,6 @@ AH_BOTTOM([
 /* Under Windows we use the gettext code from libgpg-error.  */
 #define GPG_ERR_ENABLE_GETTEXT_MACROS
 
-/* Under WindowsCE we use the strerror replacement from libgpg-error.  */
-#define GPG_ERR_ENABLE_ERRNO_MACROS
-
 #endif /*GNUPG_CONFIG_H_INCLUDED*/
 ])
 
