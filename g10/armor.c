@@ -1054,11 +1054,13 @@ radix64_read( armor_filter_context_t *afx, IOBUF a, size_t *retn,
     afx->radbuf[0] = val;
 
     if( n )
-      gcry_md_write (afx->crc_md, buf, n);
+      {
+        gcry_md_write (afx->crc_md, buf, n);
+        afx->any_data = 1;
+      }
 
     if( checkcrc ) {
 	gcry_md_final (afx->crc_md);
-	afx->any_data = 1;
 	afx->inp_checked=0;
 	afx->faked = 0;
 	for(;;) { /* skip lf and pad characters */
