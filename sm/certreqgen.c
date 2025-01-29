@@ -111,6 +111,7 @@ struct reqgen_ctrl_s
 {
   int lnr;
   int dryrun;
+  int no_protection;
 };
 
 
@@ -302,6 +303,8 @@ read_parameters (ctrl_t ctrl, estream_t fp, estream_t out_fp)
             log_info ("%s\n", value);
           else if (!ascii_strcasecmp (keyword, "%dry-run"))
             outctrl.dryrun = 1;
+          else if (!ascii_strcasecmp (keyword, "%no-protection"))
+            outctrl.no_protection = 1;
           else if (!ascii_strcasecmp( keyword, "%commit"))
             {
               rc = proc_parameters (ctrl, para, out_fp, &outctrl);
@@ -760,7 +763,7 @@ proc_parameters (ctrl_t ctrl, struct para_data_s *para,
           xfree (cardkeyid);
           return gpg_error (GPG_ERR_INV_PARAMETER);
         }
-      rc = gpgsm_agent_genkey (ctrl, keyparms, &public);
+      rc = gpgsm_agent_genkey (ctrl, outctrl->no_protection, keyparms, &public);
       if (rc)
         {
           r = get_parameter (para, pKEYTYPE, 0);

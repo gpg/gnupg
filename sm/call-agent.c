@@ -680,8 +680,8 @@ inq_genkey_parms (void *opaque, const char *line)
 
 
 /* Call the agent to generate a new key */
-int
-gpgsm_agent_genkey (ctrl_t ctrl,
+gpg_error_t
+gpgsm_agent_genkey (ctrl_t ctrl, int no_protection,
                     ksba_const_sexp_t keyparms, ksba_sexp_t *r_pubkey)
 {
   int rc;
@@ -709,7 +709,9 @@ gpgsm_agent_genkey (ctrl_t ctrl,
   if (!gk_parm.sexplen)
     return gpg_error (GPG_ERR_INV_VALUE);
   gnupg_get_isotime (timebuf);
-  snprintf (line, sizeof line, "GENKEY --timestamp=%s", timebuf);
+  snprintf (line, sizeof line, "GENKEY%s --timestamp=%s",
+            no_protection? " --no-protection":"",
+            timebuf);
   rc = assuan_transact (agent_ctx, line,
                         put_membuf_cb, &data,
                         inq_genkey_parms, &gk_parm, NULL, NULL);

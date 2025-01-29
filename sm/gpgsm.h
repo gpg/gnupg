@@ -526,8 +526,9 @@ int gpgsm_scd_pksign (ctrl_t ctrl, const char *keyid, const char *desc,
 int gpgsm_agent_pkdecrypt (ctrl_t ctrl, const char *keygrip, const char *desc,
                            ksba_const_sexp_t ciphertext,
                            char **r_buf, size_t *r_buflen);
-int gpgsm_agent_genkey (ctrl_t ctrl,
-                        ksba_const_sexp_t keyparms, ksba_sexp_t *r_pubkey);
+gpg_error_t gpgsm_agent_genkey (ctrl_t ctrl, int no_protection,
+                                ksba_const_sexp_t keyparms,
+                                ksba_sexp_t *r_pubkey);
 int gpgsm_agent_readkey (ctrl_t ctrl, int fromcard, const char *hexkeygrip,
                          ksba_sexp_t *r_pubkey);
 int gpgsm_agent_scd_serialno (ctrl_t ctrl, char **r_serialno);
