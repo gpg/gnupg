@@ -135,6 +135,7 @@ enum cmd_and_opt_values {
 
   oPassphraseFD,
   oPinentryMode,
+  oNoProtection,
   oRequestOrigin,
 
   oAssumeArmor,
@@ -436,6 +437,7 @@ static gpgrt_opt_t opts[] = {
   ARGPARSE_s_n (oDisableFdTranslation, "disable-fd-translation", "@"),
   ARGPARSE_s_i (oPassphraseFD,    "passphrase-fd", "@"),
   ARGPARSE_s_s (oPinentryMode,    "pinentry-mode", "@"),
+  ARGPARSE_s_n (oNoProtection,    "no-protection", "@"),
 
 
   ARGPARSE_header (NULL, N_("Other options")),
@@ -1177,6 +1179,10 @@ main ( int argc, char **argv)
 	  if (opt.pinentry_mode == -1)
             log_error (_("invalid pinentry mode '%s'\n"), pargs.r.ret_str);
 	  break;
+
+        case oNoProtection:
+          ctrl.no_protection = 1;
+          break;
 
         case oRequestOrigin:
           opt.request_origin = parse_request_origin (pargs.r.ret_str);

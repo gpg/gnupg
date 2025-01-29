@@ -271,7 +271,8 @@ Export the private key and the certificate identified by @var{key-id}
 using the PKCS#12 format.  When used with the @code{--armor} option a few
 informational lines are prepended to the output.  Note, that the PKCS#12
 format is not very secure and proper transport security should be used
-to convey the exported key.  (@xref{option --p12-charset}.)
+to convey the exported key.  The option @code{--no-protection} can be
+used to export without passphrase protection.  (@xref{option --p12-charset}.)
 
 @item --export-secret-key-p8 @var{key-id}
 @itemx --export-secret-key-raw @var{key-id}
@@ -886,6 +887,13 @@ are:
   Redirect Pinentry queries to the caller.  Note that in contrast to
   Pinentry the user is not prompted again if he enters a bad password.
 @end table
+
+@item --no-protection
+@opindex no-protection
+When exporting a private key in the PKCS#12 format do not use a
+passphrase to protect the key.  Please use this option only along with
+a PKCS#12 export becuase it may eventually also have an effect for
+other commands.
 
 @item --request-origin @var{origin}
 @opindex request-origin
@@ -1783,6 +1791,11 @@ encrypt operation.  Note that this option is ignored if
 
 @item input-size-hint
 This is the same as the @option{--input-size-hint} command line option.
+
+@item no-protection
+If @var{value} is true exported keys are not protected by a
+passphrase.  This can be reset with a value of 0 or a RESET command.
+This is the same as the command line option @option{--no-protection}.
 
 @end table
 

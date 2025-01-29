@@ -284,6 +284,8 @@ struct server_control_s
    * progress info and to decide on how to allocate buffers.  */
   uint64_t input_size_hint;
 
+  int no_protection;  /* No passphrase for PKCS#12 export.  */
+
   int create_base64;  /* Create base64 encoded output */
   int create_pem;     /* create PEM output */
   const char *pem_name; /* PEM name to use */

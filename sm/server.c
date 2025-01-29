@@ -318,6 +318,11 @@ option_handler (assuan_context_t ctx, const char *key, const char *value)
     {
       ctrl->input_size_hint = string_to_u64 (value);
     }
+  else if (!strcmp (key, "no-protection"))
+    {
+      int i = *value? atoi (value) : 0;
+      ctrl->no_protection = !!i;
+    }
   else
     err = gpg_error (GPG_ERR_UNKNOWN_OPTION);
 
@@ -338,6 +343,7 @@ reset_notify (assuan_context_t ctx, char *line)
   ctrl->server_local->recplist = NULL;
   ctrl->server_local->signerlist = NULL;
   ctrl->always_trust = 0;
+  ctrl->no_protection = 0;
   close_message_fp (ctrl);
   assuan_close_input_fd (ctx);
   assuan_close_output_fd (ctx);
