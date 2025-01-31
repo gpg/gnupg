@@ -3068,7 +3068,8 @@ to the default of 3.
 @subsection Compliance options
 
 These options control what GnuPG is compliant to. Only one of these
-options may be active at a time. Note that the default setting of
+options may be active at a time. If multiple options are given, the
+last one supersedes all the others.  Note that the default setting of
 this is nearly always the correct one. See the INTEROPERABILITY WITH
 OTHER OPENPGP PROGRAMS section below before using one of these
 options.
