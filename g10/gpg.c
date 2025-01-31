@@ -2302,6 +2302,7 @@ set_compliance_option (enum cmd_and_opt_values option)
     case oRFC2440:
       opt.compliance = CO_RFC2440;
       opt.flags.dsa2 = 0;
+      opt.flags.require_cross_cert = 0;
       opt.rfc2440_text = 1;
       opt.allow_non_selfsigned_uid = 1;
       opt.allow_freeform_uid = 1;
