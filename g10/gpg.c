@@ -2320,7 +2320,22 @@ set_compliance_option (enum cmd_and_opt_values option)
     case oPGP7:  opt.compliance = CO_PGP7;  break;
     case oPGP8:  opt.compliance = CO_PGP8;  break;
     case oGnuPG:
+      /* set up default options affected by policy compliance: */
       opt.compliance = CO_GNUPG;
+      opt.flags.dsa2 = 0;
+      opt.flags.require_cross_cert = 1;
+      opt.rfc2440_text = 0;
+      opt.allow_non_selfsigned_uid = 0;
+      opt.allow_freeform_uid = 0;
+      opt.escape_from = 1;
+      opt.not_dash_escaped = 0;
+      opt.def_cipher_algo = 0;
+      opt.def_digest_algo = 0;
+      opt.cert_digest_algo = 0;
+      opt.compress_algo = -1;
+      opt.s2k_mode = 3; /* iterated+salted */
+      opt.s2k_digest_algo = 0;
+      opt.s2k_cipher_algo = DEFAULT_CIPHER_ALGO;
       break;
 
     case oDE_VS:
@@ -2476,19 +2491,10 @@ main (int argc, char **argv)
     opt.command_fd = -1; /* no command fd */
     opt.compress_level = -1; /* defaults to standard compress level */
     opt.bz2_compress_level = -1; /* defaults to standard compress level */
-    /* note: if you change these lines, look at oOpenPGP */
-    opt.def_cipher_algo = 0;
-    opt.def_digest_algo = 0;
-    opt.cert_digest_algo = 0;
-    opt.compress_algo = -1; /* defaults to DEFAULT_COMPRESS_ALGO */
-    opt.s2k_mode = 3; /* iterated+salted */
     opt.s2k_count = 0; /* Auto-calibrate when needed.  */
-    opt.s2k_cipher_algo = DEFAULT_CIPHER_ALGO;
     opt.completes_needed = 1;
     opt.marginals_needed = 3;
     opt.max_cert_depth = 5;
-    opt.escape_from = 1;
-    opt.flags.require_cross_cert = 1;
     opt.import_options = (IMPORT_REPAIR_KEYS
                           | IMPORT_COLLAPSE_UIDS
                           | IMPORT_COLLAPSE_SUBKEYS);
@@ -2524,7 +2530,7 @@ main (int argc, char **argv)
     opt.emit_version = 0;
     opt.weak_digests = NULL;
     opt.with_subkey_fingerprint = 1;
-    opt.compliance = CO_GNUPG;
+    set_compliance_option (oGnuPG);
 
     /* Check special options given on the command line.  */
     orig_argc = argc;
