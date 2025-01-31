@@ -2317,8 +2317,14 @@ set_compliance_option (enum cmd_and_opt_values option)
       opt.s2k_cipher_algo = CIPHER_ALGO_3DES;
       opt.flags.allow_old_cipher_algos = 1;
       break;
-    case oPGP7:  opt.compliance = CO_PGP7;  break;
-    case oPGP8:  opt.compliance = CO_PGP8;  break;
+    case oPGP7:
+      set_compliance_option (oGnuPG);
+      opt.compliance = CO_PGP7;
+      break;
+    case oPGP8:
+      set_compliance_option (oGnuPG);
+      opt.compliance = CO_PGP8;
+      break;
     case oGnuPG:
       /* set up default options affected by policy compliance: */
       opt.compliance = CO_GNUPG;
