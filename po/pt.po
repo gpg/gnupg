@@ -57,13 +57,14 @@
 #   (conjugation) enter (verb)        |  introduzir
 #   usage:                            |  uso:
 #   usage                             |  utilização
+#   quantum-resistant                 |  quântico-resiliente
 #
 #
 msgid ""
 msgstr ""
 "Project-Id-Version: gnupg\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"PO-Revision-Date: 2024-11-30 11:55+0000\n"
+"PO-Revision-Date: 2025-02-03 08:47+0000\n"
 "Last-Translator: Daniel Cerqueira <dan.git@lispclub.com>\n"
 "Language-Team: pt <dan.git@lispclub.com>\n"
 "Language: pt\n"
@@ -1438,6 +1439,16 @@ msgstr "forçado"
 msgid "Please try command \"%s\" if the listing does not look correct\n"
 msgstr "Tente o comando \"%s\" se a listagem não parecer correta\n"
 
+#, c-format
+msgid ""
+"Please note that the factory settings of the PINs are\n"
+"   PIN = '%s'     Admin PIN = '%s'\n"
+"You should change them using the command --change-pin\n"
+msgstr ""
+"Observe que as configurações de fábrica dos PINs são\n"
+"   PIN = '%s'  PIN do Admin = '%s'\n"
+"Você deve alterá-los usando o comando --change-pin\n"
+
 msgid "Error: Only plain ASCII is currently allowed.\n"
 msgstr "Erro: Só ASCII simples é permitido de momento.\n"
 
@@ -1590,16 +1601,6 @@ msgstr "Nota: as chaves já estão armazenadas no cartão!\n"
 
 msgid "Replace existing keys? (y/N) "
 msgstr "Substituir chaves existentes? (s/N) "
-
-#, c-format
-msgid ""
-"Please note that the factory settings of the PINs are\n"
-"   PIN = '%s'     Admin PIN = '%s'\n"
-"You should change them using the command --change-pin\n"
-msgstr ""
-"Observe que as configurações de fábrica dos PINs são\n"
-"   PIN = '%s'  PIN do Admin = '%s'\n"
-"Você deve alterá-los usando o comando --change-pin\n"
 
 msgid "Please select the type of key to generate:\n"
 msgstr "Selecione o tipo de chave a ser gerada:\n"
@@ -4521,6 +4522,11 @@ msgid ""
 "         not properly written to the disk.  You may want to repeat the\n"
 "         entire operation or just create a new encryption key on the card.\n"
 msgstr ""
+"Aviso: Embora a chave tenha sido gravada no cartão, um ficheiro de backup "
+"não\n"
+"       foi devidamente gravado no disco.  Você poderá querer repetir a\n"
+"       operação inteira ou apenas criar uma nova chave de cifração no "
+"cartão.\n"
 
 #, c-format
 msgid "writing public key to '%s'\n"
@@ -4796,7 +4802,7 @@ msgstr "cifrado com chave %s, ID %s\n"
 
 #, c-format
 msgid "WARNING: key is not quantum-resistant\n"
-msgstr "AVISO: chave não é resistente a ataques quantum\n"
+msgstr "AVISO: chave não é quântico-resiliente\n"
 
 #, c-format
 msgid "WARNING: multiple plaintexts seen\n"
@@ -5559,10 +5565,9 @@ msgstr "a chave usada não está marcada para uso de cifração.\n"
 msgid "okay, we are the anonymous recipient.\n"
 msgstr "ok, nós somos o destinatário anónimo.\n"
 
-#, fuzzy, c-format
-#| msgid "WARNING: key is not quantum-resistant\n"
+#, c-format
 msgid "WARNING: session key is not quantum-resistant\n"
-msgstr "AVISO: chave não é resistente a ataques quantum\n"
+msgstr "AVISO: chave de sessão não é quântica-resiliente\n"
 
 #, c-format
 msgid "old encoding of the DEK is not supported\n"
