@@ -2335,7 +2335,7 @@ set_compliance_option (enum cmd_and_opt_values option)
       break;
 
     case oDE_VS:
-      set_compliance_option (oOpenPGP);
+      set_compliance_option (oGnuPG);
       opt.compliance = CO_DE_VS;
       /* We divert here from the backward compatible rfc4880 algos.  */
       opt.s2k_digest_algo = DIGEST_ALGO_SHA256;
