@@ -3687,7 +3687,9 @@ blocks of 64 bits; modern algorithms use blocks of 128 bit instead.
 To avoid certain attack on these old algorithms it is suggested not to
 encrypt more than 150 MiByte using the same key.  For this reason gpg
 does not allow the use of 64 bit block size algorithms for encryption
-unless this option is specified.
+unless this option is specified.  Some compliance modes already set or
+clear this flag and thus this flags should be used after a compliance
+mode setting.
 
 @item --allow-weak-digest-algos
 @opindex allow-weak-digest-algos

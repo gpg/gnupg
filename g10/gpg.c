@@ -2277,54 +2277,6 @@ set_compliance_option (enum cmd_and_opt_values option)
 {
   switch (option)
     {
-    case oOpenPGP:
-    case oRFC4880:
-      /* This is effectively the same as RFC2440, but with
-         "--enable-dsa2 --no-rfc2440-text --escape-from-lines
-         --require-cross-certification". */
-      opt.compliance = CO_RFC4880;
-      opt.flags.dsa2 = 1;
-      opt.flags.require_cross_cert = 1;
-      opt.rfc2440_text = 0;
-      opt.allow_non_selfsigned_uid = 1;
-      opt.allow_freeform_uid = 1;
-      opt.escape_from = 1;
-      opt.not_dash_escaped = 0;
-      opt.def_cipher_algo = 0;
-      opt.def_digest_algo = 0;
-      opt.cert_digest_algo = 0;
-      opt.compress_algo = -1;
-      opt.s2k_mode = 3; /* iterated+salted */
-      opt.s2k_digest_algo = DIGEST_ALGO_SHA1;
-      opt.s2k_cipher_algo = CIPHER_ALGO_3DES;
-      opt.flags.allow_old_cipher_algos = 1;
-      break;
-    case oRFC2440:
-      opt.compliance = CO_RFC2440;
-      opt.flags.dsa2 = 0;
-      opt.flags.require_cross_cert = 0;
-      opt.rfc2440_text = 1;
-      opt.allow_non_selfsigned_uid = 1;
-      opt.allow_freeform_uid = 1;
-      opt.escape_from = 0;
-      opt.not_dash_escaped = 0;
-      opt.def_cipher_algo = 0;
-      opt.def_digest_algo = 0;
-      opt.cert_digest_algo = 0;
-      opt.compress_algo = -1;
-      opt.s2k_mode = 3; /* iterated+salted */
-      opt.s2k_digest_algo = DIGEST_ALGO_SHA1;
-      opt.s2k_cipher_algo = CIPHER_ALGO_3DES;
-      opt.flags.allow_old_cipher_algos = 1;
-      break;
-    case oPGP7:
-      set_compliance_option (oGnuPG);
-      opt.compliance = CO_PGP7;
-      break;
-    case oPGP8:
-      set_compliance_option (oGnuPG);
-      opt.compliance = CO_PGP8;
-      break;
     case oGnuPG:
       /* set up default options affected by policy compliance: */
       opt.compliance = CO_GNUPG;
@@ -2342,6 +2294,44 @@ set_compliance_option (enum cmd_and_opt_values option)
       opt.s2k_mode = 3; /* iterated+salted */
       opt.s2k_digest_algo = 0;
       opt.s2k_cipher_algo = DEFAULT_CIPHER_ALGO;
+      opt.flags.allow_old_cipher_algos = 0;
+      break;
+
+    case oOpenPGP:
+    case oRFC4880:
+      /* This is effectively the same as RFC2440, but with
+         "--enable-dsa2 --no-rfc2440-text --escape-from-lines
+         --require-cross-certification". */
+      set_compliance_option (oGnuPG);
+      opt.compliance = CO_RFC4880;
+      opt.flags.dsa2 = 1;
+      opt.allow_non_selfsigned_uid = 1;
+      opt.allow_freeform_uid = 1;
+      opt.s2k_digest_algo = DIGEST_ALGO_SHA1;
+      opt.s2k_cipher_algo = CIPHER_ALGO_3DES;
+      opt.flags.allow_old_cipher_algos = 1;
+      break;
+
+    case oRFC2440:
+      set_compliance_option (oGnuPG);
+      opt.compliance = CO_RFC2440;
+      opt.flags.require_cross_cert = 0;
+      opt.rfc2440_text = 1;
+      opt.allow_non_selfsigned_uid = 1;
+      opt.allow_freeform_uid = 1;
+      opt.escape_from = 0;
+      opt.s2k_digest_algo = DIGEST_ALGO_SHA1;
+      opt.s2k_cipher_algo = CIPHER_ALGO_3DES;
+      opt.flags.allow_old_cipher_algos = 1;
+      break;
+
+    case oPGP7:
+      set_compliance_option (oGnuPG);
+      opt.compliance = CO_PGP7;
+      break;
+    case oPGP8:
+      set_compliance_option (oGnuPG);
+      opt.compliance = CO_PGP8;
       break;
 
     case oDE_VS:
