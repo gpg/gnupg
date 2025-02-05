@@ -219,6 +219,40 @@ get_default_pubkey_algo (void)
 }
 
 
+/* Depending on the USE some public key algorithms need to be changed.
+ * In particular this is the case for standard EC curves which may
+ * have either ECDSA or ECDH as their algo.  The function returns the
+ * new algo if demanded by USE. IF the function can't decide the algo
+ * is returned as is and it is expected that a letter error check will
+ * kick in.  If no change is required ALGO is returned as is.  */
+static int
+adjust_algo_for_ecdh_ecdsa (int algo, unsigned int use, const char *curve)
+{
+  int needalgo;
+
+  if (algo != PUBKEY_ALGO_ECDSA && algo != PUBKEY_ALGO_ECDH)
+    return algo; /* Not an algo we need to adjust.  */
+
+  if (!curve || !*curve)
+    return algo;  /* No curve given and thus we can't decide.  */
+  if (!openpgp_is_curve_supported (curve, &needalgo, NULL))
+    return algo;  /* Curve not supported - can't decide.  */
+  if (needalgo)
+    return algo;  /* No need to map the X{25519,488} curves because we
+                   * would also need to change the curve.  */
+
+  if (algo == PUBKEY_ALGO_ECDH
+      && (use & (PUBKEY_USAGE_SIG|PUBKEY_USAGE_AUTH|PUBKEY_USAGE_CERT)))
+    return PUBKEY_ALGO_ECDSA;  /* Switch to the signing variant.  */
+
+  if (algo == PUBKEY_ALGO_ECDSA
+      && (use & (PUBKEY_USAGE_ENC)))
+    return PUBKEY_ALGO_ECDH;  /* Switch to the encryption variant.  */
+
+  return algo;  /* Return as is.  */
+}
+
+
 static void
 print_status_key_created (int letter, PKT_public_key *pk, const char *handle)
 {
@@ -6740,6 +6774,9 @@ parse_algo_usage_expire (ctrl_t ctrl, int for_subkey,
         }
       return gpg_error (GPG_ERR_INV_VALUE);
     }
+
+  /* Now do the tricky ECDSA/ECDH adjustment.  */
+  algo = adjust_algo_for_ecdh_ecdsa (algo, use, curve);
 
   /* Make sure a primary key has the CERT usage.  */
   if (!for_subkey)
