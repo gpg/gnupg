@@ -89,6 +89,10 @@ The UTC time the key was created in ISO compressed format
 (yyyymmddThhmmss).  This information can be used to re-create an
 OpenPGP key.
 
+*** Link
+For a composite key this item gives the keygrip of the other key part.
+In particular Kyber keys may use this to link to the ECC part and vice versa.
+
 *** Label
 This is a short human readable description for the key which can be
 used by the software to describe the key in a user interface.  For

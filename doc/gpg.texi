@@ -3157,6 +3157,13 @@ ML-KEM1024) algorithms and AES-256 are considered quantum-resistant;
 Kyber is always used in a composite scheme along with a classic ECC
 algorithm.
 
+@item --disable-pqc-encryption
+@opindex disable-pqc-encryption
+This option disables the use of quantum-resistant subkeys and uses a
+subkey with a non-quantum-resistant algorithm if available or throw an
+error otherwise.  The option is ignored if
+@option{--require-pqc-encryption} is active.
+
 @item --require-compliance
 @opindex require-compliance
 To check that data has been encrypted according to the rules of the

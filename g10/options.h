@@ -308,6 +308,9 @@ struct
     unsigned int require_compliance:1;
     /* Fail encryption unless a PQC algorithm is used.  */
     unsigned int require_pqc_encryption:1;
+    /* Do not use PQC subkeys for encryption.  This is never set if
+     * require_pqc_encryption is also set.  */
+    unsigned int disable_pqc_encryption:1;
     /* Process all signatures even in batch mode.  */
     unsigned int proc_all_sigs:1;
   } flags;

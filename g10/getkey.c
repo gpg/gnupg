@@ -3804,6 +3804,14 @@ finish_lookup (kbnode_t keyblock, unsigned int req_usage, int want_exact,
 			   req_usage, pk->pubkey_usage);
 	      continue;
 	    }
+	  if (opt.flags.disable_pqc_encryption
+              && pk->pubkey_algo == PUBKEY_ALGO_KYBER)
+	    {
+	      if (DBG_LOOKUP)
+                log_debug ("\tsubkey skipped due to option %s\n",
+                           "--disable-pqc-encryption");
+	      continue;
+	    }
 
           n_subkeys++;
 	  if (pk->flags.revoked)
