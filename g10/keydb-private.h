@@ -23,13 +23,7 @@
 
 #include <assuan.h>
 #include "../common/membuf.h"
-
-
-/* Ugly forward declarations.  */
-struct keyring_handle;
-typedef struct keyring_handle *KEYRING_HANDLE;
-struct keybox_handle;
-typedef struct keybox_handle *KEYBOX_HANDLE;
+#include "../kbx/keybox-fwddecl.h"
 
 
 /* This is for keydb.c and only used in non-keyboxd mode. */

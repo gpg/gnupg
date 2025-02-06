@@ -44,7 +44,7 @@ common_libs = $(libcommon)
 commonpth_libs = $(libcommonpth)
 
 common_sources = \
-	keybox.h keybox-defs.h keybox-search-desc.h \
+	keybox.h keybox-defs.h keybox-search-desc.h keybox-fwddecl.h \
 	keybox-util.c \
 	keybox-init.c \
 	keybox-blob.c \
