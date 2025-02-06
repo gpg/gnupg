@@ -44,6 +44,16 @@
 # endif
 #endif
 
+#if __GNUC__
+# define MY_GCC_VERSION (__GNUC__ * 10000 \
+                         + __GNUC_MINOR__ * 100 \
+                         + __GNUC_PATCHLEVEL__)
+#else
+# define MY_GCC_VERSION 0
+#endif
+
+
+
 /* Used for documentation purposes, to signal functions in 'interface' */
 #define INTERFACE
 
@@ -169,7 +179,7 @@ type_to_string (enum scheme_types typ)
      case T_SINK: return "sink";
      case T_FRAME: return "frame";
      }
-#ifdef __GNUC__
+#if MY_GCC_VERSION >= 40500  /* gcc >= 4.5.0 */
      __builtin_unreachable ();
 #else
      assert (! "not reached");
