@@ -1055,7 +1055,7 @@ do_process_spawn_io (scheme *sc, pointer args)
         if (ret < 0)
           break;
 
-        if (FD_ISSET (out_fd, &read_fdset))
+        if (out_fd >= 0 && FD_ISSET (out_fd, &read_fdset))
           {
             bytes_read = read (out_fd, out_string + out_off,
                                out_len - out_off);
@@ -1079,7 +1079,7 @@ do_process_spawn_io (scheme *sc, pointer args)
               }
           }
 
-        if (FD_ISSET (err_fd, &read_fdset))
+        if (err_fd >= 0 && FD_ISSET (err_fd, &read_fdset))
           {
             bytes_read = read (err_fd, err_string + err_off,
                                err_len - err_off);
