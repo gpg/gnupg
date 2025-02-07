@@ -1,6 +1,24 @@
 Noteworthy changes in version 2.5.4 (unreleased)
 ------------------------------------------------
 
+  * gpg: New option --disable-pqc-encryption.  [rG00c31f8b04]
+
+  * gpg: Fix --quick-add-key for Weierstrass ECC with usage given.
+    [T7506]
+
+  * gpg: Fix handling with no CRC armor.  [T7071]
+
+  * gpgsm: Allow unattended PKCS#12 export without passphrase.
+    [rG159e801043]
+
+  * gpgsm: Allow CSR generation with an unprotected key.
+    [rG89055f24f4]
+
+  * agent: Fix ssh-agent's request_identities for skipped Brainpool
+    keys.  [rG2469dc5aae]
+
+  * Do not package zlib and bzip2 object files in a speedo release
+    build.  [T7442]
 
   See-also: gnupg-announce/2025q1/000xxx.html
   Release-info: https://dev.gnupg.org/T7480
