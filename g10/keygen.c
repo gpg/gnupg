@@ -1859,6 +1859,10 @@ common_gen (const char *keyparms, const char *keyparms2,
 
   if (keyparms2)
     {
+      unsigned char tmpgrip[KEYGRIP_LEN];
+      char hexgrip1[2*KEYGRIP_LEN+1];
+      char hexgrip2[2*KEYGRIP_LEN+1];
+
       err = agent_genkey (NULL, NULL, NULL, keyparms2,
                           1 /* No protection */,
                           NULL, timestamp,
@@ -1869,6 +1873,31 @@ common_gen (const char *keyparms, const char *keyparms2,
                      gpg_strerror (err) );
           gcry_sexp_release (s_key);
           return err;
+        }
+
+      if (!gcry_pk_get_keygrip (s_key, tmpgrip))
+        {
+          log_error ("error computing keygrip for generated key\n");
+          gcry_sexp_release (s_key);
+          gcry_sexp_release (s_key2);
+          return gpg_error (GPG_ERR_GENERAL);
+        }
+      bin2hex (tmpgrip, KEYGRIP_LEN, hexgrip1);
+      if (!gcry_pk_get_keygrip (s_key2, tmpgrip))
+        {
+          log_error ("error computing keygrip for generated key\n");
+          gcry_sexp_release (s_key);
+          gcry_sexp_release (s_key2);
+          return gpg_error (GPG_ERR_GENERAL);
+        }
+      bin2hex (tmpgrip, KEYGRIP_LEN, hexgrip2);
+      err = agent_crosslink_keys (NULL, hexgrip1, hexgrip2);
+      if (err)
+        {
+          log_error ("error setting link attributes for generated keys\n");
+          gcry_sexp_release (s_key);
+          gcry_sexp_release (s_key2);
+          return gpg_error (GPG_ERR_GENERAL);
         }
     }
 

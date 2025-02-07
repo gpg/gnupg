@@ -202,6 +202,10 @@ gpg_error_t agent_genkey (ctrl_t ctrl,
                           const char *passphrase, time_t timestamp,
                           gcry_sexp_t *r_pubkey);
 
+/* Apply the Link attributes.  */
+gpg_error_t agent_crosslink_keys (ctrl_t ctrl,
+                                  const char *hexgrip1, const char *hexgrip2);
+
 /* Read a public key.  FROMCARD may be 0, 1, or 2. */
 gpg_error_t agent_readkey (ctrl_t ctrl, int fromcard, const char *hexkeygrip,
                            unsigned char **r_pubkey);

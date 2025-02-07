@@ -2673,6 +2673,30 @@ agent_genkey (ctrl_t ctrl, char **cache_nonce_addr, char **passwd_nonce_addr,
 }
 
 
+/* Add the Link attribute to both given keys.  */
+gpg_error_t
+agent_crosslink_keys (ctrl_t ctrl, const char *hexgrip1, const char *hexgrip2)
+{
+  gpg_error_t err;
+  char line[ASSUAN_LINELENGTH];
+
+  err = start_agent (ctrl, 0);
+  if (err)
+    goto leave;
+
+  snprintf (line, sizeof line, "KEYATTR %s Link: %s", hexgrip1, hexgrip2);
+  err = assuan_transact (agent_ctx, line, NULL, NULL, NULL, NULL, NULL, NULL);
+  if (err)
+    goto leave;
+
+  snprintf (line, sizeof line, "KEYATTR %s Link: %s", hexgrip2, hexgrip1);
+  err = assuan_transact (agent_ctx, line, NULL, NULL, NULL, NULL, NULL, NULL);
+
+ leave:
+  return err;
+}
+
+
 
 /* Call the agent to read the public key part for a given keygrip.
  * Values from FROMCARD:
