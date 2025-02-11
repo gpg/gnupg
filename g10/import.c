@@ -1993,7 +1993,6 @@ import_one_real (ctrl_t ctrl,
   int mod_key = 0;
   int same_key = 0;
   int non_self_or_utk = 0;
-  size_t an;
   char pkstrbuf[PUBKEY_STRING_SIZE];
   int merge_keys_done = 0;
   int any_filter = 0;
@@ -2014,8 +2013,8 @@ import_one_real (ctrl_t ctrl,
   pk = node->pkt->pkt.public_key;
 
   fingerprint_from_pk (pk, fpr2, &fpr2len);
-  for (an = fpr2len; an < MAX_FINGERPRINT_LEN; an++)
-    fpr2[an] = 0;
+  if (MAX_FINGERPRINT_LEN > fpr2len)
+    memset (fpr2+fpr2len, 0, MAX_FINGERPRINT_LEN - fpr2len);
   keyid_from_pk( pk, keyid );
   uidnode = find_next_kbnode( keyblock, PKT_USER_ID );
 
@@ -2212,7 +2211,8 @@ import_one_real (ctrl_t ctrl,
 
   /* Do we have this key already in one of our pubrings ? */
   err = get_keyblock_byfprint_fast (ctrl, &keyblock_orig, &hd,
-                                    fpr2, fpr2len, 1/*locked*/);
+                                 1 /*primary only */,
+                                 fpr2, fpr2len, 1/*locked*/);
   if ((err
        && gpg_err_code (err) != GPG_ERR_NO_PUBKEY
        && gpg_err_code (err) != GPG_ERR_UNUSABLE_PUBKEY)

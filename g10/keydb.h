@@ -420,10 +420,11 @@ gpg_error_t get_pubkey_byfprint_fast (ctrl_t ctrl, PKT_public_key *pk,
    merge the self-signed data into the public key and subkeys or into
    the user ids.  */
 gpg_error_t get_keyblock_byfprint_fast (ctrl_t ctrl,
-                                        kbnode_t *r_keyblock,
-                                        KEYDB_HANDLE *r_hd,
-                                        const byte *fprint, size_t fprint_len,
-                                        int lock);
+                                     kbnode_t *r_keyblock,
+                                     KEYDB_HANDLE *r_hd,
+                                     int primary_only,
+                                     const byte *fpr, size_t fprlen,
+                                     int lock);
 
 
 /* Returns true if a secret key is available for the public key with

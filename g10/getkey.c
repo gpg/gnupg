@@ -1946,7 +1946,7 @@ get_pubkey_byfprint_fast (ctrl_t ctrl, PKT_public_key * pk,
   KBNODE keyblock;
 
   err = get_keyblock_byfprint_fast (ctrl,
-                                    &keyblock, NULL, fprint, fprint_len, 0);
+                                    &keyblock, NULL, 0, fprint, fprint_len, 0);
   if (!err)
     {
       if (pk)
@@ -1963,18 +1963,23 @@ get_pubkey_byfprint_fast (ctrl_t ctrl, PKT_public_key * pk,
  * R_HD may be NULL.  If LOCK is set the handle has been opend in
  * locked mode and keydb_disable_caching () has been called.  On error
  * R_KEYBLOCK is set to NULL but R_HD must be released by the caller;
- * it may have a value of NULL, though.  This allows one to do an insert
- * operation on a locked keydb handle.  */
+ * it may have a value of NULL, though.  This allows one to do an
+ * insert operation on a locked keydb handle.  If PRIMARY_ONLY is set
+ * the function returns a keyblock which has the requested fingerprint
+ * has primary key.  */
 gpg_error_t
 get_keyblock_byfprint_fast (ctrl_t ctrl,
-                            kbnode_t *r_keyblock, KEYDB_HANDLE *r_hd,
-                            const byte *fprint, size_t fprint_len, int lock)
+                         kbnode_t *r_keyblock, KEYDB_HANDLE *r_hd,
+                         int primary_only,
+                         const byte *fprint, size_t fprint_len, int lock)
 {
   gpg_error_t err;
   KEYDB_HANDLE hd;
   kbnode_t keyblock;
   byte fprbuf[MAX_FINGERPRINT_LEN];
   int i;
+  byte tmpfpr[MAX_FINGERPRINT_LEN];
+  size_t tmpfprlen;
 
   if (r_keyblock)
     *r_keyblock = NULL;
@@ -2006,6 +2011,7 @@ get_keyblock_byfprint_fast (ctrl_t ctrl,
   if (r_hd)
     *r_hd = hd;
 
+ again:
   err = keydb_search_fpr (hd, fprbuf, fprint_len);
   if (gpg_err_code (err) == GPG_ERR_NOT_FOUND)
     {
@@ -2024,6 +2030,17 @@ get_keyblock_byfprint_fast (ctrl_t ctrl,
 
   log_assert (keyblock->pkt->pkttype == PKT_PUBLIC_KEY
               || keyblock->pkt->pkttype == PKT_PUBLIC_SUBKEY);
+
+  if (primary_only)
+    {
+      fingerprint_from_pk (keyblock->pkt->pkt.public_key, tmpfpr, &tmpfprlen);
+      if (fprint_len != tmpfprlen || memcmp (fprint, tmpfpr, fprint_len))
+        {
+          release_kbnode (keyblock);
+          keyblock = NULL;
+          goto again;
+        }
+    }
 
   /* Not caching key here since it won't have all of the fields
      properly set. */
