@@ -422,6 +422,7 @@ gpg_error_t get_pubkey_byfpr_fast (ctrl_t ctrl, PKT_public_key *pk,
 gpg_error_t get_keyblock_byfpr_fast (ctrl_t ctrl,
                                      kbnode_t *r_keyblock,
                                      KEYDB_HANDLE *r_hd,
+                                     int primary_only,
                                      const byte *fpr, size_t fprlen,
                                      int lock);
 
