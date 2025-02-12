@@ -1440,6 +1440,13 @@ msgstr ""
 msgid "Please try command \"%s\" if the listing does not look correct\n"
 msgstr ""
 
+#, c-format
+msgid ""
+"Please note that the factory settings of the PINs are\n"
+"   PIN = '%s'     Admin PIN = '%s'\n"
+"You should change them using the command --change-pin\n"
+msgstr ""
+
 msgid "Error: Only plain ASCII is currently allowed.\n"
 msgstr ""
 
@@ -1596,13 +1603,6 @@ msgid "Note: keys are already stored on the card!\n"
 msgstr "ignorita: sekreta ŝlosilo jam ĉeestas\n"
 
 msgid "Replace existing keys? (y/N) "
-msgstr ""
-
-#, c-format
-msgid ""
-"Please note that the factory settings of the PINs are\n"
-"   PIN = '%s'     Admin PIN = '%s'\n"
-"You should change them using the command --change-pin\n"
 msgstr ""
 
 #, fuzzy
@@ -7811,10 +7811,6 @@ msgstr ""
 #, fuzzy, c-format
 msgid "error writing to output: %s\n"
 msgstr "eraro dum skribado de ŝlosilaro '%s': %s\n"
-
-#, c-format
-msgid "GPG_TTY has not been set - using maybe bogus default\n"
-msgstr ""
 
 #, fuzzy, c-format
 msgid "invalid formatted fingerprint in '%s', line %d\n"

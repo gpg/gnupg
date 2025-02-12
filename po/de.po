@@ -1402,6 +1402,16 @@ msgid "Please try command \"%s\" if the listing does not look correct\n"
 msgstr ""
 "Falls das Listing nicht korrekt erscheint, geben Sie bitte \"%s\" ein\n"
 
+#, c-format
+msgid ""
+"Please note that the factory settings of the PINs are\n"
+"   PIN = '%s'     Admin PIN = '%s'\n"
+"You should change them using the command --change-pin\n"
+msgstr ""
+"Bitte beachten: Die Werkseinstellung der PINs sind\n"
+"   PIN = '%s'     Admin-PIN = '%s'\n"
+"Sie sollten sie mittels des Befehls --change-pin ändern\n"
+
 msgid "Error: Only plain ASCII is currently allowed.\n"
 msgstr "Fehler: Nur reines ASCII ist derzeit erlaubt.\n"
 
@@ -1559,16 +1569,6 @@ msgstr "Hinweis: Auf der Karte sind bereits Schlüssel gespeichert!\n"
 
 msgid "Replace existing keys? (y/N) "
 msgstr "Vorhandene Schlüssel ersetzen? (j/N) "
-
-#, c-format
-msgid ""
-"Please note that the factory settings of the PINs are\n"
-"   PIN = '%s'     Admin PIN = '%s'\n"
-"You should change them using the command --change-pin\n"
-msgstr ""
-"Bitte beachten: Die Werkseinstellung der PINs sind\n"
-"   PIN = '%s'     Admin-PIN = '%s'\n"
-"Sie sollten sie mittels des Befehls --change-pin ändern\n"
 
 msgid "Please select the type of key to generate:\n"
 msgstr "Bitte wählen Sie die Art des Schlüssel, der erzeugt werden soll:\n"
@@ -7678,12 +7678,6 @@ msgid "error writing to output: %s\n"
 msgstr "Fehler beim Schreiben auf die Ausgabe: %s\n"
 
 #, c-format
-msgid "GPG_TTY has not been set - using maybe bogus default\n"
-msgstr ""
-"GPG_TTY wurde nicht gesetzt - ein (möglicherweise falscher) Standardwert "
-"wird deshalb verwendet\n"
-
-#, c-format
 msgid "invalid formatted fingerprint in '%s', line %d\n"
 msgstr "Der Fingerabdruck in `%s', Zeile %d is fehlerhaft formatiert\n"
 
@@ -9174,6 +9168,12 @@ msgstr "Verwaltungskommandos für Yubikeys"
 
 msgid "manage the command history"
 msgstr "Verwaltung der Kommandohistorie"
+
+#, c-format
+#~ msgid "GPG_TTY has not been set - using maybe bogus default\n"
+#~ msgstr ""
+#~ "GPG_TTY wurde nicht gesetzt - ein (möglicherweise falscher) Standardwert "
+#~ "wird deshalb verwendet\n"
 
 #, c-format
 #~ msgid "public key of ultimately trusted key %s not found\n"

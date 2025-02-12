@@ -1425,6 +1425,16 @@ msgstr "увімкнено"
 msgid "Please try command \"%s\" if the listing does not look correct\n"
 msgstr ""
 
+#, c-format
+msgid ""
+"Please note that the factory settings of the PINs are\n"
+"   PIN = '%s'     Admin PIN = '%s'\n"
+"You should change them using the command --change-pin\n"
+msgstr ""
+"Зауважте, що типовими параметрами пінкоду є\n"
+"   PIN = «%s»     Адміністративний PIN = «%s»\n"
+"Вам слід змінити параметри за допомогою команди --change-pin\n"
+
 msgid "Error: Only plain ASCII is currently allowed.\n"
 msgstr ""
 "Помилка: у поточній версії можна використовувати лише звичайний ASCII.\n"
@@ -1584,16 +1594,6 @@ msgstr "ЗАУВАЖЕННЯ: ключі вже збережено на карт
 
 msgid "Replace existing keys? (y/N) "
 msgstr "Замірити вже створені ключі? (y/N або т/Н) "
-
-#, c-format
-msgid ""
-"Please note that the factory settings of the PINs are\n"
-"   PIN = '%s'     Admin PIN = '%s'\n"
-"You should change them using the command --change-pin\n"
-msgstr ""
-"Зауважте, що типовими параметрами пінкоду є\n"
-"   PIN = «%s»     Адміністративний PIN = «%s»\n"
-"Вам слід змінити параметри за допомогою команди --change-pin\n"
 
 msgid "Please select the type of key to generate:\n"
 msgstr "Виберіть тип ключа, який слід створити:\n"
@@ -7828,11 +7828,6 @@ msgid "error writing to output: %s\n"
 msgstr "помилка під час спроби запису до stdout: %s\n"
 
 #, c-format
-msgid "GPG_TTY has not been set - using maybe bogus default\n"
-msgstr ""
-"GPG_TTY не встановлено — можливе використання підробного типового значення\n"
-
-#, c-format
 msgid "invalid formatted fingerprint in '%s', line %d\n"
 msgstr "некоректне форматування відбитка у «%s», рядок %d\n"
 
@@ -9325,6 +9320,12 @@ msgstr ""
 
 msgid "manage the command history"
 msgstr ""
+
+#, c-format
+#~ msgid "GPG_TTY has not been set - using maybe bogus default\n"
+#~ msgstr ""
+#~ "GPG_TTY не встановлено — можливе використання підробного типового "
+#~ "значення\n"
 
 #, c-format
 #~ msgid "public key of ultimately trusted key %s not found\n"

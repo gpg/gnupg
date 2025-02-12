@@ -1465,6 +1465,20 @@ msgstr "forţat(ă)"
 msgid "Please try command \"%s\" if the listing does not look correct\n"
 msgstr ""
 
+#, fuzzy, c-format
+#| msgid ""
+#| "Please note that the factory settings of the PINs are\n"
+#| "   PIN = `%s'     Admin PIN = `%s'\n"
+#| "You should change them using the command --change-pin\n"
+msgid ""
+"Please note that the factory settings of the PINs are\n"
+"   PIN = '%s'     Admin PIN = '%s'\n"
+"You should change them using the command --change-pin\n"
+msgstr ""
+"Vă rugăm să observaţi că setările din fabrică ale PIN-urilor sunt\n"
+"   PIN = `%s'     PIN Admin = `%s'\n"
+"Ar trebui să le schimbaţi folosind comanda --change-pin\n"
+
 msgid "Error: Only plain ASCII is currently allowed.\n"
 msgstr "Eroare: Deocamdată sunt permise numai caractere ASCII.\n"
 
@@ -1622,20 +1636,6 @@ msgstr "cheia secretă deja stocată pe un card\n"
 
 msgid "Replace existing keys? (y/N) "
 msgstr "Înlocuiesc cheile existente? (d/N) "
-
-#, fuzzy, c-format
-#| msgid ""
-#| "Please note that the factory settings of the PINs are\n"
-#| "   PIN = `%s'     Admin PIN = `%s'\n"
-#| "You should change them using the command --change-pin\n"
-msgid ""
-"Please note that the factory settings of the PINs are\n"
-"   PIN = '%s'     Admin PIN = '%s'\n"
-"You should change them using the command --change-pin\n"
-msgstr ""
-"Vă rugăm să observaţi că setările din fabrică ale PIN-urilor sunt\n"
-"   PIN = `%s'     PIN Admin = `%s'\n"
-"Ar trebui să le schimbaţi folosind comanda --change-pin\n"
 
 msgid "Please select the type of key to generate:\n"
 msgstr "Vă rugăm selectaţi tipul de cheie de generat:\n"
@@ -7966,10 +7966,6 @@ msgstr ""
 #, fuzzy, c-format
 msgid "error writing to output: %s\n"
 msgstr "eroare la scrierea inelului de chei `%s': %s\n"
-
-#, c-format
-msgid "GPG_TTY has not been set - using maybe bogus default\n"
-msgstr ""
 
 #, fuzzy, c-format
 msgid "invalid formatted fingerprint in '%s', line %d\n"

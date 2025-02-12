@@ -1362,6 +1362,16 @@ msgstr "强制"
 msgid "Please try command \"%s\" if the listing does not look correct\n"
 msgstr ""
 
+#, c-format
+msgid ""
+"Please note that the factory settings of the PINs are\n"
+"   PIN = '%s'     Admin PIN = '%s'\n"
+"You should change them using the command --change-pin\n"
+msgstr ""
+"请注意，出厂设置的 PIN 为：\n"
+"  PIN = ‘%s’    管理员 PIN = ‘%s’\n"
+"您应当使用 --change-pin 命令来更改它们\n"
+
 msgid "Error: Only plain ASCII is currently allowed.\n"
 msgstr "错误：目前只允许使用纯 ASCII 字符。\n"
 
@@ -1514,16 +1524,6 @@ msgstr "注意： 已有私钥被存储于卡片上！\n"
 
 msgid "Replace existing keys? (y/N) "
 msgstr "替换现存的密钥？(y/N) "
-
-#, c-format
-msgid ""
-"Please note that the factory settings of the PINs are\n"
-"   PIN = '%s'     Admin PIN = '%s'\n"
-"You should change them using the command --change-pin\n"
-msgstr ""
-"请注意，出厂设置的 PIN 为：\n"
-"  PIN = ‘%s’    管理员 PIN = ‘%s’\n"
-"您应当使用 --change-pin 命令来更改它们\n"
 
 msgid "Please select the type of key to generate:\n"
 msgstr "请选择您要生成的密钥类型：\n"
@@ -7306,10 +7306,6 @@ msgid "error writing to output: %s\n"
 msgstr "写入到标准输出（stdout）时出现错误：%s\n"
 
 #, c-format
-msgid "GPG_TTY has not been set - using maybe bogus default\n"
-msgstr "GPG_TTY 未被设置 - 使用可能是不正确的默认值\n"
-
-#, c-format
 msgid "invalid formatted fingerprint in '%s', line %d\n"
 msgstr "无效的格式化指纹位于‘%s’ 的第 %d 行\n"
 
@@ -8752,6 +8748,10 @@ msgstr "Yubikey 管理命令"
 
 msgid "manage the command history"
 msgstr "管理命令历史记录"
+
+#, c-format
+#~ msgid "GPG_TTY has not been set - using maybe bogus default\n"
+#~ msgstr "GPG_TTY 未被设置 - 使用可能是不正确的默认值\n"
 
 #, c-format
 #~ msgid "public key of ultimately trusted key %s not found\n"

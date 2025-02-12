@@ -1553,6 +1553,20 @@ msgstr "tvingad"
 msgid "Please try command \"%s\" if the listing does not look correct\n"
 msgstr ""
 
+#, fuzzy, c-format
+#| msgid ""
+#| "Please note that the factory settings of the PINs are\n"
+#| "   PIN = `%s'     Admin PIN = `%s'\n"
+#| "You should change them using the command --change-pin\n"
+msgid ""
+"Please note that the factory settings of the PINs are\n"
+"   PIN = '%s'     Admin PIN = '%s'\n"
+"You should change them using the command --change-pin\n"
+msgstr ""
+"Observera dock att fabriksinställningarna för PIN-koderna är\n"
+"   PIN-kod = \"%s\"     Admin PIN-kod = \"%s\"\n"
+"Du bör ändra dem med kommandot --change-pin\n"
+
 msgid "Error: Only plain ASCII is currently allowed.\n"
 msgstr "Fel: Endast ren ASCII tillåts för närvarande.\n"
 
@@ -1728,20 +1742,6 @@ msgstr "OBSERVERA: nycklar har redan lagrats på kortet!\n"
 
 msgid "Replace existing keys? (y/N) "
 msgstr "Ersätt existerande nycklar? (j/N) "
-
-#, fuzzy, c-format
-#| msgid ""
-#| "Please note that the factory settings of the PINs are\n"
-#| "   PIN = `%s'     Admin PIN = `%s'\n"
-#| "You should change them using the command --change-pin\n"
-msgid ""
-"Please note that the factory settings of the PINs are\n"
-"   PIN = '%s'     Admin PIN = '%s'\n"
-"You should change them using the command --change-pin\n"
-msgstr ""
-"Observera dock att fabriksinställningarna för PIN-koderna är\n"
-"   PIN-kod = \"%s\"     Admin PIN-kod = \"%s\"\n"
-"Du bör ändra dem med kommandot --change-pin\n"
 
 msgid "Please select the type of key to generate:\n"
 msgstr "Välj vilken typ av nyckel som ska genereras:\n"
@@ -8238,11 +8238,6 @@ msgstr "Fel - "
 msgid "error writing to output: %s\n"
 msgstr "fel vid skrivning till %s: %s\n"
 
-#, c-format
-msgid "GPG_TTY has not been set - using maybe bogus default\n"
-msgstr ""
-"GPG_TTY har inte ställts in - använder kanske felaktigt standardvärde\n"
-
 #, fuzzy, c-format
 #| msgid "invalid formatted fingerprint in `%s', line %d\n"
 msgid "invalid formatted fingerprint in '%s', line %d\n"
@@ -9936,6 +9931,11 @@ msgstr ""
 
 msgid "manage the command history"
 msgstr ""
+
+#, c-format
+#~ msgid "GPG_TTY has not been set - using maybe bogus default\n"
+#~ msgstr ""
+#~ "GPG_TTY har inte ställts in - använder kanske felaktigt standardvärde\n"
 
 #, c-format
 #~ msgid "public key of ultimately trusted key %s not found\n"

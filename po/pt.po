@@ -7584,10 +7584,6 @@ msgid "error writing to output: %s\n"
 msgstr "erro ao escrever na saída: %s\n"
 
 #, c-format
-msgid "GPG_TTY has not been set - using maybe bogus default\n"
-msgstr "GPG_TTY não foi definido - talvez esteja usando falsa pré-definição\n"
-
-#, c-format
 msgid "invalid formatted fingerprint in '%s', line %d\n"
 msgstr "impressão digital formatada está inválida em '%s', linha %d\n"
 
@@ -9052,3 +9048,8 @@ msgstr "comandos de gerir uma Yubikey"
 
 msgid "manage the command history"
 msgstr "gerir o histórico de comandos"
+
+#, c-format
+#~ msgid "GPG_TTY has not been set - using maybe bogus default\n"
+#~ msgstr ""
+#~ "GPG_TTY não foi definido - talvez esteja usando falsa pré-definição\n"

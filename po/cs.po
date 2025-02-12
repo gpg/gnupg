@@ -1410,6 +1410,16 @@ msgstr "vyžadováno"
 msgid "Please try command \"%s\" if the listing does not look correct\n"
 msgstr "Pokud výpis nevypadá v pořádku, zkuste příkaz „%s“\n"
 
+#, c-format
+msgid ""
+"Please note that the factory settings of the PINs are\n"
+"   PIN = '%s'     Admin PIN = '%s'\n"
+"You should change them using the command --change-pin\n"
+msgstr ""
+"Prosím nezapomeňte, že tovární nastavení PINů je\n"
+"   PIN = „%s“     PIN správce = „%s“\n"
+"Měli byste je změnit příkazem --change-pin\n"
+
 msgid "Error: Only plain ASCII is currently allowed.\n"
 msgstr "Chyba: V současné verzi je povolenou pouze plain ASCII.\n"
 
@@ -1562,16 +1572,6 @@ msgstr "Poznámka: na kartě jsou již klíče uloženy!\n"
 
 msgid "Replace existing keys? (y/N) "
 msgstr "Přepsat existující klíče? (a/N) "
-
-#, c-format
-msgid ""
-"Please note that the factory settings of the PINs are\n"
-"   PIN = '%s'     Admin PIN = '%s'\n"
-"You should change them using the command --change-pin\n"
-msgstr ""
-"Prosím nezapomeňte, že tovární nastavení PINů je\n"
-"   PIN = „%s“     PIN správce = „%s“\n"
-"Měli byste je změnit příkazem --change-pin\n"
 
 msgid "Please select the type of key to generate:\n"
 msgstr "Prosím, vyberte druh klíče, který chcete generovat:\n"
@@ -7590,10 +7590,6 @@ msgid "error writing to output: %s\n"
 msgstr "chyba při zápisu na standardní výstup: %s\n"
 
 #, c-format
-msgid "GPG_TTY has not been set - using maybe bogus default\n"
-msgstr "GPG_TTY nebyla nastavena – použiji možná chybnou implicitní hodnotu\n"
-
-#, c-format
 msgid "invalid formatted fingerprint in '%s', line %d\n"
 msgstr "nesprávně formátovaný otisk v „%s“, řádek %d\n"
 
@@ -9060,6 +9056,11 @@ msgstr "Příkazy pro správu Yubikey"
 
 msgid "manage the command history"
 msgstr "spravuje historii příkazů"
+
+#, c-format
+#~ msgid "GPG_TTY has not been set - using maybe bogus default\n"
+#~ msgstr ""
+#~ "GPG_TTY nebyla nastavena – použiji možná chybnou implicitní hodnotu\n"
 
 #, c-format
 #~ msgid "public key of ultimately trusted key %s not found\n"

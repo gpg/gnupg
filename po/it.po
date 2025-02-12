@@ -1398,6 +1398,16 @@ msgstr "costretto"
 msgid "Please try command \"%s\" if the listing does not look correct\n"
 msgstr ""
 
+#, c-format
+msgid ""
+"Please note that the factory settings of the PINs are\n"
+"   PIN = '%s'     Admin PIN = '%s'\n"
+"You should change them using the command --change-pin\n"
+msgstr ""
+"Si prega di notare che le impostazioni di fabbrica dei PIN sono\n"
+"   PIN : '%s'     PIN di amministrazione = '%s'\n"
+"È necessario modificarli utilizzando il comando --change-pin\n"
+
 msgid "Error: Only plain ASCII is currently allowed.\n"
 msgstr "Errore: al momento è consentito solo ASCII semplice.\n"
 
@@ -1557,16 +1567,6 @@ msgstr "Nota: le chiavi sono già memorizzate sulla scheda!\n"
 
 msgid "Replace existing keys? (y/N) "
 msgstr "Sostituire le chiavi esistenti? (y/N) "
-
-#, c-format
-msgid ""
-"Please note that the factory settings of the PINs are\n"
-"   PIN = '%s'     Admin PIN = '%s'\n"
-"You should change them using the command --change-pin\n"
-msgstr ""
-"Si prega di notare che le impostazioni di fabbrica dei PIN sono\n"
-"   PIN : '%s'     PIN di amministrazione = '%s'\n"
-"È necessario modificarli utilizzando il comando --change-pin\n"
 
 msgid "Please select the type of key to generate:\n"
 msgstr "Selezionare il tipo di chiave da generare:\n"
@@ -7657,10 +7657,6 @@ msgid "error writing to output: %s\n"
 msgstr "errore durante la scrittura in stdout: %s\n"
 
 #, c-format
-msgid "GPG_TTY has not been set - using maybe bogus default\n"
-msgstr "GPG_TTY non è stato impostato - utilizzando forse falso default\n"
-
-#, c-format
 msgid "invalid formatted fingerprint in '%s', line %d\n"
 msgstr "impronta digitale formattata non valida in '%s', riga %d\n"
 
@@ -9155,6 +9151,10 @@ msgstr "Comandi di gestione Yubikey"
 
 msgid "manage the command history"
 msgstr "gestire la cronologia dei comandi"
+
+#, c-format
+#~ msgid "GPG_TTY has not been set - using maybe bogus default\n"
+#~ msgstr "GPG_TTY non è stato impostato - utilizzando forse falso default\n"
 
 #, c-format
 #~ msgid "public key of ultimately trusted key %s not found\n"

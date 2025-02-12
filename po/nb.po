@@ -1416,6 +1416,16 @@ msgstr "tvunget"
 msgid "Please try command \"%s\" if the listing does not look correct\n"
 msgstr ""
 
+#, c-format
+msgid ""
+"Please note that the factory settings of the PINs are\n"
+"   PIN = '%s'     Admin PIN = '%s'\n"
+"You should change them using the command --change-pin\n"
+msgstr ""
+"PIN-koder fra fabrikk:\n"
+"   PIN = «%s»     Admin-PIN = «%s»\n"
+"Du bør endre disse med kommandoen «--change-pin»\n"
+
 msgid "Error: Only plain ASCII is currently allowed.\n"
 msgstr "Feil: Bare ren ASCII er foreløpig tillatt.\n"
 
@@ -1582,16 +1592,6 @@ msgstr "MERK: det ligger allerede nøkler på kortet.\n"
 
 msgid "Replace existing keys? (y/N) "
 msgstr "Erstatte eksisterende nøkler? (j/N) "
-
-#, c-format
-msgid ""
-"Please note that the factory settings of the PINs are\n"
-"   PIN = '%s'     Admin PIN = '%s'\n"
-"You should change them using the command --change-pin\n"
-msgstr ""
-"PIN-koder fra fabrikk:\n"
-"   PIN = «%s»     Admin-PIN = «%s»\n"
-"Du bør endre disse med kommandoen «--change-pin»\n"
 
 msgid "Please select the type of key to generate:\n"
 msgstr "Velg hvilken type nøkkel du vil lage:\n"
@@ -7650,10 +7650,6 @@ msgid "error writing to output: %s\n"
 msgstr "feil under skriving til std.utkanal: %s\n"
 
 #, c-format
-msgid "GPG_TTY has not been set - using maybe bogus default\n"
-msgstr "GPG_TTY har ingen verdi. Bruker forvalgt verdi som kan være ugyldig\n"
-
-#, c-format
 msgid "invalid formatted fingerprint in '%s', line %d\n"
 msgstr "feilformatert fingeravtrykk i «%s», linje %d\n"
 
@@ -9131,6 +9127,11 @@ msgstr ""
 
 msgid "manage the command history"
 msgstr ""
+
+#, c-format
+#~ msgid "GPG_TTY has not been set - using maybe bogus default\n"
+#~ msgstr ""
+#~ "GPG_TTY har ingen verdi. Bruker forvalgt verdi som kan være ugyldig\n"
 
 #, c-format
 #~ msgid "public key of ultimately trusted key %s not found\n"

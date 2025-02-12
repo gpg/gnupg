@@ -1375,6 +1375,16 @@ msgstr "強制"
 msgid "Please try command \"%s\" if the listing does not look correct\n"
 msgstr "一覧が正しくないように見える場合、コマンド \"%s\" を試してください\n"
 
+#, c-format
+msgid ""
+"Please note that the factory settings of the PINs are\n"
+"   PIN = '%s'     Admin PIN = '%s'\n"
+"You should change them using the command --change-pin\n"
+msgstr ""
+"工場設定のPINは下記のとおり\n"
+"   PIN = '%s'     管理者PIN = '%s'\n"
+"次のコマンドを使って変更すべきです --change-pin\n"
+
 msgid "Error: Only plain ASCII is currently allowed.\n"
 msgstr "エラー： 普通のASCIIだけが今、許可されています。\n"
 
@@ -1527,16 +1537,6 @@ msgstr "注意: 秘密鍵はもうカードに保管してあります!\n"
 
 msgid "Replace existing keys? (y/N) "
 msgstr "既存の鍵を置き換えますか? (y/N) "
-
-#, c-format
-msgid ""
-"Please note that the factory settings of the PINs are\n"
-"   PIN = '%s'     Admin PIN = '%s'\n"
-"You should change them using the command --change-pin\n"
-msgstr ""
-"工場設定のPINは下記のとおり\n"
-"   PIN = '%s'     管理者PIN = '%s'\n"
-"次のコマンドを使って変更すべきです --change-pin\n"
 
 msgid "Please select the type of key to generate:\n"
 msgstr "生成する鍵の型を選択してください:\n"
@@ -7342,10 +7342,6 @@ msgid "error writing to output: %s\n"
 msgstr "出力への書き込みエラー: %s\n"
 
 #, c-format
-msgid "GPG_TTY has not been set - using maybe bogus default\n"
-msgstr "GPG_TTY が設定されていません - 少々疑問のデフォルトを使います\n"
-
-#, c-format
 msgid "invalid formatted fingerprint in '%s', line %d\n"
 msgstr "'%s'(行 %d) 無効な形式のフィンガープリント\n"
 
@@ -8794,6 +8790,10 @@ msgstr "Yubikey管理コマンド"
 
 msgid "manage the command history"
 msgstr "コマンド履歴を管理する"
+
+#, c-format
+#~ msgid "GPG_TTY has not been set - using maybe bogus default\n"
+#~ msgstr "GPG_TTY が設定されていません - 少々疑問のデフォルトを使います\n"
 
 #, c-format
 #~ msgid "public key of ultimately trusted key %s not found\n"

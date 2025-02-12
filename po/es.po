@@ -1458,6 +1458,16 @@ msgstr "forzado"
 msgid "Please try command \"%s\" if the listing does not look correct\n"
 msgstr ""
 
+#, c-format
+msgid ""
+"Please note that the factory settings of the PINs are\n"
+"   PIN = '%s'     Admin PIN = '%s'\n"
+"You should change them using the command --change-pin\n"
+msgstr ""
+"Ten en cuenta que los valores de fábrica del PIN son\n"
+"   PIN = '%s'     PIN Administrador = '%s'\n"
+"Debería cambiarlos usando la orden --change-pin\n"
+
 msgid "Error: Only plain ASCII is currently allowed.\n"
 msgstr "Error: sólo se permite ASCII sin formato actualmente.\n"
 
@@ -1615,16 +1625,6 @@ msgstr "NOTA: ¡ya hay claves almacenadas en la tarjeta!\n"
 
 msgid "Replace existing keys? (y/N) "
 msgstr "¿Reemplazar las claves existentes? (s/N) "
-
-#, c-format
-msgid ""
-"Please note that the factory settings of the PINs are\n"
-"   PIN = '%s'     Admin PIN = '%s'\n"
-"You should change them using the command --change-pin\n"
-msgstr ""
-"Ten en cuenta que los valores de fábrica del PIN son\n"
-"   PIN = '%s'     PIN Administrador = '%s'\n"
-"Debería cambiarlos usando la orden --change-pin\n"
 
 msgid "Please select the type of key to generate:\n"
 msgstr "Por favor seleccione tipo de clave que generar:\n"
@@ -7735,10 +7735,6 @@ msgid "error writing to output: %s\n"
 msgstr "error al escribir a stdout: %s\n"
 
 #, c-format
-msgid "GPG_TTY has not been set - using maybe bogus default\n"
-msgstr "GPG_TTY no tiene valor - usando valor por defecto quizá absurdo\n"
-
-#, c-format
 msgid "invalid formatted fingerprint in '%s', line %d\n"
 msgstr "formato incorrecto de huella digital en '%s', línea %d\n"
 
@@ -9243,6 +9239,10 @@ msgstr ""
 
 msgid "manage the command history"
 msgstr ""
+
+#, c-format
+#~ msgid "GPG_TTY has not been set - using maybe bogus default\n"
+#~ msgstr "GPG_TTY no tiene valor - usando valor por defecto quizá absurdo\n"
 
 #, c-format
 #~ msgid "public key of ultimately trusted key %s not found\n"

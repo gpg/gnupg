@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnupg 2.4.0\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"PO-Revision-Date: 2023-05-30 23:45+0300\n"
+"PO-Revision-Date: 2025-02-12 11:40+0100\n"
 "Last-Translator: Emir SARI <emir_sari@icloud.com>\n"
 "Language-Team: Turkish\n"
 "Language: tr\n"
@@ -1385,6 +1385,16 @@ msgstr "zorlandı"
 msgid "Please try command \"%s\" if the listing does not look correct\n"
 msgstr "Listeleme doğru görünmüyorsa lütfen \"%s\" komutunu deneyin\n"
 
+#, c-format
+msgid ""
+"Please note that the factory settings of the PINs are\n"
+"   PIN = '%s'     Admin PIN = '%s'\n"
+"You should change them using the command --change-pin\n"
+msgstr ""
+"Lütfen dikkat edin, PIN'lerin öntanımlı ayarları böyledir:\n"
+"   PIN = '%s'     Admin PIN = '%s'\n"
+"Bunları --change-pin komutunu kullanarak değiştirmelisiniz\n"
+
 msgid "Error: Only plain ASCII is currently allowed.\n"
 msgstr "Hata: Şimdilik yalnızca US-ASCII mümkün.\n"
 
@@ -1539,16 +1549,6 @@ msgstr "Not: Anahtarlar halihazırda kart üzerinde depolanıyor!\n"
 
 msgid "Replace existing keys? (y/N) "
 msgstr "Var olan anahtarlar başkalarıyla değiştirilsin mi? (e/H) "
-
-#, c-format
-msgid ""
-"Please note that the factory settings of the PINs are\n"
-"   PIN = '%s'     Admin PIN = '%s'\n"
-"You should change them using the command --change-pin\n"
-msgstr ""
-"Lütfen dikkat edin, PIN'lerin öntanımlı ayarları böyledir:\n"
-"   PIN = '%s'     Admin PIN = '%s'\n"
-"Bunları --change-pin komutunu kullanarak değiştirmelisiniz\n"
 
 msgid "Please select the type of key to generate:\n"
 msgstr "Lütfen üretilecek anahtar türünü seçin:\n"
@@ -4749,7 +4749,7 @@ msgstr "%s anahtarı ve %s kullanıcı kimliği ile şifrelendi\n"
 
 #, c-format
 msgid "WARNING: key is not quantum-resistant\n"
-msgstr "UYARI: Anahtar quantum dirençli değil"
+msgstr "UYARI: Anahtar quantum dirençli değil\n"
 
 #, c-format
 msgid "WARNING: multiple plaintexts seen\n"
@@ -5534,7 +5534,7 @@ msgstr "Not: %s gizli anahtarının %s tarihinde kullanım süresi doldu\n"
 
 #, c-format
 msgid "Note: ADSK key has been used for decryption"
-msgstr "Not: Şifre çözümü için ADSK anahtarı kullanılmış\n"
+msgstr "Not: Şifre çözümü için ADSK anahtarı kullanılmış"
 
 #, c-format
 msgid "Note: key has been revoked"
@@ -7517,10 +7517,6 @@ msgid "error writing to output: %s\n"
 msgstr "çıktıya yazılırken hata: %s\n"
 
 #, c-format
-msgid "GPG_TTY has not been set - using maybe bogus default\n"
-msgstr "GPG_TTY atanmamış - kullanımı sorunlara yol açabilir\n"
-
-#, c-format
 msgid "invalid formatted fingerprint in '%s', line %d\n"
 msgstr "'%s', %d. satırındaki biçimli parmak izi geçersiz\n"
 
@@ -8972,3 +8968,7 @@ msgstr "Yubikey yönetim konsolu"
 
 msgid "manage the command history"
 msgstr "komut geçmişini yönet"
+
+#, c-format
+#~ msgid "GPG_TTY has not been set - using maybe bogus default\n"
+#~ msgstr "GPG_TTY atanmamış - kullanımı sorunlara yol açabilir\n"

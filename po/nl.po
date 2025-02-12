@@ -1440,6 +1440,17 @@ msgstr "geforceerd"
 msgid "Please try command \"%s\" if the listing does not look correct\n"
 msgstr ""
 
+#, c-format
+msgid ""
+"Please note that the factory settings of the PINs are\n"
+"   PIN = '%s'     Admin PIN = '%s'\n"
+"You should change them using the command --change-pin\n"
+msgstr ""
+"Gelieve te noteren dat de fabrieksinstellingen voor de pincodes de volgende "
+"zijn:\n"
+"   pincode = '%s'     Beheerderspincode = '%s'\n"
+"U wordt aangeraden deze te wijzigen met het commando --change-pin\n"
+
 msgid "Error: Only plain ASCII is currently allowed.\n"
 msgstr "Fout: alleen platte ASCII is momenteel toegestaan.\n"
 
@@ -1603,17 +1614,6 @@ msgstr "Let op: sleutels worden al op de kaart bewaard!\n"
 
 msgid "Replace existing keys? (y/N) "
 msgstr "Bestaande sleutels vervangen? (j/N) "
-
-#, c-format
-msgid ""
-"Please note that the factory settings of the PINs are\n"
-"   PIN = '%s'     Admin PIN = '%s'\n"
-"You should change them using the command --change-pin\n"
-msgstr ""
-"Gelieve te noteren dat de fabrieksinstellingen voor de pincodes de volgende "
-"zijn:\n"
-"   pincode = '%s'     Beheerderspincode = '%s'\n"
-"U wordt aangeraden deze te wijzigen met het commando --change-pin\n"
 
 msgid "Please select the type of key to generate:\n"
 msgstr "Selecteer het type sleutel dat aangemaakt moet worden:\n"
@@ -7869,12 +7869,6 @@ msgid "error writing to output: %s\n"
 msgstr "fout bij het schrijven naar '%s': %s\n"
 
 #, c-format
-msgid "GPG_TTY has not been set - using maybe bogus default\n"
-msgstr ""
-"GPG_TTY werd niet ingesteld - de standaard, die misschien gebrekkig zal "
-"functioneren, wordt gebruik\n"
-
-#, c-format
 msgid "invalid formatted fingerprint in '%s', line %d\n"
 msgstr "ongeldig opgemaakte vingerafdruk in '%s', regel %d\n"
 
@@ -9407,6 +9401,12 @@ msgstr ""
 
 msgid "manage the command history"
 msgstr ""
+
+#, c-format
+#~ msgid "GPG_TTY has not been set - using maybe bogus default\n"
+#~ msgstr ""
+#~ "GPG_TTY werd niet ingesteld - de standaard, die misschien gebrekkig zal "
+#~ "functioneren, wordt gebruik\n"
 
 #, c-format
 #~ msgid "public key of ultimately trusted key %s not found\n"

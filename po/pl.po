@@ -1374,6 +1374,16 @@ msgstr "wymuszono"
 msgid "Please try command \"%s\" if the listing does not look correct\n"
 msgstr "Proszę spróbować polecenia „%s”, jeśli lista nie wygląda poprawnie\n"
 
+#, c-format
+msgid ""
+"Please note that the factory settings of the PINs are\n"
+"   PIN = '%s'     Admin PIN = '%s'\n"
+"You should change them using the command --change-pin\n"
+msgstr ""
+"Fabryczne ustawienia PIN-ów to\n"
+"   PIN = „%s”   PIN administracyjny = „%s”\n"
+"Należy je zmienić przy użyciu polecenia --change-pin\n"
+
 msgid "Error: Only plain ASCII is currently allowed.\n"
 msgstr "Błąd: aktualnie dopuszczalne jest tylko czyste ASCII.\n"
 
@@ -1526,16 +1536,6 @@ msgstr "Uwaga: klucze są już zapisane na karcie!\n"
 
 msgid "Replace existing keys? (y/N) "
 msgstr "Zastąpić istniejące klucze? (t/N) "
-
-#, c-format
-msgid ""
-"Please note that the factory settings of the PINs are\n"
-"   PIN = '%s'     Admin PIN = '%s'\n"
-"You should change them using the command --change-pin\n"
-msgstr ""
-"Fabryczne ustawienia PIN-ów to\n"
-"   PIN = „%s”   PIN administracyjny = „%s”\n"
-"Należy je zmienić przy użyciu polecenia --change-pin\n"
 
 msgid "Please select the type of key to generate:\n"
 msgstr "Proszę wybrać rodzaj klucza do wygenerowania:\n"
@@ -7625,11 +7625,6 @@ msgid "error writing to output: %s\n"
 msgstr "błąd zapisu do „%s”: %s\n"
 
 #, c-format
-msgid "GPG_TTY has not been set - using maybe bogus default\n"
-msgstr ""
-"GPG_TTY nie zostało ustawione - użycie być może nieprawidłowego domyślnego\n"
-
-#, c-format
 msgid "invalid formatted fingerprint in '%s', line %d\n"
 msgstr "niewłaściwie sformatowany odcisk w „%s”, w linii %d\n"
 
@@ -9098,6 +9093,12 @@ msgstr "polecenia zarządzające kluczami Yubikey"
 
 msgid "manage the command history"
 msgstr "zarządzanie historią poleceń"
+
+#, c-format
+#~ msgid "GPG_TTY has not been set - using maybe bogus default\n"
+#~ msgstr ""
+#~ "GPG_TTY nie zostało ustawione - użycie być może nieprawidłowego "
+#~ "domyślnego\n"
 
 #, c-format
 #~ msgid "public key of ultimately trusted key %s not found\n"

@@ -1411,6 +1411,16 @@ msgid "Please try command \"%s\" if the listing does not look correct\n"
 msgstr ""
 "Veuillez essayer la commande « %s » si la liste ne parait pas correcte\n"
 
+#, c-format
+msgid ""
+"Please note that the factory settings of the PINs are\n"
+"   PIN = '%s'     Admin PIN = '%s'\n"
+"You should change them using the command --change-pin\n"
+msgstr ""
+"Veuillez noter que les configurations d'usine des codes personnels sont\n"
+"   code personnel = « %s »     code personnel d'admin. = « %s ».\n"
+"Vous devriez les modifier avec la commande --change-pin\n"
+
 msgid "Error: Only plain ASCII is currently allowed.\n"
 msgstr "Erreur : seul l'ASCII standard est permis pour l'instant.\n"
 
@@ -1570,16 +1580,6 @@ msgstr "Remarque : les clefs sont déjà stockées sur la carte.\n"
 
 msgid "Replace existing keys? (y/N) "
 msgstr "Faut-il remplacer les clefs existantes ? (o/N) "
-
-#, c-format
-msgid ""
-"Please note that the factory settings of the PINs are\n"
-"   PIN = '%s'     Admin PIN = '%s'\n"
-"You should change them using the command --change-pin\n"
-msgstr ""
-"Veuillez noter que les configurations d'usine des codes personnels sont\n"
-"   code personnel = « %s »     code personnel d'admin. = « %s ».\n"
-"Vous devriez les modifier avec la commande --change-pin\n"
 
 msgid "Please select the type of key to generate:\n"
 msgstr "Veuillez sélectionner le type de clef à générer :\n"
@@ -7737,12 +7737,6 @@ msgid "error writing to output: %s\n"
 msgstr "erreur d'écriture sur la sortie standard : %s\n"
 
 #, c-format
-msgid "GPG_TTY has not been set - using maybe bogus default\n"
-msgstr ""
-"GPG_TTY n'a pas été définie — utilisation de valeurs par défaut "
-"potentiellement inappropriées\n"
-
-#, c-format
 msgid "invalid formatted fingerprint in '%s', line %d\n"
 msgstr "formatage incorrect de l'empreinte dans « %s », ligne %d\n"
 
@@ -9268,6 +9262,12 @@ msgstr "commandes de gestion de Yubikey"
 
 msgid "manage the command history"
 msgstr "gérer l'historique des commandes"
+
+#, c-format
+#~ msgid "GPG_TTY has not been set - using maybe bogus default\n"
+#~ msgstr ""
+#~ "GPG_TTY n'a pas été définie — utilisation de valeurs par défaut "
+#~ "potentiellement inappropriées\n"
 
 #, c-format
 #~ msgid "public key of ultimately trusted key %s not found\n"
