@@ -588,6 +588,16 @@ Ignore requests to change the current @code{tty} or X window system's
 @code{DISPLAY} variable respectively.  This is useful to lock the
 pinentry to pop up at the @code{tty} or display you started the agent.
 
+@item --change-std-env-name -@var{name}
+@opindex change-std-env-name
+The agent uses a fixed list of environment variables which are passed
+on to the Pinentry.  This option allows to remove variables from that
+list.  For example:
+@smallexample
+  change-std-env-name -DBUS_SESSION_BUS_ADDRESS
+@end smallexample
+
+
 @item --listen-backlog @var{n}
 @opindex listen-backlog
 Set the size of the queue for pending connections.  The default is 64.

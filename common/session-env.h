@@ -33,6 +33,7 @@
 struct session_environment_s;
 typedef struct session_environment_s *session_env_t;
 
+void session_env_mod_stdenvnames (const char *name);
 const char *session_env_list_stdenvnames (int *iterator,
                                           const char **r_assname);
 

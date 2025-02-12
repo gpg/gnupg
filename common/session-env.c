@@ -63,6 +63,7 @@ static struct
 {
   const char *name;
   const char *assname;  /* Name used by Assuan or NULL.  */
+  unsigned int disabled;/* The entry is not valid        */
 } stdenvnames[] = {
   { "GPG_TTY", "ttyname" },      /* GnuPG specific envvar.  */
   { "TERM",    "ttytype" },      /* Used to set ttytype. */
@@ -97,9 +98,39 @@ static struct
    allocation.  Note that this is not reentrant if used with a
    preemptive thread model.  */
 static size_t lastallocatedarraysize;
-#define INITIAL_ARRAYSIZE 8  /* Let's use the number of stdenvnames.  */
-#define CHUNK_ARRAYSIZE 10
+#define INITIAL_ARRAYSIZE 14  /* Let's use the number of stdenvnames.  */
+#define CHUNK_ARRAYSIZE 16
 #define MAXDEFAULT_ARRAYSIZE (INITIAL_ARRAYSIZE + CHUNK_ARRAYSIZE * 5)
+
+
+/* Modify the list of environment names which are known to gpg-agent.
+ * This function must be called before the session names are used and
+ * should not be changed later.  The syntax for NAME is:
+ *
+ *    -FOO        := Remove the environment variable FOO from the list
+ *    [+]FOO      := Add the environment variable FOO to the list
+ *    [+]FOO:bar  := Ditto, but also add "bar" as Assuan alias.
+ *
+ * Note that adding environment variables is not yet supported and
+ * silently ignored.
+ */
+void
+session_env_mod_stdenvnames (const char *name)
+{
+  int idx;
+
+  if (*name != '-')
+    return;
+  name++;
+  if (!*name)
+    return;
+
+  for (idx = 0; idx < DIM (stdenvnames); idx++)
+    {
+      if (!strcmp (stdenvnames[idx].name, name))
+        stdenvnames[idx].disabled = 1;
+    }
+}
 
 
 /* Return the names of standard environment variables one after the
@@ -133,6 +164,8 @@ session_env_list_stdenvnames (int *iterator, const char **r_assname)
           p = commastring;
           for (idx = 0; idx < DIM (stdenvnames); idx++)
             {
+              if (stdenvnames[idx].disabled)
+                continue;
               if (idx)
                 *p++ = ',';
               p = stpcpy (p, stdenvnames[idx].name);
@@ -142,10 +175,14 @@ session_env_list_stdenvnames (int *iterator, const char **r_assname)
       return commastring;
     }
 
-  idx = *iterator;
-  if (idx < 0 || idx >= DIM (stdenvnames))
-    return NULL;
-  *iterator = idx + 1;
+  do
+    {
+      idx = *iterator;
+      if (idx < 0 || idx >= DIM (stdenvnames))
+        return NULL;
+      *iterator = idx + 1;
+    }
+  while (stdenvnames[idx].disabled);
   if (r_assname)
     *r_assname = stdenvnames[idx].assname;
   return stdenvnames[idx].name;

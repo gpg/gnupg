@@ -146,6 +146,7 @@ enum cmd_and_opt_values
   oAutoExpandSecmem,
   oListenBacklog,
   oInactivityTimeout,
+  oChangeStdEnvName,
 
   oWriteEnvFile,
 
@@ -239,7 +240,7 @@ static gpgrt_opt_t opts[] = {
   ARGPARSE_s_i (oListenBacklog, "listen-backlog", "@"),
   ARGPARSE_op_u (oAutoExpandSecmem, "auto-expand-secmem", "@"),
   ARGPARSE_s_s (oFakedSystemTime, "faked-system-time", "@"),
-
+  ARGPARSE_s_s (oChangeStdEnvName, "change-std-env-name", "@"),
 
   ARGPARSE_header ("Security", N_("Options controlling the security")),
 
@@ -1298,6 +1299,10 @@ main (int argc, char **argv)
 
         case oKeepTTY: opt.keep_tty = 1; break;
         case oKeepDISPLAY: opt.keep_display = 1; break;
+
+        case oChangeStdEnvName:
+          session_env_mod_stdenvnames (pargs.r.ret_str);
+          break;
 
 	case oSSHSupport:
           ssh_support = 1;
