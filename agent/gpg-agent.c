@@ -2307,7 +2307,7 @@ create_server_socket (char *name, int primary, int cygwin,
       if (primary && !check_for_running_agent (1))
         {
           if (steal_socket)
-            log_info (N_("trying to steal socket from running %s\n"),
+            log_info (_("trying to steal socket from running %s\n"),
                       "gpg-agent");
           else
             {
@@ -2322,17 +2322,25 @@ create_server_socket (char *name, int primary, int cygwin,
             }
         }
       gnupg_remove (unaddr->sun_path);
+      log_info (_("socket file removed - retrying binding\n"));
       rc = assuan_sock_bind (fd, addr, len);
     }
   if (rc != -1 && (rc=assuan_sock_get_nonce (addr, len, nonce)))
     log_error (_("error getting nonce for the socket\n"));
   if (rc == -1)
     {
+      int w32err = 0;
+
+      if (assuan_sock_get_flag (fd, "w32_error", &w32err))
+        w32err = -1;  /* Old Libassuan or not Windows.  */
+
+      rc = gpg_error_from_syserror ();
       /* We use gpg_strerror here because it allows us to get strings
          for some W32 socket error codes.  */
       log_error (_("error binding socket to '%s': %s\n"),
-                 unaddr->sun_path,
-                 gpg_strerror (gpg_error_from_syserror ()));
+                 unaddr->sun_path, gpg_strerror (rc));
+      if (w32err != -1)
+        log_info ("system error code: %d (0x%x)\n", w32err, w32err);
 
       assuan_sock_close (fd);
       *name = 0; /* Inhibit removal of the socket by cleanup(). */
