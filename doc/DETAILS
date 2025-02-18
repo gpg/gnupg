@@ -1720,9 +1720,11 @@ Description of some debug flags:
   - RFC-2253 :: UTF-8 String Representation of Distinguished Names.
   - RFC-2279 :: UTF-8, a transformation format of ISO 10646
   - RFC-2440 :: OpenPGP (obsolete).
+  - RFC-2634 :: CMS - Enhanced Security Services (ESS)
   - RFC-3156 :: MIME Security with Pretty Good Privacy (PGP).
   - RFC-3447 :: PKCS  #1: RSA Cryptography Specifications Version 2.1
   - RFC-4880 :: OpenPGP
+  - RFC-5035 :: CMS - Enhanced Security Services Update (ESS)
   - RFC-5083 :: CMS - Authenticated-Enveloped-Data
   - RFC-5084 :: CMS - AES-GCM
   - RFC-5280 :: X.509 PKI Certificate and CRL Profile

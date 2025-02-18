@@ -134,6 +134,13 @@
 
   Add other options as needed.
 
+*** Cygwin
+
+  Although Cygwin (Posix emulation on top of Windows) is not
+  officially supported, GnuPG can be build for that platform.  It
+  might be required to invoke configure like this:
+
+    ./configure  ac_cv_type_SOCKET=no
 
 *** Systems without a full C99 compiler
 
