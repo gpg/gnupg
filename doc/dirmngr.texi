@@ -403,7 +403,12 @@ Entirely disables the use of LDAP.
 
 @item --disable-http
 @opindex disable-http
-Entirely disables the use of HTTP.
+Disable the use of HTTP to fetch CRLs.  This also disables OCSP
+requests as a side-effect.  HTTP access to keyservers and to other
+files will still work.  This is a legacy option from a time before CRL
+distribution points became common; it is better to use the explicit
+option @option{--ignore-http-dp} if the goal is to avoid fetching CRLs
+via HTTP.
 
 @item --ignore-http-dp
 @opindex ignore-http-dp
