@@ -1263,19 +1263,17 @@ do_check_sig (CTX c, kbnode_t node, const void *extrahash, size_t extrahashlen,
 
   /* We only get here if we are checking the signature of a binary
      (0x00) or text document (0x01).  */
-  rc = check_signature2 (c->ctrl, sig, md, extrahash, extrahashlen,
-                         forced_pk,
-                         NULL, is_expkey, is_revkey, r_pk);
+  rc = check_signature (c->ctrl, sig, md, extrahash, extrahashlen,
+                        forced_pk, NULL, is_expkey, is_revkey, r_pk);
   if (! rc)
     md_good = md;
   else if (gpg_err_code (rc) == GPG_ERR_BAD_SIGNATURE && md2)
     {
       PKT_public_key *pk2;
 
-      rc = check_signature2 (c->ctrl, sig, md2, extrahash, extrahashlen,
-                             forced_pk,
-                             NULL, is_expkey, is_revkey,
-                             r_pk? &pk2 : NULL);
+      rc = check_signature (c->ctrl, sig, md2, extrahash, extrahashlen,
+                            forced_pk, NULL, is_expkey, is_revkey,
+                            r_pk? &pk2 : NULL);
       if (!rc)
         {
           md_good = md2;
@@ -1896,7 +1894,6 @@ issuer_fpr_string (PKT_signature *sig)
   p = issuer_fpr_raw (sig, &n);
   return p? bin2hex (p, n, NULL) : NULL;
 }
-
 
 static void
 print_good_bad_signature (int statno, const char *keyid_str, kbnode_t un,
