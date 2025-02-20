@@ -907,16 +907,12 @@ int cmp_user_ids( PKT_user_id *a, PKT_user_id *b );
 
 
 /*-- sig-check.c --*/
-/* Check a signature.  This is shorthand for check_signature2 with
-   the unnamed arguments passed as NULL.  */
-int check_signature (ctrl_t ctrl, PKT_signature *sig, gcry_md_hd_t digest);
-
 /* Check a signature.  Looks up the public key from the key db.  (If
  * R_PK is not NULL, it is stored at RET_PK.)  DIGEST contains a
  * valid hash context that already includes the signed data.  This
  * function adds the relevant meta-data to the hash before finalizing
  * it and verifying the signature.  FOCRED_PK is usually NULL. */
-gpg_error_t check_signature2 (ctrl_t ctrl,
+gpg_error_t check_signature (ctrl_t ctrl,
                               PKT_signature *sig, gcry_md_hd_t digest,
                               const void *extrahash, size_t extrahashlen,
                               PKT_public_key *forced_pk,

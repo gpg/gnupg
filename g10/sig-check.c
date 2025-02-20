@@ -88,17 +88,6 @@ check_key_verify_compliance (PKT_public_key *pk)
 }
 
 
-
-/* Check a signature.  This is shorthand for check_signature2 with
-   the unnamed arguments passed as NULL.  */
-int
-check_signature (ctrl_t ctrl, PKT_signature *sig, gcry_md_hd_t digest)
-{
-  return check_signature2 (ctrl, sig, digest, NULL, 0, NULL,
-                           NULL, NULL, NULL, NULL);
-}
-
-
 /* Check a signature.
  *
  * Looks up the public key that created the signature (SIG->KEYID)
@@ -144,12 +133,12 @@ check_signature (ctrl_t ctrl, PKT_signature *sig, gcry_md_hd_t digest)
  *
  * Returns 0 on success.  An error code otherwise.  */
 gpg_error_t
-check_signature2 (ctrl_t ctrl,
-                  PKT_signature *sig, gcry_md_hd_t digest,
-                  const void *extrahash, size_t extrahashlen,
-                  PKT_public_key *forced_pk,
-                  u32 *r_expiredate,
-		  int *r_expired, int *r_revoked, PKT_public_key **r_pk)
+check_signature (ctrl_t ctrl,
+                 PKT_signature *sig, gcry_md_hd_t digest,
+                 const void *extrahash, size_t extrahashlen,
+                 PKT_public_key *forced_pk,
+                 u32 *r_expiredate, int *r_expired, int *r_revoked,
+                 PKT_public_key **r_pk)
 {
   int rc=0;
   PKT_public_key *pk;
@@ -802,7 +791,8 @@ check_revocation_keys (ctrl_t ctrl, PKT_public_key *pk, PKT_signature *sig)
               hash_public_key(md,pk);
 	      /* Note: check_signature only checks that the signature
 		 is good.  It does not fail if the key is revoked.  */
-              rc = check_signature (ctrl, sig, md);
+              rc = check_signature (ctrl, sig, md, NULL, 0, NULL,
+                                    NULL, NULL, NULL, NULL);
 	      cache_sig_result(sig,rc);
               gcry_md_close (md);
 	      break;
