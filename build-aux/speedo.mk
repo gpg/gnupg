@@ -225,7 +225,6 @@ AUTHENTICODE_FILES= \
                     gpg-wks-client.exe        \
                     gpg.exe                   \
                     gpgconf.exe               \
-                    gpgme-w32spawn.exe        \
                     gpgsm.exe                 \
                     gpgtar.exe                \
                     gpgv.exe                  \
@@ -234,7 +233,6 @@ AUTHENTICODE_FILES= \
                     libassuan-9.dll           \
                     libgcrypt-20.dll          \
                     libgpg-error-0.dll        \
-                    libgpgme-11.dll           \
                     libksba-8.dll             \
                     libnpth-0.dll             \
                     libntbtls-0.dll           \
@@ -272,10 +270,6 @@ speedo_spkgs  = \
 	zlib bzip2 sqlite \
         libassuan libksba ntbtls gnupg
 
-ifeq ($(STATIC),0)
-speedo_spkgs += gpgme
-endif
-
 ifeq ($(TARGETOS),w32)
 speedo_spkgs += pinentry
 endif
@@ -297,7 +291,7 @@ endif
 # Packages which use the gnupg autogen.sh build style
 speedo_gnupg_style = \
 	libgpg-error npth libgcrypt  \
-	libassuan libksba ntbtls gnupg gpgme \
+	libassuan libksba ntbtls gnupg \
 	pinentry
 
 # Packages which use only make and no build directory
@@ -351,10 +345,6 @@ ntbtls_ver  := $(shell awk '$$1=="ntbtls_ver" {print $$2}' swdb.lst)
 ntbtls_sha1 := $(shell awk '$$1=="ntbtls_sha1" {print $$2}' swdb.lst)
 ntbtls_sha2 := $(shell awk '$$1=="ntbtls_sha2" {print $$2}' swdb.lst)
 
-gpgme_ver  := $(shell awk '$$1=="gpgme_ver" {print $$2}' swdb.lst)
-gpgme_sha1 := $(shell awk '$$1=="gpgme_sha1" {print $$2}' swdb.lst)
-gpgme_sha2 := $(shell awk '$$1=="gpgme_sha2" {print $$2}' swdb.lst)
-
 pinentry_ver  := $(shell awk '$$1=="pinentry_ver" {print $$2}' swdb.lst)
 pinentry_sha1 := $(shell awk '$$1=="pinentry_sha1" {print $$2}' swdb.lst)
 pinentry_sha2 := $(shell awk '$$1=="pinentry_sha2" {print $$2}' swdb.lst)
@@ -383,7 +373,6 @@ $(info Zlib ...........: $(zlib_ver))
 $(info Bzip2 ..........: $(bzip2_ver))
 $(info SQLite .........: $(sqlite_ver))
 $(info NtbTLS .. ......: $(ntbtls_ver))
-$(info GPGME ..........: $(gpgme_ver))
 $(info Pinentry .......: $(pinentry_ver))
 endif
 
@@ -454,8 +443,6 @@ else ifeq ($(WHAT),git)
   speedo_pkg_libksba_gitref = master
   speedo_pkg_ntbtls_git = $(gitrep)/ntbtls
   speedo_pkg_ntbtls_gitref = master
-  speedo_pkg_gpgme_git = $(gitrep)/gpgme
-  speedo_pkg_gpgme_gitref = master
   speedo_pkg_pinentry_git = $(gitrep)/pinentry
   speedo_pkg_pinentry_gitref = master
 else ifeq ($(WHAT),release)
@@ -471,8 +458,6 @@ else ifeq ($(WHAT),release)
 	$(pkgrep)/libksba/libksba-$(libksba_ver).tar.bz2
   speedo_pkg_ntbtls_tar = \
 	$(pkgrep)/ntbtls/ntbtls-$(ntbtls_ver).tar.bz2
-  speedo_pkg_gpgme_tar = \
-	$(pkgrep)/gpgme/gpgme-$(gpgme_ver).tar.bz2
   speedo_pkg_pinentry_tar = \
 	$(pkgrep)/pinentry/pinentry-$(pinentry_ver).tar.bz2
 else
@@ -535,13 +520,6 @@ define speedo_pkg_gnupg_post_install
     |sed 's/,/./g' >$(idir)/INST_PROD_VERSION )
 endef
 endif
-
-# The LDFLAGS was needed for -lintl for glib.
-speedo_pkg_gpgme_configure = \
-	--disable-static --disable-w32-glib \
-	--with-gpg-error-prefix=$(idir) \
-	LDFLAGS=-L$(idir)/lib
-
 
 speedo_pkg_pinentry_configure += \
         --disable-pinentry-qt5   \

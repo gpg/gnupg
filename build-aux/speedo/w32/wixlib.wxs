@@ -85,9 +85,6 @@ and then manually edited:
       <Component Id="cmpAF601EA2DF4EFD403CBF65A0D5162922" Directory="dirAA72FFDDFA224FB221D53750596B0142" Guid="EEF227D9-1FA3-4A96-AF86-12D1FDC12925">
         <File Id="fil00B1F6AD370147577D6F7C998ACE6122" KeyPath="yes" Source="$(var.SourceDir)\bin\gpgconf-w32.exe"/>
       </Component>
-      <Component Id="cmp3BA8A06E4085F542FDAA78BAFB507AD4" Directory="dirAA72FFDDFA224FB221D53750596B0142" Guid="E026569F-F37A-49FC-A529-68BDE3097218">
-        <File Id="fil1A596ECA8DC19F8EC626168033269CFE" KeyPath="yes" Source="$(var.SourceDir)\libexec\gpgme-w32spawn.exe"/>
-      </Component>
       <Component Id="cmp28685CE9EF72251E2DB49488E4F253A0" Directory="dirAA72FFDDFA224FB221D53750596B0142" Guid="BC5A0A60-3E5C-4FDD-BFEC-EA0C3F370958">
         <File Id="fil3632B0ED7374F4D2C34F884D0AB1CD55" KeyPath="yes" Source="$(var.SourceDir)\bin\gpgsm.exe"/>
       </Component>
@@ -105,9 +102,6 @@ and then manually edited:
       </Component>
       <Component Id="cmpA55348E1B63D2B8001A86EBE5A88B479" Directory="dirAA72FFDDFA224FB221D53750596B0142" Guid="475D7E3F-8FA7-4B68-801C-083210A63B03">
         <File Id="filEF34E24421329153F11FC15FBA8812A0" KeyPath="yes" Source="$(var.SourceDir)\bin\libgpg-error-0.dll"/>
-      </Component>
-      <Component Id="cmpDBDFA95FDDD0A86801D39E55BF3BC868" Directory="dirAA72FFDDFA224FB221D53750596B0142" Guid="5BE73ECB-4F28-4320-9ED6-1ECC2536E547">
-        <File Id="fil6AC228365277B587545F74B1089D5476" KeyPath="yes" Source="$(var.SourceDir)\bin\libgpgme-11.dll"/>
       </Component>
       <Component Id="cmp9304510805DD3179141F4262F000041B" Directory="dirAA72FFDDFA224FB221D53750596B0142" Guid="A824D70D-80C0-45E6-8FE8-A3B316384173">
         <File Id="filC065951849A7371A734CB3174EF3FE0E" KeyPath="yes" Source="$(var.SourceDir)\bin\libksba-8.dll"/>
@@ -139,9 +133,6 @@ and then manually edited:
       <Component Id="cmp60C98038298D866C96CD9E8B567D506E" Directory="dir39F5678CDEA54A3E48058808B3D68E81" Guid="E9EAFCE0-373A-4F8F-8804-9A478A8B3F46">
         <File Id="fil0CA9A6FD42409FBE4DE71D8307617803" KeyPath="yes" Source="$(var.SourceDir)\include\gpg-error.h"/>
       </Component>
-      <Component Id="cmp6DFA25F5C06C7D4378B57B4972B9ABF9" Directory="dir39F5678CDEA54A3E48058808B3D68E81" Guid="3A0D85D2-F3FA-46FC-84A3-DB5EC1E5EFFE">
-        <File Id="fil12216064300F3BD74F304FB7BBF82DF8" KeyPath="yes" Source="$(var.SourceDir)\include\gpgme.h"/>
-      </Component>
       <Component Id="cmp24395F851942E67A35947276D2E7898E" Directory="dir39F5678CDEA54A3E48058808B3D68E81" Guid="3B75734A-329A-4ECA-BD49-6118D2AC1192">
         <File Id="filA775AF0DD0F9ED50A0D55FF9CDE33975" KeyPath="yes" Source="$(var.SourceDir)\include\ksba.h"/>
       </Component>
@@ -156,9 +147,6 @@ and then manually edited:
       </Component>
       <Component Id="cmpF41B20B2A8CAD3CBA8917622CABACA0D" Directory="dir6694D0A4AAD84EF827096DD86D1B4FA2" Guid="591391E9-D3DD-45F2-A038-14D1B8542778">
         <File Id="filA6EB6699DCA86B1FBE961D53E2E24440" KeyPath="yes" Source="$(var.SourceDir)\lib\libgpg-error.dll.a" Name="libgpg-error.imp"/>
-      </Component>
-      <Component Id="cmp51A12EB5E7192912DCC1637F9417A39E" Directory="dir6694D0A4AAD84EF827096DD86D1B4FA2" Guid="E15FE761-BF44-4130-B354-EBE8F6A0F5D8">
-        <File Id="fil710653D37212C7F55D9AF2FCF7189BA7" KeyPath="yes" Source="$(var.SourceDir)\lib\libgpgme.dll.a" Name="libgpgme.imp"/>
       </Component>
       <Component Id="cmp30558FA612DCFC9CE144A01F3B4BC87A" Directory="dir6694D0A4AAD84EF827096DD86D1B4FA2" Guid="CBC1DADD-384C-4C28-B535-DCADD5C5D958">
         <File Id="fil972A246C4D46A8ECD31DD7C6CC4D5B58" KeyPath="yes" Source="$(var.SourceDir)\lib\libksba.dll.a" Name="libksba.imp"/>

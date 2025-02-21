@@ -841,18 +841,6 @@ Section "-ksba" SEC_ksba
   File include/ksba.h
 SectionEnd
 
-Section "-gpgme" SEC_gpgme
-  SetOutPath "$INSTDIR\bin"
-  File bin/libgpgme-11.dll
-  File /nonfatal bin/libgpgme-glib-11.dll
-  File libexec/gpgme-w32spawn.exe
-  SetOutPath "$INSTDIR\lib"
-  File /oname=libgpgme.imp      lib/libgpgme.dll.a
-  File /nonfatal /oname=libgpgme-glib.imp lib/libgpgme-glib.dll.a
-  SetOutPath "$INSTDIR\include"
-  File include/gpgme.h
-SectionEnd
-
 Section "-sqlite" SEC_sqlite
   SetOutPath "$INSTDIR\bin"
   File bin/libsqlite3-0.dll
@@ -1223,15 +1211,6 @@ SectionEnd
 
 Section "-un.libiconv"
   Delete "$INSTDIR\bin\libiconv-2.dll"
-SectionEnd
-
-Section "-un.gpgme"
-  Delete "$INSTDIR\bin\libgpgme-11.dll"
-  Delete "$INSTDIR\bin\libgpgme-glib-11.dll"
-  Delete "$INSTDIR\bin\gpgme-w32spawn.exe"
-  Delete "$INSTDIR\lib\libgpgme.imp"
-  Delete "$INSTDIR\lib\libgpgme-glib.imp"
-  Delete "$INSTDIR\include\gpgme.h"
 SectionEnd
 
 Section "-un.ksba"
