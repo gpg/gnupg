@@ -15,7 +15,7 @@
 # configure it for the respective package.  It is maintained as part of
 # GnuPG and source copied by other packages.
 #
-# Version: 2024-07-04
+# Version: 2025-02-21
 
 configure_ac="configure.ac"
 
@@ -72,6 +72,7 @@ FORCE=
 SILENT=
 PRINT_HOST=no
 PRINT_BUILD=no
+PRINT_TSDIR=no
 tmp=$(dirname "$0")
 tsdir=$(cd "${tmp}"; pwd)
 
@@ -84,9 +85,10 @@ if test x"$1" = x"--help"; then
   echo "    --silent       Silent operation"
   echo "    --force        Pass --force to autoconf"
   echo "    --find-version Helper for configure.ac"
-  echo "    --git-build    Run all commands to  build from a Git"
+  echo "    --git-build    Run all commands to build from a Git"
   echo "    --print-host   Print only the host triplet"
   echo "    --print-build  Print only the build platform triplet"
+  echo "    --print-tsdir  Print only the dir of this script"
   echo "    --build-TYPE   Configure to cross build for TYPE"
   echo ""
   echo "  ARGS are passed to configure in --build-TYPE mode."
@@ -135,6 +137,7 @@ die_p
 configure_opts=
 extraoptions=
 # List of optional variables sourced from autogen.rc and ~/.gnupg-autogen.rc
+maintainer_mode_option=
 w32_toolprefixes=
 w32_extraoptions=
 w64_toolprefixes=
@@ -154,6 +157,11 @@ myhostsub=""
 case "$1" in
     --find-version)
         myhost="find-version"
+        SILENT=" --silent"
+        shift
+        ;;
+    --print-tsdir)
+        myhost="print-tsdir"
         SILENT=" --silent"
         shift
         ;;
@@ -214,6 +222,12 @@ if [ -f "$HOME/.gnupg-autogen.rc" ]; then
     . "$HOME/.gnupg-autogen.rc"
 fi
 
+# Disable the --enable-maintainer_mode option.
+if [ "${maintainer_mode_option}" = off ]; then
+    maintainer_mode_option=
+elif [ -z "${maintainer_mode_option}" ]; then
+    maintainer_mode_option=--enable-maintainer-mode
+fi
 
 # **** FIND VERSION ****
 # This is a helper for the configure.ac M4 magic
@@ -250,13 +264,15 @@ if [ "$myhost" = "find-version" ]; then
       if [ -n "$tmp" ]; then
           tmp=$(echo "$tmp" | sed s/^"$package"// \
                     | awk -F- '$3!=0 && $3 !~ /^beta/ {print"-beta"$3}')
-      else
+      fi
+      if [ -z "$tmp" ]; then
           # (due tof "-base" in the tag we need to take the 4th field)
           tmp=$(git describe --match "${matchstr2}" --long 2>/dev/null)
           if [ -n "$tmp" ]; then
               tmp=$(echo "$tmp" | sed s/^"$package"// \
                         | awk -F- '$4!=0 && $4 !~ /^beta/ {print"-beta"$4}')
-          elif [ -n "${matchstr3}" ]; then
+          fi
+          if [ -z "$tmp" -a -n "${matchstr3}" ]; then
               tmp=$(git describe --match "${matchstr3}" --long 2>/dev/null)
               if [ -n "$tmp" ]; then
                   tmp=$(echo "$tmp" | sed s/^"$package"// \
@@ -281,6 +297,14 @@ if [ "$myhost" = "find-version" ]; then
     exit 0
 fi
 # **** end FIND VERSION ****
+
+# **** PRINT TSDIR VERSION ****
+# This is a helper used by some configure.ac M4 magic
+if [ "$myhost" = "print-tsdir" ]; then
+    echo "$tsdir"
+    exit 0
+fi
+# **** end PRINT TSDIR ****
 
 
 if [ ! -f "$tsdir/build-aux/config.guess" ]; then
@@ -313,6 +337,7 @@ if [ "$myhost" = "w32" ]; then
           extraoptions="$extraoptions $w32_extraoptions"
           ;;
     esac
+    w32root=$(echo "$w32root" | sed s,^//,/,)
     info "Using $w32root as standard install directory"
     replace_sysroot
 
@@ -345,7 +370,7 @@ if [ "$myhost" = "w32" ]; then
         fi
     fi
 
-    $tsdir/configure --enable-maintainer-mode ${SILENT} \
+    $tsdir/configure "${maintainer_mode_option}" ${SILENT} \
              --prefix=${w32root}  \
              --host=${host} --build=${build} SYSROOT=${w32root} \
              PKG_CONFIG_LIBDIR=${w32root}/lib/pkgconfig \
@@ -390,7 +415,7 @@ if [ "$myhost" = "amd64" ]; then
         fi
     fi
 
-    $tsdir/configure --enable-maintainer-mode ${SILENT} \
+    $tsdir/configure "${maintainer_mode_option}" ${SILENT} \
              --prefix=${amd64root}  \
              --host=${host} --build=${build} \
              ${configure_opts} ${extraoptions} "$@"
