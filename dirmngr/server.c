@@ -2727,6 +2727,52 @@ cmd_ks_put (assuan_context_t ctx, char *line)
 }
 
 
+static const char hlp_ks_del[] =
+  "KS_DEL --ldap {<pattern>}\n"
+  "\n"
+  "Delete the keys matching PATTERN from the configured OpenPGP LDAP server\n"
+  "The pattern should be a fingerprint.\n"
+  "The option --ldap is mandatory.\n";
+static gpg_error_t
+cmd_ks_del (assuan_context_t ctx, char *line)
+{
+  ctrl_t ctrl = assuan_get_pointer (ctx);
+  gpg_error_t err;
+  strlist_t list = NULL;
+  unsigned int flags = 0;
+
+  if (has_option (line, "--ldap"))
+    flags |= KS_GET_FLAG_ONLY_LDAP;
+  line = skip_options (line);
+
+  err = percentplus_line_to_strlist (line, &list);
+  if (err)
+    goto leave;
+
+  if (!(flags & KS_GET_FLAG_ONLY_LDAP))
+    {
+      err = set_error (GPG_ERR_SYNTAX, "option --ldap is mandatory");
+      goto leave;
+    }
+
+  if (!list)
+    {
+      err = set_error (GPG_ERR_SYNTAX, "no fingerprints given");
+      goto leave;
+    }
+
+  err = ensure_keyserver (ctrl);
+  if (err)
+    goto leave;
+
+  err = ks_action_del (ctrl, ctrl->server_local->keyservers, list);
+
+ leave:
+  free_strlist (list);
+  return leave_cmd (ctx, err);
+}
+
+
 
 static const char hlp_ad_query[] =
   "AD_QUERY [--first|--next] [--] <filter> \n"
@@ -3067,6 +3113,7 @@ register_commands (assuan_context_t ctx)
     { "KS_GET",     cmd_ks_get,     hlp_ks_get },
     { "KS_FETCH",   cmd_ks_fetch,   hlp_ks_fetch },
     { "KS_PUT",     cmd_ks_put,     hlp_ks_put },
+    { "KS_DEL",     cmd_ks_del,     hlp_ks_del },
     { "AD_QUERY",   cmd_ad_query,   hlp_ad_query },
     { "GETINFO",    cmd_getinfo,    hlp_getinfo },
     { "LOADSWDB",   cmd_loadswdb,   hlp_loadswdb },

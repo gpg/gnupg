@@ -2984,6 +2984,18 @@ ks_ldap_put (ctrl_t ctrl, parsed_uri_t uri,
 }
 
 
+/* Delete the keys given by PATTERNS from the keyserver identified by
+ * URI. */
+gpg_error_t
+ks_ldap_del (ctrl_t ctrl, parsed_uri_t uri, strlist_t patterns)
+{
+  (void)ctrl;
+  (void)uri;
+  (void)patterns;
+  return gpg_error (GPG_ERR_NOT_IMPLEMENTED);
+}
+
+
 
 /* Get the data described by FILTER_ARG from URI.  On success R_FP has
  * an open stream to read the data.  KS_GET_FLAGS conveys flags from
