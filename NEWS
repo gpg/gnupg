@@ -1,6 +1,9 @@
 Noteworthy changes in version 2.4.8 (unreleased)
 ------------------------------------------------
 
+  * gpg: Fix a verification DoS due to a malicious subkey in the
+    keyring.  [T7527]
+
   Release-info: https://dev.gnupg.org/T7428
 
 
