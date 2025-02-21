@@ -324,6 +324,46 @@ strcpy_escaped_plus (char *d, const unsigned char *s)
 }
 
 
+/* Break the LINE into space delimited tokens, put them into a new
+ * strlist and return it at R_LIST.  On error an erro code is
+ * returned.  If no tokens are found the list is set to NULL.
+ * Percent-plus encoding is removed from each token.  Note that the
+ * function will modify LINE.  */
+static gpg_error_t
+percentplus_line_to_strlist (char *line, strlist_t *r_list)
+{
+  strlist_t list = NULL;
+  strlist_t sl;
+  char *p;
+
+  for (p=line; *p; line = p)
+    {
+      while (*p && *p != ' ')
+        p++;
+      if (*p)
+        *p++ = 0;
+      if (*line)
+        {
+          sl = xtrymalloc (sizeof *sl + strlen (line));
+          if (!sl)
+            {
+              gpg_error_t err = gpg_error_from_syserror ();
+              free_strlist (list);
+              *r_list = NULL;
+              return err;
+            }
+          sl->flags = 0;
+          strcpy_escaped_plus (sl->d, line);
+          sl->next = list;
+          list = sl;
+        }
+    }
+
+  *r_list = list;
+  return 0;
+}
+
+
 /* This function returns true if a Tor server is running.  The status
  * is cached for the current connection.  */
 static int
@@ -2434,37 +2474,16 @@ cmd_ks_search (assuan_context_t ctx, char *line)
 {
   ctrl_t ctrl = assuan_get_pointer (ctx);
   gpg_error_t err;
-  strlist_t list, sl;
-  char *p;
+  strlist_t list;
   estream_t outfp;
 
   if (has_option (line, "--quick"))
     ctrl->timeout = opt.connect_quick_timeout;
   line = skip_options (line);
 
-  /* Break the line down into an strlist.  Each pattern is
-     percent-plus escaped. */
-  list = NULL;
-  for (p=line; *p; line = p)
-    {
-      while (*p && *p != ' ')
-        p++;
-      if (*p)
-        *p++ = 0;
-      if (*line)
-        {
-          sl = xtrymalloc (sizeof *sl + strlen (line));
-          if (!sl)
-            {
-              err = gpg_error_from_syserror ();
-              goto leave;
-            }
-          sl->flags = 0;
-          strcpy_escaped_plus (sl->d, line);
-          sl->next = list;
-          list = sl;
-        }
-    }
+  err = percentplus_line_to_strlist (line, &list);
+  if (err)
+    goto leave;
 
   err = ensure_keyserver (ctrl);
   if (err)
@@ -2503,9 +2522,7 @@ cmd_ks_get (assuan_context_t ctx, char *line)
   ctrl_t ctrl = assuan_get_pointer (ctx);
   gpg_error_t err;
   strlist_t list = NULL;
-  strlist_t sl;
   const char *s;
-  char *p;
   estream_t outfp;
   unsigned int flags = 0;
   gnupg_isotime_t opt_newer;
@@ -2528,30 +2545,13 @@ cmd_ks_get (assuan_context_t ctx, char *line)
     }
   line = skip_options (line);
 
-  /* Break the line into a strlist.  Each pattern is by
-     definition percent-plus escaped.  However we only support keyids
-     and fingerprints and thus the client has no need to apply the
-     escaping.  */
-  for (p=line; *p; line = p)
-    {
-      while (*p && *p != ' ')
-        p++;
-      if (*p)
-        *p++ = 0;
-      if (*line)
-        {
-          sl = xtrymalloc (sizeof *sl + strlen (line));
-          if (!sl)
-            {
-              err = gpg_error_from_syserror ();
-              goto leave;
-            }
-          sl->flags = 0;
-          strcpy_escaped_plus (sl->d, line);
-          sl->next = list;
-          list = sl;
-        }
-    }
+  /* Break the line into a strlist.  Each pattern is by definition
+     percent-plus escaped.  However we only support keyids and
+     fingerprints and thus the caler of this function has no need to
+     apply the escaping.  */
+  err = percentplus_line_to_strlist (line, &list);
+  if (err)
+    goto leave;
 
   if ((flags & KS_GET_FLAG_FIRST) && !(flags & KS_GET_FLAG_ONLY_LDAP))
     {
