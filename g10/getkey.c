@@ -316,13 +316,20 @@ pk_from_block (PKT_public_key *pk, kbnode_t keyblock, kbnode_t found_key)
 
 /* Specialized version of get_pubkey which retrieves the key based on
  * information in SIG.  In contrast to get_pubkey PK is required.  IF
- * FORCED_PK is not NULL, this public key is used and copied to PK. */
+ * FORCED_PK is not NULL, this public key is used and copied to PK.
+ * If R_KEYBLOCK is not NULL the entire keyblock is stored there if
+ * found and FORCED_PK is not used; if not used or on error NULL is
+ * stored there. */
 gpg_error_t
 get_pubkey_for_sig (ctrl_t ctrl, PKT_public_key *pk, PKT_signature *sig,
-                    PKT_public_key *forced_pk)
+                    PKT_public_key *forced_pk, kbnode_t *r_keyblock)
 {
+  gpg_error_t err;
   const byte *fpr;
   size_t fprlen;
+
+  if (r_keyblock)
+    *r_keyblock = NULL;
 
   if (forced_pk)
     {
@@ -330,13 +337,29 @@ get_pubkey_for_sig (ctrl_t ctrl, PKT_public_key *pk, PKT_signature *sig,
       return 0;
     }
 
+  /* Make sure to request only keys cabable of signing.  This makes
+   * sure that a subkey w/o a valid backsig or with bad usage flags
+   * will be skipped.  */
+  pk->req_usage = PUBKEY_USAGE_SIG;
+
   /* First try the ISSUER_FPR info.  */
   fpr = issuer_fpr_raw (sig, &fprlen);
-  if (fpr && !get_pubkey_byfpr (ctrl, pk, NULL, fpr, fprlen))
+  if (fpr && !get_pubkey_byfpr (ctrl, pk, r_keyblock, fpr, fprlen))
     return 0;
+  if (r_keyblock)
+    {
+      release_kbnode (*r_keyblock);
+      *r_keyblock = NULL;
+    }
 
   /* Fallback to use the ISSUER_KEYID.  */
-  return get_pubkey (ctrl, pk, sig->keyid);
+  err = get_pubkey_bykid (ctrl, pk, r_keyblock, sig->keyid);
+  if (err && r_keyblock)
+    {
+      release_kbnode (*r_keyblock);
+      *r_keyblock = NULL;
+    }
+  return err;
 }
 
 
@@ -354,6 +377,10 @@ get_pubkey_for_sig (ctrl_t ctrl, PKT_public_key *pk, PKT_signature *sig,
  * usage will be returned.  As such, it is essential that
  * PK->REQ_USAGE be correctly initialized!
  *
+ * If R_KEYBLOCK is not NULL, then the first result's keyblock is
+ * returned in *R_KEYBLOCK.  This should be freed using
+ * release_kbnode().
+ *
  * Returns 0 on success, GPG_ERR_NO_PUBKEY if there is no public key
  * with the specified key id, or another error code if an error
  * occurs.
@@ -361,24 +388,30 @@ get_pubkey_for_sig (ctrl_t ctrl, PKT_public_key *pk, PKT_signature *sig,
  * If the data was not read from the cache, then the self-signed data
  * has definitely been merged into the public key using
  * merge_selfsigs.  */
-int
-get_pubkey (ctrl_t ctrl, PKT_public_key * pk, u32 * keyid)
+gpg_error_t
+get_pubkey_bykid (ctrl_t ctrl, PKT_public_key *pk, kbnode_t *r_keyblock,
+                  u32 *keyid)
 {
   int internal = 0;
-  int rc = 0;
+  gpg_error_t rc = 0;
+
+  if (r_keyblock)
+    *r_keyblock = NULL;
 
 #if MAX_PK_CACHE_ENTRIES
-  if (pk)
+  if (pk && !r_keyblock)
     {
       /* Try to get it from the cache.  We don't do this when pk is
-         NULL as it does not guarantee that the user IDs are
-         cached. */
+       * NULL as it does not guarantee that the user IDs are cached.
+       * The old get_pubkey_function did not check PK->REQ_USAGE when
+       * reading form the caceh.  This is probably a bug.  Note that
+       * the cache is not used when the caller asked to return the
+       * entire keyblock.  This is because the cache does not
+       * associate the public key wit its primary key.  */
       pk_cache_entry_t ce;
       for (ce = pk_cache; ce; ce = ce->next)
 	{
 	  if (ce->keyid[0] == keyid[0] && ce->keyid[1] == keyid[1])
-	    /* XXX: We don't check PK->REQ_USAGE here, but if we don't
-	       read from the cache, we do check it!  */
 	    {
 	      copy_public_key (pk, ce->pk);
 	      return 0;
@@ -386,6 +419,7 @@ get_pubkey (ctrl_t ctrl, PKT_public_key * pk, u32 * keyid)
 	}
     }
 #endif
+
   /* More init stuff.  */
   if (!pk)
     {
@@ -431,16 +465,18 @@ get_pubkey (ctrl_t ctrl, PKT_public_key * pk, u32 * keyid)
     ctx.req_usage = pk->req_usage;
     rc = lookup (ctrl, &ctx, 0, &kb, &found_key);
     if (!rc)
-      {
-	pk_from_block (pk, kb, found_key);
-      }
+      pk_from_block (pk, kb, found_key);
     getkey_end (ctrl, &ctx);
+    if (!rc && r_keyblock)
+      {
+        *r_keyblock = kb;
+        kb = NULL;
+      }
     release_kbnode (kb);
   }
-  if (!rc)
-    goto leave;
 
-  rc = GPG_ERR_NO_PUBKEY;
+  if (rc)  /* Return a more useful error code.  */
+    rc = gpg_error (GPG_ERR_NO_PUBKEY);
 
 leave:
   if (!rc)
@@ -448,6 +484,14 @@ leave:
   if (internal)
     free_public_key (pk);
   return rc;
+}
+
+
+/* Wrapper for get_pubkey_bykid w/o keyblock return feature.  */
+int
+get_pubkey (ctrl_t ctrl, PKT_public_key *pk, u32 *keyid)
+{
+  return get_pubkey_bykid (ctrl, pk, NULL, keyid);
 }
 
 
@@ -560,28 +604,6 @@ get_pubkey_fast (ctrl_t ctrl, PKT_public_key * pk, u32 * keyid)
      properly set. */
 
   return rc;
-}
-
-
-/* Return the entire keyblock used to create SIG.  This is a
- * specialized version of get_pubkeyblock.
- *
- * FIXME: This is a hack because get_pubkey_for_sig was already called
- * and it could have used a cache to hold the key.  */
-kbnode_t
-get_pubkeyblock_for_sig (ctrl_t ctrl, PKT_signature *sig)
-{
-  const byte *fpr;
-  size_t fprlen;
-  kbnode_t keyblock;
-
-  /* First try the ISSUER_FPR info.  */
-  fpr = issuer_fpr_raw (sig, &fprlen);
-  if (fpr && !get_pubkey_byfpr (ctrl, NULL, &keyblock, fpr, fprlen))
-    return keyblock;
-
-  /* Fallback to use the ISSUER_KEYID.  */
-  return get_pubkeyblock (ctrl, sig->keyid);
 }
 
 
@@ -3700,6 +3722,7 @@ finish_lookup (kbnode_t keyblock, unsigned int req_usage, int want_exact,
   kbnode_t latest_key;
   PKT_public_key *pk;
   int req_prim;
+  int diag_exactfound = 0;
   u32 curtime = make_timestamp ();
 
   if (r_flags)
@@ -3730,11 +3753,10 @@ finish_lookup (kbnode_t keyblock, unsigned int req_usage, int want_exact,
         {
           if (want_exact)
             {
-              if (DBG_LOOKUP)
-                log_debug ("finish_lookup: exact search requested and found\n");
               foundk = k;
               pk = k->pkt->pkt.public_key;
               pk->flags.exact = 1;
+              diag_exactfound = 1;
               break;
             }
           else if (!allow_adsk && (k->pkt->pkt.public_key->pubkey_usage
@@ -3764,10 +3786,14 @@ finish_lookup (kbnode_t keyblock, unsigned int req_usage, int want_exact,
     log_debug ("finish_lookup: checking key %08lX (%s)(req_usage=%x)\n",
 	       (ulong) keyid_from_pk (keyblock->pkt->pkt.public_key, NULL),
 	       foundk ? "one" : "all", req_usage);
+  if (diag_exactfound && DBG_LOOKUP)
+    log_debug ("\texact search requested and found\n");
 
   if (!req_usage)
     {
       latest_key = foundk ? foundk : keyblock;
+      if (DBG_LOOKUP)
+        log_debug ("\tno usage requested - accepting key\n");
       goto found;
     }
 

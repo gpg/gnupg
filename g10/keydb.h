@@ -332,9 +332,15 @@ void getkey_disable_caches(void);
 /* Return the public key used for signature SIG and store it at PK.  */
 gpg_error_t get_pubkey_for_sig (ctrl_t ctrl,
                                 PKT_public_key *pk, PKT_signature *sig,
-                                PKT_public_key *forced_pk);
+                                PKT_public_key *forced_pk,
+                                kbnode_t *r_keyblock);
 
-/* Return the public key with the key id KEYID and store it at PK.  */
+/* Return the public key with the key id KEYID and store it at PK.
+ * Optionally return the entire keyblock.  */
+gpg_error_t get_pubkey_bykid (ctrl_t ctrl, PKT_public_key *pk,
+                              kbnode_t *r_keyblock, u32 *keyid);
+
+/* Same as get_pubkey_bykid but w/o r_keyblock.  */
 int get_pubkey (ctrl_t ctrl, PKT_public_key *pk, u32 *keyid);
 
 /* Same as get_pubkey but with auto LDAP fetch.  */

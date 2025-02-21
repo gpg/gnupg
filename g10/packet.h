@@ -936,7 +936,7 @@ gpg_error_t check_signature (ctrl_t ctrl,
                               const void *extrahash, size_t extrahashlen,
                               PKT_public_key *forced_pk,
                               u32 *r_expiredate, int *r_expired, int *r_revoked,
-                              PKT_public_key **r_pk);
+                             PKT_public_key **r_pk, kbnode_t *r_keyblock);
 
 
 /*-- pubkey-enc.c --*/
