@@ -24,6 +24,7 @@ Options:
         [--url=STRING]    Include STRING as URL (default=$url)
         [--stamp]         Use a stamp file to avoid double signing
         [--dry-run]       Do not actually run osslsigncode
+                          (same as GPG_AUTHCODE_SIGN_MODE=disable)
         [--template]      Print a template for ~/.gnupg-autogenrc
         [--version]       Print version and exit
 EOF
@@ -182,6 +183,9 @@ if [ ! -f $autogenrc ]; then
     echo >&2 "$PGM: hint: use option --template"
     exit 1
 fi
+
+[ "$GPG_AUTHCODE_SIGN_MODE" = "disable" ] && dryrun=yes
+
 
 # Define the cleanup routine for osslsigncode
 cleanup()
