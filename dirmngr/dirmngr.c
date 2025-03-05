@@ -2259,7 +2259,8 @@ start_connection_thread (void *arg)
 
   if (check_nonce (fd, &socket_nonce))
     {
-      log_error ("handler nonce check FAILED\n");
+      log_error ("handler for fd %d FAILED nonce check\n", FD_DBG (fd));
+      assuan_sock_close (fd);
       return NULL;
     }
 

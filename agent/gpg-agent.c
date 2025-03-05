@@ -2877,8 +2877,9 @@ start_connection_thread_std (void *arg)
 
   if (check_nonce (ctrl, &socket_nonce))
     {
-      log_error ("handler 0x%lx nonce check FAILED\n",
-                 (unsigned long) npth_self());
+      log_error ("handler 0x%lx for fd %d FAILED nonce check\n",
+                 (unsigned long) npth_self(), FD_DBG (ctrl->thread_startup.fd));
+      assuan_sock_close (ctrl->thread_startup.fd);
       return NULL;
     }
 
@@ -2894,8 +2895,9 @@ start_connection_thread_extra (void *arg)
 
   if (check_nonce (ctrl, &socket_nonce_extra))
     {
-      log_error ("handler 0x%lx nonce check FAILED\n",
-                 (unsigned long) npth_self());
+      log_error ("handler 0x%lx for fd %d FAILED nonce check\n",
+                 (unsigned long) npth_self(), FD_DBG (ctrl->thread_startup.fd));
+      assuan_sock_close (ctrl->thread_startup.fd);
       return NULL;
     }
 
@@ -2912,8 +2914,9 @@ start_connection_thread_browser (void *arg)
 
   if (check_nonce (ctrl, &socket_nonce_browser))
     {
-      log_error ("handler 0x%lx nonce check FAILED\n",
-                 (unsigned long) npth_self());
+      log_error ("handler 0x%lx for fd %d FAILED nonce check\n",
+                 (unsigned long) npth_self(), FD_DBG (ctrl->thread_startup.fd));
+      assuan_sock_close (ctrl->thread_startup.fd);
       return NULL;
     }
 
@@ -2929,7 +2932,10 @@ start_connection_thread_ssh (void *arg)
   ctrl_t ctrl = arg;
 
   if (check_nonce (ctrl, &socket_nonce_ssh))
-    return NULL;
+    {
+      assuan_sock_close (ctrl->thread_startup.fd);
+      return NULL;
+    }
 
   active_connections++;
   agent_init_default_ctrl (ctrl);
