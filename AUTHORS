@@ -49,7 +49,8 @@ Ben Kibbey  <bjk@luxsci.net>  Assigns past and future changes.
 
 Birger Langkjer <birger.langkjer@image.dk> Translations [da]
 
-Maxim Britov <maxim.britov@gmail.com> Translations [ru]
+Daniel Cerqueira <dan.git@lispclub.com> Translations [pt]
+Pedro Morais <morais@poli.org> Translations [pt_PT]
 
 Daniel Resare  <daniel@resare.com> Translations [sv]
 Per Tunedal    <per@clipanish.com> Translations [sv]
@@ -79,6 +80,7 @@ Gaël Quéri  <gael@lautre.net>  Translations [fr]
     (fixed a lot of typos)
 
 Gregory Steuck <steuck@iname.com> Translations [ru]
+Maxim Britov <maxim.britov@gmail.com> Translations [ru]
 
 Nagy Ferenc László <nfl@nfllab.com> Translations [hu]
 
@@ -128,8 +130,6 @@ Paul Eggert <eggert@twinsun.com>
 
 Pavel I. Shajdo <pshajdo@gmail.com> Translations [ru]
     (man pages)
-
-Pedro Morais <morais@poli.org> Translations [pt_PT]
 
 Rémi Guyomarch	<rguyom@mail.dotcom.fr> Assigns past and future changes.
     (g10/compress.c, g10/encr-data.c,
