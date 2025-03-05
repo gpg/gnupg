@@ -46,6 +46,8 @@ void setup_libassuan_logging (unsigned int *debug_var_address,
                                                  const char *msg));
 void set_libassuan_log_cats (unsigned int newcats);
 
+void log_libassuan_system_error (assuan_fd_t fd);
+
 
 gpg_error_t
 send_pinentry_environment (assuan_context_t ctx,

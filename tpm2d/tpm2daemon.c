@@ -973,9 +973,10 @@ create_server_socket (const char *name, char **r_redir_name,
     log_error (_("error getting nonce for the socket\n"));
  if (rc == -1)
     {
+      gpg_error_t myerr = gpg_error_from_syserror ();
+      log_libassuan_system_error (fd);
       log_error (_("error binding socket to '%s': %s\n"),
-                 unaddr->sun_path,
-                 gpg_strerror (gpg_error_from_syserror ()));
+                 unaddr->sun_path, gpg_strerror (myerr));
       assuan_sock_close (fd);
       tpm2d_exit (2);
     }
@@ -1240,7 +1241,9 @@ handle_connections (gnupg_fd_t listen_fd)
                                    (struct sockaddr *)&paddr, &plen);
           if (fd == GNUPG_INVALID_FD)
             {
-              log_error ("accept failed: %s\n", strerror (errno));
+              gpg_error_t myerr = gpg_error_from_syserror ();
+              log_libassuan_system_error (listen_fd);
+              log_error ("accept failed: %s\n", gpg_strerror (myerr));
             }
           else if ( !(ctrl = xtrycalloc (1, sizeof *ctrl)) )
             {

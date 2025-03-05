@@ -1202,8 +1202,10 @@ create_server_socket (char *name, int cygwin, assuan_sock_nonce_t *nonce)
     {
       /* We use gpg_strerror here because it allows us to get strings
          for some W32 socket error codes.  */
+      gpg_error_t myerr = gpg_error_from_syserror ();
+      log_libassuan_system_error (fd);
       log_error (_("error binding socket to '%s': %s\n"),
-                 unaddr->sun_path, gpg_strerror (gpg_error_from_syserror ()));
+                 unaddr->sun_path, gpg_strerror (myerr));
 
       assuan_sock_close (fd);
       *name = 0; /* Inhibit removal of the socket by cleanup(). */
@@ -1732,8 +1734,10 @@ handle_connections (gnupg_fd_t listen_fd)
                                        (struct sockaddr *)&paddr, &plen);
               if (fd == GNUPG_INVALID_FD)
                 {
+                  gpg_error_t myerr = gpg_error_from_syserror ();
+                  log_libassuan_system_error (listentbl[idx].l_fd);
                   log_error ("accept failed for %s: %s\n",
-                             listentbl[idx].name, strerror (errno));
+                             listentbl[idx].name, gpg_strerror (myerr));
                 }
               else if ( !(ctrl = xtrycalloc (1, sizeof *ctrl)))
                 {

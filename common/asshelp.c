@@ -128,6 +128,21 @@ set_libassuan_log_cats (unsigned int newcats)
 }
 
 
+/* Get the last Windows error from an Assuan socket function and print
+ * the raw error code using log_info.  */
+void
+log_libassuan_system_error (assuan_fd_t fd)
+{
+  int w32err = 0;
+
+  if (assuan_sock_get_flag (fd, "w32_error", &w32err))
+    w32err = -1;  /* Old Libassuan or not Windows.  */
+
+  if (w32err != -1)
+    log_info ("system error code: %d (0x%x)\n", w32err, w32err);
+}
+
+
 
 static gpg_error_t
 send_one_option (assuan_context_t ctx, gpg_err_source_t errsource,

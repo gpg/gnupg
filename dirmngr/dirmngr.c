@@ -1459,6 +1459,7 @@ main (int argc, char **argv)
 	log_error (_("error getting nonce for the socket\n"));
       if (rc == -1)
         {
+          log_libassuan_system_error (fd);
           log_error (_("error binding socket to '%s': %s\n"),
                      serv_addr.sun_path,
                      gpg_strerror (gpg_error_from_syserror ()));
@@ -2484,7 +2485,9 @@ handle_connections (assuan_fd_t listen_fd)
                                    (struct sockaddr *)&paddr, &plen);
 	  if (fd == GNUPG_INVALID_FD)
 	    {
-	      log_error ("accept failed: %s\n", strerror (errno));
+              gpg_error_t myerr = gpg_error_from_syserror ();
+              log_libassuan_system_error (listen_fd);
+	      log_error ("accept failed: %s\n", gpg_strerror (myerr));
 	    }
           else
             {
