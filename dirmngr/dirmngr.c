@@ -976,21 +976,46 @@ my_ntbtls_log_handler (void *opaque, int level, const char *fmt, va_list argv)
 #endif
 
 
+/* Helper for initialize_modules.  */
 static void
 thread_init (void)
 {
-  npth_init ();
+  static int npth_initialized = 0;
+
+  if (!npth_initialized)
+    {
+      npth_initialized++;
+      npth_init ();
+      /* With nPth running we can set the logging callback.  Our
+       * windows implementation does not yet feature the nPth TLS
+       * functions.  */
+#ifndef HAVE_W32_SYSTEM
+      if (npth_key_create (&my_tlskey_current_fd, NULL) == 0)
+        if (npth_setspecific (my_tlskey_current_fd, NULL) == 0)
+          log_set_pid_suffix_cb (pid_suffix_callback);
+#endif /*!HAVE_W32_SYSTEM*/
+      }
   gpgrt_set_syscall_clamp (npth_unprotect, npth_protect);
 
-  /* Now with NPth running we can set the logging callback.  Our
-     windows implementation does not yet feature the NPth TLS
-     functions.  */
-#ifndef HAVE_W32_SYSTEM
-  if (npth_key_create (&my_tlskey_current_fd, NULL) == 0)
-    if (npth_setspecific (my_tlskey_current_fd, NULL) == 0)
-      log_set_pid_suffix_cb (pid_suffix_callback);
-#endif /*!HAVE_W32_SYSTEM*/
+  /* Now that we have set the syscall clamp we need to tell Libgcrypt
+   * that it should get them from libgpg-error.  Note that Libgcrypt
+   * has already been initialized but at that point nPth was not
+   * initialized and thus Libgcrypt could not set its system call
+   * clamp.  */
+  gcry_control (GCRYCTL_REINIT_SYSCALL_CLAMP, 0, 0);
+  assuan_control (ASSUAN_CONTROL_REINIT_SYSCALL_CLAMP, NULL);
 }
+
+
+static void
+initialize_modules (void)
+{
+  thread_init ();
+  cert_cache_init (hkp_cacert_filenames);
+  crl_cache_init ();
+  ks_hkp_init ();
+}
+
 
 
 int
@@ -1317,12 +1342,9 @@ main (int argc, char **argv)
           log_debug ("... okay\n");
         }
 
-
-      thread_init ();
-      cert_cache_init (hkp_cacert_filenames);
-      crl_cache_init ();
-      ks_hkp_init ();
+      initialize_modules ();
       http_register_netactivity_cb (netactivity_action);
+
       start_command_handler (ASSUAN_INVALID_FD, 0);
       shutdown_reaper ();
     }
@@ -1360,10 +1382,7 @@ main (int argc, char **argv)
       else
         log_set_prefix (NULL, 0);
 
-      thread_init ();
-      cert_cache_init (hkp_cacert_filenames);
-      crl_cache_init ();
-      ks_hkp_init ();
+      initialize_modules ();
       http_register_netactivity_cb (netactivity_action);
       handle_connections (3);
       shutdown_reaper ();
@@ -1587,11 +1606,9 @@ main (int argc, char **argv)
             }
         }
 
-      thread_init ();
-      cert_cache_init (hkp_cacert_filenames);
-      crl_cache_init ();
-      ks_hkp_init ();
+      initialize_modules ();
       http_register_netactivity_cb (netactivity_action);
+
       handle_connections (fd);
       shutdown_reaper ();
     }
@@ -1610,10 +1627,8 @@ main (int argc, char **argv)
       memset (&ctrlbuf, 0, sizeof ctrlbuf);
       dirmngr_init_default_ctrl (&ctrlbuf);
 
-      thread_init ();
-      cert_cache_init (hkp_cacert_filenames);
-      crl_cache_init ();
-      ks_hkp_init ();
+      initialize_modules ();
+
       if (!argc)
         rc = crl_cache_load (&ctrlbuf, NULL);
       else
@@ -1634,10 +1649,8 @@ main (int argc, char **argv)
       memset (&ctrlbuf, 0, sizeof ctrlbuf);
       dirmngr_init_default_ctrl (&ctrlbuf);
 
-      thread_init ();
-      cert_cache_init (hkp_cacert_filenames);
-      crl_cache_init ();
-      ks_hkp_init ();
+      initialize_modules ();
+
       rc = crl_fetch (&ctrlbuf, argv[0], &reader);
       if (rc)
         log_error (_("fetching CRL from '%s' failed: %s\n"),
