@@ -315,11 +315,12 @@ pk_from_block (PKT_public_key *pk, kbnode_t keyblock, kbnode_t found_key)
 
 
 /* Specialized version of get_pubkey which retrieves the key based on
- * information in SIG.  In contrast to get_pubkey PK is required.  IF
+ * information in SIG.  In contrast to get_pubkey PK is required.  If
  * FORCED_PK is not NULL, this public key is used and copied to PK.
  * If R_KEYBLOCK is not NULL the entire keyblock is stored there if
  * found and FORCED_PK is not used; if not used or on error NULL is
- * stored there. */
+ * stored there.  Use this function only to find the key for
+ * verification; it can't be used to select a key for signing.  */
 gpg_error_t
 get_pubkey_for_sig (ctrl_t ctrl, PKT_public_key *pk, PKT_signature *sig,
                     PKT_public_key *forced_pk, kbnode_t *r_keyblock)
@@ -339,8 +340,9 @@ get_pubkey_for_sig (ctrl_t ctrl, PKT_public_key *pk, PKT_signature *sig,
 
   /* Make sure to request only keys cabable of signing.  This makes
    * sure that a subkey w/o a valid backsig or with bad usage flags
-   * will be skipped.  */
-  pk->req_usage = PUBKEY_USAGE_SIG;
+   * will be skipped.  We also request the verification mode so that
+   * expired and reoked keys are returned.  */
+  pk->req_usage = (PUBKEY_USAGE_SIG | PUBKEY_USAGE_VERIFY);
 
   /* First try the ISSUER_FPR info.  */
   fpr = issuer_fpr_raw (sig, &fprlen);
@@ -404,10 +406,10 @@ get_pubkey_bykid (ctrl_t ctrl, PKT_public_key *pk, kbnode_t *r_keyblock,
       /* Try to get it from the cache.  We don't do this when pk is
        * NULL as it does not guarantee that the user IDs are cached.
        * The old get_pubkey_function did not check PK->REQ_USAGE when
-       * reading form the caceh.  This is probably a bug.  Note that
+       * reading from the cache.  This is probably a bug.  Note that
        * the cache is not used when the caller asked to return the
        * entire keyblock.  This is because the cache does not
-       * associate the public key wit its primary key.  */
+       * associate the public key with its primary key.  */
       pk_cache_entry_t ce;
       for (ce = pk_cache; ce; ce = ce->next)
 	{
@@ -3724,10 +3726,17 @@ finish_lookup (kbnode_t keyblock, unsigned int req_usage, int want_exact,
   PKT_public_key *pk;
   int req_prim;
   int diag_exactfound = 0;
+  int verify_mode = 0;
   u32 curtime = make_timestamp ();
 
   if (r_flags)
     *r_flags = 0;
+
+
+  /* The verify mode is used to change the behaviour so that we can
+   * return an expired or revoked key for signature verification.  */
+  verify_mode = ((req_usage & PUBKEY_USAGE_VERIFY)
+                 && (req_usage & PUBKEY_USAGE_SIG));
 
 #define USAGE_MASK  (PUBKEY_USAGE_SIG|PUBKEY_USAGE_ENC|PUBKEY_USAGE_CERT)
   req_usage &= USAGE_MASK;
@@ -3784,9 +3793,9 @@ finish_lookup (kbnode_t keyblock, unsigned int req_usage, int want_exact,
     }
 
   if (DBG_LOOKUP)
-    log_debug ("finish_lookup: checking key %08lX (%s)(req_usage=%x)\n",
+    log_debug ("finish_lookup: checking key %08lX (%s)(req_usage=%x%s)\n",
 	       (ulong) keyid_from_pk (keyblock->pkt->pkt.public_key, NULL),
-	       foundk ? "one" : "all", req_usage);
+	       foundk ? "one" : "all", req_usage, verify_mode? ",verify":"");
   if (diag_exactfound && DBG_LOOKUP)
     log_debug ("\texact search requested and found\n");
 
@@ -3850,28 +3859,29 @@ finish_lookup (kbnode_t keyblock, unsigned int req_usage, int want_exact,
 	    }
 
           n_subkeys++;
-	  if (pk->flags.revoked)
+	  if (!verify_mode && pk->flags.revoked)
 	    {
 	      if (DBG_LOOKUP)
 		log_debug ("\tsubkey has been revoked\n");
               n_revoked_or_expired++;
 	      continue;
 	    }
-	  if (pk->has_expired && !opt.ignore_expiration)
+	  if (!verify_mode && pk->has_expired && !opt.ignore_expiration)
 	    {
 	      if (DBG_LOOKUP)
 		log_debug ("\tsubkey has expired\n");
               n_revoked_or_expired++;
 	      continue;
 	    }
-	  if (pk->timestamp > curtime && !opt.ignore_valid_from)
+	  if (!verify_mode && pk->timestamp > curtime && !opt.ignore_valid_from)
 	    {
 	      if (DBG_LOOKUP)
 		log_debug ("\tsubkey not yet valid\n");
 	      continue;
 	    }
 
-          if (want_secret)
+
+          if (!verify_mode && want_secret)
             {
               int secret_key_avail = agent_probe_secret_key (NULL, pk);
 
@@ -3898,7 +3908,8 @@ finish_lookup (kbnode_t keyblock, unsigned int req_usage, int want_exact,
             }
 
 	  if (DBG_LOOKUP)
-	    log_debug ("\tsubkey might be fine\n");
+	    log_debug ("\tsubkey might be fine%s\n",
+                       verify_mode? " for verification":"");
 	  /* In case a key has a timestamp of 0 set, we make sure
 	     that it is used.  A better change would be to compare
 	     ">=" but that might also change the selected keys and
@@ -3939,12 +3950,12 @@ finish_lookup (kbnode_t keyblock, unsigned int req_usage, int want_exact,
 	    log_debug ("\tprimary key usage does not match: "
 		       "want=%x have=%x\n", req_usage, pk->pubkey_usage);
 	}
-      else if (pk->flags.revoked)
+      else if (!verify_mode && pk->flags.revoked)
 	{
 	  if (DBG_LOOKUP)
 	    log_debug ("\tprimary key has been revoked\n");
 	}
-      else if (pk->has_expired)
+      else if (!verify_mode && pk->has_expired)
 	{
 	  if (DBG_LOOKUP)
 	    log_debug ("\tprimary key has expired\n");
@@ -3952,7 +3963,8 @@ finish_lookup (kbnode_t keyblock, unsigned int req_usage, int want_exact,
       else /* Okay.  */
 	{
 	  if (DBG_LOOKUP)
-	    log_debug ("\tprimary key may be used\n");
+	    log_debug ("\tprimary key may be used%s\n",
+                       verify_mode? " for verification":"");
 	  latest_key = keyblock;
 	}
     }

@@ -60,6 +60,7 @@
 #define PUBKEY_USAGE_RENC    1024                /* Restricted encryption.  */
 #define PUBKEY_USAGE_TIME    2048                /* Timestamp use.  */
 
+#define PUBKEY_USAGE_VERIFY  16384               /* Verify only modifier.  */
 
 /* The usage bits which can be derived from the algo.  */
 #define PUBKEY_USAGE_BASIC_MASK  (PUBKEY_USAGE_SIG|PUBKEY_USAGE_ENC\
