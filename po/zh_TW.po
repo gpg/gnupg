@@ -502,6 +502,11 @@ msgstr "嘗試從執行中的 %s 奪取 socket\n"
 msgid "a gpg-agent is already running - not starting a new one\n"
 msgstr "已經有一份 gpg-agent 在執行了 - 不會再啟動一份新的\n"
 
+#, fuzzy, c-format
+#| msgid "key %s: removed multiple subkey binding\n"
+msgid "socket file removed - retrying binding\n"
+msgstr "金鑰 %s: 多重附帶子鑰已移除\n"
+
 #, c-format
 msgid "error getting nonce for the socket\n"
 msgstr "為 socket 取得 nonce 時出錯\n"

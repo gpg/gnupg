@@ -552,6 +552,11 @@ msgstr "poging om socket te stelen van actieve %s\n"
 msgid "a gpg-agent is already running - not starting a new one\n"
 msgstr "er is al een gpg-agent actief - er wordt geen nieuwe opgestart\n"
 
+#, fuzzy, c-format
+#| msgid "key %s: removed multiple subkey binding\n"
+msgid "socket file removed - retrying binding\n"
+msgstr "sleutel %s: meervoudige koppeling van de subsleutel verwijderd\n"
+
 #, c-format
 msgid "error getting nonce for the socket\n"
 msgstr "fout bij het verkrijgen van nonce voor de socket\n"

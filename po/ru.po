@@ -542,6 +542,11 @@ msgstr ""
 msgid "a gpg-agent is already running - not starting a new one\n"
 msgstr "агент gpg уже запущен - еще один, новый, запущен не будет\n"
 
+#, fuzzy, c-format
+#| msgid "key %s: removed multiple subkey binding\n"
+msgid "socket file removed - retrying binding\n"
+msgstr "ключ %s: удалена многократная связь подключей\n"
+
 #, c-format
 msgid "error getting nonce for the socket\n"
 msgstr "ошибка получения разового кода для сокета\n"

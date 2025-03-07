@@ -509,6 +509,11 @@ msgstr "正尝试从运行的 %s 处夺取套接字\n"
 msgid "a gpg-agent is already running - not starting a new one\n"
 msgstr "有一个 gpg-agent 实例正在运行 - 无须启动新的实例\n"
 
+#, fuzzy, c-format
+#| msgid "key %s: removed multiple subkey binding\n"
+msgid "socket file removed - retrying binding\n"
+msgstr "密钥 %s：已删除多重子密钥绑定\n"
+
 #, c-format
 msgid "error getting nonce for the socket\n"
 msgstr "获取套接字 nonce 时出现错误\n"

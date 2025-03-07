@@ -530,6 +530,11 @@ msgstr ""
 "une instance de gpg-agent fonctionne déjà —\n"
 "pas de démarrage d'une nouvelle instance\n"
 
+#, fuzzy, c-format
+#| msgid "key %s: removed multiple subkey binding\n"
+msgid "socket file removed - retrying binding\n"
+msgstr "clef %s : suppression de lien multiple aux sous-clefs\n"
+
 #, c-format
 msgid "error getting nonce for the socket\n"
 msgstr "erreur de lecture du « nonce » du socket\n"

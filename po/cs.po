@@ -548,6 +548,11 @@ msgstr "zkouší se ukrást socket z běžícího programu %s\n"
 msgid "a gpg-agent is already running - not starting a new one\n"
 msgstr "gpg-agent již běží – nový nebude spuštěn\n"
 
+#, fuzzy, c-format
+#| msgid "key %s: removed multiple subkey binding\n"
+msgid "socket file removed - retrying binding\n"
+msgstr "klíč %s: smazána vícenásobná vazba podklíče\n"
+
 #, c-format
 msgid "error getting nonce for the socket\n"
 msgstr "chyba při získávání soli pro socket\n"

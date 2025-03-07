@@ -548,6 +548,11 @@ msgid "a gpg-agent is already running - not starting a new one\n"
 msgstr "gpg-agent nu este disponibil în această sesiune\n"
 
 #, fuzzy, c-format
+#| msgid "key %s: removed multiple subkey binding\n"
+msgid "socket file removed - retrying binding\n"
+msgstr "cheia %s: am şters multiple legături de subchei\n"
+
+#, fuzzy, c-format
 msgid "error getting nonce for the socket\n"
 msgstr "eroare la obţinere noului PIN: %s\n"
 

@@ -555,6 +555,10 @@ msgid "a gpg-agent is already running - not starting a new one\n"
 msgstr "gpg-agent ei ole käytettävissä tässä istunnossa\n"
 
 #, fuzzy, c-format
+msgid "socket file removed - retrying binding\n"
+msgstr "avain %08lX: moninkertainen aliavainriippuvuus poistettu\n"
+
+#, fuzzy, c-format
 msgid "error getting nonce for the socket\n"
 msgstr "virhe luotaessa salasanaa: %s\n"
 

@@ -543,6 +543,10 @@ msgid "a gpg-agent is already running - not starting a new one\n"
 msgstr "gpg-agent non está dispoñible nesta sesión\n"
 
 #, fuzzy, c-format
+msgid "socket file removed - retrying binding\n"
+msgstr "chave %08lX: eliminouse unha ligazón de sub-chave múltiple\n"
+
+#, fuzzy, c-format
 msgid "error getting nonce for the socket\n"
 msgstr "erro ao crea-lo contrasinal: %s\n"
 

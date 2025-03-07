@@ -514,6 +514,11 @@ msgstr "稼働中の %s からソケットを奪おうとします\n"
 msgid "a gpg-agent is already running - not starting a new one\n"
 msgstr "gpg-agentは既に実行されています - 新しいものをスタートさせません\n"
 
+#, fuzzy, c-format
+#| msgid "key %s: removed multiple subkey binding\n"
+msgid "socket file removed - retrying binding\n"
+msgstr "鍵%s: 多重副鍵の対応を削除します\n"
+
 #, c-format
 msgid "error getting nonce for the socket\n"
 msgstr "ソケットのナンス取得エラー\n"

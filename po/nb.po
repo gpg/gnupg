@@ -538,6 +538,11 @@ msgstr ""
 msgid "a gpg-agent is already running - not starting a new one\n"
 msgstr "en gpg-agent kjører allerede. Lar være å starte en ny\n"
 
+#, fuzzy, c-format
+#| msgid "key %s: removed multiple subkey binding\n"
+msgid "socket file removed - retrying binding\n"
+msgstr "nøkkel %s: fjernet flere undernøkkelbindinger\n"
+
 #, c-format
 msgid "error getting nonce for the socket\n"
 msgstr "feil under henting av sokkel-anledning\n"

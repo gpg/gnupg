@@ -538,6 +538,10 @@ msgid "a gpg-agent is already running - not starting a new one\n"
 msgstr "gpg-agent ei ole sesses sessioonis kasutatav\n"
 
 #, fuzzy, c-format
+msgid "socket file removed - retrying binding\n"
+msgstr "võti %08lX: vigane mitme alamvõtme seos\n"
+
+#, fuzzy, c-format
 msgid "error getting nonce for the socket\n"
 msgstr "viga parooli loomisel: %s\n"
 

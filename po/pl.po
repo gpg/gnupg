@@ -513,6 +513,11 @@ msgstr "próba kradzieży gniazda od działającego %s\n"
 msgid "a gpg-agent is already running - not starting a new one\n"
 msgstr "gpg-agent już działa - nieuruchamianie nowego\n"
 
+#, fuzzy, c-format
+#| msgid "key %s: removed multiple subkey binding\n"
+msgid "socket file removed - retrying binding\n"
+msgstr "klucz %s: usunięto wielokrotne dowiązanie podklucza\n"
+
 #, c-format
 msgid "error getting nonce for the socket\n"
 msgstr "błąd podczas pobierania nonce z gniazda\n"

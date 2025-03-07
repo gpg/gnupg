@@ -515,6 +515,11 @@ msgstr "çalışmakta olan %s ögesinden soket aşırılmaya çalışılıyor\n"
 msgid "a gpg-agent is already running - not starting a new one\n"
 msgstr "çalışan bir gpg-agent zaten var - bir yenisi başlatılmayacak\n"
 
+#, fuzzy, c-format
+#| msgid "key %s: removed multiple subkey binding\n"
+msgid "socket file removed - retrying binding\n"
+msgstr "%s anahtarı: Çok sayıda yardımcı anahtar bağlantısı kaldırıldı\n"
+
 #, c-format
 msgid "error getting nonce for the socket\n"
 msgstr "soket için tuz alınırken hata\n"

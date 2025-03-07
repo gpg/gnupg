@@ -538,6 +538,11 @@ msgstr ""
 msgid "a gpg-agent is already running - not starting a new one\n"
 msgstr "gpg-agent вже запущено, потреби у запуску нової копії немає\n"
 
+#, fuzzy, c-format
+#| msgid "key %s: removed multiple subkey binding\n"
+msgid "socket file removed - retrying binding\n"
+msgstr "ключ %s: вилучено кратне зв’язування підключів\n"
+
 #, c-format
 msgid "error getting nonce for the socket\n"
 msgstr "помилка під час спроби отримання поточного стану сокета\n"

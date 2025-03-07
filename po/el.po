@@ -541,6 +541,10 @@ msgid "a gpg-agent is already running - not starting a new one\n"
 msgstr "ο gpg-agent δεν είναι διαθέσιμος σε αυτή τη συνεδρία\n"
 
 #, fuzzy, c-format
+msgid "socket file removed - retrying binding\n"
+msgstr "κλειδί %08lX: αφαιρέθηκε η δέσμευση πολλαπλού υποκλειδιού\n"
+
+#, fuzzy, c-format
 msgid "error getting nonce for the socket\n"
 msgstr "σφάλμα στη δημιουργία της φράσης κλειδί: %s\n"
 

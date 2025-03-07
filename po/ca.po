@@ -573,6 +573,10 @@ msgid "a gpg-agent is already running - not starting a new one\n"
 msgstr "gpg-agent no està disponible en aquesta sessió\n"
 
 #, fuzzy, c-format
+msgid "socket file removed - retrying binding\n"
+msgstr "clau %08lX: s'ha eliminat un enllaç de subclau múltiple\n"
+
+#, fuzzy, c-format
 msgid "error getting nonce for the socket\n"
 msgstr "error en crear «%s»: %s\n"
 

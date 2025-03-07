@@ -521,6 +521,11 @@ msgstr ""
 msgid "a gpg-agent is already running - not starting a new one\n"
 msgstr "un gpg-agent è già in esecuzione - non iniziare uno nuovo\n"
 
+#, fuzzy, c-format
+#| msgid "key %s: removed multiple subkey binding\n"
+msgid "socket file removed - retrying binding\n"
+msgstr "chiave %s: rimossa l'associazione di più sottochiavi\n"
+
 #, c-format
 msgid "error getting nonce for the socket\n"
 msgstr "errore durante il recupero di un errore per il socket\n"

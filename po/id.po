@@ -543,6 +543,10 @@ msgid "a gpg-agent is already running - not starting a new one\n"
 msgstr "gpg-agent tidak tersedia untuk sesi ini\n"
 
 #, fuzzy, c-format
+msgid "socket file removed - retrying binding\n"
+msgstr "kunci %08lX: hapus subkey binding ganda\n"
+
+#, fuzzy, c-format
 msgid "error getting nonce for the socket\n"
 msgstr "kesalahan penciptaan passphrase: %s\n"
 

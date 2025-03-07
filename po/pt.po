@@ -577,6 +577,11 @@ msgstr "tentando roubar o socket de executar %s\n"
 msgid "a gpg-agent is already running - not starting a new one\n"
 msgstr "um gpg-agent já está em execução - não iniciando um novo\n"
 
+#, fuzzy, c-format
+#| msgid "key %s: removed multiple subkey binding\n"
+msgid "socket file removed - retrying binding\n"
+msgstr "chave %s: vinculação de várias subchaves removida\n"
+
 #, c-format
 msgid "error getting nonce for the socket\n"
 msgstr "erro ao obter nonce para o socket\n"

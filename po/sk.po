@@ -543,6 +543,10 @@ msgid "a gpg-agent is already running - not starting a new one\n"
 msgstr "gpg-agent nie je v tomto sedení dostupný\n"
 
 #, fuzzy, c-format
+msgid "socket file removed - retrying binding\n"
+msgstr "kľúč %08lX: zmazaná viacnásobná väzba podkľúča\n"
+
+#, fuzzy, c-format
 msgid "error getting nonce for the socket\n"
 msgstr "chyba pri vytváraní hesla: %s\n"
 

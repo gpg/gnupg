@@ -538,6 +538,10 @@ msgid "a gpg-agent is already running - not starting a new one\n"
 msgstr "GPG ügynök nem elérhető ebben a munkafolyamatban.\n"
 
 #, fuzzy, c-format
+msgid "socket file removed - retrying binding\n"
+msgstr "%08lX kulcs: Eltávolítottam a többszörös alkulcskötést.\n"
+
+#, fuzzy, c-format
 msgid "error getting nonce for the socket\n"
 msgstr "Hiba a jelszó létrehozásakor: %s.\n"
 

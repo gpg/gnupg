@@ -541,6 +541,10 @@ msgid "a gpg-agent is already running - not starting a new one\n"
 msgstr "gpg-agent ne estas disponata en ĉi tiu sesio\n"
 
 #, fuzzy, c-format
+msgid "socket file removed - retrying binding\n"
+msgstr "ŝlosilo %08lX: nevalida subŝlosila bindado\n"
+
+#, fuzzy, c-format
 msgid "error getting nonce for the socket\n"
 msgstr "eraro dum kreado de pasfrazo: %s\n"
 
