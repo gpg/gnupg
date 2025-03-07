@@ -1445,7 +1445,7 @@ write_keybinding (ctrl_t ctrl, kbnode_t root,
                             cache_nonce);
   if (err)
     {
-      log_error ("make_keysig_packeto failed: %s\n", gpg_strerror (err));
+      log_error ("make_keysig_packet failed: %s\n", gpg_strerror (err));
       return err;
     }
 
