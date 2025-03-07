@@ -1,13 +1,20 @@
-Noteworthy changes in version 2.5.5 (unreleased)
+Noteworthy changes in version 2.5.5 (2025-03-07)
 ------------------------------------------------
 
   * gpg: Fix a verification DoS due to a malicious subkey in the
     keyring.  [T7527]
 
+  * dirmngr: Fix possible hangs due to blocking connection requests.
+    [T6606, T7434]
+
+  * w32: On socket nonce mismatch close the socket.  [T7434]
+
+  * w32: Print more detailed diagnostics for IPC errors.
+
   * GPGME is not any more distributed with the Windows installer.
     Please install gpg4win to get gpgme version.
 
-  See-also: gnupg-announce/2025q1/000xxx.html
+  See-also: gnupg-announce/2025q1/000491.html
   Release-info: https://dev.gnupg.org/T7530
 
 
