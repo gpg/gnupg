@@ -9,7 +9,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnupg-2.4.1\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"PO-Revision-Date: 2025-01-09 09:12+0100\n"
+"PO-Revision-Date: 2025-03-07 13:50+0100\n"
 "Last-Translator: Werner Koch <wk@gnupg.org>\n"
 "Language-Team: German\n"
 "Language: de\n"
@@ -526,6 +526,10 @@ msgstr "Versuche den Socket des laufenden %s zu übernehmen\n"
 #, c-format
 msgid "a gpg-agent is already running - not starting a new one\n"
 msgstr "Ein gpg-agent läuft bereits - ein weiterer wird nicht gestartet\n"
+
+#, c-format
+msgid "socket file removed - retrying binding\n"
+msgstr "Datei des Sockets gelöscht - versuche erneut zu binden\n"
 
 #, c-format
 msgid "error getting nonce for the socket\n"
