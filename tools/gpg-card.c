@@ -1183,7 +1183,7 @@ print_card_list (estream_t fp, card_info_t info, strlist_t cards,
 
 /* The LIST command.  This also updates INFO if needed. */
 static gpg_error_t
-cmd_list (card_info_t info, char *argstr)
+cmd_list (card_info_t info, char *argstr, int use_opt_cards)
 {
   gpg_error_t err;
   int opt_cards, opt_apps, opt_info, opt_reread, opt_no_key_lookup;
@@ -1213,8 +1213,8 @@ cmd_list (card_info_t info, char *argstr)
        "  --no-key-lookup do not list matching OpenPGP or X.509 keys\n"
        , 0);
 
-  opt_cards = has_leading_option (argstr, "--cards");
-  opt_apps = has_leading_option (argstr, "--apps");
+  opt_cards = (use_opt_cards || has_leading_option (argstr, "--cards"));
+  opt_apps = (use_opt_cards || has_leading_option (argstr, "--apps"));
   opt_info = has_leading_option (argstr, "--info");
   opt_reread = has_leading_option (argstr, "--reread");
   opt_shadow = has_leading_option (argstr, "--shadow");
@@ -1281,11 +1281,13 @@ cmd_list (card_info_t info, char *argstr)
       need_learn = 1;
     }
 
-  if (opt_cards || opt_apps)
+  if ((opt_cards || opt_apps) && !use_opt_cards)
     {
       /* Note that with option --apps CARDS is here the list of all
        * apps.  Format is "SERIALNO APPNAME {APPNAME}".  We print the
-       * card number in the first column. */
+       * card number in the first column.  If use_opt_cards (ie. "ll")
+       * is used we do not get here but handle this below so that we
+       * can also switch cards with the ll command. */
       if (opt_apps)
         err = scd_applist (&cards, opt_cards);
       else
@@ -1300,7 +1302,10 @@ cmd_list (card_info_t info, char *argstr)
         {
           int i, cardno;
 
-          err = scd_cardlist (&cards);
+          if (use_opt_cards)
+            err = scd_applist (&cards, 1);
+          else
+            err = scd_cardlist (&cards);
           if (err)
             goto leave;
 
@@ -1356,6 +1361,8 @@ cmd_list (card_info_t info, char *argstr)
 
       if (err)
         ;
+      else if (use_opt_cards)
+        print_card_list (fp, info, cards, 0);
       else if (opt_info)
         print_card_list (fp, info, cards, 1);
       else
@@ -3882,7 +3889,7 @@ cmd_history (card_info_t info, char *argstr)
 enum cmdids
   {
     cmdNOP = 0,
-    cmdQUIT, cmdHELP, cmdLIST, cmdRESET, cmdVERIFY,
+    cmdQUIT, cmdHELP, cmdLIST, cmdLISTCARDS, cmdRESET, cmdVERIFY,
     cmdNAME, cmdURL, cmdFETCH, cmdLOGIN, cmdLANG, cmdSALUT, cmdCAFPR,
     cmdFORCESIG, cmdGENERATE, cmdPASSWD, cmdPRIVATEDO, cmdWRITECERT,
     cmdREADCERT, cmdWRITEKEY,  cmdUNBLOCK, cmdFACTRST, cmdKDFSETUP,
@@ -3904,6 +3911,7 @@ static struct
   { "?"       ,  cmdHELP,       NULL },
   { "list"    ,  cmdLIST,       N_("list all available data")},
   { "l"       ,  cmdLIST,       NULL },
+  { "ll"      ,  cmdLISTCARDS,  NULL },
   { "name"    ,  cmdNAME,       N_("change card holder's name")},
   { "url"     ,  cmdURL,        N_("change URL to retrieve key")},
   { "fetch"   ,  cmdFETCH,      N_("fetch the key specified in the card URL")},
@@ -4038,7 +4046,8 @@ dispatch_command (card_info_t info, const char *orig_command)
         }
       break;
 
-    case cmdLIST:         err = cmd_list (info, argstr); break;
+    case cmdLIST:         err = cmd_list (info, argstr, 0); break;
+    case cmdLISTCARDS:    err = cmd_list (info, argstr, 1); break;
     case cmdVERIFY:       err = cmd_verify (info, argstr); break;
     case cmdAUTH:         err = cmd_authenticate (info, argstr); break;
     case cmdNAME:         err = cmd_name (info, argstr); break;
@@ -4150,7 +4159,7 @@ interactive_loop (void)
         }
       else if (redisplay)
         {
-          err = cmd_list (info, "");
+          err = cmd_list (info, "", 0);
           if (err)
             {
               err = fixup_scd_errors (err);
@@ -4290,7 +4299,8 @@ interactive_loop (void)
             }
           break;
 
-        case cmdLIST:      err = cmd_list (info, argstr); break;
+        case cmdLIST:      err = cmd_list (info, argstr, 0); break;
+        case cmdLISTCARDS: err = cmd_list (info, argstr, 1); break;
         case cmdVERIFY:
           err = cmd_verify (info, argstr);
           if (!err)
