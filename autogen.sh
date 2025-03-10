@@ -15,7 +15,7 @@
 # configure it for the respective package.  It is maintained as part of
 # GnuPG and source copied by other packages.
 #
-# Version: 2025-02-21
+# Version: 2025-03-10
 
 configure_ac="configure.ac"
 
@@ -256,24 +256,23 @@ if [ "$myhost" = "find-version" ]; then
       matchstr3="$package-$major-base"
       vers="$major.$minor.$micro"
     fi
+    matchexcl="--exclude $package-*beta*"
 
     beta=no
     if [ -e .git ]; then
       ingit=yes
-      tmp=$(git describe --match "${matchstr1}" --long 2>/dev/null)
+      tmp=$(git describe --match "${matchstr1}" $matchexcl --long 2>/dev/null)
       if [ -n "$tmp" ]; then
           tmp=$(echo "$tmp" | sed s/^"$package"// \
                     | awk -F- '$3!=0 && $3 !~ /^beta/ {print"-beta"$3}')
-      fi
-      if [ -z "$tmp" ]; then
+      else
           # (due tof "-base" in the tag we need to take the 4th field)
-          tmp=$(git describe --match "${matchstr2}" --long 2>/dev/null)
+          tmp=$(git describe --match "${matchstr2}" $matchexcl --long 2>/dev/null)
           if [ -n "$tmp" ]; then
               tmp=$(echo "$tmp" | sed s/^"$package"// \
                         | awk -F- '$4!=0 && $4 !~ /^beta/ {print"-beta"$4}')
-          fi
-          if [ -z "$tmp" -a -n "${matchstr3}" ]; then
-              tmp=$(git describe --match "${matchstr3}" --long 2>/dev/null)
+          elif [ -n "${matchstr3}" ]; then
+              tmp=$(git describe --match "${matchstr3}" $matchexcl --long 2>/dev/null)
               if [ -n "$tmp" ]; then
                   tmp=$(echo "$tmp" | sed s/^"$package"// \
                           | awk -F- '$4!=0 && $4 !~ /^beta/ {print"-beta"$4}')
