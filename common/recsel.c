@@ -64,6 +64,7 @@ struct recsel_expr_s
   unsigned int not:1;   /* Negate operators. */
   unsigned int disjun:1;/* Start of a disjunction.  */
   unsigned int xcase:1; /* String match is case sensitive.  */
+  unsigned int lefta:1; /* String match is left anchored.  */
   const char *value;    /* (Points into NAME.)  */
   long numvalue;        /* strtol of VALUE.  */
   char name[1];         /* Name of the property.  */
@@ -140,6 +141,7 @@ find_next_lc (char *string)
  * Values for <flag> must be space separated and any of:
  *
  *   --  VALUE spans to the end of the expression.
+ *   -^  The substring match is left anchored.
  *   -c  The string match in this part is done case-sensitive.
  *   -t  Do not trim leading and trailing spaces from VALUE.
  *       Note that a space after <op> is here required.
@@ -176,6 +178,7 @@ recsel_parse_expr (recsel_expr_t *selector, const char *expression)
   int toend = 0;
   int xcase = 0;
   int notrim = 0;
+  int lefta = 0;
   int disjun = 0;
   char *next_lc = NULL;
 
@@ -206,6 +209,7 @@ recsel_parse_expr (recsel_expr_t *selector, const char *expression)
         case '-': toend = 1; break;
         case 'c': xcase = 1; break;
         case 't': notrim = 1; break;
+        case '^': lefta = 1; break;
         default:
           log_error ("invalid flag '-%c' in expression\n", *expr);
           recsel_release (se_head);
@@ -235,6 +239,7 @@ recsel_parse_expr (recsel_expr_t *selector, const char *expression)
   se->not = 0;
   se->disjun = disjun;
   se->xcase = xcase;
+  se->lefta = lefta;
 
   if (!se_head)
     se_head = se;
@@ -463,9 +468,10 @@ recsel_dump (recsel_expr_t selector)
   log_debug ("--- Begin selectors ---\n");
   for (se = selector; se; se = se->next)
     {
-      log_debug ("%s %s %s %s '%s'\n",
+      log_debug ("%s %s %s %s %s '%s'\n",
                  se==selector? "  ": (se->disjun? "||":"&&"),
                  se->xcase?  "-c":"  ",
+                 se->lefta?  "-^":"  ",
                  se->name,
                  se->op == SELECT_SAME?    (se->not? "<>":"= "):
                  se->op == SELECT_SUB?     (se->not? "!~":"=~"):
@@ -529,9 +535,15 @@ recsel_select (recsel_expr_t selector,
               break;
             case SELECT_SUB:
               if (se->xcase)
-                result = !!gnupg_memstr (value, valuelen, se->value);
+                result = (gnupg_memstr (value, valuelen, se->value)
+                          && (!se->lefta
+                              || (selen <= valuelen
+                                  && !memcmp (value, se->value, selen))));
               else
-                result = !!memistr (value, valuelen, se->value);
+                result = (memistr (value, valuelen, se->value)
+                          && (!se->lefta
+                              || (selen <= valuelen
+                                  && !memicmp (value, se->value, selen))));
               break;
             case SELECT_NONEMPTY:
               result = !!valuelen;

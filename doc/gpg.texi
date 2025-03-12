@@ -2561,8 +2561,8 @@ gpg can track the origin of a key. Certain origins are implicitly
 known (e.g., keyserver, web key directory) and set.  For a standard
 import the origin of the keys imported can be set with this option.
 To list the possible values use "help" for @var{string}.  Some origins
-can store an optional @var{url} argument.  That URL can appended to
-@var{string} after a comma.
+can store an optional @var{url} argument; such an URL can be appended to
+@var{string} delimited by a comma.
 
 @item --import-options @var{parameters}
 @opindex import-options
@@ -4389,6 +4389,8 @@ are:
 @table @asis
   @item --
   @var{VALUE} spans to the end of the expression.
+  @item -^
+  The substring match is left anchored.
   @item -c
   The string match in this part is done case-sensitive.
   @item -t

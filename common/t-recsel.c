@@ -225,8 +225,26 @@ run_test_2 (void)
   if (!recsel_select (se, test_2_getval, NULL))
     fail (0, 0);
   FREEEXPR();
-  ADDEXPR ("uid =~ @");
+  ADDEXPR ("uid !~ @");
+  if (recsel_select (se, test_2_getval, NULL))
+    fail (0, 0);
+
+  FREEEXPR();
+  ADDEXPR ("uid =~ foo@");
   if (!recsel_select (se, test_2_getval, NULL))
+    fail (0, 0);
+  FREEEXPR();
+  ADDEXPR ("uid =~ oo@");
+  if (!recsel_select (se, test_2_getval, NULL))
+    fail (0, 0);
+  FREEEXPR();
+  /* Again but with left anchored substring.  */
+  ADDEXPR ("-^ uid =~ foo@");
+  if (!recsel_select (se, test_2_getval, NULL))
+    fail (0, 0);
+  FREEEXPR();
+  ADDEXPR ("-^ uid =~ oo@");
+  if (recsel_select (se, test_2_getval, NULL))
     fail (0, 0);
 
   FREEEXPR();
