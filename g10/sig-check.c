@@ -943,7 +943,8 @@ check_signature_over_key_or_uid (ctrl_t ctrl, PKT_public_key *signer,
               rc = get_pubkey_for_sig (ctrl, signer, sig, NULL);
               if (rc)
                 {
-                  xfree (signer);
+                  if (signer_alloced != 1)
+                    xfree (signer);
                   signer = NULL;
                   signer_alloced = 0;
                   goto leave;
