@@ -1394,8 +1394,11 @@ handle_connections (gnupg_fd_t listen_fd)
       ret = npth_eselect (nfd+1, &read_fdset, NULL, NULL, t,
                           events, &events_set);
       saved_errno = errno;
-      if (events_set & 1)
-        continue;
+      if ((events_set & 1))
+        {
+          if (opt.debug)
+            log_debug ("the_event seen and reset by npth_eselect\n");
+        }
 #endif
 
       if (ret == -1 && saved_errno != EINTR)
