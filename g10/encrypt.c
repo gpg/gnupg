@@ -1121,7 +1121,7 @@ reencrypt_to_new_recipients (ctrl_t ctrl, int armor, const char *filename,
   if (err)
     goto leave;
 
-  /* The write the old recipients in --add-recipients mode.  */
+  /* Write the old recipients in --add-recipients mode.  */
   for (count=0, el = pkenc_list; el; el = el->next, count++)
     if (!ctrl->clear_recipients)
       {

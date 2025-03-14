@@ -1816,7 +1816,7 @@ insert_key_origin_uid (PKT_user_id *uid, u32 curtime,
       /* We insert origin information on a UID only when we received
        * them via the Web Key Directory or a DANE record.  The key we
        * receive here from the WKD has been filtered to contain only
-       * the user ID as looked up in the WKD.  For a DANE origin we
+       * the user ID as looked up in the WKD.  For a DANE origin
        * this should also be the case.  Thus we will see here only one
        * user id.  */
       uid->keyorg = origin;
