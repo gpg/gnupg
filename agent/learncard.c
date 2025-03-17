@@ -295,10 +295,14 @@ send_cert_back (ctrl_t ctrl, const char *id, void *assuan_context)
   return 0;
 }
 
+
 /* Perform the learn operation.  If ASSUAN_CONTEXT is not NULL and
-   SEND is true all new certificates are send back via Assuan.  */
+ * SEND is true all new certificates are send back via Assuan.  If
+ * DEMAND_SN is not NULL it has a string with the serial number of the
+ * card requested. */
 int
-agent_handle_learn (ctrl_t ctrl, int send, void *assuan_context, int force)
+agent_handle_learn (ctrl_t ctrl, int send, void *assuan_context, int force,
+                    const char *demand_sn)
 {
   int rc;
   struct kpinfo_cb_parm_s parm;
@@ -328,7 +332,7 @@ agent_handle_learn (ctrl_t ctrl, int send, void *assuan_context, int force)
   cparm.ctrl = ctrl;
 
   /* Now gather all the available info. */
-  rc = agent_card_learn (ctrl, kpinfo_cb, &parm, certinfo_cb, &cparm,
+  rc = agent_card_learn (ctrl, demand_sn, kpinfo_cb, &parm, certinfo_cb, &cparm,
                          sinfo_cb, &sparm);
   if (!rc && (parm.error || cparm.error || sparm.error))
     rc = parm.error? parm.error : cparm.error? cparm.error : sparm.error;

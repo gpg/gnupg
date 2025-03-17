@@ -1275,14 +1275,17 @@ learn_cb (void *opaque, const void *buffer, size_t length)
   return 0;
 }
 
-/* Call the agent to learn about a smartcard */
+
+/* Call the agent to learn about a smartcard.  If SERIALNO is not NULL
+ * switch to the card with that s/n first.  */
 int
-gpgsm_agent_learn (ctrl_t ctrl)
+gpgsm_agent_learn (ctrl_t ctrl, const char *serialno)
 {
   int rc;
   struct learn_parm_s learn_parm;
   membuf_t data;
   size_t len;
+  char line[ASSUAN_LINELENGTH];
 
   rc = start_agent (ctrl);
   if (rc)
@@ -1297,7 +1300,10 @@ gpgsm_agent_learn (ctrl_t ctrl)
   learn_parm.ctrl = ctrl;
   learn_parm.ctx = agent_ctx;
   learn_parm.data = &data;
-  rc = assuan_transact (agent_ctx, "LEARN --send",
+  snprintf (line, sizeof line, "LEARN --send%s%s",
+            serialno? " -- ":"",
+            serialno? serialno:"");
+  rc = assuan_transact (agent_ctx, line,
                         learn_cb, &learn_parm,
                         NULL, NULL,
                         learn_status_cb, &learn_parm);

@@ -291,11 +291,12 @@ Import the certificates from the PEM or binary encoded files as well as
 from signed-only messages.  This command may also be used to import a
 secret key from a PKCS#12 file.
 
-@item --learn-card
+@item --learn-card [@var{serialno}]
 @opindex learn-card
-Read information about the private keys from the smartcard and import
-the certificates from there.  This command utilizes the @command{gpg-agent}
-and in turn the @command{scdaemon}.
+Read information about the private keys from the current smartcard and import
+the certificates from there.  This command utilizes @command{gpg-agent}
+and in turn @command{scdaemon}.  If @var{serialno} is provided the
+system first makes that card the current one.
 
 @item --change-passphrase @var{user_id}
 @opindex change-passphrase

@@ -384,27 +384,13 @@ cmd_serialno (assuan_context_t ctx, char *line)
 
 
 
-static const char hlp_switchcard[] =
-  "SWITCHCARD [<serialno>]\n"
-  "\n"
-  "Make the card with SERIALNO the current card.\n"
-  "The command \"getinfo card_list\" can be used to list\n"
-  "the serial numbers of inserted and known cards.  Note\n"
-  "that the command \"SERIALNO\" can be used to refresh\n"
-  "the list of known cards.  A simple SERIALNO status\n"
-  "is printed on success.";
+/* Helper for cmd_swicthcard and cmd_learn.  */
 static gpg_error_t
-cmd_switchcard (assuan_context_t ctx, char *line)
+switchcard_core (ctrl_t ctrl, const char *line)
 {
-  ctrl_t ctrl = assuan_get_pointer (ctx);
   gpg_error_t err = 0;
   unsigned char *sn_bin = NULL;
   size_t sn_bin_len = 0;
-
-  if ((err = open_card (ctrl)))
-    return err;
-
-  line = skip_options (line);
 
   if (*line)
     {
@@ -422,6 +408,30 @@ cmd_switchcard (assuan_context_t ctx, char *line)
  leave:
   xfree (sn_bin);
   return err;
+}
+
+
+static const char hlp_switchcard[] =
+  "SWITCHCARD [<serialno>]\n"
+  "\n"
+  "Make the card with SERIALNO the current card.\n"
+  "The command \"getinfo card_list\" can be used to list\n"
+  "the serial numbers of inserted and known cards.  Note\n"
+  "that the command \"SERIALNO\" can be used to refresh\n"
+  "the list of known cards.  A simple SERIALNO status\n"
+  "is printed on success.";
+static gpg_error_t
+cmd_switchcard (assuan_context_t ctx, char *line)
+{
+  ctrl_t ctrl = assuan_get_pointer (ctx);
+  gpg_error_t err;
+
+  if ((err = open_card (ctrl)))
+    return err;
+
+  line = skip_options (line);
+
+  return switchcard_core (ctrl, line);
 }
 
 
@@ -458,7 +468,8 @@ cmd_switchapp (assuan_context_t ctx, char *line)
 
 
 static const char hlp_learn[] =
-  "LEARN [--force] [--keypairinfo] [--reread] [--multi]\n"
+  "LEARN [--force] [--keypairinfo] [--reread] [--multi] KEYGRIP\n"
+  "LEARN [--demand=<serialno>] [--force] [--keypairinfo] [--reread] [--multi]\n"
   "\n"
   "Learn all useful information of the currently inserted card.  When\n"
   "used without the force options, the command might do an INQUIRE\n"
@@ -529,6 +540,8 @@ static const char hlp_learn[] =
   "\n"
   "The URL to be used for locating the entire public key.\n"
   "  \n"
+  "If KEYGRIP is given the card holding a key with that keygrip is used.\n"
+  "If --demand is used the card with the specified S/N is used.\n"
   "Note, that this function may even be used on a locked card.";
 static gpg_error_t
 cmd_learn (assuan_context_t ctx, char *line)
@@ -539,16 +552,36 @@ cmd_learn (assuan_context_t ctx, char *line)
   int opt_multi = has_option (line, "--multi");
   int opt_reread = has_option (line, "--reread");
   int opt_force = has_option (line, "--force");
+  const char *opt_demand;
   unsigned int flags;
   card_t card;
   const char *keygrip = NULL;
 
-  if ((rc = open_card (ctrl)))
-    return rc;
+  opt_demand = has_option_name (line, "--demand");
+  if (opt_demand)
+    {
+      if (*opt_demand != '=')
+        return set_error (GPG_ERR_ASS_PARAMETER, "missing value for option");
+      line = (char *)++opt_demand;
+      while (*line && !spacep (line))
+        line++;
+      if (*line)
+        *line++ = 0;
+    }
 
   line = skip_options (line);
   if (strlen (line) == 40)
     keygrip = line;
+
+  if ((rc = open_card (ctrl)))
+    return rc;
+
+  if (opt_demand)
+    {
+      rc = switchcard_core (ctrl, opt_demand);
+      if (rc)
+        return rc;
+    }
 
   card = card_get (ctrl, keygrip);
   if (!card)

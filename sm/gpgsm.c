@@ -2269,11 +2269,11 @@ main ( int argc, char **argv)
 
 
     case aLearnCard:
-      if (argc)
+      if (argc > 1)
         wrong_args ("--learn-card");
       else
         {
-          int rc = gpgsm_agent_learn (&ctrl);
+          int rc = gpgsm_agent_learn (&ctrl, argc? *argv : NULL);
           if (rc)
             log_error ("error learning card: %s\n", gpg_strerror (rc));
         }

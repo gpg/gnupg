@@ -260,10 +260,14 @@ learn_status_cb (void *opaque, const char *line)
   return err;
 }
 
+
 /* Perform the LEARN command and return a list of all private keys
-   stored on the card. */
+ * stored on the card.  If DEMAND_SN is given the info is returned for
+ * the card with that S/N instead of the current card.  This may then
+ * switch the current card.  */
 int
 agent_card_learn (ctrl_t ctrl,
+                  const char *demand_sn,
                   void (*kpinfo_cb)(void*, const char *),
                   void *kpinfo_cb_arg,
                   void (*certinfo_cb)(void*, const char *),
@@ -273,6 +277,7 @@ agent_card_learn (ctrl_t ctrl,
 {
   int rc;
   struct learn_parm_s parm;
+  char line[ASSUAN_LINELENGTH];
 
   rc = start_scd (ctrl);
   if (rc)
@@ -285,7 +290,13 @@ agent_card_learn (ctrl_t ctrl,
   parm.certinfo_cb_arg = certinfo_cb_arg;
   parm.sinfo_cb = sinfo_cb;
   parm.sinfo_cb_arg = sinfo_cb_arg;
-  rc = assuan_transact (daemon_ctx (ctrl), "LEARN --force",
+
+  if (demand_sn && *demand_sn)
+    snprintf (line, sizeof line, "LEARN --demand=%s --force", demand_sn);
+  else
+    snprintf (line, sizeof line, "LEARN --force");
+
+  rc = assuan_transact (daemon_ctx (ctrl), line,
                         NULL, NULL, NULL, NULL,
                         learn_status_cb, &parm);
   if (rc)

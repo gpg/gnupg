@@ -731,7 +731,7 @@ int agent_tpm2d_pkdecrypt (ctrl_t ctrl, const unsigned char *cipher,
 			   char **r_buf, size_t *r_len);
 
 /*-- call-scd.c --*/
-int agent_card_learn (ctrl_t ctrl,
+int agent_card_learn (ctrl_t ctrl, const char *demand_sn,
                       void (*kpinfo_cb)(void*, const char *),
                       void *kpinfo_cb_arg,
                       void (*certinfo_cb)(void*, const char *),
@@ -780,7 +780,8 @@ gpg_error_t agent_card_keyinfo (ctrl_t ctrl, const char *keygrip,
                                 int cap, struct card_key_info_s **result);
 
 /*-- learncard.c --*/
-int agent_handle_learn (ctrl_t ctrl, int send, void *assuan_context, int force);
+int agent_handle_learn (ctrl_t ctrl, int send, void *assuan_context,
+                        int force, const char *demand_sn);
 
 
 /*-- cvt-openpgp.c --*/

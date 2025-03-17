@@ -2376,27 +2376,31 @@ cmd_get_confirmation (assuan_context_t ctx, char *line)
 
 
 static const char hlp_learn[] =
-  "LEARN [--send] [--sendinfo] [--force]\n"
+  "LEARN [--send] [--sendinfo] [--force] [SERIALNO]\n"
   "\n"
   "Learn something about the currently inserted smartcard.  With\n"
   "--sendinfo information about the card is returned; with --send\n"
   "the available certificates are returned as D lines; with --force\n"
-  "private key storage will be updated by the result.";
+  "private key storage will be updated by the result. With SERIALNO\n"
+  "given the current card is first switched to the specified one.";
 static gpg_error_t
 cmd_learn (assuan_context_t ctx, char *line)
 {
   ctrl_t ctrl = assuan_get_pointer (ctx);
   gpg_error_t err;
   int send, sendinfo, force;
+  const char *demand_sn;
 
   send = has_option (line, "--send");
   sendinfo = send? 1 : has_option (line, "--sendinfo");
   force = has_option (line, "--force");
+  line = skip_options (line);
+  demand_sn = *line? line : NULL;
 
   if (ctrl->restricted)
     return leave_cmd (ctx, gpg_error (GPG_ERR_FORBIDDEN));
 
-  err = agent_handle_learn (ctrl, send, sendinfo? ctx : NULL, force);
+  err = agent_handle_learn (ctrl, send, sendinfo? ctx : NULL, force, demand_sn);
   return leave_cmd (ctx, err);
 }
 
