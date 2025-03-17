@@ -908,15 +908,15 @@ keyboxd_runtime_change (int killflag)
   int cmdidx;
 
   pgmname = gnupg_module_name (GNUPG_MODULE_NAME_CONNECT_AGENT);
-  argv[i++] = "--no-autostart";
-  argv[i++] = "--keyboxd";
-  cmdidx = i;
-  argv[i++] = killflag? "KILLKEYBOXD" : "RELOADKEYBOXD";
   if (!gnupg_default_homedir_p ())
     {
       argv[i++] = "--homedir";
       argv[i++] = gnupg_homedir ();
     }
+  argv[i++] = "--no-autostart";
+  argv[i++] = "--keyboxd";
+  cmdidx = i;
+  argv[i++] = killflag? "KILLKEYBOXD" : "RELOADKEYBOXD";
   argv[i] = NULL;
   log_assert (i < DIM(argv));
 
