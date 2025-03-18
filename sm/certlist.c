@@ -395,7 +395,8 @@ gpgsm_add_to_certlist (ctrl_t ctrl, const char *name, int secret,
                   else
                     wrong_usage = rc;
                 }
-              else if (gpg_err_code (rc) == GPG_ERR_CERT_EXPIRED)
+              else if (gpg_err_code (rc) == GPG_ERR_CERT_EXPIRED
+                       || gpg_err_code (rc) == GPG_ERR_CERT_TOO_YOUNG)
                 {
                   ksba_cert_release (cert);
                   cert = NULL;
