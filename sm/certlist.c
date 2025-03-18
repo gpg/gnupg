@@ -350,6 +350,7 @@ gpgsm_add_to_certlist (ctrl_t ctrl, const char *name, int secret,
       else
         {
           int wrong_usage = 0;
+          int expired_rc = 0;
           char *first_subject = NULL;
           char *first_issuer = NULL;
 
@@ -398,6 +399,8 @@ gpgsm_add_to_certlist (ctrl_t ctrl, const char *name, int secret,
               else if (gpg_err_code (rc) == GPG_ERR_CERT_EXPIRED
                        || gpg_err_code (rc) == GPG_ERR_CERT_TOO_YOUNG)
                 {
+                  if (!expired_rc)
+                    expired_rc = rc;
                   ksba_cert_release (cert);
                   cert = NULL;
                   log_info (_("looking for another certificate\n"));
@@ -407,6 +410,8 @@ gpgsm_add_to_certlist (ctrl_t ctrl, const char *name, int secret,
           /* We want the error code from the first match in this case. */
           if (rc && wrong_usage)
             rc = wrong_usage;
+          else if (rc && expired_rc)
+            rc = expired_rc;
 
           if (!rc)
             {
@@ -436,7 +441,7 @@ gpgsm_add_to_certlist (ctrl_t ctrl, const char *name, int secret,
                      keybox).  */
                   if (!keydb_get_cert (kh, &cert2))
                     {
-                      int tmp;
+                      gpg_err_code_t tmp;
 
                       if (!current_time_loaded)
                         {
@@ -444,25 +449,31 @@ gpgsm_add_to_certlist (ctrl_t ctrl, const char *name, int secret,
                           current_time_loaded = 1;
                         }
 
-                      tmp =
-                        (same_subject_issuer (first_subject,
-                                             first_issuer,
-                                             cert2)
-                         && ((gpg_err_code (
-                               secret? gpgsm_cert_use_sign_p (cert2, 0)
-                                     : gpgsm_cert_use_encrypt_p (cert2)
-                               )
-                              ) == GPG_ERR_WRONG_KEY_USAGE
-                             || (gpg_err_code (
+                      if (same_subject_issuer (first_subject,
+                                               first_issuer,
+                                               cert2))
+                        {
+                          tmp = gpg_err_code (
+                                   secret? gpgsm_cert_use_sign_p (cert2, 0)
+                                         : gpgsm_cert_use_encrypt_p (cert2)
+                                                ) == GPG_ERR_WRONG_KEY_USAGE;
+                          if (!tmp)
+                            {
+                              switch (gpg_err_code (
                                   check_validity_period_cm (current_time,
                                                             current_time,
                                                             cert,
                                                             exp_time,
-                                                            0, NULL, 0, 1)
-                                  ) == GPG_ERR_CERT_EXPIRED
-                                )
-                             )
-                         );
+                                                            0, NULL, 0, 1)))
+                                {
+                                case GPG_ERR_CERT_EXPIRED:
+                                case GPG_ERR_CERT_TOO_YOUNG: tmp = 1; break;
+                                default: tmp = 0; break;
+                                }
+                            }
+                        }
+                      else
+                        tmp = 0;
 
                       if (tmp)
                         gpgsm_add_cert_to_certlist (ctrl, cert2,
@@ -470,7 +481,7 @@ gpgsm_add_to_certlist (ctrl_t ctrl, const char *name, int secret,
                       else
                         {
                           if (is_cert_in_certlist (cert2, dup_certs))
-                            tmp = 1;
+                            tmp = GPG_ERR_TRUE;
                         }
 
                       ksba_cert_release (cert2);
