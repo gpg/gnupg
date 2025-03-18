@@ -337,9 +337,10 @@ gpgsm_add_to_certlist (ctrl_t ctrl, const char *name, int secret,
   KEYDB_SEARCH_DESC desc;
   KEYDB_HANDLE kh = NULL;
   ksba_cert_t cert = NULL;
-  ksba_isotime_t current_time = {0, };
-  ksba_isotime_t exp_time = {0, };
-  int current_time_loaded = 0;
+  ksba_isotime_t current_time;
+  ksba_isotime_t exp_time = {0};
+
+  gnupg_get_isotime (current_time);
 
   rc = classify_user_id (name, &desc, 0);
   if (!rc)
@@ -370,15 +371,9 @@ gpgsm_add_to_certlist (ctrl_t ctrl, const char *name, int secret,
               rc = secret? gpgsm_cert_use_sign_p (cert, 0)
                          : gpgsm_cert_use_encrypt_p (cert);
               if (!rc)
-                {
-                  if (!current_time_loaded)
-                    {
-                      gnupg_get_isotime (current_time);
-                      current_time_loaded = 1;
-                    }
-                  rc = check_validity_period_cm (current_time, current_time,
-                                                 cert, exp_time, 0, NULL, 0, 0);
-                }
+                rc = check_validity_period_cm (current_time, current_time,
+                                               cert, exp_time, 0, NULL, 0, 0);
+
               if (gpg_err_code (rc) == GPG_ERR_WRONG_KEY_USAGE)
                 {
                   /* There might be another certificate with the
@@ -442,12 +437,6 @@ gpgsm_add_to_certlist (ctrl_t ctrl, const char *name, int secret,
                   if (!keydb_get_cert (kh, &cert2))
                     {
                       gpg_err_code_t tmp;
-
-                      if (!current_time_loaded)
-                        {
-                          gnupg_get_isotime (current_time);
-                          current_time_loaded = 1;
-                        }
 
                       if (same_subject_issuer (first_subject,
                                                first_issuer,
@@ -620,6 +609,7 @@ gpgsm_find_cert (ctrl_t ctrl,
               ksba_isotime_t notbefore = "";
               const unsigned char *image = NULL;
               size_t length = 0;
+
               if (allow_ambiguous)
                 {
                   /* We want to return the newest certificate */
