@@ -376,7 +376,7 @@ gpgsm_add_to_certlist (ctrl_t ctrl, const char *name, int secret,
                       current_time_loaded = 1;
                     }
                   rc = check_validity_period_cm (current_time, current_time,
-                                                 cert, exp_time, 0, NULL, 0);
+                                                 cert, exp_time, 0, NULL, 0, 0);
                 }
               if (gpg_err_code (rc) == GPG_ERR_WRONG_KEY_USAGE)
                 {
@@ -458,7 +458,7 @@ gpgsm_add_to_certlist (ctrl_t ctrl, const char *name, int secret,
                                                             current_time,
                                                             cert,
                                                             exp_time,
-                                                            0, NULL, 0)
+                                                            0, NULL, 0, 1)
                                   ) == GPG_ERR_CERT_EXPIRED
                                 )
                              )

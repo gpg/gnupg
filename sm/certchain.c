@@ -1430,15 +1430,18 @@ check_validity_period (ksba_isotime_t current_time,
 }
 
 /* This is a variant of check_validity_period used with the chain
-   model.  The extra constraint here is that notBefore and notAfter
-   must exists and if the additional argument CHECK_TIME is given this
-   time is used to check the validity period of SUBJECT_CERT.  */
+ * model.  The extra constraint here is that notBefore and notAfter
+ * must exists and if the additional argument CHECK_TIME is given this
+ * time is used to check the validity period of SUBJECT_CERT.  With
+ * NO_LOG_EXPIRED the function does not log diagnostics about cert
+ * expiration et al.  */
 gpg_error_t
 check_validity_period_cm (ksba_isotime_t current_time,
                           ksba_isotime_t check_time,
                           ksba_cert_t subject_cert,
                           ksba_isotime_t exptime,
-                          int listmode, estream_t listfp, int depth)
+                          int listmode, estream_t listfp, int depth,
+                          int no_log_expired)
 {
   gpg_error_t err;
   ksba_isotime_t not_before, not_after;
@@ -1454,22 +1457,26 @@ check_validity_period_cm (ksba_isotime_t current_time,
     }
   if (!*not_before || !*not_after)
     {
-      do_list (1, listmode, listfp,
-               _("required certificate attributes missing: %s%s%s"),
-               !*not_before? "notBefore":"",
-               (!*not_before && !*not_after)? ", ":"",
-               !*not_before? "notAfter":"");
+      if (!no_log_expired)
+        do_list (1, listmode, listfp,
+                 _("required certificate attributes missing: %s%s%s"),
+                 !*not_before? "notBefore":"",
+                 (!*not_before && !*not_after)? ", ":"",
+                 !*not_before? "notAfter":"");
       return gpg_error (GPG_ERR_BAD_CERT);
     }
   if (strcmp (not_before, not_after) > 0 )
     {
-      do_list (1, listmode, listfp,
-               _("certificate with invalid validity"));
-      log_info ("  (valid from ");
-      dump_isotime (not_before);
-      log_printf (" expired at ");
-      dump_isotime (not_after);
-      log_printf (")\n");
+      if (!no_log_expired)
+        {
+          do_list (1, listmode, listfp,
+                   _("certificate with invalid validity"));
+          log_info ("  (valid from ");
+          dump_isotime (not_before);
+          log_printf (" expired at ");
+          dump_isotime (not_after);
+          log_printf (")\n");
+        }
       return gpg_error (GPG_ERR_BAD_CERT);
     }
 
@@ -1480,15 +1487,18 @@ check_validity_period_cm (ksba_isotime_t current_time,
 
   if (strcmp (current_time, not_before) < 0 )
     {
-      do_list (1, listmode, listfp,
-               depth ==  0 ? _("certificate not yet valid") :
-               depth == -1 ? _("root certificate not yet valid") :
-               /* other */   _("intermediate certificate not yet valid"));
-      if (!listmode)
+      if (!no_log_expired)
         {
-          log_info ("  (valid from ");
-          dump_isotime (not_before);
-          log_printf (")\n");
+          do_list (1, listmode, listfp,
+                   depth ==  0 ? _("certificate not yet valid") :
+                   depth == -1 ? _("root certificate not yet valid") :
+                   /* other */   _("intermediate certificate not yet valid"));
+          if (!listmode)
+            {
+              log_info ("  (valid from ");
+              dump_isotime (not_before);
+              log_printf (")\n");
+            }
         }
       return gpg_error (GPG_ERR_CERT_TOO_YOUNG);
     }
@@ -1499,14 +1509,15 @@ check_validity_period_cm (ksba_isotime_t current_time,
     {
       /* Note that we don't need a case for the root certificate
          because its own consistency has already been checked.  */
-      do_list(opt.ignore_expiration?0:1, listmode, listfp,
+      if (!no_log_expired)
+        do_list (opt.ignore_expiration?0:1, listmode, listfp,
               depth == 0 ?
               _("signature not created during lifetime of certificate") :
               depth == 1 ?
               _("certificate not created during lifetime of issuer") :
               _("intermediate certificate not created during lifetime "
                 "of issuer"));
-      if (!listmode)
+      if (!listmode && !no_log_expired)
         {
           log_info (depth== 0? _("  (  signature created at ") :
                     /* */      _("  (certificate created at ") );
@@ -1737,7 +1748,7 @@ do_validate_chain (ctrl_t ctrl, ksba_cert_t cert, ksba_isotime_t checktime_arg,
       if ( (flags & VALIDATE_FLAG_CHAIN_MODEL) )
         rc = check_validity_period_cm (current_time, check_time, subject_cert,
                                        exptime, listmode, listfp,
-                                       (depth && is_root)? -1: depth);
+                                       (depth && is_root)? -1: depth, 0);
       else
         rc = check_validity_period (current_time, subject_cert,
                                     exptime, listmode, listfp,
