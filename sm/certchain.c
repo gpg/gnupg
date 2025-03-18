@@ -1433,7 +1433,7 @@ check_validity_period (ksba_isotime_t current_time,
    model.  The extra constraint here is that notBefore and notAfter
    must exists and if the additional argument CHECK_TIME is given this
    time is used to check the validity period of SUBJECT_CERT.  */
-static gpg_error_t
+gpg_error_t
 check_validity_period_cm (ksba_isotime_t current_time,
                           ksba_isotime_t check_time,
                           ksba_cert_t subject_cert,

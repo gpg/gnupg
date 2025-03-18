@@ -441,6 +441,11 @@ int gpgsm_validate_chain (ctrl_t ctrl, ksba_cert_t cert,
                           ksba_isotime_t r_exptime,
                           int listmode, estream_t listfp,
                           unsigned int flags, unsigned int *retflags);
+gpg_error_t check_validity_period_cm (ksba_isotime_t current_time,
+                          ksba_isotime_t check_time,
+                          ksba_cert_t subject_cert,
+                          ksba_isotime_t exptime,
+                          int listmode, estream_t listfp, int depth);
 int gpgsm_basic_cert_check (ctrl_t ctrl, ksba_cert_t cert);
 
 /*-- certlist.c --*/

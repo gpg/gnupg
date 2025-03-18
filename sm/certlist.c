@@ -337,6 +337,9 @@ gpgsm_add_to_certlist (ctrl_t ctrl, const char *name, int secret,
   KEYDB_SEARCH_DESC desc;
   KEYDB_HANDLE kh = NULL;
   ksba_cert_t cert = NULL;
+  ksba_isotime_t current_time = {0, };
+  ksba_isotime_t exp_time = {0, };
+  int current_time_loaded = 0;
 
   rc = classify_user_id (name, &desc, 0);
   if (!rc)
@@ -365,10 +368,20 @@ gpgsm_add_to_certlist (ctrl_t ctrl, const char *name, int secret,
                 }
               rc = secret? gpgsm_cert_use_sign_p (cert, 0)
                          : gpgsm_cert_use_encrypt_p (cert);
+              if (!rc)
+                {
+                  if (!current_time_loaded)
+                    {
+                      gnupg_get_isotime (current_time);
+                      current_time_loaded = 1;
+                    }
+                  rc = check_validity_period_cm (current_time, current_time,
+                                                 cert, exp_time, 0, NULL, 0);
+                }
               if (gpg_err_code (rc) == GPG_ERR_WRONG_KEY_USAGE)
                 {
                   /* There might be another certificate with the
-                     correct usage, so we try again */
+                   * correct usage, so we try again */
                   if (!wrong_usage
                       || same_subject_issuer (first_subject, first_issuer,cert))
                     {
@@ -381,7 +394,13 @@ gpgsm_add_to_certlist (ctrl_t ctrl, const char *name, int secret,
                     }
                   else
                     wrong_usage = rc;
-
+                }
+              else if (gpg_err_code (rc) == GPG_ERR_CERT_EXPIRED)
+                {
+                  ksba_cert_release (cert);
+                  cert = NULL;
+                  log_info (_("looking for another certificate\n"));
+                  goto get_next;
                 }
             }
           /* We want the error code from the first match in this case. */
@@ -416,14 +435,34 @@ gpgsm_add_to_certlist (ctrl_t ctrl, const char *name, int secret,
                      keybox).  */
                   if (!keydb_get_cert (kh, &cert2))
                     {
-                      int tmp = (same_subject_issuer (first_subject,
-                                                      first_issuer,
-                                                      cert2)
-                                 && ((gpg_err_code (
-                                      secret? gpgsm_cert_use_sign_p (cert2,0)
-                                            : gpgsm_cert_use_encrypt_p (cert2)
-                                      )
-                                     )  == GPG_ERR_WRONG_KEY_USAGE));
+                      int tmp;
+
+                      if (!current_time_loaded)
+                        {
+                          gnupg_get_isotime (current_time);
+                          current_time_loaded = 1;
+                        }
+
+                      tmp =
+                        (same_subject_issuer (first_subject,
+                                             first_issuer,
+                                             cert2)
+                         && ((gpg_err_code (
+                               secret? gpgsm_cert_use_sign_p (cert2, 0)
+                                     : gpgsm_cert_use_encrypt_p (cert2)
+                               )
+                              ) == GPG_ERR_WRONG_KEY_USAGE
+                             || (gpg_err_code (
+                                  check_validity_period_cm (current_time,
+                                                            current_time,
+                                                            cert,
+                                                            exp_time,
+                                                            0, NULL, 0)
+                                  ) == GPG_ERR_CERT_EXPIRED
+                                )
+                             )
+                         );
+
                       if (tmp)
                         gpgsm_add_cert_to_certlist (ctrl, cert2,
                                                     &dup_certs, 0);
