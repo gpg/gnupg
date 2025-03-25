@@ -1,6 +1,25 @@
 Noteworthy changes in version 2.5.6 (unreleased)
 ------------------------------------------------
 
+  * gpg: Add a flag to the filter expressions for left anchored
+    substring match.  [rGc12b7d047e]
+
+  * gpg: Fix double free of internal data.  [T7547]
+
+  * gpgsm: Extend --learn-card by an optional s/n argument.  [T7379]
+
+  * gpgsm: Skip expired certificates when selection a certificate by
+    subject.  [rG4cf83273e8]
+
+  * scd: Fix posssible lockup on Windows due to a lost select
+    result.  [rGa7ec3792c5]
+
+  * card: New command "ll" as alias for "list --cards".  [rGd6ee7adebe]
+
+  * gpgconf: Fix reload and kill of keyboxd.  [T7569]
+
+  Release-info: https://dev.gnupg.org/T7586
+
 
 Noteworthy changes in version 2.5.5 (2025-03-07)
 ------------------------------------------------

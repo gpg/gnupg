@@ -448,6 +448,7 @@ set_one_pref (int val, int type, const char *item, byte *buf, int *nbuf)
  * "pref" (something like: "S10 S3 H3 H2 Z2 Z1") or the actual
  * cipher/hash/compress names.  Use NULL to set the default
  * preferences.  Returns: 0 = okay
+ * PERSONAL is either 0 or one PREFTYPE_*
  */
 int
 keygen_set_std_prefs (const char *string,int personal)
