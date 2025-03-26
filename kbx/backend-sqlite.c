@@ -956,18 +956,36 @@ run_select_statement (ctrl_t ctrl, be_sqlite_local_t ctx,
                                extra, " ORDER BY p.ubid", &ctx->select_stmt);
       if (!err)
         {
-          s = desc[descidx].u.name;
-          if (s && *s == '<' && s[1])
-            { /* It is common that the indicator for exact addrspec
-               * search has not been removed.  We do this here.  */
-              s++;
-              n = strlen (s);
-              if (n > 1 && s[n-1] == '>')
-                n--;
+          if (desc[descidx].mode == KEYDB_SEARCH_MODE_MAIL)
+            {
+              char *mail = xtrystrdup (desc[descidx].u.name);
+
+              if (!mail)
+                err = gpg_error_from_syserror ();
+              else
+                {
+                  ascii_strlwr (mail);
+                  s = mail;
+                  if (*s == '<' && s[1])
+                    { /* It is common that the indicator for exact addrspec
+                       * search has not been removed.  We do this here.  */
+                      s++;
+                      n = strlen (s);
+                      if (n > 1 && s[n-1] == '>')
+                        n--;
+                    }
+                  else
+                    n = strlen (s);
+                  err = run_sql_bind_ntext (ctx->select_stmt, 1, s, n);
+                  xfree (mail);
+                }
             }
           else
-            n = s? strlen (s):0;
-          err = run_sql_bind_ntext (ctx->select_stmt, 1, s, n);
+            {
+              s = desc[descidx].u.name;
+              n = s? strlen (s):0;
+              err = run_sql_bind_ntext (ctx->select_stmt, 1, s, n);
+            }
         }
       break;
 
