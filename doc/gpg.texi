@@ -4591,10 +4591,10 @@ interface is described in the subsection ``How to manage your keys''.
 @subsection Unattended key generation
 
 The command @option{--generate-key} may be used along with the option
-@option{--batch} for unattended key generation.  This is the most
-flexible way of generating keys, but it is also the most complex one.
-Consider using the quick key manipulation interface described in the
-previous subsection ``The quick key manipulation interface''.
+@option{--batch} for unattended key generation.  This is the legacy
+way of generating key.  New applications should consider the use of
+the quick key manipulation interface described in the previous
+subsection ``The quick key manipulation interface''.
 
 The parameters for the key are either read from stdin or given as a
 file on the command line.  The format of the parameter file is as
@@ -4722,8 +4722,10 @@ Default is to use the Pinentry dialog to ask for a passphrase.
 @item Name-Real: @var{name}
 @itemx Name-Comment: @var{comment}
 @itemx Name-Email: @var{email}
+@itemx User-Id: @var{full-user-id}
 The three parts of a user name.  Remember to use UTF-8 encoding here.
-If you don't give any of them, no user ID is created.
+As an alternative "User-Id" can be used to specify the entire user-id
+with a single UTF-8 string.
 
 @item Expire-Date: @var{iso-date}|(@var{number}[d|w|m|y])
 Set the expiration date for the key (and the subkey).  It may either

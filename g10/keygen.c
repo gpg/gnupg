@@ -5195,6 +5195,7 @@ read_parameter_file (ctrl_t ctrl, const char *fname )
 	{ "Name-Real",      pNAMEREAL },
 	{ "Name-Email",     pNAMEEMAIL },
 	{ "Name-Comment",   pNAMECOMMENT },
+        { "User-Id",        pUSERID },
 	{ "Expire-Date",    pEXPIREDATE },
 	{ "Subkey-Expire-Date", pSUBKEYEXPIREDATE },
 	{ "Creation-Date",  pCREATIONDATE },
