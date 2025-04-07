@@ -7749,18 +7749,18 @@ retry:
 		error = dns_connect(so->udp, (struct sockaddr *)&so->remote, dns_sa_len(&so->remote));
 		dns_trace_sys_connect(so->trace, so->udp, SOCK_DGRAM, (struct sockaddr *)&so->remote, error);
 
-		/* Linux returns EINVAL when address was bound to
-		   localhost and it's external IP address now.  */
+#if __linux
+		/* Linux returns EINVAL when address was once bound to
+		   localhost and the socket is reused for an external
+		   IP address now.  */
 		if (error == EINVAL) {
 			struct sockaddr unspec_addr;
 			memset (&unspec_addr, 0, sizeof unspec_addr);
 			unspec_addr.sa_family = AF_UNSPEC;
 			connect(so->udp, &unspec_addr, sizeof unspec_addr);
 			goto udp_connect_retry;
-		} else if (error == ECONNREFUSED)
-			/* Error for previous socket operation may
-			   be reserved(?) asynchronously. */
-			goto udp_connect_retry;
+		}
+#endif
 
 		if (error)
 			goto error;
