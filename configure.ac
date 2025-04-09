@@ -29,7 +29,7 @@ min_automake_version="1.16.3"
 m4_define([mym4_package],[gnupg])
 m4_define([mym4_major], [2])
 m4_define([mym4_minor], [2])
-m4_define([mym4_micro], [47])
+m4_define([mym4_micro], [48])
 
 # To start a new development series, i.e a new major or minor number
 # you need to mark an arbitrary commit before the first beta release
