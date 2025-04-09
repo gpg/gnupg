@@ -1,5 +1,11 @@
-Noteworthy changes in version 2.2.47 (unreleased)
+Noteworthy changes in version 2.2.47 (2025-04-09)
 -------------------------------------------------
+
+  * gpg: Fix double free of internal data in --no-sig-cache mode.
+    [T7547]
+
+  * scd: Fix posssible lockup on Windows due to lost select results.
+    [T2982]
 
 
 Noteworthy changes in version 2.2.46 (2025-01-07)
