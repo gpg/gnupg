@@ -1486,6 +1486,84 @@ show_configs_one_file (const char *fname, int global, estream_t outfp,
 }
 
 
+/* Read registry string wrapper which also support the GnuPG Registry
+ * emulation.  */
+static char *
+my_read_reg_string (const char *name, int *r_hklm_fallback)
+{
+#ifdef HAVE_W32_SYSTEM
+  return read_w32_reg_string (name, r_hklm_fallback);
+#elif GPGRT_VERSION_NUMBER >= 0x013400 /* 1.52 */
+  static gpgrt_nvc_t registry;
+  static int no_registry;
+  const char *s;
+  gpgrt_nve_t e;
+  char *namebuffer = NULL;
+  char *p;
+
+  if (r_hklm_fallback)
+    *r_hklm_fallback = 0; /* We only support HKLM */
+
+  if (no_registry)
+    return NULL;
+
+  /* Read and parse the registry if not yet done.  */
+  if (!registry)
+    {
+      gpg_error_t err;
+      int lnr;
+      char *fname;
+      estream_t fp;
+
+      fname = make_filename (gnupg_sysconfdir (), "Registry", NULL);
+      fp = es_fopen (fname, "r");
+      if (!fp)
+        {
+          no_registry = 1;
+          return NULL;
+        }
+      if (opt.verbose)
+        log_info ("Note: Using Registry emulation file '%s'\n", fname);
+
+      err = gpgrt_nvc_parse (&registry, &lnr, fp, GPGRT_NVC_SECTION);
+      es_fclose (fp);
+      if (err)
+        {
+          log_info ("%s:%d: error parsing Registry emulation file: %s\n",
+                    fname, lnr, gpg_strerror (err));
+          no_registry = 1;
+          xfree (fname);
+          return NULL;
+        }
+      xfree (fname);
+    }
+
+  if (name)
+    {
+      namebuffer = xstrdup (name);
+      for (p=namebuffer; *p; p++)
+        if (*p == '\\')
+          *p = '/';
+      name = namebuffer;
+    }
+
+  e = gpgrt_nvc_lookup (registry, name);
+  if (!e && *name != '/')
+    {
+      /* Strip any HKLM or HKCU prefix and try again.  */
+      name = strchr (name, '/');
+      if (name)
+        e = gpgrt_nvc_lookup (registry, name);
+    }
+  xfree (namebuffer);
+  s = e? gpgrt_nve_value (e) : NULL;
+  return s? xtrystrdup (s) : NULL;
+#else /* GpgRT too old  */
+  return NULL;
+#endif
+}
+
+
 #ifdef HAVE_W32_SYSTEM
 /* Print registry entries relevant to the GnuPG system and related
  * software.  */
@@ -1566,7 +1644,7 @@ show_other_registry_entries (estream_t outfp)
           name = namebuf;
         }
 
-      value = read_w32_reg_string (name, &from_hklm);
+      value = my_read_reg_string (name, &from_hklm);
       if (!value)
         continue;
 
@@ -1592,6 +1670,7 @@ show_other_registry_entries (estream_t outfp)
 
   xfree (namebuf);
 }
+#endif /*HAVE_W32_SYSTEM*/
 
 
 /* Print registry entries take from a configuration file.  */
@@ -1633,7 +1712,7 @@ show_registry_entries_from_file (estream_t outfp)
         continue;
 
       xfree (value);
-      value = read_w32_reg_string (line, &from_hklm);
+      value = my_read_reg_string (line, &from_hklm);
       if (!value)
         continue;
 
@@ -1659,7 +1738,6 @@ show_registry_entries_from_file (estream_t outfp)
   es_fclose (fp);
   xfree (fname);
 }
-#endif /*HAVE_W32_SYSTEM*/
 
 
 /* Show all config files.  */
@@ -1759,7 +1837,6 @@ show_configs (estream_t outfp)
         es_fprintf (outfp, "#+end_example\n");
     }
 
-#ifdef HAVE_W32_SYSTEM
   es_fprintf (outfp, "** Registry entries\n");
   es_fprintf (outfp, "#+begin_example\n");
   any = 0;
@@ -1776,7 +1853,7 @@ show_configs (estream_t outfp)
                 any = 1;
                 es_fprintf (outfp, "Encountered in config files:\n");
               }
-            if ((p = read_w32_reg_string (sl->d, &from_hklm)))
+            if ((p = my_read_reg_string (sl->d, &from_hklm)))
               es_fprintf (outfp, "  %s ->%s<-%s\n", sl->d, p,
                           from_hklm? " [hklm]":"");
             else
@@ -1784,10 +1861,11 @@ show_configs (estream_t outfp)
             xfree (p);
           }
     }
+#ifdef HAVE_W32_SYSTEM
   show_other_registry_entries (outfp);
+#endif /*HAVE_W32_SYSTEM*/
   show_registry_entries_from_file (outfp);
   es_fprintf (outfp, "#+end_example\n");
-#endif /*HAVE_W32_SYSTEM*/
 
   free_strlist (list);
 
