@@ -4833,11 +4833,11 @@ msgstr "AVVISO: più testo in chiaro visti\n"
 
 #, c-format
 msgid "encrypted with %lu passphrases\n"
-msgstr "cifratto con %lu passphrase\n"
+msgstr "cifrato con %lu passphrase\n"
 
 #, c-format
 msgid "encrypted with 1 passphrase\n"
-msgstr "cifratto con 1 passphrase\n"
+msgstr "cifrato con 1 passphrase\n"
 
 #, c-format
 msgid "public key decryption failed: %s\n"
