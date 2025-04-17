@@ -11,7 +11,7 @@
 @ifset isman
 GnuPG is a set of programs for public key encryption and digital
 signatures.  The program most users will want to use is the OpenPGP
-command line tool, named @command{gpg}.  @command{gpgv}is a stripped
+command line tool, named @command{gpg}.  @command{gpgv} is a stripped
 down version of @command{gpg} with no encryption functionality, used
 only to verify signatures against a trusted keyring.  @command{gpgsm} is
 the X.509/CMS (for S/MIME) counterpart of
