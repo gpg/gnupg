@@ -360,7 +360,7 @@ static INLINE int Cislower(int c) { return isascii(c) && islower(c); }
 #endif
 
 #if USE_ASCII_NAMES
-static const char charnames[32][3]={
+static const char *charnames[32]={
  "nul",
  "soh",
  "stx",
