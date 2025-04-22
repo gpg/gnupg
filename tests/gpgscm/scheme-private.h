@@ -207,7 +207,7 @@ const struct scheme_interface *vptr;
 
 /* operator code */
 enum scheme_opcodes {
-#define _OP_DEF(A,B,C,D,OP) OP,
+#define _OP_DEF(OP,A,B,C,...) OP,
 #include "opdefines.h"
   OP_MAXDEFINED
 };

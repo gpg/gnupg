@@ -5369,26 +5369,26 @@ static const struct {
   {is_nonneg, "non-negative integer"}
 };
 
-#define TST_NONE 0
-#define TST_ANY "\001"
-#define TST_STRING "\002"
-#define TST_SYMBOL "\003"
-#define TST_PORT "\004"
-#define TST_INPORT "\005"
-#define TST_OUTPORT "\006"
-#define TST_ENVIRONMENT "\007"
-#define TST_PAIR "\010"
-#define TST_LIST "\011"
-#define TST_CHAR "\012"
-#define TST_VECTOR "\013"
-#define TST_NUMBER "\014"
-#define TST_INTEGER "\015"
-#define TST_NATURAL "\016"
+#define TST_NONE        0
+#define TST_ANY         1
+#define TST_STRING      2
+#define TST_SYMBOL      3
+#define TST_PORT        4
+#define TST_INPORT      5
+#define TST_OUTPORT     6
+#define TST_ENVIRONMENT 7
+#define TST_PAIR        8
+#define TST_LIST        9
+#define TST_CHAR       10
+#define TST_VECTOR     11
+#define TST_NUMBER     12
+#define TST_INTEGER    13
+#define TST_NATURAL    14
 
 #define INF_ARG 0xff
 
 static const struct op_code_info dispatch_table[]= {
-#define _OP_DEF(A,B,C,D,OP) {{A},B,C,{D}},
+#define _OP_DEF(OP,A,B,C,...) {{A},B,C,{__VA_ARGS__}},
 #include "opdefines.h"
 #undef _OP_DEF
   {{0},0,0,{0}},
@@ -5434,7 +5434,7 @@ check_arguments (scheme *sc, const struct op_code_info *pcd, char *msg, size_t m
       do {
 	pointer arg = car(arglist);
 	j = (int)t[0];
-	if (j == TST_LIST[0]) {
+	if (j == TST_LIST) {
 	  if (arg != sc->NIL && !is_pair(arg)) break;
 	} else {
 	  if (!tests[j].fct(arg)) break;
