@@ -3536,14 +3536,23 @@ read_ef_tokeninfo (app_t app)
       /* Get next TLV.  */
       err = parse_ber_header (&p, &n, &class, &tag, &constructed,
                               &ndef, &objlen, &hdrlen);
-      if (!err && (objlen > n || !objlen))
+      if (!err && objlen > n)
         err = gpg_error (GPG_ERR_INV_OBJ);
       if (err)
         goto leave;
+
+      if (class == CLASS_CONTEXT && tag == 0 && !objlen)
+        ; /* The optional label is stored as zero length object - okay.  */
+      else if (!objlen)
+        {
+          err = gpg_error (GPG_ERR_INV_OBJ);
+          goto leave;
+        }
     }
   if (class == CLASS_CONTEXT && tag == 0)
     {
-      app->app_local->token_label = percent_data_escape (0, NULL, p, objlen);
+      if (objlen)
+        app->app_local->token_label = percent_data_escape (0, NULL, p, objlen);
 
       p += objlen;
       n -= objlen;
