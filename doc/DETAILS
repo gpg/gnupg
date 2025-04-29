@@ -160,8 +160,12 @@ described here.
 
     This is only used on primary keys.  This is a single letter, but
     be prepared that additional information may follow in future
-    versions.  For trust signatures with a regular expression, this is
-    the regular expression value, quoted as in field 10.
+    versions.  Note that if a trust signature indicates that the key's
+    computed trust is higher than the ownertrust, that higher value is
+    shown here.
+
+    In signature records describing a trust signatures this is the
+    regular expression value, quoted as in field 10.
 
 *** Field 10 - User-ID
 

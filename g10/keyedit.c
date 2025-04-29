@@ -111,6 +111,13 @@ static int update_trust = 0;
 
 #define CONTROL_D ('D' - 'A' + 1)
 
+/* Flags values used by sign_uids().  */
+#define SIGN_UIDS_LOCAL         1  /* Create non-exportable sig.    */
+#define SIGN_UIDS_NONREVOCABLE  2  /* Create non-revocable sig.     */
+#define SIGN_UIDS_TRUSTSIG      4  /* Create trust signature.       */
+#define SIGN_UIDS_INTERACTIVE   8  /* Change the way of prompting.  */
+#define SIGN_UIDS_QUICK        16  /* Called by a --quick command.  */
+
 struct sign_attrib
 {
   int non_exportable, non_revocable;
@@ -474,16 +481,16 @@ trustsig_prompt (byte * trust_value, byte * trust_depth, char **regexp)
 
 
 /*
- * Loop over all LOCUSR and sign the uids after asking.  If no
- * user id is marked, all user ids will be signed; if some user_ids
- * are marked only those will be signed.  If QUICK is true the
- * function won't ask the user and use sensible defaults.
+ * Loop over all LOCUSR and sign the uids after asking.  If no user id
+ * is marked, all user ids will be signed; if some user_ids are marked
+ * only those will be signed.  FLAGS are the SIGN_UIDS_* constants.
+ * For example with SIGN_UIDS_QUICK the function won't ask the user
+ * and use sensible defaults.
  */
 static int
 sign_uids (ctrl_t ctrl, estream_t fp,
-           kbnode_t keyblock, strlist_t locusr, int *ret_modified,
-	   int local, int nonrevocable, int trust, int interactive,
-           int quick)
+           kbnode_t keyblock, strlist_t locusr, unsigned int flags,
+           int *ret_modified)
 {
   int rc = 0;
   SK_LIST sk_list = NULL;
@@ -491,7 +498,8 @@ sign_uids (ctrl_t ctrl, estream_t fp,
   PKT_public_key *pk = NULL;
   KBNODE node, uidnode;
   PKT_public_key *primary_pk = NULL;
-  int select_all = !count_selected_uids (keyblock) || interactive;
+  int select_all = (!count_selected_uids (keyblock)
+                    || (flags & SIGN_UIDS_INTERACTIVE));
 
   /* Build a list of all signators.
    *
@@ -564,7 +572,7 @@ sign_uids (ctrl_t ctrl, estream_t fp,
 
 		      if (selfsig)
 			tty_fprintf (fp, "\n");
-		      else if (opt.expert && !quick)
+		      else if (opt.expert && !(flags & SIGN_UIDS_QUICK))
 			{
 			  tty_fprintf (fp, "\n");
 			  /* No, so remove the mark and continue */
@@ -576,7 +584,7 @@ sign_uids (ctrl_t ctrl, estream_t fp,
 			      uidnode->flag &= ~NODFLG_MARK_A;
 			      uidnode = NULL;
 			    }
-			  else if (interactive)
+			  else if ((flags & SIGN_UIDS_INTERACTIVE))
 			    yesreally = 1;
 			}
 		      else
@@ -592,7 +600,7 @@ sign_uids (ctrl_t ctrl, estream_t fp,
 
 		      if (selfsig)
 			tty_fprintf (fp, "\n");
-		      else if (opt.expert && !quick)
+		      else if (opt.expert && !(flags & SIGN_UIDS_QUICK))
 			{
 			  tty_fprintf (fp, "\n");
 			  /* No, so remove the mark and continue */
@@ -604,7 +612,7 @@ sign_uids (ctrl_t ctrl, estream_t fp,
 			      uidnode->flag &= ~NODFLG_MARK_A;
 			      uidnode = NULL;
 			    }
-			  else if (interactive)
+			  else if ((flags & SIGN_UIDS_INTERACTIVE))
 			    yesreally = 1;
 			}
 		      else
@@ -619,7 +627,7 @@ sign_uids (ctrl_t ctrl, estream_t fp,
 		      tty_fprintf (fp, _("User ID \"%s\" is not self-signed."),
                                    user);
 
-		      if (opt.expert && !quick)
+		      if (opt.expert && !(flags & SIGN_UIDS_QUICK))
 			{
 			  tty_fprintf (fp, "\n");
 			  /* No, so remove the mark and continue */
@@ -631,7 +639,7 @@ sign_uids (ctrl_t ctrl, estream_t fp,
 			      uidnode->flag &= ~NODFLG_MARK_A;
 			      uidnode = NULL;
 			    }
-			  else if (interactive)
+			  else if ((flags & SIGN_UIDS_INTERACTIVE))
 			    yesreally = 1;
 			}
 		      else
@@ -642,7 +650,8 @@ sign_uids (ctrl_t ctrl, estream_t fp,
 			}
 		    }
 
-		  if (uidnode && interactive && !yesreally && !quick)
+		  if (uidnode && (flags & SIGN_UIDS_INTERACTIVE)
+                      && !yesreally && !(flags & SIGN_UIDS_QUICK))
 		    {
 		      tty_fprintf (fp,
                                    _("User ID \"%s\" is signable.  "), user);
@@ -671,7 +680,7 @@ sign_uids (ctrl_t ctrl, estream_t fp,
 
 		  /* It's a v3 self-sig.  Make it into a v4 self-sig? */
 		  if (node->pkt->pkt.signature->version < 4
-                      && selfsig && !quick)
+                      && selfsig && !(flags & SIGN_UIDS_QUICK))
 		    {
 		      tty_fprintf (fp,
                                    _("The self-signature on \"%s\"\n"
@@ -699,7 +708,7 @@ sign_uids (ctrl_t ctrl, estream_t fp,
 		      tty_fprintf (fp, _("Your current signature on \"%s\"\n"
                                          "has expired.\n"), user);
 
-		      if (quick || cpr_get_answer_is_yes
+		      if ((flags & SIGN_UIDS_QUICK) || cpr_get_answer_is_yes
 			  ("sign_uid.replace_expired_okay",
 			   _("Do you want to issue a "
 			     "new signature to replace "
@@ -718,14 +727,15 @@ sign_uids (ctrl_t ctrl, estream_t fp,
 			}
 		    }
 
-		  if (!node->pkt->pkt.signature->flags.exportable && !local)
+		  if (!node->pkt->pkt.signature->flags.exportable
+                      && !(flags & SIGN_UIDS_LOCAL))
 		    {
 		      /* It's a local sig, and we want to make a
 		         exportable sig. */
 		      tty_fprintf (fp, _("Your current signature on \"%s\"\n"
                                          "is a local signature.\n"), user);
 
-		      if (quick || cpr_get_answer_is_yes
+		      if ((flags & SIGN_UIDS_QUICK) || cpr_get_answer_is_yes
 			  ("sign_uid.local_promote_okay",
 			   _("Do you want to promote "
 			     "it to a full exportable " "signature? (y/N) ")))
@@ -745,7 +755,8 @@ sign_uids (ctrl_t ctrl, estream_t fp,
 
 		  /* Fixme: see whether there is a revocation in which
 		   * case we should allow signing it again. */
-		  if (!node->pkt->pkt.signature->flags.exportable && local)
+		  if (!node->pkt->pkt.signature->flags.exportable
+                      && (flags & SIGN_UIDS_LOCAL))
 		    tty_fprintf ( fp,
                        _("\"%s\" was already locally signed by key %s\n"),
                        user, keystr_from_pk (pk));
@@ -755,7 +766,7 @@ sign_uids (ctrl_t ctrl, estream_t fp,
 				user, keystr_from_pk (pk));
 
 		  if (opt.flags.force_sign_key
-                      || (opt.expert && !quick
+                      || (opt.expert && !(flags & SIGN_UIDS_QUICK)
                           && cpr_get_answer_is_yes ("sign_uid.dupe_okay",
                                                     _("Do you want to sign it "
                                                       "again anyway? (y/N) "))))
@@ -805,7 +816,7 @@ sign_uids (ctrl_t ctrl, estream_t fp,
 	    {
 	      tty_fprintf (fp, _("This key has expired!"));
 
-	      if (opt.expert && !quick)
+	      if (opt.expert && !(flags & SIGN_UIDS_QUICK))
 		{
 		  tty_fprintf (fp, "  ");
 		  if (!cpr_get_answer_is_yes ("sign_uid.expired_okay",
@@ -824,7 +835,7 @@ sign_uids (ctrl_t ctrl, estream_t fp,
 	      tty_fprintf (fp, _("This key is due to expire on %s.\n"),
                            expirestr_from_pk (primary_pk));
 
-	      if (opt.ask_cert_expire && !quick)
+	      if (opt.ask_cert_expire && !(flags & SIGN_UIDS_QUICK))
 		{
 		  char *answer = cpr_get ("sign_uid.expire",
 					  _("Do you want your signature to "
@@ -851,7 +862,7 @@ sign_uids (ctrl_t ctrl, estream_t fp,
          the expiration of the pk */
       if (!duration && !selfsig)
 	{
-	  if (opt.ask_cert_expire && !quick)
+	  if (opt.ask_cert_expire && !(flags & SIGN_UIDS_QUICK))
 	    duration = ask_expire_interval (1, opt.def_cert_expire);
 	  else
 	    duration = parse_expire_string (opt.def_cert_expire);
@@ -861,7 +872,7 @@ sign_uids (ctrl_t ctrl, estream_t fp,
 	;
       else
 	{
-	  if (opt.batch || !opt.ask_cert_level || quick)
+	  if (opt.batch || !opt.ask_cert_level || (flags & SIGN_UIDS_QUICK))
 	    class = 0x10 + opt.def_cert_level;
 	  else
 	    {
@@ -906,11 +917,11 @@ sign_uids (ctrl_t ctrl, estream_t fp,
 		}
 	    }
 
-	  if (trust && !quick)
+	  if ((flags & SIGN_UIDS_TRUSTSIG) && !(flags & SIGN_UIDS_QUICK))
 	    trustsig_prompt (&trust_value, &trust_depth, &trust_regexp);
 	}
 
-      if (!quick)
+      if (!(flags & SIGN_UIDS_QUICK))
         {
           p = get_user_id_native (ctrl, sk_keyid);
           tty_fprintf (fp,
@@ -924,14 +935,14 @@ sign_uids (ctrl_t ctrl, estream_t fp,
 	  tty_fprintf (fp, "\n");
 	  tty_fprintf (fp, _("This will be a self-signature.\n"));
 
-	  if (local)
+	  if ((flags & SIGN_UIDS_LOCAL))
 	    {
 	      tty_fprintf (fp, "\n");
 	      tty_fprintf (fp, _("WARNING: the signature will not be marked "
                                  "as non-exportable.\n"));
 	    }
 
-	  if (nonrevocable)
+	  if ((flags & SIGN_UIDS_NONREVOCABLE))
 	    {
 	      tty_fprintf (fp, "\n");
 	      tty_fprintf (fp, _("WARNING: the signature will not be marked "
@@ -940,14 +951,14 @@ sign_uids (ctrl_t ctrl, estream_t fp,
 	}
       else
 	{
-	  if (local)
+	  if ((flags & SIGN_UIDS_LOCAL))
 	    {
 	      tty_fprintf (fp, "\n");
 	      tty_fprintf (fp,
                  _("The signature will be marked as non-exportable.\n"));
 	    }
 
-	  if (nonrevocable)
+	  if ((flags & SIGN_UIDS_NONREVOCABLE))
 	    {
 	      tty_fprintf (fp, "\n");
 	      tty_fprintf (fp,
@@ -977,7 +988,7 @@ sign_uids (ctrl_t ctrl, estream_t fp,
 
       if (opt.batch && opt.answer_yes)
 	;
-      else if (quick)
+      else if ((flags & SIGN_UIDS_QUICK))
         ;
       else if (!cpr_get_answer_is_yes ("sign_uid.okay",
 				       _("Really sign? (y/N) ")))
@@ -999,8 +1010,8 @@ sign_uids (ctrl_t ctrl, estream_t fp,
 
 	      log_assert (primary_pk);
 	      memset (&attrib, 0, sizeof attrib);
-	      attrib.non_exportable = local;
-	      attrib.non_revocable = nonrevocable;
+	      attrib.non_exportable = !!(flags & SIGN_UIDS_LOCAL);
+	      attrib.non_revocable = !!(flags & SIGN_UIDS_NONREVOCABLE);
 	      attrib.trust_depth = trust_depth;
 	      attrib.trust_value = trust_value;
 	      attrib.trust_regexp = trust_regexp;
@@ -1192,9 +1203,10 @@ fix_keyblock (ctrl_t ctrl, kbnode_t *keyblockp)
 }
 
 
+/* Helper to parse the prefix of the sign command STR and set the
+ * respective bits in R_FLAGS.  Returns false on error.  */
 static int
-parse_sign_type (const char *str, int *localsig, int *nonrevokesig,
-		 int *trustsig)
+parse_sign_type (const char *str, unsigned int *r_flags)
 {
   const char *p = str;
 
@@ -1202,17 +1214,17 @@ parse_sign_type (const char *str, int *localsig, int *nonrevokesig,
     {
       if (ascii_strncasecmp (p, "l", 1) == 0)
 	{
-	  *localsig = 1;
+	  *r_flags |= SIGN_UIDS_LOCAL;
 	  p++;
 	}
       else if (ascii_strncasecmp (p, "nr", 2) == 0)
 	{
-	  *nonrevokesig = 1;
+	  *r_flags |= SIGN_UIDS_NONREVOCABLE;
 	  p += 2;
 	}
       else if (ascii_strncasecmp (p, "t", 1) == 0)
 	{
-	  *trustsig = 1;
+	  *r_flags |= SIGN_UIDS_TRUSTSIG;
 	  p++;
 	}
       else
@@ -1664,7 +1676,7 @@ keyedit_menu (ctrl_t ctrl, const char *username, strlist_t locusr,
 
 	case cmdSIGN:
 	  {
-	    int localsig = 0, nonrevokesig = 0, trustsig = 0, interactive = 0;
+            unsigned int myflags = 0;
 
 	    if (pk->flags.revoked)
 	      {
@@ -1700,7 +1712,7 @@ keyedit_menu (ctrl_t ctrl, const char *username, strlist_t locusr,
                 if (! result)
                   {
                     if (opt.interactive)
-                      interactive = 1;
+                      myflags |= SIGN_UIDS_INTERACTIVE;
                     else
                       {
                         tty_printf (_("Hint: Select the user IDs to sign\n"));
@@ -1710,16 +1722,15 @@ keyedit_menu (ctrl_t ctrl, const char *username, strlist_t locusr,
 
                   }
               }
+
 	    /* What sort of signing are we doing? */
-	    if (!parse_sign_type
-		(answer, &localsig, &nonrevokesig, &trustsig))
+	    if (!parse_sign_type (answer, &myflags))
 	      {
 		tty_printf (_("Unknown signature type '%s'\n"), answer);
 		break;
 	      }
 
-	    sign_uids (ctrl, NULL, keyblock, locusr, &modified,
-		       localsig, nonrevokesig, trustsig, interactive, 0);
+	    sign_uids (ctrl, NULL, keyblock, locusr, myflags, &modified);
 	  }
 	  break;
 
@@ -3025,7 +3036,9 @@ keyedit_quick_sign (ctrl_t ctrl, const char *fpr, strlist_t uids,
     }
 
   /* Sign. */
-  sign_uids (ctrl, es_stdout, keyblock, locusr, &modified, local, 0, 0, 0, 1);
+  sign_uids (ctrl, es_stdout, keyblock, locusr,
+             (SIGN_UIDS_QUICK | (local? SIGN_UIDS_LOCAL : 0)),
+             &modified);
   es_fflush (es_stdout);
 
   if (modified)
