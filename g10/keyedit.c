@@ -44,6 +44,7 @@
 #include "../common/ttyio.h"
 #include "../common/status.h"
 #include "../common/i18n.h"
+#include "../common/mbox-util.h"
 #include "keyserver-internal.h"
 #include "call-agent.h"
 #include "../common/host2net.h"
@@ -380,6 +381,92 @@ sign_mk_attrib (PKT_signature * sig, void *opaque)
 }
 
 
+/* Parse a trust signature specification string into the 3 return
+ * args.  Returns 0 on success or an errorcode.  Format for the string
+ * is
+ *  ['T=']<depth>,<value>[,<domain>]
+ * The optional prefix is just to allow c+p from the --check-sigs
+ * output.  The domain is optional, <depth> must be a value in the
+ * range 0 to 255, value may either be value in the same range or -
+ * preferred - 'm' or 'f'.
+ */
+static gpg_error_t
+parse_trustsig_string (const char *string,
+                       byte *trust_value, byte *trust_depth, char **regexp)
+{
+  gpg_error_t err = 0;
+  char **fields;
+  int nfields;
+  int along;
+  char *endp;
+
+  *trust_value = 0;
+  *trust_depth = 0;
+  *regexp = NULL;
+
+  if (!string)
+    return gpg_error (GPG_ERR_INV_ARG);
+
+  if (*string == 'T' && string[1] == '=')
+    string += 2;
+
+  fields = strtokenize (string, ",");
+  if (!fields)
+      return gpg_error_from_syserror ();
+
+  for (nfields=0; fields[nfields]; nfields++)
+    ;
+  if (nfields < 2 || nfields > 3)
+    {
+      err = gpg_error (GPG_ERR_SYNTAX);
+      goto leave;
+    }
+  along = strtol (fields[0], &endp, 10);
+  if (along < 0 || along > 255 || fields[0] == endp || *endp)
+    {
+      err = gpg_error (GPG_ERR_ERANGE);
+      goto leave;
+    }
+  *trust_depth = along;
+  if (!strcmp (fields[1], "m")|| !strcmp (fields[1], "marginal"))
+    along = 60;
+  else if (!strcmp (fields[1], "f")|| !strcmp (fields[1], "full"))
+    along = 120;
+  else
+    {
+      along = strtol (fields[1], &endp, 10);
+      if (along < 0 || along > 255 || fields[1] == endp || *endp)
+        {
+          err = gpg_error (GPG_ERR_ERANGE);
+          goto leave;
+        }
+    }
+  *trust_value = along;
+
+  if (nfields == 3)
+    {
+      if (!is_valid_domain_name (fields[2]))
+        err = gpg_error (GPG_ERR_NO_NAME);
+      else
+        {
+          *regexp = strconcat ("<[^>]+[@.]", fields[2], ">$", NULL);
+          if (!*regexp)
+            err = gpg_error_from_syserror ();
+        }
+    }
+
+ leave:
+  xfree (fields);
+  if (err && *regexp)
+    {
+      xfree (*regexp);
+      *regexp = NULL;
+    }
+  return err;
+}
+
+
+/* Interactive version of parse_trustsig_string.  */
 static void
 trustsig_prompt (byte * trust_value, byte * trust_depth, char **regexp)
 {
@@ -485,12 +572,13 @@ trustsig_prompt (byte * trust_value, byte * trust_depth, char **regexp)
  * is marked, all user ids will be signed; if some user_ids are marked
  * only those will be signed.  FLAGS are the SIGN_UIDS_* constants.
  * For example with SIGN_UIDS_QUICK the function won't ask the user
- * and use sensible defaults.
+ * and use sensible defaults.  TRUSTSIGSTR is only used if also
+ * SIGN_UIDS_TRUSTSIG is set.
  */
 static int
 sign_uids (ctrl_t ctrl, estream_t fp,
            kbnode_t keyblock, strlist_t locusr, unsigned int flags,
-           int *ret_modified)
+           const char *trustsigstr, int *ret_modified)
 {
   int rc = 0;
   SK_LIST sk_list = NULL;
@@ -498,8 +586,10 @@ sign_uids (ctrl_t ctrl, estream_t fp,
   PKT_public_key *pk = NULL;
   KBNODE node, uidnode;
   PKT_public_key *primary_pk = NULL;
+  char *trust_regexp = NULL;
   int select_all = (!count_selected_uids (keyblock)
                     || (flags & SIGN_UIDS_INTERACTIVE));
+
 
   /* Build a list of all signators.
    *
@@ -516,7 +606,7 @@ sign_uids (ctrl_t ctrl, estream_t fp,
   for (sk_rover = sk_list; sk_rover; sk_rover = sk_rover->next)
     {
       u32 sk_keyid[2], pk_keyid[2];
-      char *p, *trust_regexp = NULL;
+      char *p;
       int class = 0, selfsig = 0;
       u32 duration = 0, timestamp = 0;
       byte trust_depth = 0, trust_value = 0;
@@ -917,9 +1007,21 @@ sign_uids (ctrl_t ctrl, estream_t fp,
 		}
 	    }
 
-	  if ((flags & SIGN_UIDS_TRUSTSIG) && !(flags & SIGN_UIDS_QUICK))
-	    trustsig_prompt (&trust_value, &trust_depth, &trust_regexp);
-	}
+	  if ((flags & SIGN_UIDS_TRUSTSIG))
+            {
+              xfree (trust_regexp);
+              trust_regexp = NULL;
+              if ((flags & SIGN_UIDS_QUICK))
+                {
+                  rc = parse_trustsig_string (trustsigstr, &trust_value,
+                                              &trust_depth, &trust_regexp);
+                  if (rc)
+                    goto leave;
+                }
+              else
+                trustsig_prompt (&trust_value, &trust_depth, &trust_regexp);
+            }
+        }
 
       if (!(flags & SIGN_UIDS_QUICK))
         {
@@ -1065,6 +1167,8 @@ sign_uids (ctrl_t ctrl, estream_t fp,
     } /* End loop over signators.  */
 
  leave:
+  xfree (trust_regexp);
+  trust_regexp = NULL;
   release_sk_list (sk_list);
   return rc;
 }
@@ -1730,7 +1834,7 @@ keyedit_menu (ctrl_t ctrl, const char *username, strlist_t locusr,
 		break;
 	      }
 
-	    sign_uids (ctrl, NULL, keyblock, locusr, myflags, &modified);
+	    sign_uids (ctrl, NULL, keyblock, locusr, myflags, NULL, &modified);
 	  }
 	  break;
 
@@ -2910,10 +3014,12 @@ find_by_primary_fpr (ctrl_t ctrl, const char *fpr,
    key are signed using the default signing key.  If UIDS is an empty
    list all usable UIDs are signed, if it is not empty, only those
    user ids matching one of the entries of the list are signed.  With
-   LOCAL being true the signatures are marked as non-exportable.  */
+   LOCAL being true the signatures are marked as non-exportable.  If
+   TRUSTSIG is given a trust signature is created; see
+   parse_trustsig_string(). */
 void
 keyedit_quick_sign (ctrl_t ctrl, const char *fpr, strlist_t uids,
-                    strlist_t locusr, int local)
+                    strlist_t locusr, const char *trustsig, int local)
 {
   gpg_error_t err = 0;
   kbnode_t keyblock = NULL;
@@ -2928,6 +3034,20 @@ keyedit_quick_sign (ctrl_t ctrl, const char *fpr, strlist_t uids,
   /* See keyedit_menu for why we need this.  */
   check_trustdb_stale (ctrl);
 #endif
+
+  /* Do an early check on an arg for an immediate error message.  */
+  if (trustsig)
+    {
+      byte trust_depth, trust_value;
+      char *trust_regexp;
+      err = parse_trustsig_string (trustsig, &trust_value,
+                                   &trust_depth, &trust_regexp);
+      xfree (trust_regexp);
+      (void)trust_depth;
+      (void)trust_value;
+      if (err)
+        goto leave;
+    }
 
   /* We require a fingerprint because only this uniquely identifies a
      key and may thus be used to select a key for unattended key
@@ -3036,10 +3156,14 @@ keyedit_quick_sign (ctrl_t ctrl, const char *fpr, strlist_t uids,
     }
 
   /* Sign. */
-  sign_uids (ctrl, es_stdout, keyblock, locusr,
-             (SIGN_UIDS_QUICK | (local? SIGN_UIDS_LOCAL : 0)),
-             &modified);
+  err = sign_uids (ctrl, es_stdout, keyblock, locusr,
+                   (SIGN_UIDS_QUICK
+                    | (local? SIGN_UIDS_LOCAL : 0)
+                    | (trustsig? SIGN_UIDS_TRUSTSIG : 0)),
+                   trustsig, &modified);
   es_fflush (es_stdout);
+  if (err)
+    goto leave;
 
   if (modified)
     {
@@ -3058,7 +3182,10 @@ keyedit_quick_sign (ctrl_t ctrl, const char *fpr, strlist_t uids,
 
  leave:
   if (err)
-    write_status_error ("keyedit.sign-key", err);
+    {
+      log_error (_("creating key signature failed: %s\n"), gpg_strerror (err));
+      write_status_error ("keyedit.sign-key", err);
+    }
   release_kbnode (keyblock);
   keydb_release (kdbhd);
 }

@@ -1137,8 +1137,10 @@ from @option{--edit-key}.
 
 @item --quick-sign-key @var{fpr} [@var{names}]
 @itemx --quick-lsign-key @var{fpr} [@var{names}]
+@itemx --quick-tsign-key @var{fpr} @var{trustspec} [@var{names}]
 @opindex quick-sign-key
 @opindex quick-lsign-key
+@opindex quick-tsign-key
 Directly sign a key from the passphrase without any further user
 interaction.  The @var{fpr} must be the verified primary fingerprint
 of a key in the local keyring. If no @var{names} are given, all
@@ -1152,6 +1154,17 @@ non-exportable.  If such a non-exportable signature already exists the
 @option{--quick-sign-key} turns it into a exportable signature.  If
 you need to update an existing signature, for example to add or change
 notation data, you need to use the option @option{--force-sign-key}.
+
+The command @option{--quick-tsign-key} creates a trust signature using
+the information from the @var{trustspec} string.  The @var{trustspec}
+uses the format [T=]@var{dept},@var{value}[,@var{domain}].  @var{depth}
+is the length of the trust chain in the range 0 (identical to a
+standard key signature) to 255 (ridiculous long trust chain); the most
+common lengths for trust signatures are 1 and 2.  @var{value} is
+either "f" or "full" which are mapped to a value of 120 or "m" or
+"marginal" which are mapped to a value of 60.  The allowed range is 0
+to 255 but it is highly suggested to use only 60 or 120.  @var{domain}
+is optional and a plain domain name like "example.org".
 
 This command uses reasonable defaults and thus does not provide the
 full flexibility of the "sign" subcommand from @option{--edit-key}.

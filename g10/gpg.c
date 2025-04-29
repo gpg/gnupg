@@ -130,6 +130,7 @@ enum cmd_and_opt_values
     aLSignKey,
     aQuickSignKey,
     aQuickLSignKey,
+    aQuickTSignKey,
     aQuickRevSig,
     aQuickAddUid,
     aQuickAddKey,
@@ -529,6 +530,8 @@ static gpgrt_opt_t opts[] = {
               N_("quickly sign a key")),
   ARGPARSE_c (aQuickLSignKey, "quick-lsign-key",
               N_("quickly sign a key locally")),
+  ARGPARSE_c (aQuickTSignKey, "quick-tsign-key",
+              N_("quickly sign a key with a trust signature")),
   ARGPARSE_c (aQuickRevSig,   "quick-revoke-sig" ,
               N_("quickly revoke a key signature")),
   ARGPARSE_c (aSignKey,  "sign-key"   ,N_("sign a key")),
@@ -2734,6 +2737,7 @@ main (int argc, char **argv)
 	  case aSign:
 	  case aQuickSignKey:
 	  case aQuickLSignKey:
+	  case aQuickTSignKey:
 	  case aQuickRevSig:
 	  case aSignKey:
 	  case aLSignKey:
@@ -4715,7 +4719,25 @@ main (int argc, char **argv)
           sl = NULL;
           for( ; argc; argc--, argv++)
 	    append_to_strlist2 (&sl, *argv, utf8_strings);
-          keyedit_quick_sign (ctrl, fpr, sl, locusr, (cmd == aQuickLSignKey));
+          keyedit_quick_sign (ctrl, fpr, sl, locusr,
+                              NULL, (cmd == aQuickLSignKey));
+          free_strlist (sl);
+        }
+	break;
+
+      case aQuickTSignKey:
+        {
+          const char *fpr, *tsig;
+
+          if (argc < 2)
+            wrong_args ("--quick-tsign-key fingerprint"
+                        " depth,[m|f][,domain] [userids]");
+          fpr = *argv++; argc--;
+          tsig = *argv++; argc--;
+          sl = NULL;
+          for( ; argc; argc--, argv++)
+	    append_to_strlist2 (&sl, *argv, utf8_strings);
+          keyedit_quick_sign (ctrl, fpr, sl, locusr, tsig, 0);
           free_strlist (sl);
         }
 	break;

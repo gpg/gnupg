@@ -48,7 +48,8 @@ void keyedit_quick_addadsk (ctrl_t ctrl, const char *fpr, const char *adskfpr);
 void keyedit_quick_revuid (ctrl_t ctrl, const char *username,
                            const char *uidtorev);
 void keyedit_quick_sign (ctrl_t ctrl, const char *fpr,
-                         strlist_t uids, strlist_t locusr, int local);
+                         strlist_t uids, strlist_t locusr,
+                         const char *trustsig, int local);
 void keyedit_quick_revsig (ctrl_t ctrl, const char *username,
                            const char *sigtorev, strlist_t affected_uids);
 void keyedit_quick_set_expire (ctrl_t ctrl,
