@@ -1390,6 +1390,15 @@ give the opposite meaning.  The options are:
   Show the ownertrust value for keys also in the standard key
   listing.  Defaults to no.
 
+  @item show-trustsig
+  @opindex list-options:show-trustsig
+  Show information about trust signatures also in a non-colon mode.
+  The information is printed in brackets after the signer's user ID in
+  the format T=@var{dept},@var{value}[,[R]"@var{string}"].
+  With the "R" prefix @var{string} gives the raw regular expression
+  escaped in C-style; without the prefix the domain name is printed
+  verbatim.  Defaults to no.
+
   @item show-policy-urls
   @opindex list-options:show-policy-urls
   Show policy URLs in the  @option{--check-signatures}

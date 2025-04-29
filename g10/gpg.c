@@ -2129,6 +2129,8 @@ parse_list_options(char *str)
        N_("show preferences")},
       {"show-ownertrust", LIST_SHOW_OWNERTRUST, NULL,
        N_("show ownertrust")},
+      {"show-trustsig", LIST_SHOW_TRUSTSIG, NULL,
+       N_("show trust signature information")},
       {"show-only-fpr-mbox",LIST_SHOW_ONLY_FPR_MBOX, NULL,
        NULL},
       {"sort-sigs", LIST_SORT_SIGS, NULL,

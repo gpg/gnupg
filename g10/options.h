@@ -463,6 +463,7 @@ EXTERN_UNLESS_MAIN_MODULE int memory_stat_debug_mode;
 #define LIST_SHOW_X509_NOTATIONS         (1<<17)
 #define LIST_STORE_X509_NOTATIONS        (1<<18)
 #define LIST_SHOW_OWNERTRUST             (1<<19)
+#define LIST_SHOW_TRUSTSIG               (1<<20)
 
 #define VERIFY_SHOW_PHOTOS               (1<<0)
 #define VERIFY_SHOW_POLICY_URLS          (1<<1)

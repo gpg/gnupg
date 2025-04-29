@@ -6,6 +6,9 @@ Noteworthy changes in version 2.5.6 (unreleased)
 
   * gpg: Fix double free of internal data.  [T7547]
 
+  * gpg: New list option "show-trustsig" to avoid resorting to colon
+    mode for this info.
+
   * gpgsm: Extend --learn-card by an optional s/n argument.  [T7379]
 
   * gpgsm: Skip expired certificates when selection a certificate by

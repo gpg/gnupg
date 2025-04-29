@@ -1291,6 +1291,37 @@ cmp_signodes (const void *av, const void *bv)
 }
 
 
+/* Given a domain name at NAME with length NAME, check whether this is
+ * a valid domain name and in that case return a malloced string ith
+ * the name.  Escaped dots are ignored and removed from the result.
+ * Example: "example\.org" -> "example.org" Note that the input may
+ * not be Nul terminated.  */
+static char *
+parse_trust_name (const char *name, size_t namelen)
+{
+  char *buffer, *p;
+
+  p = buffer = xtrymalloc (namelen+1);
+  if (!buffer)
+    return NULL; /* Oops - caller needs to use some fallback  */
+
+  for (;  namelen; name++, namelen--)
+    {
+      if (*name == '\\' && namelen > 1 && name[1] == '.')
+        ; /* Skip the escape character.  */
+      else
+        *p++ = *name;
+    }
+  *p = 0;
+  if (!is_valid_domain_name (buffer))
+    {
+      xfree (buffer);
+      buffer = NULL;
+    }
+  return buffer;
+}
+
+
 /* Helper for list_keyblock_print.  The caller must have set
  * NODFLG_MARK_B to indicate self-signatures.  */
 static void
@@ -1402,6 +1433,31 @@ list_signature_print (ctrl_t ctrl, kbnode_t keyblock, kbnode_t node,
       char *p = get_user_id (ctrl, sig->keyid, &n, NULL);
       print_utf8_buffer (es_stdout, p, n);
       xfree (p);
+    }
+  if ((opt.list_options & LIST_SHOW_TRUSTSIG)
+      && (sig->trust_depth || sig->trust_value || sig->trust_regexp))
+    {
+      es_fprintf (es_stdout, " [T=%d,%d", sig->trust_depth, sig->trust_value);
+      if (sig->trust_regexp)
+        {
+          size_t n = strlen (sig->trust_regexp);
+          char *tname = NULL;
+
+          if (!strncmp (sig->trust_regexp, "<[^>]+[@.]", 10)
+              && n > 12 && !strcmp (sig->trust_regexp+n-2, ">$")
+              && (tname=parse_trust_name (sig->trust_regexp+10, n-12)))
+            {
+              es_fprintf (es_stdout, ",\"%s", tname);
+              xfree (tname);
+            }
+          else
+            {
+              es_fputs (",R\"", es_stdout);
+              es_write_sanitized (es_stdout, sig->trust_regexp, n, "\"", NULL);
+            }
+          es_putc ('\"', es_stdout);
+        }
+      es_putc (']', es_stdout);
     }
   es_putc ('\n', es_stdout);
 
