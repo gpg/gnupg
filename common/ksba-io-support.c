@@ -174,7 +174,7 @@ has_only_base64 (const unsigned char *line, int linelen)
     {
       if (*line == '\n' || (linelen > 1 && *line == '\r' && line[1] == '\n'))
           break;
-      if ( !strchr (bintoasc, *line) )
+      if ( !memchr (bintoasc, *line, sizeof (bintoasc)) )
         return 0;
     }
   return 1;  /* yes */
