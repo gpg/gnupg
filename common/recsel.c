@@ -506,7 +506,11 @@ recsel_select (recsel_expr_t selector,
     {
       value = getval? getval (cookie, se->name) : NULL;
       if (!value)
-        value = "";
+        {
+          se = se->next;
+          result = 0;
+          continue;
+        }
 
       if (!*value)
         {
