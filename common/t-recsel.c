@@ -324,7 +324,7 @@ run_test_2 (void)
 
   FREEEXPR();
   ADDEXPR ("nothing -z");
-  if (!recsel_select (se, test_2_getval, NULL))
+  if (recsel_select (se, test_2_getval, NULL))
     fail (0, 0);
   FREEEXPR();
   ADDEXPR ("nothing -n");
@@ -352,7 +352,7 @@ run_test_2 (void)
 
   FREEEXPR();
   ADDEXPR ("nothing -f");
-  if (!recsel_select (se, test_2_getval, NULL))
+  if (recsel_select (se, test_2_getval, NULL))
     fail (0, 0);
   FREEEXPR();
   ADDEXPR ("nothing -t");
@@ -387,7 +387,8 @@ run_test_2 (void)
     fail (0, 0);
 
   FREEEXPR();
-  ADDEXPR ("letter -f");
+  ADDEXPR ("letters -f");
+  recsel_dump (se);
   if (!recsel_select (se, test_2_getval, NULL))
     fail (0, 0);
   FREEEXPR();

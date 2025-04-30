@@ -527,7 +527,11 @@ recsel_select (recsel_expr_t selector,
       if (recsel_debug)
         log_debug ("%s: name=%s got value '%s'\n", __func__, se->name, value);
       if (!value)
-        value = "";
+        {
+          se = se->next;
+          result = 0;
+          continue;
+        }
 
       if (!*value)
         {
