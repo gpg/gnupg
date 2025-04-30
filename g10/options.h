@@ -368,6 +368,7 @@ struct {
 #define DBG_TRUST_VALUE   256	/* debug the trustdb */
 #define DBG_HASHING_VALUE 512	/* debug hashing operations */
 #define DBG_IPC_VALUE     1024  /* debug assuan communication */
+#define DBG_RECSEL_VALUE  2048  /* Debug the record selection */
 #define DBG_CLOCK_VALUE   4096
 #define DBG_LOOKUP_VALUE  8192	/* debug the key lookup */
 #define DBG_EXTPROG_VALUE 16384 /* debug external program calls */
@@ -382,6 +383,7 @@ struct {
 #define DBG_TRUST  (opt.debug & DBG_TRUST_VALUE)
 #define DBG_HASHING (opt.debug & DBG_HASHING_VALUE)
 #define DBG_IPC     (opt.debug & DBG_IPC_VALUE)
+#define DBG_RECSEL  (opt.debug & DBG_RECSEL_VALUE)
 #define DBG_CLOCK   (opt.debug & DBG_CLOCK_VALUE)
 #define DBG_LOOKUP  (opt.debug & DBG_LOOKUP_VALUE)
 #define DBG_EXTPROG (opt.debug & DBG_EXTPROG_VALUE)

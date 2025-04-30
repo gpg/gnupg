@@ -34,6 +34,7 @@ typedef struct recsel_expr_s *recsel_expr_t;
 
 gpg_error_t recsel_parse_expr (recsel_expr_t *selector, const char *expr);
 void recsel_release (recsel_expr_t a);
+int recsel_set_debug (int value);
 void recsel_dump (recsel_expr_t selector);
 int recsel_select (recsel_expr_t selector,
                    const char *(*getval)(void *cookie, const char *propname),

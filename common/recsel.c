@@ -71,6 +71,10 @@ struct recsel_expr_s
 };
 
 
+/* Global debug variable.  */
+static int recsel_debug;
+
+
 /* Helper */
 static inline gpg_error_t
 my_error_from_syserror (void)
@@ -460,6 +464,15 @@ recsel_release (recsel_expr_t a)
 }
 
 
+int
+recsel_set_debug (int value)
+{
+  int old = recsel_debug;
+  recsel_debug = value;
+  return old;
+}
+
+
 void
 recsel_dump (recsel_expr_t selector)
 {
@@ -511,6 +524,8 @@ recsel_select (recsel_expr_t selector,
   while (se)
     {
       value = getval? getval (cookie, se->name) : NULL;
+      if (recsel_debug)
+        log_debug ("%s: name=%s got value '%s'\n", __func__, se->name, value);
       if (!value)
         value = "";
 
@@ -616,5 +631,7 @@ recsel_select (recsel_expr_t selector,
         }
     }
 
+  if (recsel_debug)
+    log_debug ("%s: result=%d\n", __func__, result);
   return result;
 }

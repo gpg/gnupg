@@ -132,6 +132,8 @@ parse_and_set_list_filter (const char *string)
     err = recsel_parse_expr (&list_filter.selkey, string+7);
   else
     err = gpg_error (GPG_ERR_INV_NAME);
+  if (!err && DBG_RECSEL)
+    recsel_dump (list_filter.selkey);
 
   return err;
 }

@@ -1464,6 +1464,8 @@ impex_filter_getval (void *cookie, const char *propname)
   /* We allow a prefix delimited by a slash to limit the scope of the
    * keyword.  Note that "pub" also includes "sec" and "sub" includes
    * "ssb".  */
+  if (DBG_RECSEL)  /* Printing the packet type is useful.  */
+    log_debug ("%s: pkttype=%s\n", __func__, pkttype_str (node->pkt->pkttype));
   if ((s=strchr (propname, '/')) && s != propname)
     {
       size_t n = s - propname;

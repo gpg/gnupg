@@ -65,6 +65,7 @@
 #include "../common/init.h"
 #include "../common/mbox-util.h"
 #include "../common/zb32.h"
+#include "../common/recsel.h"
 #include "../common/shareddefs.h"
 #include "../common/compliance.h"
 #include "../common/comopt.h"
@@ -1043,6 +1044,7 @@ static struct debug_flags_s debug_flags [] =
     { DBG_TRUST_VALUE  , "trust"   },
     { DBG_HASHING_VALUE, "hashing" },
     { DBG_IPC_VALUE    , "ipc"     },
+    { DBG_RECSEL_VALUE , "recsel"  },
     { DBG_CLOCK_VALUE  , "clock"   },
     { DBG_LOOKUP_VALUE , "lookup"  },
     { DBG_EXTPROG_VALUE, "extprog" },
@@ -1412,6 +1414,9 @@ set_debug (const char *level)
     opt.verbose = 1;
   if (opt.debug && opt.quiet)
     opt.quiet = 0;
+
+  /* Pass debug flags to the record selection module.  */
+  recsel_set_debug (!!DBG_RECSEL);
 
   if (opt_set_iobuf_size || opt_set_iobuf_size_used)
     log_debug ("iobuf buffer size is %uk\n",
