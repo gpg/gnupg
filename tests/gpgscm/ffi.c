@@ -1667,6 +1667,11 @@ ffi_init (scheme *sc, const char *argv0, const char *scriptname,
   ffi_define_function (sc, getenv);
   ffi_define_function (sc, setenv);
   ffi_define_function_name (sc, "_exit", exit);
+  /* AIX defines open to open64 which breaks the macro expansion to
+     'do_open' if it is not undefined.  */
+#ifdef open
+# undef open
+#endif
   ffi_define_function (sc, open);
   ffi_define_function (sc, fdopen);
   ffi_define_function (sc, close);
