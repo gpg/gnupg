@@ -341,8 +341,10 @@ get_pubkey_for_sig (ctrl_t ctrl, PKT_public_key *pk, PKT_signature *sig,
   /* Make sure to request only keys cabable of signing.  This makes
    * sure that a subkey w/o a valid backsig or with bad usage flags
    * will be skipped.  We also request the verification mode so that
-   * expired and reoked keys are returned.  */
-  pk->req_usage = (PUBKEY_USAGE_SIG | PUBKEY_USAGE_VERIFY);
+   * expired and revoked keys are returned.  We keep only a requested
+   * CERT usage in PK for the sake of key signatures.  */
+  pk->req_usage = (PUBKEY_USAGE_SIG | PUBKEY_USAGE_VERIFY
+                   | (pk->req_usage & PUBKEY_USAGE_CERT));
 
   /* First try the ISSUER_FPR info.  */
   fpr = issuer_fpr_raw (sig, &fprlen);
@@ -3736,7 +3738,7 @@ finish_lookup (kbnode_t keyblock, unsigned int req_usage, int want_exact,
   /* The verify mode is used to change the behaviour so that we can
    * return an expired or revoked key for signature verification.  */
   verify_mode = ((req_usage & PUBKEY_USAGE_VERIFY)
-                 && (req_usage & PUBKEY_USAGE_SIG));
+                 && (req_usage & (PUBKEY_USAGE_CERT|PUBKEY_USAGE_SIG)));
 
 #define USAGE_MASK  (PUBKEY_USAGE_SIG|PUBKEY_USAGE_ENC|PUBKEY_USAGE_CERT)
   req_usage &= USAGE_MASK;
