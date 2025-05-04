@@ -89,8 +89,12 @@ get_signal_name( int signum )
      reentrant. */
 #if HAVE_SIGDESCR_NP
   return sigdescr_np (signum);
-#elif HAVE_DECL_SYS_SIGLIST && defined(NSIG)
-  return (signum >= 0 && signum < NSIG) ? sys_siglist[signum] : "?";
+#elif (HAVE_DECL_SYS_SIGLIST || HAVE_DECL__SYS_SIGLIST) && defined(NSIG)
+#if HAVE_DECL_SYS_SIGLIST
+#undef _sys_siglist
+#define _sys_siglist sys_siglist
+#endif
+  return (signum >= 0 && signum < NSIG) ? _sys_siglist[signum] : "?";
 #else
   return NULL;
 #endif
