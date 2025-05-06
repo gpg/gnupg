@@ -301,12 +301,14 @@ gpgsm_verify (ctrl_t ctrl, estream_t in_fp, estream_t data_fp,
       unsigned int pkalgoflags, verifyflags;
 
       rc = ksba_cms_get_issuer_serial (cms, signer, &issuer, &serial);
-      if (!signer && gpg_err_code (rc) == GPG_ERR_NO_DATA
-          && !data_fp && is_detached)
+      if (!signer && gpg_err_code (rc) == GPG_ERR_NO_DATA)
         {
           log_info ("certs-only message accepted\n");
-          rc = 0;
-          break;
+          if (!data_fp && is_detached)
+            {
+              rc = 0;
+              break;
+            }
         }
       if (rc)
         {

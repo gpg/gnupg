@@ -388,7 +388,6 @@ run_test_2 (void)
 
   FREEEXPR();
   ADDEXPR ("letters -f");
-  recsel_dump (se);
   if (!recsel_select (se, test_2_getval, NULL))
     fail (0, 0);
   FREEEXPR();
