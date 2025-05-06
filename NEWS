@@ -8,20 +8,37 @@ Noteworthy changes in version 2.5.6 (unreleased)
     mode for this info.  [rG41d6ae8f41]
 
   * gpg: New command --quick-tsign-key to create a trust signature.
+    [rGd90b290f97]
 
-  * gpg: Fix double free of internal data.  [T7547]
+  * gpg: New keygen parameter "User-Id".  [rGcfd597c603]
+
+  * gpg: New list options "show-trustsig".  [rGrG41d6ae8f41]
+
+  * gpg: Fix double free of internal data in no-sig-cache mode [T7547]
+
+  * gpg: Signatures from revoked or expired keys do not anymore show
+    up as missing keys.  Fixes regression in 2.5.5.  [T7583]
 
   * gpgsm: Extend --learn-card by an optional s/n argument.  [T7379]
 
   * gpgsm: Skip expired certificates when selection a certificate by
     subject.  [rG4cf83273e8]
 
+  * card: New command "ll" as alias for "list --cards".  [rGd6ee7adebe]
+
   * scd: Fix posssible lockup on Windows due to a lost select
     result.  [rGa7ec3792c5]
 
-  * card: New command "ll" as alias for "list --cards".  [rGd6ee7adebe]
+  * scd:p15: Accept P15 cards with a zero-length label.  [rGdb25aa9887]
+
+  * keyboxd: Use case-insensitive search for mail addresses.  [T7576]
+
+  * dirmngr: Fix a problem in libdns related to an address change from
+    127.0.0.1.  [T4021]
 
   * gpgconf: Fix reload and kill of keyboxd.  [T7569]
+
+  * Fix logic for certain recsel conditions.  [rG8968e84903]
 
   Release-info: https://dev.gnupg.org/T7586
 
