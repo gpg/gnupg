@@ -1,4 +1,4 @@
-Noteworthy changes in version 2.5.6 (unreleased)
+Noteworthy changes in version 2.5.6 (2025-05-08)
 ------------------------------------------------
 
   * gpg: Add a flag to the filter expressions for left anchored
@@ -40,6 +40,11 @@ Noteworthy changes in version 2.5.6 (unreleased)
 
   * Fix logic for certain recsel conditions.  [rG8968e84903]
 
+  * Add Solaris support to get_signal_name.  [T7638]
+
+  * Fix build error of the test shell on AIX.  [T7632]
+
+  See-also: gnupg-announce/2025q2/000492.html
   Release-info: https://dev.gnupg.org/T7586
 
 
