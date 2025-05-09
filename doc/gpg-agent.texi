@@ -406,10 +406,7 @@ control this behavior but this command line option takes precedence.
 Set the time a cache entry is valid to @var{n} seconds.  The default
 is 600 seconds.  Each time a cache entry is accessed, the entry's
 timer is reset.  To set an entry's maximum lifetime, use
-@command{max-cache-ttl}.  Note that a cached passphrase may not be
-evicted immediately from memory if no client requests a cache
-operation.  This is due to an internal housekeeping function which is
-only run every few seconds.
+@command{max-cache-ttl}.
 
 @item --default-cache-ttl-ssh @var{n}
 @opindex default-cache-ttl

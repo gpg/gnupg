@@ -330,45 +330,41 @@ compute_expiration (ITEM r)
       return 1;
     }
 
-  switch (r->cache_mode)
+  if (r->cache_mode == CACHE_MODE_DATA)
     {
-    case CACHE_MODE_DATA:
-    case CACHE_MODE_PIN:
-      maxttl = 0;  /* No MAX TTL here.  */
-      break;
-    case CACHE_MODE_SSH: maxttl = opt.max_cache_ttl_ssh; break;
-    default: maxttl = opt.max_cache_ttl; break;
-    }
-
-  if (maxttl)
-    {
-      if (r->created + maxttl < current)
+      /* No MAX TTL here.  */
+      if (r->ttl >= 0)
         {
-          r->t.tv_sec = 0;
+          r->t.tv_sec = r->ttl;
           r->t.reason = CACHE_EXPIRE_CREATION;
           return 1;
         }
-
-      next = r->created + maxttl - current;
+      else
+        return 0;
     }
+  else if (r->cache_mode == CACHE_MODE_SSH)
+    maxttl = opt.max_cache_ttl_ssh;
   else
-    next = 0;
+    maxttl = opt.max_cache_ttl;
 
-  if (r->ttl >= 0 && (next == 0 || r->ttl < next))
+  if (r->created + maxttl <= current)
+    {
+      r->t.tv_sec = 0;
+      r->t.reason = CACHE_EXPIRE_CREATION;
+      return 1;
+    }
+
+  next = r->created + maxttl - current;
+  if (r->ttl >= 0 && r->ttl < next)
     {
       r->t.tv_sec = r->ttl;
       r->t.reason = CACHE_EXPIRE_LAST_ACCESS;
       return 1;
     }
 
-  if (next)
-    {
-      r->t.tv_sec = next;
-      r->t.reason = CACHE_EXPIRE_CREATION;
-      return 1;
-    }
-
-  return 0;
+  r->t.tv_sec = next;
+  r->t.reason = CACHE_EXPIRE_CREATION;
+  return 1;
 }
 
 static void
