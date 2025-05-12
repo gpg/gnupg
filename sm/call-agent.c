@@ -967,6 +967,10 @@ istrusted_status_cb (void *opaque, const char *line)
         return gpg_error_from_syserror ();
       strcpy (ci->fpr, s);
       memset (&ci->flags, 0, sizeof ci->flags);
+
+      if ((opt.compat_flags & COMPAT_DE_VS_TRUSTLIST))
+        parm->flags.de_vs = 1;
+
       ci->next = parm->cache;
       parm->cache = ci;
     }

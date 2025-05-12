@@ -188,6 +188,8 @@ struct
 #define COMPAT_NO_CHAIN_CACHE     2
 /* Ditto.  But here to disable the keyinfo and istrusted cache.  */
 #define COMPAT_NO_KEYINFO_CACHE   4
+/* Assume that all trustlist.txt entries have the de-vs flag set.  */
+#define COMPAT_DE_VS_TRUSTLIST    8
 
 /* Forward declaration for an object defined in server.c */
 struct server_local_s;
