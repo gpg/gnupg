@@ -2438,6 +2438,7 @@ ask_key_flags_with_mask (int algo, int subkey, unsigned int current,
    * below for a workaround. */
   possible = (openpgp_pk_algo_usage (algo) & mask);
   possible &= ~PUBKEY_USAGE_RENC;
+  possible &= ~PUBKEY_USAGE_GROUP;
   if (algo == PUBKEY_ALGO_ECDH)
     possible |= (current & (PUBKEY_USAGE_ENC
                             |PUBKEY_USAGE_CERT
@@ -4972,7 +4973,8 @@ proc_parameter_file (ctrl_t ctrl, struct para_data_s *para, const char *fname,
   else
     {
       r = get_parameter (para, pKEYUSAGE);
-      if (r && (r->u.usage & ~openpgp_pk_algo_usage (algo)))
+      if (r && (r->u.usage
+                & ~(openpgp_pk_algo_usage (algo) | PUBKEY_USAGE_GROUP)))
         {
           log_error ("%s:%d: specified Key-Usage not allowed for algo %d\n",
                      fname, r->lnr, algo);
@@ -5009,7 +5011,8 @@ proc_parameter_file (ctrl_t ctrl, struct para_data_s *para, const char *fname,
       else
         {
           r = get_parameter (para, pSUBKEYUSAGE);
-          if (r && (r->u.usage & ~openpgp_pk_algo_usage (algo)))
+          if (r && (r->u.usage
+                    & ~(openpgp_pk_algo_usage (algo)|PUBKEY_USAGE_GROUP)))
             {
               log_error ("%s:%d: specified Subkey-Usage not allowed"
                          " for algo %d\n", fname, r->lnr, algo);
