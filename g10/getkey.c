@@ -3162,7 +3162,7 @@ merge_selfsigs_main (ctrl_t ctrl, kbnode_t keyblock, int *r_revoked,
       /* Check that the usage matches the usage as given by the algo.  */
       int x = openpgp_pk_algo_usage (pk->pubkey_algo);
       if (x) /* Mask it down to the actual allowed usage.  */
-	key_usage &= x;
+	key_usage &= (x | PUBKEY_USAGE_GROUP);
     }
 
   /* Whatever happens, it's a primary key, so it can certify. */
@@ -3437,7 +3437,7 @@ merge_selfsigs_subkey (ctrl_t ctrl, kbnode_t keyblock, kbnode_t subnode)
       /* Check that the usage matches the usage as given by the algo.  */
       int x = openpgp_pk_algo_usage (subpk->pubkey_algo);
       if (x) /* Mask it down to the actual allowed usage.  */
-	key_usage &= x;
+	key_usage &= (x | PUBKEY_USAGE_GROUP);
     }
 
   subpk->pubkey_usage = key_usage;
