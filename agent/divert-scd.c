@@ -507,21 +507,25 @@ agent_card_ecc_kem (ctrl_t ctrl, const unsigned char *ecc_ct,
   char *ecdh = NULL;
   size_t len;
   int rc;
+  char hexgrip[41];
 
-  rc = agent_card_pkdecrypt (ctrl, ctrl->keygrip, getpin_cb, ctrl, NULL,
+  bin2hex (ctrl->keygrip, 20, hexgrip);
+  rc = agent_card_pkdecrypt (ctrl, hexgrip, getpin_cb, ctrl, NULL,
                              ecc_ct, ecc_point_len, &ecdh, &len, NULL);
   if (rc)
     return rc;
 
-  if (len != ecc_point_len)
+  if (len == ecc_point_len)
+    memcpy (ecc_ecdh, ecdh, len);
+  else if (len == ecc_point_len + 1 && ecdh[0] == 0x40) /* The prefix */
+    memcpy (ecc_ecdh, ecdh + 1, len - 1);
+  else
     {
       if (opt.verbose)
         log_info ("%s: ECC result length invalid (%zu != %zu)\n",
                   __func__, len, ecc_point_len);
       return gpg_error (GPG_ERR_INV_DATA);
     }
-  else
-    memcpy (ecc_ecdh, ecdh, len);
 
   xfree (ecdh);
   return err;

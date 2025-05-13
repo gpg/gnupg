@@ -538,7 +538,7 @@ ecc_pgp_kem_decrypt (ctrl_t ctrl, gcry_sexp_t s_skey0,
         s: encrypted session key
         fixed-info: A buffer with the fixed info.
 
-   FIXME: For now, possible keys on smartcard are not supported.
+   FIXME: For now, possible PQC key on smartcard is not yet supported.
   */
 static gpg_error_t
 composite_pgp_kem_decrypt (ctrl_t ctrl, const char *desc_text,
