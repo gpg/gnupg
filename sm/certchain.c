@@ -1081,14 +1081,10 @@ gpgsm_walk_cert_chain (ctrl_t ctrl, ksba_cert_t start, ksba_cert_t *r_next)
       err = gpg_error (GPG_ERR_BAD_CERT);
       goto leave;
     }
-  if (!subject)
-    {
-      log_error ("no subject found in certificate\n");
-      err = gpg_error (GPG_ERR_BAD_CERT);
-      goto leave;
-    }
+  if (!subject && !opt.quiet)
+    log_info ("Note: no subject found in certificate\n");
 
-  if (is_root_cert (start, issuer, subject))
+  if (subject && is_root_cert (start, issuer, subject))
     {
       err = gpg_error (GPG_ERR_NOT_FOUND); /* we are at the root */
       goto leave;
