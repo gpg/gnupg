@@ -1670,7 +1670,8 @@ list_keyblock_simple (ctrl_t ctrl, kbnode_t keyblock)
 	  if (uid->attrib_data)
 	    continue;
 
-	  if (uid->flags.expired || uid->flags.revoked)
+	  if ((uid->flags.expired || uid->flags.revoked)
+              && !(opt.list_options & LIST_SHOW_UNUSABLE_UIDS))
             continue;
 
           mbox = mailbox_from_userid (uid->name, 0);
