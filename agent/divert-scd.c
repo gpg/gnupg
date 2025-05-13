@@ -507,9 +507,9 @@ agent_card_ecc_kem (ctrl_t ctrl, const unsigned char *ecc_ct,
   char *ecdh = NULL;
   size_t len;
   int rc;
-  char hexgrip[41];
+  char hexgrip[KEYGRIP_LEN*2+1];
 
-  bin2hex (ctrl->keygrip, 20, hexgrip);
+  bin2hex (ctrl->keygrip, KEYGRIP_LEN, hexgrip);
   rc = agent_card_pkdecrypt (ctrl, hexgrip, getpin_cb, ctrl, NULL,
                              ecc_ct, ecc_point_len, &ecdh, &len, NULL);
   if (rc)
