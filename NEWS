@@ -1,4 +1,4 @@
-Noteworthy changes in version 2.4.8 (unreleased)
+Noteworthy changes in version 2.4.8 (2025-05-14)
 ------------------------------------------------
 
   * gpg: Fix a verification DoS due to a malicious subkey in the
@@ -6,6 +6,26 @@ Noteworthy changes in version 2.4.8 (unreleased)
 
   * gpg: Fix a regression in 2.4.7 for generating a key from card.
     [T7457]
+
+  * gpg: Fix --quick-add-key for Weierstrass ECC with usage given.
+    [T7506]
+
+  * gpg: Fully implement the group key flag.  [rGedd01d8fc4]
+
+  * gpg: Make combination of show-only-fpr-mbox and show-unusable-uid
+    work.  [rGeb2a90d343]
+
+  * gpgsm: Do not return an error code when importing a certificate
+    with an empty subject.  [T7171]
+
+  * scd: Accept P15 cards with a zero-length label.  [rG18b4ebb28a]
+
+  * keyboxd: Use case-insensitive search for mail addresses.  [T7576]
+
+  * gpgconf: Fix reload and kill of keyboxd.  [T7569]
+
+  * w32: Fix posssible lockup due to lost select results.
+    [rG9448d01d61]
 
   Release-info: https://dev.gnupg.org/T7428
 
