@@ -1345,22 +1345,23 @@ prompt_for_card (ctrl_t ctrl, const unsigned char *grip,
 
 /* Return the secret key as an S-Exp in RESULT after locating it using
    the GRIP.  Caller should set GRIP=NULL, when a key in a file is
-   intended to be used for cryptographic operation.  In this case,
-   CTRL->keygrip is used to locate the file, and it may ask a user for
-   confirmation.  If the operation shall be diverted to a token, an
-   allocated S-expression with the shadow_info part from the file is
-   stored at SHADOW_INFO; if not NULL will be stored at SHADOW_INFO.
-   CACHE_MODE defines now the cache shall be used.  DESC_TEXT may be
-   set to present a custom description for the pinentry.  LOOKUP_TTL
-   is an optional function to convey a TTL to the cache manager; we do
-   not simply pass the TTL value because the value is only needed if
-   an unprotect action was needed and looking up the TTL may have some
-   overhead (e.g. scanning the sshcontrol file).  If a CACHE_NONCE is
-   given that cache item is first tried to get a passphrase.  If
-   R_PASSPHRASE is not NULL, the function succeeded and the key was
-   protected the used passphrase (entered or from the cache) is stored
-   there; if not NULL will be stored.  The caller needs to free the
-   returned passphrase.   */
+   intended to be used for cryptographic operation (except the case of
+   GRIP==CTRL->keygrip1 for PQC).  When GRIP==NULL, CTRL->keygrip is
+   used to locate the file.  When GRIP==NULL or GRIP==CTRL->keygrip1,
+   it may ask a user for confirmation.  If the operation shall be
+   diverted to a token, an allocated S-expression with the shadow_info
+   part from the file is stored at SHADOW_INFO; if not NULL will be
+   stored at SHADOW_INFO.  CACHE_MODE defines now the cache shall be
+   used.  DESC_TEXT may be set to present a custom description for the
+   pinentry.  LOOKUP_TTL is an optional function to convey a TTL to
+   the cache manager; we do not simply pass the TTL value because the
+   value is only needed if an unprotect action was needed and looking
+   up the TTL may have some overhead (e.g. scanning the sshcontrol
+   file).  If a CACHE_NONCE is given that cache item is first tried to
+   get a passphrase.  If R_PASSPHRASE is not NULL, the function
+   succeeded and the key was protected the used passphrase (entered or
+   from the cache) is stored there; if not NULL will be stored.  The
+   caller needs to free the returned passphrase.  */
 gpg_error_t
 agent_key_from_file (ctrl_t ctrl, const char *cache_nonce,
                      const char *desc_text,
@@ -1375,6 +1376,7 @@ agent_key_from_file (ctrl_t ctrl, const char *cache_nonce,
   gcry_sexp_t s_skey;
   nvc_t keymeta = NULL;
   char *desc_text_buffer = NULL;  /* Used in case we extend DESC_TEXT.  */
+  int for_crypto_operation = 0;
 
   *result = NULL;
   if (shadow_info)
@@ -1384,11 +1386,18 @@ agent_key_from_file (ctrl_t ctrl, const char *cache_nonce,
   if (r_timestamp)
     *r_timestamp = (time_t)(-1);
 
-  if (!grip && !ctrl->have_keygrip)
-    return gpg_error (GPG_ERR_NO_SECKEY);
+  if (!grip)
+    {
+      if (!ctrl->have_keygrip)
+        return gpg_error (GPG_ERR_NO_SECKEY);
+      for_crypto_operation = 1;
+      grip = ctrl->keygrip;
+    }
+  else if (grip == ctrl->keygrip1)
+    /* This is the use case for composite PQC,  */
+    for_crypto_operation = 1;
 
-  err = read_key_file (ctrl, grip? grip : ctrl->keygrip,
-                       &s_skey, &keymeta, NULL);
+  err = read_key_file (ctrl, grip, &s_skey, &keymeta, NULL);
   if (err)
     {
       if (gpg_err_code (err) == GPG_ERR_ENOENT)
@@ -1418,7 +1427,7 @@ agent_key_from_file (ctrl_t ctrl, const char *cache_nonce,
         *r_timestamp = isotime2epoch (created);
     }
 
-  if (!grip && keymeta)
+  if (for_crypto_operation && keymeta)
     {
       const char *ask_confirmation = nvc_get_string (keymeta, "Confirm:");
 
@@ -1520,8 +1529,7 @@ agent_key_from_file (ctrl_t ctrl, const char *cache_nonce,
 
         if (!err)
           {
-            err = unprotect (ctrl, cache_nonce, desc_text_final, &buf,
-                             grip? grip : ctrl->keygrip,
+            err = unprotect (ctrl, cache_nonce, desc_text_final, &buf, grip,
                              cache_mode, lookup_ttl, r_passphrase);
             if (err)
               log_error ("failed to unprotect the secret key: %s\n",
@@ -1556,9 +1564,9 @@ agent_key_from_file (ctrl_t ctrl, const char *cache_nonce,
                    * When it's a key on card (not on tpm2), make sure
                    * it's available.
                    */
-                  if (strcmp (shadow_type, "t1-v1") == 0 && !grip)
-                    err = prompt_for_card (ctrl, ctrl->keygrip,
-                                           keymeta, *shadow_info);
+                  if (strcmp (shadow_type, "t1-v1") == 0
+                      && for_crypto_operation)
+                    err = prompt_for_card (ctrl, grip, keymeta, *shadow_info);
                 }
             }
           else

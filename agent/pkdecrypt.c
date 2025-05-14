@@ -583,7 +583,7 @@ composite_pgp_kem_decrypt (ctrl_t ctrl, const char *desc_text,
   gcry_buffer_t fixed_info = { 0, 0, 0, NULL };
 
   err = agent_key_from_file (ctrl, NULL, desc_text,
-                             ctrl->keygrip, &shadow_info0,
+                             NULL, &shadow_info0,
                              CACHE_MODE_NORMAL, NULL, &s_skey0, NULL, NULL);
   if (err && gpg_err_code (err) != GPG_ERR_NO_SECKEY)
     {
