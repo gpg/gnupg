@@ -1448,9 +1448,8 @@ start_connection_thread (void *arg)
 
   if (check_nonce (ctrl, &socket_nonce))
     {
-      log_error ("handler 0x%lx for fd %d FAILED nonce check\n",
-                 (unsigned long) npth_self(), FD_DBG (ctrl->thread_startup.fd));
-      assuan_sock_close (ctrl->thread_startup.fd);
+      log_error ("handler 0x%lx nonce check FAILED\n",
+                 (unsigned long) npth_self());
       return NULL;
     }
 
