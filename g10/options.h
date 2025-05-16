@@ -387,7 +387,7 @@ EXTERN_UNLESS_MAIN_MODULE int memory_debug_mode;
 EXTERN_UNLESS_MAIN_MODULE int memory_stat_debug_mode;
 
 /* Compatibility flags */
-/* #define COMPAT_FOO   1 */
+#define COMPAT_COMPR_KEYS     4  /* Allow import of compressed keys. (T7014) */
 
 
 /* Compliance test macors.  */
