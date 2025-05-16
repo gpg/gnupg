@@ -61,9 +61,12 @@ static struct {
   { "Ed448",      "1.3.101.113",            456, "ed448",   NULL,
     PUBKEY_ALGO_EDDSA },
 
-  { "NIST P-256",      "1.2.840.10045.3.1.7",    256, "nistp256" },
-  { "NIST P-384",      "1.3.132.0.34",           384, "nistp384" },
-  { "NIST P-521",      "1.3.132.0.35",           521, "nistp521" },
+  { "NIST P-256",      "1.2.840.10045.3.1.7",    256, "nistp256", NULL,
+    0, GCRY_KEM_RAW_P256R1 },
+  { "NIST P-384",      "1.3.132.0.34",           384, "nistp384", NULL,
+    0, GCRY_KEM_RAW_P384R1 },
+  { "NIST P-521",      "1.3.132.0.35",           521, "nistp521", NULL,
+    0, GCRY_KEM_RAW_P521R1 },
 
   { "brainpoolP256r1", "1.3.36.3.3.2.8.1.1.7",   256, NULL, "bp256",
     0, GCRY_KEM_RAW_BP256 },
