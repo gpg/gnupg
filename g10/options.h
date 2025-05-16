@@ -399,7 +399,7 @@ EXTERN_UNLESS_MAIN_MODULE int memory_stat_debug_mode;
 /* Compatibility flags */
 #define COMPAT_PARALLELIZED   1  /* Use threaded hashing for signatures.  */
 #define COMPAT_T7014_OLD      2  /* Use initial T7014 test data.  */
-
+#define COMPAT_COMPR_KEYS     4  /* Allow import of compressed keys. (T7014) */
 
 /* Compliance test macros.  */
 #define GNUPG   (opt.compliance==CO_GNUPG || opt.compliance==CO_DE_VS)

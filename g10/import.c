@@ -1058,7 +1058,12 @@ read_block( IOBUF a, unsigned int options,
       switch (pkt->pkttype)
         {
         case PKT_COMPRESSED:
-          if (check_compress_algo (pkt->pkt.compressed->algorithm))
+          if (!(opt.compat_flags & COMPAT_COMPR_KEYS))
+            {
+              rc = GPG_ERR_UNEXPECTED_PACKET;
+              goto ready;
+            }
+          else if (check_compress_algo (pkt->pkt.compressed->algorithm))
             {
               rc = GPG_ERR_COMPR_ALGO;
               goto ready;
