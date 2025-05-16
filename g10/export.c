@@ -424,9 +424,6 @@ do_export (ctrl_t ctrl, strlist_t users, int secret, unsigned int options,
   IOBUF out = NULL;
   int any, rc;
   armor_filter_context_t *afx = NULL;
-  compress_filter_context_t zfx;
-
-  memset( &zfx, 0, sizeof zfx);
 
   rc = open_outfile (GNUPG_INVALID_FD, NULL, 0, !!secret, &out);
   if (rc)
