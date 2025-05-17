@@ -1356,10 +1356,16 @@ search_and_parse (ctrl_t ctrl, const char *keyspec,
                   char **attrs, LDAPMessage **r_message)
 {
   gpg_error_t err = 0;
-  int l_err, l_reserr;
+  int l_err;
+#ifdef HAVE_W32_SYSTEM
+  ULONG l_reserr;
+  ULONG totalcount = 0;
+#else
+  int l_reserr;
+  unsigned int totalcount = 0;
+#endif
   LDAPControl *srvctrls[2] = { NULL, NULL };
   int count;
-  unsigned int totalcount = 0;
   LDAPControl *pagectrl = NULL;
   LDAPControl **resctrls = NULL;
 
