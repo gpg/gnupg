@@ -38,20 +38,12 @@ int pk_check_secret_key (pubkey_algo_t algo, gcry_mpi_t *skey);
 
 /*-- ecdh.c --*/
 gcry_mpi_t  pk_ecdh_default_params (unsigned int qbits);
-gpg_error_t pk_ecdh_generate_ephemeral_key (gcry_mpi_t *pkey, gcry_mpi_t *r_k);
-gpg_error_t pk_ecdh_encrypt_with_shared_point
-/*         */  (const char *shared, size_t nshared,
-                const byte pk_fp[MAX_FINGERPRINT_LEN],
-                const byte *data, size_t ndata,
-                gcry_mpi_t *pkey,
-                gcry_mpi_t *out);
-
-int pk_ecdh_encrypt (gcry_mpi_t *resarr, const byte pk_fp[MAX_FINGERPRINT_LEN],
-                     gcry_mpi_t data, gcry_mpi_t * pkey);
 int pk_ecdh_decrypt (gcry_mpi_t *result, const byte sk_fp[MAX_FINGERPRINT_LEN],
                      gcry_mpi_t data,
                      const byte *frame, size_t nframe,
                      gcry_mpi_t * skey);
 
+gpg_error_t gnupg_ecc_6637_kdf (void *kek, size_t kek_len, int hashalgo,
+                                const void *ecdh, size_t ecdh_len, PKT_public_key *pk);
 
 #endif /*GNUPG_G10_PKGLUE_H*/

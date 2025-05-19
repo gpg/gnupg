@@ -144,8 +144,8 @@ compute_kmac256 (void *digest, size_t digestlen,
 }
 
 
-/* Compute KEK (shared secret) for ECC with HASHALGO, ECDH result,
-   ciphertext in ECC_CT, public key in ECC_PK.  */
+/* Compute KEK for ECC with HASHALGO, ECDH result, ciphertext in
+   ECC_CT (which is an ephemeral key), and public key in ECC_PK.  */
 gpg_error_t
 gnupg_ecc_kem_kdf (void *kek, size_t kek_len,
                    int hashalgo, const void *ecdh, size_t ecdh_len,

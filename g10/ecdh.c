@@ -236,6 +236,68 @@ derive_kek (size_t kek_size,
   return err;
 }
 
+/* Compute KEK for ECC with HASHALGO, ECDH result, and public key in
+   PK, using the method defined in RFC 6637.  Note that ephemeral key
+   is not used to compute KEK here.  */
+gpg_error_t
+gnupg_ecc_6637_kdf (void *kek, size_t kek_len,
+                    int hashalgo, const void *ecdh, size_t ecdh_len,
+                    PKT_public_key *pk)
+{
+  gpg_error_t err;
+  unsigned char kdf_params[256];
+  size_t kdf_params_size;
+  unsigned int nbits;
+  byte *secret_x;
+  int secret_x_size;
+  gcry_kdf_hd_t hd;
+  unsigned long param[1];
+  byte fp[MAX_FINGERPRINT_LEN];
+
+  fingerprint_from_pk (pk, fp, NULL);
+
+  /* Build kdf_params.  */
+  err = build_kdf_params (kdf_params, &kdf_params_size, pk->pkey, fp);
+  if (err)
+    return err;
+
+  nbits = pubkey_nbits (PUBKEY_ALGO_ECDH, pk->pkey);
+  if (!nbits)
+    return gpg_error (GPG_ERR_TOO_SHORT);
+
+  secret_x_size = (nbits+7)/8;
+  if (kek_len > secret_x_size)
+    return gpg_error (GPG_ERR_BAD_PUBKEY);
+
+  err = extract_secret_x (&secret_x, ecdh, ecdh_len,
+                          /* pk->pkey[1] is the public point */
+                          (mpi_get_nbits (pk->pkey[1])+7)/8,
+                          secret_x_size);
+  if (err)
+    return err;
+
+  param[0] = kek_len;
+  err = gcry_kdf_open (&hd, GCRY_KDF_ONESTEP_KDF, hashalgo, param, 1,
+                       secret_x, secret_x_size, NULL, 0, NULL, 0,
+                       kdf_params, kdf_params_size);
+  if (!err)
+    {
+      gcry_kdf_compute (hd, NULL);
+      gcry_kdf_final (hd, kek_len, secret_x);
+      gcry_kdf_close (hd);
+      memcpy (kek, secret_x, kek_len);
+      /* Clean the tail before returning.  */
+      memset (secret_x+kek_len, 0, secret_x_size - kek_len);
+      xfree (secret_x);
+      return 0;
+    }
+  else
+    {
+      xfree (secret_x);
+      return err;
+    }
+}
+
 
 /* Prepare ECDH using SHARED, PK_FP fingerprint, and PKEY array.
    Returns the cipher handle in R_HD, which needs to be closed by
@@ -357,160 +419,6 @@ prepare_ecdh_with_shared_point (const char *shared, size_t nshared,
 
   return err;
 }
-
-/* Encrypts DATA using a key derived from the ECC shared point SHARED
-   using the FIPS SP 800-56A compliant method
-   key_derivation+key_wrapping.  PKEY is the public key and PK_FP the
-   fingerprint of this public key.  On success the result is stored at
-   R_RESULT; on failure NULL is stored at R_RESULT and an error code
-   returned.  */
-gpg_error_t
-pk_ecdh_encrypt_with_shared_point (const char *shared, size_t nshared,
-                                   const byte pk_fp[MAX_FINGERPRINT_LEN],
-                                   const byte *data, size_t ndata,
-                                   gcry_mpi_t *pkey, gcry_mpi_t *r_result)
-{
-  gpg_error_t err;
-  gcry_cipher_hd_t hd;
-  byte *data_buf;
-  int data_buf_size;
-  gcry_mpi_t result;
-  byte *in;
-
-  *r_result = NULL;
-
-  err = prepare_ecdh_with_shared_point (shared, nshared, pk_fp, pkey, &hd);
-  if (err)
-    return err;
-
-  data_buf_size = ndata;
-  if ((data_buf_size & 7) != 0)
-    {
-      log_error ("can't use a shared secret of %d bytes for ecdh\n",
-                 data_buf_size);
-      gcry_cipher_close (hd);
-      return gpg_error (GPG_ERR_BAD_DATA);
-    }
-
-  data_buf = xtrymalloc_secure( 1 + 2*data_buf_size + 8);
-  if (!data_buf)
-    {
-      err = gpg_error_from_syserror ();
-      gcry_cipher_close (hd);
-      return err;
-    }
-
-  in = data_buf+1+data_buf_size+8;
-
-  /* Write data MPI into the end of data_buf. data_buf is size
-     aeswrap data.  */
-  memcpy (in, data, ndata);
-
-  if (DBG_CRYPTO)
-    log_printhex (in, data_buf_size, "ecdh encrypting  :");
-
-  err = gcry_cipher_encrypt (hd, data_buf+1, data_buf_size+8,
-                             in, data_buf_size);
-  memset (in, 0, data_buf_size);
-  gcry_cipher_close (hd);
-  if (err)
-    {
-      log_error ("ecdh failed in gcry_cipher_encrypt: %s\n",
-                 gpg_strerror (err));
-      xfree (data_buf);
-      return err;
-    }
-  data_buf[0] = data_buf_size+8;
-
-  if (DBG_CRYPTO)
-    log_printhex (data_buf+1, data_buf[0], "ecdh encrypted to:");
-
-  result = gcry_mpi_set_opaque (NULL, data_buf, 8 * (1+data_buf[0]));
-  if (!result)
-    {
-      err = gpg_error_from_syserror ();
-      xfree (data_buf);
-      log_error ("ecdh failed to create an MPI: %s\n",
-                 gpg_strerror (err));
-      return err;
-    }
-
-  *r_result = result;
-  return err;
-}
-
-
-static gcry_mpi_t
-gen_k (unsigned nbits, int little_endian, int is_opaque)
-{
-  gcry_mpi_t k;
-
-  if (is_opaque)
-    {
-      unsigned char *p;
-      size_t nbytes = (nbits+7)/8;
-
-      p = gcry_random_bytes_secure (nbytes, GCRY_STRONG_RANDOM);
-      if ((nbits % 8))
-        {
-          if (little_endian)
-            p[nbytes-1] &= ((1 << (nbits % 8)) - 1);
-          else
-            p[0] &= ((1 << (nbits % 8)) - 1);
-        }
-      k = gcry_mpi_set_opaque (NULL, p, nbits);
-      return k;
-    }
-
-  k = gcry_mpi_snew (nbits);
-  if (DBG_CRYPTO)
-    log_debug ("choosing a random k of %u bits\n", nbits);
-
-  gcry_mpi_randomize (k, nbits-1, GCRY_STRONG_RANDOM);
-
-  if (DBG_CRYPTO)
-    {
-      unsigned char *buffer;
-      if (gcry_mpi_aprint (GCRYMPI_FMT_HEX, &buffer, NULL, k))
-        BUG ();
-      log_debug ("ephemeral scalar MPI #0: %s\n", buffer);
-      gcry_free (buffer);
-    }
-
-  return k;
-}
-
-
-/* Generate an ephemeral key for the public ECDH key in PKEY.  On
-   success the generated key is stored at R_K; on failure NULL is
-   stored at R_K and an error code returned.  */
-gpg_error_t
-pk_ecdh_generate_ephemeral_key (gcry_mpi_t *pkey, gcry_mpi_t *r_k)
-{
-  unsigned int nbits;
-  gcry_mpi_t k;
-  int is_little_endian = 0;
-  int require_opaque = 0;
-
-  if (openpgp_oid_is_cv448 (pkey[0]))
-    {
-      is_little_endian = 1;
-      require_opaque = 1;
-    }
-
-  *r_k = NULL;
-
-  nbits = pubkey_nbits (PUBKEY_ALGO_ECDH, pkey);
-  if (!nbits)
-    return gpg_error (GPG_ERR_TOO_SHORT);
-  k = gen_k (nbits, is_little_endian, require_opaque);
-  if (!k)
-    BUG ();
-
-  *r_k = k;
-  return 0;
-}
-
 
 
 /* Perform ECDH decryption.   */
