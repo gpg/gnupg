@@ -222,8 +222,18 @@
   remote use gpg-agent because the no-autostart feature on the remote
   site will not work as expected.
 
-  Thus the recommendation is not to use the --supervised option.  All
-  GnuPG components handle the startup of their daemons on their own.
+  If your systems already comes with a systemd enabled GnuPG, you
+  should thus tell it not to start its own GnuPG daemons by running
+  the following three commands once:
+
+    systemctl --user mask --now gpg-agent.service \
+              gpg-agent.socket gpg-agent-ssh.socket \
+              gpg-agent-extra.socket gpg-agent-browser.socket
+    systemctl --user mask --now dirmngr.socket
+    systemctl --user mask --now keyboxd.socket
+
+  This way all GnuPG components can handle the startup of their
+  daemons on their own and start the correct version.
 
   The only problem is that for using GnuPG's ssh-agent protocol
   support, the gpg-agent must have been started before ssh.  This can
