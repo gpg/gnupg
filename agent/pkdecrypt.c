@@ -38,7 +38,6 @@ struct ecc_params
   size_t pubkey_len;            /* Pubkey in the SEXP representation.   */
   size_t scalar_len;
   size_t point_len;
-  size_t shared_len;
   int hash_algo;
   int kem_algo;
   int scalar_reverse;
@@ -48,35 +47,35 @@ static const struct ecc_params ecc_table[] =
   {
     {
       "Curve25519",
-      33, 32, 32, 32,
+      33, 32, 32,
       GCRY_MD_SHA3_256, GCRY_KEM_RAW_X25519,
       1
     },
     {
       "X448",
-      56, 56, 56, 64,
+      56, 56, 56,
       GCRY_MD_SHA3_512, GCRY_KEM_RAW_X448,
       0
     },
     {
       "brainpoolP256r1",
-      65, 32, 65, 32,
+      65, 32, 65,
       GCRY_MD_SHA3_256, GCRY_KEM_RAW_BP256,
       0
     },
     {
       "brainpoolP384r1",
-      97, 48, 97, 64,
+      97, 48, 97,
       GCRY_MD_SHA3_512, GCRY_KEM_RAW_BP384,
       0
     },
     {
       "brainpoolP512r1",
-      129, 64, 129, 64,
+      129, 64, 129,
       GCRY_MD_SHA3_512, GCRY_KEM_RAW_BP512,
       0
     },
-    { NULL, 0, 0, 0, 0, 0, 0, 0 }
+    { NULL, 0, 0, 0, 0, 0, 0 }
 };
 
 
@@ -424,19 +423,22 @@ ecc_get_curve (ctrl_t ctrl, gcry_sexp_t s_skey, const char **r_curve)
 }
 
 /* Given a private key in SEXP by S_SKEY0 and a cipher text by ECC_CT
- * with length ECC_POINT_LEN, do ECC-KEM operation.  Result is
- * returned in the memory referred by ECC_SS.  Shared secret length is
- * returned in the memory referred by R_SHARED_LEN.  CTRL is used to
- * access smartcard, internally.  */
+ * with length ECC_POINT_LEN, do ECC KEM decap (== raw ECDH)
+ * operation.  Result is returned in the memory referred by ECC_ECDH.
+ * Public key is extracted and put into ECC_PK.  The hash algorithm
+ * which is used for following KDF operation is stored into
+ * R_HASH_ALGO.  SHADOW_INFO0 is used to determine if the private key
+ * is actually on smartcard.  CTRL is used to access smartcard,
+ * internally.  */
 static gpg_error_t
-ecc_pgp_kem_decrypt (ctrl_t ctrl, gcry_sexp_t s_skey0,
-                     unsigned char *shadow_info0,
-                     const unsigned char *ecc_ct, size_t ecc_point_len,
-                     unsigned char *ecc_ss, size_t *r_shared_len)
+ecc_pgp_kem_decap (ctrl_t ctrl, gcry_sexp_t s_skey0,
+                   const unsigned char *shadow_info0,
+                   const unsigned char *ecc_ct, size_t ecc_point_len,
+                   unsigned char ecc_ecdh[ECC_POINT_LEN_MAX],
+                   unsigned char ecc_pk[ECC_POINT_LEN_MAX],
+                   int *r_hash_algo)
 {
   gpg_error_t err;
-  unsigned char ecc_ecdh[ECC_POINT_LEN_MAX];
-  unsigned char ecc_pk[ECC_POINT_LEN_MAX];
   const char *curve;
   const struct ecc_params *ecc = NULL;
 
@@ -453,6 +455,9 @@ ecc_pgp_kem_decrypt (ctrl_t ctrl, gcry_sexp_t s_skey0,
       return err;
     }
 
+  if (DBG_CRYPTO)
+    log_debug ("ECC    curve: %s\n", curve);
+
   ecc = get_ecc_params (curve);
   if (!ecc)
     {
@@ -461,10 +466,7 @@ ecc_pgp_kem_decrypt (ctrl_t ctrl, gcry_sexp_t s_skey0,
       return gpg_error (GPG_ERR_BAD_SECKEY);
     }
 
-  *r_shared_len = ecc->shared_len;
-
-  if (DBG_CRYPTO)
-    log_debug ("ECC    curve: %s\n", curve);
+  *r_hash_algo = ecc->hash_algo;
 
   if (ecc->point_len != ecc_point_len)
     {
@@ -508,22 +510,6 @@ ecc_pgp_kem_decrypt (ctrl_t ctrl, gcry_sexp_t s_skey0,
   if (DBG_CRYPTO)
     log_printhex (ecc_ecdh, ecc_point_len, "ECC     ecdh:");
 
-  err = gnupg_ecc_kem_kdf (ecc_ss, ecc->shared_len, ecc->hash_algo,
-                           ecc_ecdh, ecc->point_len, ecc_ct, ecc->point_len,
-                           ecc_pk, ecc->point_len);
-
-  wipememory (ecc_ecdh, sizeof ecc_ecdh);
-
-  if (err)
-    {
-      if (opt.verbose)
-        log_info ("%s: kdf for ECC failed\n", __func__);
-      return err;
-    }
-
-  if (DBG_CRYPTO)
-    log_printhex (ecc_ss, ecc->shared_len, "ECC   shared:");
-
   return 0;
 }
 
@@ -561,7 +547,10 @@ composite_pgp_kem_decrypt (ctrl_t ctrl, const char *desc_text,
   gcry_mpi_t ecc_ct_mpi = NULL;
   const unsigned char *ecc_ct;
   size_t ecc_ct_len;
+  unsigned char ecc_ecdh[ECC_POINT_LEN_MAX];
+  unsigned char ecc_pk[ECC_POINT_LEN_MAX];
   unsigned char ecc_ss[ECC_HASH_LEN_MAX];
+  int ecc_hashalgo;
   size_t ecc_shared_len, ecc_point_len;
 
   enum gcry_kem_algos mlkem_kem_algo;
@@ -629,10 +618,23 @@ composite_pgp_kem_decrypt (ctrl_t ctrl, const char *desc_text,
 
   /* Firstly, ECC part.  */
   ecc_point_len = ecc_ct_len;
-  err = ecc_pgp_kem_decrypt (ctrl, s_skey0, shadow_info0, ecc_ct, ecc_point_len,
-                             ecc_ss, &ecc_shared_len);
+  err = ecc_pgp_kem_decap (ctrl, s_skey0, shadow_info0, ecc_ct, ecc_point_len,
+                           ecc_ecdh, ecc_pk, &ecc_hashalgo);
   if (err)
     goto leave;
+  ecc_shared_len = gcry_md_get_algo_dlen (ecc_hashalgo);
+  err = gnupg_ecc_kem_kdf (ecc_ss, ecc_shared_len, ecc_hashalgo,
+                           ecc_ecdh, ecc_point_len, ecc_ct, ecc_point_len,
+                           ecc_pk, ecc_point_len);
+  if (err)
+    {
+      if (opt.verbose)
+        log_info ("%s: kdf for ECC failed\n", __func__);
+      return err;
+    }
+  wipememory (ecc_ecdh, sizeof ecc_ecdh);
+  if (DBG_CRYPTO)
+    log_printhex (ecc_ss, ecc_shared_len, "ECC   shared:");
 
   /* Secondly, PQC part.  For now, we assume ML-KEM.  */
   err = gcry_sexp_extract_param (s_skey1, NULL, "/s", &mlkem_sk_mpi, NULL);
