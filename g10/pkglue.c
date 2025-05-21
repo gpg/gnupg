@@ -598,7 +598,7 @@ do_encrypt_kem (PKT_public_key *pk, gcry_mpi_t data, int seskey_algo,
                            ecc_hash_algo,
                            ecc_ecdh, ecc_ecdh_len,
                            ecc_ct, ecc_ct_len,
-                           ecc_pubkey, ecc_pubkey_len);
+                           ecc_pubkey, ecc_pubkey_len, NULL);
   if (err)
     {
       if (opt.verbose)

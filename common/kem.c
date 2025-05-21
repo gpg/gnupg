@@ -150,24 +150,50 @@ gpg_error_t
 gnupg_ecc_kem_kdf (void *kek, size_t kek_len,
                    int hashalgo, const void *ecdh, size_t ecdh_len,
                    const void *ecc_ct, size_t ecc_ct_len,
-                   const void *ecc_pk, size_t ecc_pk_len)
+                   const void *ecc_pk, size_t ecc_pk_len,
+                   gcry_buffer_t *fixed_info)
 {
-  gcry_buffer_t iov[3];
-  unsigned int dlen;
+  if (fixed_info)
+    {
+      /* Traditional ECC */
+      gpg_error_t err;
+      gcry_kdf_hd_t hd;
+      unsigned long param[1];
 
-  dlen = gcry_md_get_algo_dlen (hashalgo);
-  if (kek_len != dlen)
-    return gpg_error (GPG_ERR_INV_LENGTH);
+      param[0] = kek_len;
+      err = gcry_kdf_open (&hd, GCRY_KDF_ONESTEP_KDF, hashalgo, param, 1,
+                           ecdh, ecdh_len, NULL, 0, NULL, 0,
+                           (char *)fixed_info->data+fixed_info->off,
+                           fixed_info->len);
+      if (!err)
+        {
+          gcry_kdf_compute (hd, NULL);
+          gcry_kdf_final (hd, kek_len, kek);
+          gcry_kdf_close (hd);
+        }
 
-  memset (iov, 0, sizeof (iov));
+      return err;
+    }
+  else
+    {
+      /* ECC in composite KEM */
+      gcry_buffer_t iov[3];
+      unsigned int dlen;
 
-  iov[0].data = (unsigned char *)ecdh;
-  iov[0].len = ecdh_len;
-  iov[1].data = (unsigned char *)ecc_ct;
-  iov[1].len = ecc_ct_len;
-  iov[2].data = (unsigned char *)ecc_pk;
-  iov[2].len = ecc_pk_len;
-  gcry_md_hash_buffers (hashalgo, 0, kek, iov, 3);
+      dlen = gcry_md_get_algo_dlen (hashalgo);
+      if (kek_len != dlen)
+        return gpg_error (GPG_ERR_INV_LENGTH);
+
+      memset (iov, 0, sizeof (iov));
+
+      iov[0].data = (unsigned char *)ecdh;
+      iov[0].len = ecdh_len;
+      iov[1].data = (unsigned char *)ecc_ct;
+      iov[1].len = ecc_ct_len;
+      iov[2].data = (unsigned char *)ecc_pk;
+      iov[2].len = ecc_pk_len;
+      gcry_md_hash_buffers (hashalgo, 0, kek, iov, 3);
+    }
 
   return 0;
 }
