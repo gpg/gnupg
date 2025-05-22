@@ -168,3 +168,34 @@ divert_tpm2_pkdecrypt (ctrl_t ctrl,
 
   return agent_tpm2d_pkdecrypt (ctrl, s, n, shadow_info, r_buf, r_len);
 }
+
+int
+agent_tpm2d_ecc_kem (ctrl_t ctrl,
+                     const unsigned char *shadow_info,
+                     const unsigned char *ecc_ct,
+                     size_t ecc_point_len, unsigned char *ecc_ecdh)
+{
+  char *ecdh = NULL;
+  size_t len;
+  int rc;
+
+  rc = agent_tpm2d_pkdecrypt (ctrl, ecc_ct, ecc_point_len, shadow_info,
+                              &ecdh, &len);
+  if (rc)
+    return rc;
+
+  if (len == ecc_point_len)
+    memcpy (ecc_ecdh, ecdh, len);
+  else if (len == ecc_point_len + 1 && ecdh[0] == 0x40) /* The prefix */
+    memcpy (ecc_ecdh, ecdh + 1, len - 1);
+  else
+    {
+      if (opt.verbose)
+        log_info ("%s: ECC result length invalid (%zu != %zu)\n",
+                  __func__, len, ecc_point_len);
+      return gpg_error (GPG_ERR_INV_DATA);
+    }
+
+  xfree (ecdh);
+  return rc;
+}

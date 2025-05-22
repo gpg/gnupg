@@ -503,8 +503,13 @@ ecc_pgp_kem_decap (ctrl_t ctrl, gcry_sexp_t s_skey0,
     {
       if (s_skey0 && agent_is_tpm2_key (s_skey0))
         {
-          log_error ("TPM decryption failed: %s\n", gpg_strerror (err));
-          return gpg_error (GPG_ERR_NOT_IMPLEMENTED);
+          err = agent_tpm2d_ecc_kem (ctrl, shadow_info0,
+                                     ecc_ct, ecc->point_len, ecc_ecdh);
+          if (err)
+            {
+              log_error ("TPM decryption failed: %s\n", gpg_strerror (err));
+              return err;
+            }
         }
       else
         {

@@ -655,6 +655,9 @@ int divert_tpm2_pkdecrypt (ctrl_t ctrl,
                            char **r_buf, size_t *r_len, int *r_padding);
 int divert_tpm2_writekey (ctrl_t ctrl, const unsigned char *grip,
                           gcry_sexp_t s_skey);
+int agent_tpm2d_ecc_kem (ctrl_t ctrl, const unsigned char *shadow_info,
+                         const unsigned char *ecc_ct,
+                         size_t ecc_point_len, unsigned char *ecc_ecdh);
 #else /*!HAVE_LIBTSS*/
 static inline int
 divert_tpm2_pksign (ctrl_t ctrl,
@@ -684,6 +687,16 @@ divert_tpm2_writekey (ctrl_t ctrl, const unsigned char *grip,
                       gcry_sexp_t s_skey)
 {
   (void)ctrl; (void)grip; (void)s_skey;
+  return gpg_error (GPG_ERR_NOT_SUPPORTED);
+}
+
+static inline int
+agent_tpm2d_ecc_kem (ctrl_t ctrl, const unsigned char *shadow_info,
+                     const unsigned char *ecc_ct,
+                     size_t ecc_point_len, unsigned char *ecc_ecdh)
+{
+  (void)ctrl; (void)ecc_ct;
+  (void)ecc_point_len; (void)ecc_ecdh;
   return gpg_error (GPG_ERR_NOT_SUPPORTED);
 }
 #endif /*!HAVE_LIBTSS*/
