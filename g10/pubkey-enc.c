@@ -188,6 +188,80 @@ get_session_key (ctrl_t ctrl, struct pubkey_enc_list *list, DEK *dek)
 }
 
 
+/* Build an SEXP to gpg-agent, for PKDECRYPT command.  */
+static gpg_error_t
+ecdh_sexp_build (gcry_sexp_t *r_s_data, struct pubkey_enc_list *enc,
+                 PKT_public_key *sk)
+{
+  gpg_error_t err;
+  const unsigned char *oid;
+  const unsigned char *kdf_params_spec;
+  unsigned int nbits;
+  size_t len;
+  size_t oid_len;
+  byte fp[MAX_FINGERPRINT_LEN];
+  int keywrap_cipher_algo;
+  int kdf_hash_algo;
+  unsigned char *kdf_params = NULL;
+  int kdf_params_len = 0;
+
+  if (!gcry_mpi_get_flag (sk->pkey[0], GCRYMPI_FLAG_OPAQUE))
+    return gpg_error (GPG_ERR_BAD_PUBKEY);
+
+  oid = gcry_mpi_get_opaque (sk->pkey[0], &nbits);
+  oid_len = (nbits+7)/8;
+
+  /* In the public key part of SK, there is a specifier of KDF
+     parameters (namely, hash algo for KDF and symmetric algo for
+     wrapping key).  Using this specifier (together with curve OID
+     of the public key and the fingerprint), we build _the_ KDF
+     parameters.  */
+  if (!gcry_mpi_get_flag (sk->pkey[2], GCRYMPI_FLAG_OPAQUE))
+    return gpg_error (GPG_ERR_BAD_PUBKEY);
+
+  kdf_params_spec = gcry_mpi_get_opaque (sk->pkey[2], &nbits);
+  len = (nbits+7)/8;
+
+  fingerprint_from_pk (sk, fp, NULL);
+
+  /* Expect 4 bytes  03 01 hash_alg symm_alg.  */
+  if (len != 4 || kdf_params_spec[0] != 3 || kdf_params_spec[1] != 1)
+    return gpg_error (GPG_ERR_BAD_PUBKEY);
+
+  kdf_params_len = oid_len + 1 + 4 + 20 + 20;
+  kdf_params = xtrymalloc (kdf_params_len);
+  if (!kdf_params)
+    return gpg_error_from_syserror ();
+
+  memcpy (kdf_params, oid, oid_len);
+  kdf_params[oid_len] = PUBKEY_ALGO_ECDH;
+  memcpy (kdf_params + oid_len + 1, kdf_params_spec, 4);
+  memcpy (kdf_params + oid_len + 1 + 4, "Anonymous Sender    ", 20);
+  memcpy (kdf_params + oid_len + 1 + 4 + 20, fp, 20);
+
+  if (DBG_CRYPTO)
+    log_printhex (kdf_params, kdf_params_len,
+                  "ecdh KDF message params are:");
+
+  keywrap_cipher_algo = kdf_params_spec[3];
+  kdf_hash_algo = kdf_params_spec[2];
+
+  if (!enc->d.data[0] || !enc->d.data[1])
+    {
+      xfree (kdf_params);
+      return gpg_error (GPG_ERR_BAD_MPI);
+    }
+
+  err = gcry_sexp_build (r_s_data, NULL,
+                         "(enc-val(ecc(c%d)(h%d)(e%m)(s%m)(kdf-params%b)))",
+                         keywrap_cipher_algo, kdf_hash_algo,
+                         enc->d.data[0], enc->d.data[1],
+                         kdf_params_len, kdf_params);
+  xfree (kdf_params);
+  return err;
+}
+
+
 static gpg_error_t
 get_it (ctrl_t ctrl,
         struct pubkey_enc_list *enc, DEK *dek, PKT_public_key *sk, u32 *keyid)
@@ -201,7 +275,6 @@ get_it (ctrl_t ctrl,
   gcry_sexp_t s_data;
   char *desc;
   char *keygrip;
-  byte fp[MAX_FINGERPRINT_LEN];
 
   if (DBG_CLOCK)
     log_clock ("decryption start");
@@ -231,13 +304,7 @@ get_it (ctrl_t ctrl,
                                enc->d.data[0]);
     }
   else if (sk->pubkey_algo == PUBKEY_ALGO_ECDH)
-    {
-      if (!enc->d.data[0] || !enc->d.data[1])
-        err = gpg_error (GPG_ERR_BAD_MPI);
-      else
-        err = gcry_sexp_build (&s_data, NULL, "(enc-val(ecdh(s%m)(e%m)))",
-                               enc->d.data[1], enc->d.data[0]);
-    }
+    err = ecdh_sexp_build (&s_data, enc, sk);
   else if (sk->pubkey_algo == PUBKEY_ALGO_KYBER)
     {
       char fixedinfo[1+MAX_FINGERPRINT_LEN];
@@ -269,9 +336,6 @@ get_it (ctrl_t ctrl,
 
   if (err)
     goto leave;
-
-  if (sk->pubkey_algo == PUBKEY_ALGO_ECDH)
-    fingerprint_from_pk (sk, fp, NULL);
 
   /* Decrypt. */
   desc = gpg_format_keydesc (ctrl, sk, FORMAT_KEYDESC_NORMAL, 1);
@@ -316,22 +380,6 @@ get_it (ctrl_t ctrl,
     }
   else if (sk->pubkey_algo == PUBKEY_ALGO_ECDH)
     {
-      gcry_mpi_t decoded;
-
-      /* At the beginning the frame are the bytes of shared point MPI.  */
-      err = pk_ecdh_decrypt (&decoded, fp,
-                             enc->d.data[1], /*encr data as an MPI*/
-                             frame, nframe,
-                             sk->pkey);
-      if(err)
-        goto leave;
-
-      xfree (frame);
-      err = gcry_mpi_aprint (GCRYMPI_FMT_USG, &frame, &nframe, decoded);
-      mpi_release (decoded);
-      if (err)
-        goto leave;
-
       /* Now the frame are the bytes decrypted but padded session key.  */
       if (!nframe || nframe <= 8
           || frame[nframe-1] > nframe)
