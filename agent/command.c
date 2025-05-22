@@ -1096,7 +1096,7 @@ cmd_pkdecrypt (assuan_context_t ctx, char *line)
   if (!rc)
     rc = assuan_inquire (ctx, "CIPHERTEXT",
 			&value, &valuelen, MAXLEN_CIPHERTEXT);
-  if (!rc && kemid > KEM_PQC_PGP)
+  if (!rc && kemid > KEM_PGP)
     rc = assuan_inquire (ctx, "OPTION",
                          &option, &optionlen, MAXLEN_CIPHERTEXT);
   if (rc)

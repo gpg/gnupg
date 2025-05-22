@@ -43,7 +43,6 @@ struct ecc_params
   int scalar_reverse;
 };
 
-/* FIXME: Add NIST curves for traditional ECC */
 static const struct ecc_params ecc_table[] =
   {
     {
@@ -56,6 +55,24 @@ static const struct ecc_params ecc_table[] =
       "X448",
       56, 56, 56,
       GCRY_MD_SHA3_512, GCRY_KEM_RAW_X448,
+      0
+    },
+    {
+      "NIST P-256",
+      65, 32, 65,
+      GCRY_MD_SHA3_256, GCRY_KEM_RAW_P256R1,
+      0
+    },
+    {
+      "NIST P-384",
+      97, 48, 97,
+      GCRY_MD_SHA3_512, GCRY_KEM_RAW_P384R1,
+      0
+    },
+    {
+      "NIST P-521",
+      133, 66, 133,
+      GCRY_MD_SHA3_512, GCRY_KEM_RAW_P521R1,
       0
     },
     {
@@ -82,8 +99,8 @@ static const struct ecc_params ecc_table[] =
 
 /* Maximum buffer sizes required for ECC KEM.  Keep this aligned to
  * the ecc_table above.  */
-#define ECC_SCALAR_LEN_MAX 64
-#define ECC_POINT_LEN_MAX (1+2*64)
+#define ECC_SCALAR_LEN_MAX 66
+#define ECC_POINT_LEN_MAX (1+2*ECC_SCALAR_LEN_MAX)
 #define ECC_HASH_LEN_MAX 64
 
 
@@ -729,10 +746,10 @@ composite_pgp_kem_decrypt (ctrl_t ctrl, const char *desc_text,
     }
 
   err = gcry_cipher_setkey (hd, kek, kek_len);
-
   sessionkey_len = encrypted_sessionkey_len - 8;
-  err = gcry_cipher_decrypt (hd, sessionkey, sessionkey_len,
-                             encrypted_sessionkey, encrypted_sessionkey_len);
+  if (!err)
+    err = gcry_cipher_decrypt (hd, sessionkey, sessionkey_len,
+                               encrypted_sessionkey, encrypted_sessionkey_len);
   gcry_cipher_close (hd);
 
   mpi_release (encrypted_sessionkey_mpi);
@@ -770,7 +787,7 @@ composite_pgp_kem_decrypt (ctrl_t ctrl, const char *desc_text,
 /* For ECC PGP KEM, decrypt CIPHERTEXT using KEM API.  CIPHERTEXT
    should follow the format of:
 
-	(enc-val(ecdh(c%d)(h%d)(e%m)(s%m)(fixed-info&)))
+	(enc-val(ecc(c%d)(h%d)(e%m)(s%m)(kdf-params&)))
         c: cipher identifier (of wrapping key)
         h: hash identifier
         e: ECDH ciphertext
@@ -808,7 +825,7 @@ ecc_kem_decrypt (ctrl_t ctrl, const char *desc_text,
   gcry_cipher_hd_t hd;
   unsigned char sessionkey[256];
   size_t sessionkey_len;
-  gcry_buffer_t fixed_info = { 0, 0, 0, NULL };
+  gcry_buffer_t kdf_params = { 0, 0, 0, NULL };
 
   err = agent_key_from_file (ctrl, NULL, desc_text,
                              NULL, &shadow_info,
@@ -819,9 +836,9 @@ ecc_kem_decrypt (ctrl_t ctrl, const char *desc_text,
       goto leave;
     }
 
-  err = gcry_sexp_extract_param (s_cipher, NULL, "%dc%dh/es&'fixed-info'",
+  err = gcry_sexp_extract_param (s_cipher, NULL, "%dc%dh/es&'kdf-params'",
                                  &algo, &hashalgo, &ecc_ct_mpi,
-                                 &encrypted_sessionkey_mpi, &fixed_info, NULL);
+                                 &encrypted_sessionkey_mpi, &kdf_params, NULL);
   if (err)
     {
       if (opt.verbose)
@@ -829,7 +846,7 @@ ecc_kem_decrypt (ctrl_t ctrl, const char *desc_text,
       goto leave;
     }
 
-  if (!fixed_info.data)
+  if (!kdf_params.data)
     {
       if (opt.verbose)
         log_info ("%s: the KDF parameters is required\n", __func__);
@@ -869,7 +886,7 @@ ecc_kem_decrypt (ctrl_t ctrl, const char *desc_text,
                               x-component from the point.  */
                            ecc_ecdh + 1 : ecc_ecdh,
                            ecc->scalar_len, ecc_ct, ecc_point_len,
-                           ecc_pk, ecc_point_len, &fixed_info);
+                           ecc_pk, ecc_point_len, &kdf_params);
   if (err)
     {
       if (opt.verbose)
@@ -891,10 +908,18 @@ ecc_kem_decrypt (ctrl_t ctrl, const char *desc_text,
       goto leave;
     }
 
+  if (encrypted_sessionkey[0] != encrypted_sessionkey_len - 1)
+    {
+      err = gpg_error (GPG_ERR_INV_DATA);
+      goto leave;
+    }
+
   err = gcry_cipher_setkey (hd, kek, kek_len);
-  sessionkey_len = encrypted_sessionkey_len - 8;
-  err = gcry_cipher_decrypt (hd, sessionkey, sessionkey_len,
-                             encrypted_sessionkey, encrypted_sessionkey_len);
+  sessionkey_len = encrypted_sessionkey_len - 8 - 1;
+  if (!err)
+    err = gcry_cipher_decrypt (hd, sessionkey, sessionkey_len,
+                               encrypted_sessionkey + 1,
+                               encrypted_sessionkey_len - 1);
   gcry_cipher_close (hd);
 
   if (err)
@@ -914,7 +939,7 @@ ecc_kem_decrypt (ctrl_t ctrl, const char *desc_text,
   xfree (kek);
   mpi_release (ecc_ct_mpi);
   mpi_release (encrypted_sessionkey_mpi);
-  gcry_free (fixed_info.data);
+  gcry_free (kdf_params.data);
   gcry_sexp_release (s_skey);
   xfree (shadow_info);
   return err;
