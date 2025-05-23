@@ -306,7 +306,7 @@ gpg_error_t gnupg_ecc_kem_kdf (void *kek, size_t kek_len,
                                int hashalgo, const void *ecdh, size_t ecdh_len,
                                const void *ecc_ct, size_t ecc_ct_len,
                                const void *ecc_pk, size_t ecc_pk_len,
-                               gcry_buffer_t *fixed_info);
+                               gcry_buffer_t *kdf_params);
 
 gpg_error_t gnupg_kem_combiner  (void *kek, size_t kek_len,
                                  const void *ecc_ss, size_t ecc_ss_len,

@@ -145,15 +145,20 @@ compute_kmac256 (void *digest, size_t digestlen,
 
 
 /* Compute KEK for ECC with HASHALGO, ECDH result, ciphertext in
-   ECC_CT (which is an ephemeral key), and public key in ECC_PK.  */
+ * ECC_CT (which is an ephemeral key), and public key in ECC_PK.
+ *
+ * For traditional ECC (of v4), KDF_PARAMS is specified by upper layer
+ * and an ephemeral key and public key are not used for the
+ * computation.
+ */
 gpg_error_t
 gnupg_ecc_kem_kdf (void *kek, size_t kek_len,
                    int hashalgo, const void *ecdh, size_t ecdh_len,
                    const void *ecc_ct, size_t ecc_ct_len,
                    const void *ecc_pk, size_t ecc_pk_len,
-                   gcry_buffer_t *fixed_info)
+                   gcry_buffer_t *kdf_params)
 {
-  if (fixed_info)
+  if (kdf_params)
     {
       /* Traditional ECC */
       gpg_error_t err;
@@ -163,8 +168,8 @@ gnupg_ecc_kem_kdf (void *kek, size_t kek_len,
       param[0] = kek_len;
       err = gcry_kdf_open (&hd, GCRY_KDF_ONESTEP_KDF, hashalgo, param, 1,
                            ecdh, ecdh_len, NULL, 0, NULL, 0,
-                           (char *)fixed_info->data+fixed_info->off,
-                           fixed_info->len);
+                           (char *)kdf_params->data+kdf_params->off,
+                           kdf_params->len);
       if (!err)
         {
           gcry_kdf_compute (hd, NULL);
