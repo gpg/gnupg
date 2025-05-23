@@ -156,7 +156,7 @@ gnupg_ecc_kem_kdf (void *kek, size_t kek_len,
                    int hashalgo, const void *ecdh, size_t ecdh_len,
                    const void *ecc_ct, size_t ecc_ct_len,
                    const void *ecc_pk, size_t ecc_pk_len,
-                   gcry_buffer_t *kdf_params)
+                   unsigned char *kdf_params, size_t kdf_params_len)
 {
   if (kdf_params)
     {
@@ -168,8 +168,7 @@ gnupg_ecc_kem_kdf (void *kek, size_t kek_len,
       param[0] = kek_len;
       err = gcry_kdf_open (&hd, GCRY_KDF_ONESTEP_KDF, hashalgo, param, 1,
                            ecdh, ecdh_len, NULL, 0, NULL, 0,
-                           (char *)kdf_params->data+kdf_params->off,
-                           kdf_params->len);
+                           kdf_params, kdf_params_len);
       if (!err)
         {
           gcry_kdf_compute (hd, NULL);

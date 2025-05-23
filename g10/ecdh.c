@@ -79,62 +79,6 @@ pk_ecdh_default_params (unsigned int qbits)
 }
 
 
-/* Extract xcomponent from the point SHARED.  POINT_NBYTES is the
-   size to represent an EC point which is determined by the public
-   key.  SECRET_X_SIZE is the size of x component to represent an
-   integer which is determined by the curve. */
-static gpg_error_t
-extract_secret_x (byte **r_secret_x,
-                  const char *shared, size_t nshared,
-                  size_t point_nbytes, size_t secret_x_size)
-{
-  byte *secret_x;
-
-  *r_secret_x = NULL;
-
-  /* Extract X from the result.  It must be in the format of:
-     04 || X || Y
-     40 || X
-     41 || X
-
-     Since it may come with the prefix, the size of point is larger
-     than or equals to the size of an integer X.  We also better check
-     that the provided shared point is not larger than the size needed
-     to represent the point.  */
-  if (point_nbytes < secret_x_size)
-    return gpg_error (GPG_ERR_BAD_DATA);
-  if (point_nbytes < nshared)
-    return gpg_error (GPG_ERR_BAD_DATA);
-
-  /* Extract x component of the shared point: this is the actual
-     shared secret. */
-  secret_x = xtrymalloc_secure (point_nbytes);
-  if (!secret_x)
-    return gpg_error_from_syserror ();
-
-  memcpy (secret_x, shared, nshared);
-
-  /* Wrangle the provided point unless only the x-component w/o any
-   * prefix was provided.  */
-  if (nshared != secret_x_size)
-    {
-      /* Remove the prefix.  */
-      if ((point_nbytes & 1))
-        memmove (secret_x, secret_x+1, secret_x_size);
-
-      /* Clear the rest of data.  */
-      if (point_nbytes - secret_x_size)
-        memset (secret_x+secret_x_size, 0, point_nbytes-secret_x_size);
-    }
-
-  if (DBG_CRYPTO)
-    log_printhex (secret_x, secret_x_size, "ECDH shared secret X is:");
-
-  *r_secret_x = secret_x;
-  return 0;
-}
-
-
 /* Build KDF parameters */
 /* RFC 6637 defines the KDF parameters and its encoding in Section
    8. EC DH Algorighm (ECDH).  Since it was written for v4 key, it
@@ -142,375 +86,57 @@ extract_secret_x (byte **r_secret_x,
    master key fingerprint".  For v5 key, it is considered "adequate"
    (in terms of NIST SP 800 56A, see 5.8.2 FixedInfo) to use the first
    20 octets of its 32 octets fingerprint.  */
-static gpg_error_t
-build_kdf_params (unsigned char kdf_params[256], size_t *r_size,
-                  gcry_mpi_t *pkey, const byte pk_fp[MAX_FINGERPRINT_LEN])
-{
-  IOBUF obuf;
-  gpg_error_t err;
-
-  *r_size = 0;
-
-  obuf = iobuf_temp();
-  if (!obuf)
-    return gpg_error_from_syserror ();
-
-  /* variable-length field 1, curve name OID */
-  err = gpg_mpi_write_opaque_nohdr (obuf, pkey[0]);
-  /* fixed-length field 2 */
-  iobuf_put (obuf, PUBKEY_ALGO_ECDH);
-  /* variable-length field 3, KDF params */
-  err = (err ? err : gpg_mpi_write_opaque_nohdr (obuf, pkey[2]));
-  /* fixed-length field 4 */
-  iobuf_write (obuf, "Anonymous Sender    ", 20);
-  /* fixed-length field 5, recipient fp (or first 20 octets of fp) */
-  iobuf_write (obuf, pk_fp, 20);
-
-  if (!err)
-    *r_size = iobuf_temp_to_buffer (obuf, kdf_params, 256);
-
-  iobuf_close (obuf);
-
-  if (!err)
-    {
-      if (DBG_CRYPTO)
-        log_printhex (kdf_params, *r_size, "ecdh KDF message params are:");
-    }
-
-  return err;
-}
-
-
-/* Derive KEK with KEK_SIZE into the memory at SECRET_X.  */
-static gpg_error_t
-derive_kek (size_t kek_size,
-            int kdf_hash_algo,
-            byte *secret_x, int secret_x_size,
-            const unsigned char *kdf_params, size_t kdf_params_size)
-{
-  gpg_error_t err;
-#if 0 /* GCRYPT_VERSION_NUMBER >= 0x010b00 */
-  /*
-   * Experimental: We will remove this if/endif-conditional
-   * compilation when we update NEED_LIBGCRYPT_VERSION to 1.11.0.
-   */
-  gcry_kdf_hd_t hd;
-  unsigned long param[1];
-
-  param[0] = kek_size;
-  err = gcry_kdf_open (&hd, GCRY_KDF_ONESTEP_KDF, kdf_hash_algo,
-                       param, 1,
-                       secret_x, secret_x_size, NULL, 0, NULL, 0,
-                       kdf_params, kdf_params_size);
-  if (!err)
-    {
-      gcry_kdf_compute (hd, NULL);
-      gcry_kdf_final (hd, kek_size, secret_x);
-      gcry_kdf_close (hd);
-      /* Clean the tail before returning.  */
-      memset (secret_x+kek_size, 0, secret_x_size - kek_size);
-    }
-#else
-  gcry_md_hd_t h;
-
-  log_assert( gcry_md_get_algo_dlen (kdf_hash_algo) >= 32 );
-
-  err = gcry_md_open (&h, kdf_hash_algo, 0);
-  if (err)
-    {
-      log_error ("gcry_md_open failed for kdf_hash_algo %d: %s",
-                 kdf_hash_algo, gpg_strerror (err));
-      return err;
-    }
-  gcry_md_write(h, "\x00\x00\x00\x01", 4);      /* counter = 1 */
-  gcry_md_write(h, secret_x, secret_x_size);    /* x of the point X */
-  gcry_md_write(h, kdf_params, kdf_params_size);      /* KDF parameters */
-  gcry_md_final (h);
-  memcpy (secret_x, gcry_md_read (h, kdf_hash_algo), kek_size);
-  gcry_md_close (h);
-  /* Clean the tail before returning.  */
-  memset (secret_x+kek_size, 0, secret_x_size - kek_size);
-#endif
-  if (DBG_CRYPTO)
-    log_printhex (secret_x, kek_size, "ecdh KEK is:");
-  return err;
-}
-
-/* Compute KEK for ECC with HASHALGO, ECDH result, and public key in
-   PK, using the method defined in RFC 6637.  Note that ephemeral key
-   is not used to compute KEK here.  */
 gpg_error_t
-gnupg_ecc_6637_kdf (void *kek, size_t kek_len,
-                    int hashalgo, const void *ecdh, size_t ecdh_len,
-                    PKT_public_key *pk)
+ecc_build_kdf_params (unsigned char **r_kdf_params, size_t *r_len,
+                      const unsigned char **r_kdf_params_spec,
+                      gcry_mpi_t *pkey, const byte fp[MAX_FINGERPRINT_LEN])
 {
-  gpg_error_t err;
-  unsigned char kdf_params[256];
-  size_t kdf_params_size;
+  const unsigned char *oid;
+  const unsigned char *kdf_params_spec;
   unsigned int nbits;
-  byte *secret_x;
-  int secret_x_size;
-  gcry_kdf_hd_t hd;
-  unsigned long param[1];
-  byte fp[MAX_FINGERPRINT_LEN];
+  size_t oid_len;
+  size_t len;
+  unsigned char *kdf_params = NULL;
+  int kdf_params_len = 0;
 
-  fingerprint_from_pk (pk, fp, NULL);
-
-  /* Build kdf_params.  */
-  err = build_kdf_params (kdf_params, &kdf_params_size, pk->pkey, fp);
-  if (err)
-    return err;
-
-  nbits = pubkey_nbits (PUBKEY_ALGO_ECDH, pk->pkey);
-  if (!nbits)
-    return gpg_error (GPG_ERR_TOO_SHORT);
-
-  secret_x_size = (nbits+7)/8;
-  if (kek_len > secret_x_size)
+  if (!gcry_mpi_get_flag (pkey[0], GCRYMPI_FLAG_OPAQUE))
     return gpg_error (GPG_ERR_BAD_PUBKEY);
 
-  err = extract_secret_x (&secret_x, ecdh, ecdh_len,
-                          /* pk->pkey[1] is the public point */
-                          (mpi_get_nbits (pk->pkey[1])+7)/8,
-                          secret_x_size);
-  if (err)
-    return err;
+  oid = gcry_mpi_get_opaque (pkey[0], &nbits);
+  oid_len = (nbits+7)/8;
 
-  param[0] = kek_len;
-  err = gcry_kdf_open (&hd, GCRY_KDF_ONESTEP_KDF, hashalgo, param, 1,
-                       secret_x, secret_x_size, NULL, 0, NULL, 0,
-                       kdf_params, kdf_params_size);
-  if (!err)
-    {
-      gcry_kdf_compute (hd, NULL);
-      gcry_kdf_final (hd, kek_len, secret_x);
-      gcry_kdf_close (hd);
-      memcpy (kek, secret_x, kek_len);
-      /* Clean the tail before returning.  */
-      memset (secret_x+kek_len, 0, secret_x_size - kek_len);
-      xfree (secret_x);
-      return 0;
-    }
-  else
-    {
-      xfree (secret_x);
-      return err;
-    }
-}
-
-
-/* Prepare ECDH using SHARED, PK_FP fingerprint, and PKEY array.
-   Returns the cipher handle in R_HD, which needs to be closed by
-   the caller.  */
-static gpg_error_t
-prepare_ecdh_with_shared_point (const char *shared, size_t nshared,
-                                const byte pk_fp[MAX_FINGERPRINT_LEN],
-                                gcry_mpi_t *pkey, gcry_cipher_hd_t *r_hd)
-{
-  gpg_error_t err;
-  byte *secret_x;
-  int secret_x_size;
-  unsigned int nbits;
-  const unsigned char *kek_params;
-  size_t kek_params_size;
-  int kdf_hash_algo;
-  int kdf_encr_algo;
-  unsigned char kdf_params[256];
-  size_t kdf_params_size;
-  size_t kek_size;
-  gcry_cipher_hd_t hd;
-
-  *r_hd = NULL;
-
+  /* In the public key part, there is a specifier of KDF parameters
+     (namely, hash algo for KDF and symmetric algo for wrapping key).
+     Using this specifier (together with curve OID of the public key
+     and the fingerprint), we build _the_ KDF parameters.  */
   if (!gcry_mpi_get_flag (pkey[2], GCRYMPI_FLAG_OPAQUE))
-    return gpg_error (GPG_ERR_BUG);
+    return gpg_error (GPG_ERR_BAD_PUBKEY);
 
-  kek_params = gcry_mpi_get_opaque (pkey[2], &nbits);
-  kek_params_size = (nbits+7)/8;
-
-  if (DBG_CRYPTO)
-    log_printhex (kek_params, kek_params_size, "ecdh KDF params:");
+  kdf_params_spec = gcry_mpi_get_opaque (pkey[2], &nbits);
+  len = (nbits+7)/8;
 
   /* Expect 4 bytes  03 01 hash_alg symm_alg.  */
-  if (kek_params_size != 4 || kek_params[0] != 3 || kek_params[1] != 1)
+  if (len != 4 || kdf_params_spec[0] != 3 || kdf_params_spec[1] != 1)
     return gpg_error (GPG_ERR_BAD_PUBKEY);
 
-  kdf_hash_algo = kek_params[2];
-  kdf_encr_algo = kek_params[3];
+  kdf_params_len = oid_len + 1 + 4 + 20 + 20;
+  kdf_params = xtrymalloc (kdf_params_len);
+  if (!kdf_params)
+    return gpg_error_from_syserror ();
+
+  memcpy (kdf_params, oid, oid_len);
+  kdf_params[oid_len] = PUBKEY_ALGO_ECDH;
+  memcpy (kdf_params + oid_len + 1, kdf_params_spec, 4);
+  memcpy (kdf_params + oid_len + 1 + 4, "Anonymous Sender    ", 20);
+  memcpy (kdf_params + oid_len + 1 + 4 + 20, fp, 20);
 
   if (DBG_CRYPTO)
-    log_debug ("ecdh KDF algorithms %s+%s with aeswrap\n",
-               openpgp_md_algo_name (kdf_hash_algo),
-               openpgp_cipher_algo_name (kdf_encr_algo));
+    log_printhex (kdf_params, kdf_params_len,
+                  "ecdh KDF message params are:");
 
-  if (kdf_hash_algo != GCRY_MD_SHA256
-      && kdf_hash_algo != GCRY_MD_SHA384
-      && kdf_hash_algo != GCRY_MD_SHA512)
-    return gpg_error (GPG_ERR_BAD_PUBKEY);
-
-  if (kdf_encr_algo != CIPHER_ALGO_AES
-      && kdf_encr_algo != CIPHER_ALGO_AES192
-      && kdf_encr_algo != CIPHER_ALGO_AES256)
-    return gpg_error (GPG_ERR_BAD_PUBKEY);
-
-  kek_size = gcry_cipher_get_algo_keylen (kdf_encr_algo);
-  if (kek_size > gcry_md_get_algo_dlen (kdf_hash_algo))
-    return gpg_error (GPG_ERR_BAD_PUBKEY);
-
-  /* Build kdf_params.  */
-  err = build_kdf_params (kdf_params, &kdf_params_size, pkey, pk_fp);
-  if (err)
-    return err;
-
-  nbits = pubkey_nbits (PUBKEY_ALGO_ECDH, pkey);
-  if (!nbits)
-    return gpg_error (GPG_ERR_TOO_SHORT);
-
-  secret_x_size = (nbits+7)/8;
-  if (kek_size > secret_x_size)
-    return gpg_error (GPG_ERR_BAD_PUBKEY);
-
-  err = extract_secret_x (&secret_x, shared, nshared,
-                          /* pkey[1] is the public point */
-                          (mpi_get_nbits (pkey[1])+7)/8,
-                          secret_x_size);
-  if (err)
-    return err;
-
-  /*** We have now the shared secret bytes in secret_x. ***/
-
-  /* At this point we are done with PK encryption and the rest of the
-   * function uses symmetric key encryption techniques to protect the
-   * input DATA.  The following two sections will simply replace
-   * current secret_x with a value derived from it.  This will become
-   * a KEK.
-   */
-
-  /* Derive a KEK (key wrapping key) using SECRET_X and KDF_PARAMS. */
-  err = derive_kek (kek_size, kdf_hash_algo, secret_x,
-                    secret_x_size, kdf_params, kdf_params_size);
-  if (err)
-    {
-      xfree (secret_x);
-      return err;
-    }
-
-  /* And, finally, aeswrap with key secret_x.  */
-  err = gcry_cipher_open (&hd, kdf_encr_algo, GCRY_CIPHER_MODE_AESWRAP, 0);
-  if (err)
-    {
-      log_error ("ecdh failed to initialize AESWRAP: %s\n",
-                 gpg_strerror (err));
-      xfree (secret_x);
-      return err;
-    }
-
-  err = gcry_cipher_setkey (hd, secret_x, kek_size);
-  xfree (secret_x);
-  secret_x = NULL;
-  if (err)
-    {
-      gcry_cipher_close (hd);
-      log_error ("ecdh failed in gcry_cipher_setkey: %s\n",
-                 gpg_strerror (err));
-    }
-  else
-    *r_hd = hd;
-
-  return err;
-}
-
-
-/* Perform ECDH decryption.   */
-int
-pk_ecdh_decrypt (gcry_mpi_t *r_result, const byte sk_fp[MAX_FINGERPRINT_LEN],
-                 gcry_mpi_t data,
-                 const byte *shared, size_t nshared, gcry_mpi_t * skey)
-{
-  gpg_error_t err;
-  gcry_cipher_hd_t hd;
-  size_t nbytes;
-  byte *data_buf;
-  int data_buf_size;
-  const unsigned char *p;
-  unsigned int nbits;
-
-  *r_result = NULL;
-
-  err = prepare_ecdh_with_shared_point (shared, nshared, sk_fp, skey, &hd);
-  if (err)
-    return err;
-
-  p = gcry_mpi_get_opaque (data, &nbits);
-  nbytes = (nbits+7)/8;
-
-  data_buf_size = nbytes;
-  if ((data_buf_size & 7) != 1 || data_buf_size <= 1 + 8)
-    {
-      log_error ("can't use a shared secret of %d bytes for ecdh\n",
-                 data_buf_size);
-      gcry_cipher_close (hd);
-      return gpg_error (GPG_ERR_BAD_DATA);
-    }
-
-  /* The first octet is for length.  It's longer than the result
-     because of one additional block of AESWRAP.   */
-  data_buf_size -= 1 + 8;
-  data_buf = xtrymalloc_secure (data_buf_size);
-  if (!data_buf)
-    {
-      err = gpg_error_from_syserror ();
-      gcry_cipher_close (hd);
-      return err;
-    }
-
-  if (!p)
-    {
-      xfree (data_buf);
-      gcry_cipher_close (hd);
-      return gpg_error (GPG_ERR_BAD_MPI);
-    }
-  if (p[0] != nbytes-1)
-    {
-      log_error ("ecdh inconsistent size\n");
-      xfree (data_buf);
-      gcry_cipher_close (hd);
-      return gpg_error (GPG_ERR_BAD_MPI);
-    }
-
-  if (DBG_CRYPTO)
-    log_printhex (p+1, nbytes-1, "ecdh decrypting :");
-
-  err = gcry_cipher_decrypt (hd, data_buf, data_buf_size, p+1, nbytes-1);
-  gcry_cipher_close (hd);
-  if (err)
-    {
-      log_error ("ecdh failed in gcry_cipher_decrypt: %s\n",
-                 gpg_strerror (err));
-      xfree (data_buf);
-      return err;
-    }
-
-  if (DBG_CRYPTO)
-    log_printhex (data_buf, data_buf_size, "ecdh decrypted to :");
-
-  /* Padding is removed later.  */
-  /* if (in[data_buf_size-1] > 8 ) */
-  /*   { */
-  /*     log_error ("ecdh failed at decryption: invalid padding." */
-  /*                " 0x%02x > 8\n", in[data_buf_size-1] ); */
-  /*     return gpg_error (GPG_ERR_BAD_KEY); */
-  /*   } */
-
-  err = gcry_mpi_scan (r_result, GCRYMPI_FMT_USG, data_buf,
-                       data_buf_size, NULL);
-  xfree (data_buf);
-  if (err)
-    {
-      log_error ("ecdh failed to create a plain text MPI: %s\n",
-                 gpg_strerror (err));
-      return err;
-    }
-
-  return err;
+  *r_kdf_params = kdf_params;
+  *r_len = kdf_params_len;
+  if (r_kdf_params_spec)
+    *r_kdf_params_spec = kdf_params_spec;
+  return 0;
 }

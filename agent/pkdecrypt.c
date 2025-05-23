@@ -648,7 +648,7 @@ composite_pgp_kem_decrypt (ctrl_t ctrl, const char *desc_text,
   ecc_shared_len = gcry_md_get_algo_dlen (ecc_hashalgo);
   err = gnupg_ecc_kem_kdf (ecc_ss, ecc_shared_len, ecc_hashalgo,
                            ecc_ecdh, ecc_point_len, ecc_ct, ecc_point_len,
-                           ecc_pk, ecc_point_len, NULL);
+                           ecc_pk, ecc_point_len, NULL, 0);
   if (err)
     {
       if (opt.verbose)
@@ -891,7 +891,9 @@ ecc_kem_decrypt (ctrl_t ctrl, const char *desc_text,
                               x-component from the point.  */
                            ecc_ecdh + 1 : ecc_ecdh,
                            ecc->scalar_len, ecc_ct, ecc_point_len,
-                           ecc_pk, ecc_point_len, &kdf_params);
+                           ecc_pk, ecc_point_len,
+                           (char *)kdf_params.data+kdf_params.off,
+                           kdf_params.len);
   if (err)
     {
       if (opt.verbose)

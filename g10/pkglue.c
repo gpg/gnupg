@@ -598,7 +598,7 @@ do_encrypt_kem (PKT_public_key *pk, gcry_mpi_t data, int seskey_algo,
                            ecc_hash_algo,
                            ecc_ecdh, ecc_ecdh_len,
                            ecc_ct, ecc_ct_len,
-                           ecc_pubkey, ecc_pubkey_len, NULL);
+                           ecc_pubkey, ecc_pubkey_len, NULL, 0);
   if (err)
     {
       if (opt.verbose)
@@ -766,14 +766,19 @@ do_encrypt_ecdh (PKT_public_key *pk, gcry_mpi_t data,  gcry_mpi_t *resarr)
   unsigned char ecc_ct[ECC_POINT_LEN_MAX];
   unsigned char ecc_ecdh[ECC_POINT_LEN_MAX];
   size_t ecc_ct_len, ecc_ecdh_len;
+  int is_weierstrass;
 
   unsigned char *kek = NULL;
   size_t kek_len;
 
-  const unsigned char *kek_params;
-  size_t kek_params_size;
+  const unsigned char *kdf_params_spec;
+  byte fp[MAX_FINGERPRINT_LEN];
+  int keywrap_cipher_algo;
   int kdf_hash_algo;
-  int kdf_encr_algo;
+  unsigned char *kdf_params = NULL;
+  size_t kdf_params_len = 0;
+
+  fingerprint_from_pk (pk, fp, NULL);
 
   ecc_oid = openpgp_oid_to_str (pk->pkey[0]);
   if (!ecc_oid)
@@ -802,6 +807,7 @@ do_encrypt_ecdh (PKT_public_key *pk, gcry_mpi_t data,  gcry_mpi_t *resarr)
           goto leave;
         }
       ecc_ct_len = ecc_ecdh_len = 32;
+      is_weierstrass = 0;
     }
   else if (ecc_algo == GCRY_KEM_RAW_X448)
     {
@@ -816,6 +822,7 @@ do_encrypt_ecdh (PKT_public_key *pk, gcry_mpi_t data,  gcry_mpi_t *resarr)
           goto leave;
         }
       ecc_ct_len = ecc_ecdh_len = 56;
+      is_weierstrass = 0;
     }
   else if (ecc_algo == GCRY_KEM_RAW_BP256)
     {
@@ -830,6 +837,7 @@ do_encrypt_ecdh (PKT_public_key *pk, gcry_mpi_t data,  gcry_mpi_t *resarr)
           goto leave;
         }
       ecc_ct_len = ecc_ecdh_len = 65;
+      is_weierstrass = 1;
     }
   else if (ecc_algo == GCRY_KEM_RAW_BP384)
     {
@@ -844,6 +852,7 @@ do_encrypt_ecdh (PKT_public_key *pk, gcry_mpi_t data,  gcry_mpi_t *resarr)
           goto leave;
         }
       ecc_ct_len = ecc_ecdh_len = 97;
+      is_weierstrass = 1;
     }
   else if (ecc_algo == GCRY_KEM_RAW_BP512)
     {
@@ -858,6 +867,7 @@ do_encrypt_ecdh (PKT_public_key *pk, gcry_mpi_t data,  gcry_mpi_t *resarr)
           goto leave;
         }
       ecc_ct_len = ecc_ecdh_len = 129;
+      is_weierstrass = 1;
     }
   else if (ecc_algo == GCRY_KEM_RAW_P256R1)
     {
@@ -872,6 +882,7 @@ do_encrypt_ecdh (PKT_public_key *pk, gcry_mpi_t data,  gcry_mpi_t *resarr)
           goto leave;
         }
       ecc_ct_len = ecc_ecdh_len = 65;
+      is_weierstrass = 1;
     }
   else if (ecc_algo == GCRY_KEM_RAW_P384R1)
     {
@@ -886,6 +897,7 @@ do_encrypt_ecdh (PKT_public_key *pk, gcry_mpi_t data,  gcry_mpi_t *resarr)
           goto leave;
         }
       ecc_ct_len = ecc_ecdh_len = 97;
+      is_weierstrass = 1;
     }
   else if (ecc_algo == GCRY_KEM_RAW_P521R1)
     {
@@ -900,6 +912,7 @@ do_encrypt_ecdh (PKT_public_key *pk, gcry_mpi_t data,  gcry_mpi_t *resarr)
           goto leave;
         }
       ecc_ct_len = ecc_ecdh_len = 133;
+      is_weierstrass = 1;
     }
   else
     {
@@ -933,32 +946,18 @@ do_encrypt_ecdh (PKT_public_key *pk, gcry_mpi_t data,  gcry_mpi_t *resarr)
       log_printhex (ecc_ecdh, ecc_ecdh_len, "ECC     ecdh:");
     }
 
-  if (!gcry_mpi_get_flag (pk->pkey[2], GCRYMPI_FLAG_OPAQUE))
-    {
-      err = gpg_error (GPG_ERR_BUG);
-      goto leave;
-    }
+  err = ecc_build_kdf_params (&kdf_params, &kdf_params_len,
+                              &kdf_params_spec, pk->pkey, fp);
+  if (err)
+    return err;
 
-  kek_params = gcry_mpi_get_opaque (pk->pkey[2], &nbits);
-  kek_params_size = (nbits+7)/8;
-
-  if (DBG_CRYPTO)
-    log_printhex (kek_params, kek_params_size, "ecdh KDF params:");
-
-  /* Expect 4 bytes  03 01 hash_alg symm_alg.  */
-  if (kek_params_size != 4 || kek_params[0] != 3 || kek_params[1] != 1)
-    {
-      err = gpg_error (GPG_ERR_BAD_PUBKEY);
-      goto leave;
-    }
-
-  kdf_hash_algo = kek_params[2];
-  kdf_encr_algo = kek_params[3];
+  keywrap_cipher_algo = kdf_params_spec[3];
+  kdf_hash_algo = kdf_params_spec[2];
 
   if (DBG_CRYPTO)
     log_debug ("ecdh KDF algorithms %s+%s with aeswrap\n",
                openpgp_md_algo_name (kdf_hash_algo),
-               openpgp_cipher_algo_name (kdf_encr_algo));
+               openpgp_cipher_algo_name (keywrap_cipher_algo));
 
   if (kdf_hash_algo != GCRY_MD_SHA256
       && kdf_hash_algo != GCRY_MD_SHA384
@@ -968,15 +967,15 @@ do_encrypt_ecdh (PKT_public_key *pk, gcry_mpi_t data,  gcry_mpi_t *resarr)
       goto leave;
     }
 
-  if (kdf_encr_algo != CIPHER_ALGO_AES
-      && kdf_encr_algo != CIPHER_ALGO_AES192
-      && kdf_encr_algo != CIPHER_ALGO_AES256)
+  if (keywrap_cipher_algo != CIPHER_ALGO_AES
+      && keywrap_cipher_algo != CIPHER_ALGO_AES192
+      && keywrap_cipher_algo != CIPHER_ALGO_AES256)
     {
       err = gpg_error (GPG_ERR_BAD_PUBKEY);
       goto leave;
     }
 
-  kek_len = gcry_cipher_get_algo_keylen (kdf_encr_algo);
+  kek_len = gcry_cipher_get_algo_keylen (keywrap_cipher_algo);
   if (kek_len > gcry_md_get_algo_dlen (kdf_hash_algo))
     {
       err = gpg_error (GPG_ERR_BAD_PUBKEY);
@@ -990,8 +989,14 @@ do_encrypt_ecdh (PKT_public_key *pk, gcry_mpi_t data,  gcry_mpi_t *resarr)
       goto leave;
     }
 
-  err = gnupg_ecc_6637_kdf (kek, kek_len, kdf_hash_algo,
-                            ecc_ecdh, ecc_ecdh_len, pk);
+  err = gnupg_ecc_kem_kdf (kek, kek_len, kdf_hash_algo,
+                           is_weierstrass ?
+                           ecc_ecdh + 1 : ecc_ecdh,
+                           is_weierstrass ?
+                           (ecc_ecdh_len - 1) / 2 : ecc_ecdh_len,
+                           NULL, 0, NULL, 0,
+                           kdf_params, kdf_params_len);
+  xfree (kdf_params);
   if (err)
     {
       if (opt.verbose)
@@ -1002,7 +1007,8 @@ do_encrypt_ecdh (PKT_public_key *pk, gcry_mpi_t data,  gcry_mpi_t *resarr)
   if (DBG_CRYPTO)
     log_printhex (kek, kek_len, "KEK:");
 
-  err = gcry_cipher_open (&hd, kdf_encr_algo, GCRY_CIPHER_MODE_AESWRAP, 0);
+  err = gcry_cipher_open (&hd, keywrap_cipher_algo,
+                          GCRY_CIPHER_MODE_AESWRAP, 0);
   if (!err)
     err = gcry_cipher_setkey (hd, kek, kek_len);
   if (err)

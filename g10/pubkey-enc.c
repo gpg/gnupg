@@ -194,54 +194,19 @@ ecdh_sexp_build (gcry_sexp_t *r_s_data, struct pubkey_enc_list *enc,
                  PKT_public_key *sk)
 {
   gpg_error_t err;
-  const unsigned char *oid;
   const unsigned char *kdf_params_spec;
-  unsigned int nbits;
-  size_t len;
-  size_t oid_len;
   byte fp[MAX_FINGERPRINT_LEN];
   int keywrap_cipher_algo;
   int kdf_hash_algo;
   unsigned char *kdf_params = NULL;
-  int kdf_params_len = 0;
-
-  if (!gcry_mpi_get_flag (sk->pkey[0], GCRYMPI_FLAG_OPAQUE))
-    return gpg_error (GPG_ERR_BAD_PUBKEY);
-
-  oid = gcry_mpi_get_opaque (sk->pkey[0], &nbits);
-  oid_len = (nbits+7)/8;
-
-  /* In the public key part of SK, there is a specifier of KDF
-     parameters (namely, hash algo for KDF and symmetric algo for
-     wrapping key).  Using this specifier (together with curve OID
-     of the public key and the fingerprint), we build _the_ KDF
-     parameters.  */
-  if (!gcry_mpi_get_flag (sk->pkey[2], GCRYMPI_FLAG_OPAQUE))
-    return gpg_error (GPG_ERR_BAD_PUBKEY);
-
-  kdf_params_spec = gcry_mpi_get_opaque (sk->pkey[2], &nbits);
-  len = (nbits+7)/8;
+  size_t kdf_params_len = 0;
 
   fingerprint_from_pk (sk, fp, NULL);
 
-  /* Expect 4 bytes  03 01 hash_alg symm_alg.  */
-  if (len != 4 || kdf_params_spec[0] != 3 || kdf_params_spec[1] != 1)
-    return gpg_error (GPG_ERR_BAD_PUBKEY);
-
-  kdf_params_len = oid_len + 1 + 4 + 20 + 20;
-  kdf_params = xtrymalloc (kdf_params_len);
-  if (!kdf_params)
-    return gpg_error_from_syserror ();
-
-  memcpy (kdf_params, oid, oid_len);
-  kdf_params[oid_len] = PUBKEY_ALGO_ECDH;
-  memcpy (kdf_params + oid_len + 1, kdf_params_spec, 4);
-  memcpy (kdf_params + oid_len + 1 + 4, "Anonymous Sender    ", 20);
-  memcpy (kdf_params + oid_len + 1 + 4 + 20, fp, 20);
-
-  if (DBG_CRYPTO)
-    log_printhex (kdf_params, kdf_params_len,
-                  "ecdh KDF message params are:");
+  err = ecc_build_kdf_params (&kdf_params, &kdf_params_len,
+                              &kdf_params_spec, sk->pkey, fp);
+  if (err)
+    return err;
 
   keywrap_cipher_algo = kdf_params_spec[3];
   kdf_hash_algo = kdf_params_spec[2];
@@ -256,7 +221,7 @@ ecdh_sexp_build (gcry_sexp_t *r_s_data, struct pubkey_enc_list *enc,
                          "(enc-val(ecc(c%d)(h%d)(e%m)(s%m)(kdf-params%b)))",
                          keywrap_cipher_algo, kdf_hash_algo,
                          enc->d.data[0], enc->d.data[1],
-                         kdf_params_len, kdf_params);
+                         (int)kdf_params_len, kdf_params);
   xfree (kdf_params);
   return err;
 }
