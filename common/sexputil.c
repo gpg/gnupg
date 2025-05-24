@@ -784,11 +784,11 @@ uncompress_ecc_q_in_canon_sexp (const unsigned char *keydata,
     return err;
   if (!tok)
     return gpg_error (GPG_ERR_BAD_PUBKEY);
-  else if (toklen == 10 || !memcmp ("public-key", tok, toklen))
+  else if (toklen == 10 && !memcmp ("public-key", tok, toklen))
     ;
-  else if (toklen == 11 || !memcmp ("private-key", tok, toklen))
+  else if (toklen == 11 && !memcmp ("private-key", tok, toklen))
     ;
-  else if (toklen == 20 || !memcmp ("shadowed-private-key", tok, toklen))
+  else if (toklen == 20 && !memcmp ("shadowed-private-key", tok, toklen))
     ;
   else
     return gpg_error (GPG_ERR_BAD_PUBKEY);
