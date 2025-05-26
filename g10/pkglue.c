@@ -34,7 +34,7 @@
 
 
 /* Maximum buffer sizes required for ECC KEM.  */
-#define ECC_POINT_LEN_MAX (1+2*64)
+#define ECC_POINT_LEN_MAX (1+2*66)
 #define ECC_HASH_LEN_MAX 64
 
 
