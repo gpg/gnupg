@@ -29,7 +29,7 @@ EXTRA_DIST = OAUTHORS ONEWS ChangeLog-2011 tls-ca.pem \
 
 
 
-dist_pkgdata_DATA = sks-keyservers.netCA.pem
+dist_pkgdata_DATA =
 
 bin_PROGRAMS = dirmngr dirmngr-client
 
