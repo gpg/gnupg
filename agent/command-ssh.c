@@ -3958,7 +3958,7 @@ start_command_handler_ssh (ctrl_t ctrl, gnupg_fd_t sock_client)
   es_syshd_t syshd;
 
   syshd.type = ES_SYSHD_SOCK;
-#ifdef HAVE_SOCKET
+#if defined(HAVE_SOCKET) && defined(HAVE_W32_SYSTEM)
   syshd.u.sock = (SOCKET)sock_client;
 #else
   syshd.u.sock = sock_client;
