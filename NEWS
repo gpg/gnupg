@@ -1,6 +1,9 @@
 Noteworthy changes in version 2.5.7 (unreleased)
 ------------------------------------------------
 
+  * gpg: Allow updating a SHA-1 key certification w/o using
+    the --force-sign-key option.  [T7663]
+
 
 Noteworthy changes in version 2.5.6 (2025-05-08)
 ------------------------------------------------

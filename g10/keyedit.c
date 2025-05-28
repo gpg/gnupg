@@ -855,7 +855,16 @@ sign_uids (ctrl_t ctrl, estream_t fp,
                                 _("\"%s\" was already signed by key %s\n"),
 				user, keystr_from_pk (pk));
 
-		  if (opt.flags.force_sign_key
+                  if (node->pkt->pkt.signature->digest_algo
+                      == DIGEST_ALGO_SHA1
+                      && !opt.flags.allow_weak_key_signatures)
+                    {
+                      /* Allow updating a signature to a stronger
+                       * digest algorithm without an extra option.  */
+		      xfree (user);
+		      continue;
+                    }
+		  else if (opt.flags.force_sign_key
                       || (opt.expert && !(flags & SIGN_UIDS_QUICK)
                           && cpr_get_answer_is_yes ("sign_uid.dupe_okay",
                                                     _("Do you want to sign it "
