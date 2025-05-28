@@ -1110,10 +1110,10 @@ ifneq ($(TARGETOS),w32)
 	 echo "sysconfdir = /etc/gnupg"  >bin/gpgconf.ctl ;\
 	 echo "rootdir = $(idir)" >>bin/gpgconf.ctl ;\
 	 echo "speedo: /*" ;\
-	 echo "speedo:  * Now copy $(idir)/ to the final location and" ;\
-	 echo "speedo:  * adjust $(idir)/bin/gpgconf.ctl accordingly" ;\
-	 echo "speedo:  * Or run run for example:" ;\
+	 echo "speedo:  * Now run for example:" ;\
 	 echo "speedo:  *   make -f $(topsrc)/build-aux/speedo.mk install SYSROOT=/usr/local/gnupg26" ;\
+	 echo "speedo:  * This copies copy $(idir)/ to the final location and" ;\
+	 echo "speedo:  * adjusts $(idir)/bin/gpgconf.ctl accordingly" ;\
 	 echo "speedo:  */")
 endif
 

@@ -90,7 +90,11 @@
   toolchain is installed.  On a Debian based system it should be
   sufficient to run as root:
 
-    apt-get install build-essential libusb-1.0-0-dev libsqlite3-dev patchelf
+    apt-get install build-essential libusb-1.0-0-dev libsqlite3-dev \
+                    libldap-dev libreadline-dev patchelf
+
+  (libldap-dev and libreadline-dev are not strictly necessary but
+   are highly suggested.)
 
   Then as regular user run
 
@@ -229,8 +233,8 @@
     systemctl --user mask --now gpg-agent.service \
               gpg-agent.socket gpg-agent-ssh.socket \
               gpg-agent-extra.socket gpg-agent-browser.socket
-    systemctl --user mask --now dirmngr.socket
-    systemctl --user mask --now keyboxd.socket
+    systemctl --user mask --now dirmngr.service dirmngr.socket
+    systemctl --user mask --now keyboxd.service keyboxd.socket
 
   This way all GnuPG components can handle the startup of their
   daemons on their own and start the correct version.
