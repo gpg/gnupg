@@ -2162,6 +2162,7 @@ retrieve_options_from_program (gc_component_id_t component, int only_installed)
         }
     }
 
+  gpgrt_argparse (NULL, &pargs, NULL);  /* Release internal state.  */
   xfree (line);
   xfree (twopartconfig_name);
 }

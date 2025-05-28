@@ -593,6 +593,7 @@ gpgtar_list (const char *filename, int decrypt)
     }
 
  leave:
+  gpgrt_process_release (proc);
   free_strlist (extheader);
   xfree (header);
   if (stream != es_stdin)

@@ -559,6 +559,7 @@ gpgtar_extract (const char *filename, int decrypt)
     }
 
  leave:
+  gpgrt_process_release (proc);
   notextracted  = tarinfo->skipped_badname;
   notextracted += tarinfo->skipped_suspicious;
   notextracted += tarinfo->skipped_symlinks;

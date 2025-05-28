@@ -1222,12 +1222,23 @@ do_process_wait (scheme *sc, pointer args)
   FFI_ARG_OR_RETURN (sc, struct proc_object_box *, box, proc, args);
   FFI_ARG_OR_RETURN (sc, int, hang, bool, args);
   FFI_ARGS_DONE_OR_RETURN (sc, args);
-  err = gpgrt_process_wait (box->proc, hang);
-  if (!err)
-    err = gpgrt_process_ctl (box->proc, GPGRT_PROCESS_GET_EXIT_ID, &retcode);
-  if (err == GPG_ERR_TIMEOUT)
-    err = 0;
-
+  if (!box->proc)
+    {
+      if (verbose)
+        fprintf (stderr, "caught already (%p)\n", box);
+    }
+  else
+    {
+      err = gpgrt_process_wait (box->proc, hang);
+      if (!err)
+        {
+          err = gpgrt_process_ctl (box->proc, GPGRT_PROCESS_GET_EXIT_ID, &retcode);
+          gpgrt_process_release (box->proc);
+          box->proc = NULL;
+        }
+      if (err == GPG_ERR_TIMEOUT)
+        err = 0;
+    }
   FFI_RETURN_INT (sc, retcode);
 }
 

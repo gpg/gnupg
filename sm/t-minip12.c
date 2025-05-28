@@ -433,7 +433,8 @@ one_file (const char *name, const char *pass)
               gcry_free (tmpbuf);
             }
         }
-    }
+      p12_parse_free_kparms (result);
+   }
   if (badpass)
     log_error ("Bad password given?\n");
 

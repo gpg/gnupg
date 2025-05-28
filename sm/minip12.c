@@ -2027,7 +2027,7 @@ p12_parse (const unsigned char *buffer, size_t length, const char *pw,
   if ((err = tlv_expect_octet_string (tlv, &data, &datalen)))
     goto bailout;
 
-  tmptlv = tlv_parser_new (data, datalen, opt_verbose, NULL);
+  tmptlv = tlv_parser_new (data, datalen, opt_verbose, tlv);
   if (!tmptlv)
     {
       err = gpg_error_from_syserror ();
