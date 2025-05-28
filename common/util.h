@@ -296,6 +296,14 @@ void gnupg_set_builddir (const char *newdir);
 void gnupg_rl_initialize (void);
 
 /*-- helpfile.c --*/
+
+/* Bit flags for gnupg_get_template.  */
+#define GET_TEMPLATE_CURRENT_LOCALE 1 /* Use only the current locale.       */
+#define GET_TEMPLATE_SUBST_ENVVARS  2 /* Substitute environment variables.  */
+#define GET_TEMPLATE_CRLF           4 /* Use CR+LF.                         */
+
+char *gnupg_get_template (const char *domain, const char *key,
+                          unsigned int flags);
 char *gnupg_get_help_string (const char *key, int only_current_locale);
 
 /*-- localename.c --*/

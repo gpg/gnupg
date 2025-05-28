@@ -1,5 +1,6 @@
 /* helpfile.c - GnuPG's helpfile feature
  *	Copyright (C) 2007 Free Software Foundation, Inc.
+ *	Copyright (C) 2011,2012, 2025 g10 Code GmbH
  *
  * This file is part of GnuPG.
  *
@@ -25,6 +26,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, see <https://www.gnu.org/licenses/>.
+ * SPDX-License-Identifier: (LGPL-3.0-or-later OR GPL-2.0-or-later)
  */
 
 #include <config.h>
@@ -38,7 +40,7 @@
 
 /* Try to find KEY in the file FNAME.  */
 static char *
-findkey_fname (const char *key, const char *fname)
+findkey_fname (const char *key, const char *fname, unsigned int flags)
 {
   gpg_error_t err = 0;
   estream_t fp;
@@ -126,7 +128,10 @@ findkey_fname (const char *key, const char *fname)
       if (is_membuf_ready (&mb))
         {
           put_membuf_str (&mb, p);
-          put_membuf (&mb, "\n", 1);
+          if ((flags & GET_TEMPLATE_CRLF))
+            put_membuf (&mb, "\r\n", 2);
+          else
+            put_membuf (&mb, "\n", 1);
         }
 
     }
@@ -159,22 +164,23 @@ findkey_fname (const char *key, const char *fname)
 
 /* Try the help files depending on the locale.  */
 static char *
-findkey_locale (const char *key, const char *locname,
-                int only_current_locale, const char *dirname)
+findkey_locale (const char *domain, const char *key, const char *locname,
+                const char *dirname, unsigned int flags)
 {
   const char *s;
   char *fname, *ext, *p;
   char *result;
 
-  fname = xtrymalloc (strlen (dirname) + 6 + strlen (locname) + 4 + 1);
+  fname = xtrymalloc (strlen (dirname) + 2
+                      + strlen (domain) + strlen (locname) + 4 + 1);
   if (!fname)
     return NULL;
-  ext = stpcpy (stpcpy (fname, dirname), "/help.");
+  ext = stpcpy (stpcpy (stpcpy (stpcpy (fname, dirname), "/"), domain), ".");
   /* Search with locale name and territory.  ("help.LL_TT.txt") */
   if (strchr (locname, '_'))
     {
       strcpy (stpcpy (ext, locname), ".txt");
-      result = findkey_fname (key, fname);
+      result = findkey_fname (key, fname, flags);
     }
   else
     result = NULL;  /* No territory.  */
@@ -187,17 +193,17 @@ findkey_locale (const char *key, const char *locname,
           for (p=ext, s=locname; *s && *s != '_';)
             *p++ = *s++;
           strcpy (p, ".txt");
-          result = findkey_fname (key, fname);
+          result = findkey_fname (key, fname, flags);
         }
       else
         result = NULL;
     }
 
-  if (!result && (!only_current_locale || !*locname) )
+  if (!result && (!(flags & GET_TEMPLATE_CURRENT_LOCALE) || !*locname))
     {
       /* Last try: Search in file without any locale info.  ("help.txt") */
       strcpy (ext, "txt");
-      result = findkey_fname (key, fname);
+      result = findkey_fname (key, fname, flags);
     }
 
   xfree (fname);
@@ -205,31 +211,32 @@ findkey_locale (const char *key, const char *locname,
 }
 
 
-/* Return a malloced help text as identified by KEY.  The system takes
+/* Return a malloced text as identified by KEY.  The system takes
    the string from an UTF-8 encoded file to be created by an
    administrator or as distributed with GnuPG.  On a GNU or Unix
    system the entry is searched in these files:
 
-     /etc/gnupg/help.LL.txt
-     /etc/gnupg/help.txt
-     /usr/share/gnupg/help.LL.txt
-     /usr/share/gnupg/help.txt
+     /etc/gnupg/<domain>.<LL>.txt
+     /etc/gnupg/<domain>.txt
+     /usr/share/gnupg/<domain>.<LL>.txt
+     /usr/share/gnupg/<domain>.txt
 
-   Here LL denotes the two digit language code of the current locale.
-   If ONLY_CURRENT_LOCALE is set, the function won't fallback to the
-   english valiant ("help.txt") unless that locale has been requested.
+   The <domain> is either "help" or any other domain like "mail-tube".
+   Here <LL> denotes the two digit language code of the current
+   locale.  If the flag bit GET_TEMPLATE_CURRENT_LOCALE is set, the
+   function won't fallback to the english valiant ("<domain>.txt")
+   unless that locale has been requested.
 
-   The help file needs to be encoded in UTF-8, lines with a '#' in the
+   The template file needs to be encoded in UTF-8, lines with a '#' in the
    first column are comment lines and entirely ignored.  Help keys are
    identified by a key consisting of a single word with a single dot
    as the first character.  All key lines listed without any
    intervening lines (except for comment lines) lead to the same help
-   text.  Lines following the key lines make up the actual hep texts.
-
+   text.  Lines following the key lines make up the actual template texts.
 */
 
 char *
-gnupg_get_help_string (const char *key, int only_current_locale)
+gnupg_get_template (const char *domain, const char *key, unsigned int flags)
 {
   static const char *locname;
   char *result;
@@ -250,7 +257,7 @@ gnupg_get_help_string (const char *key, int only_current_locale)
             else if (*p == '_')
               {
                 if (count++)
-                  *p = 0;  /* Also cut at a underscore in the territory.  */
+                  *p = 0;  /* Also cut at an underscore in the territory.  */
               }
           locname = buffer;
         }
@@ -259,14 +266,32 @@ gnupg_get_help_string (const char *key, int only_current_locale)
   if (!key || !*key)
     return NULL;
 
-  result = findkey_locale (key, locname, only_current_locale,
-                           gnupg_sysconfdir ());
+  result = findkey_locale (domain, key, locname,
+                           gnupg_sysconfdir (), flags);
   if (!result)
-    result = findkey_locale (key, locname, only_current_locale,
-                             gnupg_datadir ());
+    result = findkey_locale (domain, key, locname,
+                             gnupg_datadir (), flags);
 
-  if (result)
+  if (result && (flags & GET_TEMPLATE_SUBST_ENVVARS))
+    {
+      char *tmp = substitute_envvars (result);
+      if (tmp)
+        {
+          xfree (result);
+          result = tmp;
+        }
+    }
+
+  if (result && !(flags & GET_TEMPLATE_CRLF))
     trim_trailing_spaces (result);
 
   return result;
+}
+
+
+char *
+gnupg_get_help_string (const char *key, int only_current)
+{
+  return gnupg_get_template ("help", key,
+                             only_current? GET_TEMPLATE_CURRENT_LOCALE : 0);
 }

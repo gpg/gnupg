@@ -39,6 +39,7 @@ int
 main (int argc, char **argv)
 {
   char *result;
+  unsigned int flags = 0;
 
   if (argc)
     { argc--; argv++; }
@@ -48,17 +49,35 @@ main (int argc, char **argv)
       verbose = 1;
       argc--; argv++;
     }
+  if (argc && !strcmp (argv[0], "--env"))
+    {
+      flags |= GET_TEMPLATE_SUBST_ENVVARS;
+      argc--; argv++;
+    }
+  if (argc && !strcmp (argv[0], "--crlf"))
+    {
+      flags |= GET_TEMPLATE_CRLF;
+      argc--; argv++;
+    }
+  if (argc != 2)
+    {
+      fprintf (stderr, "Usage: t-helpfile [--env] [--crlf] domain key\n");
+      exit (2);
+    }
 
-  result = gnupg_get_help_string (argc? argv[0]:NULL, 0);
+
+  result = gnupg_get_template (argv[0], argv[1], flags);
   if (!result)
     {
       fprintf (stderr,
-               "Error: nothing found for '%s'\n", argc?argv[0]:"(null)");
+               "Error: nothing found for '%s' in domain '%s'\n",
+               argv[1], argv[0]);
       errcount++;
     }
   else
     {
-      printf ("key '%s' result='%s'\n", argc?argv[0]:"(null)", result);
+      printf ("domain '%s' key '%s' result='%s'\n",
+              argv[0], argv[1], result);
       xfree (result);
     }
 
