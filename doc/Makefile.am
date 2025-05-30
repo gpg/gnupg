@@ -33,7 +33,8 @@ helpfiles = help.txt help.be.txt help.ca.txt help.cs.txt		\
             help.gl.txt help.hu.txt help.id.txt help.it.txt		\
             help.ja.txt help.nb.txt help.pl.txt help.pt.txt		\
             help.pt_BR.txt help.ro.txt help.ru.txt help.sk.txt		\
-            help.sv.txt help.tr.txt help.zh_CN.txt help.zh_TW.txt
+            help.sv.txt help.tr.txt help.zh_CN.txt help.zh_TW.txt       \
+            mail-tube.txt mail-tube.de.txt
 
 EXTRA_DIST = samplekeys.asc mksamplekeys com-certs.pem \
 	     gnupg-logo.pdf gnupg-logo.png gnupg-logo-tr.png \

@@ -37,6 +37,7 @@
 #include "../common/ccparray.h"
 #include "../common/mbox-util.h"
 #include "../common/zb32.h"
+#include "../common/i18n.h"
 #include "rfc822parse.h"
 #include "mime-maker.h"
 
@@ -256,6 +257,7 @@ main (int argc, char **argv)
   log_set_prefix ("gpg-mail-tube", GPGRT_LOG_WITH_PREFIX);
 
   /* Make sure that our subsystems are ready.  */
+  i18n_init();  /* Required for gnupg_get_template.  */
   init_common_subsystems (&argc, &argv);
 
   /* Parse the command line. */
@@ -366,6 +368,18 @@ main (int argc, char **argv)
     log_error ("command failed: %s\n", gpg_strerror (err));
   free_strlist (recipients);
   return log_get_errorcount (0)? 1:0;
+}
+
+
+/* Return true if TSRING has only ascii chacrterst or is NULL.  */
+static int
+only_ascii (const char *string)
+{
+  if (string)
+    for ( ; *string; string++)
+      if ((*string & 0x80))
+        return 0;
+  return 1;
 }
 
 
@@ -549,20 +563,46 @@ mail_tube_encrypt (estream_t fpin, strlist_t recipients)
   /* Output the plain or PGP/MIME boilerplate.  */
   if (opt.as_attach)
     {
-      /* FIXME: Need to have a configurable message here.  */
+      char *templ, *tmpstr;
+      const char *charset = "us-ascii";
+      const char *ctencode = "";
+
+      templ = gnupg_get_template ("mail-tube",
+                                  ct_is_text? "encrypted-file-attached"
+                                            : "encrypted-mail-attached",
+                                  (GET_TEMPLATE_SUBST_ENVVARS
+                                   | GET_TEMPLATE_CRLF));
+      if (templ && !only_ascii (templ))
+        {
+          charset = "utf-8";
+          ctencode = "Content-Transfer-Encoding: quoted-printable\r\n";
+          tmpstr = mime_maker_qp_encode (templ);
+          if (!tmpstr)
+            {
+              log_error ("QP encoding failed: %s\n",
+                         gpg_strerror (gpg_error_from_syserror ()));
+              exit (1);
+            }
+          xfree (templ);
+          templ = tmpstr;
+        }
       es_fprintf (es_stdout,
                   "\r\n"
                   "\r\n"
                   "--=-=mt-%s=-=\r\n"
-                  "Content-Type: text/plain; charset=us-ascii\r\n"
+                  "Content-Type: text/plain; charset=%s\r\n"
+                  "%s"
                   "Content-Disposition: inline\r\n"
                   "\r\n"
-                  "Please find attached an encrypted %s.\r\n"
+                  "%s"
                   "\r\n"
                   "--=-=mt-%s=-=\r\n",
                   boundary,
-                  ct_is_text? "file":"message",
+                  charset, ctencode,
+                  templ? templ
+                       : "Please find attached an encrypted file/mail.\r\n",
                   boundary);
+      xfree (templ);
       if (ct_is_text)
         es_fprintf (es_stdout,
                     "Content-Type: text/plain; charset=us-ascii\r\n"
