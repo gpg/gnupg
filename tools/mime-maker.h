@@ -31,6 +31,7 @@ void mime_maker_set_verbose (mime_maker_t ctx, int level);
 
 void mime_maker_dump_tree (mime_maker_t ctx);
 
+char *mime_maker_qp_encode (const char *string);
 gpg_error_t mime_maker_add_header (mime_maker_t ctx,
                                    const char *name, const char *value);
 gpg_error_t mime_maker_add_body (mime_maker_t ctx, const char *string);

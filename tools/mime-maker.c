@@ -1,5 +1,5 @@
 /* mime-maker.c - Create MIME structures
- * Copyright (C) 2016 g10 Code GmbH
+ * Copyright (C) 2016, 2025 g10 Code GmbH
  * Copyright (C) 2016 Bundesamt für Sicherheit in der Informationstechnik
  *
  * This file is part of GnuPG.
@@ -16,6 +16,7 @@
  *
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program; if not, see <https://www.gnu.org/licenses/>.
+ * SPDX-License-Identifier: LGPL-2.1-or-later
  */
 
 #include <config.h>
@@ -345,6 +346,89 @@ add_header (part_t part, const char *name, const char *value)
     xfree (hdr);
 
   return 0;
+}
+
+
+/* Return a new string which is QP encoded.  Also encodes the F in a
+ * leading "From " and a line with a single dot.  Return NULL and sets
+ * ERRNO on error.  */
+char *
+mime_maker_qp_encode (const char *string)
+{
+  /* Check whether the current character is followed by a line ending.
+   * The end of the string also considered a line ending. */
+#define nextislf(a) (*a && ((a[1] == '\r' && a[2] == '\n') \
+                            || a[1] == '\n' || !a[1]))
+
+#define tohex(n) ((n) < 10 ? ((n) + '0') : (((n) - 10) + 'A'))
+
+  char *buffer, *p;
+  const unsigned char *s;
+  int lastwaslf;
+  size_t n;
+
+  /* Count the required length.  */
+  for (lastwaslf=1, n=0, s = string; *s; s++)
+    {
+      if (*s == '.' && nextislf (s))
+        {
+          n += 3;
+        }
+      else if (!strncmp (s, "From ", 5))
+        {
+          n += 3 + 4;
+          s += 4;
+        }
+      else if (*s == '=')
+        {
+          n += 3;
+        }
+      else if (strchr ("\r\n\t", *s) || (*s >= 0x20 && *s <= 0x7e))
+        n++;
+      else
+        n += 3;
+    }
+  n++;
+
+  /* Now encode.  */
+  p = buffer = xtrymalloc (n);
+  if (!buffer)
+    return NULL;
+  for (lastwaslf=1, s = string; *s; s++)
+    {
+      if (lastwaslf && *s == '.' && nextislf (s))
+        {
+          *p++ = '=';
+          *p++ = '2';
+          *p++ = 'E';
+        }
+      else if (lastwaslf && !strncmp (s, "From ", 5))
+        {
+          memcpy (p, "=46rom ", 7);
+          p += 7;
+          s += 4;
+        }
+      else if (*s == '=')
+        {
+          *p++ = '=';
+          *p++ = '3';
+          *p++ = 'D';
+        }
+      else if (strchr ("\r\n\t", *s) || (*s >= 0x20 && *s <= 0x7e))
+        *p++ = *s;
+      else
+        {
+          *p++ = '=';
+          *p++ = tohex ((*s>>4)&15);
+          *p++ = tohex (*s&15);
+        }
+      lastwaslf = (*s == '\n');
+    }
+  *p = 0;
+
+  return buffer;
+#undef tohex
+#undef nextislf
 }
 
 
