@@ -231,7 +231,7 @@ t_extra_src =
 t_common_cflags = $(LIBGCRYPT_CFLAGS) $(GPG_ERROR_CFLAGS) $(INCICONV)
 t_common_ldadd  = $(libcommon) \
 		  $(LIBGCRYPT_LIBS) $(GPG_ERROR_LIBS) \
-                  $(LIBINTL) $(LIBICONV)
+                  $(LIBINTL) $(LIBICONV) $(W32SOCKLIBS)
 
 t_mime_maker_SOURCES = t-mime-maker.c \
 		       rfc822parse.c rfc822parse.h \

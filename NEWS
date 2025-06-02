@@ -1,8 +1,38 @@
-Noteworthy changes in version 2.5.7 (unreleased)
+Noteworthy changes in version 2.5.7 (2025-06-02)
 ------------------------------------------------
 
   * gpg: Allow updating a SHA-1 key certification w/o using
     the --force-sign-key option.  [T7663]
+
+  * gpg: The group key flag has now been fully implemented.
+    [rG8833a34bf0]
+
+  * gpg: Make combination of show-only-fpr-mbox and show-unusable-uid
+    work.  [rGd5a4a2dc89]
+
+  * gpg: Do not allow compressed key packets on import.  [T7014]
+
+  * gpgsm: Allow an empty subject DN also during import.  [T7171]
+
+  * agent: Recover the old behavior with max-cache-ttl=0.  [T6681]
+
+  * agent: Fix ECC key on smartcard for composite KEM with PQC.
+    [T7648]
+
+  * scd: Fix a harmless read buffer over-read in a function used by
+    PKCS#15 cards.  [T7662]
+
+  * gpg-mail-tube,wks: Support templates for mail content.  [T7381]
+
+  * Use the KEM interface of Libgcrypt for encryption/decryption.
+    [T7649]
+
+  * Fix a glitch in socket handling in Windows in case of a nonce
+    mismatch.  [rG645cf7d8fc]
+
+
+  See-also: gnupg-announce/2025q2/000493.html
+  Release-info: https://dev.gnupg.org/T7671
 
 
 Noteworthy changes in version 2.5.6 (2025-05-08)
