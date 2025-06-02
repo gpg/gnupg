@@ -160,9 +160,6 @@ and then manually edited:
       <Component Id="cmp59D652F2B6BBFD90563BF58D6CE6BE7B" Directory="dirF4B1502A83344E3C92AB58989653B465" Guid="1C51D4AF-B308-40A3-B8D8-CEDA5AB2A383">
         <File Id="filCB1BD20C87EE88A17D7502E26268DA65" KeyPath="yes" Source="$(var.SourceDir)\share\gnupg\distsigkey.gpg"/>
       </Component>
-      <Component Id="cmpB3614EC83F6377F9DB10BC5C5A78AA47" Directory="dirF4B1502A83344E3C92AB58989653B465" Guid="BACEBFAD-8B9A-4A40-9402-42B3D8DDFDE3">
-        <File Id="fil0E0180B133150E83BBEDA55A98F3EF53" KeyPath="yes" Source="$(var.SourceDir)\share\gnupg\sks-keyservers.netCA.pem"/>
-      </Component>
       <Component Id="cmp546709111F313BA25B92228092A64615" Directory="dirC8F3DBB83340CAA01AAA7A2A483F2C9D" Guid="03FC08BD-E454-4F57-BC28-226C3784F391">
         <File Id="filB3D8051BA1609D83EEA2EE794DF525CD" KeyPath="yes" Source="$(var.SourceDir)\share\locale\ca\LC_MESSAGES\gnupg2.mo"/>
       </Component>
