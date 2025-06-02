@@ -9,7 +9,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnupg-2.4.1\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"PO-Revision-Date: 2025-03-07 13:50+0100\n"
+"PO-Revision-Date: 2025-06-02 15:40+0200\n"
 "Last-Translator: Werner Koch <wk@gnupg.org>\n"
 "Language-Team: German\n"
 "Language: de\n"
@@ -2047,6 +2047,9 @@ msgstr "Schlüssel schnell signieren"
 msgid "quickly sign a key locally"
 msgstr "Schlüssel schnell nur für diesen Rechner signieren"
 
+msgid "quickly sign a key with a trust signature"
+msgstr "Schnell eine User-ID mit einer \"Trust\"-Signatur beglaubigen"
+
 msgid "quickly revoke a key signature"
 msgstr "Schnell eine Schlüsselsignatur widerrufen"
 
@@ -2348,6 +2351,9 @@ msgstr "Voreinstellungen anzeigen"
 
 msgid "show ownertrust"
 msgstr "Den \"Ownertrust\" anzeigen"
+
+msgid "show trust signature information"
+msgstr "Zeige \"Trust\"-Signatur Informationen"
 
 #, c-format
 msgid "unknown TOFU policy '%s'\n"
@@ -3726,6 +3732,10 @@ msgstr "Keine passende User-ID"
 
 msgid "Nothing to sign.\n"
 msgstr "Nichts zu beglaubigen\n"
+
+#, c-format
+msgid "creating key signature failed: %s\n"
+msgstr "Fehler beim Erzeugen einer Schlüsselsignatur: %s\n"
 
 #, c-format
 msgid "Not signed by you.\n"
