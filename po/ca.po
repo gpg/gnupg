@@ -2207,6 +2207,10 @@ msgid "quickly sign a key locally"
 msgstr "signa una clau localment"
 
 #, fuzzy
+msgid "quickly sign a key with a trust signature"
+msgstr "Pista: Trieu els ID d'usuari que voleu signar\n"
+
+#, fuzzy
 #| msgid "generate a new key pair"
 msgid "quickly revoke a key signature"
 msgstr "genera un nou parell de claus"
@@ -2547,6 +2551,11 @@ msgstr "estableix la llista de preferències"
 #| msgid "change the ownertrust"
 msgid "show ownertrust"
 msgstr "canvia la confiança"
+
+#, fuzzy
+#| msgid "Critical signature notation: "
+msgid "show trust signature information"
+msgstr "Notació de signatura crítica: "
 
 #, fuzzy, c-format
 msgid "unknown TOFU policy '%s'\n"
@@ -4004,6 +4013,11 @@ msgstr "Usuari inexistent.\n"
 #, fuzzy
 msgid "Nothing to sign.\n"
 msgstr "No hi ha res que signar amb la clau %08lX\n"
+
+#, fuzzy, c-format
+#| msgid "checking created signature failed: %s\n"
+msgid "creating key signature failed: %s\n"
+msgstr "no s'ha pogut comprovar la signatura creada: %s\n"
 
 #, c-format
 msgid "Not signed by you.\n"

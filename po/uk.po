@@ -2086,6 +2086,11 @@ msgid "quickly sign a key locally"
 msgstr "швидко підписати ключ локально"
 
 #, fuzzy
+#| msgid "sign selected user IDs with a trust signature"
+msgid "quickly sign a key with a trust signature"
+msgstr "підписати вибрані ідентифікатори користувача підписом надійності"
+
+#, fuzzy
 #| msgid "quickly revoke a user-id"
 msgid "quickly revoke a key signature"
 msgstr "швидке відкликання ідентифікатора користувача"
@@ -2415,6 +2420,11 @@ msgstr "список переваг (експертний)"
 #| msgid "change the ownertrust"
 msgid "show ownertrust"
 msgstr "змінити рівень довіри до власника"
+
+#, fuzzy
+#| msgid "Critical signature notation: "
+msgid "show trust signature information"
+msgstr "Критична примітка підпису: "
 
 #, c-format
 msgid "unknown TOFU policy '%s'\n"
@@ -3806,6 +3816,11 @@ msgstr "Немає відповідних ідентифікаторів кор�
 
 msgid "Nothing to sign.\n"
 msgstr "Нічого підписувати.\n"
+
+#, fuzzy, c-format
+#| msgid "checking created signature failed: %s\n"
+msgid "creating key signature failed: %s\n"
+msgstr "невдала спроба перевірити створений підпис: %s\n"
 
 #, c-format
 msgid "Not signed by you.\n"

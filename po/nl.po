@@ -2105,6 +2105,12 @@ msgstr "snel een sleutel ondertekenen"
 msgid "quickly sign a key locally"
 msgstr "een sleutel snel lokaal ondertekenen"
 
+#, fuzzy
+#| msgid "sign selected user IDs with a trust signature"
+msgid "quickly sign a key with a trust signature"
+msgstr ""
+"geselecteerde gebruikers-ID's met een betrouwbare handtekening ondertekenen"
+
 msgid "quickly revoke a key signature"
 msgstr "een sleutelhandtekening snel intrekken"
 
@@ -2416,6 +2422,11 @@ msgstr "voorkeuren tonen"
 #| msgid "change the ownertrust"
 msgid "show ownertrust"
 msgstr "de betrouwbaarheidsinformatie wijzigen"
+
+#, fuzzy
+#| msgid "Unknown critical signature notation: "
+msgid "show trust signature information"
+msgstr "Onbekende kritieke notatie van de handtekening: "
 
 #, c-format
 msgid "unknown TOFU policy '%s'\n"
@@ -3827,6 +3838,11 @@ msgstr "Geen overeenkomende gebruikers-ID's."
 
 msgid "Nothing to sign.\n"
 msgstr "Er valt niets te ondertekenen.\n"
+
+#, fuzzy, c-format
+#| msgid "revoking the key signature failed: %s\n"
+msgid "creating key signature failed: %s\n"
+msgstr "het intrekken van de sleutelondertekening is mislukt: %s\n"
 
 #, c-format
 msgid "Not signed by you.\n"

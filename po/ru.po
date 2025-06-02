@@ -2066,6 +2066,11 @@ msgid "quickly sign a key locally"
 msgstr "быстро подписать ключ локально"
 
 #, fuzzy
+#| msgid "sign selected user IDs with a trust signature"
+msgid "quickly sign a key with a trust signature"
+msgstr "подписать выбранные идентификаторы пользователя подписью доверия"
+
+#, fuzzy
 #| msgid "quickly revoke a user-id"
 msgid "quickly revoke a key signature"
 msgstr "быстро отозвать идентификатор пользователя"
@@ -2385,6 +2390,11 @@ msgstr "список предпочтений (экспертам)"
 #| msgid "change the ownertrust"
 msgid "show ownertrust"
 msgstr "изменить уровень доверия владельцу"
+
+#, fuzzy
+#| msgid "Unknown critical signature notation: "
+msgid "show trust signature information"
+msgstr "Неизвестное критическое замечание к подписи: "
 
 #, c-format
 msgid "unknown TOFU policy '%s'\n"
@@ -3765,6 +3775,11 @@ msgstr "Нет подходящих идентификаторов пользо�
 
 msgid "Nothing to sign.\n"
 msgstr "Подписывать нечего.\n"
+
+#, fuzzy, c-format
+#| msgid "checking created signature failed: %s\n"
+msgid "creating key signature failed: %s\n"
+msgstr "сбой проверки созданной подписи: %s\n"
 
 #, c-format
 msgid "Not signed by you.\n"

@@ -1994,6 +1994,11 @@ msgstr "すばやく鍵に署名"
 msgid "quickly sign a key locally"
 msgstr "すばやく鍵へローカルに署名"
 
+#, fuzzy
+#| msgid "sign selected user IDs with a trust signature"
+msgid "quickly sign a key with a trust signature"
+msgstr "選択したユーザIDに信用署名を署名する"
+
 msgid "quickly revoke a key signature"
 msgstr "すばやく鍵への署名を失効"
 
@@ -2283,6 +2288,11 @@ msgstr "優先指定の表示"
 
 msgid "show ownertrust"
 msgstr "所有者信用の表示"
+
+#, fuzzy
+#| msgid "Unknown critical signature notation: "
+msgid "show trust signature information"
+msgstr "不明なクリティカルな署名注釈: "
 
 #, c-format
 msgid "unknown TOFU policy '%s'\n"
@@ -3605,6 +3615,11 @@ msgstr "マッチするユーザIDはありません。"
 
 msgid "Nothing to sign.\n"
 msgstr "署名するものがありません。\n"
+
+#, fuzzy, c-format
+#| msgid "revoking the key signature failed: %s\n"
+msgid "creating key signature failed: %s\n"
+msgstr "鍵の署名の失効に失敗しました: %s\n"
 
 #, c-format
 msgid "Not signed by you.\n"

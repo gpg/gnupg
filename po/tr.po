@@ -2009,6 +2009,11 @@ msgstr "tez bir anahtar imzala"
 msgid "quickly sign a key locally"
 msgstr "tez bir anahtarı yerel olarak imzala"
 
+#, fuzzy
+#| msgid "sign selected user IDs with a trust signature"
+msgid "quickly sign a key with a trust signature"
+msgstr "seçili kullanıcı kimliklerini bir güvence imzasıyla imzala"
+
 msgid "quickly revoke a key signature"
 msgstr "tez bir anahtar imzasını yürürlükten kaldır"
 
@@ -2305,6 +2310,11 @@ msgstr "tercihleri göster"
 
 msgid "show ownertrust"
 msgstr "iye güvencesini göster"
+
+#, fuzzy
+#| msgid "Unknown critical signature notation: "
+msgid "show trust signature information"
+msgstr "Bilinmeyen kritik imza simgelemi: "
 
 #, c-format
 msgid "unknown TOFU policy '%s'\n"
@@ -3672,6 +3682,11 @@ msgstr "Eşleşen kullanıcı kimliği yok."
 
 msgid "Nothing to sign.\n"
 msgstr "İmzalanacak bir şey yok.\n"
+
+#, fuzzy, c-format
+#| msgid "revoking the key signature failed: %s\n"
+msgid "creating key signature failed: %s\n"
+msgstr "anahtar imzasını yürürlükten kaldırma başarısız: %s\n"
 
 #, c-format
 msgid "Not signed by you.\n"

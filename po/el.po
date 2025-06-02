@@ -2136,6 +2136,10 @@ msgid "quickly sign a key locally"
 msgstr "υπογραφή ενός κλειδιού τοπικά"
 
 #, fuzzy
+msgid "quickly sign a key with a trust signature"
+msgstr "Συμβουλή: Επιλέξτε το user ID για υπογραφή\n"
+
+#, fuzzy
 #| msgid "generate a new key pair"
 msgid "quickly revoke a key signature"
 msgstr "δημιουργία ενός νέου ζεύγους κλειδιών"
@@ -2466,6 +2470,11 @@ msgstr "ορισμός απεικόνισης επιλογών"
 #| msgid "change the ownertrust"
 msgid "show ownertrust"
 msgstr "αλλαγή της εμπιστοσύνης ιδιοκτήτη"
+
+#, fuzzy
+#| msgid "Critical signature notation: "
+msgid "show trust signature information"
+msgstr "Σημείωση κρίσιμης υπογραφής: "
 
 #, fuzzy, c-format
 msgid "unknown TOFU policy '%s'\n"
@@ -3906,6 +3915,11 @@ msgstr "Δεν υπάρχει αυτό το user ID.\n"
 #, fuzzy
 msgid "Nothing to sign.\n"
 msgstr "Τίποτα για να υπογραφεί με το κλειδί  %08lX\n"
+
+#, fuzzy, c-format
+#| msgid "checking created signature failed: %s\n"
+msgid "creating key signature failed: %s\n"
+msgstr "απέτυχε ο έλεγχος της υπογραφής που δημιουργήθηκε: %s\n"
 
 #, fuzzy, c-format
 msgid "Not signed by you.\n"

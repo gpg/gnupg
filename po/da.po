@@ -2238,6 +2238,11 @@ msgid "quickly sign a key locally"
 msgstr "underskriv en nøgle lokalt"
 
 #, fuzzy
+#| msgid "sign selected user IDs with a trust signature"
+msgid "quickly sign a key with a trust signature"
+msgstr "underskriv valgte bruger-id'er med en troværdighedsunderskrift"
+
+#, fuzzy
 #| msgid "generate a new key pair"
 msgid "quickly revoke a key signature"
 msgstr "opret et nyt nøglepar"
@@ -2586,6 +2591,11 @@ msgstr "vis præferencer (ekspert)"
 #| msgid "change the ownertrust"
 msgid "show ownertrust"
 msgstr "ændr ejertroværdigheden"
+
+#, fuzzy
+#| msgid "Critical signature notation: "
+msgid "show trust signature information"
+msgstr "Kritisk underskriftnotation: "
 
 #, fuzzy, c-format
 #| msgid "unknown option `%s'\n"
@@ -4025,6 +4035,11 @@ msgstr "Ingen sådan bruger-id.\n"
 #| msgid "Nothing to sign with key %s\n"
 msgid "Nothing to sign.\n"
 msgstr "Intet at underskrive med nøgle %s\n"
+
+#, fuzzy, c-format
+#| msgid "checking created signature failed: %s\n"
+msgid "creating key signature failed: %s\n"
+msgstr "kontrol af oprettet underskrift mislykkedes: %s\n"
 
 #, c-format
 msgid "Not signed by you.\n"

@@ -2119,6 +2119,10 @@ msgid "quickly sign a key locally"
 msgstr "subskribi ŝlosilon loke"
 
 #, fuzzy
+msgid "quickly sign a key with a trust signature"
+msgstr "Sugesto: Elekti la uzantidentigilojn por subskribi\n"
+
+#, fuzzy
 #| msgid "generate a new key pair"
 msgid "quickly revoke a key signature"
 msgstr "krei novan ŝlosilparon"
@@ -2447,6 +2451,10 @@ msgstr "agordi liston de preferoj"
 #| msgid "change the ownertrust"
 msgid "show ownertrust"
 msgstr "ŝanĝi la posedantofidon"
+
+#, fuzzy
+msgid "show trust signature information"
+msgstr "Subskribo-notacio: "
 
 #, fuzzy, c-format
 msgid "unknown TOFU policy '%s'\n"
@@ -3883,6 +3891,11 @@ msgstr "Uzantidentigilo ne ekzistas.\n"
 #, fuzzy
 msgid "Nothing to sign.\n"
 msgstr "Nenio por subskribi per ŝlosilo %08lX\n"
+
+#, fuzzy, c-format
+#| msgid "checking created signature failed: %s\n"
+msgid "creating key signature failed: %s\n"
+msgstr "kontrolo de kreita subskribo malsukcesis: %s\n"
 
 #, fuzzy, c-format
 msgid "Not signed by you.\n"

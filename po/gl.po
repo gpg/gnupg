@@ -2135,6 +2135,10 @@ msgid "quickly sign a key locally"
 msgstr "asinar unha chave localmente"
 
 #, fuzzy
+msgid "quickly sign a key with a trust signature"
+msgstr "Pista: seleccione os IDs de usuario que desexa asinar\n"
+
+#, fuzzy
 #| msgid "generate a new key pair"
 msgid "quickly revoke a key signature"
 msgstr "xerar un novo par de chaves"
@@ -2462,6 +2466,11 @@ msgstr "estabrece-la lista de preferencias"
 #| msgid "change the ownertrust"
 msgid "show ownertrust"
 msgstr "cambia-la confianza sobre o dono"
+
+#, fuzzy
+#| msgid "Critical signature notation: "
+msgid "show trust signature information"
+msgstr "Notación de sinaturas críticas: "
 
 #, fuzzy, c-format
 msgid "unknown TOFU policy '%s'\n"
@@ -3902,6 +3911,11 @@ msgstr "Non hai tal ID de usuario.\n"
 #, fuzzy
 msgid "Nothing to sign.\n"
 msgstr "Nada que asinar coa chave %08lX\n"
+
+#, fuzzy, c-format
+#| msgid "checking created signature failed: %s\n"
+msgid "creating key signature failed: %s\n"
+msgstr "fallou a comprobación da sinatura creada: %s\n"
 
 #, fuzzy, c-format
 msgid "Not signed by you.\n"

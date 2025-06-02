@@ -2154,6 +2154,11 @@ msgid "quickly sign a key locally"
 msgstr "semnează o cheie local"
 
 #, fuzzy
+#| msgid "sign selected user IDs with a trust signature"
+msgid "quickly sign a key with a trust signature"
+msgstr "semnează ID-urile utilizatorilor selectaţi cu o semnătură de încredere"
+
+#, fuzzy
 #| msgid "generate a new key pair"
 msgid "quickly revoke a key signature"
 msgstr "generează o nouă perechi de chei"
@@ -2515,6 +2520,11 @@ msgstr "showpref"
 #| msgid "change the ownertrust"
 msgid "show ownertrust"
 msgstr "schimbă încrederea pentru proprietar"
+
+#, fuzzy
+#| msgid "Critical signature notation: "
+msgid "show trust signature information"
+msgstr "Notare semnătură critică: "
 
 #, fuzzy, c-format
 #| msgid "unknown option `%s'\n"
@@ -3937,6 +3947,11 @@ msgstr "Nu există acest ID utilizator.\n"
 #| msgid "Nothing to sign with key %s\n"
 msgid "Nothing to sign.\n"
 msgstr "Nimic de semnat cu cheia %s\n"
+
+#, fuzzy, c-format
+#| msgid "checking created signature failed: %s\n"
+msgid "creating key signature failed: %s\n"
+msgstr "verificarea semnăturii create a eşuat: %s\n"
 
 #, c-format
 msgid "Not signed by you.\n"

@@ -1963,6 +1963,11 @@ msgstr "快速簽署金鑰"
 msgid "quickly sign a key locally"
 msgstr "快速在本機簽署金鑰"
 
+#, fuzzy
+#| msgid "sign selected user IDs with a trust signature"
+msgid "quickly sign a key with a trust signature"
+msgstr "用信任簽章來簽署所選的使用者 ID"
+
 msgid "quickly revoke a key signature"
 msgstr "快速撤銷一個金鑰簽章"
 
@@ -2250,6 +2255,11 @@ msgstr "顯示偏好設定"
 
 msgid "show ownertrust"
 msgstr "顯示主觀信任"
+
+#, fuzzy
+#| msgid "Unknown critical signature notation: "
+msgid "show trust signature information"
+msgstr "未知的關鍵簽章註記:"
 
 #, c-format
 msgid "unknown TOFU policy '%s'\n"
@@ -3568,6 +3578,11 @@ msgstr "沒有相符的使用者 ID."
 
 msgid "Nothing to sign.\n"
 msgstr "沒有東西可以簽署.\n"
+
+#, fuzzy, c-format
+#| msgid "revoking the key signature failed: %s\n"
+msgid "creating key signature failed: %s\n"
+msgstr "撤銷金鑰簽章時失敗: %s\n"
 
 #, c-format
 msgid "Not signed by you.\n"

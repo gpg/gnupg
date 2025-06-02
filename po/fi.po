@@ -2144,6 +2144,10 @@ msgid "quickly sign a key locally"
 msgstr "allekirjoita avain paikallisesti"
 
 #, fuzzy
+msgid "quickly sign a key with a trust signature"
+msgstr "Vihje: Valitse allekirjoitettavat käyttäjätunnukset\n"
+
+#, fuzzy
 #| msgid "generate a new key pair"
 msgid "quickly revoke a key signature"
 msgstr "luo uusi avainpari"
@@ -2471,6 +2475,11 @@ msgstr "näytä valinnat"
 #| msgid "change the ownertrust"
 msgid "show ownertrust"
 msgstr "muuta luottamusastetta"
+
+#, fuzzy
+#| msgid "Critical signature notation: "
+msgid "show trust signature information"
+msgstr "Kriittinen allekirjoitusnotaatio: "
 
 #, fuzzy, c-format
 msgid "unknown TOFU policy '%s'\n"
@@ -3902,6 +3911,11 @@ msgstr "Käyttäjätunnusta ei löydy.\n"
 #, fuzzy
 msgid "Nothing to sign.\n"
 msgstr "Avaimelle %08lX ei löydy mitään mitä allekirjoittaa\n"
+
+#, fuzzy, c-format
+#| msgid "checking created signature failed: %s\n"
+msgid "creating key signature failed: %s\n"
+msgstr "luodun allekirjoituksen tarkistus epäonnistui: %s\n"
 
 #, fuzzy, c-format
 msgid "Not signed by you.\n"

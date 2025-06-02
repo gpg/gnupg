@@ -2127,6 +2127,10 @@ msgid "quickly sign a key locally"
 msgstr "kulcs aláírása helyileg"
 
 #, fuzzy
+msgid "quickly sign a key with a trust signature"
+msgstr "Javaslat: Válassza ki az aláírni kívánt felhasználóazonosítókat!\n"
+
+#, fuzzy
 #| msgid "generate a new key pair"
 msgid "quickly revoke a key signature"
 msgstr "új kulcspár létrehozása"
@@ -2454,6 +2458,11 @@ msgstr "preferencialista beállítása"
 #| msgid "change the ownertrust"
 msgid "show ownertrust"
 msgstr "kulcstulajdonos megbízhatóságának beállítása"
+
+#, fuzzy
+#| msgid "Critical signature notation: "
+msgid "show trust signature information"
+msgstr "Kritikus aláírás-jelölés: "
 
 #, fuzzy, c-format
 msgid "unknown TOFU policy '%s'\n"
@@ -3879,6 +3888,11 @@ msgstr "Nincs ilyen felhasználói azonosító.\n"
 #, fuzzy
 msgid "Nothing to sign.\n"
 msgstr "Nincs mit aláírni a %08lX kulccsal!\n"
+
+#, fuzzy, c-format
+#| msgid "checking created signature failed: %s\n"
+msgid "creating key signature failed: %s\n"
+msgstr "A létrehozott aláírás ellenőrzése sikertelen: %s.\n"
 
 #, fuzzy, c-format
 msgid "Not signed by you.\n"

@@ -2045,6 +2045,11 @@ msgstr "rychle podepsat klíč"
 msgid "quickly sign a key locally"
 msgstr "rychle lokálně podepsat klíč"
 
+#, fuzzy
+#| msgid "sign selected user IDs with a trust signature"
+msgid "quickly sign a key with a trust signature"
+msgstr "podepsat vybrané uživatelské ID důvěryhodným podpisem"
+
 msgid "quickly revoke a key signature"
 msgstr "rychle odvolat podpis klíče"
 
@@ -2348,6 +2353,11 @@ msgstr "vypsat předvolby"
 #| msgid "change the ownertrust"
 msgid "show ownertrust"
 msgstr "změnit důvěryhodnost vlastníka klíče"
+
+#, fuzzy
+#| msgid "Unknown critical signature notation: "
+msgid "show trust signature information"
+msgstr "Neznámá kritická notace podpisu: "
 
 #, c-format
 msgid "unknown TOFU policy '%s'\n"
@@ -3701,6 +3711,11 @@ msgstr "Žádný identifikátor uživatele neodpovídá."
 
 msgid "Nothing to sign.\n"
 msgstr "Nic na podepsání.\n"
+
+#, fuzzy, c-format
+#| msgid "revoking the key signature failed: %s\n"
+msgid "creating key signature failed: %s\n"
+msgstr "odvolat podpis klíče se nepodařilo: %s\n"
 
 #, c-format
 msgid "Not signed by you.\n"

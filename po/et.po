@@ -2127,6 +2127,10 @@ msgid "quickly sign a key locally"
 msgstr "allkirjasta võti lokaalselt"
 
 #, fuzzy
+msgid "quickly sign a key with a trust signature"
+msgstr "Vihje: Valige allkirjastamiseks kasutaja\n"
+
+#, fuzzy
 #| msgid "generate a new key pair"
 msgid "quickly revoke a key signature"
 msgstr "genereeri uus võtmepaar"
@@ -2454,6 +2458,11 @@ msgstr "sea eelistuste nimekiri"
 #| msgid "change the ownertrust"
 msgid "show ownertrust"
 msgstr "muuda omaniku usaldust"
+
+#, fuzzy
+#| msgid "Critical signature notation: "
+msgid "show trust signature information"
+msgstr "Kriitiline allkirja noteerimine: "
 
 #, fuzzy, c-format
 msgid "unknown TOFU policy '%s'\n"
@@ -3878,6 +3887,11 @@ msgstr "Tundmatu kasutaja ID.\n"
 #, fuzzy
 msgid "Nothing to sign.\n"
 msgstr "Võtmega %08lX pole midagi allkirjastada\n"
+
+#, fuzzy, c-format
+#| msgid "checking created signature failed: %s\n"
+msgid "creating key signature failed: %s\n"
+msgstr "Loodud allkirja ei õnnestu kontrollida: %s\n"
 
 #, fuzzy, c-format
 msgid "Not signed by you.\n"

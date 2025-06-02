@@ -2004,6 +2004,11 @@ msgstr "szybkie złożenie podpisu na kluczu"
 msgid "quickly sign a key locally"
 msgstr "szybkie złożenie prywatnego podpisu na kluczu"
 
+#, fuzzy
+#| msgid "sign selected user IDs with a trust signature"
+msgid "quickly sign a key with a trust signature"
+msgstr "podpisanie wybranych identyfikatorów użytkownika sygnaturą zaufania"
+
 msgid "quickly revoke a key signature"
 msgstr "szybkie unieważnienie podpisu klucza"
 
@@ -2316,6 +2321,11 @@ msgstr "pokazanie ustawień"
 #| msgid "change the ownertrust"
 msgid "show ownertrust"
 msgstr "zmiana zaufania właściciela"
+
+#, fuzzy
+#| msgid "Unknown critical signature notation: "
+msgid "show trust signature information"
+msgstr "Nieznane krytyczne adnotacje podpisu: "
 
 #, c-format
 msgid "unknown TOFU policy '%s'\n"
@@ -3694,6 +3704,11 @@ msgstr "Brak pasującego identyfikatora użytkownika."
 
 msgid "Nothing to sign.\n"
 msgstr "Nie ma nic do podpisania.\n"
+
+#, fuzzy, c-format
+#| msgid "revoking the key signature failed: %s\n"
+msgid "creating key signature failed: %s\n"
+msgstr "unieważnienie podpisu klucza nie powiodło się: %s\n"
 
 #, c-format
 msgid "Not signed by you.\n"

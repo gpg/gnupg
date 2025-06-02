@@ -2109,6 +2109,11 @@ msgid "quickly sign a key locally"
 msgstr "firma una clave localmente en modo rápido"
 
 #, fuzzy
+#| msgid "sign selected user IDs with a trust signature"
+msgid "quickly sign a key with a trust signature"
+msgstr "firmar IDs seleccionados con firma de confianza"
+
+#, fuzzy
 #| msgid "quickly revoke a user-id"
 msgid "quickly revoke a key signature"
 msgstr "revoca una id de usuario en modo rápido"
@@ -2427,6 +2432,11 @@ msgstr "verpref"
 #| msgid "change the ownertrust"
 msgid "show ownertrust"
 msgstr "cambia valores de confianza"
+
+#, fuzzy
+#| msgid "Critical signature notation: "
+msgid "show trust signature information"
+msgstr "Notación de firmas críticas: "
 
 #, c-format
 msgid "unknown TOFU policy '%s'\n"
@@ -3791,6 +3801,11 @@ msgstr "No coincide con ningún identificador de usuario."
 
 msgid "Nothing to sign.\n"
 msgstr "Nada que firmar.\n"
+
+#, fuzzy, c-format
+#| msgid "checking created signature failed: %s\n"
+msgid "creating key signature failed: %s\n"
+msgstr "la comprobación de la firma creada falló: %s\n"
 
 #, c-format
 msgid "Not signed by you.\n"

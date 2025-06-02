@@ -2131,6 +2131,10 @@ msgid "quickly sign a key locally"
 msgstr "tandai kunci secara lokal"
 
 #, fuzzy
+msgid "quickly sign a key with a trust signature"
+msgstr "Petunjuk: Pilih ID user untuk ditandai\n"
+
+#, fuzzy
 #| msgid "generate a new key pair"
 msgid "quickly revoke a key signature"
 msgstr "buat sepasang kunci baru"
@@ -2458,6 +2462,11 @@ msgstr "set daftar preferensi"
 #| msgid "change the ownertrust"
 msgid "show ownertrust"
 msgstr "ubah ownertrust"
+
+#, fuzzy
+#| msgid "Critical signature notation: "
+msgid "show trust signature information"
+msgstr "Notasi signature kritis: "
 
 #, fuzzy, c-format
 msgid "unknown TOFU policy '%s'\n"
@@ -3885,6 +3894,11 @@ msgstr "Tidak ada ID user tersebut.\n"
 #, fuzzy
 msgid "Nothing to sign.\n"
 msgstr "Tidak ada yang ditandai dengan kunci %08lX\n"
+
+#, fuzzy, c-format
+#| msgid "checking created signature failed: %s\n"
+msgid "creating key signature failed: %s\n"
+msgstr "Gagal memeriksa signature yang dibuat: %s\n"
 
 #, fuzzy, c-format
 msgid "Not signed by you.\n"

@@ -2135,6 +2135,10 @@ msgid "quickly sign a key locally"
 msgstr "podpísať kľúč lokálne"
 
 #, fuzzy
+msgid "quickly sign a key with a trust signature"
+msgstr "Nápoveda: Vyberte id užívateľa na podpísanie\n"
+
+#, fuzzy
 #| msgid "generate a new key pair"
 msgid "quickly revoke a key signature"
 msgstr "vytvoriť nový pár kľúčov"
@@ -2470,6 +2474,11 @@ msgstr "nastaviť zoznam predvolieb"
 #| msgid "change the ownertrust"
 msgid "show ownertrust"
 msgstr "zmeniť dôveryhodnosť vlastníka kľúča"
+
+#, fuzzy
+#| msgid "Critical signature notation: "
+msgid "show trust signature information"
+msgstr "Kritická podpisová notácia: "
 
 #, fuzzy, c-format
 msgid "unknown TOFU policy '%s'\n"
@@ -3905,6 +3914,11 @@ msgstr "Takýto identifikátor užívateľa neexistuje.\n"
 #, fuzzy
 msgid "Nothing to sign.\n"
 msgstr "Nič na podpísanie kľúčom %08lX\n"
+
+#, fuzzy, c-format
+#| msgid "checking created signature failed: %s\n"
+msgid "creating key signature failed: %s\n"
+msgstr "kontrola vytvoreného podpisu sa nepodarila: %s\n"
 
 #, fuzzy, c-format
 msgid "Not signed by you.\n"

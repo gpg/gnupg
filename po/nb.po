@@ -2078,6 +2078,11 @@ msgid "quickly sign a key locally"
 msgstr "hurtigsigner nøkkel lokalt"
 
 #, fuzzy
+#| msgid "sign selected user IDs with a trust signature"
+msgid "quickly sign a key with a trust signature"
+msgstr "signer valgte bruker-id-er med tillitssignatur"
+
+#, fuzzy
 #| msgid "quickly revoke a user-id"
 msgid "quickly revoke a key signature"
 msgstr "opphev bruker-ID raskt"
@@ -2386,6 +2391,11 @@ msgstr "vis innstillinger (avansert)"
 #| msgid "change the ownertrust"
 msgid "show ownertrust"
 msgstr "endre eiertillit"
+
+#, fuzzy
+#| msgid "Critical signature notation: "
+msgid "show trust signature information"
+msgstr "Kritisk signaturnotat: "
 
 #, c-format
 msgid "unknown TOFU policy '%s'\n"
@@ -3753,6 +3763,11 @@ msgstr "Ingen treff på bruker-id-er."
 
 msgid "Nothing to sign.\n"
 msgstr "Ingenting å signere.\n"
+
+#, fuzzy, c-format
+#| msgid "checking created signature failed: %s\n"
+msgid "creating key signature failed: %s\n"
+msgstr "kontroll av opprettet signatur mislyktes: %s\n"
 
 #, c-format
 msgid "Not signed by you.\n"

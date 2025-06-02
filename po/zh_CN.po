@@ -1988,6 +1988,11 @@ msgstr "快速签名一个密钥"
 msgid "quickly sign a key locally"
 msgstr "快速本地签名一个密钥"
 
+#, fuzzy
+#| msgid "sign selected user IDs with a trust signature"
+msgid "quickly sign a key with a trust signature"
+msgstr "为所选用户标识添加信任签名"
+
 msgid "quickly revoke a key signature"
 msgstr "快速吊销一个密钥签名"
 
@@ -2281,6 +2286,11 @@ msgstr "列出偏好设置（专家模式）"
 #| msgid "change the ownertrust"
 msgid "show ownertrust"
 msgstr "变更信任度"
+
+#, fuzzy
+#| msgid "Unknown critical signature notation: "
+msgid "show trust signature information"
+msgstr "未知的紧急签名注记： "
 
 #, c-format
 msgid "unknown TOFU policy '%s'\n"
@@ -3600,6 +3610,11 @@ msgstr "没有匹配的用户标识。"
 
 msgid "Nothing to sign.\n"
 msgstr "没有可被签名的东西。\n"
+
+#, fuzzy, c-format
+#| msgid "revoking the key signature failed: %s\n"
+msgid "creating key signature failed: %s\n"
+msgstr "吊销密钥签名失败：%s\n"
 
 #, c-format
 msgid "Not signed by you.\n"
