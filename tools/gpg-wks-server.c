@@ -142,6 +142,7 @@ struct server_ctx_s
 {
   char *fpr;
   uidinfo_list_t mboxes;  /* List with addr-specs taken from the UIDs.  */
+  char *language;         /* Requested language.  */
   unsigned int draft_version_2:1; /* Client supports the draft 2.  */
 };
 typedef struct server_ctx_s *server_ctx_t;
@@ -157,7 +158,9 @@ static int opt_with_file;
 static gpg_error_t get_domain_list (strlist_t *r_list);
 
 static gpg_error_t command_receive_cb (void *opaque,
-                                       const char *mediatype, estream_t fp,
+                                       const char *mediatype,
+                                       const char *language,
+                                       estream_t fp,
                                        unsigned int flags);
 static gpg_error_t command_list_domains (void);
 static gpg_error_t command_revoke_key (const char *mailaddr);
@@ -429,6 +432,54 @@ main (int argc, char **argv)
   if (err)
     log_error ("command failed: %s\n", gpg_strerror (err));
   return log_get_errorcount (0)? 1:0;
+}
+
+
+/* Return true if STRING has only ascii characters or is NULL.  */
+static int
+only_ascii (const char *string)
+{
+  if (string)
+    for ( ; *string; string++)
+      if ((*string & 0x80))
+        return 0;
+  return 1;
+}
+
+
+struct my_subst_vars_s
+{
+  const char *address;
+};
+
+
+/* Helper for my_subst_vars.  */
+static const char *
+my_subst_vars_cb (void *cookie, const char *name)
+{
+  struct my_subst_vars_s *parm = cookie;
+  const char *s;
+
+  if (name && !strcmp (name, "sigdelim"))
+    s = "-- ";
+  else if (name && !strcmp (name, "address"))
+    s = parm->address;
+  else /* Assume envvar.  */
+    s = getenv (name);
+  return s? s : "";
+}
+
+
+/* Substitute all envvars in TEMPL and the var $address my the value
+ * of MBOX.  Return a a new malloced string or NULL.  */
+static char *
+my_subst_vars (server_ctx_t ctx, const char *templ, const char *mbox)
+{
+  struct my_subst_vars_s parm;
+
+  (void)ctx;
+  parm.address = mbox;
+  return substitute_vars (templ, my_subst_vars_cb, &parm);
 }
 
 
@@ -991,6 +1042,9 @@ send_confirmation_request (server_ctx_t ctx,
   char *from_buffer = NULL;
   const char *from;
   strlist_t sl;
+  char *templ = NULL;
+  char *p;
+  const char *cttype, *ctencode;
 
   from = from_buffer = get_submission_address (mbox);
   if (!from)
@@ -1123,25 +1177,48 @@ send_confirmation_request (server_ctx_t ctx,
         goto leave;
       partid = mime_maker_get_partid (mime);
 
-      err = mime_maker_add_header (mime, "Content-Type", "text/plain");
+      templ = gnupg_get_template ("wks-utils", "server.confirm.body",
+                                  0, ctx->language);
+      if (templ)
+        {
+          p = my_subst_vars (ctx, templ, mbox);
+          xfree (templ);
+          templ = p;
+        }
+
+      if (templ && !only_ascii (templ))
+        {
+          cttype   = "text/plain; charset=utf-8";
+          ctencode = "quoted-printable";
+          p = mime_maker_qp_encode (templ);
+          if (!p)
+            {
+              err = gpg_error_from_syserror ();
+              log_error ("QP encoding failed: %s\n", gpg_strerror (err));
+              goto leave;
+            }
+          xfree (templ);
+          templ = p;
+        }
+      else
+        {
+          cttype   = "text/plain";
+          ctencode = NULL;
+        }
+
+      err = mime_maker_add_header (mime, "Content-Type", cttype);
+      if (err)
+        goto leave;
+      if (ctencode)
+        err = mime_maker_add_header (mime,
+                                     "Content-Transfer-Encoding", ctencode);
       if (err)
         goto leave;
 
-      err = mime_maker_add_body
-        (mime,
+      err = mime_maker_add_body (mime, templ? templ :
          "This message has been send to confirm your request\n"
          "to publish your key.  If you did not request a key\n"
-         "publication, simply ignore this message.\n"
-         "\n"
-         "Most mail software can handle this kind of message\n"
-         "automatically and thus you would not have seen this\n"
-         "message.  It seems that your client does not fully\n"
-         "support this service.  The web page\n"
-         "\n"
-         "       https://gnupg.org/faq/wkd.html\n"
-         "\n"
-         "explains how you can process this message anyway in\n"
-         "a few manual steps.\n");
+         "publication, simply ignore this message.\n");
       if (err)
         goto leave;
 
@@ -1180,6 +1257,7 @@ send_confirmation_request (server_ctx_t ctx,
   err = wks_send_mime (mime);
 
  leave:
+  xfree (templ);
   mime_maker_release (mime);
   es_fclose (signature);
   es_fclose (signeddata);
@@ -1285,7 +1363,8 @@ process_new_key (server_ctx_t ctx, estream_t key)
 /* Send a message to tell the user at MBOX that their key has been
  * published.  FNAME the name of the file with the key.  */
 static gpg_error_t
-send_congratulation_message (const char *mbox, const char *keyfile)
+send_congratulation_message (server_ctx_t ctx,
+                             const char *mbox, const char *keyfile)
 {
   gpg_error_t err;
   estream_t body = NULL;
@@ -1294,6 +1373,9 @@ send_congratulation_message (const char *mbox, const char *keyfile)
   char *from_buffer = NULL;
   const char *from;
   strlist_t sl;
+  char *templ = NULL;
+  char *p;
+  const char *charset, *ctencode;
 
   from = from_buffer = get_submission_address (mbox);
   if (!from)
@@ -1315,28 +1397,47 @@ send_congratulation_message (const char *mbox, const char *keyfile)
       log_error ("error allocating memory buffer: %s\n", gpg_strerror (err));
       goto leave;
     }
-  /* It is fine to use 8 bit encoding because that is encrypted and
-   * only our client will see it.  */
-  es_fputs ("Content-Type: text/plain; charset=utf-8\n"
-            "Content-Transfer-Encoding: 8bit\n"
-            "\n",
-            body);
 
-  es_fprintf (body,
-              "Hello!\n\n"
-              "The key for your address '%s' has been published\n"
-              "and can now be retrieved from the Web Key Directory.\n"
-              "\n"
-              "For more information on this system see:\n"
-              "\n"
-              "  https://gnupg.org/faq/wkd.html\n"
-              "\n"
-              "Best regards\n"
-              "\n"
-              "  GnuPG Key Publisher\n\n\n"
-              "-- \n"
-              "For information on GnuPG see: %s\n",
-              mbox, "https://gnupg.org");
+  templ = gnupg_get_template ("wks-utils", "server.publish.congrats",
+                              0, ctx->language);
+  if (templ)
+    {
+      p = my_subst_vars (ctx, templ, mbox);
+      xfree (templ);
+      templ = p;
+    }
+
+  if (templ && !only_ascii (templ))
+    {
+      charset = "utf-8";
+      ctencode = "Content-Transfer-Encoding: quoted-printable\n";
+      p = mime_maker_qp_encode (templ);
+      if (!p)
+        {
+          err = gpg_error_from_syserror ();
+          log_error ("QP encoding failed: %s\n", gpg_strerror (err));
+          goto leave;
+        }
+      xfree (templ);
+      templ = p;
+    }
+  else
+    {
+      charset = "us-ascii";
+      ctencode = "";
+    }
+
+
+  es_fprintf (body, "Content-Type: text/plain; charset=%s\n%s\n",
+              charset, ctencode);
+
+  if (templ)
+    es_fputs (templ, body);
+  else
+    es_fprintf (body, "Hello!\n\n"
+                "The key for your address '%s' has been published\n"
+                "and can now be retrieved from the Web Key Directory.\n",
+                mbox);
 
   es_rewind (body);
   err = encrypt_stream (&bodyenc, body, keyfile);
@@ -1399,6 +1500,7 @@ send_congratulation_message (const char *mbox, const char *keyfile)
   err = wks_send_mime (mime);
 
  leave:
+  xfree (templ);
   mime_maker_release (mime);
   es_fclose (bodyenc);
   es_fclose (body);
@@ -1516,7 +1618,7 @@ check_and_publish (server_ctx_t ctx, const char *address, const char *nonce)
                fnewname, gpg_strerror (gpg_err_code_from_syserror()));
 
   log_info ("key %s published for '%s'\n", ctx->fpr, address);
-  send_congratulation_message (address, fnewname);
+  send_congratulation_message (ctx, address, fnewname);
 
   /* Try to publish as DANE record if the DANE directory exists.  */
   xfree (fname);
@@ -1645,7 +1747,7 @@ process_confirmation_response (server_ctx_t ctx, estream_t msg)
 
 /* Called from the MIME receiver to process the plain text data in MSG .  */
 static gpg_error_t
-command_receive_cb (void *opaque, const char *mediatype,
+command_receive_cb (void *opaque, const char *mediatype, const char *language,
                     estream_t msg, unsigned int flags)
 {
   gpg_error_t err;
@@ -1656,6 +1758,8 @@ command_receive_cb (void *opaque, const char *mediatype,
   memset (&ctx, 0, sizeof ctx);
   if ((flags & WKS_RECEIVE_DRAFT2))
     ctx.draft_version_2 = 1;
+  if (language)
+    ctx.language = xtrystrdup (language);
 
   if (!strcmp (mediatype, "application/pgp-keys"))
     err = process_new_key (&ctx, msg);

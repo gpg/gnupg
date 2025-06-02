@@ -1,0 +1,71 @@
+# wks-utils.txt - gpg-wks-server/-client strings (en)  -*- default-generic -*-
+# Written in 2025 by g10 Code GmbH
+#
+# To the extent possible under law, the author(s) have dedicated all
+# copyright and related and neighboring rights to this text to the
+# public domain worldwide.  This text is distributed without any
+# warranty.  You should have received a copy of the CC0 Public Domain
+# Dedication along with this software.  If not, see
+# <https://creativecommons.org/publicdomain/zero/1.0/>.
+# SPDX-License-Identifier: CC0-1.0
+#
+# Note that this template file needs to be UTF-8 encoded.  When looking
+# for a template item, GnuPG scans the help files in the following order
+# (assuming a standard Unix layout):
+#
+#    /etc/gnupg/TEMPLATE.LL_TT.txt
+#    /etc/gnupg/TEMPLATE.LL.txt
+#    /etc/gnupg/TEMPLATE.txt
+#    /usr/share/gnupg/TEMPLATE.LL_TT.txt
+#    /usr/share/gnupg/TEMPLATE.LL.txt
+#    /usr/share/gnupg/TEMPLATE.txt
+#
+# Here TEMPLATE denotes the name of the template (e.g. "mail-tube"),
+# LL_TT denotes the full name of the current locale with the territory
+# (.e.g. "de_DE"), LL denotes just the locale name (e.g. "de").  The
+# first matching item is returned.  To put a dot or a hash mark at the
+# beginning of a text line, it needs to be prefixed with a dot and a
+# space.  A single dot may be used to terminated an entry.  Depending
+# on the template type certain variables (${NAME}) are expanded.
+# Check the man page of the respective tool.
+
+.server.confirm.body
+This message has been send to confirm your request
+to publish your key.  If you did not request a key
+publication, simply ignore this message.
+
+Most mail software can handle this kind of message
+automatically and thus you would not have seen this
+message.  It seems that your client does not fully
+support this service.  The web page
+
+       https://gnupg.org/faq/wkd.html
+
+explains how you can process this message anyway in
+a few manual steps.
+
+
+${sigdelim}
+For information on GnuPG see: https://gnupg.org
+
+.
+
+.server.publish.congrats
+Hello!
+
+The key for your address '${address}' has been published
+and can now be retrieved from the Web Key Directory.
+
+For more information on this system see:
+
+  https://gnupg.org/faq/wkd.html
+
+Best regards
+
+  GnuPG Key Publisher
+
+
+${sigdelim}
+For information on GnuPG see: https://gnupg.org
+
+.

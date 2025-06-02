@@ -303,7 +303,7 @@ void gnupg_rl_initialize (void);
 #define GET_TEMPLATE_CRLF           4 /* Use CR+LF.                         */
 
 char *gnupg_get_template (const char *domain, const char *key,
-                          unsigned int flags);
+                          unsigned int flags, const char *override_locale);
 char *gnupg_get_help_string (const char *key, int only_current_locale);
 
 /*-- localename.c --*/

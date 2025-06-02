@@ -234,21 +234,25 @@ findkey_locale (const char *domain, const char *key, const char *locname,
    intervening lines (except for comment lines) lead to the same help
    text.  Lines following the key lines make up the actual template texts.
 */
-
 char *
-gnupg_get_template (const char *domain, const char *key, unsigned int flags)
+gnupg_get_template (const char *domain, const char *key, unsigned int flags,
+                    const char *override_locale)
 {
-  static const char *locname;
+  static const char *locname_buffer;
+  const char *locname;
   char *result;
 
-  if (!locname)
+  if (override_locale && *override_locale)
+    locname = override_locale;
+  else if (!locname_buffer)
     {
       char *buffer, *p;
       int count = 0;
       const char *s = gnupg_messages_locale_name ();
+
       buffer = xtrystrdup (s);
       if (!buffer)
-        locname = "";
+        locname_buffer = "";
       else
         {
           for (p = buffer; *p; p++)
@@ -259,9 +263,12 @@ gnupg_get_template (const char *domain, const char *key, unsigned int flags)
                 if (count++)
                   *p = 0;  /* Also cut at an underscore in the territory.  */
               }
-          locname = buffer;
+          locname_buffer = buffer;
         }
+      locname = locname_buffer;
     }
+  else
+    locname = locname_buffer;
 
   if (!key || !*key)
     return NULL;
@@ -293,5 +300,6 @@ char *
 gnupg_get_help_string (const char *key, int only_current)
 {
   return gnupg_get_template ("help", key,
-                             only_current? GET_TEMPLATE_CURRENT_LOCALE : 0);
+                             only_current? GET_TEMPLATE_CURRENT_LOCALE : 0,
+                             NULL);
 }

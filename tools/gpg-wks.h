@@ -127,6 +127,7 @@ gpg_error_t wks_cmd_print_wkd_url (const char *userid);
 gpg_error_t wks_receive (estream_t fp,
                          gpg_error_t (*result_cb)(void *opaque,
                                                   const char *mediatype,
+                                                  const char *language,
                                                   estream_t data,
                                                   unsigned int flags),
                          void *cb_data);

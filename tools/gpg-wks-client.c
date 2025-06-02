@@ -155,6 +155,8 @@ const char *fake_submission_addr;
 static char **blacklist_array;
 static size_t blacklist_array_len;
 
+/* The current locale in the short form (e.g. "de" instead of "de_DE")  */
+static char *short_locale;
 
 static void wrong_args (const char *t1, const char *t2) GPGRT_ATTR_NORETURN;
 static void add_blacklist (const char *fname);
@@ -168,7 +170,9 @@ static gpg_error_t encrypt_response (estream_t *r_output, estream_t input,
                                      const char *fingerprint);
 static gpg_error_t read_confirmation_request (estream_t msg);
 static gpg_error_t command_receive_cb (void *opaque,
-                                       const char *mediatype, estream_t fp,
+                                       const char *mediatype,
+                                       const char *language,
+                                       estream_t fp,
                                        unsigned int flags);
 static gpg_error_t command_mirror (char *domain[]);
 
@@ -373,6 +377,20 @@ main (int argc, char **argv)
   set_dirmngr_options (opt.verbose, (opt.debug & DBG_IPC_VALUE),
                        !opt.no_autostart);
 
+
+  /* Get the short form of the current locale.  */
+  {
+    const char *locname = gnupg_messages_locale_name ();
+    char *p;
+
+    if (locname && *locname && strcmp (locname, "C"))
+      {
+        short_locale = xstrdup (locname);
+        if ((p = strpbrk (short_locale, "_.@/")))
+          *p = 0;
+        gpgrt_annotate_leaked_object (short_locale);
+      }
+  }
 
   /* Check that the top directory exists.  */
   if (cmd == aInstallKey || cmd == aRemoveKey || cmd == aMirror)
@@ -1338,25 +1356,6 @@ command_create (const char *fingerprint, const char *userid)
         }
     }
 
-
-  /* Now put the armor around the key.  */
-  {
-    estream_t newkey;
-
-    es_rewind (key);
-    err = wks_armor_key (&newkey, key,
-                         no_encrypt? NULL
-                         /* */    : ("Content-Type: application/pgp-keys\n"
-                                     "\n"));
-    if (err)
-      {
-        log_error ("error armoring key: %s\n", gpg_strerror (err));
-        goto leave;
-      }
-    es_fclose (key);
-    key = newkey;
-  }
-
   /* Hack to support posteo but let them disable this by setting the
    * new policy-version flag.  */
   if (policy->protocol_version < 3
@@ -1366,6 +1365,31 @@ command_create (const char *fingerprint, const char *userid)
       no_encrypt = 1;
       posteo_hack = 1;
     }
+
+
+  /* Now put the armor around the key.  */
+  {
+    estream_t newkey;
+    char *prefix;
+
+    prefix = xstrconcat
+      ("Content-Type: application/pgp-keys\n",
+       short_locale && *short_locale? "Content-Language: " : "",
+       short_locale && *short_locale? short_locale : "",
+       short_locale && *short_locale? "\n" : "",
+       "\n", NULL);
+
+    es_rewind (key);
+    err = wks_armor_key (&newkey, key, no_encrypt? NULL : prefix);
+    xfree (prefix);
+    if (err)
+      {
+        log_error ("error armoring key: %s\n", gpg_strerror (err));
+        goto leave;
+      }
+    es_fclose (key);
+    key = newkey;
+  }
 
   /* Encrypt the key part.  */
   if (!no_encrypt)
@@ -1415,8 +1439,10 @@ command_create (const char *fingerprint, const char *userid)
             goto leave;
         }
 
-      err = mime_maker_add_header (mime, "Content-type",
+      err = mime_maker_add_header (mime, "Content-Type",
                                    "application/pgp-keys");
+      if (!err && short_locale && *short_locale)
+        err = mime_maker_add_header (mime, "Content-Language", short_locale);
       if (err)
         goto leave;
 
@@ -1596,10 +1622,11 @@ send_confirmation_response (const char *sender, const char *address,
    * only our client will see it.  */
   if (encrypt)
     {
-      es_fputs ("Content-Type: application/vnd.gnupg.wks\n"
-                "Content-Transfer-Encoding: 8bit\n"
-                "\n",
-                body);
+      es_fprintf (body,
+                  "Content-Type: application/vnd.gnupg.wks\n"
+                  "Content-Transfer-Encoding: 8bit\n"
+                  "Content-Language: %s\n"
+                  "\n", (short_locale && *short_locale)? short_locale : "en");
     }
 
   es_fprintf (body, ("type: confirmation-response\n"
@@ -1858,12 +1885,13 @@ read_confirmation_request (estream_t msg)
 
 /* Called from the MIME receiver to process the plain text data in MSG.  */
 static gpg_error_t
-command_receive_cb (void *opaque, const char *mediatype,
+command_receive_cb (void *opaque, const char *mediatype, const char *language,
                     estream_t msg, unsigned int flags)
 {
   gpg_error_t err;
 
   (void)opaque;
+  (void)language;
   (void)flags;
 
   if (!strcmp (mediatype, "application/vnd.gnupg.wks"))

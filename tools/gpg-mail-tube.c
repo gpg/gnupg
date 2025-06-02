@@ -371,7 +371,7 @@ main (int argc, char **argv)
 }
 
 
-/* Return true if TSRING has only ascii chacrterst or is NULL.  */
+/* Return true if STRING has only ascii characters or is NULL.  */
 static int
 only_ascii (const char *string)
 {
@@ -571,7 +571,8 @@ mail_tube_encrypt (estream_t fpin, strlist_t recipients)
                                   ct_is_text? "encrypted-file-attached"
                                             : "encrypted-mail-attached",
                                   (GET_TEMPLATE_SUBST_ENVVARS
-                                   | GET_TEMPLATE_CRLF));
+                                   | GET_TEMPLATE_CRLF),
+                                  NULL);
       if (templ && !only_ascii (templ))
         {
           charset = "utf-8";

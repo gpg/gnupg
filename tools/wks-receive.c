@@ -50,6 +50,7 @@ struct receive_ctx_s
   estream_t signature;
   estream_t key_data;
   estream_t wkd_data;
+  char *ct_language;  /* The short locale of the conent or NULL.  */
   unsigned int collect_key_data:1;
   unsigned int collect_wkd_data:1;
   unsigned int draft_version_2:1;  /* This is a draft version 2 request.  */
@@ -288,6 +289,34 @@ t2body (void *cookie, int level)
 }
 
 
+/* Get the Content-Language from the curent MIME header and store it
+ * in CTX.  */
+static void
+get_language (receive_ctx_t ctx)
+{
+  rfc822parse_t msg;
+  char *value, *p;
+  size_t valueoff;
+
+  msg = mime_parser_rfc822parser (ctx->parser);
+  if (msg)
+    {
+      value = rfc822parse_get_field (msg, "Content-Language",
+                                     -1, &valueoff);
+      if (value)
+        {
+          xfree (ctx->ct_language);
+          ctx->ct_language = xtrystrdup (value+valueoff);
+          /* Take only the first short language.  */
+          if (ctx->ct_language
+              && (p = strpbrk (ctx->ct_language, " \t,_.@/")))
+            *p = 0;
+          rfc822_free (value);
+        }
+    }
+}
+
+
 static gpg_error_t
 new_part (void *cookie, const char *mediatype, const char *mediasubtype)
 {
@@ -308,6 +337,7 @@ new_part (void *cookie, const char *mediatype, const char *mediasubtype)
         }
       else
         {
+          get_language (ctx);
           ctx->key_data = es_fopenmem (0, "w+b");
           if (!ctx->key_data)
             {
@@ -333,6 +363,7 @@ new_part (void *cookie, const char *mediatype, const char *mediasubtype)
         }
       else
         {
+          get_language (ctx);
           ctx->wkd_data = es_fopenmem (0, "w+b");
           if (!ctx->wkd_data)
             {
@@ -410,6 +441,7 @@ gpg_error_t
 wks_receive (estream_t fp,
              gpg_error_t (*result_cb)(void *opaque,
                                       const char *mediatype,
+                                      const char *language,
                                       estream_t data,
                                       unsigned int flags),
              void *cb_data)
@@ -482,6 +514,8 @@ wks_receive (estream_t fp,
       if (DBG_MIME)
         {
           es_rewind (ctx->key_data);
+          if (ctx->ct_language)
+            log_debug ("Language: '%s'\n", ctx->ct_language);
           log_debug ("Key: '");
           log_printf ("\n");
           while ((c = es_getc (ctx->key_data)) != EOF)
@@ -492,7 +526,7 @@ wks_receive (estream_t fp,
         {
           es_rewind (ctx->key_data);
           err = result_cb (cb_data, "application/pgp-keys",
-                           ctx->key_data, flags);
+                           ctx->ct_language, ctx->key_data, flags);
           if (err)
             goto leave;
         }
@@ -512,7 +546,7 @@ wks_receive (estream_t fp,
         {
           es_rewind (ctx->wkd_data);
           err = result_cb (cb_data, "application/vnd.gnupg.wks",
-                           ctx->wkd_data, flags);
+                           ctx->ct_language, ctx->wkd_data, flags);
           if (err)
             goto leave;
         }
@@ -529,6 +563,7 @@ wks_receive (estream_t fp,
   es_fclose (ctx->signature);
   es_fclose (ctx->key_data);
   es_fclose (ctx->wkd_data);
+  xfree (ctx->ct_language);
   xfree (ctx);
   return err;
 }

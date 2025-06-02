@@ -66,7 +66,7 @@ main (int argc, char **argv)
     }
 
 
-  result = gnupg_get_template (argv[0], argv[1], flags);
+  result = gnupg_get_template (argv[0], argv[1], flags, NULL);
   if (!result)
     {
       fprintf (stderr,

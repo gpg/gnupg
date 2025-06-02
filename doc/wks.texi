@@ -358,6 +358,15 @@ use option @option{-q}.
 
 The command @option{--revoke-key} is not yet functional.
 
+This tool needs to insert strings into the mails which can be
+configured using a plain text file.  The installed default files for
+English (@file{wks-utils.txt}) and German (@file{wks-utils.de.txt})
+can be copied to the system configuration directory and changed to
+local needs.  Environment variables in these texts are expanded, the
+variable ``sigdelim'' is replaced by two dashes and a blank, the
+variable ``address'' is replaced by the mail address of the key to be
+published.
+
 
 @mansect options
 @noindent
