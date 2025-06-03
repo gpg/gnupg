@@ -1,6 +1,31 @@
 #ifndef JIMREGEXP_H
 #define JIMREGEXP_H
 
+#ifdef REGEXP_PREFIX
+/*
+ * An application can specify REGEXP_PREFIX to use the prefix to
+ * regexp routines (regcomp, regexec, regerror and regfree).
+ *
+ * Note that the regexp routines are the ones in the standard C
+ * library.  It is no problem to override those routines by an
+ * application (with appropriate care of link order).
+ *
+ * However, use of REGEXP_PREFIX is required when you use
+ * AddressSanitizer (ASan).  It doesn't work well, because it tries to
+ * replace regexp routines in the standard C library but actually
+ * replaces this implementation.  Since it doesn't know about this
+ * implementation, it's not compatible.
+ *
+ * For example, in the Makefiles of GnuPG, we do specify REGEXP_PREFIX
+ * with "gnupg_".
+ */
+#define ADD_PREFIX(name) REGEXP_PREFIX ## name
+#define regcomp ADD_PREFIX(regcomp)
+#define regexec ADD_PREFIX(regexec)
+#define regerror ADD_PREFIX(regerror)
+#define regfree ADD_PREFIX(regfree)
+#endif
+
 /** regexp(3)-compatible regular expression implementation for Jim.
  *
  * See jimregexp.c for details

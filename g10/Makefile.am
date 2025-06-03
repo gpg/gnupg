@@ -26,7 +26,7 @@ EXTRA_DIST = distsigkey.gpg \
 	     t-keydb-get-keyblock.gpg t-stutter-data.asc \
 	     all-tests.scm
 
-AM_CPPFLAGS =
+AM_CPPFLAGS = -DREGEXP_PREFIX=gnupg_
 
 include $(top_srcdir)/am/cmacros.am
 
