@@ -381,7 +381,7 @@ gpgtar_extract (const char *filename, int decrypt)
   char *dirname = NULL;
   struct tarinfo_s tarinfo_buffer;
   tarinfo_t tarinfo = &tarinfo_buffer;
-  gpgrt_process_t proc;
+  gpgrt_process_t proc = NULL;
   char *logfilename = NULL;
   unsigned long long notextracted;
 
@@ -559,7 +559,6 @@ gpgtar_extract (const char *filename, int decrypt)
     }
 
  leave:
-  /* fixme: Why can't we use gpgrt_process_release (proc); */
   notextracted  = tarinfo->skipped_badname;
   notextracted += tarinfo->skipped_suspicious;
   notextracted += tarinfo->skipped_symlinks;
@@ -596,5 +595,6 @@ gpgtar_extract (const char *filename, int decrypt)
   xfree (logfilename);
   if (stream != es_stdin)
     es_fclose (stream);
+  gpgrt_process_release (proc);
   return err;
 }
