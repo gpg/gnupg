@@ -9,9 +9,9 @@
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: gnupg 2.5.3\n"
+"Project-Id-Version: gnupg 2.5.7\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"PO-Revision-Date: 2025-01-10 15:04+0900\n"
+"PO-Revision-Date: 2025-06-03 13:59+0900\n"
 "Last-Translator: NIIBE Yutaka <gniibe@fsij.org>\n"
 "Language-Team: none\n"
 "Language: ja\n"
@@ -514,10 +514,9 @@ msgstr "稼働中の %s からソケットを奪おうとします\n"
 msgid "a gpg-agent is already running - not starting a new one\n"
 msgstr "gpg-agentは既に実行されています - 新しいものをスタートさせません\n"
 
-#, fuzzy, c-format
-#| msgid "key %s: removed multiple subkey binding\n"
+#, c-format
 msgid "socket file removed - retrying binding\n"
-msgstr "鍵%s: 多重副鍵の対応を削除します\n"
+msgstr "ソケットファイルを削除しました - バインドを再度試みます\n"
 
 #, c-format
 msgid "error getting nonce for the socket\n"
@@ -1994,10 +1993,8 @@ msgstr "すばやく鍵に署名"
 msgid "quickly sign a key locally"
 msgstr "すばやく鍵へローカルに署名"
 
-#, fuzzy
-#| msgid "sign selected user IDs with a trust signature"
 msgid "quickly sign a key with a trust signature"
-msgstr "選択したユーザIDに信用署名を署名する"
+msgstr "すばやく鍵に信用署名を署名"
 
 msgid "quickly revoke a key signature"
 msgstr "すばやく鍵への署名を失効"
@@ -2289,10 +2286,8 @@ msgstr "優先指定の表示"
 msgid "show ownertrust"
 msgstr "所有者信用の表示"
 
-#, fuzzy
-#| msgid "Unknown critical signature notation: "
 msgid "show trust signature information"
-msgstr "不明なクリティカルな署名注釈: "
+msgstr "信用署名の情報の表示"
 
 #, c-format
 msgid "unknown TOFU policy '%s'\n"
@@ -3616,10 +3611,9 @@ msgstr "マッチするユーザIDはありません。"
 msgid "Nothing to sign.\n"
 msgstr "署名するものがありません。\n"
 
-#, fuzzy, c-format
-#| msgid "revoking the key signature failed: %s\n"
+#, c-format
 msgid "creating key signature failed: %s\n"
-msgstr "鍵の署名の失効に失敗しました: %s\n"
+msgstr "鍵の署名の作成に失敗しました: %s\n"
 
 #, c-format
 msgid "Not signed by you.\n"
