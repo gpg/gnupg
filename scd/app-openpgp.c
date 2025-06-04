@@ -5641,8 +5641,7 @@ do_auth (app_t app, ctrl_t ctrl, const char *keyidstr,
 
   if (app->app_local->keyattr[2].key_type == KEY_TYPE_ECC)
     {
-      if (!(app->app_local->keyattr[2].ecc.flags & ECC_FLAG_DJB_TWEAK)
-          && (indatalen == 51 || indatalen == 67 || indatalen == 83))
+      if (indatalen == 51 || indatalen == 67 || indatalen == 83)
         {
           const char *p = (const char *)indata + 19;
           indata = p;
