@@ -5641,13 +5641,15 @@ do_auth (app_t app, ctrl_t ctrl, const char *keyidstr,
 
   if (app->app_local->keyattr[2].key_type == KEY_TYPE_ECC)
     {
+      /* This is a heuristic to strip off the OID of digest.  Fully
+         implemented, it would be use of X macro in do_sign above.  */
       if (indatalen == 51 || indatalen == 67 || indatalen == 83)
         {
           const char *p = (const char *)indata + 19;
           indata = p;
           indatalen -= 19;
         }
-      else
+      else if (indatalen > 15)
         {
           const char *p = (const char *)indata + 15;
           indata = p;
