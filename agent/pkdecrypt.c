@@ -43,6 +43,9 @@ struct ecc_params
   int scalar_reverse;
 };
 
+/* The first entry must be Curve25519, to handle the prefix of 0x40 in
+   OpenPGP. */
+#define ECC_CURVE25519_INDEX 0
 static const struct ecc_params ecc_table[] =
   {
     {
@@ -483,6 +486,13 @@ ecc_pgp_kem_decap (ctrl_t ctrl, gcry_sexp_t s_skey0,
       return gpg_error (GPG_ERR_BAD_SECKEY);
     }
   *r_ecc = ecc;
+
+  if (ecc == &ecc_table[ECC_CURVE25519_INDEX]
+      && ecc_point_len == ecc->point_len + 1 && *ecc_ct == 0x40)
+    {
+      ecc_ct++;
+      ecc_point_len--;
+    }
 
   if (ecc->point_len != ecc_point_len)
     {
