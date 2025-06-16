@@ -97,7 +97,8 @@ common_sources = \
 	openpgp-fpr.c \
 	comopt.c comopt.h \
 	compliance.c compliance.h \
-	pkscreening.c pkscreening.h
+	pkscreening.c pkscreening.h \
+	gost-util.h gost-util.c
 
 
 if HAVE_W32_SYSTEM
