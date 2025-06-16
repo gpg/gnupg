@@ -223,9 +223,17 @@ gpg_error_t uncompress_ecc_q_in_canon_sexp (const unsigned char *keydata,
                                             size_t *r_newkeydatalen);
 
 int get_pk_algo_from_key (gcry_sexp_t key);
+int get_pk_info_from_key (gcry_sexp_t key, char **r_oid, char **r_curve_oid,
+                          char **r_digest_oid);
 int get_pk_algo_from_canon_sexp (const unsigned char *keydata,
                                  size_t keydatalen);
+int get_pk_info_from_canon_sexp (const unsigned char *keydata,
+                                 size_t keydatalen, char **r_oid,
+                                 char **r_curve_oid, char **r_digest_oid);
 char *pubkey_algo_string (gcry_sexp_t s_pkey, enum gcry_pk_algos *r_algoid);
+int pkey_is_gost (gcry_sexp_t s_pkey);
+
+gcry_mpi_t get_mpi_from_sexp (gcry_sexp_t sexp, const char *item, int mpifmt);
 const char *pubkey_algo_to_string (int algo);
 const char *hash_algo_to_string (int algo);
 const char *cipher_mode_to_string (int mode);
