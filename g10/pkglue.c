@@ -32,19 +32,19 @@
 
 /* FIXME: Better change the function name because mpi_ is used by
    gcrypt macros.  */
-gcry_mpi_t
-get_mpi_from_sexp (gcry_sexp_t sexp, const char *item, int mpifmt)
-{
-  gcry_sexp_t list;
-  gcry_mpi_t data;
+// gcry_mpi_t
+// get_mpi_from_sexp (gcry_sexp_t sexp, const char *item, int mpifmt)
+// {
+//   gcry_sexp_t list;
+//   gcry_mpi_t data;
 
-  list = gcry_sexp_find_token (sexp, item, 0);
-  log_assert (list);
-  data = gcry_sexp_nth_mpi (list, 1, mpifmt);
-  log_assert (data);
-  gcry_sexp_release (list);
-  return data;
-}
+//   list = gcry_sexp_find_token (sexp, item, 0);
+//   log_assert (list);
+//   data = gcry_sexp_nth_mpi (list, 1, mpifmt);
+//   log_assert (data);
+//   gcry_sexp_release (list);
+//   return data;
+// }
 
 
 /*
