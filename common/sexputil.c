@@ -989,6 +989,13 @@ uncompress_ecc_q_in_canon_sexp (const unsigned char *keydata,
 int
 get_pk_algo_from_key (gcry_sexp_t key)
 {
+  return get_pk_info_from_key (key, NULL, NULL, NULL);
+}
+
+int
+get_pk_info_from_key (gcry_sexp_t key, char **r_oid, char **r_curve_oid,
+                      char **r_digest_oid)
+{
   gcry_sexp_t list;
   const char *s;
   size_t n;
@@ -1014,17 +1021,16 @@ get_pk_algo_from_key (gcry_sexp_t key)
 
       l1 = gcry_sexp_find_token (list, "flags", 0);
       for (i = l1 ? gcry_sexp_length (l1)-1 : 0; i > 0; i--)
-	{
-	  s = gcry_sexp_nth_data (l1, i, &n);
-	  if (!s)
-	    continue; /* Not a data element. */
-
-	  if (n == 5 && !memcmp (s, "eddsa", 5))
-	    {
-	      algo = GCRY_PK_EDDSA;
-	      break;
-	    }
-	}
+        {
+          s = gcry_sexp_nth_data (l1, i, &n);
+          if (!s)
+            continue;
+          if (n == 5 && !memcmp (s, "eddsa", 5))
+            {
+              algo = GCRY_PK_EDDSA;
+              break;
+            }
+        }
       gcry_sexp_release (l1);
 
       l1 = gcry_sexp_find_token (list, "curve", 0);
@@ -1032,13 +1038,72 @@ get_pk_algo_from_key (gcry_sexp_t key)
       if (n == 5 && !memcmp (s, "Ed448", 5))
         algo = GCRY_PK_EDDSA;
       gcry_sexp_release (l1);
+
+      if (r_oid || r_curve_oid || r_digest_oid)
+        {
+          const char *curve_oid = NULL;
+          gcry_sexp_t curve = NULL;
+          char *digest_oid = NULL;
+          gcry_sexp_t digest = NULL;
+          const char *oid = NULL;
+
+          curve = gcry_sexp_find_token (list, "curve", 0);
+          if (curve)
+            {
+              char *curvename = gcry_sexp_nth_string (curve, 1);
+              if (curvename)
+                  curve_oid = openpgp_curve_to_oid (curvename, NULL);
+              xfree (curvename);
+            }
+
+          digest = gcry_sexp_find_token (list, "digest", 0);
+          if (digest)
+            digest_oid = gcry_sexp_nth_string (digest, 1);
+
+          if (curve_oid)
+            {
+              if (0 == strncmp (curve_oid, "1.2.643.2.2.35.", 15) ||
+                  0 == strncmp (curve_oid, "1.2.643.2.2.36.", 15))
+                {
+                  if (digest_oid && 0 == strcmp (digest_oid, "1.2.643.7.1.1.2.2"))
+                    oid = "1.2.643.7.1.1.1.1";
+                  else
+                    oid = "1.2.643.2.2.19";
+                }
+              else if (0 == strncmp (curve_oid, "1.2.643.7.1.2.1.1.", 18))
+                oid = "1.2.643.7.1.1.1.1";
+              else if (0 == strncmp (curve_oid, "1.2.643.7.1.2.1.2.", 18))
+                oid = "1.2.643.7.1.1.1.2";
+            }
+
+          if (oid && r_oid)
+            {
+              *r_oid = xtrystrdup (oid);
+              if (!*r_oid) algo = 0;
+            }
+
+          if (curve_oid && r_curve_oid)
+            {
+              *r_curve_oid = xtrystrdup (curve_oid);
+              if (!*r_curve_oid) algo = 0;
+            }
+
+          if (digest_oid && r_digest_oid)
+            *r_digest_oid = digest_oid;
+          else
+            xfree (digest_oid);
+
+          gcry_sexp_release (curve);
+          gcry_sexp_release (digest);
+        }
     }
 
  out:
   gcry_sexp_release (list);
-
   return algo;
 }
+
+
 
 
 /* This is a variant of get_pk_algo_from_key but takes an canonical
@@ -1047,13 +1112,21 @@ get_pk_algo_from_key (gcry_sexp_t key)
 int
 get_pk_algo_from_canon_sexp (const unsigned char *keydata, size_t keydatalen)
 {
+  return get_pk_info_from_canon_sexp (keydata, keydatalen, NULL, NULL, NULL);
+}
+
+int
+get_pk_info_from_canon_sexp (const unsigned char *keydata,
+                             size_t keydatalen, char **r_oid,
+                             char **r_curve_oid, char **r_digest_oid)
+{
   gcry_sexp_t sexp;
   int algo;
 
   if (gcry_sexp_sscan (&sexp, NULL, keydata, keydatalen))
     return 0;
 
-  algo = get_pk_algo_from_key (sexp);
+  algo = get_pk_info_from_key (sexp, r_oid, r_curve_oid, r_digest_oid);
   gcry_sexp_release (sexp);
   return algo;
 }
@@ -1123,6 +1196,33 @@ pubkey_algo_string (gcry_sexp_t s_pkey, enum gcry_pk_algos *r_algoid)
   return result;
 }
 
+int
+pkey_is_gost (gcry_sexp_t s_pkey)
+{
+  const char *curve = gcry_pk_get_curve (s_pkey, 0, NULL);
+  const char *name = openpgp_oid_to_curve (openpgp_curve_to_oid (curve,
+                                                                 NULL),
+                                           0);
+  int ret = (name && 0 == strncmp (name, "GOST", 4));
+
+  return ret;
+}
+
+/* FIXME: Better change the function name because mpi_ is used by
+   gcrypt macros.  */
+gcry_mpi_t
+get_mpi_from_sexp (gcry_sexp_t sexp, const char *item, int mpifmt)
+{
+  gcry_sexp_t list;
+  gcry_mpi_t data;
+
+  list = gcry_sexp_find_token (sexp, item, 0);
+  log_assert (list);
+  data = gcry_sexp_nth_mpi (list, 1, mpifmt);
+  log_assert (data);
+  gcry_sexp_release (list);
+  return data;
+}
 
 /* Map a pubkey algo id from gcrypt to a string.  This is the same as
  * gcry_pk_algo_name but makes sure that the ECC algo identifiers are
