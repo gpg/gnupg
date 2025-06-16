@@ -145,7 +145,8 @@ typedef enum
     CIPHER_ALGO_CAMELLIA128 = 11,
     CIPHER_ALGO_CAMELLIA192 = 12,
     CIPHER_ALGO_CAMELLIA256 = 13,
-    CIPHER_ALGO_PRIVATE10   = 110
+    CIPHER_ALGO_PRIVATE10   = 110,
+    CIPHER_ALGO_GOST28147   = 170 /* GCRY_CIPHER_GOST28147 - (255 - 110) */
   }
 cipher_algo_t;
 
@@ -187,7 +188,10 @@ typedef enum
     DIGEST_ALGO_SHA384      =  9,
     DIGEST_ALGO_SHA512      = 10,
     DIGEST_ALGO_SHA224      = 11,
-    DIGEST_ALGO_PRIVATE10   = 110
+    DIGEST_ALGO_PRIVATE10   = 110,
+    DIGEST_ALGO_GOSTR3411_12_256 = 164, /* GCRY_MD_STRIBOG256 - (255 - 110) */
+    DIGEST_ALGO_GOSTR3411_12_512 = 165, /* GCRY_MD_STRIBOG512 - (255 - 110) */
+    DIGEST_ALGO_GOSTR3411_94 = 166      /* GCRY_MD_GOSTR3411_CP - (255 - 110) */
   }
 digest_algo_t;
 
@@ -201,6 +205,24 @@ typedef enum
     COMPRESS_ALGO_PRIVATE10 = 110
   }
 compress_algo_t;
+
+
+typedef enum
+  {
+    MAC_ALGO_HMAC_MD5 = 106,
+    MAC_ALGO_HMAC_SHA1 = 105,
+    MAC_ALGO_HMAC_RMD160 = 108,
+    MAC_ALGO_HMAC_SHA256 = 101,
+    MAC_ALGO_HMAC_SHA512 = 103,
+    MAC_ALGO_HMAC_SHA384 = 104,
+    MAC_ALGO_HMAC_SHA224 = 102,
+    MAC_ALGO_PRIVATE10 = 110,
+    MAC_ALGO_HMAC_GOSTR3411_94 = 111,
+    MAC_ALGO_HMAC_GOST3411_12_256 = 112,
+    MAC_ALGO_HMAC_GOST3411_12_512 = 113,
+    MAC_ALGO_GOST28147_IMIT = 114
+  }
+mac_algo_t;
 
 /* Limits to be used for static arrays.  */
 #define OPENPGP_MAX_NPKEY  5  /* Maximum number of public key parameters. */
