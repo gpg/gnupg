@@ -2632,10 +2632,6 @@ cmd_ks_fetch (assuan_context_t ctx, char *line)
     ctrl->timeout = opt.connect_quick_timeout;
   line = skip_options (line);
 
-  err = ensure_keyserver (ctrl);  /* FIXME: Why do we needs this here?  */
-  if (err)
-    goto leave;
-
   /* Setup an output stream and perform the get.  */
   outfp = es_fopencookie (ctx, "w", data_line_cookie_functions);
   if (!outfp)
@@ -2650,7 +2646,6 @@ cmd_ks_fetch (assuan_context_t ctx, char *line)
       ctrl->server_local->inhibit_data_logging = 0;
     }
 
- leave:
   return leave_cmd (ctx, err);
 }
 
