@@ -28,7 +28,7 @@ EXTRA_DIST = \
 	gpg-wks-client-w32info.rc    gpg-wks-client.w32-manifest.in \
 	gpg-card-w32info.rc          gpg-card.w32-manifest.in
 
-AM_CPPFLAGS =
+AM_CPPFLAGS = -DREGEXP_PREFIX=gnupg_
 include $(top_srcdir)/am/cmacros.am
 
 if HAVE_W32_SYSTEM

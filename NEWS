@@ -1,7 +1,22 @@
-Noteworthy changes in version 2.5.8 (unreleased)
+Noteworthy changes in version 2.5.8 (2025-06-20)
 ------------------------------------------------
 
+  * gpg: Show revocation reason with a standard -k listing.  [T7083]
 
+  * gpg: Emit a revocation reason as comment in a "pub" record.
+    [T7083]
+
+  * agent: Fix regression in 2.5.7 decrypting with a card based
+    cv25519 key.  [T7676]
+
+  * scd:openpgp: Fix a regression in exporting card based ed25519 ssh
+    keys.  [T7589]
+
+  * dirmngr: Do not require a keyserver for "gpg --fetch-key".
+    [T7693]
+
+
+  See-also: gnupg-announce/2025q2/000494.html
   Release-info: https://dev.gnupg.org/T7672
 
 
