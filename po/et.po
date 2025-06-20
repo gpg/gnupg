@@ -3140,10 +3140,6 @@ msgstr "Kasutaja ID ei ole enam kehtiv"
 msgid "reason for revocation: "
 msgstr "tühistamise põhjus: "
 
-#, c-format
-msgid "revocation comment: "
-msgstr "tühistamise kommentaar: "
-
 #, fuzzy, c-format
 msgid "key %s: no public key - can't apply revocation certificate\n"
 msgstr ""
@@ -4833,6 +4829,10 @@ msgstr[1] ""
 
 msgid "Keyring"
 msgstr "Võtmehoidla"
+
+#, c-format
+msgid "revocation comment: "
+msgstr "tühistamise kommentaar: "
 
 msgid "Revocable by: "
 msgstr ""

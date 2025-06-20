@@ -3067,10 +3067,6 @@ msgid "reason for revocation: "
 msgstr "причина отзыва: "
 
 #, c-format
-msgid "revocation comment: "
-msgstr "пояснение к отзыву: "
-
-#, c-format
 msgid "key %s: no public key - can't apply revocation certificate\n"
 msgstr "ключ %s: нет открытого ключа - не могу применить сертификат отзыва\n"
 
@@ -4720,6 +4716,10 @@ msgstr[2] "Внимание: %lu ключей пропущено из-за бо�
 
 msgid "Keyring"
 msgstr "Таблица ключей"
+
+#, c-format
+msgid "revocation comment: "
+msgstr "пояснение к отзыву: "
 
 msgid "Revocable by: "
 msgstr ""

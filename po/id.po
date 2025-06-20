@@ -3145,10 +3145,6 @@ msgstr "ID User tidak lagi valid"
 msgid "reason for revocation: "
 msgstr "Alasan pembatalan:"
 
-#, c-format
-msgid "revocation comment: "
-msgstr "Komentar pembatalan:"
-
 #, fuzzy, c-format
 msgid "key %s: no public key - can't apply revocation certificate\n"
 msgstr ""
@@ -4851,6 +4847,10 @@ msgstr[1] ""
 
 msgid "Keyring"
 msgstr "Keyring"
+
+#, c-format
+msgid "revocation comment: "
+msgstr "Komentar pembatalan:"
 
 msgid "Revocable by: "
 msgstr ""

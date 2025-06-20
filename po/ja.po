@@ -2943,10 +2943,6 @@ msgid "reason for revocation: "
 msgstr "失効理由: "
 
 #, c-format
-msgid "revocation comment: "
-msgstr "失効のコメント: "
-
-#, c-format
 msgid "key %s: no public key - can't apply revocation certificate\n"
 msgstr "鍵%s: 公開鍵がありません - 失効証明書を適用できません\n"
 
@@ -4504,6 +4500,10 @@ msgstr[0] "警告: %lu個の鍵がその大きさのためスキップされま�
 
 msgid "Keyring"
 msgstr "鍵リング"
+
+#, c-format
+msgid "revocation comment: "
+msgstr "失効のコメント: "
 
 msgid "Revocable by: "
 msgstr "以下によって失効可能:"

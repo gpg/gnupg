@@ -3066,10 +3066,6 @@ msgid "reason for revocation: "
 msgstr "grunnen for opphevelse: "
 
 #, c-format
-msgid "revocation comment: "
-msgstr "kommentar til opphevelse: "
-
-#, c-format
 msgid "key %s: no public key - can't apply revocation certificate\n"
 msgstr ""
 "nøkkel %s: offentlig nøkkel mangler. Klarte ikke å bruke "
@@ -4704,6 +4700,10 @@ msgstr[1] "Advarsel: hoppet over %lu nøkler pga. for høy størrelse\n"
 
 msgid "Keyring"
 msgstr "Nøkkelknippe"
+
+#, c-format
+msgid "revocation comment: "
+msgstr "kommentar til opphevelse: "
 
 msgid "Revocable by: "
 msgstr ""

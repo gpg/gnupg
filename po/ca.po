@@ -3238,10 +3238,6 @@ msgstr "L'ID d'usuari ja no és vàlid"
 msgid "reason for revocation: "
 msgstr "raó de la revocació: "
 
-#, c-format
-msgid "revocation comment: "
-msgstr "comentari de la revocació: "
-
 #, fuzzy, c-format
 msgid "key %s: no public key - can't apply revocation certificate\n"
 msgstr ""
@@ -4990,6 +4986,10 @@ msgstr[1] ""
 
 msgid "Keyring"
 msgstr "Anell"
+
+#, c-format
+msgid "revocation comment: "
+msgstr "comentari de la revocació: "
 
 msgid "Revocable by: "
 msgstr ""

@@ -3021,10 +3021,6 @@ msgid "reason for revocation: "
 msgstr "důvod pro revokaci: "
 
 #, c-format
-msgid "revocation comment: "
-msgstr "revokační poznámka: "
-
-#, c-format
 msgid "key %s: no public key - can't apply revocation certificate\n"
 msgstr "klíč %s: chybí veřejný klíč – nemohu aplikovat revokační certifikát\n"
 
@@ -4625,6 +4621,10 @@ msgstr[2] "Pozor: %lu klíčů přeskočeno kvůli jejich přílišné velikosti
 
 msgid "Keyring"
 msgstr "Soubor klíčů (keyring)"
+
+#, c-format
+msgid "revocation comment: "
+msgstr "revokační poznámka: "
 
 msgid "Revocable by: "
 msgstr ""

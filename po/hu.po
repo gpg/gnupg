@@ -3140,10 +3140,6 @@ msgstr "A felhasználói azonosító már nem érvényes."
 msgid "reason for revocation: "
 msgstr "Visszavonás oka: "
 
-#, c-format
-msgid "revocation comment: "
-msgstr "Megjegyzés a visszavonáshoz: "
-
 #, fuzzy, c-format
 msgid "key %s: no public key - can't apply revocation certificate\n"
 msgstr "%08lX kulcs: Nincs nyilvános kulcs - nem tudok visszavonni.\n"
@@ -4841,6 +4837,10 @@ msgstr[1] ""
 
 msgid "Keyring"
 msgstr "Kulcskarika"
+
+#, c-format
+msgid "revocation comment: "
+msgstr "Megjegyzés a visszavonáshoz: "
 
 msgid "Revocable by: "
 msgstr ""

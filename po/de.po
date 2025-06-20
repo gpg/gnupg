@@ -3026,10 +3026,6 @@ msgid "reason for revocation: "
 msgstr "Grund für Widerruf: "
 
 #, c-format
-msgid "revocation comment: "
-msgstr "Widerruf-Bemerkung: "
-
-#, c-format
 msgid "key %s: no public key - can't apply revocation certificate\n"
 msgstr ""
 "Schlüssel %s: Kein öffentlicher Schlüssel - der Schlüsselwiderruf kann nicht "
@@ -4654,6 +4650,10 @@ msgstr[1] "WARNUNG: %lu Schlüssel übersprungen, da sie zu groß sind\n"
 
 msgid "Keyring"
 msgstr "Schlüsselbund"
+
+#, c-format
+msgid "revocation comment: "
+msgstr "Widerruf-Bemerkung: "
 
 msgid "Revocable by: "
 msgstr "Widerrufbar durch: "

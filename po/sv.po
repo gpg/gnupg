@@ -3357,10 +3357,6 @@ msgid "reason for revocation: "
 msgstr "anledning för spärrning: "
 
 #, c-format
-msgid "revocation comment: "
-msgstr "spärrningskommentar: "
-
-#, c-format
 msgid "key %s: no public key - can't apply revocation certificate\n"
 msgstr "nyckel %s: ingen publik nyckel - kan inte verkställa spärrcertifikat\n"
 
@@ -5085,6 +5081,10 @@ msgstr[1] ""
 
 msgid "Keyring"
 msgstr "Nyckelring"
+
+#, c-format
+msgid "revocation comment: "
+msgstr "spärrningskommentar: "
 
 msgid "Revocable by: "
 msgstr ""

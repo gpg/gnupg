@@ -3291,10 +3291,6 @@ msgid "reason for revocation: "
 msgstr "årsag for tilbagekald: "
 
 #, c-format
-msgid "revocation comment: "
-msgstr "tilbagekaldskommentar: "
-
-#, c-format
 msgid "key %s: no public key - can't apply revocation certificate\n"
 msgstr ""
 "nøgle %s: ingen offentlig nøgle - kan ikke anvende tilbagekaldscertifikat\n"
@@ -5009,6 +5005,10 @@ msgstr[1] ""
 
 msgid "Keyring"
 msgstr "Nøglering"
+
+#, c-format
+msgid "revocation comment: "
+msgstr "tilbagekaldskommentar: "
 
 msgid "Revocable by: "
 msgstr ""

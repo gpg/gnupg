@@ -3129,10 +3129,6 @@ msgid "reason for revocation: "
 msgstr "Kialo por revoko: "
 
 #, fuzzy, c-format
-msgid "revocation comment: "
-msgstr "Komento pri revoko: "
-
-#, fuzzy, c-format
 msgid "key %s: no public key - can't apply revocation certificate\n"
 msgstr ""
 "ŝlosilo %08lX: publika ŝlosilo mankas - ne povas apliki revokatestilon\n"
@@ -4841,6 +4837,10 @@ msgstr[1] ""
 
 msgid "Keyring"
 msgstr "Ŝlosilaro"
+
+#, fuzzy, c-format
+msgid "revocation comment: "
+msgstr "Komento pri revoko: "
 
 msgid "Revocable by: "
 msgstr ""

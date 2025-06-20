@@ -3160,10 +3160,6 @@ msgstr "Käyttäjätunnus ei ole enää käytössä"
 msgid "reason for revocation: "
 msgstr "mitätöinnin syy: "
 
-#, c-format
-msgid "revocation comment: "
-msgstr "mitätöintikommentti: "
-
 #, fuzzy, c-format
 msgid "key %s: no public key - can't apply revocation certificate\n"
 msgstr ""
@@ -4867,6 +4863,10 @@ msgstr[1] ""
 
 msgid "Keyring"
 msgstr "Avainrengas"
+
+#, c-format
+msgid "revocation comment: "
+msgstr "mitätöintikommentti: "
 
 msgid "Revocable by: "
 msgstr ""

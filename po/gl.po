@@ -3147,10 +3147,6 @@ msgstr "O ID de usuario xa non é válido"
 msgid "reason for revocation: "
 msgstr "motivo para a revocación: "
 
-#, c-format
-msgid "revocation comment: "
-msgstr "comentario de revocación: "
-
 #, fuzzy, c-format
 msgid "key %s: no public key - can't apply revocation certificate\n"
 msgstr ""
@@ -4877,6 +4873,10 @@ msgstr[1] ""
 
 msgid "Keyring"
 msgstr "Chaveiro"
+
+#, c-format
+msgid "revocation comment: "
+msgstr "comentario de revocación: "
 
 msgid "Revocable by: "
 msgstr ""

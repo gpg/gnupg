@@ -3108,10 +3108,6 @@ msgid "reason for revocation: "
 msgstr "razón para la revocación: "
 
 #, c-format
-msgid "revocation comment: "
-msgstr "comentario a la revocación: "
-
-#, c-format
 msgid "key %s: no public key - can't apply revocation certificate\n"
 msgstr ""
 "clave %s: falta la clave pública - imposible emplear el\n"
@@ -4736,6 +4732,10 @@ msgstr[1] "Advertencia: claves %lu no usadas por su gran tamaño\n"
 
 msgid "Keyring"
 msgstr "Anillo de claves"
+
+#, c-format
+msgid "revocation comment: "
+msgstr "comentario a la revocación: "
 
 msgid "Revocable by: "
 msgstr ""

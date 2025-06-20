@@ -2947,10 +2947,6 @@ msgid "reason for revocation: "
 msgstr "吊销原因： "
 
 #, c-format
-msgid "revocation comment: "
-msgstr "吊销注释： "
-
-#, c-format
 msgid "key %s: no public key - can't apply revocation certificate\n"
 msgstr "密钥 %s：没有公钥 - 无法应用吊销证书\n"
 
@@ -4502,6 +4498,10 @@ msgstr[0] "警告：%lu 把密钥因尺寸大而被跳过\n"
 
 msgid "Keyring"
 msgstr "钥匙环"
+
+#, c-format
+msgid "revocation comment: "
+msgstr "吊销注释： "
 
 msgid "Revocable by: "
 msgstr ""

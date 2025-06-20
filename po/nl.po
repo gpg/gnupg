@@ -3112,10 +3112,6 @@ msgid "reason for revocation: "
 msgstr "reden van de intrekking: "
 
 #, c-format
-msgid "revocation comment: "
-msgstr "toelichting bij de intrekking: "
-
-#, c-format
 msgid "key %s: no public key - can't apply revocation certificate\n"
 msgstr ""
 "sleutel %s: geen publieke sleutel - kan intrekkingscertificaat niet "
@@ -4796,6 +4792,10 @@ msgstr[1] "Waarschuwing: %lu sleutels overgeslagen vanwege hun grote omvang\n"
 
 msgid "Keyring"
 msgstr "Sleutelring"
+
+#, c-format
+msgid "revocation comment: "
+msgstr "toelichting bij de intrekking: "
 
 msgid "Revocable by: "
 msgstr ""

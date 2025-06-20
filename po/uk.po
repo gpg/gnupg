@@ -3108,10 +3108,6 @@ msgid "reason for revocation: "
 msgstr "причина відкликання: "
 
 #, c-format
-msgid "revocation comment: "
-msgstr "коментар щодо відкликання: "
-
-#, c-format
 msgid "key %s: no public key - can't apply revocation certificate\n"
 msgstr ""
 "ключ %s: немає відкритого ключа — не можна застосовувати сертифікат "
@@ -4771,6 +4767,10 @@ msgstr[2] ""
 
 msgid "Keyring"
 msgstr "Сховище ключів"
+
+#, c-format
+msgid "revocation comment: "
+msgstr "коментар щодо відкликання: "
 
 msgid "Revocable by: "
 msgstr ""

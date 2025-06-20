@@ -2990,10 +2990,6 @@ msgid "reason for revocation: "
 msgstr "powód unieważnienia: "
 
 #, c-format
-msgid "revocation comment: "
-msgstr "komentarz do unieważnienia: "
-
-#, c-format
 msgid "key %s: no public key - can't apply revocation certificate\n"
 msgstr ""
 "klucz %s: brak klucza publicznego, którego dotyczy wczytany certyfikat\n"
@@ -4635,6 +4631,10 @@ msgstr[2] "Ostrzeżenie: %lu kluczy pominięto z powodu dużego rozmiaru\n"
 
 msgid "Keyring"
 msgstr "Zbiór kluczy"
+
+#, c-format
+msgid "revocation comment: "
+msgstr "komentarz do unieważnienia: "
 
 msgid "Revocable by: "
 msgstr ""

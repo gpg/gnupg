@@ -3221,10 +3221,6 @@ msgid "reason for revocation: "
 msgstr "motiv pentru revocare: "
 
 #, c-format
-msgid "revocation comment: "
-msgstr "comentariu revocare: "
-
-#, c-format
 msgid "key %s: no public key - can't apply revocation certificate\n"
 msgstr ""
 "cheia %s: nici o cheie publică - nu pot aplica certificatul de revocare\n"
@@ -4916,6 +4912,10 @@ msgstr[1] ""
 
 msgid "Keyring"
 msgstr "Inel de chei"
+
+#, c-format
+msgid "revocation comment: "
+msgstr "comentariu revocare: "
 
 msgid "Revocable by: "
 msgstr ""

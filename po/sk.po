@@ -3161,10 +3161,6 @@ msgstr "Identifikátor užívateľa už neplatí"
 msgid "reason for revocation: "
 msgstr "dôvod na revokáciu: "
 
-#, c-format
-msgid "revocation comment: "
-msgstr "revokačná poznámka: "
-
 #, fuzzy, c-format
 msgid "key %s: no public key - can't apply revocation certificate\n"
 msgstr ""
@@ -4863,6 +4859,10 @@ msgstr[1] ""
 
 msgid "Keyring"
 msgstr "súbor kľúčov (keyring)"
+
+#, c-format
+msgid "revocation comment: "
+msgstr "revokačná poznámka: "
 
 msgid "Revocable by: "
 msgstr ""

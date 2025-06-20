@@ -2980,10 +2980,6 @@ msgid "reason for revocation: "
 msgstr "yürürlükten kaldırma sebebi: "
 
 #, c-format
-msgid "revocation comment: "
-msgstr "yürürlükten kaldırma açıklaması: "
-
-#, c-format
 msgid "key %s: no public key - can't apply revocation certificate\n"
 msgstr ""
 "%s anahtarı: Genel anahtar değil - yürürlükten kaldırma sertifikası "
@@ -4603,6 +4599,10 @@ msgstr[1] "Uyarı: %lu imza, büyük boyut nedeniyle atlandı\n"
 
 msgid "Keyring"
 msgstr "Anahtar zinciri"
+
+#, c-format
+msgid "revocation comment: "
+msgstr "yürürlükten kaldırma açıklaması: "
 
 msgid "Revocable by: "
 msgstr "Yürürlükten kaldırabilir: "

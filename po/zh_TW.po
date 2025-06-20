@@ -2913,10 +2913,6 @@ msgid "reason for revocation: "
 msgstr "撤銷原因: "
 
 #, c-format
-msgid "revocation comment: "
-msgstr "撤銷註釋: "
-
-#, c-format
 msgid "key %s: no public key - can't apply revocation certificate\n"
 msgstr "金鑰 %s: 沒有公鑰 - 無法套用撤銷憑證\n"
 
@@ -4472,6 +4468,10 @@ msgstr[0] "警告: 已跳過 %lu 個太大的金鑰\n"
 
 msgid "Keyring"
 msgstr "鑰匙圈"
+
+#, c-format
+msgid "revocation comment: "
+msgstr "撤銷註釋: "
 
 msgid "Revocable by: "
 msgstr "可撤銷者:"

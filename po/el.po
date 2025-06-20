@@ -3155,10 +3155,6 @@ msgstr "Το User ID δεν είναι πλέον έγκυρο"
 msgid "reason for revocation: "
 msgstr "αιτία για ανάκληση:"
 
-#, c-format
-msgid "revocation comment: "
-msgstr "σχόλιο ανάκλησης:"
-
 #, fuzzy, c-format
 msgid "key %s: no public key - can't apply revocation certificate\n"
 msgstr ""
@@ -4881,6 +4877,10 @@ msgstr[1] ""
 
 msgid "Keyring"
 msgstr "Κλειδοθήκη"
+
+#, c-format
+msgid "revocation comment: "
+msgstr "σχόλιο ανάκλησης:"
 
 msgid "Revocable by: "
 msgstr ""
