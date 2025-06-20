@@ -296,9 +296,12 @@ described here.
 
 *** Field 21 - Comment
 
-    This is currently only used in "rev" and "rvs" records to carry
-    the the comment field of the revocation reason.  The value is
-    quoted in C style.
+    This is currently only used in "rev", "rvs", ans "pub" records to
+    carry the comment field of the revocation reason.  The value is
+    quoted in C style.  For a "pub" record the comment is preceeded by
+    a human readable recovation reason followed by a LF; this allows
+    to show the import entire key revocation (class 0x20) reason
+    without running a --with-sigs listing.
 
 ** Special fields
 

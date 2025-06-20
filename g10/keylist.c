@@ -2078,6 +2078,26 @@ list_keyblock_colon (ctrl_t ctrl, kbnode_t keyblock,
     es_write_sanitized (es_stdout, pk->updateurl, strlen (pk->updateurl),
                         ":", NULL);
   es_putc (':', es_stdout);		/* End of field 20 (origin). */
+  if (pk->flags.revoked && pk->revoked.got_reason
+      && (pk->revoked.reason_code || pk->revoked.reason_comment))
+    {
+      char *freeme;
+      const char *s;
+      size_t n;
+
+      s = revocation_reason_code_to_str (pk->revoked.reason_code, &freeme);
+      n = strlen (s);
+      es_write_sanitized (es_stdout, s, n, ":", NULL);
+      if (n && s[n-1] != '.')
+        es_putc ('.', es_stdout);
+      es_putc ('\\', es_stdout);  /* C-style escaped colon.  */
+      es_putc ('n', es_stdout);
+      es_write_sanitized (es_stdout, pk->revoked.reason_comment,
+                          pk->revoked.reason_comment_len,
+                          ":", NULL);
+      xfree (freeme);
+      es_putc (':', es_stdout);		/* End of field 21 (comment). */
+    }
   es_putc ('\n', es_stdout);
 
   print_revokers (es_stdout, 1, pk);
