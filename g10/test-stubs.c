@@ -571,6 +571,15 @@ tofu_notice_key_changed (ctrl_t ctrl, kbnode_t kb)
   return 0;
 }
 
+
+const char *
+revocation_reason_code_to_str (int code, char **freeme)
+{
+  (void)code;
+  *freeme = NULL;
+  return "";
+}
+
 int
 get_revocation_reason (PKT_signature *sig, char **r_reason,
                        char **r_comment, size_t *r_commentlen)

@@ -407,6 +407,7 @@ gpg_error_t transfer_secret_keys (ctrl_t ctrl, struct import_stats_s *stats,
 int collapse_uids (kbnode_t *keyblock);
 int collapse_subkeys (kbnode_t *keyblock);
 
+const char *revocation_reason_code_to_str (int code, char **r_freeme);
 int get_revocation_reason (PKT_signature *sig, char **r_reason,
                            char **r_comment, size_t *r_commentlen);
 
@@ -495,6 +496,7 @@ void print_key_info_log (ctrl_t ctrl, int loglevel, int indent,
                      PKT_public_key *pk, int secret);
 void print_card_key_info (estream_t fp, KBNODE keyblock);
 void print_key_line (ctrl_t ctrl, estream_t fp, PKT_public_key *pk, int secret);
+void print_revocation_reason_comment (const char *comment, size_t comment_len);
 
 /*-- verify.c --*/
 void print_file_status( int status, const char *name, int what );

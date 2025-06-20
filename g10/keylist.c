@@ -1324,6 +1324,58 @@ parse_trust_name (const char *name, size_t namelen)
 }
 
 
+void
+print_revocation_reason_comment (const char *comment, size_t comment_len)
+{
+  const byte *s, *s_lf;
+  size_t n, n_lf;
+
+  if (!comment || !comment_len)
+    return;
+
+  s = comment;
+  n = comment_len;
+  s_lf = NULL;
+  do
+    {
+      /* We don't want any empty lines, so we skip them.  */
+      for (;n && *s == '\n'; s++, n--)
+        ;
+      if (n)
+        {
+          s_lf = memchr (s, '\n', n);
+          n_lf = s_lf? s_lf - s : n;
+          es_fprintf (es_stdout, "         %s",
+                      _("revocation comment: "));
+          es_write_sanitized (es_stdout, s, n_lf, NULL, NULL);
+          es_putc ('\n', es_stdout);
+          s += n_lf; n -= n_lf;
+        }
+    } while (s_lf);
+}
+
+
+static void
+print_revocation_reason (PKT_public_key *pk)
+{
+  char *freeme;
+  const char *codestr;
+
+  if (!pk->revoked.got_reason)
+    return;
+
+  if (!pk->revoked.reason_code && !pk->revoked.reason_comment)
+    return; /* Do not print "revocation reason: No reason specified". */
+
+  codestr = revocation_reason_code_to_str (pk->revoked.reason_code, &freeme);
+  es_fprintf (es_stdout, "      %s%s\n",
+              _("reason for revocation: "), codestr);
+  xfree (freeme);
+  print_revocation_reason_comment (pk->revoked.reason_comment,
+                                   pk->revoked.reason_comment_len);
+}
+
+
 /* Helper for list_keyblock_print.  The caller must have set
  * NODFLG_MARK_B to indicate self-signatures.  */
 static void
@@ -1502,31 +1554,7 @@ list_signature_print (ctrl_t ctrl, kbnode_t keyblock, kbnode_t node,
     {
       es_fprintf (es_stdout, "      %s%s\n",
                   _("reason for revocation: "), reason_text);
-      if (reason_comment)
-        {
-          const byte *s, *s_lf;
-          size_t n, n_lf;
-
-          s = reason_comment;
-          n = reason_commentlen;
-          s_lf = NULL;
-          do
-            {
-              /* We don't want any empty lines, so we skip them.  */
-              for (;n && *s == '\n'; s++, n--)
-                ;
-              if (n)
-                {
-                  s_lf = memchr (s, '\n', n);
-                  n_lf = s_lf? s_lf - s : n;
-                  es_fprintf (es_stdout, "         %s",
-                              _("revocation comment: "));
-                  es_write_sanitized (es_stdout, s, n_lf, NULL, NULL);
-                  es_putc ('\n', es_stdout);
-                  s += n_lf; n -= n_lf;
-                }
-            } while (s_lf);
-        }
+      print_revocation_reason_comment (reason_comment, reason_commentlen);
     }
 
   xfree (reason_text);
@@ -2763,6 +2791,10 @@ print_key_line (ctrl_t ctrl, estream_t fp, PKT_public_key *pk, int secret)
   if (pk->flags.primary &&
       !opt.fingerprint && !opt.with_fingerprint)
     print_fingerprint (ctrl, fp, pk, 20);
+
+  /* Print the revocation reason.  */
+  if (pk->flags.revoked)
+    print_revocation_reason (pk);
 }
 
 

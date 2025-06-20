@@ -3366,6 +3366,33 @@ import_secret_one (ctrl_t ctrl, kbnode_t keyblock,
 }
 
 
+/* Return a string for the revocation reason CODE.  R_FREEM must be an
+ * possibly unintialized ptr which should be freed by the caller after
+ * the return value has been consumed.  */
+const char *
+revocation_reason_code_to_str (int code, char **freeme)
+{
+  /* Take care: get_revocation_reason has knowledge of the internal
+   * working of this fucntion.  */
+  const char *result;
+
+  *freeme = NULL;
+  switch (code)
+    {
+    case 0x00: result = _("No reason specified"); break;
+    case 0x01: result = _("Key is superseded");   break;
+    case 0x02: result = _("Key has been compromised"); break;
+    case 0x03: result = _("Key is no longer used"); break;
+    case 0x20: result = _("User ID is no longer valid"); break;
+    default:
+      *freeme = xasprintf ("code=%02x", code);
+      result = *freeme;
+      break;
+    }
+
+  return result;
+}
+
 
 /* Return the recocation reason from signature SIG.  If no revocation
  * reason is available 0 is returned, in other cases the reason
@@ -3383,9 +3410,8 @@ get_revocation_reason (PKT_signature *sig, char **r_reason,
   int reason_seq = 0;
   size_t reason_n;
   const byte *reason_p;
-  char reason_code_buf[20];
-  const char *reason_text = NULL;
   int reason_code = 0;
+  char *freeme;
 
   if (r_reason)
     *r_reason = NULL;
@@ -3397,26 +3423,15 @@ get_revocation_reason (PKT_signature *sig, char **r_reason,
                                       &reason_n, &reason_seq, NULL))
          && !reason_n)
     ;
-  if (reason_p)
+  if (reason_p && reason_n)
     {
       reason_code = *reason_p;
       reason_n--; reason_p++;
-      switch (reason_code)
-        {
-        case 0x00: reason_text = _("No reason specified"); break;
-        case 0x01: reason_text = _("Key is superseded");   break;
-        case 0x02: reason_text = _("Key has been compromised"); break;
-        case 0x03: reason_text = _("Key is no longer used"); break;
-        case 0x20: reason_text = _("User ID is no longer valid"); break;
-        default:
-          snprintf (reason_code_buf, sizeof reason_code_buf,
-                    "code=%02x", reason_code);
-          reason_text = reason_code_buf;
-          break;
-        }
-
+      revocation_reason_code_to_str (reason_code, &freeme);
       if (r_reason)
-        *r_reason = xstrdup (reason_text);
+        *r_reason = freeme;
+      else
+        xfree (freeme);
 
       if (r_comment && reason_n)
         {
@@ -3533,31 +3548,7 @@ list_standalone_revocation (ctrl_t ctrl, PKT_signature *sig, int sigrc)
         {
           es_fprintf (es_stdout, "      %s%s\n",
                       _("reason for revocation: "), reason_text);
-          if (reason_comment)
-            {
-              const byte *s, *s_lf;
-              size_t n, n_lf;
-
-              s = reason_comment;
-              n = reason_commentlen;
-              s_lf = NULL;
-              do
-                {
-                  /* We don't want any empty lines, so we skip them.  */
-                  for (;n && *s == '\n'; s++, n--)
-                    ;
-                  if (n)
-                    {
-                      s_lf = memchr (s, '\n', n);
-                      n_lf = s_lf? s_lf - s : n;
-                      es_fprintf (es_stdout, "         %s",
-                                  _("revocation comment: "));
-                      es_write_sanitized (es_stdout, s, n_lf, NULL, NULL);
-                      es_putc ('\n', es_stdout);
-                      s += n_lf; n -= n_lf;
-                    }
-                } while (s_lf);
-            }
+          print_revocation_reason_comment (reason_comment, reason_commentlen);
         }
     }
 

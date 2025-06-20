@@ -339,12 +339,20 @@ typedef struct
 
 struct revoke_info
 {
-  /* revoked at this date */
+  /* Revoked at this date */
   u32 date;
-  /* the keyid of the revoking key (selfsig or designated revoker) */
+  /* The keyid of the revoking key (selfsig or designated revoker) */
   u32 keyid[2];
-  /* the algo of the revoking key */
+  /* A malloced string of len reason_comment_len with the raw reason
+   * string or NULL if not given.  */
+  char *reason_comment;
+  size_t reason_comment_len;
+  /* The algo of the revoking key */
   byte algo;
+  /* The reason code. */
+  byte reason_code;
+  /* Whether the above reason fields are valid. */
+  byte got_reason;
 };
 
 

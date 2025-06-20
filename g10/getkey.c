@@ -2738,13 +2738,42 @@ fixup_uidnode (KBNODE uidnode, KBNODE signode, u32 keycreated)
     uid->flags.ks_modify = 0;
 }
 
+
+/* Store the revocation signature into the RINFO struct.  */
 static void
 sig_to_revoke_info (PKT_signature * sig, struct revoke_info *rinfo)
 {
+  int reason_seq = 0;
+  size_t reason_n;
+  const byte *reason_p;
+
   rinfo->date = sig->timestamp;
   rinfo->algo = sig->pubkey_algo;
   rinfo->keyid[0] = sig->keyid[0];
   rinfo->keyid[1] = sig->keyid[1];
+  xfree (rinfo->reason_comment);
+  rinfo->reason_comment = NULL;
+  rinfo->reason_comment_len = 0;
+  rinfo->reason_code = 0;
+  rinfo->got_reason = 0;
+
+  while ((reason_p = enum_sig_subpkt (sig, 1, SIGSUBPKT_REVOC_REASON,
+                                      &reason_n, &reason_seq, NULL))
+         && !reason_n)
+    ; /* Skip over empty reason packets.  */
+
+  if (reason_p)
+    {
+      rinfo->got_reason = 1;
+      rinfo->reason_code = *reason_p;
+      reason_n--; reason_p++;
+      if (reason_n)
+        {
+          rinfo->reason_comment = xmalloc (reason_n);
+          memcpy (rinfo->reason_comment, reason_p, reason_n);
+          rinfo->reason_comment_len = reason_n;
+        }
+    }
 }
 
 
@@ -3564,7 +3593,7 @@ merge_selfsigs (ctrl_t ctrl, kbnode_t keyblock)
 {
   KBNODE k;
   int revoked;
-  struct revoke_info rinfo;
+  struct revoke_info rinfo = { 0 };
   PKT_public_key *main_pk;
   prefitem_t *prefs;
   unsigned int mdc_feature;
@@ -3611,8 +3640,19 @@ merge_selfsigs (ctrl_t ctrl, kbnode_t keyblock)
 		pk->flags.valid = 0;
 	      if (revoked && !pk->flags.revoked)
 		{
+                  /* Copy RINFO reason part only the first time
+                   * because we don't want to propagate the reason to
+                   * the subkeys.  This assumes that we get the public
+                   * key first.  */
 		  pk->flags.revoked = revoked;
-		  memcpy (&pk->revoked, &rinfo, sizeof (rinfo));
+                  memcpy (&pk->revoked, &rinfo, sizeof (rinfo));
+                  if (rinfo.got_reason)
+                    {
+                      rinfo.got_reason = 0;
+                      rinfo.reason_code = 0;
+                      rinfo.reason_comment = NULL;  /*(owner is pk->revoked)*/
+                      rinfo.reason_comment_len = 0;
+                    }
 		}
 	      if (main_pk->has_expired)
 		{
@@ -3622,7 +3662,7 @@ merge_selfsigs (ctrl_t ctrl, kbnode_t keyblock)
 		}
 	    }
 	}
-      return;
+      goto leave;
     }
 
   /* Set the preference list of all keys to those of the primary real
@@ -3660,6 +3700,9 @@ merge_selfsigs (ctrl_t ctrl, kbnode_t keyblock)
 	  pk->flags.aead = aead_feature;
 	}
     }
+
+ leave:
+  xfree (rinfo.reason_comment);
 }
 
 
