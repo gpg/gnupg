@@ -3411,6 +3411,7 @@ get_revocation_reason (PKT_signature *sig, char **r_reason,
   size_t reason_n;
   const byte *reason_p;
   int reason_code = 0;
+  const char *reason_string;
   char *freeme;
 
   if (r_reason)
@@ -3427,9 +3428,11 @@ get_revocation_reason (PKT_signature *sig, char **r_reason,
     {
       reason_code = *reason_p;
       reason_n--; reason_p++;
-      revocation_reason_code_to_str (reason_code, &freeme);
-      if (r_reason)
+      reason_string = revocation_reason_code_to_str (reason_code, &freeme);
+      if (r_reason && freeme)
         *r_reason = freeme;
+      else if (r_reason && reason_string)
+        *r_reason = xstrdup (reason_string);
       else
         xfree (freeme);
 
