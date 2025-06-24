@@ -3152,6 +3152,7 @@ ask_curve (int *algo, int *subkey_algo, const char *current)
     unsigned int supported : 1;   /* Supported by gpg.     */
     unsigned int de_vs : 1;       /* Allowed in CO_DE_VS.  */
     unsigned int expert_only : 1; /* Only with --expert    */
+    unsigned int no_listing : 1;  /* Do not show in the menu    */
     unsigned int available : 1;   /* Available in Libycrypt (runtime checked) */
   } curves[] = {
 #if GPG_USE_ECDSA || GPG_USE_ECDH
@@ -3159,15 +3160,15 @@ ask_curve (int *algo, int *subkey_algo, const char *current)
 #else
 # define MY_USE_ECDSADH 0
 #endif
-    { "Curve25519",      "Ed25519", "Curve 25519", !!GPG_USE_EDDSA, 0, 0, 0 },
-    { "X448",            "Ed448",   "Curve 448",   !!GPG_USE_EDDSA, 0, 1, 0 },
-    { "NIST P-256",      NULL, NULL,               MY_USE_ECDSADH,  0, 1, 0 },
-    { "NIST P-384",      NULL, NULL,               MY_USE_ECDSADH,  0, 0, 0 },
-    { "NIST P-521",      NULL, NULL,               MY_USE_ECDSADH,  0, 1, 0 },
-    { "brainpoolP256r1", NULL, "Brainpool P-256",  MY_USE_ECDSADH,  1, 0, 0 },
-    { "brainpoolP384r1", NULL, "Brainpool P-384",  MY_USE_ECDSADH,  1, 1, 0 },
-    { "brainpoolP512r1", NULL, "Brainpool P-512",  MY_USE_ECDSADH,  1, 1, 0 },
-    { "secp256k1",       NULL, NULL,               MY_USE_ECDSADH,  0, 1, 0 },
+    { "Curve25519",      "Ed25519", "Curve 25519", !!GPG_USE_EDDSA, 0,0,0,0 },
+    { "X448",            "Ed448",   "Curve 448",   !!GPG_USE_EDDSA, 0,1,0,0 },
+    { "NIST P-256",      NULL, NULL,               MY_USE_ECDSADH,  0,1,0,0 },
+    { "NIST P-384",      NULL, NULL,               MY_USE_ECDSADH,  0,0,0,0 },
+    { "NIST P-521",      NULL, NULL,               MY_USE_ECDSADH,  0,1,0,0 },
+    { "brainpoolP256r1", NULL, "Brainpool P-256",  MY_USE_ECDSADH,  1,0,0,0 },
+    { "brainpoolP384r1", NULL, "Brainpool P-384",  MY_USE_ECDSADH,  1,1,0,0 },
+    { "brainpoolP512r1", NULL, "Brainpool P-512",  MY_USE_ECDSADH,  1,1,0,0 },
+    { "secp256k1",       NULL, NULL,               MY_USE_ECDSADH,  0,1,1,0 },
   };
 #undef MY_USE_ECDSADH
   int idx;
@@ -3220,10 +3221,11 @@ ask_curve (int *algo, int *subkey_algo, const char *current)
         }
 
       curves[idx].available = 1;
-      tty_printf ("   (%d) %s%s\n", idx + 1,
-                  curves[idx].pretty_name?
-                  curves[idx].pretty_name:curves[idx].name,
-                  idx == 0? _(" *default*"):"");
+      if (!curves[idx].no_listing)
+        tty_printf ("   (%d) %s%s\n", idx + 1,
+                    curves[idx].pretty_name?
+                    curves[idx].pretty_name:curves[idx].name,
+                    idx == 0? _(" *default*"):"");
     }
   gcry_sexp_release (keyparms);
 
@@ -3238,7 +3240,8 @@ ask_curve (int *algo, int *subkey_algo, const char *current)
           xfree(answer);
           return NULL;
         }
-      else if (*answer && !idx)
+      else if (*answer && (!idx || (idx > 0 && idx <= DIM (curves)
+                                    && curves[idx-1].no_listing)))
         {
           /* See whether the user entered the name of the curve.  */
           for (idx=0; idx < DIM(curves); idx++)

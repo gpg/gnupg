@@ -4,6 +4,9 @@ Noteworthy changes in version 2.5.9 (unreleased)
   * gpg: Add the revocation reason to the sigclass of a "rev" line.
     Regression in 2.5.7.  [T7073]
 
+  * gpg: Do not show the non-standard secp256k1 curve in the menu to
+    select the curve.  It can however be specified using its name.
+
 
   Release-info: https://dev.gnupg.org/T7695
 
