@@ -28,102 +28,9 @@
 
 #include "agent.h"
 #include "../common/openpgpdefs.h"
+#include "../common/util.h"
 
 
-/* Table with parameters for KEM decryption.  Use get_ecc_parms to
- * find an entry.  */
-struct ecc_params
-{
-  const char *curve;  /* Canonical name of the curve.  */
-  size_t pubkey_len;  /* Pubkey length in the SEXP representation.  */
-  size_t scalar_len;
-  size_t point_len;
-  int hash_algo;      /* Hash algo when it's used for composite KEM.  */
-  int kem_algo;
-  int scalar_reverse;
-};
-
-/* The first entry must be Curve25519, to handle the prefix of 0x40 in
-   OpenPGP. */
-#define ECC_CURVE25519_INDEX 0
-static const struct ecc_params ecc_table[] =
-  {
-    {
-      "Curve25519",
-      33, 32, 32,
-      GCRY_MD_SHA3_256, GCRY_KEM_RAW_X25519,
-      1
-    },
-    {
-      "X448",
-      56, 56, 56,
-      GCRY_MD_SHA3_512, GCRY_KEM_RAW_X448,
-      0
-    },
-    {
-      "NIST P-256",
-      65, 32, 65,
-      GCRY_MD_SHA3_256, GCRY_KEM_RAW_P256R1,
-      0
-    },
-    {
-      "NIST P-384",
-      97, 48, 97,
-      GCRY_MD_SHA3_512, GCRY_KEM_RAW_P384R1,
-      0
-    },
-    {
-      "NIST P-521",
-      133, 66, 133,
-      GCRY_MD_SHA3_512, GCRY_KEM_RAW_P521R1,
-      0
-    },
-    {
-      "brainpoolP256r1",
-      65, 32, 65,
-      GCRY_MD_SHA3_256, GCRY_KEM_RAW_BP256,
-      0
-    },
-    {
-      "brainpoolP384r1",
-      97, 48, 97,
-      GCRY_MD_SHA3_512, GCRY_KEM_RAW_BP384,
-      0
-    },
-    {
-      "brainpoolP512r1",
-      129, 64, 129,
-      GCRY_MD_SHA3_512, GCRY_KEM_RAW_BP512,
-      0
-    },
-    { NULL, 0, 0, 0, 0, 0, 0 }
-};
-
-
-/* Maximum buffer sizes required for ECC KEM.  Keep this aligned to
- * the ecc_table above.  */
-#define ECC_SCALAR_LEN_MAX 66
-#define ECC_POINT_LEN_MAX (1+2*ECC_SCALAR_LEN_MAX)
-#define ECC_HASH_LEN_MAX 64
-
-
-
-/* Return the ECC parameters for CURVE.  CURVE is expected to be the
- * canonical name.  */
-static const struct ecc_params *
-get_ecc_params (const char *curve)
-{
-  int i;
-
-  for (i = 0; ecc_table[i].curve; i++)
-    if (!strcmp (ecc_table[i].curve, curve))
-      return &ecc_table[i];
-
-  return NULL;
-}
-
-
-
 /* DECRYPT the stuff in ciphertext which is expected to be a S-Exp.
    Try to get the key from CTRL and write the decoded stuff back to
    OUTFP.   The padding information is stored at R_PADDING with -1
@@ -265,8 +172,8 @@ reverse_buffer (unsigned char *buffer, unsigned int length)
 
 
 static gpg_error_t
-ecc_extract_pk_from_key (const struct ecc_params *ecc, gcry_sexp_t s_skey,
-                         unsigned char *ecc_pk)
+ecc_extract_pk_from_key (const struct gnupg_ecc_params *ecc,
+                         gcry_sexp_t s_skey, unsigned char *ecc_pk)
 {
   gpg_error_t err;
   unsigned int nbits;
@@ -311,8 +218,8 @@ ecc_extract_pk_from_key (const struct ecc_params *ecc, gcry_sexp_t s_skey,
 }
 
 static gpg_error_t
-ecc_extract_sk_from_key (const struct ecc_params *ecc, gcry_sexp_t s_skey,
-                         unsigned char *ecc_sk)
+ecc_extract_sk_from_key (const struct gnupg_ecc_params *ecc,
+                         gcry_sexp_t s_skey, unsigned char *ecc_sk)
 {
   gpg_error_t err;
   unsigned int nbits;
@@ -353,7 +260,7 @@ ecc_extract_sk_from_key (const struct ecc_params *ecc, gcry_sexp_t s_skey,
 }
 
 static gpg_error_t
-ecc_raw_kem (const struct ecc_params *ecc, gcry_sexp_t s_skey,
+ecc_raw_kem (const struct gnupg_ecc_params *ecc, gcry_sexp_t s_skey,
              const unsigned char *ecc_ct, unsigned char *ecc_ecdh)
 {
   gpg_error_t err = 0;
@@ -456,11 +363,11 @@ ecc_pgp_kem_decap (ctrl_t ctrl, gcry_sexp_t s_skey0,
                    const unsigned char *ecc_ct, size_t ecc_point_len,
                    unsigned char ecc_ecdh[ECC_POINT_LEN_MAX],
                    unsigned char ecc_pk[ECC_POINT_LEN_MAX],
-                   const struct ecc_params **r_ecc)
+                   const struct gnupg_ecc_params **r_ecc)
 {
   gpg_error_t err;
   const char *curve;
-  const struct ecc_params *ecc = NULL;
+  const struct gnupg_ecc_params *ecc = NULL;
 
   if (ecc_point_len > ECC_POINT_LEN_MAX)
     return gpg_error (GPG_ERR_INV_DATA);
@@ -478,7 +385,7 @@ ecc_pgp_kem_decap (ctrl_t ctrl, gcry_sexp_t s_skey0,
   if (DBG_CRYPTO)
     log_debug ("ECC    curve: %s\n", curve);
 
-  ecc = get_ecc_params (curve);
+  ecc = gnupg_get_ecc_params (curve);
   if (!ecc)
     {
       if (opt.verbose)
@@ -487,8 +394,8 @@ ecc_pgp_kem_decap (ctrl_t ctrl, gcry_sexp_t s_skey0,
     }
   *r_ecc = ecc;
 
-  if (ecc == &ecc_table[ECC_CURVE25519_INDEX]
-      && ecc_point_len == ecc->point_len + 1 && *ecc_ct == 0x40)
+  if (ecc->may_have_prefix && ecc_point_len == ecc->point_len + 1
+      && *ecc_ct == 0x40)
     {
       ecc_ct++;
       ecc_point_len--;
@@ -583,7 +490,7 @@ composite_pgp_kem_decrypt (ctrl_t ctrl, const char *desc_text,
   unsigned char ecc_ss[ECC_HASH_LEN_MAX];
   int ecc_hashalgo;
   size_t ecc_shared_len, ecc_point_len;
-  const struct ecc_params *ecc;
+  const struct gnupg_ecc_params *ecc;
 
   enum gcry_kem_algos mlkem_kem_algo;
   gcry_mpi_t mlkem_sk_mpi = NULL;
@@ -832,7 +739,7 @@ ecc_kem_decrypt (ctrl_t ctrl, const char *desc_text,
   unsigned char ecc_ecdh[ECC_POINT_LEN_MAX];
   unsigned char ecc_pk[ECC_POINT_LEN_MAX];
   size_t ecc_point_len;
-  const struct ecc_params *ecc;
+  const struct gnupg_ecc_params *ecc;
 
   unsigned char *kek = NULL;
   size_t kek_len;

@@ -35,7 +35,7 @@
 #include <gpg-error.h>
 #include <gcrypt.h>
 #include "mischelp.h"
-
+#include "util.h"
 
 /* domSeperation as per *PGP specs. */
 #define KMAC_KEY "OpenPGPCompositeKeyDerivationFunction"
@@ -247,4 +247,73 @@ gnupg_kem_combiner (void *kek, size_t kek_len,
                          KMAC_KEY, strlen (KMAC_KEY),
                          KMAC_CUSTOM, strlen (KMAC_CUSTOM), iov, 6);
   return err;
+}
+
+#define ECC_CURVE25519_INDEX 0
+static const struct gnupg_ecc_params ecc_table[] =
+  {
+    {
+      "Curve25519",
+      33, 32, 32,
+      GCRY_MD_SHA3_256, GCRY_KEM_RAW_X25519,
+      1, 1
+    },
+    {
+      "X448",
+      56, 56, 56,
+      GCRY_MD_SHA3_512, GCRY_KEM_RAW_X448,
+      0, 0
+    },
+    {
+      "NIST P-256",
+      65, 32, 65,
+      GCRY_MD_SHA3_256, GCRY_KEM_RAW_P256R1,
+      0, 0
+    },
+    {
+      "NIST P-384",
+      97, 48, 97,
+      GCRY_MD_SHA3_512, GCRY_KEM_RAW_P384R1,
+      0, 0
+    },
+    {
+      "NIST P-521",
+      133, 66, 133,
+      GCRY_MD_SHA3_512, GCRY_KEM_RAW_P521R1,
+      0, 0
+    },
+    {
+      "brainpoolP256r1",
+      65, 32, 65,
+      GCRY_MD_SHA3_256, GCRY_KEM_RAW_BP256,
+      0, 0
+    },
+    {
+      "brainpoolP384r1",
+      97, 48, 97,
+      GCRY_MD_SHA3_512, GCRY_KEM_RAW_BP384,
+      0, 0
+    },
+    {
+      "brainpoolP512r1",
+      129, 64, 129,
+      GCRY_MD_SHA3_512, GCRY_KEM_RAW_BP512,
+      0, 0
+    },
+    { NULL, 0, 0, 0, 0, 0, 0, 0 }
+};
+
+
+/* Return the ECC parameters for CURVE.  CURVE is expected to be the
+ * canonical name.  */
+const struct gnupg_ecc_params *
+gnupg_get_ecc_params (const char *curve)
+{
+  int i;
+
+  for (i = 0; ecc_table[i].curve; i++)
+    if (!strcmp (ecc_table[i].curve, curve))
+      return &ecc_table[i];
+
+  return NULL;
 }

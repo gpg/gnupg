@@ -33,11 +33,6 @@
 #include "options.h"
 
 
-/* Maximum buffer sizes required for ECC KEM.  */
-#define ECC_POINT_LEN_MAX (1+2*66)
-#define ECC_HASH_LEN_MAX 64
-
-
 /* FIXME: Better change the function name because mpi_ is used by
    gcrypt macros.  */
 gcry_mpi_t

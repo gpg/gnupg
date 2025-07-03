@@ -324,6 +324,27 @@ gpg_error_t gnupg_kem_combiner  (void *kek, size_t kek_len,
                                  const void *mlkem_ct, size_t mlkem_ct_len,
                                  const void *fixedinfo, size_t fixedinfo_len);
 
+/* ECC parameters for KEM encryption/decryption.  */
+struct gnupg_ecc_params
+{
+  const char *curve;      /* Canonical name of the curve.  */
+  size_t pubkey_len;      /* Pubkey length in the SEXP representation.  */
+  size_t scalar_len;
+  size_t point_len;
+  int hash_algo;          /* Hash algo when it's used for composite KEM.  */
+  int kem_algo;
+  int scalar_reverse;     /* Byte-oder is reverse.  */
+  int may_have_prefix;    /* Point representation may have prefix.  */
+};
+
+const struct gnupg_ecc_params *gnupg_get_ecc_params (const char *curve);
+
+/* Maximum buffer sizes required for ECC KEM.  */
+#define ECC_SCALAR_LEN_MAX 66
+#define ECC_POINT_LEN_MAX (1+2*ECC_SCALAR_LEN_MAX)
+#define ECC_HASH_LEN_MAX 64
+
+
 /*-- miscellaneous.c --*/
 
 /* This function is called at startup to tell libgcrypt to use our own
