@@ -335,6 +335,7 @@ struct gnupg_ecc_params
   int kem_algo;
   int scalar_reverse;     /* Byte-oder is reverse.  */
   int may_have_prefix;    /* Point representation may have prefix.  */
+  int is_weierstrauss;    /* True if it is Weierstrass curve.  */
 };
 
 const struct gnupg_ecc_params *gnupg_get_ecc_params (const char *curve);

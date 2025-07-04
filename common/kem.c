@@ -256,51 +256,59 @@ static const struct gnupg_ecc_params ecc_table[] =
       "Curve25519",
       33, 32, 32,
       GCRY_MD_SHA3_256, GCRY_KEM_RAW_X25519,
-      1, 1
+      1, 1, 0
     },
     {
       "X448",
       56, 56, 56,
       GCRY_MD_SHA3_512, GCRY_KEM_RAW_X448,
-      0, 0
+      0, 0, 0
     },
     {
       "NIST P-256",
       65, 32, 65,
       GCRY_MD_SHA3_256, GCRY_KEM_RAW_P256R1,
-      0, 0
+      0, 0, 1
     },
     {
       "NIST P-384",
       97, 48, 97,
       GCRY_MD_SHA3_512, GCRY_KEM_RAW_P384R1,
-      0, 0
+      0, 0, 1
     },
     {
       "NIST P-521",
       133, 66, 133,
       GCRY_MD_SHA3_512, GCRY_KEM_RAW_P521R1,
-      0, 0
+      0, 0, 1
     },
     {
       "brainpoolP256r1",
       65, 32, 65,
       GCRY_MD_SHA3_256, GCRY_KEM_RAW_BP256,
-      0, 0
+      0, 0, 1
     },
     {
       "brainpoolP384r1",
       97, 48, 97,
       GCRY_MD_SHA3_512, GCRY_KEM_RAW_BP384,
-      0, 0
+      0, 0, 1
     },
     {
       "brainpoolP512r1",
       129, 64, 129,
       GCRY_MD_SHA3_512, GCRY_KEM_RAW_BP512,
-      0, 0
+      0, 0, 1
     },
-    { NULL, 0, 0, 0, 0, 0, 0, 0 }
+#ifdef GCRY_KEM_RAW_P256K1
+    {
+      "secp256k1",
+      65, 32, 65,
+      GCRY_MD_SHA3_256, GCRY_KEM_RAW_P256K1,
+      0, 0, 1
+    },
+#endif
+    { NULL, 0, 0, 0, 0, 0, 0, 0, 0 }
 };
 
 
