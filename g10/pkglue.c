@@ -427,7 +427,9 @@ do_encrypt_kem (PKT_public_key *pk, gcry_mpi_t data, int seskey_algo,
   gcry_sexp_t s_data = NULL;
   gcry_cipher_hd_t hd = NULL;
   char *ecc_oid = NULL;
-  enum gcry_kem_algos kyber_algo, ecc_algo;
+  const char *curve;
+  const struct gnupg_ecc_params *ecc;
+  enum gcry_kem_algos kyber_algo;
 
   const unsigned char *ecc_pubkey;
   size_t ecc_pubkey_len;
@@ -468,103 +470,56 @@ do_encrypt_kem (PKT_public_key *pk, gcry_mpi_t data, int seskey_algo,
       log_error ("%s: error getting OID for ECC key\n", __func__);
       goto leave;
     }
-  ecc_algo = openpgp_oid_to_kem_algo (ecc_oid);
-  if (ecc_algo == GCRY_KEM_RAW_X25519)
+  curve = openpgp_oid_to_curve (ecc_oid, 1);
+  if (!curve)
+    {
+      err = gpg_error (GPG_ERR_INV_DATA);
+      log_error ("%s: error getting curve for ECC key\n", __func__);
+      goto leave;
+    }
+  ecc = gnupg_get_ecc_params (curve);
+  if (!ecc)
+    {
+      if (opt.verbose)
+        log_info ("%s: ECC curve %s not supported\n", __func__, curve);
+      err = gpg_error (GPG_ERR_INV_DATA);
+      goto leave;
+    }
+  ecc_ct_len = ecc_ecdh_len = ecc->point_len;
+  ecc_ss_len = ecc->scalar_len;
+  ecc_hash_algo = ecc->hash_algo;
+
+  ecc_pubkey = gcry_mpi_get_opaque (pk->pkey[1], &nbits);
+  ecc_pubkey_len = (nbits+7)/8;
+  if (ecc_pubkey_len != ecc->pubkey_len)
+    {
+      if (ecc->kem_algo == GCRY_KEM_RAW_X25519
+          && ecc_pubkey_len == ecc->pubkey_len - 1)
+        /* For Curve25519, we also accept no prefix in the point
+         * representation.  */
+        ;
+      else
+        {
+          if (opt.verbose)
+            log_info ("%s: ECC public key length invalid (%zu)\n",
+                      __func__, ecc_pubkey_len);
+          err = gpg_error (GPG_ERR_INV_DATA);
+          goto leave;
+        }
+    }
+
+  if (ecc->kem_algo == GCRY_KEM_RAW_X25519)
     {
       if (!strcmp (ecc_oid, "1.3.6.1.4.1.3029.1.5.1"))
         log_info ("Warning: "
                   "legacy OID for cv25519 accepted during development\n");
-      ecc_pubkey = gcry_mpi_get_opaque (pk->pkey[1], &nbits);
-      ecc_pubkey_len = (nbits+7)/8;
+      /* Optional prefix handling */
       if (ecc_pubkey_len == 33 && *ecc_pubkey == 0x40)
         {
           ecc_pubkey++;     /* Remove the 0x40 prefix.  */
           ecc_pubkey_len--;
         }
-      if (ecc_pubkey_len != 32)
-        {
-          if (opt.verbose)
-            log_info ("%s: ECC public key length invalid (%zu)\n",
-                      __func__, ecc_pubkey_len);
-          err = gpg_error (GPG_ERR_INV_DATA);
-          goto leave;
-        }
-      ecc_ct_len = ecc_ecdh_len = 32;
-      ecc_ss_len = 32;
-      ecc_hash_algo = GCRY_MD_SHA3_256;
     }
-  else if (ecc_algo == GCRY_KEM_RAW_X448)
-    {
-      ecc_pubkey = gcry_mpi_get_opaque (pk->pkey[1], &nbits);
-      ecc_pubkey_len = (nbits+7)/8;
-      if (ecc_pubkey_len != 56)
-        {
-          if (opt.verbose)
-            log_info ("%s: ECC public key length invalid (%zu)\n",
-                      __func__, ecc_pubkey_len);
-          err = gpg_error (GPG_ERR_INV_DATA);
-          goto leave;
-        }
-      ecc_ct_len = ecc_ecdh_len = 56;
-      ecc_ss_len = 64;
-      ecc_hash_algo = GCRY_MD_SHA3_512;
-    }
-  else if (ecc_algo == GCRY_KEM_RAW_BP256)
-    {
-      ecc_pubkey = gcry_mpi_get_opaque (pk->pkey[1], &nbits);
-      ecc_pubkey_len = (nbits+7)/8;
-      if (ecc_pubkey_len != 65)
-        {
-          if (opt.verbose)
-            log_info ("%s: ECC public key length invalid (%zu)\n",
-                      __func__, ecc_pubkey_len);
-          err = gpg_error (GPG_ERR_INV_DATA);
-          goto leave;
-        }
-      ecc_ct_len = ecc_ecdh_len = 65;
-      ecc_ss_len = 32;
-      ecc_hash_algo = GCRY_MD_SHA3_256;
-    }
-  else if (ecc_algo == GCRY_KEM_RAW_BP384)
-    {
-      ecc_pubkey = gcry_mpi_get_opaque (pk->pkey[1], &nbits);
-      ecc_pubkey_len = (nbits+7)/8;
-      if (ecc_pubkey_len != 97)
-        {
-          if (opt.verbose)
-            log_info ("%s: ECC public key length invalid (%zu)\n",
-                      __func__, ecc_pubkey_len);
-          err = gpg_error (GPG_ERR_INV_DATA);
-          goto leave;
-        }
-      ecc_ct_len = ecc_ecdh_len = 97;
-      ecc_ss_len = 64;
-      ecc_hash_algo = GCRY_MD_SHA3_512;
-    }
-  else if (ecc_algo == GCRY_KEM_RAW_BP512)
-    {
-      ecc_pubkey = gcry_mpi_get_opaque (pk->pkey[1], &nbits);
-      ecc_pubkey_len = (nbits+7)/8;
-      if (ecc_pubkey_len != 129)
-        {
-          if (opt.verbose)
-            log_info ("%s: ECC public key length invalid (%zu)\n",
-                      __func__, ecc_pubkey_len);
-          err = gpg_error (GPG_ERR_INV_DATA);
-          goto leave;
-        }
-      ecc_ct_len = ecc_ecdh_len = 129;
-      ecc_ss_len = 64;
-      ecc_hash_algo = GCRY_MD_SHA3_512;
-    }
-  else
-    {
-      if (opt.verbose)
-        log_info ("%s: ECC curve %s not supported\n", __func__, ecc_oid);
-      err = gpg_error (GPG_ERR_INV_DATA);
-      goto leave;
-    }
-
 
   if (DBG_CRYPTO)
     {
@@ -572,7 +527,7 @@ do_encrypt_kem (PKT_public_key *pk, gcry_mpi_t data, int seskey_algo,
       log_printhex (ecc_pubkey, ecc_pubkey_len, "ECC   pubkey:");
     }
 
-  err = gcry_kem_encap (ecc_algo,
+  err = gcry_kem_encap (ecc->kem_algo,
                         ecc_pubkey, ecc_pubkey_len,
                         ecc_ct, ecc_ct_len,
                         ecc_ecdh, ecc_ecdh_len,
@@ -749,7 +704,8 @@ do_encrypt_ecdh (PKT_public_key *pk, gcry_mpi_t data,  gcry_mpi_t *resarr)
   unsigned int nbits;
   gcry_cipher_hd_t hd = NULL;
   char *ecc_oid = NULL;
-  enum gcry_kem_algos ecc_algo;
+  const char *curve;
+  const struct gnupg_ecc_params *ecc;
 
   const unsigned char *ecc_pubkey;
   size_t ecc_pubkey_len;
@@ -761,7 +717,6 @@ do_encrypt_ecdh (PKT_public_key *pk, gcry_mpi_t data,  gcry_mpi_t *resarr)
   unsigned char ecc_ct[ECC_POINT_LEN_MAX];
   unsigned char ecc_ecdh[ECC_POINT_LEN_MAX];
   size_t ecc_ct_len, ecc_ecdh_len;
-  int is_weierstrass;
 
   unsigned char *kek = NULL;
   size_t kek_len;
@@ -782,139 +737,51 @@ do_encrypt_ecdh (PKT_public_key *pk, gcry_mpi_t data,  gcry_mpi_t *resarr)
       log_error ("%s: error getting OID for ECC key\n", __func__);
       goto leave;
     }
-  ecc_algo = openpgp_oid_to_kem_algo (ecc_oid);
-  if (ecc_algo == GCRY_KEM_RAW_X25519)
+  curve = openpgp_oid_to_curve (ecc_oid, 1);
+  if (!curve)
     {
-      /* Legacy OID is OK here.  */
-      ecc_pubkey = gcry_mpi_get_opaque (pk->pkey[1], &nbits);
-      ecc_pubkey_len = (nbits+7)/8;
+      err = gpg_error (GPG_ERR_INV_DATA);
+      log_error ("%s: error getting curve for ECC key\n", __func__);
+      goto leave;
+    }
+  ecc = gnupg_get_ecc_params (curve);
+  if (!ecc)
+    {
+      if (opt.verbose)
+        log_info ("%s: ECC curve %s not supported\n", __func__, curve);
+      err = gpg_error (GPG_ERR_INV_DATA);
+      goto leave;
+    }
+  ecc_ct_len = ecc_ecdh_len = ecc->point_len;
+
+  ecc_pubkey = gcry_mpi_get_opaque (pk->pkey[1], &nbits);
+  ecc_pubkey_len = (nbits+7)/8;
+  if (ecc_pubkey_len != ecc->pubkey_len)
+    {
+      if (ecc->kem_algo == GCRY_KEM_RAW_X25519
+          && ecc_pubkey_len == ecc->pubkey_len - 1)
+        /* For Curve25519, we also accept no prefix in the point
+         * representation.  */
+        ;
+      else
+        {
+          if (opt.verbose)
+            log_info ("%s: ECC public key length invalid (%zu)\n",
+                      __func__, ecc_pubkey_len);
+          err = gpg_error (GPG_ERR_INV_DATA);
+          goto leave;
+        }
+    }
+
+  if (ecc->kem_algo == GCRY_KEM_RAW_X25519)
+    {
+      /* Note: Legacy OID is OK here.  */
+      /* Optional prefix handling */
       if (ecc_pubkey_len == 33 && *ecc_pubkey == 0x40)
         {
           ecc_pubkey++;     /* Remove the 0x40 prefix.  */
           ecc_pubkey_len--;
         }
-      if (ecc_pubkey_len != 32)
-        {
-          if (opt.verbose)
-            log_info ("%s: ECC public key length invalid (%zu)\n",
-                      __func__, ecc_pubkey_len);
-          err = gpg_error (GPG_ERR_INV_DATA);
-          goto leave;
-        }
-      ecc_ct_len = ecc_ecdh_len = 32;
-      is_weierstrass = 0;
-    }
-  else if (ecc_algo == GCRY_KEM_RAW_X448)
-    {
-      ecc_pubkey = gcry_mpi_get_opaque (pk->pkey[1], &nbits);
-      ecc_pubkey_len = (nbits+7)/8;
-      if (ecc_pubkey_len != 56)
-        {
-          if (opt.verbose)
-            log_info ("%s: ECC public key length invalid (%zu)\n",
-                      __func__, ecc_pubkey_len);
-          err = gpg_error (GPG_ERR_INV_DATA);
-          goto leave;
-        }
-      ecc_ct_len = ecc_ecdh_len = 56;
-      is_weierstrass = 0;
-    }
-  else if (ecc_algo == GCRY_KEM_RAW_BP256)
-    {
-      ecc_pubkey = gcry_mpi_get_opaque (pk->pkey[1], &nbits);
-      ecc_pubkey_len = (nbits+7)/8;
-      if (ecc_pubkey_len != 65)
-        {
-          if (opt.verbose)
-            log_info ("%s: ECC public key length invalid (%zu)\n",
-                      __func__, ecc_pubkey_len);
-          err = gpg_error (GPG_ERR_INV_DATA);
-          goto leave;
-        }
-      ecc_ct_len = ecc_ecdh_len = 65;
-      is_weierstrass = 1;
-    }
-  else if (ecc_algo == GCRY_KEM_RAW_BP384)
-    {
-      ecc_pubkey = gcry_mpi_get_opaque (pk->pkey[1], &nbits);
-      ecc_pubkey_len = (nbits+7)/8;
-      if (ecc_pubkey_len != 97)
-        {
-          if (opt.verbose)
-            log_info ("%s: ECC public key length invalid (%zu)\n",
-                      __func__, ecc_pubkey_len);
-          err = gpg_error (GPG_ERR_INV_DATA);
-          goto leave;
-        }
-      ecc_ct_len = ecc_ecdh_len = 97;
-      is_weierstrass = 1;
-    }
-  else if (ecc_algo == GCRY_KEM_RAW_BP512)
-    {
-      ecc_pubkey = gcry_mpi_get_opaque (pk->pkey[1], &nbits);
-      ecc_pubkey_len = (nbits+7)/8;
-      if (ecc_pubkey_len != 129)
-        {
-          if (opt.verbose)
-            log_info ("%s: ECC public key length invalid (%zu)\n",
-                      __func__, ecc_pubkey_len);
-          err = gpg_error (GPG_ERR_INV_DATA);
-          goto leave;
-        }
-      ecc_ct_len = ecc_ecdh_len = 129;
-      is_weierstrass = 1;
-    }
-  else if (ecc_algo == GCRY_KEM_RAW_P256R1)
-    {
-      ecc_pubkey = gcry_mpi_get_opaque (pk->pkey[1], &nbits);
-      ecc_pubkey_len = (nbits+7)/8;
-      if (ecc_pubkey_len != 65)
-        {
-          if (opt.verbose)
-            log_info ("%s: ECC public key length invalid (%zu)\n",
-                      __func__, ecc_pubkey_len);
-          err = gpg_error (GPG_ERR_INV_DATA);
-          goto leave;
-        }
-      ecc_ct_len = ecc_ecdh_len = 65;
-      is_weierstrass = 1;
-    }
-  else if (ecc_algo == GCRY_KEM_RAW_P384R1)
-    {
-      ecc_pubkey = gcry_mpi_get_opaque (pk->pkey[1], &nbits);
-      ecc_pubkey_len = (nbits+7)/8;
-      if (ecc_pubkey_len != 97)
-        {
-          if (opt.verbose)
-            log_info ("%s: ECC public key length invalid (%zu)\n",
-                      __func__, ecc_pubkey_len);
-          err = gpg_error (GPG_ERR_INV_DATA);
-          goto leave;
-        }
-      ecc_ct_len = ecc_ecdh_len = 97;
-      is_weierstrass = 1;
-    }
-  else if (ecc_algo == GCRY_KEM_RAW_P521R1)
-    {
-      ecc_pubkey = gcry_mpi_get_opaque (pk->pkey[1], &nbits);
-      ecc_pubkey_len = (nbits+7)/8;
-      if (ecc_pubkey_len != 133)
-        {
-          if (opt.verbose)
-            log_info ("%s: ECC public key length invalid (%zu)\n",
-                      __func__, ecc_pubkey_len);
-          err = gpg_error (GPG_ERR_INV_DATA);
-          goto leave;
-        }
-      ecc_ct_len = ecc_ecdh_len = 133;
-      is_weierstrass = 1;
-    }
-  else
-    {
-      if (opt.verbose)
-        log_info ("%s: ECC curve %s not supported\n", __func__, ecc_oid);
-      err = gpg_error (GPG_ERR_INV_DATA);
-      goto leave;
     }
 
   if (DBG_CRYPTO)
@@ -923,7 +790,7 @@ do_encrypt_ecdh (PKT_public_key *pk, gcry_mpi_t data,  gcry_mpi_t *resarr)
       log_printhex (ecc_pubkey, ecc_pubkey_len, "ECC   pubkey:");
     }
 
-  err = gcry_kem_encap (ecc_algo,
+  err = gcry_kem_encap (ecc->kem_algo,
                         ecc_pubkey, ecc_pubkey_len,
                         ecc_ct, ecc_ct_len,
                         ecc_ecdh, ecc_ecdh_len,
@@ -985,9 +852,9 @@ do_encrypt_ecdh (PKT_public_key *pk, gcry_mpi_t data,  gcry_mpi_t *resarr)
     }
 
   err = gnupg_ecc_kem_kdf (kek, kek_len, kdf_hash_algo,
-                           is_weierstrass ?
+                           ecc->is_weierstrauss ?
                            ecc_ecdh + 1 : ecc_ecdh,
-                           is_weierstrass ?
+                           ecc->is_weierstrauss ?
                            (ecc_ecdh_len - 1) / 2 : ecc_ecdh_len,
                            NULL, 0, NULL, 0,
                            kdf_params, kdf_params_len);
