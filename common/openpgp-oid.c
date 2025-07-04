@@ -45,35 +45,34 @@ static struct {
   const char *alias;  /* NULL or alternative name of the curve.  */
   const char *abbr;   /* NULL or abbreviated name of the curve.  */
   int pubkey_algo;    /* Required OpenPGP algo or 0 for ECDSA/ECDH.  */
-  enum gcry_kem_algos kem_algo; /* 0 or the KEM algorithm for PQC.   */
 } oidtable[] = {
 
   { "Curve25519", "1.3.6.1.4.1.3029.1.5.1", 255, "cv25519", NULL,
-    PUBKEY_ALGO_ECDH, GCRY_KEM_RAW_X25519 /* only during development */},
+    PUBKEY_ALGO_ECDH /* only during development */},
   { "Ed25519",    "1.3.6.1.4.1.11591.15.1", 255, "ed25519", NULL,
     PUBKEY_ALGO_EDDSA },
   { "Curve25519", "1.3.101.110",            255, "cv25519", NULL,
-    PUBKEY_ALGO_ECDH, GCRY_KEM_RAW_X25519 },
+    PUBKEY_ALGO_ECDH },
   { "Ed25519",    "1.3.101.112",            255, "ed25519", NULL,
     PUBKEY_ALGO_EDDSA },
   { "X448",       "1.3.101.111",            448, "cv448",   NULL,
-    PUBKEY_ALGO_ECDH, GCRY_KEM_RAW_X448 },
+    PUBKEY_ALGO_ECDH },
   { "Ed448",      "1.3.101.113",            456, "ed448",   NULL,
     PUBKEY_ALGO_EDDSA },
 
   { "NIST P-256",      "1.2.840.10045.3.1.7",    256, "nistp256", NULL,
-    0, GCRY_KEM_RAW_P256R1 },
+    0 },
   { "NIST P-384",      "1.3.132.0.34",           384, "nistp384", NULL,
-    0, GCRY_KEM_RAW_P384R1 },
+    0 },
   { "NIST P-521",      "1.3.132.0.35",           521, "nistp521", NULL,
-    0, GCRY_KEM_RAW_P521R1 },
+    0 },
 
   { "brainpoolP256r1", "1.3.36.3.3.2.8.1.1.7",   256, NULL, "bp256",
-    0, GCRY_KEM_RAW_BP256 },
+    0 },
   { "brainpoolP384r1", "1.3.36.3.3.2.8.1.1.11",  384, NULL, "bp384",
-    0, GCRY_KEM_RAW_BP384 },
+    0 },
   { "brainpoolP512r1", "1.3.36.3.3.2.8.1.1.13",  512, NULL, "bp512",
-    0, GCRY_KEM_RAW_BP512 },
+    0 },
 
   { "secp256k1",       "1.3.132.0.10",           256 },
 
@@ -556,29 +555,6 @@ openpgp_oid_or_name_to_curve (const char *oidname, int canon)
       return !canon && oidtable[i].alias? oidtable[i].alias : oidtable[i].name;
 
   return NULL;
-}
-
-
-/* Return the KEM algorithm id for the curve with OIDNAME.  */
-enum gcry_kem_algos
-openpgp_oid_to_kem_algo (const char *oidname)
-{
-  int i;
-
-  if (!oidname)
-    return 0;
-
-  for (i=0; oidtable[i].name; i++)
-    if (!strcmp (oidtable[i].oidstr, oidname))
-      return oidtable[i].kem_algo;
-
-  for (i=0; oidtable[i].name; i++)
-    if (!ascii_strcasecmp (oidtable[i].name, oidname)
-        || (oidtable[i].alias
-            && !ascii_strcasecmp (oidtable[i].alias, oidname)))
-      return oidtable[i].kem_algo;
-
-  return 0;
 }
 
 
