@@ -40,11 +40,11 @@ A0:8B:DF:3B:AA:EE:3F:9D:64:6C:47:81:23:21:D4:A6:18:81:67:1D  S
 
 #          S/N: 0139
 #       Issuer: /CN=12R-CA 1:PN/O=Bundesnetzagentur/C=DE
-44:7E:D4:E3:9A:D7:92:E2:07:FA:53:1A:2E:F5:B8:02:5B:47:57:B0  de
+44:7E:D4:E3:9A:D7:92:E2:07:FA:53:1A:2E:F5:B8:02:5B:47:57:B0  S
 
 #          S/N: 013C
 #       Issuer: /CN=13R-CA 1:PN/O=Bundesnetzagentur/C=DE
-AC:A7:BE:45:1F:A6:BF:09:F2:D1:3F:08:7B:BC:EB:7F:46:A2:CC:8A  de
+AC:A7:BE:45:1F:A6:BF:09:F2:D1:3F:08:7B:BC:EB:7F:46:A2:CC:8A  S
 
 
 #          S/N: 00B3963E0E6C2D65125853E970665402E5
@@ -62,5 +62,3 @@ D5:C7:50:F2:FE:4E:EE:D7:C7:B1:E4:13:7B:FB:54:84:3A:7D:97:9B  S
 #       Issuer: /CN=CA Cert Signing Authority/OU=http:\x2f\x2fwww.
 #               cacert.org/O=Root CA/EMail=support@cacert.org
 13:5C:EC:36:F4:9C:B8:E9:3B:1A:B2:70:CD:80:88:46:76:CE:8F:33  S
-
-

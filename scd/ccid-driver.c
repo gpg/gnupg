@@ -1000,7 +1000,7 @@ get_escaped_usb_string (libusb_device_handle *idev, int idx,
 
   /* First get the list of supported languages and use the first one.
      If we do don't find it we try to use English.  Note that this is
-     all in a 2 bute Unicode encoding using little endian. */
+     all in a 2 byte Unicode encoding using little endian. */
   my_npth_unprotect ();
   rc = libusb_control_transfer (idev, LIBUSB_ENDPOINT_IN,
                                 LIBUSB_REQUEST_GET_DESCRIPTOR,

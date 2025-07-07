@@ -9,12 +9,6 @@
 # country code.  Additional data delimited with by a whitespace is
 # current ignored but might late be used for other purposes.
 #
-# Note: The subversion copy of this file carries a gpg:signature
-# property with its OpenPGP signature.  Check this signature before
-# adding entries:
-#  svn pg gpg:signature qualified.txt | gpg --verify - qualified.txt
-# to create a new signature:
-#  f=qualified.txt; gpg -sba $f && svn ps gpg:signature -F $f.asc $f
 
 #*******************************************
 #
