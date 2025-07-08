@@ -39,6 +39,8 @@
 
 #define MAX_DATABLOB_SIZE (16*1024*1024)
 
+/* Set this to 1 to enable extra debug messages from this module.  */
+static volatile int debug_client;
 
 
 /* This object is used to implement a client to the keyboxd.  */
@@ -194,10 +196,12 @@ datastream_thread (void *arg)
   char *data = NULL;
   char *tmpdata;
 
-  /* log_debug ("%s: started\n", __func__); */
+  if (debug_client)
+    log_debug ("%s: started\n", __func__);
   while (kcd->fp)
     {
-      /* log_debug ("%s: waiting ...\n", __func__); */
+      if (debug_client)
+        log_debug ("%s: waiting ...\n", __func__);
       if (es_read (kcd->fp, lenbuf, 4, &nread))
         {
           err = gpg_error_from_syserror ();
@@ -212,7 +216,8 @@ datastream_thread (void *arg)
         break;
 
       datalen = buf32_to_size_t (lenbuf);
-      /* log_debug ("keyboxd announced %zu bytes\n", datalen); */
+      if (debug_client)
+        log_debug ("%s: keyboxd announced %zu bytes\n", __func__, datalen);
       if (!datalen)
         {
           log_info ("ignoring empty blob received from keyboxd\n");
@@ -249,7 +254,8 @@ datastream_thread (void *arg)
         }
       else
         {
-          /* log_debug ("parsing datastream succeeded\n"); */
+          if (debug_client)
+            log_debug ("%s: parsing datastream succeeded\n", __func__);
         }
 
       /* Thread-safe assignment to the result var:  */
@@ -271,7 +277,8 @@ datastream_thread (void *arg)
         }
       unlock_datastream (kcd);
     }
-  /* log_debug ("%s: finished\n", __func__); */
+  if (debug_client)
+    log_debug ("%s: finished\n", __func__);
 
   return NULL;
 }
@@ -360,7 +367,8 @@ kbx_client_data_release (kbx_client_data_t kcd)
 gpg_error_t
 kbx_client_data_simple (kbx_client_data_t kcd, const char *command)
 {
-  /* log_debug ("%s: sending command '%s'\n", __func__, command); */
+  if (debug_client)
+    log_debug ("%s: sending command '%s'\n", __func__, command);
   return assuan_transact (kcd->ctx, command,
                           NULL, NULL, NULL, NULL, NULL, NULL);
 }
@@ -385,14 +393,16 @@ kbx_client_data_cmd (kbx_client_data_t kcd, const char *command,
 
   if (kcd->fp)
     {
-      /* log_debug ("%s: sending command '%s'\n", __func__, command); */
+      if (debug_client)
+        log_debug ("%s: sending command '%s'\n", __func__, command);
       err = assuan_transact (kcd->ctx, command,
                              NULL, NULL,
                              NULL, NULL,
                              status_cb, status_cb_value);
       if (err)
         {
-          if (gpg_err_code (err) != GPG_ERR_NOT_FOUND
+          if (debug_client
+              && gpg_err_code (err) != GPG_ERR_NOT_FOUND
               && gpg_err_code (err) != GPG_ERR_NOTHING_FOUND)
             log_debug ("%s: finished command with error: %s\n",
                        __func__, gpg_strerror (err));
@@ -406,8 +416,9 @@ kbx_client_data_cmd (kbx_client_data_t kcd, const char *command,
       membuf_t mb;
       size_t len;
 
-      /* log_debug ("%s: sending command '%s' (no fd-passing)\n", */
-      /*            __func__, command); */
+      if (debug_client)
+        log_debug ("%s: sending command '%s' (no fd-passing)\n",
+                   __func__, command);
       init_membuf (&mb, 8192);
       err = assuan_transact (kcd->ctx, command,
                              put_membuf_cb, &mb,
@@ -415,10 +426,11 @@ kbx_client_data_cmd (kbx_client_data_t kcd, const char *command,
                              status_cb, status_cb_value);
       if (err)
         {
-          /* if (gpg_err_code (err) != GPG_ERR_NOT_FOUND */
-          /*     && gpg_err_code (err) != GPG_ERR_NOTHING_FOUND) */
-          /*   log_debug ("%s: finished command with error: %s\n", */
-          /*              __func__, gpg_strerror (err)); */
+          if (debug_client
+              && gpg_err_code (err) != GPG_ERR_NOT_FOUND
+              && gpg_err_code (err) != GPG_ERR_NOTHING_FOUND)
+            log_debug ("%s: finished command with error: %s\n",
+                       __func__, gpg_strerror (err));
           xfree (get_membuf (&mb, &len));
           kcd->dlineerr = err;
           goto leave;
@@ -453,7 +465,8 @@ kbx_client_data_wait (kbx_client_data_t kcd, char **r_data, size_t *r_datalen)
       lock_datastream (kcd);
       if (!kcd->data && !kcd->dataerr)
         {
-          /* log_debug ("%s: waiting on datastream_cond ...\n", __func__); */
+          if (debug_client)
+            log_debug ("%s: waiting on datastream_cond ...\n", __func__);
           rc = npth_cond_wait (&kcd->cond, &kcd->mutex);
           if (rc)
             {
@@ -461,8 +474,8 @@ kbx_client_data_wait (kbx_client_data_t kcd, char **r_data, size_t *r_datalen)
               log_error ("%s: waiting on condition failed: %s\n",
                          __func__, gpg_strerror (err));
             }
-          /* else */
-          /*   log_debug ("%s: waiting on datastream.cond done\n", __func__); */
+          else if (debug_client)
+            log_debug ("%s: waiting on datastream.cond done\n", __func__);
         }
       *r_data = kcd->data;
       kcd->data = NULL;
