@@ -1614,7 +1614,7 @@ do_change_keyattr (int keyno, const struct key_attr *key_attr)
   else
     {
       log_error (_("public key algorithm %d (%s) is not supported\n"),
-                 key_attr->algo, gcry_pk_algo_name (key_attr->algo));
+                 key_attr->algo, openpgp_pk_algo_name (key_attr->algo));
       return gpg_error (GPG_ERR_PUBKEY_ALGO);
     }
 

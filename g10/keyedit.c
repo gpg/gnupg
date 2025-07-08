@@ -4106,7 +4106,7 @@ show_key_with_all_names (ctrl_t ctrl, estream_t fp,
                            _("The following key was revoked on"
                             " %s by %s key %s\n"),
 			  revokestr_from_pk (pk),
-                          gcry_pk_algo_name (pk->revoked.algo), user);
+                          openpgp_pk_algo_name (pk->revoked.algo), user);
 	      xfree (user);
 	    }
 
@@ -4121,14 +4121,14 @@ show_key_with_all_names (ctrl_t ctrl, estream_t fp,
 		    char *user;
 		    const char *algo;
 
-		    algo = gcry_pk_algo_name (pk->revkey[i].algid);
+		    algo = openpgp_pk_algo_name (pk->revkey[i].algid);
 		    keyid_from_fingerprint (ctrl, pk->revkey[i].fpr,
 					    pk->revkey[i].fprlen, r_keyid);
 
 		    user = get_user_id_string_native (ctrl, r_keyid);
 		    tty_fprintf (fp,
                                  _("This key may be revoked by %s key %s"),
-                                 algo ? algo : "?", user);
+                                 algo, user);
 
 		    if (pk->revkey[i].class & 0x40)
 		      {
