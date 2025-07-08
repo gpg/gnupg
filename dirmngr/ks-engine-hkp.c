@@ -1278,6 +1278,8 @@ send_request (ctrl_t ctrl, const char *request, const char *hostportstr,
          we're good with both HTTP 1.0 and 1.1.  */
       es_fputs ("Pragma: no-cache\r\n"
                 "Cache-Control: no-cache\r\n", fp);
+      if (*opt.user_agent)
+        es_fprintf (fp, "User-Agent: %s\r\n", opt.user_agent);
       if (post_cb)
         err = post_cb (post_cb_value, http);
       if (!err)

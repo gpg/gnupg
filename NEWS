@@ -7,6 +7,8 @@ Noteworthy changes in version 2.5.9 (unreleased)
   * gpg: Do not show the non-standard secp256k1 curve in the menu to
     select the curve.  It can however be specified using its name.
 
+  * dirmngr: New option --user-agent and send a default User-Agent of
+    "GnuPG/2.6" for all HTTP requests.  [T7715]
 
   Release-info: https://dev.gnupg.org/T7695
 

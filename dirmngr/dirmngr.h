@@ -160,6 +160,8 @@ struct
 
   strlist_t keyserver;              /* List of default keyservers.  */
 
+  const char *user_agent;           /* The HTTP Use-Agent (never NULL).  */
+
   /* Compatibility flags (COMPAT_FLAG_xxxx).  */
   unsigned int compat_flags;
 } opt;

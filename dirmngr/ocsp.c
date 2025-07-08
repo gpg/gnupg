@@ -197,6 +197,9 @@ do_ocsp_request (ctrl_t ctrl, ksba_ocsp_t ocsp,
       return err;
     }
 
+  if (*opt.user_agent)
+    es_fprintf (http_get_write_ptr (http),
+                "User-Agent: %s\r\n", opt.user_agent);
   es_fprintf (http_get_write_ptr (http),
 	      "Content-Type: application/ocsp-request\r\n"
 	      "Content-Length: %lu\r\n",

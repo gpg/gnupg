@@ -161,6 +161,7 @@ enum cmd_and_opt_values {
   oListenBacklog,
   oFakeCRL,
   oCompatibilityFlags,
+  oUserAgent,
   aTest
 };
 
@@ -251,6 +252,7 @@ static gpgrt_opt_t opts[] = {
                 N_("|URL|redirect all HTTP requests to URL")),
   ARGPARSE_s_n (oHonorHTTPProxy, "honor-http-proxy",
                 N_("use system's HTTP proxy setting")),
+  ARGPARSE_s_s (oUserAgent, "user-agent", "@"),
   ARGPARSE_s_s (oLDAPWrapperProgram, "ldap-wrapper-program", "@"),
 
   ARGPARSE_header ("Keyserver", N_("Configuration for OpenPGP servers")),
@@ -695,6 +697,7 @@ parse_rereadable_options (gpgrt_argparse_t *pargs, int reread)
       opt.ocsp_max_period = 90 * 86400;       /* 90 days.  */
       opt.ocsp_current_period = 3 * 60 * 60;  /* 3 hours. */
       opt.max_replies = DEFAULT_MAX_REPLIES;
+      opt.user_agent = "GnuPG/2.6";
       while (opt.ocsp_signer)
         {
           fingerprint_list_t tmp = opt.ocsp_signer->next;
@@ -904,6 +907,15 @@ parse_rereadable_options (gpgrt_argparse_t *pargs, int reread)
           pargs->r_opt = ARGPARSE_INVALID_ARG;
           pargs->err = ARGPARSE_PRINT_WARNING;
         }
+      break;
+
+    case oUserAgent:
+      if (strpbrk (pargs->r.ret_str, "\r\n"))
+        ; /* Ignore if the caller tried to insert CR or LF.  */
+      else if (!strcmp (pargs->r.ret_str, "none"))
+        opt.user_agent = "";
+      else
+        opt.user_agent = pargs->r.ret_str;
       break;
 
     default:

@@ -429,6 +429,12 @@ ignoring DPs entirely.
 Ignore all OCSP URLs contained in the certificate.  The effect is to
 force the use of the default responder.
 
+@item --user-agent @var{string}
+@opindex user-agent
+Change the default User-Agent for HTTP requests to @var{string}.  If
+@var{string} is empty or has the value ``none'' no User-Agent header
+will be used.
+
 @item --honor-http-proxy
 @opindex honor-http-proxy
 If the environment variable @env{http_proxy} has been set, use its

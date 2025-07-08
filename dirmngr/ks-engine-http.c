@@ -130,6 +130,8 @@ ks_http_fetch (ctrl_t ctrl, const char *url, unsigned int flags,
       if ((flags & KS_HTTP_FETCH_NOCACHE))
         es_fputs ("Pragma: no-cache\r\n"
                   "Cache-Control: no-cache\r\n", fp);
+      if (*opt.user_agent)
+        es_fprintf (fp, "User-Agent: %s\r\n", opt.user_agent);
       http_start_data (http);
       if (es_ferror (fp))
         err = gpg_error_from_syserror ();
