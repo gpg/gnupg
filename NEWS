@@ -1,4 +1,4 @@
-Noteworthy changes in version 2.5.9 (unreleased)
+Noteworthy changes in version 2.5.9 (2025-07-10)
 ------------------------------------------------
 
   * gpg: Add the revocation reason to the sigclass of a "rev" line.
@@ -6,9 +6,13 @@ Noteworthy changes in version 2.5.9 (unreleased)
 
   * gpg: Do not show the non-standard secp256k1 curve in the menu to
     select the curve.  It can however be specified using its name.
+    [rG49a9171f63]
+
+  * gpg: Fix regression in using the secp256k1 curve.  [T7698]
 
   * dirmngr: New option --user-agent and send a default User-Agent of
     "GnuPG/2.6" for all HTTP requests.  [T7715]
+
 
   Release-info: https://dev.gnupg.org/T7695
 
