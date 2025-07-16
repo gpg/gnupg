@@ -2765,6 +2765,7 @@ ssh_send_available_keys (ctrl_t ctrl, estream_t key_blobs, u32 *r_key_counter)
                * support at all but a smartcard lists that curve.
                * We ignore them.  */
               skipped++;
+              err = 0;
             }
           else
             goto leave;
