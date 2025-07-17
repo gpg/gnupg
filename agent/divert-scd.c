@@ -517,7 +517,7 @@ agent_card_ecc_kem (ctrl_t ctrl, const unsigned char *ecc_ct,
 
   if (len == ecc_point_len)
     memcpy (ecc_ecdh, ecdh, len);
-  else if ((len - 1) * 2 == ecc_point_len - 1 && ecdh[0] == 0x02)
+  else if (len && (len - 1) * 2 == ecc_point_len - 1 && ecdh[0] == 0x02)
     {
       /* It's x-coordinate-only (compressed) point representation.  */
       memcpy (ecc_ecdh, ecdh, len);
