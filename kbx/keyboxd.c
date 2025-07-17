@@ -734,6 +734,7 @@ main (int argc, char **argv )
 
       (void)nodetach;
       initialize_modules ();
+      w32_ack_to_frontend ();
 
 #else /*!HAVE_W32_SYSTEM*/
 

@@ -106,6 +106,11 @@ gpg_error_t warn_server_version_mismatch (assuan_context_t ctx,
                                           void *status_func_ctrl,
                                           int print_hints);
 
+#ifdef HAVE_W32_SYSTEM
+/* Say hello to the frontend.  */
+void w32_ack_to_frontend (void);
+#endif
+
 
 /*-- asshelp2.c --*/
 

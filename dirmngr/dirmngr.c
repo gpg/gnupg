@@ -1526,6 +1526,7 @@ main (int argc, char **argv)
       pid = getpid ();
       es_printf ("set %s=%s;%lu;1\n",
                  DIRMNGR_INFO_NAME, socket_name, (ulong) pid);
+      w32_ack_to_frontend ();
 #else
       pid = fork();
       if (pid == (pid_t)-1)

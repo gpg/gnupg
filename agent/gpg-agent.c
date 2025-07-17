@@ -1855,6 +1855,9 @@ main (int argc, char **argv)
         }
 
       log_info ("%s %s started\n", gpgrt_strusage(11), gpgrt_strusage(13) );
+#ifdef HAVE_W32_SYSTEM
+      w32_ack_to_frontend ();
+#endif
       handle_connections (fd, fd_extra, fd_browser, fd_ssh,
                           reliable_homedir_inotify);
       assuan_sock_close (fd);
