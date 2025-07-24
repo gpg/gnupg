@@ -1814,9 +1814,13 @@ make_keysig_packet (ctrl_t ctrl,
   u32 pk_keyid[2], pksk_keyid[2];
   unsigned int signhints;
 
-  log_assert ((sigclass >= 0x10 && sigclass <= 0x13) || sigclass == 0x1F
-              || sigclass == 0x20 || sigclass == 0x18 || sigclass == 0x19
-              || sigclass == 0x30 || sigclass == 0x28 );
+  log_assert ((sigclass&~3) == SIGCLASS_CERT
+              || sigclass == SIGCLASS_KEY
+              || sigclass == SIGCLASS_KEYREV
+              || sigclass == SIGCLASS_SUBKEY
+              || sigclass == SIGCLASS_BACKSIG
+              || sigclass == SIGCLASS_CERTREV
+              || sigclass == SIGCLASS_SUBREV );
 
   if (pksk->version >= 5)
     sigversion = 5;
@@ -1853,14 +1857,15 @@ make_keysig_packet (ctrl_t ctrl,
   /* Hash the public key certificate. */
   hash_public_key (md, pk);
 
-  if (sigclass == 0x18 || sigclass == 0x19 || sigclass == 0x28)
+  if (sigclass == SIGCLASS_SUBKEY || sigclass == SIGCLASS_BACKSIG
+      || sigclass == SIGCLASS_SUBREV)
     {
       /* Hash the subkey binding/backsig/revocation.  */
       hash_public_key (md, subpk);
       if ((subpk->pubkey_usage & PUBKEY_USAGE_RENC))
         signhints |= SIGNHINT_ADSK;
     }
-  else if (sigclass != 0x1F && sigclass != 0x20)
+  else if (sigclass != SIGCLASS_KEY && sigclass != SIGCLASS_KEYREV)
     {
       /* Hash the user id. */
       hash_uid (md, sigversion, uid);
