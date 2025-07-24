@@ -541,14 +541,26 @@ cmd_istrusted (assuan_context_t ctx, char *line)
 {
   ctrl_t ctrl = assuan_get_pointer (ctx);
   int rc, n, i;
-  char *p;
+  char *p, *pn;
   char fpr[41];
 
   /* Parse the fingerprint value. */
+  pn = NULL;  /* Indicates that we have not reparsed.  */
+ parseagain:
   for (p=line,n=0; hexdigitp (p); p++, n++)
     ;
   if (*p || !(n == 40 || n == 32))
-    return set_error (GPG_ERR_ASS_PARAMETER, "invalid fingerprint");
+    {
+      if (!pn && *p && strchr (p, ':'))
+        {
+          for (pn=p=line; *p ; p++)
+            if (*p != ':')
+              *pn++ = *p;
+          *pn = 0;
+          goto parseagain;
+        }
+      return set_error (GPG_ERR_ASS_PARAMETER, "invalid fingerprint");
+    }
   i = 0;
   if (n==32)
     {
