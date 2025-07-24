@@ -1059,6 +1059,7 @@ static struct compatibility_flags_s compatibility_flags [] =
     { COMPAT_PARALLELIZED, "parallelized" },
     { COMPAT_T7014_OLD,    "t7014-old" },
     { COMPAT_COMPR_KEYS,   "compr-keys" },
+    { COMPAT_NO_MANU,      "no-manu" },
     { 0, NULL }
   };
 
@@ -2116,6 +2117,8 @@ parse_list_options(char *str)
        NULL},
       {"show-user-notations",LIST_SHOW_USER_NOTATIONS,NULL,
        N_("show user-supplied notations during signature listings")},
+      {"show-hidden-notations",LIST_SHOW_HIDDEN_NOTATIONS,NULL,
+       NULL},
       {"show-x509-notations",LIST_SHOW_X509_NOTATIONS,NULL, NULL },
       {"store-x509-notations",LIST_STORE_X509_NOTATIONS,NULL, NULL },
       {"show-keyserver-urls",LIST_SHOW_KEYSERVER_URLS,NULL,
@@ -3498,7 +3501,9 @@ main (int argc, char **argv)
 		   NULL},
 		  {"show-user-notations",VERIFY_SHOW_USER_NOTATIONS,NULL,
 		   N_("show user-supplied notations during signature verification")},
-		  {"show-keyserver-urls",VERIFY_SHOW_KEYSERVER_URLS,NULL,
+                  {"show-hidden-notations",VERIFY_SHOW_HIDDEN_NOTATIONS,NULL,
+                   NULL},
+                  {"show-keyserver-urls",VERIFY_SHOW_KEYSERVER_URLS,NULL,
 		   N_("show preferred keyserver URLs during signature verification")},
 		  {"show-uid-validity",VERIFY_SHOW_UID_VALIDITY,NULL,
 		   N_("show user ID validity during signature verification")},

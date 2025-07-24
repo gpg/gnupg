@@ -179,6 +179,7 @@ static struct
 
   /* GnuPG extensions */
   { "1.3.6.1.4.1.11591.2.1.1", "pkaAddress" },
+  { "1.3.6.1.4.1.11591.2.1.2", "manuNotation" },
   { "1.3.6.1.4.1.11591.2.2.1", "standaloneCertificate" },
   { "1.3.6.1.4.1.11591.2.2.2", "wellKnownPrivateKey" },
   { "1.3.6.1.4.1.11591.2.6.1", "gpgUsageCert", OID_FLAG_KP },

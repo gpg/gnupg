@@ -914,6 +914,7 @@ void build_attribute_subpkt(PKT_user_id *uid,byte type,
 			    const void *buf,u32 buflen,
 			    const void *header,u32 headerlen);
 struct notation *string_to_notation(const char *string,int is_utf8);
+struct notation *name_value_to_notation (const char *name, const char *value);
 struct notation *blob_to_notation(const char *name,
                                   const char *data, size_t len);
 struct notation *sig_to_notation(PKT_signature *sig);

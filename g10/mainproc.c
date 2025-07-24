@@ -2492,7 +2492,9 @@ check_sig_and_print (CTX c, kbnode_t node)
             show_notation
               (sig, 0, 1,
                (((opt.verify_options&VERIFY_SHOW_STD_NOTATIONS)?1:0)
-                + ((opt.verify_options&VERIFY_SHOW_USER_NOTATIONS)?2:0)));
+                + ((opt.verify_options&VERIFY_SHOW_USER_NOTATIONS)?2:0)
+                + ((opt.verify_options &VERIFY_SHOW_HIDDEN_NOTATIONS)? 4:0)
+                ));
           else
             show_notation (sig, 0, 2, 0);
         }

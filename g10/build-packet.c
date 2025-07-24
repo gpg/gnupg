@@ -1577,17 +1577,18 @@ notation_value_to_human_readable_string (struct notation *notation)
     return xstrdup (notation->value);
 }
 
+
 /* Turn the notation described by the string STRING into a notation.
-
-   STRING has the form:
-
-     - -name - Delete the notation.
-     - name@domain.name=value - Normal notation
-     - !name@domain.name=value - Notation with critical bit set.
-
-   The caller must free the result using free_notation().  */
+ *
+ * STRING has the form:
+ *
+ *   - -name - Delete the notation.
+ *   - name@domain.name=value - Normal notation
+ *   - !name@domain.name=value - Notation with critical bit set.
+ *
+ * The caller must free the result using free_notation().  */
 struct notation *
-string_to_notation(const char *string,int is_utf8)
+string_to_notation (const char *string, int is_utf8)
 {
   const char *s;
   int saw_at=0;
@@ -1675,6 +1676,22 @@ string_to_notation(const char *string,int is_utf8)
   free_notation(notation);
   return NULL;
 }
+
+
+/* Turn the notation described by NAME and VALUE into a notation.
+ * This will be a human readble non-critical notation.
+ * The caller must free the result using free_notation().  */
+struct notation *
+name_value_to_notation (const char *name, const char *value)
+{
+  struct notation *notation;
+
+  notation = xcalloc (1, sizeof *notation);
+  notation->name = xstrdup (name);
+  notation->value = xstrdup (value);
+  return notation;
+}
+
 
 /* Like string_to_notation, but store opaque data rather than human
    readable data.  */

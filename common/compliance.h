@@ -78,6 +78,7 @@ int gnupg_gcrypt_is_compliant (enum gnupg_compliance_mode compliance);
 
 const char *gnupg_status_compliance_flag (enum gnupg_compliance_mode
                                           compliance);
+const char *gnupg_manu_notation_value (enum gnupg_compliance_mode compliance);
 
 struct gnupg_compliance_option
 {

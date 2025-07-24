@@ -400,6 +400,7 @@ EXTERN_UNLESS_MAIN_MODULE int memory_stat_debug_mode;
 #define COMPAT_PARALLELIZED   1  /* Use threaded hashing for signatures.  */
 #define COMPAT_T7014_OLD      2  /* Use initial T7014 test data.  */
 #define COMPAT_COMPR_KEYS     4  /* Allow import of compressed keys. (T7014) */
+#define COMPAT_NO_MANU        8  /* Do not include a "manu" notation.  */
 
 /* Compliance test macros.  */
 #define GNUPG   (opt.compliance==CO_GNUPG || opt.compliance==CO_DE_VS)
@@ -466,6 +467,7 @@ EXTERN_UNLESS_MAIN_MODULE int memory_stat_debug_mode;
 #define LIST_STORE_X509_NOTATIONS        (1<<18)
 #define LIST_SHOW_OWNERTRUST             (1<<19)
 #define LIST_SHOW_TRUSTSIG               (1<<20)
+#define LIST_SHOW_HIDDEN_NOTATIONS       (1<<21)
 
 #define VERIFY_SHOW_PHOTOS               (1<<0)
 #define VERIFY_SHOW_POLICY_URLS          (1<<1)
@@ -476,6 +478,7 @@ EXTERN_UNLESS_MAIN_MODULE int memory_stat_debug_mode;
 #define VERIFY_SHOW_UID_VALIDITY         (1<<5)
 #define VERIFY_SHOW_UNUSABLE_UIDS        (1<<6)
 #define VERIFY_SHOW_PRIMARY_UID_ONLY     (1<<9)
+#define VERIFY_SHOW_HIDDEN_NOTATIONS     (1<<21)
 
 #define KEYSERVER_HTTP_PROXY             (1<<0)
 #define KEYSERVER_TIMEOUT                (1<<1)

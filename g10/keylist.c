@@ -638,6 +638,7 @@ show_keyserver_url (PKT_signature * sig, int indent, int mode)
  * Defined bits in WHICH:
  *   1 - standard notations
  *   2 - user notations
+ *   4 - print notations normally hidden
  */
 void
 show_notation (PKT_signature * sig, int indent, int mode, int which)
@@ -653,6 +654,9 @@ show_notation (PKT_signature * sig, int indent, int mode, int which)
   /* There may be multiple notations in the same sig. */
   for (nd = notations; nd; nd = nd->next)
     {
+       if (!(which & 4) && !strcmp (nd->name, "manu"))
+        continue;
+
       if (mode != 2)
 	{
 	  int has_at = !!strchr (nd->name, '@');
@@ -1522,11 +1526,11 @@ list_signature_print (ctrl_t ctrl, kbnode_t keyblock, kbnode_t node,
   if (sig->flags.notation && (opt.list_options & LIST_SHOW_NOTATIONS))
     show_notation (sig, 3, 0,
                    ((opt.
-                     list_options & LIST_SHOW_STD_NOTATIONS) ? 1 : 0)
-                   +
-                     ((opt.
-                       list_options & LIST_SHOW_USER_NOTATIONS) ? 2 :
-                      0));
+                     list_options & LIST_SHOW_STD_NOTATIONS) ? 1 : 0) +
+                   ((opt.
+                     list_options & LIST_SHOW_USER_NOTATIONS) ? 2 : 0) +
+                   ((opt.
+                     list_options & LIST_SHOW_HIDDEN_NOTATIONS) ? 4 : 0));
 
   if (sig->flags.notation
       && (opt.list_options

@@ -1420,11 +1420,15 @@ give the opposite meaning.  The options are:
   @item show-notations
   @itemx show-std-notations
   @itemx show-user-notations
+  @itemx show-hidden-notations
   @opindex list-options:show-notations
   @opindex list-options:show-std-notations
   @opindex list-options:show-user-notations
+  @opindex list-options:show-hidden-notations
   Show all, IETF standard, or user-defined signature notations in the
-  @option{--check-signatures} listings. Defaults to no.
+  @option{--check-sigs} listings.  Hidden notations are those which
+  are automatically inserted by an implementation and not worthy to
+  mention. Defaults to no.
 
   @item show-x509-notations
   @opindex list-options:show-x509-notations
@@ -1513,11 +1517,15 @@ the opposite meaning. The options are:
   @item show-notations
   @itemx show-std-notations
   @itemx show-user-notations
+  @itemx show-hidden-notations
   @opindex verify-options:show-notations
   @opindex verify-options:show-std-notations
   @opindex verify-options:show-user-notations
+  @opindex verify-options:show-hidden-notations
   Show all, IETF standard, or user-defined signature notations in the
-  signature being verified. Defaults to IETF standard.
+  signature being verified.  Hidden notations are those which are
+  automatically inserted by an implementation and not worthy to
+  mention.  Defaults to IETF standard.
 
   @item show-keyserver-urls
   @opindex verify-options:show-keyserver-urls
@@ -3374,7 +3382,9 @@ given once only the name of the program and the major number is
 emitted, given twice the minor is also emitted, given thrice
 the micro is added, and given four times an operating system identification
 is also emitted.  @option{--no-emit-version} (default) disables the version
-line.
+line.  Note that unless the @option{--compatibility-flags} have
+a "no-manu" flag set, the GnuPG and Libgcrypt major and minor version
+(e.g. "2.6+1.11") is included in signature packets and keys.
 
 @item --sig-notation @{@var{name}=@var{value}@}
 @itemx --cert-notation @{@var{name}=@var{value}@}

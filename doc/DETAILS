@@ -1666,6 +1666,7 @@ Status codes are:
   1.3.6.1.4.1.11591.2          GnuPG
   1.3.6.1.4.1.11591.2.1          notation
   1.3.6.1.4.1.11591.2.1.1          pkaAddress
+  1.3.6.1.4.1.11591.2.1.2          manuNotation (as IA5String)
   1.3.6.1.4.1.11591.2.2          X.509 extensions
   1.3.6.1.4.1.11591.2.2.1          standaloneCertificate
   1.3.6.1.4.1.11591.2.2.2          wellKnownPrivateKey
@@ -1774,7 +1775,6 @@ Description of some debug flags:
 
   - T6390 :: Notes on use of X25519 in GnuPG (https://dev.gnupg.org/T6390)
 
-
 ** v3 fingerprints
    For packet version 3 we calculate the keyids this way:
     - RSA :: Low 64 bits of n
@@ -1782,12 +1782,56 @@ Description of some debug flags:
                  calculate a RMD160 hash value from it. This is used
                  as the fingerprint and the low 64 bits are the keyid.
 
-** gnupg.org notations
+** Used notations
+
+  - manu :: LibrePGP/rfc4880bis defined standard notation used by
+            GnuPG and other implementaions to convey additional
+            information about the implementation used to create
+            a key or signature.  This is a list of comma delimited
+            values with these defined fields:
+
+            | field | name             | defined values         |
+            |-------+------------------+------------------------|
+            |     1 | software product | see: prod-id           |
+            |     2 | software version | e.g. "2.2", "2.5+1.12" |
+            |     3 | architecture     | see: arch-id           |
+            |     4 | operating system | see: os-id             |
+            |     5 | compliance class | e.g. "23", "2023"      |
+
+            | prod-id | name        |
+            |---------+-------------|
+            |       1 | PGP         |
+            |       2 | GnuPG       |
+            |       3 | Greenshield |
+            |       4 | RNP         |
+
+            | arch-id | cpu   |
+            |---------+-------|
+            |       1 | i686  |
+            |       2 | amd64 |
+            |       3 | arm64 |
+            |       4 | riscv |
+
+            | os-id | os      |
+            |-------+---------|
+            |     1 | Windows |
+            |     2 | Linux   |
+            |     3 | BSD     |
+
+            If a value for a field is not known, the empty string
+            may be used.  The values are also used for the X.509/CMS
+            extension 1.3.6.1.4.1.11591.2.1.2.  The compliance class
+            values are 23 for "de-vs" and 2023 for non-approved "de-vs".
+
+            This notation shall be human readable.  It is defined in
+            away to minimize its size but to be easily viewable by
+            standard software.
 
   - rem@gnupg.org :: Used by Kleopatra to implement the tag feature.
                      These tags are used to mark keys for easier
                      searching and grouping.
-
+  - cpl@gnupg.org :: Used by GnuPG to mark the compliance of
+                     encryption subkeys.
 
 ** Simplified revocation certificates
   Revocation certificates consist only of the signature packet;
