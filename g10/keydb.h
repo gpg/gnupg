@@ -37,14 +37,14 @@
                           || IS_SUBKEY_REV(s) \
                           || IS_ATTST_SIGS(s) )
 #define IS_SIG(s)        (!IS_CERT(s))
-#define IS_KEY_SIG(s)    ((s)->sig_class == 0x1f)
-#define IS_UID_SIG(s)    (((s)->sig_class & ~3) == 0x10)
+#define IS_KEY_SIG(s)    ((s)->sig_class == SIGCLASS_KEY)
+#define IS_UID_SIG(s)    (((s)->sig_class & ~3) == SIGCLASS_CERT)
 #define IS_ATTST_SIGS(s) ((s)->sig_class == 0x16)
-#define IS_SUBKEY_SIG(s) ((s)->sig_class == 0x18)
-#define IS_BACK_SIG(s)   ((s)->sig_class == 0x19)
-#define IS_KEY_REV(s)    ((s)->sig_class == 0x20)
-#define IS_UID_REV(s)    ((s)->sig_class == 0x30)
-#define IS_SUBKEY_REV(s) ((s)->sig_class == 0x28)
+#define IS_SUBKEY_SIG(s) ((s)->sig_class == SIGCLASS_SUBKEY)
+#define IS_BACK_SIG(s)   ((s)->sig_class == SIGCLASS_BACKSIG)
+#define IS_KEY_REV(s)    ((s)->sig_class == SIGCLASS_KEYREV)
+#define IS_UID_REV(s)    ((s)->sig_class == SIGCLASS_CERTREV)
+#define IS_SUBKEY_REV(s) ((s)->sig_class == SIGCLASS_SUBREV)
 
 struct getkey_ctx_s;
 typedef struct getkey_ctx_s *GETKEY_CTX;
