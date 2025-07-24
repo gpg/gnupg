@@ -214,6 +214,7 @@ struct
   int no_encrypt_to;
   int encrypt_to_default_key;
   int interactive;
+  strlist_t print_notations;       /* Name of notations to print. */
   struct notation *sig_notations;
   struct notation *cert_notations;
   strlist_t sig_policy_url;

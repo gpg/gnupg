@@ -2497,6 +2497,7 @@ check_sig_and_print (CTX c, kbnode_t node)
                 ));
           else
             show_notation (sig, 0, 2, 0);
+          print_matching_notations (sig);
         }
 
       /* Fill PKSTRBUF with the algostring in case we later need it.  */

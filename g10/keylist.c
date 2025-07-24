@@ -709,6 +709,41 @@ show_notation (PKT_signature * sig, int indent, int mode, int which)
 }
 
 
+/* Output all the notation data in SIG matching a name given by
+ * --print-notation to stdout.  */
+void
+print_matching_notations (PKT_signature *sig)
+{
+  notation_t nd, notations;
+  strlist_t sl;
+  const char *s;
+
+  if (!opt.print_notations)
+    return;
+
+  notations = sig_to_notation (sig);
+  for (nd = notations; nd; nd = nd->next)
+    {
+      for (sl=opt.print_notations; sl; sl = sl->next)
+        if (!strcmp (sl->d, nd->name))
+          break;
+      if (!sl || !*nd->value)
+        continue;
+      es_fprintf (es_stdout, "%s: ", nd->name);
+      for (s = nd->value; *s; s++)
+        {
+          if (*s == '\n')
+            es_fprintf (es_stdout, "\n%*s", (int)strlen (nd->name)+2, "");
+          else if (*s >= ' ' || *s != '\t')
+            es_putc (*s, es_stdout);
+        }
+      es_putc ('\n', es_stdout);
+    }
+
+  free_notation (notations);
+}
+
+
 static void
 print_signature_stats (struct keylist_context *s)
 {
