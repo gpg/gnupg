@@ -960,6 +960,9 @@ istrusted_status_cb (void *opaque, const char *line)
     }
   else if ((s = has_leading_keyword (line, "TRUSTLISTFPR")) && *s)
     {
+      /* We see this only with the "LISTTRUSTED --status" command but
+       * not with ISTRUSTED.  Thus the cache will only be filled by
+       * the former command. */
       istrusted_cache_t ci;
 
       ci = xtrymalloc (sizeof *ci + strlen (s));
@@ -973,6 +976,9 @@ istrusted_status_cb (void *opaque, const char *line)
 
       ci->next = parm->cache;
       parm->cache = ci;
+      /* Also need to clear the parm's flags which will be copied to
+       * the cache.  */
+      memset (&parm->flags, 0, sizeof ci->flags);
     }
   return 0;
 }
