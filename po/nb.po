@@ -2730,6 +2730,9 @@ msgstr "|FD|skrive statusinfo til denne FD"
 msgid "|ALGO|reject signatures made with ALGO"
 msgstr "|ALGO|avvis signaturer som er laget med valgt ALGOritme"
 
+msgid "|NAME|print the notation NAME to stdout"
+msgstr ""
+
 msgid "Usage: gpgv [options] [files] (-h for help)"
 msgstr "Bruk: gpgv [valg] [filer] (-h for hjelp)"
 

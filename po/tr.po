@@ -2650,6 +2650,9 @@ msgstr "|FD|durum bilgisini bu FD'ye yaz"
 msgid "|ALGO|reject signatures made with ALGO"
 msgstr "|ALGO|ALGO ile yapılan algoritmaları reddet"
 
+msgid "|NAME|print the notation NAME to stdout"
+msgstr ""
+
 msgid "Usage: gpgv [options] [files] (-h for help)"
 msgstr "Kullanım: gpgv [seçenekler] [dosyalar] (yardım için -h)"
 

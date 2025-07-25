@@ -2802,6 +2802,9 @@ msgstr "|ÁL|állapotinformációk írása ÁL állományleíróra"
 msgid "|ALGO|reject signatures made with ALGO"
 msgstr ""
 
+msgid "|NAME|print the notation NAME to stdout"
+msgstr ""
+
 msgid "Usage: gpgv [options] [files] (-h for help)"
 msgstr "Használat: gpgv [opciók] [fájlok] (-h a súgóhoz)"
 

@@ -2661,6 +2661,9 @@ msgstr "|FD|pisanie opisu stanu do deskryptora FD"
 msgid "|ALGO|reject signatures made with ALGO"
 msgstr "|ALGO|odrzucanie podpisów wykonanych podanym ALGOrytmem"
 
+msgid "|NAME|print the notation NAME to stdout"
+msgstr ""
+
 msgid "Usage: gpgv [options] [files] (-h for help)"
 msgstr "Składnia: gpgv [opcje] [pliki] (-h wyświetla pomoc)"
 

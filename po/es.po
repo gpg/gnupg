@@ -2773,6 +2773,9 @@ msgstr "|FD|escribe información de estado en este descriptor de fichero"
 msgid "|ALGO|reject signatures made with ALGO"
 msgstr "|ALGO|rechaza firmas hechas con ALGO"
 
+msgid "|NAME|print the notation NAME to stdout"
+msgstr ""
+
 msgid "Usage: gpgv [options] [files] (-h for help)"
 msgstr "Uso: gpgv [opciones] [ficheros] (-h para ayuda)"
 

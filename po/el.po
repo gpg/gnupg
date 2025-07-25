@@ -2818,6 +2818,9 @@ msgstr "|FD|εγγραφή των πληροφοριών κατάστασης σ
 msgid "|ALGO|reject signatures made with ALGO"
 msgstr ""
 
+msgid "|NAME|print the notation NAME to stdout"
+msgstr ""
+
 msgid "Usage: gpgv [options] [files] (-h for help)"
 msgstr "Χρήση: gpgv [επιλογές] [αρχεία] (-h για βοήθεια)"
 

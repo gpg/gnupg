@@ -3004,6 +3004,9 @@ msgstr "|FD|skriv statusinformation till denna FD"
 msgid "|ALGO|reject signatures made with ALGO"
 msgstr ""
 
+msgid "|NAME|print the notation NAME to stdout"
+msgstr ""
+
 msgid "Usage: gpgv [options] [files] (-h for help)"
 msgstr "Användning: gpgv [flaggor] [filer] (-h för hjälp)"
 

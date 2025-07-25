@@ -2793,6 +2793,9 @@ msgstr "|FD|skribi statusinformojn al FD (dosierpriskribilo)"
 msgid "|ALGO|reject signatures made with ALGO"
 msgstr ""
 
+msgid "|NAME|print the notation NAME to stdout"
+msgstr ""
+
 #, fuzzy
 msgid "Usage: gpgv [options] [files] (-h for help)"
 msgstr "Uzado: gpg [opcioj] [dosieroj] (-h por helpo)"
