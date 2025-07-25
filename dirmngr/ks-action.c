@@ -543,6 +543,39 @@ ks_action_put (ctrl_t ctrl, uri_item_t keyservers,
 }
 
 
+/* Delete an OpenPGP key from all KEYSERVERS which use LDAP.  The key
+ * is specifified by PATTERNS.  */
+gpg_error_t
+ks_action_del (ctrl_t ctrl, uri_item_t keyservers, strlist_t fprlist)
+{
+  gpg_error_t err = 0;
+  gpg_error_t first_err = 0;
+  int any_server = 0;
+  uri_item_t uri;
+
+  for (uri = keyservers; uri; uri = uri->next)
+    {
+#if USE_LDAP
+      if ( !strcmp (uri->parsed_uri->scheme, "ldap")
+           || !strcmp (uri->parsed_uri->scheme, "ldaps")
+           || !strcmp (uri->parsed_uri->scheme, "ldapi")
+           || uri->parsed_uri->opaque )
+        {
+          any_server = 1;
+          err = ks_ldap_del (ctrl, uri->parsed_uri, fprlist);
+          if (err && !first_err)
+            first_err = err;
+        }
+#endif
+    }
+
+  if (!any_server)
+    err = gpg_error (GPG_ERR_NO_KEYSERVER); /* No LDAP keyserver */
+  else if (!err && first_err)
+    err = first_err;
+  return err;
+}
+
 
 /* Query the default LDAP server or the one given by URL using
  * the filter expression FILTER.  Write the result to OUTFP.  */

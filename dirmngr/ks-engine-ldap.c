@@ -2988,6 +2988,116 @@ ks_ldap_put (ctrl_t ctrl, parsed_uri_t uri,
 }
 
 
+/* Delete the keys given by the list of fingerprints in FPRLIST from
+ * the keyserver identified by URI.  The function stops at the first
+ * error encountered. */
+gpg_error_t
+ks_ldap_del (ctrl_t ctrl, parsed_uri_t uri, strlist_t fprlist)
+{
+  gpg_error_t err = 0;
+  int ldap_err;
+  unsigned int serverinfo;
+  LDAP *ldap_conn = NULL;
+  char *basedn = NULL;
+  char *dn = NULL;
+  strlist_t fpr;
+  unsigned int count = 0;
+  unsigned int totalcount = 0;
+
+  if (dirmngr_use_tor ())
+    {
+      return no_ldap_due_to_tor (ctrl);
+    }
+
+  for (fpr = fprlist; fpr; fpr = fpr->next)
+    totalcount++;
+
+  err = my_ldap_connect (uri, 0, &ldap_conn, &basedn, NULL, NULL, &serverinfo);
+  if (err || !basedn)
+    {
+      if(opt.verbose)
+        log_info ("%s: connecting to server failed\n", __func__);
+      if (!err)
+	err = gpg_error (GPG_ERR_GENERAL);  /* (no baseDN) */
+      goto leave;
+    }
+
+  if (!(serverinfo & SERVERINFO_REALLDAP))
+    {
+      if(opt.verbose)
+        log_info ("%s: The PGP.com keyserver is not supported\n", __func__);
+      err = gpg_error (GPG_ERR_NOT_SUPPORTED);
+      goto leave;
+    }
+
+  if (!(serverinfo & SERVERINFO_SCHEMAV2))
+    {
+      if(opt.verbose)
+        log_info ("%s: The keyserver does not support the v2 schema\n",
+                  __func__);
+      err = gpg_error (GPG_ERR_NOT_SUPPORTED);
+      goto leave;
+    }
+
+  if (opt.verbose)
+    log_info ("%s: Using DN: %s,%s\n", __func__,
+              (serverinfo & SERVERINFO_NTDS)? "CN=<fingerprint>"
+              /* */                         : "pgpCertID=<keyid>",
+              basedn);
+  for (fpr = fprlist; fpr; fpr = fpr->next)
+    {
+      if ((serverinfo & SERVERINFO_NTDS))
+        {
+          xfree (dn);
+          dn = xtryasprintf ("CN=%s,%s", fpr->d, basedn);
+        }
+      else
+        {
+          unsigned int off;
+
+          /* Simle method to get the keyID.  Note that a v5 key
+           * (len>40) has the keyid at the left.  If the length is
+           * less than 17 we assume a keyid has been given.  */
+          off = strlen (fpr->d);
+          if (off <= 40 && off > 16)
+            off = off - 16;
+          else
+            off = 0;
+
+          xfree (dn);
+          dn = xtryasprintf ("pgpCertID=%.16s,%s", fpr->d+off, basedn);
+        }
+
+      npth_unprotect ();
+      ldap_err = ldap_delete_ext_s (ldap_conn, dn, NULL, NULL);
+      npth_protect ();
+      if (ldap_err == LDAP_SUCCESS)
+        {
+          if (opt.verbose)
+            log_info ("%s: key %s deleted\n", __func__, fpr->d);
+          count++;
+        }
+      else
+        {
+          log_error ("%s: error deleting key %s: %s\n",
+                     __func__, fpr->d, ldap_err2string (ldap_err));
+          err = ldap_err_to_gpg_err (ldap_err);
+          break;  /* Stop at the first failed deletion.  */
+        }
+    }
+  log_info ("%s: number of keys deleted: %u of %u\n",
+            __func__, count, totalcount);
+
+
+ leave:
+  if (ldap_conn)
+    ldap_unbind (ldap_conn);
+  xfree (dn);
+  xfree (basedn);
+  return err;
+}
+
+
 
 /* Get the data described by FILTER_ARG from URI.  On success R_FP has
  * an open stream to read the data.  KS_GET_FLAGS conveys flags from

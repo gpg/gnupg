@@ -1,6 +1,18 @@
 Noteworthy changes in version 2.2.48 (unreleased)
 -------------------------------------------------
 
+  * scd:p15: Accept P15 cards with a zero-length label.  [rG84229829b5]
+
+  * scd:p15: Make signing work for Nexus cards.  [rGe1576eee04]
+
+  * gpg: Fully implement the group key flag.  [rG924f09d1f3]
+
+  * gpgsm: Make use of the de-vs flag in the trustlist.txt.  [rG14383ff052]
+
+  * gpgsm: Fix caching of the trustlist's flags.  [T7738]
+
+  * dirmngr: Implement command KS_DEL for LDAP.  [T5447]
+
 
 Noteworthy changes in version 2.2.47 (2025-04-09)
 -------------------------------------------------
