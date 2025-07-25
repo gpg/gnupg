@@ -825,7 +825,7 @@ write_onepass_sig_packets (SK_LIST sk_list, IOBUF out, int sigclass )
 
 /*
  * Helper to write the plaintext (literal data) packet.  At
- * R_EXTRAHASH a malloced object with the with the extra data hashed
+ * R_EXTRAHASH a malloced object with the extra data hashed
  * into v5 signatures is stored.
  */
 static int

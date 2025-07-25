@@ -82,7 +82,7 @@ gpg_error_t ks_ldap_get (ctrl_t ctrl, parsed_uri_t uri,
 gpg_error_t ks_ldap_put (ctrl_t ctrl, parsed_uri_t uri,
 			 void *data, size_t datalen,
 			 void *info, size_t infolen);
-gpg_error_t ks_ldap_del (ctrl_t ctrl, parsed_uri_t uri, strlist_t patterns);
+gpg_error_t ks_ldap_del (ctrl_t ctrl, parsed_uri_t uri, strlist_t fprlist);
 gpg_error_t ks_ldap_query (ctrl_t ctrl, parsed_uri_t uri,
                            unsigned int ks_get_flags,
                            const char *filter, char **attrs,
