@@ -9,7 +9,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnupg-2.4.1\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"PO-Revision-Date: 2025-06-02 15:40+0200\n"
+"PO-Revision-Date: 2025-07-25 15:50+0200\n"
 "Last-Translator: Werner Koch <wk@gnupg.org>\n"
 "Language-Team: German\n"
 "Language: de\n"
@@ -2692,6 +2692,9 @@ msgstr "|FD|Statusinfo auf FD (Dateihandle) ausgeben"
 
 msgid "|ALGO|reject signatures made with ALGO"
 msgstr "|ALGO|Weise mit ALGO erstellte Signaturen zurück"
+
+msgid "|NAME|print the notation NAME to stdout"
+msgstr "|NAME|Gebe die \"Notation\" NAME auf stdout aus"
 
 msgid "Usage: gpgv [options] [files] (-h for help)"
 msgstr "Aufruf: gpgv [Optionen] [Dateien] (-h für Hilfe)"
