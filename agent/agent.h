@@ -769,7 +769,8 @@ int agent_card_pkdecrypt (ctrl_t ctrl,
                           void *getpin_cb_arg,
                           const char *desc_text,
                           const unsigned char *indata, size_t indatalen,
-                          char **r_buf, size_t *r_buflen, int *r_padding);
+                          unsigned char **r_buf, size_t *r_buflen,
+                          int *r_padding);
 
 int agent_card_readcert (ctrl_t ctrl,
                          const char *id, char **r_buf, size_t *r_buflen);
