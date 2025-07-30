@@ -125,10 +125,13 @@ mk_notation_policy_etc (ctrl_t ctrl, PKT_signature *sig,
           xfree (item->altvalue);
           item->altvalue = NULL;
         }
-      /* Restore the original nd and release ndmanu.  */
-      nd = ndmanu;
-      ndmanu->next = NULL;
-      free_notation (ndmanu);
+      if (with_manu)
+        {
+          /* Restore the original nd and release ndmanu.  */
+          nd = ndmanu;
+          ndmanu->next = NULL;
+          free_notation (ndmanu);
+        }
     }
 
   /* Set policy URL. */
