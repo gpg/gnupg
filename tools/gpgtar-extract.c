@@ -525,6 +525,8 @@ gpgtar_extract (const char *filename, int decrypt)
   for (;;)
     {
       err = gpgtar_read_header (stream, tarinfo, &header, &extheader);
+      if (!err && !header)
+        break;  /* End of archive.  */
       if (err || header == NULL)
         goto leave;
 
