@@ -1,6 +1,7 @@
 Noteworthy changes in version 2.5.12 (unreleased)
 -------------------------------------------------
 
+  * gpgtar: Fix regression in end-of-archive detection.  [T7757]
 
   Release-info: https://dev.gnupg.org/T7756
 

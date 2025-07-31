@@ -492,7 +492,8 @@ gpgtar_extract (const char *filename, int decrypt)
 #endif
       err = gpgrt_process_spawn (opt.gpg_program, argv,
                                  ((filename ? 0 : GPGRT_PROCESS_STDIN_KEEP)
-                                  | GPGRT_PROCESS_STDOUT_PIPE), act, &proc);
+                                  | GPGRT_PROCESS_STDOUT_PIPE
+                                  | GPGRT_PROCESS_STDERR_KEEP), act, &proc);
       gpgrt_spawn_actions_release (act);
       xfree (argv);
       if (err)
