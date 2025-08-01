@@ -1578,25 +1578,37 @@ parse_options(char *str,unsigned int *options,
 {
   char *tok;
 
-  if (str && (!strcmp (str, "help") || !strcmp (str, "full-help")))
+  if (str && (!strcmp (str, "help")
+              || !strcmp (str, "full-help") || !strcmp (str, "fullhelp")))
     {
       int i,maxlen=0;
       int full = *str == 'f';
+      int set;
 
       /* Figure out the longest option name so we can line these up
 	 neatly. */
       for(i=0;opts[i].name;i++)
-	if(opts[i].help && maxlen<strlen(opts[i].name))
+	if((full || opts[i].help) && maxlen<strlen(opts[i].name))
 	  maxlen=strlen(opts[i].name);
 
       for(i=0;opts[i].name;i++)
         if(opts[i].help)
-	  es_printf("%s%*s%s\n",opts[i].name,
-                    maxlen+2-(int)strlen(opts[i].name),"",_(opts[i].help));
+          {
+            set = (*options & opts[i].bit);
+            es_printf("%s%*s%s%s%s%s\n",opts[i].name,
+                      maxlen+2-(int)strlen(opts[i].name),"",_(opts[i].help),
+                      set?"  [":"", set? _("enabled"):"", set?"]":"");
+          }
+
       if (full)
         for (i=0; opts[i].name; i++)
           if(!opts[i].help)
-            es_printf("%s\n",opts[i].name);
+            {
+              set = (*options & opts[i].bit);
+              es_printf("%s%*s%s%s%s\n",opts[i].name,
+                        set? (maxlen+2-(int)strlen(opts[i].name)):0,"",
+                        set?"[":"", set? _("enabled"):"", set?"]":"");
+            }
 
       g10_exit(0);
     }
