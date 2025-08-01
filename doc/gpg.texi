@@ -2048,10 +2048,6 @@ are available for all keyserver types, some common options are:
   are marked on the keyserver as disabled. Note that this option is not
   used with HKP keyservers.
 
-  @item auto-key-retrieve
-  This is an obsolete alias for the option @option{auto-key-retrieve}.
-  Please do not use it; it will be removed in future versions..
-
   @item honor-keyserver-url
   When using @option{--refresh-keys}, if the key in question has a preferred
   keyserver URL, then use that preferred keyserver to refresh the key
@@ -2074,6 +2070,15 @@ are available for all keyserver types, some common options are:
   @item only-pubkeys
   Do now allow to import secret keys.
 
+  @item update-before-send
+  Before sending a key to an LDAP server try to retrieve and merge
+  that key first.  This is only done if the key is specified by
+  fingerprint.  This is enabled by default.
+
+  @item auto-key-retrieve
+  This is an obsolete alias for the option @option{auto-key-retrieve}.
+  Please do not use it; it will be removed in future versions.
+
   @item timeout
   @itemx http-proxy=@var{value}
   @itemx verbose
@@ -2087,9 +2092,9 @@ are available for all keyserver types, some common options are:
 
 The default list of options is: "self-sigs-only, import-clean,
 repair-keys, repair-pks-subkey-bug, export-attributes,
-honor-pka-record". However, if
-the actual used source is an LDAP server "no-self-sigs-only" is
-assumed unless "self-sigs-only" has been explictly configured.
+update-before-send". However, if the actual used source is an LDAP
+server "no-self-sigs-only" is assumed unless "self-sigs-only" has been
+explicitly configured.
 
 
 @item --completes-needed @var{n}

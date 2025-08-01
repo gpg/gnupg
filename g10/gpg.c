@@ -2423,7 +2423,7 @@ main (int argc, char **argv)
                                             | IMPORT_SELF_SIGS_ONLY
                                             | IMPORT_CLEAN);
     opt.keyserver_options.export_options = EXPORT_ATTRIBUTES;
-    opt.keyserver_options.options = KEYSERVER_HONOR_PKA_RECORD;
+    opt.keyserver_options.options = KEYSERVER_UPDATE_BEFORE_SEND;
     opt.verify_options = (LIST_SHOW_UID_VALIDITY
                           | VERIFY_SHOW_POLICY_URLS
                           | VERIFY_SHOW_STD_NOTATIONS
@@ -4770,9 +4770,9 @@ main (int argc, char **argv)
 	for( ; argc; argc--, argv++ )
 	    append_to_strlist2( &sl, *argv, utf8_strings );
 	if( cmd == aSendKeys )
-            rc = keyserver_export (ctrl, sl );
+          rc = keyserver_export (ctrl, sl, 0 );
 	else if( cmd == aRecvKeys )
-            rc = keyserver_import (ctrl, sl );
+          rc = keyserver_import (ctrl, sl, 0);
 	else
           {
             export_stats_t stats = export_new_stats ();

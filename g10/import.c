@@ -2081,7 +2081,7 @@ import_one_real (ctrl_t ctrl,
         log_error (_("key %s: public key not found: %s\n"),
                    keystr(keyid), gpg_strerror (err));
     }
-  else if (err && (opt.import_options&IMPORT_MERGE_ONLY) )
+  else if (err && ((opt.import_options|options)&IMPORT_MERGE_ONLY) )
     {
       if (opt.verbose && !silent )
         log_info( _("key %s: new key - skipped\n"), keystr(keyid));

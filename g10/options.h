@@ -434,6 +434,7 @@ EXTERN_UNLESS_MAIN_MODULE int memory_stat_debug_mode;
 #define KEYSERVER_AUTO_KEY_RETRIEVE      (1<<3)
 #define KEYSERVER_HONOR_KEYSERVER_URL    (1<<4)
 #define KEYSERVER_HONOR_PKA_RECORD       (1<<5)
+#define KEYSERVER_UPDATE_BEFORE_SEND     (1<<6)
 
 
 #endif /*G10_OPTIONS_H*/
