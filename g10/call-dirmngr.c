@@ -449,7 +449,9 @@ ks_status_cb (void *opaque, const char *line)
 
 
 /* Run the "KEYSERVER" command to return the name of the used
-   keyserver at R_KEYSERVER.  */
+ * keyserver at R_KEYSERVER.  This function returns the first
+ * keyserver; it should be extended to handle multiple keyservers or
+ * we disallow the use of several keyservers.  */
 gpg_error_t
 gpg_dirmngr_ks_list (ctrl_t ctrl, char **r_keyserver)
 {
