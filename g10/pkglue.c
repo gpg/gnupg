@@ -486,8 +486,8 @@ do_encrypt_kem (PKT_public_key *pk, gcry_mpi_t data, int seskey_algo,
       goto leave;
     }
   ecc_ct_len = ecc_ecdh_len = ecc->point_len;
-  ecc_ss_len = ecc->scalar_len;
   ecc_hash_algo = ecc->hash_algo;
+  ecc_ss_len = gcry_md_get_algo_dlen (ecc_hash_algo);
 
   ecc_pubkey = gcry_mpi_get_opaque (pk->pkey[1], &nbits);
   ecc_pubkey_len = (nbits+7)/8;
