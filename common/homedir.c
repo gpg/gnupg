@@ -987,6 +987,29 @@ w32_commondir (void)
 
   return dir;
 }
+
+/*
+ * On Windows, isatty returns TRUE when it's NUL device.
+ * We need more checks.
+ */
+int
+gnupg_isatty (int fd)
+{
+  HANDLE h;
+  DWORD mode;
+
+  if (!isatty (fd))
+    return 0;
+
+  h = (HANDLE)_get_osfhandle (fd);
+  if (h == INVALID_HANDLE_VALUE)
+    return 0;
+
+  if (!GetConsoleMode (h, &mode))
+    return 0;
+
+  return 1;
+}
 #endif /*HAVE_W32_SYSTEM*/
 
 

@@ -540,6 +540,7 @@ start_new_service (assuan_context_t *r_ctx,
 
           err = gpgrt_process_spawn (program? program : program_name, argv,
                                      (GPGRT_PROCESS_DETACHED
+                                      |GPGRT_PROCESS_STDIO_NUL
                                       |GPGRT_PROCESS_STDOUT_PIPE
                                       |GPGRT_PROCESS_STDERR_KEEP),
                                      NULL, &proc);
