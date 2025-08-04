@@ -1,6 +1,9 @@
 Noteworthy changes in version 2.5.12 (unreleased)
 -------------------------------------------------
 
+  * dirmgr: Support LDAP servers using a schema like the Windows LDS
+    servers.  [T7742]
+
   * gpgtar: Fix regression in end-of-archive detection.  [T7757]
 
   Release-info: https://dev.gnupg.org/T7756
