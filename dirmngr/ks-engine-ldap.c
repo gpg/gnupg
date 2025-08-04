@@ -54,7 +54,8 @@
 #define SERVERINFO_PGPKEYV2 2 /* Needs "pgpKeyV2" instead of "pgpKey"*/
 #define SERVERINFO_SCHEMAV2 4 /* Version 2 of the Schema.            */
 #define SERVERINFO_NTDS     8 /* Server is an Active Directory.      */
-#define SERVERINFO_GENERIC 16 /* Connected in genric mode.           */
+#define SERVERINFO_GENERIC 16 /* Connected in generic mode.          */
+#define SERVERINFO_CNFPR   32 /* Server uses CN=fingerprint.         */
 
 
 /* The page size requested from the server.  */
@@ -589,7 +590,10 @@ interrogate_ldap_dn (LDAP *ldap_conn, const char *basedn_search,
                 *r_serverinfo |= SERVERINFO_SCHEMAV2;
               if (nfields > 1
                   && !ascii_strcasecmp (fields[1], "ntds"))
-                *r_serverinfo |= SERVERINFO_NTDS;
+                *r_serverinfo |= (SERVERINFO_NTDS|SERVERINFO_CNFPR);
+              else if (nfields > 1
+                       && !ascii_strcasecmp (fields[1], "cnfpr"))
+                *r_serverinfo |= SERVERINFO_CNFPR;
             }
         }
       my_ldap_value_free (vals);
@@ -2918,7 +2922,7 @@ ks_ldap_put (ctrl_t ctrl, parsed_uri_t uri,
     char **attrval;
     char *dn;
 
-    if ((serverinfo & SERVERINFO_NTDS))
+    if ((serverinfo & SERVERINFO_CNFPR))
       {
         /* The modern way using a CN RDN with the fingerprint.  This
          * has the advantage that we won't have duplicate 64 bit
@@ -3041,12 +3045,12 @@ ks_ldap_del (ctrl_t ctrl, parsed_uri_t uri, strlist_t fprlist)
 
   if (opt.verbose)
     log_info ("%s: Using DN: %s,%s\n", __func__,
-              (serverinfo & SERVERINFO_NTDS)? "CN=<fingerprint>"
-              /* */                         : "pgpCertID=<keyid>",
+              (serverinfo & SERVERINFO_CNFPR)? "CN=<fingerprint>"
+              /* */                          : "pgpCertID=<keyid>",
               basedn);
   for (fpr = fprlist; fpr; fpr = fpr->next)
     {
-      if ((serverinfo & SERVERINFO_NTDS))
+      if ((serverinfo & SERVERINFO_CNFPR))
         {
           xfree (dn);
           dn = xtryasprintf ("CN=%s,%s", fpr->d, basedn);
