@@ -3541,7 +3541,9 @@ list_standalone_revocation (ctrl_t ctrl, PKT_signature *sig, int sigrc)
         show_notation (sig, 3, 0,
                        ((opt.list_options & LIST_SHOW_STD_NOTATIONS) ? 1 : 0)
                        +
-                       ((opt.list_options & LIST_SHOW_USER_NOTATIONS) ? 2 : 0));
+                       ((opt.list_options & LIST_SHOW_USER_NOTATIONS) ? 2 : 0)
+                       +
+                       ((opt.list_options & LIST_SHOW_HIDDEN_NOTATIONS) ? 4:0));
 
       if (sig->flags.pref_ks
           && (opt.list_options & LIST_SHOW_KEYSERVER_URLS))

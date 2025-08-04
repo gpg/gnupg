@@ -2723,11 +2723,10 @@ cmd_ks_put (assuan_context_t ctx, char *line)
 
 
 static const char hlp_ks_del[] =
-  "KS_DEL --ldap {<pattern>}\n"
+  "KS_DEL --ldap {<fingerprints>}\n"
   "\n"
-  "Delete the keys matching PATTERN from the configured OpenPGP LDAP server\n"
-  "The pattern should be a fingerprint.\n"
-  "The option --ldap is mandatory.\n";
+  "Delete the keys specified by primary keys FINGERPRINTS from the\n"
+  "configured OpenPGP LDAP server.  The option --ldap is mandatory.";
 static gpg_error_t
 cmd_ks_del (assuan_context_t ctx, char *line)
 {

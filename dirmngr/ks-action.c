@@ -551,7 +551,7 @@ ks_action_put (ctrl_t ctrl, uri_item_t keyservers,
 /* Delete an OpenPGP key from all KEYSERVERS which use LDAP.  The key
  * is specifified by PATTERNS.  */
 gpg_error_t
-ks_action_del (ctrl_t ctrl, uri_item_t keyservers, strlist_t patterns)
+ks_action_del (ctrl_t ctrl, uri_item_t keyservers, strlist_t fprlist)
 {
   gpg_error_t err = 0;
   gpg_error_t first_err = 0;
@@ -567,7 +567,7 @@ ks_action_del (ctrl_t ctrl, uri_item_t keyservers, strlist_t patterns)
            || uri->parsed_uri->opaque )
         {
           any_server = 1;
-          err = ks_ldap_del (ctrl, uri->parsed_uri, patterns);
+          err = ks_ldap_del (ctrl, uri->parsed_uri, fprlist);
           if (err && !first_err)
             first_err = err;
         }
@@ -575,7 +575,7 @@ ks_action_del (ctrl_t ctrl, uri_item_t keyservers, strlist_t patterns)
     }
 
   if (!any_server)
-    err = gpg_error (GPG_ERR_NO_KEYSERVER); /* Actual: No LDAP keyserver */
+    err = gpg_error (GPG_ERR_NO_KEYSERVER); /* No LDAP keyserver */
   else if (!err && first_err)
     err = first_err;
   return err;

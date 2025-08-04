@@ -69,6 +69,21 @@
 /* The usage bits which define encryption.  */
 #define PUBKEY_USAGE_XENC_MASK  (PUBKEY_USAGE_ENC | PUBKEY_USAGE_RENC)
 
+/* The signature classes.  */
+#define SIGCLASS_DATA    0x00   /* Signature on a binary document.       */
+#define SIGCLASS_TEXT    0x01   /* Signature on a text document.         */
+#define SIGCLASS_SALONE  0x02   /* Standalone signature.                 */
+#define SIGCLASS_CERT    0x10   /* User ID certification signature.      */
+#define SIGCLASS_CERT11  0x11   /* User ID certification signature.      */
+#define SIGCLASS_CERT12  0x12   /* User ID certification signature.      */
+#define SIGCLASS_CERT13  0x13   /* User ID certification signature.      */
+#define SIGCLASS_SUBKEY  0x18   /* Key binding signature.                */
+#define SIGCLASS_BACKSIG 0x19   /* Primary key binding signature.        */
+#define SIGCLASS_KEY     0x1f   /* Direct key signature (on primary key) */
+#define SIGCLASS_KEYREV  0x20   /* Key revoction signature.              */
+#define SIGCLASS_SUBREV  0x28   /* Subkey revocation signature.          */
+#define SIGCLASS_CERTREV 0x30   /* Certification revocation signature.   */
+
 /* Bitflags to convey hints on what kind of signature is created.  */
 #define SIGNHINT_KEYSIG  1
 #define SIGNHINT_SELFSIG 2
@@ -899,6 +914,7 @@ void build_attribute_subpkt(PKT_user_id *uid,byte type,
 			    const void *buf,u32 buflen,
 			    const void *header,u32 headerlen);
 struct notation *string_to_notation(const char *string,int is_utf8);
+struct notation *name_value_to_notation (const char *name, const char *value);
 struct notation *blob_to_notation(const char *name,
                                   const char *data, size_t len);
 struct notation *sig_to_notation(PKT_signature *sig);

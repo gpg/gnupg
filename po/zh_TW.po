@@ -2588,6 +2588,9 @@ msgstr "|檔案描述子|把狀態資訊寫入指定檔案描述子"
 msgid "|ALGO|reject signatures made with ALGO"
 msgstr "|ALGO|駁回使用演算法建立的簽章"
 
+msgid "|NAME|print the notation NAME to stdout"
+msgstr ""
+
 msgid "Usage: gpgv [options] [files] (-h for help)"
 msgstr "用法: gpgv [選項] [檔案] (或用 -h 求助)"
 

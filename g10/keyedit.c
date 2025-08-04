@@ -299,7 +299,9 @@ keyedit_print_one_sig (ctrl_t ctrl, estream_t fp,
 		       ((opt.
 			 list_options & LIST_SHOW_STD_NOTATIONS) ? 1 : 0) +
 		       ((opt.
-			 list_options & LIST_SHOW_USER_NOTATIONS) ? 2 : 0));
+			 list_options & LIST_SHOW_USER_NOTATIONS) ? 2 : 0) +
+                       ((opt.
+                         list_options & LIST_SHOW_HIDDEN_NOTATIONS) ? 4:0));
 
       if (sig->flags.pref_ks
           && ((opt.list_options & LIST_SHOW_KEYSERVER_URLS) || extended))

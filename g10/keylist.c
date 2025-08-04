@@ -638,6 +638,7 @@ show_keyserver_url (PKT_signature * sig, int indent, int mode)
  * Defined bits in WHICH:
  *   1 - standard notations
  *   2 - user notations
+ *   4 - print notations normally hidden
  */
 void
 show_notation (PKT_signature * sig, int indent, int mode, int which)
@@ -653,6 +654,9 @@ show_notation (PKT_signature * sig, int indent, int mode, int which)
   /* There may be multiple notations in the same sig. */
   for (nd = notations; nd; nd = nd->next)
     {
+       if (!(which & 4) && !strcmp (nd->name, "manu"))
+        continue;
+
       if (mode != 2)
 	{
 	  int has_at = !!strchr (nd->name, '@');
@@ -699,6 +703,41 @@ show_notation (PKT_signature * sig, int indent, int mode, int which)
             write_status_buffer (STATUS_NOTATION_DATA,
                                  nd->value, strlen (nd->value), 50);
 	}
+    }
+
+  free_notation (notations);
+}
+
+
+/* Output all the notation data in SIG matching a name given by
+ * --print-notation to stdout.  */
+void
+print_matching_notations (PKT_signature *sig)
+{
+  notation_t nd, notations;
+  strlist_t sl;
+  const char *s;
+
+  if (!opt.print_notations)
+    return;
+
+  notations = sig_to_notation (sig);
+  for (nd = notations; nd; nd = nd->next)
+    {
+      for (sl=opt.print_notations; sl; sl = sl->next)
+        if (!strcmp (sl->d, nd->name))
+          break;
+      if (!sl || !*nd->value)
+        continue;
+      es_fprintf (es_stdout, "%s: ", nd->name);
+      for (s = nd->value; *s; s++)
+        {
+          if (*s == '\n')
+            es_fprintf (es_stdout, "\n%*s", (int)strlen (nd->name)+2, "");
+          else if (*s >= ' ' || *s != '\t')
+            es_putc (*s, es_stdout);
+        }
+      es_putc ('\n', es_stdout);
     }
 
   free_notation (notations);
@@ -1522,11 +1561,11 @@ list_signature_print (ctrl_t ctrl, kbnode_t keyblock, kbnode_t node,
   if (sig->flags.notation && (opt.list_options & LIST_SHOW_NOTATIONS))
     show_notation (sig, 3, 0,
                    ((opt.
-                     list_options & LIST_SHOW_STD_NOTATIONS) ? 1 : 0)
-                   +
-                     ((opt.
-                       list_options & LIST_SHOW_USER_NOTATIONS) ? 2 :
-                      0));
+                     list_options & LIST_SHOW_STD_NOTATIONS) ? 1 : 0) +
+                   ((opt.
+                     list_options & LIST_SHOW_USER_NOTATIONS) ? 2 : 0) +
+                   ((opt.
+                     list_options & LIST_SHOW_HIDDEN_NOTATIONS) ? 4 : 0));
 
   if (sig->flags.notation
       && (opt.list_options

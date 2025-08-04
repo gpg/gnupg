@@ -2618,6 +2618,9 @@ msgstr "|FD|このFDにステイタス情報を書き出す"
 msgid "|ALGO|reject signatures made with ALGO"
 msgstr "|ALGO|ALGOで作成された署名を拒絶する"
 
+msgid "|NAME|print the notation NAME to stdout"
+msgstr ""
+
 msgid "Usage: gpgv [options] [files] (-h for help)"
 msgstr "使い方: gpgv [オプション] [ファイル] (ヘルプは -h)"
 

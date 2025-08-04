@@ -66,18 +66,21 @@ typedef struct pt_extra_hash_data_s *pt_extra_hash_data_t;
 
 
 /*
- * Create notations and other stuff.  It is assumed that the strings in
- * STRLIST are already checked to contain only printable data and have
- * a valid NAME=VALUE format.
+ * Create notations and other stuff.  It is assumed that the strings
+ * in STRLIST are already checked to contain only printable data and
+ * have a valid NAME=VALUE format.  If with_manu is set a "manu"
+ * notation is also added: a value of 1 includes it in the standard
+ * way and a value of 23 assumes that the data is de-vs compliant.
  */
 static void
 mk_notation_policy_etc (ctrl_t ctrl, PKT_signature *sig,
-			PKT_public_key *pk, PKT_public_key *pksk)
+			PKT_public_key *pk, PKT_public_key *pksk, int with_manu)
 {
   const char *string;
   char *p = NULL;
   strlist_t pu = NULL;
   struct notation *nd = NULL;
+  struct notation *ndmanu = NULL;
   struct expando_args args;
 
   log_assert (sig->version >= 4);
@@ -93,6 +96,15 @@ mk_notation_policy_etc (ctrl_t ctrl, PKT_signature *sig,
     nd = opt.sig_notations;
   else if (IS_CERT(sig) && opt.cert_notations)
     nd = opt.cert_notations;
+
+  if (with_manu)
+    {
+      ndmanu = name_value_to_notation
+        ("manu",
+         gnupg_manu_notation_value (with_manu == 23? CO_DE_VS : CO_GNUPG));
+      ndmanu->next = nd;
+      nd = ndmanu;
+    }
 
   if (nd)
     {
@@ -113,6 +125,10 @@ mk_notation_policy_etc (ctrl_t ctrl, PKT_signature *sig,
           xfree (item->altvalue);
           item->altvalue = NULL;
         }
+      /* Restore the original nd and release ndmanu.  */
+      nd = ndmanu;
+      ndmanu->next = NULL;
+      free_notation (ndmanu);
     }
 
   /* Set policy URL. */
@@ -809,7 +825,7 @@ write_onepass_sig_packets (SK_LIST sk_list, IOBUF out, int sigclass )
 
 /*
  * Helper to write the plaintext (literal data) packet.  At
- * R_EXTRAHASH a malloced object with the with the extra data hashed
+ * R_EXTRAHASH a malloced object with the extra data hashed
  * into v5 signatures is stored.
  */
 static int
@@ -920,7 +936,7 @@ write_plaintext_packet (iobuf_t out, iobuf_t inp,
 /*
  * Write the signatures from the SK_LIST to OUT. HASH must be a
  * non-finalized hash which will not be changes here.  EXTRAHASH is
- * either NULL or the extra data tro be hashed into v5 signatures.
+ * either NULL or the extra data to be hashed into v5 signatures.
  */
 static int
 write_signature_packets (ctrl_t ctrl,
@@ -930,6 +946,7 @@ write_signature_packets (ctrl_t ctrl,
 			 int status_letter, const char *cache_nonce)
 {
   SK_LIST sk_rover;
+  int with_manu;
 
   /* Loop over the certificates with secret keys. */
   for (sk_rover = sk_list; sk_rover; sk_rover = sk_rover->next)
@@ -966,7 +983,16 @@ write_signature_packets (ctrl_t ctrl,
         BUG ();
 
       build_sig_subpkt_from_sig (sig, pk, 0);
-      mk_notation_policy_etc (ctrl, sig, NULL, pk);
+
+      if (opt.compliance == CO_DE_VS
+          && gnupg_rng_is_compliant (CO_DE_VS))
+        with_manu = 23;  /* FIXME: Also check that the algos are compliant?*/
+      else if (!(opt.compat_flags & COMPAT_NO_MANU))
+        with_manu = 1;
+      else
+        with_manu = 0;
+
+      mk_notation_policy_etc (ctrl, sig, NULL, pk, with_manu);
       if (opt.flags.include_key_block && IS_SIG (sig))
         err = mk_sig_subpkt_key_block (ctrl, sig, pk);
       else
@@ -1813,10 +1839,15 @@ make_keysig_packet (ctrl_t ctrl,
   gcry_md_hd_t md;
   u32 pk_keyid[2], pksk_keyid[2];
   unsigned int signhints;
+  int with_manu;
 
-  log_assert ((sigclass >= 0x10 && sigclass <= 0x13) || sigclass == 0x1F
-              || sigclass == 0x20 || sigclass == 0x18 || sigclass == 0x19
-              || sigclass == 0x30 || sigclass == 0x28 );
+  log_assert ((sigclass&~3) == SIGCLASS_CERT
+              || sigclass == SIGCLASS_KEY
+              || sigclass == SIGCLASS_KEYREV
+              || sigclass == SIGCLASS_SUBKEY
+              || sigclass == SIGCLASS_BACKSIG
+              || sigclass == SIGCLASS_CERTREV
+              || sigclass == SIGCLASS_SUBREV );
 
   if (pksk->version >= 5)
     sigversion = 5;
@@ -1853,14 +1884,15 @@ make_keysig_packet (ctrl_t ctrl,
   /* Hash the public key certificate. */
   hash_public_key (md, pk);
 
-  if (sigclass == 0x18 || sigclass == 0x19 || sigclass == 0x28)
+  if (sigclass == SIGCLASS_SUBKEY || sigclass == SIGCLASS_BACKSIG
+      || sigclass == SIGCLASS_SUBREV)
     {
       /* Hash the subkey binding/backsig/revocation.  */
       hash_public_key (md, subpk);
       if ((subpk->pubkey_usage & PUBKEY_USAGE_RENC))
         signhints |= SIGNHINT_ADSK;
     }
-  else if (sigclass != 0x1F && sigclass != 0x20)
+  else if (sigclass != SIGCLASS_KEY && sigclass != SIGCLASS_KEYREV)
     {
       /* Hash the user id. */
       hash_uid (md, sigversion, uid);
@@ -1879,7 +1911,20 @@ make_keysig_packet (ctrl_t ctrl,
   sig->sig_class = sigclass;
 
   build_sig_subpkt_from_sig (sig, pksk, signhints);
-  mk_notation_policy_etc (ctrl, sig, pk, pksk);
+
+  with_manu = 0;
+  if ((signhints & SIGNHINT_SELFSIG)       /* Only for self-signatures.  */
+      && ((sigclass&~3) == SIGCLASS_CERT   /* on UIDs and subkeys.       */
+          || sigclass == SIGCLASS_SUBKEY))
+    {
+      if (opt.compliance == CO_DE_VS
+          && gnupg_rng_is_compliant (CO_DE_VS))
+        with_manu = 23;  /* Always in de-vs mode.  */
+      else if (!(opt.compat_flags & COMPAT_NO_MANU))
+        with_manu = 1;
+    }
+
+  mk_notation_policy_etc (ctrl, sig, pk, pksk, with_manu);
 
   /* Crucial that the call to mksubpkt comes LAST before the calls
    * to finalize the sig as that makes it possible for the mksubpkt

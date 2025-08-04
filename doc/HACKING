@@ -443,3 +443,23 @@ plaintext packets and so on.  The file g10/encode.c might be a good
 starting point to see how it is used - actually this is the other way:
 constructing messages using pushed filters but it may be easier to
 understand.
+
+** Notes on how to create test data
+
+On 2016-02-28 we created a lot of AEAD test data using a command
+similar to this:
+
+--8<---------------cut here---------------start------------->8---
+for algo in eax ocb; do
+ for csize in 6 7 12 13 14 30; do
+  for len in 0 $(seq 0 200) $(seq 8100 8200) $(seq 16350 16400) \
+               $(seq 20000 20100); do
+   awk </dev/null -v i=$len 'BEGIN{while(i){i--;printf"~"}}' \
+     | gpg --no-options -v --rfc4880bis --batch --passphrase "abc" \
+           --s2k-count 1025 --s2k-digest-algo sha256 -z0 \
+           --force-aead --aead-algo $algo --cipher aes -a \
+           --chunk-size $csize -c >symenc-aead-eax-c$csize-$len.asc
+  done
+ done
+done
+--8<---------------cut here---------------end--------------->8---

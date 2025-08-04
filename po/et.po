@@ -2802,6 +2802,9 @@ msgstr "|FP|kirjuta olekuinfo sellesse failipidemesse"
 msgid "|ALGO|reject signatures made with ALGO"
 msgstr ""
 
+msgid "|NAME|print the notation NAME to stdout"
+msgstr ""
+
 msgid "Usage: gpgv [options] [files] (-h for help)"
 msgstr "Kasuta: gpgv [võtmed] [failid] (-h näitab abiinfot)"
 

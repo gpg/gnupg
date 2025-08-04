@@ -34,7 +34,7 @@ gpg_error_t ks_action_put (ctrl_t ctrl, uri_item_t keyservers,
 			   void *data, size_t datalen,
 			   void *info, size_t infolen);
 gpg_error_t ks_action_del (ctrl_t ctrl, uri_item_t keyservers,
-                           strlist_t patterns);
+                           strlist_t fprlist);
 gpg_error_t ks_action_query (ctrl_t ctrl, const char *ldapserver,
                              unsigned int ks_get_flags,
                              const char *filter, char **attr,

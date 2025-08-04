@@ -609,7 +609,7 @@ agent_card_pkdecrypt (ctrl_t ctrl,
                       void *getpin_cb_arg,
                       const char *desc_text,
                       const unsigned char *indata, size_t indatalen,
-                      char **r_buf, size_t *r_buflen, int *r_padding)
+                      unsigned char **r_buf, size_t *r_buflen, int *r_padding)
 {
   int rc;
   char line[ASSUAN_LINELENGTH];

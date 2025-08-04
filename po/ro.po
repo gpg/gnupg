@@ -2874,6 +2874,9 @@ msgstr "|FD|scrie informaţii de stare în acest FD"
 msgid "|ALGO|reject signatures made with ALGO"
 msgstr ""
 
+msgid "|NAME|print the notation NAME to stdout"
+msgstr ""
+
 msgid "Usage: gpgv [options] [files] (-h for help)"
 msgstr "Folosire: gpgv [opţiuni] [fişiere] (-h pentru ajutor)"
 

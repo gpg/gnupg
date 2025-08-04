@@ -58,6 +58,7 @@ enum cmd_and_opt_values {
   oQuiet	  = 'q',
   oVerbose	  = 'v',
   oOutput	  = 'o',
+  oPrintNotation  = 'N',
   oBatch	  = 500,
   oKeyring,
   oIgnoreTimeConflict,
@@ -91,6 +92,8 @@ static gpgrt_opt_t opts[] = {
   ARGPARSE_s_s (oWeakDigest, "weak-digest",
                 N_("|ALGO|reject signatures made with ALGO")),
   ARGPARSE_s_n (oEnableSpecialFilenames, "enable-special-filenames", "@"),
+  ARGPARSE_s_s (oPrintNotation, "print-notation",
+                N_("|NAME|print the notation NAME to stdout")),
   ARGPARSE_s_s (oDebug, "debug", "@"),
   ARGPARSE_s_s (oAssertPubkeyAlgo,"assert-pubkey-algo", "@"),
 
@@ -265,6 +268,10 @@ main( int argc, char **argv )
                                                     pargs.r.ret_str, NULL);
               xfree (tmp);
             }
+          break;
+
+        case oPrintNotation:
+          append_to_strlist (&opt.print_notations, pargs.r.ret_str);
           break;
 
         default : pargs.err = ARGPARSE_PRINT_ERROR; break;

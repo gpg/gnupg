@@ -2897,6 +2897,9 @@ msgstr "|FD|escriu informació d'estat en aquest FD"
 msgid "|ALGO|reject signatures made with ALGO"
 msgstr ""
 
+msgid "|NAME|print the notation NAME to stdout"
+msgstr ""
+
 msgid "Usage: gpgv [options] [files] (-h for help)"
 msgstr "Forma d'ús: gpgv [opcions] [fitxers] (-h per a veure l'ajuda)"
 

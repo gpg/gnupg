@@ -394,7 +394,7 @@ divert_pkdecrypt (ctrl_t ctrl,
   int depth;
   const unsigned char *ciphertext;
   size_t ciphertextlen;
-  char *plaintext;
+  unsigned char *plaintext;
   size_t plaintextlen;
 
   bin2hex (grip, 20, hexgrip);
@@ -504,7 +504,7 @@ agent_card_ecc_kem (ctrl_t ctrl, const unsigned char *ecc_ct,
                     size_t ecc_point_len, unsigned char *ecc_ecdh)
 {
   gpg_error_t err = 0;
-  char *ecdh = NULL;
+  unsigned char *ecdh = NULL;
   size_t len;
   int rc;
   char hexgrip[KEYGRIP_LEN*2+1];
@@ -517,7 +517,8 @@ agent_card_ecc_kem (ctrl_t ctrl, const unsigned char *ecc_ct,
 
   if (len == ecc_point_len)
     memcpy (ecc_ecdh, ecdh, len);
-  else if ((len - 1) * 2 == ecc_point_len - 1 && ecdh[0] == 0x02)
+  else if (len && (len - 1) * 2 == ecc_point_len - 1
+           && (ecdh[0] & ~1) == 0x02)
     {
       /* It's x-coordinate-only (compressed) point representation.  */
       memcpy (ecc_ecdh, ecdh, len);

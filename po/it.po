@@ -2704,6 +2704,9 @@ msgstr "|FD|scrivi le informazioni di stato sul FD"
 msgid "|ALGO|reject signatures made with ALGO"
 msgstr "|ALGO|rifiuta le firme fatte con ALGO"
 
+msgid "|NAME|print the notation NAME to stdout"
+msgstr ""
+
 msgid "Usage: gpgv [options] [files] (-h for help)"
 msgstr "Uso: gpgv [opzioni] [file] (-h per l'aiuto)"
 

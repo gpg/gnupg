@@ -2620,6 +2620,9 @@ msgstr "|FD|把状态信息写入文件描述符 FD"
 msgid "|ALGO|reject signatures made with ALGO"
 msgstr "|ALGO|拒绝由 ALGO 生成的签名"
 
+msgid "|NAME|print the notation NAME to stdout"
+msgstr ""
+
 msgid "Usage: gpgv [options] [files] (-h for help)"
 msgstr "用法：gpgv [选项] [文件] (-h 获取帮助)"
 

@@ -2692,6 +2692,9 @@ msgstr "|FD|zapsat informace o stavu do tohoto FD"
 msgid "|ALGO|reject signatures made with ALGO"
 msgstr "|ALGORITMUS|zamítnout podpisy založené na ALGORITMU"
 
+msgid "|NAME|print the notation NAME to stdout"
+msgstr ""
+
 msgid "Usage: gpgv [options] [files] (-h for help)"
 msgstr "Použití: gpg [volby] [soubory] (-h pro pomoc)"
 

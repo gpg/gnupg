@@ -751,6 +751,77 @@ gnupg_status_compliance_flag (enum gnupg_compliance_mode compliance)
 }
 
 
+
+/* This function returns the value for the "manu" LibrePGP/rfc4880bis
+ * notation.  See doc/DETAILS for a description.  This value is also
+ * used for the manuNotation in X.509/CMS.  */
+const char *
+gnupg_manu_notation_value (enum gnupg_compliance_mode compliance)
+{
+  static char buffer[48];  /* Empty string indicates not yet initialized */
+  static char buffer2[40];
+
+  if (!*buffer)
+    {
+      char *buf;
+      const char *s;
+      int n;
+      const char *fields[4];
+      const char *vers1, *vers2;
+      int vers1len, vers2len;
+      int arch_id, os_id;
+
+      arch_id = 0;
+      buf = gcry_get_config (0, "cpu-arch");
+      if (buf && (n=split_fields_colon (buf, fields, DIM (fields))) >= 2)
+        {
+          if (!strcmp (fields[1], "x86") && n > 2)
+            {
+              if (!strcmp (fields[2], "amd64"))
+                arch_id = 2;
+              else if (!strcmp (fields[2], "i386"))
+                arch_id = 1;
+            }
+          else if (!strcmp (fields[1], "arm"))
+            arch_id = 3;
+        }
+      gcry_free (buf);
+#ifdef HAVE_W32_SYSTEM
+      os_id = 1;
+#elif defined(__linux__)
+      os_id = 2;
+#elif defined (__unix__) || defined(__APPLE__)
+      os_id = 3;
+#else
+      os_id = 0;
+#endif
+      vers1 = PACKAGE_VERSION;
+      for (s=vers1, n=0; *s; s++)
+        if (*s=='.')
+          if (++n == 2)
+            break;
+      vers1len = s-vers1;
+
+      vers2 = gcry_check_version (NULL);
+      for (s=vers2, n=0; *s; s++)
+        if (*s=='.')
+          if (++n == 2)
+            break;
+      vers2len = s-vers2;
+
+      snprintf (buffer2, sizeof buffer2, "2,%.*s+%.*s,%d,%d",
+                vers1len, vers1, vers2len, vers2, arch_id, os_id);
+      snprintf (buffer, sizeof buffer, "%s,%d",
+                buffer2, get_assumed_de_vs_compliance ()? 2023 : 23);
+    }
+
+  if (compliance == CO_DE_VS)
+    return buffer;
+  else
+    return buffer2;
+}
+
+
 /* Parse the value of --compliance.  Returns the value corresponding
  * to the given STRING according to OPTIONS of size LENGTH, or -1
  * indicating that the lookup was unsuccessful, or the list of options

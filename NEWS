@@ -1,6 +1,26 @@
-Noteworthy changes in version 2.5.10 (unreleased)
+Noteworthy changes in version 2.5.11 (unreleased)
 -------------------------------------------------
 
+  Release-info: https://dev.gnupg.org/T7743
+
+
+Noteworthy changes in version 2.5.10 (2025-07-25)
+-------------------------------------------------
+
+  * gpg: Add a notation with version information to signatures.  See
+    doc/DETAILS for, well, details.  [rG11d3a83b04]
+
+  * gpgv: New option --print-notation.  [rGe3cc410003]
+
+  * gpgsm: Fix caching of the trustlist's flags.  [T7738]
+
+  * agent: Fix for smartcard decryption returning x-coordinate only.
+    [T7709]
+
+  * agent: Another fix for a regression with unknown curves and ssh.
+    See also 2.5.4.  [rG55db12472f]
+
+  * dirmngr: Implement command KS_DEL for ldap servers.  [T5447]
 
   Release-info: https://dev.gnupg.org/T7719
 

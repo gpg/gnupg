@@ -2771,6 +2771,9 @@ msgstr "|FD|statusinformatie naar deze bestandsindicator (FD) schrijven"
 msgid "|ALGO|reject signatures made with ALGO"
 msgstr "|ALGO|handtekeningen gemaakt met ALGO verwerpen"
 
+msgid "|NAME|print the notation NAME to stdout"
+msgstr ""
+
 msgid "Usage: gpgv [options] [files] (-h for help)"
 msgstr "Gebruik: gpgv [opties] [bestanden] (-h voor hulp)"
 

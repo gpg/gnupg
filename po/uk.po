@@ -2771,6 +2771,9 @@ msgstr "|FD|записувати до дескриптора файла дані
 msgid "|ALGO|reject signatures made with ALGO"
 msgstr "|ALGO|відкидати підписи, створені за допомогою алгоритму ALGO"
 
+msgid "|NAME|print the notation NAME to stdout"
+msgstr ""
+
 msgid "Usage: gpgv [options] [files] (-h for help)"
 msgstr "Використання: gpgv [параметри] [файли] (-h — довідка)"
 

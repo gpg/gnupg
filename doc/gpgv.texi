@@ -122,6 +122,11 @@ refer to the file descriptor n and not to a file with that name.
 @opindex assert-pubkey-algo
 This option works in the same way as described for @command{gpg}.
 
+@item --print-notation @var{name}
+@itemx -N @var{name}
+If the signature verifies print the notation @var{name} to stdout if
+it exists.
+
 @end table
 
 @mansect return value
