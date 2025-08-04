@@ -527,7 +527,8 @@ gpgtar_list (const char *filename, int decrypt)
 #endif
       err = gpgrt_process_spawn (opt.gpg_program, argv,
                                  ((filename ? 0 : GPGRT_PROCESS_STDIN_KEEP)
-                                  | GPGRT_PROCESS_STDOUT_PIPE), act, &proc);
+                                  | GPGRT_PROCESS_STDOUT_PIPE
+                                  | GPGRT_PROCESS_STDERR_KEEP), act, &proc);
       gpgrt_spawn_actions_release (act);
       xfree (argv);
       if (err)
@@ -559,6 +560,8 @@ gpgtar_list (const char *filename, int decrypt)
   for (;;)
     {
       err = read_header (stream, tarinfo, &header, &extheader);
+      if (!err && !header)
+        break;  /* End of archive.  */
       if (err || header == NULL)
         goto leave;
 
@@ -585,8 +588,9 @@ gpgtar_list (const char *filename, int decrypt)
           int exitcode;
 
           gpgrt_process_ctl (proc, GPGRT_PROCESS_GET_EXIT_ID, &exitcode);
-          log_error ("running %s failed (exitcode=%d): %s",
-                     opt.gpg_program, exitcode, gpg_strerror (err));
+          if (exitcode)
+            log_error ("running %s failed (exitcode=%d): %s",
+                       opt.gpg_program, exitcode, gpg_strerror (err));
         }
       gpgrt_process_release (proc);
       proc = NULL;

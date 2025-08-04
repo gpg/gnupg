@@ -99,6 +99,8 @@ static struct parse_options keyserver_opts[]=
      N_("automatically retrieve keys when verifying signatures")},
     {"honor-keyserver-url",KEYSERVER_HONOR_KEYSERVER_URL,NULL,
      N_("honor the preferred keyserver URL set on the key")},
+    {"update-before-send", KEYSERVER_UPDATE_BEFORE_SEND,NULL,
+     N_("update a key before sending it")},
     {NULL,0,NULL,NULL}
   };
 
@@ -107,7 +109,8 @@ static gpg_error_t keyserver_get (ctrl_t ctrl,
                                   struct keyserver_spec *override_keyserver,
                                   unsigned int flags,
                                   unsigned char **r_fpr, size_t *r_fprlen);
-static gpg_error_t keyserver_put (ctrl_t ctrl, strlist_t keyspecs);
+static gpg_error_t keyserver_put (ctrl_t ctrl, strlist_t keyspecs,
+                                  int assume_new_key);
 
 
 /* Reasonable guess.  The commonly used test key simon.josefsson.org
@@ -790,8 +793,11 @@ search_line_handler (void *opaque, int special, char *line)
 
 
 
-int
-keyserver_export (ctrl_t ctrl, strlist_t users)
+/* Send all keys specified by USERS to the configured keyserver.  If
+ * ASSUME_NEW_KEY is true the KEYSERVER_UPDATE_BEFORE_SEND option will
+ * be ignored. */
+gpg_error_t
+keyserver_export (ctrl_t ctrl, strlist_t users, int assume_new_key)
 {
   gpg_error_t err;
   strlist_t sl=NULL;
@@ -815,7 +821,7 @@ keyserver_export (ctrl_t ctrl, strlist_t users)
 
   if(sl)
     {
-      rc = keyserver_put (ctrl, sl);
+      rc = keyserver_put (ctrl, sl, assume_new_key);
       free_strlist(sl);
     }
 
@@ -898,23 +904,31 @@ keyserver_retrieval_screener (kbnode_t keyblock, void *opaque)
 }
 
 
-int
-keyserver_import (ctrl_t ctrl, strlist_t users)
+/* Given a list of patterns in USERS, try to import those keys from
+ * the configured keyserver.  */
+gpg_error_t
+keyserver_import (ctrl_t ctrl, strlist_t users, unsigned int flags)
 {
-  gpg_error_t err;
+  gpg_error_t tmperr;
+  gpg_error_t err = 0;
   KEYDB_SEARCH_DESC *desc;
   int num=100,count=0;
-  int rc=0;
 
   /* Build a list of key ids */
-  desc=xmalloc(sizeof(KEYDB_SEARCH_DESC)*num);
+  desc = xmalloc (sizeof(KEYDB_SEARCH_DESC)*num);
 
   for(;users;users=users->next)
     {
-      err = classify_user_id (users->d, &desc[count], 1);
-      if (err || (desc[count].mode    != KEYDB_SEARCH_MODE_SHORT_KID
-                  && desc[count].mode != KEYDB_SEARCH_MODE_LONG_KID
-                  && desc[count].mode != KEYDB_SEARCH_MODE_FPR))
+      tmperr = classify_user_id (users->d, &desc[count], 1);
+      if (!tmperr && (flags & KEYSERVER_IMPORT_FLAG_ONLYFPR)
+          && desc[count].mode != KEYDB_SEARCH_MODE_FPR)
+        {
+	  log_info (_("\"%s\" not a fingerprint: skipping\n"), users->d);
+          continue;
+        }
+      if (tmperr || (desc[count].mode    != KEYDB_SEARCH_MODE_SHORT_KID
+                     && desc[count].mode != KEYDB_SEARCH_MODE_LONG_KID
+                     && desc[count].mode != KEYDB_SEARCH_MODE_FPR))
 	{
 	  log_error (_("\"%s\" not a key ID: skipping\n"), users->d);
 	  continue;
@@ -928,12 +942,12 @@ keyserver_import (ctrl_t ctrl, strlist_t users)
 	}
     }
 
-  if(count>0)
-    rc = keyserver_get (ctrl, desc, count, NULL, 0, NULL, NULL);
+  if (count > 0)
+    err = keyserver_get (ctrl, desc, count, NULL, flags, NULL, NULL);
 
-  xfree(desc);
+  xfree (desc);
 
-  return rc;
+  return err;
 }
 
 
@@ -1517,7 +1531,11 @@ keyserver_get_chunk (ctrl_t ctrl, KEYDB_SEARCH_DESC *desc, int ndesc,
          keyservers. */
 
       /* For LDAP servers we reset IMPORT_SELF_SIGS_ONLY and
-       * IMPORT_CLEAN unless they have been set explicitly.  */
+       * IMPORT_CLEAN unless they have been set explicitly.  We
+       * forcible clear them if that has been requested and also set
+       * the MERGE_ONLY option so that a --send-key can't be tricked
+       * into importing a key by means of the update-before-send
+       * keyserver option.  */
       options = (opt.keyserver_options.import_options | IMPORT_ONLY_PUBKEYS);
       if (source && (!strncmp (source, "ldap:", 5)
                      || !strncmp (source, "ldaps:", 6)))
@@ -1526,6 +1544,11 @@ keyserver_get_chunk (ctrl_t ctrl, KEYDB_SEARCH_DESC *desc, int ndesc,
             options &= ~IMPORT_SELF_SIGS_ONLY;
           if (!opt.flags.expl_import_clean)
             options &= ~IMPORT_CLEAN;
+        }
+      if ((flags & KEYSERVER_IMPORT_FLAG_UPDSEND))
+        {
+          options &= ~(IMPORT_SELF_SIGS_ONLY | IMPORT_CLEAN);
+          options |= IMPORT_MERGE_ONLY;
         }
 
       screenerarg.desc = desc;
@@ -1575,7 +1598,7 @@ keyserver_get (ctrl_t ctrl, KEYDB_SEARCH_DESC *desc, int ndesc,
       ndesc -= ndesc_used;
     }
 
-  if (any_good)
+  if (any_good && !(flags & KEYSERVER_IMPORT_FLAG_SILENT))
     import_print_stats (stats_handle);
 
   import_release_stats_handle (stats_handle);
@@ -1583,10 +1606,11 @@ keyserver_get (ctrl_t ctrl, KEYDB_SEARCH_DESC *desc, int ndesc,
 }
 
 
-/* Send all keys specified by KEYSPECS to the configured keyserver.  */
+/* Send all keys specified by KEYSPECS to the configured keyserver.
+ * If ASSUME_NEW_KEY is true the KEYSERVER_UPDATE_BEFORE_SEND option
+ * will be ignored. */
 static gpg_error_t
-keyserver_put (ctrl_t ctrl, strlist_t keyspecs)
-
+keyserver_put (ctrl_t ctrl, strlist_t keyspecs, int assume_new_key)
 {
   gpg_error_t err;
   strlist_t kspec;
@@ -1595,12 +1619,36 @@ keyserver_put (ctrl_t ctrl, strlist_t keyspecs)
   if (!keyspecs)
     return 0;  /* Return success if the list is empty.  */
 
+  /* Get the name of the used keyservers.  */
   if (gpg_dirmngr_ks_list (ctrl, &ksurl))
     {
       log_error (_("no keyserver known\n"));
       return gpg_error (GPG_ERR_NO_KEYSERVER);
     }
 
+  /* If the option is active, we first try to import the keys given by
+   * fingerprint from the keyserver.  For example, if some PKI server
+   * has signed a key and the user has not yet imported that updated
+   * key, an upload would overwrite that key signature.  This is only
+   * relevant for LDAP servers but not for the legacy HKP servers.  */
+  if ((opt.keyserver_options.options & KEYSERVER_UPDATE_BEFORE_SEND)
+      && !assume_new_key
+      && ksurl && (!strncmp (ksurl, "ldap:", 5)
+                   || !strncmp (ksurl, "ldaps:", 6)))
+    {
+      err = keyserver_import (ctrl, keyspecs, (KEYSERVER_IMPORT_FLAG_UPDSEND
+                                               | KEYSERVER_IMPORT_FLAG_ONLYFPR
+                                               | KEYSERVER_IMPORT_FLAG_SILENT));
+      if (err)
+        {
+          if (opt.verbose && gpg_err_code (err) != GPG_ERR_NO_DATA)
+            log_info (_("keyserver receive failed: %s\n"),
+                      gpg_strerror (err));
+          err = 0;
+        }
+    }
+
+  /* Send key after key to the keyserver.  */
   for (kspec = keyspecs; kspec; kspec = kspec->next)
     {
       void *data;

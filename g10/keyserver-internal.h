@@ -25,8 +25,11 @@
 #include "../common/types.h"
 
 /* Flags for the keyserver import functions.  */
-#define KEYSERVER_IMPORT_FLAG_QUICK 1
-#define KEYSERVER_IMPORT_FLAG_LDAP  2
+#define KEYSERVER_IMPORT_FLAG_QUICK    1  /* Short time out.  */
+#define KEYSERVER_IMPORT_FLAG_LDAP     2  /* Require LDAP server.  */
+#define KEYSERVER_IMPORT_FLAG_SILENT   4  /* Do not print stats.  */
+#define KEYSERVER_IMPORT_FLAG_ONLYFPR  8  /* Allow only fingerprint specs.  */
+#define KEYSERVER_IMPORT_FLAG_UPDSEND 16  /* In updating before send.       */
 
 int parse_keyserver_options(char *options);
 void free_keyserver_spec(struct keyserver_spec *keyserver);
@@ -35,8 +38,8 @@ struct keyserver_spec *parse_keyserver_uri (const char *string,
                                             int require_scheme);
 struct keyserver_spec *parse_preferred_keyserver(PKT_signature *sig);
 int keyserver_any_configured (ctrl_t ctrl);
-int keyserver_export (ctrl_t ctrl, strlist_t users);
-int keyserver_import (ctrl_t ctrl, strlist_t users);
+gpg_error_t keyserver_export (ctrl_t ctrl, strlist_t users, int assume_new_key);
+gpg_error_t keyserver_import (ctrl_t ctrl, strlist_t users, unsigned int flags);
 int keyserver_import_fpr (ctrl_t ctrl, const byte *fprint,size_t fprint_len,
                           struct keyserver_spec *keyserver,
                           unsigned int flags);

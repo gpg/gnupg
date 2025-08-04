@@ -1,5 +1,18 @@
-Noteworthy changes in version 2.5.11 (unreleased)
+Noteworthy changes in version 2.5.12 (unreleased)
 -------------------------------------------------
+
+  * gpgtar: Fix regression in end-of-archive detection.  [T7757]
+
+  Release-info: https://dev.gnupg.org/T7756
+
+
+Noteworthy changes in version 2.5.11 (2025-07-30)
+-------------------------------------------------
+
+  * gpg: Fix a segv in key signing with notations introduced in
+    2.5.10.  [T7754]
+
+  * agent: Fix for smartcard decryption with Brainpool keys.  [T7709]
 
   Release-info: https://dev.gnupg.org/T7743
 
