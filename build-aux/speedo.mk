@@ -384,9 +384,9 @@ ntbtls_ver  := $(shell awk '$$1=="ntbtls_ver" {print $$2}' swdb.lst)
 ntbtls_sha1 := $(shell awk '$$1=="ntbtls_sha1" {print $$2}' swdb.lst)
 ntbtls_sha2 := $(shell awk '$$1=="ntbtls_sha2" {print $$2}' swdb.lst)
 
-gpgme_ver  := $(shell awk '$$1=="gpgme_ver" {print $$2}' swdb.lst)
-gpgme_sha1 := $(shell awk '$$1=="gpgme_sha1" {print $$2}' swdb.lst)
-gpgme_sha2 := $(shell awk '$$1=="gpgme_sha2" {print $$2}' swdb.lst)
+gpgme_ver  := $(shell awk '$$1=="gpgme1_ver" {print $$2}' swdb.lst)
+gpgme_sha1 := $(shell awk '$$1=="gpgme1_sha1" {print $$2}' swdb.lst)
+gpgme_sha2 := $(shell awk '$$1=="gpgme1_sha2" {print $$2}' swdb.lst)
 
 pinentry_ver  := $(shell awk '$$1=="pinentry_ver" {print $$2}' swdb.lst)
 pinentry_sha1 := $(shell awk '$$1=="pinentry_sha1" {print $$2}' swdb.lst)

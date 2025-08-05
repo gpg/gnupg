@@ -1,4 +1,4 @@
-Noteworthy changes in version 2.2.48 (unreleased)
+Noteworthy changes in version 2.2.48 (2025-08-07)
 -------------------------------------------------
 
   * scd:p15: Accept P15 cards with a zero-length label.  [rG84229829b5]
@@ -13,6 +13,11 @@ Noteworthy changes in version 2.2.48 (unreleased)
 
   * dirmngr: Implement command KS_DEL for LDAP.  [T5447]
 
+  * dirmgr: Support LDAP servers using a schema like the Windows LDS
+    servers.  [T7742]
+
+  Release-info: https://dev.gnupg.org/T7766
+
 
 Noteworthy changes in version 2.2.47 (2025-04-09)
 -------------------------------------------------
@@ -22,6 +27,8 @@ Noteworthy changes in version 2.2.47 (2025-04-09)
 
   * scd: Fix posssible lockup on Windows due to lost select results.
     [T2982]
+
+  Release-info: https://dev.gnupg.org/T7767
 
 
 Noteworthy changes in version 2.2.46 (2025-01-07)
