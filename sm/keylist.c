@@ -195,6 +195,18 @@ static struct
   { "1.3.6.1.4.1.41482.3.7", "yubikey-serial-number", OID_FLAG_HEX },
   { "1.3.6.1.4.1.41482.3.8", "yubikey-pin-touch-policy", OID_FLAG_HEX },
   { "1.3.6.1.4.1.41482.3.9", "yubikey-formfactor", OID_FLAG_HEX },
+  { "1.3.6.1.4.1.41482.5.1", "yk-opgp-cardholder-name", OID_FLAG_UTF8 },
+  { "1.3.6.1.4.1.41482.5.2", "yk-opgp-attst-source", OID_FLAG_HEX },
+  { "1.3.6.1.4.1.41482.5.3", "yk-opgp-opgp-version-number", OID_FLAG_HEX },
+  { "1.3.6.1.4.1.41482.5.4", "yk-opgp-attst-fpr", OID_FLAG_HEX },
+  { "1.3.6.1.4.1.41482.5.5", "yk-opgp-attst-date", OID_FLAG_HEX },
+  { "1.3.6.1.4.1.41482.5.6", "yk-opgp-attst-sigcount", OID_FLAG_HEX },
+  { "1.3.6.1.4.1.41482.5.7", "yk-opgp-serial-number", OID_FLAG_HEX },
+  { "1.3.6.1.4.1.41482.5.8", "yk-opgp-uif", OID_FLAG_HEX },
+  { "1.3.6.1.4.1.41482.5.9", "yk-opgp-form-factor", OID_FLAG_HEX },
+  { "1.3.6.1.4.1.41482.5.10","yk-opgp-fips-certified", OID_FLAG_HEX },
+  { "1.3.6.1.4.1.41482.5.11","yk-opgp-cspn-certified", OID_FLAG_HEX },
+
 
   /* Microsoft extensions.  */
   { "1.3.6.1.4.1.311.3.10.3.12","ms-old-documentSigning", OID_FLAG_KP },
