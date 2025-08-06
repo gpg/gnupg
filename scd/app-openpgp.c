@@ -40,6 +40,19 @@
    that error counter is set to 0.  After setting the RC the error
    counter will be initialized to 3.
 
+   OPGP Attestation on Yubikeys:
+   <https://developers.yubico.com/PGP/Attestation.html:
+
+   Key-ID: 81
+   CRT:    B6 03 84 01 81
+
+   DOs for Attestation Key metadata:
+
+   0xDA   Algorithm Attributes
+   0xDB   Key Fingerprint
+   0xDC   CA Fingerprint
+   0xDD   Key Generation Date
+   0xD9   User Interaction Flag (UIF)
  */
 
 #include <config.h>
@@ -119,8 +132,16 @@ static struct {
   { 0x00D6, 0, 0x6E, 1, 0, 0, 0, 0, "UIF for Signature"},
   { 0x00D7, 0, 0x6E, 1, 0, 0, 0, 0, "UIF for Decryption"},
   { 0x00D8, 0, 0x6E, 1, 0, 0, 0, 0, "UIF for Authentication"},
+  { 0x00D9, 0, 0x6E, 1, 0, 0, 0, 0, "UIF for Attestation"},
+  { 0x00DA, 0, 0x6E, 1, 0, 0, 0, 0, "Algorithm Attributes Attestation"},
+  { 0x00DB, 0, 0x6E, 1, 0, 0, 0, 0, "Key Fingerprint Attestation"},
+  { 0x00DC, 0, 0x6E, 1, 0, 0, 0, 0, "CA Fingerprint Attestation"},
+  { 0x00DA, 0, 0x6E, 1, 0, 0, 0, 0, "Key Generation Date Attestation"},
+  { 0x00DE, 1,    0, 1, 0, 0, 0, 0, "Key information" },
   { 0x00F9, 1,    0, 1, 0, 0, 0, 0, "KDF data object"},
   { 0x00FA, 1,    0, 1, 0, 0, 0, 2, "Algorithm Information"},
+  { 0x00FB, 1,    0, 1, 0, 0, 0, 2, "Secure Messaging Certificate"},
+  { 0x00FC, 1,    0, 1, 0, 0, 0, 2, "Attestation Certificate"},
   { 0 }
 };
 
@@ -3077,6 +3098,7 @@ do_setattr (app_t app, ctrl_t ctrl, const char *name,
     { "UIF-2",        0x00D7, 0,      3, 5, 1 },
     { "UIF-3",        0x00D8, 0,      3, 5, 1 },
     { "KDF",          0x00F9, 0,      0, 4, 1 },
+    { "GEN-ATTST",    0,      0,      3,21, 1 },  /* Yubikey specific */
     { NULL, 0 }
   };
   int exmode;
@@ -3125,7 +3147,7 @@ do_setattr (app_t app, ctrl_t ctrl, const char *name,
   else
     exmode = 0;
 
-  if (table[idx].special == 4)
+  if (table[idx].special == 4)  /* KDF */
     {
       if (APP_CARD(app)->cardtype == CARDTYPE_YUBIKEY
           || APP_CARD(app)->cardtype == CARDTYPE_GNUK)
@@ -3226,6 +3248,31 @@ do_setattr (app_t app, ctrl_t ctrl, const char *name,
           /* We better reset the curDO.  */
           iso7816_select_data (app_get_slot (app), 0, table[idx].tag);
         }
+    }
+  else if (table[idx].special == 21)
+    {
+      /* Generate attestation.  This will write the attestation to the
+       * respective cert slot and thus delete an existsing certificate
+       * stored there.  The expected value is "OPENPGP.<n>". The APDU
+       * is: CLA=0x80, INS=0xFB, P1=1 (SIG) or 2 (DEC) or 3 (AUT),
+       *     P2=0x00, Lc=0x00, Data=None, Le=0x00
+       */
+      unsigned char apdu[5];
+
+      apdu[0] = 0x80;
+      apdu[1] = 0xfb;
+      if (!ascii_strncasecmp (value, "OPENPGP.1", valuelen))
+        apdu[2] = 0x01;
+      else if (!ascii_strncasecmp (value, "OPENPGP.2", valuelen))
+        apdu[2] = 0x02;
+      else if (!ascii_strncasecmp (value, "OPENPGP.3", valuelen))
+        apdu[2] = 0x03;
+      else
+        return gpg_error (GPG_ERR_INV_ID);
+      apdu[3] = 0;
+
+      rc = iso7816_apdu_direct (app_get_slot (app), apdu, 4, 0,
+                                NULL, NULL, NULL);
     }
   else  /* Standard.  */
     rc = iso7816_put_data (app_get_slot (app),
