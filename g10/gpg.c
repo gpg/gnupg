@@ -5016,7 +5016,7 @@ main (int argc, char **argv)
           const char *x_fpr, *x_expire;
 
           if (argc < 2)
-            wrong_args ("--quick-set-exipre FINGERPRINT EXPIRE [SUBKEY-FPRS]");
+            wrong_args ("--quick-set-expire FINGERPRINT EXPIRE [SUBKEY-FPRS]");
           x_fpr = *argv++; argc--;
           x_expire = *argv++; argc--;
           keyedit_quick_set_expire (ctrl, x_fpr, x_expire, argv);

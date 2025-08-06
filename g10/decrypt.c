@@ -107,7 +107,7 @@ decrypt_message (ctrl_t ctrl, const char *filename, strlist_t remusr)
     opt.outfile = NULL;
 
   if (ctrl->modify_recipients && (err || !dek) )
-    log_error (_("modifiying the recipients is not possible: %s\n"),
+    log_error (_("modifying the recipients is not possible: %s\n"),
                err? gpg_strerror (err) : _("decryption failed"));
   else if (ctrl->modify_recipients)
     {
