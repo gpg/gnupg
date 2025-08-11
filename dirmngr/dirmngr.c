@@ -332,6 +332,7 @@ static struct debug_flags_s debug_flags [] =
     { DBG_LOOKUP_VALUE , "lookup"  },
     { DBG_EXTPROG_VALUE, "extprog" },
     { DBG_KEEPTMP_VALUE, "keeptmp" },
+    { DBG_LDAP_VALUE,    "ldap"    },
     { 77, NULL } /* 77 := Do not exit on "help" or "?".  */
   };
 

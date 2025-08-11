@@ -179,6 +179,7 @@ struct
 #define DBG_LOOKUP_VALUE  8192  /* debug lookup details */
 #define DBG_EXTPROG_VALUE 16384 /* debug external program calls */
 #define DBG_KEEPTMP_VALUE 32768 /* keep some temporary files    */
+#define DBG_LDAP_VALUE    65536 /* debug ldap connection problems.  */
 
 #define DBG_X509    (opt.debug & DBG_X509_VALUE)
 #define DBG_CRYPTO  (opt.debug & DBG_CRYPTO_VALUE)
@@ -191,6 +192,7 @@ struct
 #define DBG_LOOKUP  (opt.debug & DBG_LOOKUP_VALUE)
 #define DBG_EXTPROG (opt.debug & DBG_EXTPROG_VALUE)
 #define DBG_KEEPTMP (opt.debug & DBG_KEEPTMP_VALUE)
+#define DBG_LDAP    (opt.debug & DBG_LDAP_VALUE)
 
 /* Compatibility flags */
 
