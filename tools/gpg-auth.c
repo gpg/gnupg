@@ -43,8 +43,12 @@ struct
   unsigned int debug;
   int quiet;
   int with_colons;
-  const char *agent_program;
-  int autostart;
+  const char *agent_program; /* Use a different gpg-agent.  */
+  int autostart;             /* defaults to true.  */
+
+  /* Run scd using "scdaemon --server".  Note that the default is to
+   * start or use a gpg-agent and ask it for the scdaemon's socket and
+   * then use this socket directly.  */
   int use_scd_directly;
 
   /* Options passed to the gpg-agent: */
@@ -70,8 +74,6 @@ enum opt_values
 
     oDebug      = 500,
 
-    oGpgProgram,
-    oGpgsmProgram,
     oAgentProgram,
     oStatusFD,
     oWithColons,
@@ -138,7 +140,7 @@ my_strusage( int level )
       p = ("Syntax: gpg-auth"
            " [options] \n\n"
            "Tool to authenticate a user using a smartcard.\n"
-           "Use command \"help\" to list all commands.");
+           "Use option \"--help\" to list all options.");
       break;
 
     default: p = NULL; break;
@@ -185,34 +187,39 @@ parse_arguments (gpgrt_argparse_t *pargs, gpgrt_opt_t *popts)
 
 
 
+/* An item of a linked list to keep information about an ssh public key.  */
 struct ga_key_list {
   struct ga_key_list *next;
-  char keygrip[41];  /* Keygrip to identify a key.  */
+  char keygrip[2*KEYGRIP_LEN+1];  /* Keygrip to identify a key.  */
   size_t pubkey_len;
   char *pubkey;      /* Public key in SSH format.   */
   char *comment;
 };
+typedef struct ga_key_list *ga_key_list_t;
 
 /* Local prototypes.  */
 static gpg_error_t scd_passwd_reset (assuan_context_t ctx, const char *keygrip);
 static gpg_error_t ga_scd_connect (assuan_context_t *r_scd_ctx, int use_agent);
 static gpg_error_t ga_scd_get_auth_keys (assuan_context_t ctx,
-                                         struct ga_key_list **r_key_list);
+                                         ga_key_list_t *r_key_list);
 static gpg_error_t ga_filter_by_authorized_keys (const char *user,
-                                                 struct ga_key_list **r_key_list);
-static void ga_release_auth_keys (struct ga_key_list *key_list);
+                                                 ga_key_list_t *r_key_list);
+static void ga_release_auth_keys (ga_key_list_t key_list);
 static gpg_error_t scd_pkauth (assuan_context_t ctx, const char *keygrip);
-static gpg_error_t authenticate (assuan_context_t ctx, struct ga_key_list *key_list);
-static int getpin (const char *comment, const char *info, char *buf, size_t *r_len);
+static gpg_error_t authenticate (assuan_context_t ctx, ga_key_list_t key_list);
+static int getpin (const char *comment, const char *info, char *buf,
+                   size_t *r_len);
 
-/* gpg-auth main. */
+/*
+ * gpg-auth main.
+ */
 int
 main (int argc, char **argv)
 {
   gpg_error_t err;
   gpgrt_argparse_t pargs;
   assuan_context_t scd_ctx = NULL;
-  struct ga_key_list *key_list = NULL;
+  ga_key_list_t key_list = NULL;
   const char *user;
 
   gnupg_reopen_std ("gpg-auth");
@@ -274,7 +281,7 @@ main (int argc, char **argv)
 }
 
 static gpg_error_t
-authenticate (assuan_context_t ctx, struct ga_key_list *key_list)
+authenticate (assuan_context_t ctx, ga_key_list_t key_list)
 {
   gpg_error_t err;
 
@@ -328,10 +335,10 @@ get_serialno_cb (void *opaque, const char *line)
 }
 
 /* Helper function, which is used by scd_connect.
-
-   Try to retrieve the SCDaemon's socket name from the gpg-agent
-   context CTX.  On success, *SOCKET_NAME is filled with a copy of the
-   socket name.  Return proper error code or zero on success. */
+ *
+ * Try to retrieve the SCDaemon's socket name from the gpg-agent
+ * context CTX.  On success, *SOCKET_NAME is filled with a copy of the
+ * socket name.  Return proper error code or zero on success. */
 static gpg_error_t
 agent_scd_getinfo_socket_name (assuan_context_t ctx, char **socket_name)
 {
@@ -366,18 +373,9 @@ agent_scd_getinfo_socket_name (assuan_context_t ctx, char **socket_name)
 
   return err;
 }
-
-/* Callback parameter for learn card */
-struct learn_parm_s
-{
-  void (*kpinfo_cb)(void*, const char *);
-  void *kpinfo_cb_arg;
-  void (*certinfo_cb)(void*, const char *);
-  void *certinfo_cb_arg;
-  void (*sinfo_cb)(void*, const char *, size_t, const char *);
-  void *sinfo_cb_arg;
-};
 
+
+
 /* Connect to the agent and send the standard options.  */
 static gpg_error_t
 start_agent (assuan_context_t *ctx_p)
@@ -429,8 +427,8 @@ scd_passwd_reset (assuan_context_t ctx, const char *keygrip)
 }
 
 
-/* Connect to scdaemon by pipe or socket.  Execute initial "SEREIALNO"
-   command to enable all connected token under scdaemon control.  */
+/* Connect to scdaemon by pipe or socket.  Execute initial "SERIALNO"
+ * command to enable all connected token under scdaemon control.  */
 static gpg_error_t
 ga_scd_connect (assuan_context_t *r_scd_ctx, int use_scd_directly)
 {
@@ -453,8 +451,7 @@ ga_scd_connect (assuan_context_t *r_scd_ctx, int use_scd_directly)
 
       /* Note that if gpg-agent is there but no scdaemon yet,
        * gpg-agent automatically invokes scdaemon by this query
-       * itself.
-       */
+       * itself.  */
       err = agent_scd_getinfo_socket_name (ctx, &scd_socket_name);
       assuan_release (ctx);
 
@@ -574,9 +571,11 @@ inq_needpin (void *opaque, const char *line)
   return gpg_error (rc);
 }
 
+
+/* Communication object for card_keyinfo_cb.  */
 struct card_keyinfo_parm_s {
   int error;
-  struct ga_key_list *list;
+  ga_key_list_t list;
 };
 
 /* Callback function for scd_keyinfo_list.  */
@@ -587,7 +586,7 @@ card_keyinfo_cb (void *opaque, const char *line)
   struct card_keyinfo_parm_s *parm = opaque;
   const char *keyword = line;
   int keywordlen;
-  struct ga_key_list *keyinfo = NULL;
+  ga_key_list_t keyinfo = NULL;
 
   for (keywordlen=0; *line && !spacep (line); line++, keywordlen++)
     ;
@@ -598,7 +597,7 @@ card_keyinfo_cb (void *opaque, const char *line)
     {
       const char *s;
       int n;
-      struct ga_key_list **l_p = &parm->list;
+      ga_key_list_t *l_p = &parm->list;
 
       /* It's going to append the information at the end.  */
       while ((*l_p))
@@ -611,11 +610,11 @@ card_keyinfo_cb (void *opaque, const char *line)
       for (n=0,s=line; hexdigitp (s); s++, n++)
         ;
 
-      if (n != 40)
+      if (n != 2*KEYGRIP_LEN)
         goto parm_error;
 
-      memcpy (keyinfo->keygrip, line, 40);
-      keyinfo->keygrip[40] = 0;
+      memcpy (keyinfo->keygrip, line, 2*KEYGRIP_LEN);
+      keyinfo->keygrip[2*KEYGRIP_LEN] = 0;
 
       line = s;
 
@@ -661,10 +660,10 @@ card_keyinfo_cb (void *opaque, const char *line)
 
 
 /* Call the scdaemon to retrieve list of available keys on cards.  On
-   success, the allocated structure is stored at R_KEY_LIST.  On
-   error, an error code is returned and NULL is stored at R_KEY_LIST.  */
+ * success, the allocated structure is stored at R_KEY_LIST.  On
+ * error, an error code is returned and NULL is stored at R_KEY_LIST.  */
 static gpg_error_t
-scd_keyinfo_list (assuan_context_t ctx, struct ga_key_list **r_key_list)
+scd_keyinfo_list (assuan_context_t ctx, ga_key_list_t *r_key_list)
 {
   int err;
   struct card_keyinfo_parm_s parm;
@@ -706,8 +705,12 @@ put_second_field_cb (void *opaque, const void *buf, size_t len)
   return 0;
 }
 
+
+/* Get the public ssh key from the scdaemon using the keygrip from
+ * KEY and store the public key into KEY.  On error KEY is not
+ * modified.  */
 static gpg_error_t
-scd_get_pubkey (assuan_context_t ctx, struct ga_key_list *key)
+scd_get_pubkey (assuan_context_t ctx, ga_key_list_t key)
 {
   char line[ASSUAN_LINELENGTH];
   membuf_t data;
@@ -733,12 +736,14 @@ scd_get_pubkey (assuan_context_t ctx, struct ga_key_list *key)
   return err;
 }
 
-
+/* Get a list of all auth keys and return them at R_KEY_LIST.  On
+ * error R_KEY_LIST is not changed.  */
 static gpg_error_t
-ga_scd_get_auth_keys (assuan_context_t ctx, struct ga_key_list **r_key_list)
+ga_scd_get_auth_keys (assuan_context_t ctx, ga_key_list_t *r_key_list)
 {
   gpg_error_t err;
-  struct ga_key_list *kl, *key_list = NULL;
+  ga_key_list_t kl;
+  ga_key_list_t key_list = NULL;
 
   /* Get list of auth keys with their keygrips.  */
   err = scd_keyinfo_list (ctx, &key_list);
@@ -761,16 +766,22 @@ ga_scd_get_auth_keys (assuan_context_t ctx, struct ga_key_list **r_key_list)
   return err;
 }
 
+
+/* An item of a linked list to keep SSH key information.  For example
+ * from the authorized_keys file.  */
 struct ssh_key_list {
   struct ssh_key_list *next;
   char *pubkey; /* Public key in SSH format.   */
   char *comment;
 };
+typedef struct ssh_key_list *ssh_key_list_t;
 
+
+/* Free an ssh_key_list_t.  */
 static void
-release_ssh_key_list (struct ssh_key_list *key_list)
+release_ssh_key_list (ssh_key_list_t key_list)
 {
-  struct ssh_key_list *key;
+  ssh_key_list_t key;
 
   while (key_list)
     {
@@ -782,8 +793,11 @@ release_ssh_key_list (struct ssh_key_list *key_list)
     }
 }
 
+
+/* Read the authorized_keys file for USER and return them at
+ * R_SSH_KEY_LIST.  USER is optional and defaults to "~" */
 static gpg_error_t
-ssh_authorized_keys (const char *user, struct ssh_key_list **r_ssh_key_list)
+ssh_authorized_keys (const char *user, ssh_key_list_t *r_ssh_key_list)
 {
   gpg_error_t err = 0;
   char *fname = NULL;
@@ -793,16 +807,17 @@ ssh_authorized_keys (const char *user, struct ssh_key_list **r_ssh_key_list)
   size_t  maxlen;
   ssize_t len;
   const char *fields[3];
-  struct ssh_key_list *ssh_key_list = NULL;
-  struct ssh_key_list *ssh_key_prev = NULL;
-  struct ssh_key_list *ssh_key = NULL;
+  ssh_key_list_t ssh_key_list = NULL;
+  ssh_key_list_t ssh_key_prev = NULL;
+  ssh_key_list_t ssh_key = NULL;
 
   if (user)
     {
       char tilde_user[256];
 
       snprintf (tilde_user, sizeof tilde_user, "~%s", user);
-      fname = make_absfilename_try (tilde_user, ".ssh", "authorized_keys", NULL);
+      fname = make_absfilename_try (tilde_user,
+                                    ".ssh", "authorized_keys", NULL);
     }
   else
     fname = make_absfilename_try ("~", ".ssh", "authorized_keys", NULL);
@@ -866,14 +881,18 @@ ssh_authorized_keys (const char *user, struct ssh_key_list **r_ssh_key_list)
   return err;
 }
 
+
+/* Get all authorized keys and create a new list which has only those
+ * keys which are also stored at R_KEY_LIST.  The result is a modified
+ * R_KEY_LIST.  */
 static gpg_error_t
-ga_filter_by_authorized_keys (const char *user, struct ga_key_list **r_key_list)
+ga_filter_by_authorized_keys (const char *user, ga_key_list_t *r_key_list)
 {
   gpg_error_t err;
-  struct ga_key_list *cur = *r_key_list;
-  struct ga_key_list *key_list = NULL;
-  struct ga_key_list *prev = NULL;
-  struct ssh_key_list *ssh_key_list = NULL;
+  ga_key_list_t cur = *r_key_list;
+  ga_key_list_t key_list = NULL;
+  ga_key_list_t prev = NULL;
+  ssh_key_list_t ssh_key_list = NULL;
 
   err = ssh_authorized_keys (user, &ssh_key_list);
   if (err)
@@ -884,7 +903,7 @@ ga_filter_by_authorized_keys (const char *user, struct ga_key_list **r_key_list)
 
   while (cur)
     {
-      struct ssh_key_list *skl = ssh_key_list;
+      ssh_key_list_t skl = ssh_key_list;
 
       while (skl)
         if (!strncmp (cur->pubkey, skl->pubkey, cur->pubkey_len))
@@ -906,7 +925,7 @@ ga_filter_by_authorized_keys (const char *user, struct ga_key_list **r_key_list)
         }
       else
         {
-          struct ga_key_list *k = cur;
+          ga_key_list_t k = cur;
 
           cur = cur->next;
           xfree (k->pubkey);
@@ -922,10 +941,12 @@ ga_filter_by_authorized_keys (const char *user, struct ga_key_list **r_key_list)
   return 0;
 }
 
+
+/* Release a list of keys.  */
 static void
-ga_release_auth_keys (struct ga_key_list *key_list)
+ga_release_auth_keys (ga_key_list_t key_list)
 {
-  struct ga_key_list *key;
+  ga_key_list_t key;
 
   while (key_list)
     {
@@ -936,6 +957,8 @@ ga_release_auth_keys (struct ga_key_list *key_list)
     }
 }
 
+
+/* This is called by the inq_needpin callback.  */
 static int
 getpin (const char *comment, const char *info, char *buf, size_t *r_len)
 {
