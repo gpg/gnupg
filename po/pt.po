@@ -67,7 +67,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnupg 2.5.5\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"PO-Revision-Date: 2025-03-08 07:48+0000\n"
+"PO-Revision-Date: 2025-08-20 10:06+0200\n"
 "Last-Translator: Daniel Cerqueira <dan.git@lispclub.com>\n"
 "Language-Team: Portuguese <dan.git@lispclub.com>\n"
 "Language: pt\n"
@@ -579,11 +579,6 @@ msgstr "tentando roubar o socket de executar %s\n"
 #, c-format
 msgid "a gpg-agent is already running - not starting a new one\n"
 msgstr "um gpg-agent já está em execução - não iniciando um novo\n"
-
-#, fuzzy, c-format
-#| msgid "key %s: removed multiple subkey binding\n"
-msgid "socket file removed - retrying binding\n"
-msgstr "chave %s: vinculação de várias subchaves removida\n"
 
 #, c-format
 msgid "socket file removed - retrying binding\n"
