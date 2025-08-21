@@ -2661,11 +2661,10 @@ ask_algo (ctrl_t ctrl, int addmode, int *r_subkey_algo, unsigned int *r_usage,
     tty_printf (_("  (%d) Existing key from card%s\n"), 14, "");
 
   /* Reserve 15 for Dilithium primary + Kyber subkey.  */
-  tty_printf (_("  (%d) ECC and Kyber%s\n"), 16, "");
+  if (!addmode)
+    tty_printf (_("  (%d) ECC and Kyber%s\n"), 16, "");
   if (addmode)
-    {
-      tty_printf (_("  (%d) Kyber (encrypt only)%s\n"), 17, "");
-    }
+    tty_printf (_("  (%d) Kyber (encrypt only)%s\n"), 17, "");
 
   for (;;)
     {
