@@ -2007,3 +2007,25 @@ open_stream_nc (gnupg_fd_t fd, const char *mode)
 
   return es_sysopen_nc (&syshd, mode);
 }
+
+
+/* Debug helper to track down problems with logging under Windows.  */
+void
+output_debug_string (const char *format, ...)
+{
+#ifdef HAVE_W32_SYSTEM
+  char *buf;
+  va_list arg_ptr;
+
+  va_start (arg_ptr, format);
+  buf = gpgrt_vbsprintf (format, arg_ptr);
+  va_end (arg_ptr);
+  if (buf)
+    OutputDebugStringA (buf);
+  else
+    OutputDebugStringA ("vbsprintf failed");
+  gpgrt_free (buf);
+#else
+  (void)format;
+#endif
+}
