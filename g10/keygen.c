@@ -6962,8 +6962,16 @@ generate_subkeypair (ctrl_t ctrl, kbnode_t keyblock, const char *algostr,
         }
       else if (algo == PUBKEY_ALGO_KYBER)
         {
-          nbits = 768;
-          curve = "brainpoolP256r1";
+          const char *kyberalgostr;
+
+          kyberalgostr = ask_kyber_variant ();
+          if (!kyberalgostr)  /* Should not happen.  */
+            kyberalgostr = PQC_STD_KEY_PARAM_SUB;
+
+          nbits = strstr (kyberalgostr, "768_")? 768 : 1024;
+          curve = strchr (kyberalgostr, '_');
+          log_assert (curve && curve[1]);
+          curve++;
         }
       else
         nbits = ask_keysize (algo, 0);
