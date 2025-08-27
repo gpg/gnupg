@@ -46,6 +46,7 @@ struct trustitem_s
     unsigned int cm:1;             /* Use chain model for validation. */
     unsigned int qual:1;           /* Root CA for qualified signatures.  */
     unsigned int de_vs:1;          /* Root CA for de-vs compliant PKI.    */
+    unsigned int noconsent:1;      /* Do not require a conset for "qual". */
   } flags;
   unsigned char fpr[20];  /* The binary fingerprint. */
 };
@@ -325,6 +326,8 @@ read_one_trustfile (const char *fname, int systrust,
             ti->flags.cm = 1;
           else if (n == 4 && !memcmp (p, "qual", 4) && systrust)
             ti->flags.qual = 1;
+          else if (n == 9 && !memcmp (p, "noconsent", 9) && systrust)
+            ti->flags.noconsent = 1;
           else if (n == 5 && !memcmp (p, "de-vs", 5) && systrust)
             ti->flags.de_vs = 1;
           else
@@ -485,7 +488,8 @@ istrusted_internal (ctrl_t ctrl, const char *fpr, int listmode, int *r_disabled,
             if (already_locked)
               ;
             else if (listmode || ti->flags.relax || ti->flags.cm
-                     || ti->flags.qual || ti->flags.de_vs)
+                     || ti->flags.qual || ti->flags.de_vs
+                     || ti->flags.noconsent)
               {
                 unlock_trusttable ();
                 locked = 0;
@@ -502,6 +506,9 @@ istrusted_internal (ctrl_t ctrl, const char *fpr, int listmode, int *r_disabled,
                   err = agent_write_status (ctrl,"TRUSTLISTFLAG", "cm", NULL);
                 if (!err && ti->flags.qual)
                   err = agent_write_status (ctrl,"TRUSTLISTFLAG", "qual",NULL);
+                if (!err && ti->flags.noconsent)
+                  err = agent_write_status (ctrl,"TRUSTLISTFLAG", "noconsent",
+                                            NULL);
                 if (!err && ti->flags.de_vs)
                   err = agent_write_status (ctrl,"TRUSTLISTFLAG", "de-vs",NULL);
               }

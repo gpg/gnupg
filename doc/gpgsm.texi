@@ -910,6 +910,12 @@ operation requested by a web browser.
 @opindex no-common-certs-import
 Suppress the import of common certificates on keybox creation.
 
+
+@item --no-qes-note
+@opindex no-qes-note
+Do not print notices that ``this software is not officially approved
+to create or verify QES signatures''.
+
 @end table
 
 All the long options may also be given in the configuration file after
@@ -979,9 +985,9 @@ like this:
 This is the legacy method to mark root certificates as usable for
 qualified certificates.  Qualified certificates are capable of
 creating legally binding signatures in the same way as handwritten
-signatures.  The modern method to mark such root certificates is to
-use the "qual" flag in the system trustlist.txt; see the gpg-agent man
-page for details.
+signatures (QES).  The modern method to mark such root certificates is
+to use the "qual" flag in the system trustlist.txt; see the gpg-agent
+man page for details.
 
 Comments int his file start with a hash mark and empty lines are
 ignored.  Lines do have a length limit but this is not a serious

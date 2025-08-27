@@ -220,6 +220,7 @@ enum cmd_and_opt_values {
   oAlwaysTrust,
   oNoAutostart,
   oAssertSigner,
+  oNoQESNote,
 
   oNoop
  };
@@ -324,7 +325,7 @@ static gpgrt_opt_t opts[] = {
   ARGPARSE_s_s (oKeyboxdProgram, "keyboxd-program", "@"),
   ARGPARSE_s_s (oDirmngrProgram, "dirmngr-program", "@"),
   ARGPARSE_s_s (oProtectToolProgram, "protect-tool-program", "@"),
-
+  ARGPARSE_s_n (oNoQESNote, "no-qes-note", "@"),
 
   ARGPARSE_header ("Input", N_("Options controlling the input")),
 
@@ -1540,6 +1541,8 @@ main ( int argc, char **argv)
           add_to_strlist (&opt.assert_signer_list, pargs.r.ret_str);
           break;
 
+        case oNoQESNote: opt.no_qes_note = 1; break;
+
         case oNoop: break;
 
         default:
@@ -1640,7 +1643,7 @@ main ( int argc, char **argv)
   assuan_control (ASSUAN_CONTROL_REINIT_SYSCALL_CLAMP, NULL);
 
 
-/*   if (opt.qualsig_approval && !opt.quiet) */
+/*   if (opt.qualsig_approval && !opt.quiet && !opt.no_qes_note) */
 /*     log_info (_("This software has officially been approved to " */
 /*                 "create and verify\n" */
 /*                 "qualified signatures according to German law.\n")); */

@@ -970,6 +970,8 @@ istrusted_status_cb (void *opaque, const char *line)
         parm->flags.chain_model = 1;
       else if (has_leading_keyword (line, "qual"))
         parm->flags.qualified = 1;
+      else if (has_leading_keyword (line, "noconsent"))
+        parm->flags.noconsent = 1;
       else if (has_leading_keyword (line, "de-vs"))
         parm->flags.de_vs = 1;
 

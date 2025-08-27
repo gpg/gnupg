@@ -860,6 +860,9 @@ This flag has an effect only if used in the global list.  This is now
 the preferred way to mark such CA; the old way of having a separate
 file @file{qualified.txt} is still supported.
 
+@item noconsent
+Do not require consent from a user to create a qualified signature.
+
 @item de-vs
 The CA is part of an approved PKI for the German classification level
 VS-NfD.  It is only valid in the global trustlist.  As of now this is

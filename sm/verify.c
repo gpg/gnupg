@@ -703,7 +703,7 @@ gpgsm_verify (ctrl_t ctrl, estream_t in_fp, estream_t data_fp,
             if (*qualbuffer)
               {
                 log_info (_("This is a qualified signature\n"));
-                if (!opt.qualsig_approval)
+                if (!opt.qualsig_approval && !opt.no_qes_note)
                   log_info
                     (_("Note, that this software is not officially approved "
                        "to create or verify such signatures.\n"));

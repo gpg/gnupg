@@ -1630,7 +1630,7 @@ do_validate_chain (ctrl_t ctrl, ksba_cert_t cert, ksba_isotime_t checktime_arg,
   int any_no_policy_match = 0;
   int is_qualified = -1; /* Indicates whether the certificate stems
                             from a qualified root certificate.
-                            -1 = unknown, 0 = no, 1 = yes. */
+                            -1 = unknown, 0 = no, 1 = yes, 2 = yes,noconsent */
   chain_item_t chain = NULL; /* A list of all certificates in the chain.  */
 
 
@@ -1816,7 +1816,10 @@ do_validate_chain (ctrl_t ctrl, ksba_cert_t cert, ksba_isotime_t checktime_arg,
                 {
                   /* We already checked this for this certificate,
                      thus we simply take it from the user data. */
-                  is_qualified = !!*buf;
+                  if (*buf == 2)
+                    is_qualified = 2;
+                  else
+                    is_qualified = !!*buf;
                 }
               else
                 {
@@ -1828,7 +1831,8 @@ do_validate_chain (ctrl_t ctrl, ksba_cert_t cert, ksba_isotime_t checktime_arg,
                   else
                     err = gpgsm_is_in_qualified_list (ctrl, subject_cert, NULL);
                   if (!err)
-                    is_qualified = 1;
+                    is_qualified = (rootca_flags->qualified
+                                    && rootca_flags->noconsent)? 2 : 1;
                   else if ( gpg_err_code (err) == GPG_ERR_NOT_FOUND)
                     is_qualified = 0;
                   else
@@ -1839,7 +1843,10 @@ do_validate_chain (ctrl_t ctrl, ksba_cert_t cert, ksba_isotime_t checktime_arg,
                     {
                       /* Cache the result but don't care too much
                          about an error. */
-                      buf[0] = !!is_qualified;
+                      if (is_qualified == 2)
+                        buf[0] = 2;
+                      else
+                        buf[0] = !!is_qualified;
                       err = ksba_cert_set_user_data (subject_cert,
                                                      "is_qualified", buf, 1);
                       if (err)
@@ -2222,7 +2229,10 @@ do_validate_chain (ctrl_t ctrl, ksba_cert_t cert, ksba_isotime_t checktime_arg,
       chain_item_t ci;
       char buf[1];
 
-      buf[0] = !!is_qualified;
+      if (is_qualified == 2)
+        buf[0] = 2;
+      else
+        buf[0] = !!is_qualified;
 
       for (ci = chain; ci; ci = ci->next)
         {
