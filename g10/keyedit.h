@@ -61,7 +61,8 @@ void keyedit_quick_update_pref (ctrl_t ctrl, const char *username);
 void keyedit_quick_set_ownertrust (ctrl_t ctrl, const char *username,
                                    const char *value);
 gpg_error_t append_adsk_to_key (ctrl_t ctrl, kbnode_t keyblock,
-                                PKT_public_key *adsk, const char *cache_nonce);
+                                PKT_public_key *adsk,
+                                u32 sigtimestamp, const char *cache_nonce);
 void show_basic_key_info (ctrl_t ctrl, kbnode_t keyblock, int print_sec);
 int keyedit_print_one_sig (ctrl_t ctrl, estream_t fp,
                            int rc, kbnode_t keyblock,

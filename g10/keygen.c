@@ -1263,6 +1263,7 @@ append_all_default_adsks (ctrl_t ctrl, kbnode_t keyblock)
   struct para_data_s *para;
   byte adskfpr[MAX_FINGERPRINT_LEN];
   size_t adskfprlen;
+  u32 sigtimestamp = make_timestamp ();
 
   keygen_prepare_new_key_adsks ();
   for (sl = opt.def_new_key_adsks; sl && !err; sl = sl->next)
@@ -1275,7 +1276,10 @@ append_all_default_adsks (ctrl_t ctrl, kbnode_t keyblock)
           fingerprint_from_pk (para->u.adsk, adskfpr, &adskfprlen);
           if (!has_key_with_fingerprint (keyblock, adskfpr, adskfprlen))
             {
-              err = append_adsk_to_key (ctrl, keyblock, para->u.adsk, NULL);
+              /* Fixme: We should use a cache nonce so that only one
+               * pinentry pops up.  */
+              err = append_adsk_to_key (ctrl, keyblock, para->u.adsk,
+                                        sigtimestamp, NULL);
               if (!err)
                 any_done = 1;
             }
@@ -6629,7 +6633,8 @@ do_generate_keypair (ctrl_t ctrl, struct para_data_s *para,
 
       for (idx=0; (adsk = get_parameter_adsk (para, idx)); idx++)
         {
-          err = append_adsk_to_key (ctrl, pub_root, adsk, cache_nonce);
+          err = append_adsk_to_key (ctrl, pub_root, adsk,
+                                    signtimestamp, cache_nonce);
           if (err)
             break;
           any_adsk++;

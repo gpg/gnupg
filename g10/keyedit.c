@@ -5053,11 +5053,13 @@ fail:
 
 
 /* Core function to add an ADSK to the KEYBLOCK.  Returns 0 on success
- * or an error code.  CACHE_NONCE can be used to avoid a second
- * Pinetry pop-up for appending the ADSK. */
+ * or an error code.  If SIGTIMESTAMP is not 0 it is used for the key
+ * binding signature creation time; if not given the current time is
+ * used.  CACHE_NONCE can be used to avoid a second Pinetry pop-up for
+ * appending the ADSK. */
 gpg_error_t
 append_adsk_to_key (ctrl_t ctrl, kbnode_t keyblock, PKT_public_key *adsk,
-                    const char *cache_nonce)
+                    u32 sigtimestamp, const char *cache_nonce)
 {
   gpg_error_t err;
   PKT_public_key *main_pk;  /* The primary key.  */
@@ -5102,7 +5104,7 @@ append_adsk_to_key (ctrl_t ctrl, kbnode_t keyblock, PKT_public_key *adsk,
 
   /* Make the signature.  */
   err = make_keysig_packet (ctrl, &sig, main_pk, NULL, adsk, main_pk, 0x18,
-                            adsk->timestamp, 0,
+                            sigtimestamp, 0,
                             keygen_add_key_flags_and_expire, adsk, cache_nonce);
   adsk = NULL; /* (owned by adsknode - avoid double free.)  */
   if (err)
@@ -5150,6 +5152,7 @@ menu_addadsk (ctrl_t ctrl, kbnode_t pub_keyblock, const char *adskfpr)
   byte fpr[MAX_FINGERPRINT_LEN];
   size_t fprlen;
   kbnode_t node;
+  u32 sigtimestamp = make_timestamp ();
 
   log_assert (pub_keyblock->pkt->pkttype == PKT_PUBLIC_KEY);
 
@@ -5251,7 +5254,7 @@ menu_addadsk (ctrl_t ctrl, kbnode_t pub_keyblock, const char *adskfpr)
   log_assert (node->pkt->pkttype == PKT_PUBLIC_KEY
               || node->pkt->pkttype == PKT_PUBLIC_SUBKEY);
   err = append_adsk_to_key (ctrl, pub_keyblock, node->pkt->pkt.public_key,
-                            NULL);
+                            sigtimestamp, NULL);
 
 
  leave:
