@@ -42,7 +42,7 @@ struct trustitem_s
     unsigned int for_pgp:1;        /* Set by '*' or 'P' as first flag. */
     unsigned int for_smime:1;      /* Set by '*' or 'S' as first flag. */
     unsigned int relax:1;          /* Relax checking of root certificate
-                             constraints. */
+                                      constraints.  Be default enabled. */
     unsigned int cm:1;             /* Use chain model for validation. */
     unsigned int qual:1;           /* Root CA for qualified signatures.  */
     unsigned int de_vs:1;          /* Root CA for de-vs compliant PKI.    */
@@ -257,6 +257,7 @@ read_one_trustfile (const char *fname, int systrust,
       ti = table + tableidx;
 
       memset (&ti->flags, 0, sizeof ti->flags);
+      ti->flags.relax = 1;  /* Legacy flag;  use "norelax" to trun it off. */
       if (*p == '!')
         {
           ti->flags.disabled = 1;
@@ -322,6 +323,8 @@ read_one_trustfile (const char *fname, int systrust,
             }
           else if (n == 5 && !memcmp (p, "relax", 5))
             ti->flags.relax = 1;
+          else if (n == 7 && !memcmp (p, "norelax", 7))
+            ti->flags.relax = 0;
           else if (n == 2 && !memcmp (p, "cm", 2))
             ti->flags.cm = 1;
           else if (n == 4 && !memcmp (p, "qual", 4) && systrust)
@@ -875,8 +878,7 @@ agent_marktrusted (ctrl_t ctrl, const char *name, const char *fpr, int flag)
     }
   else
     es_fputs (nameformatted, fp);
-  es_fprintf (fp, "\n%s%s %c%s\n", yes_i_trust?"":"!", fprformatted, flag,
-              flag == 'S'? " relax":"");
+  es_fprintf (fp, "\n%s%s %c\n", yes_i_trust?"":"!", fprformatted, flag);
   if (es_ferror (fp))
     err = gpg_error_from_syserror ();
 

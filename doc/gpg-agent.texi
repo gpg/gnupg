@@ -844,11 +844,14 @@ caller:
 @table @code
 
 @item relax
+@itemx norelax
 @cindex relax
+@cindex norelax
 Relax checking of some root certificate requirements.  As of now this
 flag allows the use of root certificates with a missing basicConstraints
 attribute (despite that it is a MUST for CA certificates) and disables
-CRL checking for the root certificate.
+CRL checking for the root certificate.  This is by default enabled.
+Use "norelax" to disable it.
 
 @item cm
 If validation of a certificate finally issued by a CA with this flag set
