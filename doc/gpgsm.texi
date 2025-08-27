@@ -801,8 +801,8 @@ The option has an effect only on Windows.
 
 @item --debug-level @var{level}
 @opindex debug-level
-Select the debug level for investigating problems. @var{level} may be
-a numeric value or by a keyword:
+Select the debug level for investigating problems.  @var{level} may be
+a numeric value or a keyword:
 
 @table @code
 @item none
@@ -824,8 +824,9 @@ only enabled if the keyword is used.
 @end table
 
 How these messages are mapped to the actual debugging flags is not
-specified and may change with newer releases of this program. They are
-however carefully selected to best aid in debugging.
+specified and may change with newer releases of this program.  This is
+a legacy option; in general it is better to select specific debug
+flags using the @option{--debug}.
 
 @item --debug @var{flags}
 @opindex debug

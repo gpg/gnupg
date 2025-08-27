@@ -777,11 +777,11 @@ set_debug (void)
   else if (!strcmp (debug_level, "none") || (numok && numlvl < 1))
     opt.debug = 0;
   else if (!strcmp (debug_level, "basic") || (numok && numlvl <= 2))
-    opt.debug = DBG_IPC_VALUE;
+    opt.debug = DBG_MEMSTAT_VALUE;
   else if (!strcmp (debug_level, "advanced") || (numok && numlvl <= 5))
-    opt.debug = DBG_IPC_VALUE|DBG_X509_VALUE;
+    opt.debug = DBG_MEMSTAT_VALUE|DBG_X509_VALUE;
   else if (!strcmp (debug_level, "expert")  || (numok && numlvl <= 8))
-    opt.debug = (DBG_IPC_VALUE|DBG_X509_VALUE
+    opt.debug = (DBG_MEMSTAT_VALUE|DBG_X509_VALUE
                  |DBG_CACHE_VALUE|DBG_CRYPTO_VALUE);
   else if (!strcmp (debug_level, "guru") || numok)
     {
