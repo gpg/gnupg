@@ -1817,7 +1817,7 @@ sign_symencrypt_file (ctrl_t ctrl, const char *fname, strlist_t locusr)
  * expires.
  *
  * If CACHED_NONCE is not NULL the agent may use it to avoid
- * additional pinnetry popups for the same keyblock.
+ * additional Pinentry popups for the same keyblock.
  *
  * This function creates the following subpackets: issuer, created,
  * and expire (if duration is not 0).  Additional subpackets can be
