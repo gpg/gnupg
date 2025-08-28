@@ -6745,6 +6745,16 @@ do_generate_keypair (ctrl_t ctrl, struct para_data_s *para,
       es_fflush (es_stdout);
       if (any_adsk)
         log_info (_("Note: The key has been created with one or more ADSK!\n"));
+
+      if (opt.flags.auto_key_upload)
+        {
+          unsigned int saved_options = opt.keyserver_options.options;
+
+          opt.keyserver_options.options |= KEYSERVER_LDAP_ONLY;
+          opt.keyserver_options.options |= KEYSERVER_WARN_ONLY;
+          keyserver_export_pubkey (ctrl, pk, 1/*Assume new key*/);
+          opt.keyserver_options.options = saved_options;
+         }
     }
 
   release_kbnode (pub_root);

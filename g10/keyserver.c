@@ -829,6 +829,27 @@ keyserver_export (ctrl_t ctrl, strlist_t users, int assume_new_key)
 }
 
 
+/* Send the public key specified by PK to the configured keyserver.
+ * If ASSUME_NEW_KEY is true the KEYSERVER_UPDATE_BEFORE_SEND option
+ * will be ignored. */
+gpg_error_t
+keyserver_export_pubkey (ctrl_t ctrl, PKT_public_key *pk, int assume_new_key)
+{
+  gpg_error_t err;
+  strlist_t keyspec = NULL;
+  char fpr[2*MAX_FINGERPRINT_LEN+1];
+
+  hexfingerprint (pk, fpr, sizeof fpr);
+  add_to_strlist (&keyspec, fpr);
+  err = keyserver_put (ctrl, keyspec, assume_new_key);
+  free_strlist (keyspec);
+
+  return err;
+}
+
+
+
+
 /* Structure to convey the arg to keyserver_retrieval_screener.  */
 struct ks_retrieval_screener_arg_s
 {
@@ -1608,13 +1629,15 @@ keyserver_get (ctrl_t ctrl, KEYDB_SEARCH_DESC *desc, int ndesc,
 
 /* Send all keys specified by KEYSPECS to the configured keyserver.
  * If ASSUME_NEW_KEY is true the KEYSERVER_UPDATE_BEFORE_SEND option
- * will be ignored. */
+ * will be ignored.  */
 static gpg_error_t
 keyserver_put (ctrl_t ctrl, strlist_t keyspecs, int assume_new_key)
 {
   gpg_error_t err;
   strlist_t kspec;
   char *ksurl;
+  int warn_only = !!(opt.keyserver_options.options & KEYSERVER_WARN_ONLY);
+  int loglvl = warn_only? GPGRT_LOGLVL_INFO : GPGRT_LOGLVL_ERROR;
 
   if (!keyspecs)
     return 0;  /* Return success if the list is empty.  */
@@ -1622,8 +1645,19 @@ keyserver_put (ctrl_t ctrl, strlist_t keyspecs, int assume_new_key)
   /* Get the name of the used keyservers.  */
   if (gpg_dirmngr_ks_list (ctrl, &ksurl))
     {
-      log_error (_("no keyserver known\n"));
+      gpgrt_log (loglvl, _("no keyserver known\n"));
       return gpg_error (GPG_ERR_NO_KEYSERVER);
+    }
+
+  /* Check the LDAP only flag  */
+  if ((opt.keyserver_options.options & KEYSERVER_LDAP_ONLY)
+      && !(ksurl && (!strncmp (ksurl, "ldap:", 5)
+                     || !strncmp (ksurl, "ldaps:", 6))))
+    {
+      if (opt.verbose)
+        log_info (_("upload skipped due to non-LDAP keyserver\n"));
+      err = 0;
+      goto leave;
     }
 
   /* If the option is active, we first try to import the keys given by
@@ -1656,11 +1690,13 @@ keyserver_put (ctrl_t ctrl, strlist_t keyspecs, int assume_new_key)
       kbnode_t keyblock;
 
       err = export_pubkey_buffer (ctrl, kspec->d,
-                                  opt.keyserver_options.export_options,
+                                  (opt.keyserver_options.export_options
+                                   | EXPORT_NO_STATUS),
                                   NULL, 0, NULL,
                                   &keyblock, &data, &datalen);
       if (err)
-        log_error (_("skipped \"%s\": %s\n"), kspec->d, gpg_strerror (err));
+        gpgrt_log (loglvl, _("skipped \"%s\": %s\n"),
+                   kspec->d, gpg_strerror (err));
       else
         {
           if (!opt.quiet)
@@ -1669,18 +1705,24 @@ keyserver_put (ctrl_t ctrl, strlist_t keyspecs, int assume_new_key)
                       ksurl?ksurl:"[?]");
 
           err = gpg_dirmngr_ks_put (ctrl, data, datalen, keyblock);
-          release_kbnode (keyblock);
           xfree (data);
           if (err)
             {
-              write_status_error ("keyserver_send", err);
-              log_error (_("keyserver send failed: %s\n"), gpg_strerror (err));
+              if (warn_only)
+                write_status_warning ("keyserver_send", err);
+              else
+                write_status_error ("keyserver_send", err);
+              gpgrt_log (loglvl, _("keyserver send failed: %s\n"),
+                         gpg_strerror (err));
             }
+          else /* On success print a status line.  */
+            print_status_exported (keyblock->pkt->pkt.public_key);
+          release_kbnode (keyblock);
         }
     }
 
+ leave:
   xfree (ksurl);
-
   return err;
 
 }

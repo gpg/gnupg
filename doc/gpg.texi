@@ -2113,6 +2113,12 @@ you naturally will not have on your local keyring), the operator can
 tell both your IP address and the time when you verified the
 signature.
 
+@item --auto-key-upload
+@opindex auto-key-upload
+If an LDAP keyserver is configured (in dirmngr) upload a newly created
+key right directly to that server.  Also upload publicly visible
+changes to a key to such a server.
+
 @item --keyid-format @{none|short|0xshort|long|0xlong@}
 @opindex keyid-format
 Select how to display key IDs.  "none" does not show the key ID at all

@@ -1,6 +1,8 @@
 Noteworthy changes in version 2.5.12 (unreleased)
 -------------------------------------------------
 
+  * gpg: New option --auto-key-upload.  [T7333]
+
   * dirmgr: Support LDAP servers using a schema like the Windows LDS
     servers.  [T7742]
 

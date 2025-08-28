@@ -202,6 +202,7 @@ unsigned int ecdsa_qbits_from_Q (unsigned int qbits);
 void set_status_fd ( int fd );
 int  is_status_enabled ( void );
 void write_status ( int no );
+void write_status_warning (const char *where, gpg_error_t err);
 void write_status_error (const char *where, gpg_error_t err);
 void write_status_errcode (const char *where, int errcode);
 void write_status_failure (const char *where, gpg_error_t err);
@@ -419,6 +420,7 @@ typedef struct export_stats_s *export_stats_t;
 export_stats_t export_new_stats (void);
 void export_release_stats (export_stats_t stats);
 void export_print_stats (export_stats_t stats);
+void print_status_exported (PKT_public_key *pk);
 
 int parse_export_options(char *str,unsigned int *options,int noisy);
 gpg_error_t parse_and_set_export_filter (const char *string);
