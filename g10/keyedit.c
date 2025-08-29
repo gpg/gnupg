@@ -53,6 +53,7 @@
 #include "key-clean.h"
 #include "keyedit.h"
 
+static void maybe_upload_key (ctrl_t ctrl, kbnode_t keyblock);
 static void show_prefs (PKT_user_id * uid, PKT_signature * selfsig,
 			int verbose);
 static void show_names (ctrl_t ctrl, estream_t fp,
@@ -2443,14 +2444,10 @@ keyedit_menu (ctrl_t ctrl, const char *username, strlist_t locusr,
                   log_error (_("update failed: %s\n"), gpg_strerror (err));
                   break;
                 }
-              if (upload && opt.flags.auto_key_upload)
+              if (upload)
                 {
-                  unsigned int saved_options = opt.keyserver_options.options;
-
-                  opt.keyserver_options.options |= KEYSERVER_LDAP_ONLY;
-                  opt.keyserver_options.options |= KEYSERVER_WARN_ONLY;
-                  keyserver_export_pubkey (ctrl, pk, 0);
-                  opt.keyserver_options.options = saved_options;
+                  maybe_upload_key (ctrl, keyblock);
+                  upload = 0;
                 }
 	    }
 
@@ -2508,6 +2505,23 @@ keyedit_menu (ctrl_t ctrl, const char *username, strlist_t locusr,
   release_kbnode (keyblock);
   keydb_release (kdbhd);
   xfree (answer);
+}
+
+
+/* Helper to upload a key to an LDAP server if configured.  */
+static void
+maybe_upload_key (ctrl_t ctrl, kbnode_t keyblock)
+{
+  unsigned int saved_options;
+
+  if (!opt.flags.auto_key_upload)
+    return;
+
+  saved_options = opt.keyserver_options.options;
+  opt.keyserver_options.options |= KEYSERVER_LDAP_ONLY;
+  opt.keyserver_options.options |= KEYSERVER_WARN_ONLY;
+  keyserver_export_pubkey (ctrl, keyblock->pkt->pkt.public_key, 0);
+  opt.keyserver_options.options = saved_options;
 }
 
 
@@ -2662,7 +2676,7 @@ keyedit_quick_adduid (ctrl_t ctrl, const char *username, const char *newuid)
           log_error (_("update failed: %s\n"), gpg_strerror (err));
           goto leave;
         }
-
+      maybe_upload_key (ctrl, keyblock);
       if (update_trust)
         revalidation_mark (ctrl);
     }
@@ -2797,7 +2811,7 @@ keyedit_quick_revuid (ctrl_t ctrl, const char *username, const char *uidtorev)
           log_error (_("update failed: %s\n"), gpg_strerror (err));
           goto leave;
         }
-
+      maybe_upload_key (ctrl, keyblock);
       revalidation_mark (ctrl);
       goto leave;
     }
@@ -2863,6 +2877,7 @@ keyedit_quick_set_primary (ctrl_t ctrl, const char *username,
           log_error (_("update failed: %s\n"), gpg_strerror (err));
           goto leave;
         }
+      maybe_upload_key (ctrl, keyblock);
       revalidation_mark (ctrl);
     }
   else
@@ -2910,6 +2925,7 @@ keyedit_quick_update_pref (ctrl_t ctrl, const char *username)
           log_error (_("update failed: %s\n"), gpg_strerror (err));
           goto leave;
         }
+      maybe_upload_key (ctrl, keyblock);
     }
 
  leave:
@@ -3223,6 +3239,8 @@ keyedit_quick_sign (ctrl_t ctrl, const char *fpr, strlist_t uids,
           log_error (_("update failed: %s\n"), gpg_strerror (err));
           goto leave;
         }
+      if (!local) /* No need to upload new non-expotable sigs.  */
+        maybe_upload_key (ctrl, keyblock);
     }
   else
     log_info (_("Key not changed so no update needed.\n"));
@@ -3457,6 +3475,7 @@ keyedit_quick_revsig (ctrl_t ctrl, const char *username, const char *sigtorev,
       log_error (_("update failed: %s\n"), gpg_strerror (err));
       goto leave;
     }
+  maybe_upload_key (ctrl, keyblock);
   revalidation_mark (ctrl);
 
  leave:
@@ -3527,6 +3546,7 @@ keyedit_quick_addkey (ctrl_t ctrl, const char *fpr, const char *algostr,
           log_error (_("update failed: %s\n"), gpg_strerror (err));
           goto leave;
         }
+      maybe_upload_key (ctrl, keyblock);
     }
   else
     log_info (_("Key not changed so no update needed.\n"));
@@ -3603,6 +3623,7 @@ keyedit_quick_addadsk (ctrl_t ctrl, const char *fpr, const char *adskfpr)
           log_error (_("update failed: %s\n"), gpg_strerror (err));
           goto leave;
         }
+      maybe_upload_key (ctrl, keyblock);
     }
 
  leave:
@@ -3753,6 +3774,7 @@ keyedit_quick_set_expire (ctrl_t ctrl, const char *fpr, const char *expirestr,
           log_error (_("update failed: %s\n"), gpg_strerror (err));
           goto leave;
         }
+      maybe_upload_key (ctrl, keyblock);
       if (update_trust)
         revalidation_mark (ctrl);
     }
