@@ -2114,10 +2114,12 @@ tell both your IP address and the time when you verified the
 signature.
 
 @item --auto-key-upload
+@itemx --no-auto-key-upload
 @opindex auto-key-upload
 If an LDAP keyserver is configured (in dirmngr) upload a newly created
-key right directly to that server.  Also upload publicly visible
-changes to a key to such a server.
+key directly to that server.  Also upload publicly visible changes to
+a key to such a server.  The no variant can be used to disable it in
+case it has been enabled in a configuration file.
 
 @item --keyid-format @{none|short|0xshort|long|0xlong@}
 @opindex keyid-format
