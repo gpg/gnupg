@@ -193,6 +193,26 @@ the user needs to enter the passphrase.  The option
 @opindex store
 Store only (make a simple literal data packet).
 
+
+@item --add-recipients
+@itemx --change-recipients
+@opindex add-recipients
+@opindex change-recipients
+These two commands can be used to change the recipients of an
+encrypted file or to add more recipients without fully decrypting the
+file.  This command works by decrypting just the encrypted session key
+and then encrypt the session key to the new recipients given with the
+@option{--recipient} options.  The output is the entire file with the
+recipients added.  The advantage over a simple decrypt and encrypt is
+that any inner signature is kept intact and that gpg does not need to
+actually decrypt the bulk of the data.  If
+@option{--change-recipients} is used instead of
+@option{--add-recipients} all existing recipients are removed from the
+output file so than only the newly specified recipients are able to
+decrypt the new file.  Note also that symmetric encrypted session keys
+are removed from the output for both variants of the command.
+
+
 @item --decrypt
 @itemx -d
 @opindex decrypt
