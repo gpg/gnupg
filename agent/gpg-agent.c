@@ -2685,7 +2685,6 @@ putty_message_proc (HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
   xfree (ctrl);
   if (data)
     UnmapViewOfFile (data);
-  xfree (mapsid);
   if (psd)
     LocalFree (psd);
   xfree (mysid);
