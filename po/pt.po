@@ -67,7 +67,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnupg 2.5.5\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"PO-Revision-Date: 2025-08-20 10:06+0200\n"
+"PO-Revision-Date: 2025-09-02 14:03+0200\n"
 "Last-Translator: Daniel Cerqueira <dan.git@lispclub.com>\n"
 "Language-Team: Portuguese <dan.git@lispclub.com>\n"
 "Language: pt\n"
@@ -1726,7 +1726,7 @@ msgid "Invalid command  (try \"help\")\n"
 msgstr "Comando inválido (tente \"help\")\n"
 
 #, c-format
-msgid "modifiying the recipients is not possible: %s\n"
+msgid "modifying the recipients is not possible: %s\n"
 msgstr "não é possível modificar os destinatários: %s\n"
 
 msgid "decryption failed"
@@ -4733,6 +4733,9 @@ msgstr "obter chaves automaticamente quando se verifica assinaturas"
 msgid "honor the preferred keyserver URL set on the key"
 msgstr "honrar a URL do servidor de chaves preferencial definida na chave"
 
+msgid "update a key before sending it"
+msgstr ""
+
 msgid "disabled"
 msgstr "desabilitado"
 
@@ -4746,6 +4749,11 @@ msgstr "protocolo de servidor de chaves inválido (nós %d!=handler %d)\n"
 #, c-format
 msgid "\"%s\" not a key ID: skipping\n"
 msgstr "\"%s\" não é uma ID de chave: ignorando\n"
+
+#, fuzzy, c-format
+#| msgid "\"%s\" is not a fingerprint\n"
+msgid "\"%s\" not a fingerprint: skipping\n"
+msgstr "\"%s\" não é uma impressão digital\n"
 
 #, c-format
 msgid "refreshing %d key from %s\n"
@@ -4772,6 +4780,10 @@ msgstr "pedindo chave %s de %s\n"
 #, c-format
 msgid "no keyserver known\n"
 msgstr "nenhum servidor de chaves conhecido\n"
+
+#, c-format
+msgid "upload skipped due to non-LDAP keyserver\n"
+msgstr ""
 
 #, c-format
 msgid "skipped \"%s\": %s\n"
@@ -5098,6 +5110,11 @@ msgstr "descomprimido|nenhum"
 #, c-format
 msgid "this message may not be usable by %s\n"
 msgstr "esta mensagem poderá não ser utilizável pelo %s\n"
+
+#, fuzzy
+#| msgid "enable key"
+msgid "enabled"
+msgstr "habilitar chave"
 
 #, c-format
 msgid "ambiguous option '%s'\n"

@@ -1747,7 +1747,7 @@ msgid "Invalid command  (try \"help\")\n"
 msgstr "Μη έγκυρη εντολή  (δοκιμάστε \"help\")\n"
 
 #, fuzzy, c-format
-msgid "modifiying the recipients is not possible: %s\n"
+msgid "modifying the recipients is not possible: %s\n"
 msgstr "Η δημιουργία κλειδιού απέτυχε: %s\n"
 
 #, fuzzy
@@ -4959,6 +4959,9 @@ msgstr ""
 msgid "honor the preferred keyserver URL set on the key"
 msgstr "το URL πολιτικής υπογραφής που δόθηκε δεν είναι έγκυρο\n"
 
+msgid "update a key before sending it"
+msgstr ""
+
 #, fuzzy
 msgid "disabled"
 msgstr "disable"
@@ -4973,6 +4976,10 @@ msgstr "μη έγκυρες επιλογές εξαγωγής\n"
 #, c-format
 msgid "\"%s\" not a key ID: skipping\n"
 msgstr ""
+
+#, fuzzy, c-format
+msgid "\"%s\" not a fingerprint: skipping\n"
+msgstr "σφάλμα: μη έγκυρο αποτύπωμα\n"
 
 #, fuzzy, c-format
 msgid "refreshing %d key from %s\n"
@@ -4999,6 +5006,10 @@ msgstr "αίτηση κλειδιού %08lX από το %s\n"
 #, fuzzy, c-format
 msgid "no keyserver known\n"
 msgstr "μη έγκυρες επιλογές εξαγωγής\n"
+
+#, c-format
+msgid "upload skipped due to non-LDAP keyserver\n"
+msgstr ""
 
 #, fuzzy, c-format
 msgid "skipped \"%s\": %s\n"
@@ -5340,6 +5351,11 @@ msgstr "Ασυμπίεστο"
 #, c-format
 msgid "this message may not be usable by %s\n"
 msgstr "αυτό το μήνυμα ίσως δεν μπορεί να χρησιμοποιηθεί από %s\n"
+
+#, fuzzy
+#| msgid "enable"
+msgid "enabled"
+msgstr "enable"
 
 #, fuzzy, c-format
 msgid "ambiguous option '%s'\n"
@@ -11233,9 +11249,6 @@ msgstr ""
 
 #~ msgid "disable"
 #~ msgstr "disable"
-
-#~ msgid "enable"
-#~ msgstr "enable"
 
 #~ msgid "showphoto"
 #~ msgstr "showphoto"

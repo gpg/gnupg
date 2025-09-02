@@ -1728,7 +1728,7 @@ msgstr "Некоректна команда  (скористайтеся ком�
 
 #, fuzzy, c-format
 #| msgid "key operation not possible: %s\n"
-msgid "modifiying the recipients is not possible: %s\n"
+msgid "modifying the recipients is not possible: %s\n"
 msgstr "дія над ключем неможлива: %s\n"
 
 #, fuzzy
@@ -4849,6 +4849,9 @@ msgstr "автоматично отримувати ключі під час п�
 msgid "honor the preferred keyserver URL set on the key"
 msgstr "брати до уваги адресу основного сервера ключів, встановлену у ключі"
 
+msgid "update a key before sending it"
+msgstr ""
+
 msgid "disabled"
 msgstr "вимкнено"
 
@@ -4862,6 +4865,11 @@ msgstr "некоректний протокол сервера ключів (н�
 #, c-format
 msgid "\"%s\" not a key ID: skipping\n"
 msgstr "«%s» не є ідентифікатором ключа: пропускаємо\n"
+
+#, fuzzy, c-format
+#| msgid "\"%s\" is not a fingerprint\n"
+msgid "\"%s\" not a fingerprint: skipping\n"
+msgstr "«%s» не є відбитком\n"
 
 #, c-format
 msgid "refreshing %d key from %s\n"
@@ -4889,6 +4897,10 @@ msgstr "надсилаємо запит щодо ключа %s з %s\n"
 #, c-format
 msgid "no keyserver known\n"
 msgstr "немає відомих серверів ключів\n"
+
+#, c-format
+msgid "upload skipped due to non-LDAP keyserver\n"
+msgstr ""
 
 #, c-format
 msgid "skipped \"%s\": %s\n"
@@ -5225,6 +5237,11 @@ msgstr "uncompressed|немає"
 #, c-format
 msgid "this message may not be usable by %s\n"
 msgstr "використання цього повідомлення щодо %s може бути неможливим\n"
+
+#, fuzzy
+#| msgid "enable key"
+msgid "enabled"
+msgstr "увімкнути ключ"
 
 #, c-format
 msgid "ambiguous option '%s'\n"

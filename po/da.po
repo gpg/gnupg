@@ -1854,7 +1854,7 @@ msgstr "Ugyldig kommando (prøv »help«)\n"
 
 #, fuzzy, c-format
 #| msgid "key operation not possible: %s\n"
-msgid "modifiying the recipients is not possible: %s\n"
+msgid "modifying the recipients is not possible: %s\n"
 msgstr "nøglehandling er ikke mulig: %s\n"
 
 #, fuzzy
@@ -5088,6 +5088,9 @@ msgstr "hent automatisk nøgler når der verificeres underskrifter"
 msgid "honor the preferred keyserver URL set on the key"
 msgstr "overhold den foretrukne nøglerserveradresse angivet på nøglen"
 
+msgid "update a key before sending it"
+msgstr ""
+
 msgid "disabled"
 msgstr "deaktiveret"
 
@@ -5101,6 +5104,11 @@ msgstr "ugyldig nøgleserverprotokol (os %d!=håndtag %d)\n"
 #, c-format
 msgid "\"%s\" not a key ID: skipping\n"
 msgstr "»%s« er ikke et nøgle-id: udelader\n"
+
+#, fuzzy, c-format
+#| msgid "invalid fingerprint"
+msgid "\"%s\" not a fingerprint: skipping\n"
+msgstr "ugyldig fingeraftryk"
 
 #, fuzzy, c-format
 #| msgid "refreshing %d keys from %s\n"
@@ -5129,6 +5137,10 @@ msgstr "anmoder om nøgle %s fra %s\n"
 #| msgid "no keyserver action!\n"
 msgid "no keyserver known\n"
 msgstr "ingen nøgleserverhandling!\n"
+
+#, c-format
+msgid "upload skipped due to non-LDAP keyserver\n"
+msgstr ""
 
 #, c-format
 msgid "skipped \"%s\": %s\n"
@@ -5470,6 +5482,11 @@ msgstr "ukomprimeret|ingen"
 #, c-format
 msgid "this message may not be usable by %s\n"
 msgstr "denne besked kan nok ikke bruges af %s\n"
+
+#, fuzzy
+#| msgid "enable key"
+msgid "enabled"
+msgstr "aktiver nøgle"
 
 #, fuzzy, c-format
 #| msgid "ambiguous option `%s'\n"

@@ -1699,7 +1699,7 @@ msgstr "Neplatný příkaz (zkuste „help“)\n"
 
 #, fuzzy, c-format
 #| msgid "key operation not possible: %s\n"
-msgid "modifiying the recipients is not possible: %s\n"
+msgid "modifying the recipients is not possible: %s\n"
 msgstr "operace s klíčem není možná: %s\n"
 
 #, fuzzy
@@ -4703,6 +4703,9 @@ msgstr "automaticky získávat klíče při ověřování podpisů"
 msgid "honor the preferred keyserver URL set on the key"
 msgstr "respektovat URL upřednostňovaných serverů klíčů daného klíče"
 
+msgid "update a key before sending it"
+msgstr ""
+
 msgid "disabled"
 msgstr "zneplatněn"
 
@@ -4716,6 +4719,11 @@ msgstr "neplatný protokol serveru klíčů (naše %d!=obsluha %d)\n"
 #, c-format
 msgid "\"%s\" not a key ID: skipping\n"
 msgstr "„%s“ není ID klíče: přeskočeno\n"
+
+#, fuzzy, c-format
+#| msgid "\"%s\" is not a fingerprint\n"
+msgid "\"%s\" not a fingerprint: skipping\n"
+msgstr "„%s“ není otisk\n"
 
 #, c-format
 msgid "refreshing %d key from %s\n"
@@ -4743,6 +4751,10 @@ msgstr "požaduji klíč %s z %s\n"
 #, c-format
 msgid "no keyserver known\n"
 msgstr "není znám žádný server s klíči\n"
+
+#, c-format
+msgid "upload skipped due to non-LDAP keyserver\n"
+msgstr ""
 
 #, c-format
 msgid "skipped \"%s\": %s\n"
@@ -5073,6 +5085,11 @@ msgstr "nezkomprimováno|nic"
 #, c-format
 msgid "this message may not be usable by %s\n"
 msgstr "tato zpráva nemusí být s %s použitelná\n"
+
+#, fuzzy
+#| msgid "enable key"
+msgid "enabled"
+msgstr "nastavit klíč jako platný (enable)"
 
 #, c-format
 msgid "ambiguous option '%s'\n"

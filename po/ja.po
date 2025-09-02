@@ -1658,8 +1658,9 @@ msgstr "管理者コマンドは禁止されています\n"
 msgid "Invalid command  (try \"help\")\n"
 msgstr "無効なコマンド (\"help\"を参照)\n"
 
-#, c-format
-msgid "modifiying the recipients is not possible: %s\n"
+#, fuzzy, c-format
+#| msgid "modifiying the recipients is not possible: %s\n"
+msgid "modifying the recipients is not possible: %s\n"
 msgstr "受取人を変更することはできません: %s\n"
 
 msgid "decryption failed"
@@ -4576,6 +4577,9 @@ msgstr "署名の検証時に自動的に鍵を取得する"
 msgid "honor the preferred keyserver URL set on the key"
 msgstr "鍵に設定される優先鍵サーバURLを与える"
 
+msgid "update a key before sending it"
+msgstr ""
+
 msgid "disabled"
 msgstr "使用禁止"
 
@@ -4589,6 +4593,11 @@ msgstr "無効な鍵サーバ・プロトコルです (us %d!=handler %d)\n"
 #, c-format
 msgid "\"%s\" not a key ID: skipping\n"
 msgstr "\"%s\"鍵IDではありません: スキップします\n"
+
+#, fuzzy, c-format
+#| msgid "\"%s\" is not a fingerprint\n"
+msgid "\"%s\" not a fingerprint: skipping\n"
+msgstr "\"%s\"はフィンガープリントではありません\n"
 
 #, c-format
 msgid "refreshing %d key from %s\n"
@@ -4614,6 +4623,10 @@ msgstr "鍵%sを%sに要求\n"
 #, c-format
 msgid "no keyserver known\n"
 msgstr "鍵サーバがわかりません\n"
+
+#, c-format
+msgid "upload skipped due to non-LDAP keyserver\n"
+msgstr ""
 
 #, c-format
 msgid "skipped \"%s\": %s\n"
@@ -4940,6 +4953,11 @@ msgstr "無圧縮|なし"
 #, c-format
 msgid "this message may not be usable by %s\n"
 msgstr "このメッセージは、%sでは使用できません\n"
+
+#, fuzzy
+#| msgid "enable key"
+msgid "enabled"
+msgstr "鍵を有効にする"
 
 #, c-format
 msgid "ambiguous option '%s'\n"

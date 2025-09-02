@@ -1747,7 +1747,7 @@ msgstr "Ongeldig commando  (probeer \"help\")\n"
 
 #, fuzzy, c-format
 #| msgid "key operation not possible: %s\n"
-msgid "modifiying the recipients is not possible: %s\n"
+msgid "modifying the recipients is not possible: %s\n"
 msgstr "sleutelbewerking is niet mogelijk: %s\n"
 
 #, fuzzy
@@ -4876,6 +4876,9 @@ msgstr ""
 "de URL van de voorkeurssleutelserver zoals die in de sleutel vermeld staat "
 "honoreren"
 
+msgid "update a key before sending it"
+msgstr ""
+
 msgid "disabled"
 msgstr "uitgeschakeld"
 
@@ -4889,6 +4892,11 @@ msgstr "ongeldig sleutelserverprotocol (wij %d!=verwerkingsroutine %d)\n"
 #, c-format
 msgid "\"%s\" not a key ID: skipping\n"
 msgstr "\"%s\" is geen sleutel-ID: overgeslagen\n"
+
+#, fuzzy, c-format
+#| msgid "\"%s\" is not a fingerprint\n"
+msgid "\"%s\" not a fingerprint: skipping\n"
+msgstr "\"%s\" is geen vingerafdruk\n"
 
 #, c-format
 msgid "refreshing %d key from %s\n"
@@ -4916,6 +4924,10 @@ msgstr "opvragen sleutel %s van %s\n"
 #, c-format
 msgid "no keyserver known\n"
 msgstr "geen bekende sleutelser\n"
+
+#, c-format
+msgid "upload skipped due to non-LDAP keyserver\n"
+msgstr ""
 
 #, c-format
 msgid "skipped \"%s\": %s\n"
@@ -5261,6 +5273,11 @@ msgstr "niet gecomprimeerd|geen"
 #, c-format
 msgid "this message may not be usable by %s\n"
 msgstr "dit bericht kan mogelijk niet gebruikt worden door %s\n"
+
+#, fuzzy
+#| msgid "enable key"
+msgid "enabled"
+msgstr "de sleutel inschakelen"
 
 #, c-format
 msgid "ambiguous option '%s'\n"
