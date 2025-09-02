@@ -1163,7 +1163,7 @@ gpgsm_sign (ctrl_t ctrl, certlist_t signerlist,
       if (err)
         goto leave;
       err = write_detached_signature (ctrl, blob, bloblen, out_fp);
-      xfree (blob);
+      es_free (blob);
       if (err)
         goto leave;
     }

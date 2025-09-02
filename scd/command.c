@@ -874,6 +874,7 @@ cmd_readkey (assuan_context_t ctx, char *line)
       gcry_sexp_release (s_key);
       if (!err)
         err = assuan_send_data (ctx, buf, buflen);
+      es_free (buf);
     }
   else if (advanced)
     {

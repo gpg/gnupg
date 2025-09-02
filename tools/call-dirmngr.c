@@ -261,7 +261,6 @@ wkd_get_policy_flags (const char *addrspec, estream_t *r_buffer)
   assuan_context_t ctx;
   struct wkd_get_parm_s parm;
   char *line = NULL;
-  char *buffer = NULL;
 
   memset (&parm, 0, sizeof parm);
   *r_buffer = NULL;
@@ -298,7 +297,6 @@ wkd_get_policy_flags (const char *addrspec, estream_t *r_buffer)
   parm.memfp = 0;
 
  leave:
-  es_free (buffer);
   es_fclose (parm.memfp);
   xfree (line);
   assuan_release (ctx);
