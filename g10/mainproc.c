@@ -579,6 +579,8 @@ proc_encrypted (CTX c, PACKET *pkt)
   int result = 0;
   int early_plaintext = literals_seen;
   unsigned int compliance_de_vs = 0;
+  enum gcry_cipher_modes ciphermode;
+  int unknown_ciphermode;
 
   if (pkt)
     {
@@ -742,14 +744,26 @@ proc_encrypted (CTX c, PACKET *pkt)
         result = gpg_error (GPG_ERR_NO_SECKEY);
     }
 
+  /* We need to know the ciphermode for gnupg_cipher_is_compliant.  */
+  unknown_ciphermode = 0;
+  if (pkt->pkt.encrypted->aead_algo)
+    {
+      unsigned int dummy;
+      if (openpgp_aead_algo_info (pkt->pkt.encrypted->aead_algo,
+                                  &ciphermode, &dummy))
+        unknown_ciphermode = 1;  /* error -> unknown mode */
+    }
+  else
+    ciphermode = GCRY_CIPHER_MODE_CFB;
+
   /* Compute compliance with CO_DE_VS.  */
   if (!result && (is_status_enabled () || opt.flags.require_compliance)
       /* Overriding session key voids compliance.  */
       && !opt.override_session_key
       /* Check symmetric cipher.  */
       && gnupg_gcrypt_is_compliant (CO_DE_VS)
-      && gnupg_cipher_is_compliant (CO_DE_VS, c->dek->algo,
-                                    GCRY_CIPHER_MODE_CFB))
+      && !unknown_ciphermode
+      && gnupg_cipher_is_compliant (CO_DE_VS, c->dek->algo, ciphermode))
     {
       struct pubkey_enc_list *i;
       struct symlist_item *si;
