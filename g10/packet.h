@@ -581,7 +581,7 @@ struct packet_struct {
 	PKT_comment	*comment;	/* PKT_COMMENT */
 	PKT_user_id	*user_id;	/* PKT_USER_ID */
 	PKT_compressed	*compressed;	/* PKT_COMPRESSED */
-	PKT_encrypted	*encrypted;	/* PKT_ENCRYPTED[_MDC] */
+	PKT_encrypted	*encrypted;	/* PKT_ENCRYPTED[_MDC|_AEAD] */
 	PKT_mdc 	*mdc;		/* PKT_MDC */
 	PKT_plaintext	*plaintext;	/* PKT_PLAINTEXT */
         PKT_gpg_control *gpg_control;   /* PKT_GPG_CONTROL */
