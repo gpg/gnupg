@@ -52,7 +52,7 @@ struct symlist_item
 {
   struct symlist_item *next;
   int cipher_algo;
-  int cfb_mode;
+  enum gcry_cipher_modes cipher_mode;
   int other_error;
 };
 
@@ -484,7 +484,11 @@ proc_symkey_enc (CTX c, PACKET *pkt)
     if (enc)
       {
         symitem->cipher_algo = enc->cipher_algo;
-        symitem->cfb_mode = !enc->aead_algo;
+        symitem->cipher_mode = !enc->aead_algo;
+        symitem->cipher_mode
+          = (enc->aead_algo == AEAD_ALGO_NONE? GCRY_CIPHER_MODE_CFB :
+             enc->aead_algo == AEAD_ALGO_OCB?  GCRY_CIPHER_MODE_OCB :
+             GCRY_CIPHER_MODE_NONE);
       }
     else
       symitem->other_error = 1;
@@ -778,9 +782,9 @@ proc_encrypted (CTX c, PACKET *pkt)
        * key can be sneaked in.  */
       for (si = c->symenc_list; si && compliant; si = si->next)
         {
-          if (!si->cfb_mode
+          if (si->cipher_mode == GCRY_CIPHER_MODE_NONE
               || !gnupg_cipher_is_compliant (CO_DE_VS, si->cipher_algo,
-                                             GCRY_CIPHER_MODE_CFB))
+                                             si->cipher_mode))
             compliant = 0;
         }
 
