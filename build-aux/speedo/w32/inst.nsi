@@ -1335,6 +1335,8 @@ Section "-un.gnupg"
   Delete "$INSTDIR\share\gnupg\dirmngr-conf.skel"
   Delete "$INSTDIR\share\gnupg\distsigkey.gpg"
   Delete "$INSTDIR\share\gnupg\gpg-conf.skel"
+  # The Gpg4win installer might have installed the following file:
+  Delete "$INSTDIR\share\gnupg\gpgconf.rnames"
   RMDir  "$INSTDIR\share\gnupg"
 
   Delete "$INSTDIR\share\locale\ca\LC_MESSAGES\gnupg2.mo"
