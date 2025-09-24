@@ -864,7 +864,6 @@ my_ldap_connect (parsed_uri_t uri, unsigned int generic, LDAP **ldap_connp,
     }
   else if (bindname)
     {
-
       npth_unprotect ();
       /* Older Windows header dont have the const for the last two args.
        * Thus we need to cast to avoid warnings.  */
@@ -2734,7 +2733,7 @@ extract_attributes (LDAPMod ***modlist, int *extract_state,
 gpg_error_t
 ks_ldap_put (ctrl_t ctrl, parsed_uri_t uri,
 	     void *data, size_t datalen,
-	     void *info, size_t infolen)
+	     void *info_arg, size_t infolen_arg)
 {
   gpg_error_t err = 0;
   int ldap_err;
@@ -2745,9 +2744,8 @@ ks_ldap_put (ctrl_t ctrl, parsed_uri_t uri,
   LDAPMod **addlist = NULL;
   char *data_armored = NULL;
   int extract_state;
-
-  /* The last byte of the info block.  */
-  const char *infoend = (const char *) info + infolen - 1;
+  char *info = info_arg;
+  char *info_buffer = NULL;  /* Used in case we need to copy INFO.  */
 
   /* Enable this code to dump the modlist to /tmp/modlist.txt.  */
 #if 0
@@ -2758,12 +2756,30 @@ ks_ldap_put (ctrl_t ctrl, parsed_uri_t uri,
 #endif
   estream_t dump = NULL;
 
-  /* Elide a warning.  */
-  (void) ctrl;
-
   if (dirmngr_use_tor ())
     return no_ldap_due_to_tor (ctrl);
 
+  /* Make sure that INFO is a proper string. */
+  if (!infolen_arg)
+    {
+      /* Too short - use an empty string.  */
+      info = info_buffer = xtrystrdup ("");
+    }
+  else if (info[infolen_arg-1])
+    {
+      /* No terminating nul.  Take a copy.  */
+      info_buffer = xtrymalloc (infolen_arg + 1);
+      if (!info_buffer)
+        {
+          err = gpg_error_from_syserror ();
+          goto out;
+        }
+      memcpy (info_buffer, info, infolen_arg);
+      info_buffer[infolen_arg] = '\0';
+      info = info_buffer;
+    }
+
+  /* Connect to the LDAP server to get its properties.  */
   err = my_ldap_connect (uri, 0, &ldap_conn, &basedn, NULL, NULL, &serverinfo);
   if (err || !basedn)
     {
@@ -2827,8 +2843,8 @@ ks_ldap_put (ctrl_t ctrl, parsed_uri_t uri,
       if (dump)
 	{
 	  es_fprintf(dump, "data (%zd bytes)\n", datalen);
-	  es_fprintf(dump, "info (%zd bytes): '\n", infolen);
-	  es_fwrite(info, infolen, 1, dump);
+	  es_fprintf(dump, "info (%zd bytes): '\n", strlen (info));
+	  es_fwrite(info, strlen (info), 1, dump);
 	  es_fprintf(dump, "'\n");
 	}
     }
@@ -2855,37 +2871,24 @@ ks_ldap_put (ctrl_t ctrl, parsed_uri_t uri,
 
   /* Assemble the INFO stuff into LDAP attributes */
   extract_state = 0;
-  while (infolen > 0)
+  while (*info)
     {
-      char *temp = NULL;
+      char *newline;
 
-      char *newline = memchr (info, '\n', infolen);
-      if (! newline)
-	/* The last line is not \n terminated!  Make a copy so we can
-	   add a NUL terminator.  */
-	{
-	  temp = xmalloc (infolen + 1);
-	  memcpy (temp, info, infolen);
-	  info = temp;
-	  newline = (char *) info + infolen;
-	}
-
-      *newline = '\0';
+      newline = strchr (info, '\n');
+      if (newline)
+        *newline = '\0';  /* Replace the LF */
 
       extract_attributes (&addlist, &extract_state, info,
                           (serverinfo & SERVERINFO_SCHEMAV2));
 
-      infolen = infolen - ((uintptr_t) newline - (uintptr_t) info + 1);
-      info = newline + 1;
-
-      /* Sanity check.  */
-      if (! temp)
-	log_assert ((char *) info + infolen - 1 == infoend);
+      if (newline)
+        {
+          *newline = '\n';     /* Restore the LF  */
+          info = newline + 1;  /* and forward.    */
+        }
       else
-	{
-	  log_assert (infolen == -1);
-	  xfree (temp);
-	}
+        info += strlen (info); /* Forward to the Nul.  */
     }
 
   modlist_add (&addlist, "objectClass", "pgpKeyInfo");
@@ -2987,7 +2990,7 @@ ks_ldap_put (ctrl_t ctrl, parsed_uri_t uri,
   xfree (addlist);
 
   xfree (data_armored);
-
+  xfree (info_buffer);
   return err;
 }
 
