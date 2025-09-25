@@ -4983,6 +4983,9 @@ msgstr "Introduceţi URL-ul serverului de chei preferat: "
 msgid "honor the PKA record set on a key when retrieving keys"
 msgstr ""
 
+msgid "update a key before sending it"
+msgstr ""
+
 msgid "disabled"
 msgstr "deactivat(ă)"
 
@@ -4996,6 +4999,11 @@ msgstr "protocol server de chei invalid (us %d!=handler %d)\n"
 #, c-format
 msgid "\"%s\" not a key ID: skipping\n"
 msgstr "\"%s\" nu este un ID de cheie: sărit\n"
+
+#, fuzzy, c-format
+#| msgid "invalid fingerprint"
+msgid "\"%s\" not a fingerprint: skipping\n"
+msgstr "amprentă invalidă"
 
 #, fuzzy, c-format
 #| msgid "refreshing %d keys from %s\n"

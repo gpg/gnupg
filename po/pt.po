@@ -4929,6 +4929,9 @@ msgstr "a URL de política de assinatura dada é inválida\n"
 msgid "honor the PKA record set on a key when retrieving keys"
 msgstr ""
 
+msgid "update a key before sending it"
+msgstr ""
+
 #, fuzzy
 msgid "disabled"
 msgstr "disable"
@@ -4943,6 +4946,10 @@ msgstr "opções de exportação inválidas\n"
 #, c-format
 msgid "\"%s\" not a key ID: skipping\n"
 msgstr ""
+
+#, fuzzy, c-format
+msgid "\"%s\" not a fingerprint: skipping\n"
+msgstr "%s: versão de ficheiro inválida %d\n"
 
 #, fuzzy, c-format
 msgid "refreshing %d key from %s\n"

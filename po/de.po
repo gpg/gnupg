@@ -9,7 +9,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnupg-2.1.0\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"PO-Revision-Date: 2024-10-22 15:47+0200\n"
+"PO-Revision-Date: 2025-09-25 12:12+0200\n"
 "Last-Translator: Werner Koch <wk@gnupg.org>\n"
 "Language-Team: German <de@li.org>\n"
 "Language: de\n"
@@ -4731,6 +4731,9 @@ msgstr ""
 msgid "honor the PKA record set on a key when retrieving keys"
 msgstr "Die im Schlüssel enthaltenen PKA-Daten beim Schlüsselholen beachten"
 
+msgid "update a key before sending it"
+msgstr "Schlüssel vor dem Senden aktualisieren"
+
 msgid "disabled"
 msgstr "abgeschaltet"
 
@@ -4744,6 +4747,10 @@ msgstr "Ungültiges Schlüsselserverprotokoll (wir %d!=Handhabungsroutine %d)\n"
 #, c-format
 msgid "\"%s\" not a key ID: skipping\n"
 msgstr "\"%s\" ist keine Schlüssel-ID: überspringe\n"
+
+#, c-format
+msgid "\"%s\" not a fingerprint: skipping\n"
+msgstr "\"%s\" ist kein Fingerabdruck: überspringe\n"
 
 #, c-format
 msgid "refreshing %d key from %s\n"

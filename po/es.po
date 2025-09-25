@@ -4739,6 +4739,9 @@ msgstr "usar la URL de servidor de claves preferido presente en la clave"
 msgid "honor the PKA record set on a key when retrieving keys"
 msgstr "usar el registro PKA presente en una clave al recuperar claves"
 
+msgid "update a key before sending it"
+msgstr ""
+
 msgid "disabled"
 msgstr "deshabilitado"
 
@@ -4752,6 +4755,11 @@ msgstr "protocolo del servidor de claves inválido (us %d!=handler %d)\n"
 #, c-format
 msgid "\"%s\" not a key ID: skipping\n"
 msgstr "\"%s\" no es un identificador de clave válido: omitido\n"
+
+#, fuzzy, c-format
+#| msgid "\"%s\" is not a fingerprint\n"
+msgid "\"%s\" not a fingerprint: skipping\n"
+msgstr "\"%s\" no es una huella digital\n"
 
 #, c-format
 msgid "refreshing %d key from %s\n"

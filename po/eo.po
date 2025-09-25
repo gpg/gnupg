@@ -4921,6 +4921,9 @@ msgstr "la donita gvidlinia URL por subskriboj ne validas\n"
 msgid "honor the PKA record set on a key when retrieving keys"
 msgstr ""
 
+msgid "update a key before sending it"
+msgstr ""
+
 #, fuzzy
 msgid "disabled"
 msgstr "el"
@@ -4935,6 +4938,10 @@ msgstr "nevalida ŝlosilaro"
 #, fuzzy, c-format
 msgid "\"%s\" not a key ID: skipping\n"
 msgstr "%s: ne valida ŝlosilidentigilo\n"
+
+#, fuzzy, c-format
+msgid "\"%s\" not a fingerprint: skipping\n"
+msgstr "%s: nevalida dosiero-versio %d\n"
 
 #, fuzzy, c-format
 msgid "refreshing %d key from %s\n"

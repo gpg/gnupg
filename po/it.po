@@ -4742,6 +4742,9 @@ msgstr ""
 "rispettare il record PKA impostato su una chiave durante il recupero delle "
 "chiavi"
 
+msgid "update a key before sending it"
+msgstr ""
+
 msgid "disabled"
 msgstr "disabilitato"
 
@@ -4755,6 +4758,11 @@ msgstr "protocollo keyserver non valido (noi %d!=intestazione %d!)\n"
 #, c-format
 msgid "\"%s\" not a key ID: skipping\n"
 msgstr "\"%s\" non è un ID chiave:\n"
+
+#, fuzzy, c-format
+#| msgid "\"%s\" is not a fingerprint\n"
+msgid "\"%s\" not a fingerprint: skipping\n"
+msgstr "\"%s\" non è un'impronta digitale\n"
 
 #, c-format
 msgid "refreshing %d key from %s\n"

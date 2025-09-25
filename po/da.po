@@ -5050,6 +5050,9 @@ msgstr "overhold den foretrukne nøglerserveradresse angivet på nøglen"
 msgid "honor the PKA record set on a key when retrieving keys"
 msgstr "overhold PKA-posten angivet på en nøgle når der hentes nøgler"
 
+msgid "update a key before sending it"
+msgstr ""
+
 msgid "disabled"
 msgstr "deaktiveret"
 
@@ -5063,6 +5066,11 @@ msgstr "ugyldig nøgleserverprotokol (os %d!=håndtag %d)\n"
 #, c-format
 msgid "\"%s\" not a key ID: skipping\n"
 msgstr "»%s« er ikke et nøgle-id: udelader\n"
+
+#, fuzzy, c-format
+#| msgid "invalid fingerprint"
+msgid "\"%s\" not a fingerprint: skipping\n"
+msgstr "ugyldig fingeraftryk"
 
 #, fuzzy, c-format
 #| msgid "refreshing %d keys from %s\n"

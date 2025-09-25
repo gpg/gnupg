@@ -4717,6 +4717,9 @@ msgstr "учитывать набор URL предпочтительных се�
 msgid "honor the PKA record set on a key when retrieving keys"
 msgstr "учитывать набор записей PKA при получении ключей"
 
+msgid "update a key before sending it"
+msgstr ""
+
 msgid "disabled"
 msgstr "отключен"
 
@@ -4730,6 +4733,11 @@ msgstr "недопустимый протокол сервера ключей (�
 #, c-format
 msgid "\"%s\" not a key ID: skipping\n"
 msgstr "\"%s\" - не идентификатор ключа: пропущен\n"
+
+#, fuzzy, c-format
+#| msgid "\"%s\" is not a fingerprint\n"
+msgid "\"%s\" not a fingerprint: skipping\n"
+msgstr "\"%s\" - не отпечаток\n"
 
 #, c-format
 msgid "refreshing %d key from %s\n"

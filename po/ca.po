@@ -5066,6 +5066,9 @@ msgstr "la URL de política de signatura donada no és vàlida\n"
 msgid "honor the PKA record set on a key when retrieving keys"
 msgstr ""
 
+msgid "update a key before sending it"
+msgstr ""
+
 #, fuzzy
 msgid "disabled"
 msgstr "disable"
@@ -5080,6 +5083,10 @@ msgstr ""
 #, fuzzy, c-format
 msgid "\"%s\" not a key ID: skipping\n"
 msgstr "%s: no és un ID vàlid\n"
+
+#, fuzzy, c-format
+msgid "\"%s\" not a fingerprint: skipping\n"
+msgstr "error: l'empremta digital és invàlida\n"
 
 #, fuzzy, c-format
 msgid "refreshing %d key from %s\n"

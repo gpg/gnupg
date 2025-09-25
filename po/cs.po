@@ -4739,6 +4739,9 @@ msgstr "respektovat URL upřednostňovaných serverů klíčů daného klíče"
 msgid "honor the PKA record set on a key when retrieving keys"
 msgstr "respektovat PKA záznamy klíče při získávání klíčů"
 
+msgid "update a key before sending it"
+msgstr ""
+
 msgid "disabled"
 msgstr "zneplatněn"
 
@@ -4752,6 +4755,11 @@ msgstr "neplatný protokol serveru klíčů (naše %d!=obsluha %d)\n"
 #, c-format
 msgid "\"%s\" not a key ID: skipping\n"
 msgstr "„%s“ není ID klíče: přeskočeno\n"
+
+#, fuzzy, c-format
+#| msgid "\"%s\" is not a fingerprint\n"
+msgid "\"%s\" not a fingerprint: skipping\n"
+msgstr "„%s“ není otisk\n"
 
 #, c-format
 msgid "refreshing %d key from %s\n"

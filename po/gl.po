@@ -4957,6 +4957,9 @@ msgstr "o URL de normativa de sinaturas dado non é válido\n"
 msgid "honor the PKA record set on a key when retrieving keys"
 msgstr ""
 
+msgid "update a key before sending it"
+msgstr ""
+
 #, fuzzy
 msgid "disabled"
 msgstr "disable"
@@ -4971,6 +4974,10 @@ msgstr "opcións de exportación non válidas\n"
 #, fuzzy, c-format
 msgid "\"%s\" not a key ID: skipping\n"
 msgstr "%s: non é un ID de chave válido\n"
+
+#, fuzzy, c-format
+msgid "\"%s\" not a fingerprint: skipping\n"
+msgstr "erro: pegada dactilar non válida\n"
 
 #, fuzzy, c-format
 msgid "refreshing %d key from %s\n"

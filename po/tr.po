@@ -5074,6 +5074,9 @@ msgstr "tercihli anahtar sunucusunun adresini adrese atar"
 msgid "honor the PKA record set on a key when retrieving keys"
 msgstr "anahtarları alırken PKA kaydını bir anahtara atar"
 
+msgid "update a key before sending it"
+msgstr ""
+
 msgid "disabled"
 msgstr "iptal edildi"
 
@@ -5087,6 +5090,11 @@ msgstr "anahtar sunucu protokolü geçersiz (bizimki %d!=eylemci %d)\n"
 #, c-format
 msgid "\"%s\" not a key ID: skipping\n"
 msgstr "\"%s\" bir anahtar kimliği değil: atlanıyor\n"
+
+#, fuzzy, c-format
+#| msgid "invalid fingerprint"
+msgid "\"%s\" not a fingerprint: skipping\n"
+msgstr "parmakizi geçersiz"
 
 #, fuzzy, c-format
 #| msgid "refreshing %d keys from %s\n"

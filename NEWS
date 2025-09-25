@@ -1,3 +1,18 @@
+Noteworthy changes in version 2.2.49 (2025-09-25)
+-------------------------------------------------
+
+  * gpg: Fix de-vs compliance with OCB and additional password.
+    [T7804]
+
+  * gpg: Try to retrieve a key from LDAP before sending it.  This can
+    be disabled using "keyserver-flags=no-update-before-send"  [T7730]
+
+  * dirmngr: Fix assertion failure due to wrong buffer length
+    for some certain public keys.  [rGafb0aa2674]
+
+  Release-info: https://dev.gnupg.org/T7821
+
+
 Noteworthy changes in version 2.2.48 (2025-08-07)
 -------------------------------------------------
 

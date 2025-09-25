@@ -5128,6 +5128,9 @@ msgstr "respektera föredragen nyckelserver-url inställd i nyckeln"
 msgid "honor the PKA record set on a key when retrieving keys"
 msgstr "respektera PKA-posten inställd på en nyckel när nycklar hämtas"
 
+msgid "update a key before sending it"
+msgstr ""
+
 msgid "disabled"
 msgstr "inaktiverad"
 
@@ -5141,6 +5144,11 @@ msgstr "ogiltigt nyckelserverprotokoll (vi %d!=hanterare %d)\n"
 #, c-format
 msgid "\"%s\" not a key ID: skipping\n"
 msgstr "\"%s\" inte ett nyckel-id: hoppar över\n"
+
+#, fuzzy, c-format
+#| msgid "invalid fingerprint"
+msgid "\"%s\" not a fingerprint: skipping\n"
+msgstr "ogiltigt fingeravtryck"
 
 #, fuzzy, c-format
 #| msgid "refreshing %d keys from %s\n"

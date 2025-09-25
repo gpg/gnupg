@@ -4577,6 +4577,9 @@ msgstr "鍵に設定される優先鍵サーバURLを与える"
 msgid "honor the PKA record set on a key when retrieving keys"
 msgstr "鍵に設定されたPKAレコードを鍵の取得時に与える"
 
+msgid "update a key before sending it"
+msgstr ""
+
 msgid "disabled"
 msgstr "使用禁止"
 
@@ -4590,6 +4593,11 @@ msgstr "無効な鍵サーバ・プロトコルです (us %d!=handler %d)\n"
 #, c-format
 msgid "\"%s\" not a key ID: skipping\n"
 msgstr "\"%s\"鍵IDではありません: スキップします\n"
+
+#, fuzzy, c-format
+#| msgid "\"%s\" is not a fingerprint\n"
+msgid "\"%s\" not a fingerprint: skipping\n"
+msgstr "\"%s\"はフィンガープリントではありません\n"
 
 #, c-format
 msgid "refreshing %d key from %s\n"

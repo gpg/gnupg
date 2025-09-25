@@ -4720,6 +4720,9 @@ msgstr "bruk nøklers foretrukne nøkkeltjener-adresse"
 msgid "honor the PKA record set on a key when retrieving keys"
 msgstr "bruk nøklers PKA-oppføring når du henter dem"
 
+msgid "update a key before sending it"
+msgstr ""
+
 msgid "disabled"
 msgstr "ikke i bruk"
 
@@ -4733,6 +4736,11 @@ msgstr "ugyldig nøkkeltjener-protokoll (us %d!=håndteringsprogram %d)\n"
 #, c-format
 msgid "\"%s\" not a key ID: skipping\n"
 msgstr "«%s» er ikke en nøkkel-ID, og blir hoppet over\n"
+
+#, fuzzy, c-format
+#| msgid "\"%s\" is not a fingerprint\n"
+msgid "\"%s\" not a fingerprint: skipping\n"
+msgstr "«%s» er ikke et fingeravtrykk\n"
 
 #, c-format
 msgid "refreshing %d key from %s\n"

@@ -4745,6 +4745,9 @@ msgstr "尊重金鑰上所設定的偏好金鑰伺服器 URL"
 msgid "honor the PKA record set on a key when retrieving keys"
 msgstr "取回金鑰時尊重金鑰所設定的 PKA 記錄"
 
+msgid "update a key before sending it"
+msgstr ""
+
 msgid "disabled"
 msgstr "已停用"
 
@@ -4758,6 +4761,11 @@ msgstr "無效的金鑰伺服器協定 (我們用 %d!=經手程式 %d)\n"
 #, c-format
 msgid "\"%s\" not a key ID: skipping\n"
 msgstr "\"%s\" 並非金鑰 ID: 跳過中\n"
+
+#, fuzzy, c-format
+#| msgid "\"%s\" is not a fingerprint\n"
+msgid "\"%s\" not a fingerprint: skipping\n"
+msgstr "\"%s\" 不是指紋\n"
 
 #, fuzzy, c-format
 #| msgid "refreshing %d keys from %s\n"

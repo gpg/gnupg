@@ -4756,6 +4756,9 @@ msgstr ""
 "respecter l'enregistrement PKA positionné sur une clef en récupérant les "
 "clefs"
 
+msgid "update a key before sending it"
+msgstr ""
+
 msgid "disabled"
 msgstr "désactivée"
 
@@ -4769,6 +4772,11 @@ msgstr "protocole de serveur de clefs incorrect (nous %d!=gestionnaire %d)\n"
 #, c-format
 msgid "\"%s\" not a key ID: skipping\n"
 msgstr "« %s » n'est pas un identifiant de clef : ignoré\n"
+
+#, fuzzy, c-format
+#| msgid "\"%s\" is not a fingerprint\n"
+msgid "\"%s\" not a fingerprint: skipping\n"
+msgstr "« %s » n’est pas une empreinte\n"
 
 #, c-format
 msgid "refreshing %d key from %s\n"

@@ -4790,6 +4790,9 @@ msgid "honor the PKA record set on a key when retrieving keys"
 msgstr ""
 "брати до уваги запис PKA, встановлений у ключі під час отримання ключів"
 
+msgid "update a key before sending it"
+msgstr ""
+
 msgid "disabled"
 msgstr "вимкнено"
 
@@ -4803,6 +4806,11 @@ msgstr "некоректний протокол сервера ключів (н�
 #, c-format
 msgid "\"%s\" not a key ID: skipping\n"
 msgstr "«%s» не є ідентифікатором ключа: пропускаємо\n"
+
+#, fuzzy, c-format
+#| msgid "\"%s\" is not a fingerprint\n"
+msgid "\"%s\" not a fingerprint: skipping\n"
+msgstr "«%s» не є відбитком\n"
 
 #, c-format
 msgid "refreshing %d key from %s\n"

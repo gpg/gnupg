@@ -4551,6 +4551,9 @@ msgstr "使用密钥中指定的首选公钥服务器 URL"
 msgid "honor the PKA record set on a key when retrieving keys"
 msgstr "获取密钥时使用密钥上的 PKA 记录"
 
+msgid "update a key before sending it"
+msgstr ""
+
 msgid "disabled"
 msgstr "已禁用"
 
@@ -4564,6 +4567,11 @@ msgstr "无效的公钥服务器协议（us %d!=handler %d）\n"
 #, c-format
 msgid "\"%s\" not a key ID: skipping\n"
 msgstr "“%s” 不是一个用户标识：跳过\n"
+
+#, fuzzy, c-format
+#| msgid "\"%s\" is not a fingerprint\n"
+msgid "\"%s\" not a fingerprint: skipping\n"
+msgstr "\"%s\" 不是一个指纹\n"
 
 #, c-format
 msgid "refreshing %d key from %s\n"
