@@ -101,7 +101,7 @@ dryrun=
 stamp=
 buildtype=
 # Set defaults according to our build system.
-if [ -n "$abs_top_srcdir" -a -f "$abs_top_srcdir/packages/BUILDTYPE" ]; then
+if [ -n "$abs_top_srcdir" ] && [ -f "$abs_top_srcdir/packages/BUILDTYPE" ]; then
     buildtype=$(cat "$abs_top_srcdir/packages/BUILDTYPE")
 elif [ -f "../packages/BUILDTYPE" ]; then
     buildtype=$(cat "../packages/BUILDTYPE")
@@ -190,7 +190,7 @@ fi
 # Define the cleanup routine for osslsigncode
 cleanup()
 {
-    if [ -n "$outname" -a -f "${outname}.tmp" ]; then
+    if [ -n "$outname" ] && [ -f "${outname}.tmp" ]; then
         echo >&2 "Cleaning up: Removing ${outname}.tmp"
         rm -f "${outname}.tmp"
     fi

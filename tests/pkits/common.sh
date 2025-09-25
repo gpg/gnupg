@@ -189,7 +189,7 @@ final_result () {
     [ $fail_count = 0 ]        || info "$fail_count tests failed"
     [ $skip_count = 0 ]        || info "$unsupported_count tests skipped"
     [ $unresolved_count = 0 ]  || info "$unresolved_count tests unresolved"
-    [ -z "$debug" -a -f "$SCRATCH" ] && rm "$SCRATCH"
+    [ -z "$debug" ] && [ -f "$SCRATCH" ] && rm "$SCRATCH"
     if [ $fail_count = 0 ]; then
         info "all tests passed"
     else

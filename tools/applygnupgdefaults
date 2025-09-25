@@ -31,11 +31,11 @@ fi
 # Cleanup on exit
 cleanup ()
 {
-    [ -n "$errorfile" -a -f "$errorfile" ] && rm "$errorfile"
+    [ -n "$errorfile" ] && [ -f "$errorfile" ] && rm "$errorfile"
 }
 trap cleanup EXIT SIGINT SIGHUP SIGPIPE
 errorfile=$(mktemp "/tmp/$PGM.log.XXXXXX")
-[ -n "$errorfile" -a -f "$errorfile" ] || exit 2
+{ [ -n "$errorfile" ] && [ -f "$errorfile" ]; } || exit 2
 
 # Check whether we can use getent
 if getent --help </dev/null >/dev/null 2>&1 ; then
