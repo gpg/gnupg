@@ -240,6 +240,12 @@ const char *get_keyalgo_string (enum gcry_pk_algos algo,
 
 
 /*-- homedir.c --*/
+#ifdef HAVE_W32_SYSTEM
+int gnupg_isatty (int fd);
+#else
+#define gnupg_isatty(a)  isatty ((a))
+#endif
+
 const char *standard_homedir (void);
 void gnupg_set_homedir (const char *newdir);
 void gnupg_maybe_make_homedir (const char *fname, int quiet);
@@ -426,8 +432,6 @@ _gnupg_ttyname (int fd)
 #else /*HAVE_TTYNAME*/
 # define gnupg_ttyname(n) ttyname ((n))
 #endif /*HAVE_TTYNAME */
-
-#define gnupg_isatty(a)  isatty ((a))
 
 
 /*-- Macros to replace ctype ones to avoid locale problems. --*/
