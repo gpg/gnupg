@@ -1612,7 +1612,7 @@ AC_SUBST(LIBTSS_LIBS)
 AC_SUBST(LIBTSS_CFLAGS)
 AM_CONDITIONAL(HAVE_LIBTSS, test "$have_libtss" != no)
 AM_CONDITIONAL(TEST_LIBTSS, [test -n "$SWTPM" \
-               || { test -n "$TPMSERVER" && test -n "$TSSSTARTUP; }"])
+               || { test -n "$TPMSERVER" && test -n "$TSSSTARTUP"; }])
 AC_SUBST(HAVE_LIBTSS)
 
 #
