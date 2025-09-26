@@ -1087,7 +1087,7 @@ encrypt_crypt (ctrl_t ctrl, gnupg_fd_t filefd, const char *filename,
 gpg_error_t
 reencrypt_to_new_recipients (ctrl_t ctrl, int armor, const char *filename,
                              iobuf_t infp, strlist_t recipients,
-                             DEK *dek, struct pubkey_enc_list *pkenc_list)
+                             DEK *dek, struct seskey_enc_list *sesenc_list)
 {
   gpg_error_t err;
   int save_no_encrypt_to;
@@ -1097,7 +1097,7 @@ reencrypt_to_new_recipients (ctrl_t ctrl, int armor, const char *filename,
   iobuf_t outfp = NULL;
   armor_filter_context_t *outafx = NULL;
   PACKET pkt;
-  struct pubkey_enc_list *el;
+  struct seskey_enc_list *el;
   unsigned int count;
 
   /* Unless we want to clear the recipients, record the pubkey encrypt
@@ -1105,7 +1105,7 @@ reencrypt_to_new_recipients (ctrl_t ctrl, int armor, const char *filename,
    * recipient.  We can't do that for wildcards, though.  */
   if (!ctrl->clear_recipients)
     {
-      for (el = pkenc_list; el; el = el->next, count++)
+      for (el = sesenc_list; el; el = el->next, count++)
         {
           if (el->u_sym)
             continue;
@@ -1148,7 +1148,7 @@ reencrypt_to_new_recipients (ctrl_t ctrl, int armor, const char *filename,
     goto leave;
 
   /* Write the old recipients in --add-recipients mode.  */
-  for (count=0, el = pkenc_list; el; el = el->next, count++)
+  for (count=0, el = sesenc_list; el; el = el->next, count++)
     if (!ctrl->clear_recipients && !el->u_sym)
       {
         if (opt.verbose)

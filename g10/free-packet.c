@@ -538,18 +538,18 @@ free_packet (PACKET *pkt, parse_packet_ctx_t parsectx)
 }
 
 
-/* Free a entire list of public key encrypted data.  */
+/* Free an entire list of public or symmetric key encrypted data.  */
 void
-free_pubkey_enc_list (struct pubkey_enc_list *pkenc_list)
+free_seskey_enc_list (struct seskey_enc_list *sesenc_list)
 {
-  while (pkenc_list)
+  while (sesenc_list)
     {
-      struct pubkey_enc_list *tmp = pkenc_list->next;
+      struct seskey_enc_list *tmp = sesenc_list->next;
 
-      if (!pkenc_list->u_sym)
-        release_pubkey_enc_parts (&pkenc_list->u.pub);
-      xfree (pkenc_list);
-      pkenc_list = tmp;
+      if (!sesenc_list->u_sym)
+        release_pubkey_enc_parts (&sesenc_list->u.pub);
+      xfree (sesenc_list);
+      sesenc_list = tmp;
     }
 }
 

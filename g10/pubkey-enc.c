@@ -38,7 +38,7 @@
 #include "../common/compliance.h"
 
 
-static gpg_error_t get_it (ctrl_t ctrl, struct pubkey_enc_list *k,
+static gpg_error_t get_it (ctrl_t ctrl, struct seskey_enc_list *k,
                            DEK *dek, PKT_public_key *sk, u32 *keyid);
 
 
@@ -72,14 +72,14 @@ is_algo_in_prefs (kbnode_t keyblock, preftype_t type, int algo)
  * which should have been allocated in secure memory by the caller.
  */
 gpg_error_t
-get_session_key (ctrl_t ctrl, struct pubkey_enc_list *list, DEK *dek)
+get_session_key (ctrl_t ctrl, struct seskey_enc_list *list, DEK *dek)
 {
   PKT_public_key *sk = NULL;
   gpg_error_t err;
   void *enum_context = NULL;
   u32 keyid[2];
   int search_for_secret_keys = 1;
-  struct pubkey_enc_list *k;
+  struct seskey_enc_list *k;
 
   if (DBG_CLOCK)
     log_clock ("get_session_key enter");
@@ -193,7 +193,7 @@ get_session_key (ctrl_t ctrl, struct pubkey_enc_list *list, DEK *dek)
 
 /* Build an SEXP to gpg-agent, for PKDECRYPT command.  */
 static gpg_error_t
-ecdh_sexp_build (gcry_sexp_t *r_s_data, struct pubkey_enc_list *enc,
+ecdh_sexp_build (gcry_sexp_t *r_s_data, struct seskey_enc_list *enc,
                  PKT_public_key *sk)
 {
   gpg_error_t err;
@@ -232,7 +232,7 @@ ecdh_sexp_build (gcry_sexp_t *r_s_data, struct pubkey_enc_list *enc,
 
 static gpg_error_t
 get_it (ctrl_t ctrl,
-        struct pubkey_enc_list *enc, DEK *dek, PKT_public_key *sk, u32 *keyid)
+        struct seskey_enc_list *enc, DEK *dek, PKT_public_key *sk, u32 *keyid)
 {
   gpg_error_t err;
   byte *frame = NULL;

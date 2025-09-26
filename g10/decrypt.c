@@ -56,7 +56,7 @@ decrypt_message (ctrl_t ctrl, const char *filename, strlist_t remusr)
   armor_filter_context_t *afx = NULL;
   progress_filter_context_t *pfx;
   DEK *dek = NULL;
-  struct pubkey_enc_list *pkenc_list = NULL;
+  struct seskey_enc_list *sesenc_list = NULL;
 
   pfx = new_progress_context ();
 
@@ -102,7 +102,7 @@ decrypt_message (ctrl_t ctrl, const char *filename, strlist_t remusr)
   if (!ctrl->modify_recipients)
     err = proc_encryption_packets (ctrl, NULL, fp, NULL, NULL);
   else
-    err = proc_encryption_packets (ctrl, NULL, fp, &dek, &pkenc_list);
+    err = proc_encryption_packets (ctrl, NULL, fp, &dek, &sesenc_list);
   if (opt.flags.dummy_outfile)
     opt.outfile = NULL;
 
@@ -116,11 +116,11 @@ decrypt_message (ctrl_t ctrl, const char *filename, strlist_t remusr)
       int armor = opt.armor || (was_armored (afx) && !opt.no_armor);
 
       err = reencrypt_to_new_recipients (ctrl, armor, filename, fp,
-                                         remusr, dek, pkenc_list);
+                                         remusr, dek, sesenc_list);
     }
 
   xfree (dek);
-  free_pubkey_enc_list (pkenc_list);
+  free_seskey_enc_list (sesenc_list);
   iobuf_close (fp);
   release_armor_context (afx);
   release_progress_context (pfx);

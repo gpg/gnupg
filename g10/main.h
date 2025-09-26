@@ -253,7 +253,7 @@ gpg_error_t reencrypt_to_new_recipients (ctrl_t ctrl, int armor,
                                          const char *filename, iobuf_t infp,
                                          strlist_t recipients,
                                          DEK *dek,
-                                         struct pubkey_enc_list *pkenc_list);
+                                         struct seskey_enc_list *sesenc_list);
 int encrypt_filter (void *opaque, int control,
 		    iobuf_t a, byte *buf, size_t *ret_len);
 

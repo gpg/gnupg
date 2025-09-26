@@ -172,11 +172,11 @@ typedef struct {
 
 
 /* An object to build a list of public-key and symkey encrypted
- * session key.  Note that we use a dedicated uinion here instead of
- * the usual PACKET type; this the need for extra allocations. */
-struct pubkey_enc_list
+ * session key.  Note that we use a dedicated union here instead of
+ * the usual PACKET type to avoid the need for extra allocations. */
+struct seskey_enc_list
 {
-  struct pubkey_enc_list *next;
+  struct seskey_enc_list *next;
   int result;
   int u_sym;  /* Use the sym member.  */
   union {
@@ -686,7 +686,7 @@ int proc_signature_packets_by_fd (ctrl_t ctrl, void *anchor, IOBUF a,
                                   gnupg_fd_t signed_data_fd);
 gpg_error_t proc_encryption_packets (ctrl_t ctrl, void *ctx, iobuf_t a,
                                      DEK **r_dek,
-                                     struct pubkey_enc_list **r_list);
+                                     struct seskey_enc_list **r_list);
 
 int list_packets( iobuf_t a );
 
@@ -962,7 +962,7 @@ PKT_public_key *copy_public_key( PKT_public_key *d, PKT_public_key *s );
 PKT_signature *copy_signature( PKT_signature *d, PKT_signature *s );
 PKT_user_id *scopy_user_id (PKT_user_id *sd );
 
-void free_pubkey_enc_list (struct pubkey_enc_list *pkenc_list);
+void free_seskey_enc_list (struct seskey_enc_list *sesenc_list);
 
 int cmp_public_keys( PKT_public_key *a, PKT_public_key *b );
 int cmp_signatures( PKT_signature *a, PKT_signature *b );
@@ -984,7 +984,7 @@ gpg_error_t check_signature (ctrl_t ctrl,
 
 
 /*-- pubkey-enc.c --*/
-gpg_error_t get_session_key (ctrl_t ctrl, struct pubkey_enc_list *k, DEK *dek);
+gpg_error_t get_session_key (ctrl_t ctrl, struct seskey_enc_list *k, DEK *dek);
 gpg_error_t get_override_session_key (DEK *dek, const char *string);
 
 /*-- compress.c --*/
