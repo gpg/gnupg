@@ -147,9 +147,9 @@ typedef struct {
      S2K function on the password is the session key. See RFC 4880,
      Section 5.3.)  */
   byte seskeylen;
-  /* The session key as encrypted by the S2K specifier.  For AEAD this
-   * includes the nonce and the authentication tag.  */
-  byte seskey[1];
+  /* The malloced session key as encrypted by the S2K specifier.  For
+   * AEAD this includes the nonce and the authentication tag.  */
+  byte *seskey;
 } PKT_symkey_enc;
 
 /* A public-key encrypted session key packet as defined in RFC 4880,
@@ -177,7 +177,7 @@ typedef struct {
 struct seskey_enc_list
 {
   struct seskey_enc_list *next;
-  int result;
+  int result; /* The error code decrypting the session key.  */
   int u_sym;  /* Use the sym member.  */
   union {
     PKT_pubkey_enc pub;

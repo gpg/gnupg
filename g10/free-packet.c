@@ -49,8 +49,11 @@ my_mpi_copy (gcry_mpi_t a)
 void
 free_symkey_enc( PKT_symkey_enc *enc )
 {
-    xfree(enc);
+  if (enc)
+    xfree (enc->seskey);
+  xfree(enc);
 }
+
 
 /* This is the core of free_pubkey_enc but does only release the
  * allocated members of ENC.  */

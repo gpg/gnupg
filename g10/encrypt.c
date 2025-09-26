@@ -572,7 +572,7 @@ encrypt_simple (const char *filename, int mode, int use_seskey)
   if ( s2k )
     {
       /* Fixme: This is quite similar to write_symkey_enc.  */
-      PKT_symkey_enc *enc = xmalloc_clear (sizeof *enc + enckeylen);
+      PKT_symkey_enc *enc = xmalloc_clear (sizeof *enc);
       enc->version = cfx.dek->use_aead ? 5 : 4;
       enc->cipher_algo = cfx.dek->algo;
       enc->aead_algo = cfx.dek->use_aead;
@@ -580,13 +580,14 @@ encrypt_simple (const char *filename, int mode, int use_seskey)
       if (enckeylen)
         {
           enc->seskeylen = enckeylen;
+          enc->seskey = xmalloc (enckeylen);
           memcpy (enc->seskey, enckey, enckeylen);
         }
       pkt.pkttype = PKT_SYMKEY_ENC;
       pkt.pkt.symkey_enc = enc;
       if ((rc = build_packet( out, &pkt )))
         log_error("build symkey packet failed: %s\n", gpg_strerror (rc) );
-      xfree (enc);
+      free_symkey_enc (enc);
       xfree (enckey);
       enckey = NULL;
     }
@@ -777,7 +778,7 @@ write_symkey_enc (STRING2KEY *symkey_s2k, aead_algo_t aead_algo,
   rc = encrypt_seskey (symkey_dek, aead_algo, &dek, &enckey, &enckeylen);
   if (rc)
     return rc;
-  enc = xtrycalloc (1, sizeof (PKT_symkey_enc) + enckeylen);
+  enc = xtrycalloc (1, sizeof (PKT_symkey_enc));
   if (!enc)
     {
       rc = gpg_error_from_syserror ();
@@ -790,6 +791,14 @@ write_symkey_enc (STRING2KEY *symkey_s2k, aead_algo_t aead_algo,
   enc->aead_algo = aead_algo;
   enc->s2k = *symkey_s2k;
   enc->seskeylen = enckeylen;
+  enc->seskey = xtrymalloc (enckeylen);
+  if (!enc->seskey)
+    {
+      rc = gpg_error_from_syserror ();
+      xfree (enc);
+      xfree (enckey);
+      return rc;
+    }
   memcpy (enc->seskey, enckey, enckeylen);
   xfree (enckey);
 
@@ -799,7 +808,7 @@ write_symkey_enc (STRING2KEY *symkey_s2k, aead_algo_t aead_algo,
   if ((rc=build_packet(out,&pkt)))
     log_error("build symkey_enc packet failed: %s\n",gpg_strerror (rc));
 
-  xfree (enc);
+  free_symkey_enc (enc);
   return rc;
 }
 
