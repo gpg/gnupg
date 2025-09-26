@@ -166,17 +166,34 @@ typedef struct {
   /* Whether to hide the key id.  This value is not directly
      serialized.  */
   byte    throw_keyid;
-  /* The session key.  */
+  /* The encrypted session key.  */
   gcry_mpi_t     data[PUBKEY_MAX_NENC];
 } PKT_pubkey_enc;
 
 
-/* An object to build a list of public-key encrypted session key.  */
+/* An object to build a list of public-key and symkey encrypted
+ * session key.  Note that we use a dedicated uinion here instead of
+ * the usual PACKET type; this the need for extra allocations. */
 struct pubkey_enc_list
 {
   struct pubkey_enc_list *next;
   int result;
-  PKT_pubkey_enc d;
+  int u_sym;  /* Use the sym member.  */
+  union {
+    PKT_pubkey_enc pub;
+    PKT_symkey_enc sym;
+  } u;
+};
+
+
+/* An object to record some properties of a PKT_pubkey_enc packet.  */
+struct pubkey_enc_info_item
+{
+  struct pubkey_enc_info_item *next;
+  /* 3 fields copied from a PKT_pubkey_enc:  */
+  u32     keyid[2];
+  byte    version;
+  byte    pubkey_algo;
 };
 
 
@@ -944,6 +961,8 @@ PKT_public_key *copy_public_key( PKT_public_key *d, PKT_public_key *s );
 
 PKT_signature *copy_signature( PKT_signature *d, PKT_signature *s );
 PKT_user_id *scopy_user_id (PKT_user_id *sd );
+
+void free_pubkey_enc_list (struct pubkey_enc_list *pkenc_list);
 
 int cmp_public_keys( PKT_public_key *a, PKT_public_key *b );
 int cmp_signatures( PKT_signature *a, PKT_signature *b );

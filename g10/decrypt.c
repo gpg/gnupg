@@ -120,14 +120,7 @@ decrypt_message (ctrl_t ctrl, const char *filename, strlist_t remusr)
     }
 
   xfree (dek);
-  while (pkenc_list)
-    {
-      struct pubkey_enc_list *tmp = pkenc_list->next;
-
-      release_pubkey_enc_parts (&pkenc_list->d);
-      xfree (pkenc_list);
-      pkenc_list = tmp;
-    }
+  free_pubkey_enc_list (pkenc_list);
   iobuf_close (fp);
   release_armor_context (afx);
   release_progress_context (pfx);

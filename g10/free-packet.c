@@ -538,6 +538,22 @@ free_packet (PACKET *pkt, parse_packet_ctx_t parsectx)
 }
 
 
+/* Free a entire list of public key encrypted data.  */
+void
+free_pubkey_enc_list (struct pubkey_enc_list *pkenc_list)
+{
+  while (pkenc_list)
+    {
+      struct pubkey_enc_list *tmp = pkenc_list->next;
+
+      if (!pkenc_list->u_sym)
+        release_pubkey_enc_parts (&pkenc_list->u.pub);
+      xfree (pkenc_list);
+      pkenc_list = tmp;
+    }
+}
+
+
 /****************
  * returns 0 if they match.
  */

@@ -137,14 +137,7 @@ release_list( CTX c )
 {
   proc_tree (c, c->list);
   release_kbnode (c->list);
-  while (c->pkenc_list)
-    {
-      struct pubkey_enc_list *tmp = c->pkenc_list->next;
-
-      release_pubkey_enc_parts (&c->pkenc_list->d);
-      xfree (c->pkenc_list);
-      c->pkenc_list = tmp;
-    }
+  free_pubkey_enc_list (c->pkenc_list);
   c->pkenc_list = NULL;
   while (c->symenc_list)
     {
@@ -526,7 +519,7 @@ proc_pubkey_enc (CTX c, PACKET *pkt)
     {
       struct pubkey_enc_list *x = xcalloc (1, sizeof *x);
 
-      copy_pubkey_enc_parts (&x->d, enc);
+      copy_pubkey_enc_parts (&x->u.pub, enc);
       x->result = -1;
       x->next = c->pkenc_list;
       c->pkenc_list = x;
@@ -549,24 +542,27 @@ print_pkenc_list (ctrl_t ctrl, struct pubkey_enc_list *list)
       char pkstrbuf[PUBKEY_STRING_SIZE];
       char *p;
 
+      if (list->u_sym)
+        continue;
+
       pk = xmalloc_clear (sizeof *pk);
 
-      pk->pubkey_algo = list->d.pubkey_algo;
-      if (!get_pubkey (ctrl, pk, list->d.keyid))
+      pk->pubkey_algo = list->u.pub.pubkey_algo;
+      if (!get_pubkey (ctrl, pk, list->u.pub.keyid))
         {
           pubkey_string (pk, pkstrbuf, sizeof pkstrbuf);
 
           log_info (_("encrypted with %s key, ID %s, created %s\n"),
                     pkstrbuf, keystr_from_pk (pk),
                     strtimestamp (pk->timestamp));
-          p = get_user_id_native (ctrl, list->d.keyid);
+          p = get_user_id_native (ctrl, list->u.pub.keyid);
           log_printf (_("      \"%s\"\n"), p);
           xfree (p);
         }
       else
         log_info (_("encrypted with %s key, ID %s\n"),
-                  openpgp_pk_algo_name (list->d.pubkey_algo),
-                  keystr (list->d.keyid));
+                  openpgp_pk_algo_name (list->u.pub.pubkey_algo),
+                  keystr (list->u.pub.keyid));
 
       if (opt.flags.require_pqc_encryption
           && pk->pubkey_algo != PUBKEY_ALGO_KYBER)
@@ -637,11 +633,12 @@ proc_encrypted (CTX c, PACKET *pkt)
           struct pubkey_enc_list *list;
 
           for (list = c->pkenc_list; list; list = list->next)
-            if (list->result)
+            if (list->result && !list->u_sym)
               { /* Key was not tried or it caused an error.  */
                 char buf[20];
                 snprintf (buf, sizeof buf, "%08lX%08lX",
-                          (ulong)list->d.keyid[0], (ulong)list->d.keyid[1]);
+                          (ulong)list->u.pub.keyid[0],
+                          (ulong)list->u.pub.keyid[1]);
                 write_status_text (STATUS_NO_SECKEY, buf);
               }
         }
@@ -792,9 +789,11 @@ proc_encrypted (CTX c, PACKET *pkt)
        * is compliant.  */
       for (i = c->pkenc_list; i && compliant; i = i->next)
         {
+          if (i->u_sym)
+            continue;
           memset (pk, 0, sizeof *pk);
-          pk->pubkey_algo = i->d.pubkey_algo;
-          if (!get_pubkey (c->ctrl, pk, i->d.keyid)
+          pk->pubkey_algo = i->u.pub.pubkey_algo;
+          if (!get_pubkey (c->ctrl, pk, i->u.pub.keyid)
               && !gnupg_pk_is_compliant (CO_DE_VS, pk->pubkey_algo, 0,
                                          pk->pkey, nbits_from_pk (pk), NULL))
             compliant = 0;
