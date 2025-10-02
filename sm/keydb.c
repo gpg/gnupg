@@ -71,6 +71,7 @@ static int lock_all (KEYDB_HANDLE hd);
 static void unlock_all (KEYDB_HANDLE hd);
 
 
+
 static void
 try_make_homedir (const char *fname)
 {
@@ -340,11 +341,9 @@ keydb_add_resource (ctrl_t ctrl, const char *url, int force, int *auto_created)
                 KEYBOX_HANDLE kbxhd = keybox_new_x509 (token, 0);
 
                 if (kbxhd)
-                  {
-                    keybox_compress (kbxhd);
-                    keybox_release (kbxhd);
-                  }
+                  keybox_compress (kbxhd);
                 dotlock_release (all_resources[used_resources].lockhandle);
+                keybox_release (kbxhd);
               }
 
             used_resources++;
@@ -438,7 +437,6 @@ keydb_release (KEYDB_HANDLE hd)
   assert (active_handles > 0);
   active_handles--;
 
-  unlock_all (hd);
   for (i=0; i < hd->used; i++)
     {
       switch (hd->active[i].type)
@@ -450,8 +448,9 @@ keydb_release (KEYDB_HANDLE hd)
           break;
         }
     }
+  unlock_all (hd);
 
-    xfree (hd);
+  xfree (hd);
 }
 
 
@@ -1287,6 +1286,7 @@ keydb_clear_some_cert_flags (ctrl_t ctrl, strlist_t names)
     }
 
   keydb_close_all_files ();
+  unlock_all (hd);
   err = lock_all (hd);
   if (err)
     {

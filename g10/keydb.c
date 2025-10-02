@@ -983,8 +983,6 @@ keydb_release (KEYDB_HANDLE hd)
   log_assert (active_handles > 0);
   active_handles--;
 
-  hd->keep_lock = 0;
-  unlock_all (hd);
   for (i=0; i < hd->used; i++)
     {
       switch (hd->active[i].type)
@@ -999,6 +997,8 @@ keydb_release (KEYDB_HANDLE hd)
           break;
         }
     }
+  hd->keep_lock = 0;
+  unlock_all (hd);
 
   keyblock_cache_clear (hd);
   xfree (hd);
@@ -1922,6 +1922,14 @@ keydb_search (KEYDB_HANDLE hd, KEYDB_SEARCH_DESC *desc,
         log_clock ("keydb_search leave (not found, cached)");
       keydb_stats.notfound_cached++;
       return gpg_error (GPG_ERR_NOT_FOUND);
+    }
+
+  /* Make sure we are locked.  */
+  if (!hd->locked)
+    {
+      rc = lock_all (hd);
+      if (rc)
+        return rc;
     }
 
   /* NB: If one of the exact search modes below is used in a loop to
