@@ -78,6 +78,7 @@ int check_special_filename (const char *fname, int for_write, int notranslate);
 FILE *gnupg_tmpfile (void);
 void gnupg_reopen_std (const char *pgmname);
 void gnupg_allow_set_foregound_window (pid_t pid);
+int  gnupg_remove_ext (const char *fname, int wait_for_access);
 int  gnupg_remove (const char *fname);
 gpg_error_t gnupg_rename_file (const char *oldname, const char *newname,
                                int *block_signals);

@@ -793,27 +793,91 @@ gnupg_allow_set_foregound_window (pid_t pid)
 #endif
 }
 
-int
-gnupg_remove (const char *fname)
-{
+
+/* Helper for gnupg_rename and gnupg_remove.  */
 #ifdef HAVE_W32_SYSTEM
-  int rc;
+static int
+w32_wait_when_sharing_violation (int wtime, const char *fname)
+{
+  int ec = GetLastError ();
+
+  if (ec != ERROR_SHARING_VIOLATION)
+    {
+      gnupg_w32_set_errno (ec);
+      return 0;
+    }
+
+  /* Another process has the file open.  We do not use a
+   * lock for read but instead we wait until the other
+   * process has closed the file.  This may take long but
+   * that would also be the case with a dotlock approach for
+   * read and write.  Note that we don't need this on Unix
+   * due to the inode concept.
+   *
+   * So let's wait until the file_op has worked.  The retry
+   * intervals are 50, 100, 200, 400, 800, 50ms, ...  */
+  if (!wtime || wtime >= 800)
+    wtime = 50;
+  else
+    wtime *= 2;
+
+  if (wtime >= 800)
+    log_info (_("waiting for file '%s' to become accessible ...\n"),
+              fname);
+
+  Sleep (wtime);
+  return wtime;  /* Note: WTIME is always > 0 */
+}
+#endif /*HAVE_W32_SYSTEM*/
+
+
+/* The Windows version to remove a file.  If WAIT_FOR_ACCESS is
+ * non-zero the functions waits until a sharing violation has been
+ * solved.  A value of -1 waits indefinitely, a positive value gives
+ * the number of milliseconds to wait at max.  */
+#ifdef HAVE_W32_SYSTEM
+static int
+w32_remove (const char *fname, int wait_for_access)
+{
   wchar_t *wfname;
+  int wtime = 0;
+  int totalwtime = 0;
 
   wfname = utf8_to_wchar (fname);
   if (!wfname)
-    rc = 0;
-  else
+    return -1; /* Error - ERRNO has already been set.  */
+
+ again:
+  if (DeleteFileW (wfname))
     {
-      rc = DeleteFileW (wfname);
-      if (!rc)
-        gnupg_w32_set_errno (-1);
       xfree (wfname);
+      return 0; /* Success.  */
     }
-  if (!rc)
-    return -1;
-  return 0;
-#else
+  if (!wait_for_access
+      || (wait_for_access > 0 && totalwtime > wait_for_access))
+    gnupg_w32_set_errno (-1);
+  else if ((wtime = w32_wait_when_sharing_violation (wtime, fname)))
+    {
+      totalwtime += wtime;
+      goto again;
+    }
+
+  xfree (wfname);
+  return -1;
+}
+#endif /* HAVE_W32_SYSTEM */
+
+/* This is a remove function which allows - on Windows - to wait until
+ * a sharing violation has been solved.  WAIT_FOR_ACCESS may eitehr be
+ * -1 to wait indefinitely or the number of milliseconds to wait
+ * before giving up.  */
+int
+gnupg_remove_ext (const char *fname, int wait_for_access)
+{
+#ifdef HAVE_W32_SYSTEM
+  return w32_remove (fname, wait_for_access);
+#else /* Unix */
+  (void)wait_for_access;
   /* It is common to use /dev/null for testing.  We better don't
    * remove that file.  */
   if (fname && !strcmp (fname, "/dev/null"))
@@ -821,6 +885,12 @@ gnupg_remove (const char *fname)
   else
     return remove (fname);
 #endif
+}
+
+int
+gnupg_remove (const char *fname)
+{
+  return gnupg_remove_ext (fname, 0);
 }
 
 
@@ -871,33 +941,12 @@ gnupg_rename_file (const char *oldname, const char *newname, int *block_signals)
   {
     int wtime = 0;
 
-    gnupg_remove (newname);
+    w32_remove (newname, -1);
   again:
     if (w32_rename (oldname, newname))
       {
-        if (GetLastError () == ERROR_SHARING_VIOLATION)
-          {
-            /* Another process has the file open.  We do not use a
-             * lock for read but instead we wait until the other
-             * process has closed the file.  This may take long but
-             * that would also be the case with a dotlock approach for
-             * read and write.  Note that we don't need this on Unix
-             * due to the inode concept.
-             *
-             * So let's wait until the rename has worked.  The retry
-             * intervals are 50, 100, 200, 400, 800, 50ms, ...  */
-            if (!wtime || wtime >= 800)
-              wtime = 50;
-            else
-              wtime *= 2;
-
-            if (wtime >= 800)
-              log_info (_("waiting for file '%s' to become accessible ...\n"),
-                        oldname);
-
-            Sleep (wtime);
-            goto again;
-          }
+        if ((wtime = w32_wait_when_sharing_violation (wtime, oldname)))
+          goto again;
         err = my_error_from_syserror ();
       }
   }
