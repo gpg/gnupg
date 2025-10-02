@@ -3747,6 +3747,9 @@ do_change_pin (app_t app, ctrl_t ctrl,  const char *chvnostr,
           if (!rc)
             rc = pin2hash_if_kdf (app, chvno, pinvalue, &buffer2, &bufferlen2);
           if (!rc)
+            rc = iso7816_verify (app_get_slot (app),
+                                 0x80 + chvno, buffer1, bufferlen1);
+          if (!rc)
             rc = iso7816_change_reference_data (app_get_slot (app),
                                                 0x80 + chvno,
                                                 buffer1, bufferlen1,
