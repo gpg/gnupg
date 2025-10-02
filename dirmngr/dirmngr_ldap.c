@@ -390,7 +390,7 @@ set_timeout (void)
           /* Initially set the timer.  */
           SetWaitableTimer (timer, &due_time, 0, NULL, NULL, 0);
 
-          if (CreateThread (&sec_attr, 0, alarm_thread, timer, 0, &tid))
+          if (!CreateThread (&sec_attr, 0, alarm_thread, timer, 0, &tid))
             log_error ("failed to create alarm thread\n");
         }
       else /* Retrigger the timer.  */
