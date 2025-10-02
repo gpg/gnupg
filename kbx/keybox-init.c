@@ -283,10 +283,10 @@ _keybox_ll_open (estream_t *rfp, const char *fname, unsigned int mode)
 
   fp = es_fopen (fname,
                  mode == KEYBOX_LL_OPEN_CREATE
-                 ? "wb,sysopen,sequential" :
+                 ? "wb,sysopen,sequential,share=rw" :
                  mode == KEYBOX_LL_OPEN_UPDATE
-                 ? "r+b,sysopen,sequential" :
-                 "rb,sysopen,sequential");
+                 ? "r+b,sysopen,sequential,share=rw" :
+                 "rb,sysopen,sequential,share=rw");
   if (!fp)
     return gpg_error_from_syserror ();
 

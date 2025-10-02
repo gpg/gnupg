@@ -85,6 +85,9 @@ same_file_p (const char *name1, const char *name2)
       wname = gpgrt_fname_to_wchar (name1);
       if (wname)
         {
+          /* Note that if the desiredAccess (2nd arg) is zero, we are
+           * allowed to query certain metadata even if GENERIC_READ
+           * would have not been granted.  */
           file1 = CreateFileW (wname, 0, 0, NULL, OPEN_EXISTING, 0, NULL);
           xfree (wname);
         }

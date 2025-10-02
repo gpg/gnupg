@@ -286,7 +286,6 @@ direct_open (const char *fname, const char *mode, int mode700)
         return GNUPG_INVALID_FD;
       da = GENERIC_READ | GENERIC_WRITE;
       cd = OPEN_EXISTING;
-      sm = FILE_SHARE_READ | FILE_SHARE_WRITE;
     }
   else if (strchr (mode, 'w'))
     {
@@ -294,14 +293,13 @@ direct_open (const char *fname, const char *mode, int mode700)
         return GNUPG_INVALID_FD;
       da = GENERIC_WRITE;
       cd = CREATE_ALWAYS;
-      sm = FILE_SHARE_WRITE;
     }
   else
     {
       da = GENERIC_READ;
       cd = OPEN_EXISTING;
-      sm = FILE_SHARE_READ;
     }
+  sm = FILE_SHARE_READ | FILE_SHARE_WRITE;
 
   /* We always use the Unicode version because it supports file names
    * longer than MAX_PATH.  (requires gpgrt 1.45) */
