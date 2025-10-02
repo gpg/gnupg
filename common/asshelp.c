@@ -308,7 +308,8 @@ unlock_spawning (lock_spawn_t *lock, const char *name)
 }
 
 static gpg_error_t
-wait_for_sock (int secs, const char *name, const char *sockname, int verbose, assuan_context_t ctx, int *did_success_msg)
+wait_for_sock (int secs, const char *name, const char *sockname, int verbose,
+               assuan_context_t ctx, int *did_success_msg)
 {
   gpg_error_t err = 0;
   int target_us = secs * 1000000;
@@ -477,6 +478,14 @@ start_new_gpg_agent (assuan_context_t *r_ctx,
       if (!(err = lock_spawning (&lock, gnupg_homedir (), "agent", verbose))
           && assuan_socket_connect (ctx, sockname, 0, 0))
         {
+          /* On Windows we remove the socketname before creating it.
+           * This is so that we can wait for a client which is
+           * currently trying to connect.  The 10000 will make the
+           * remove function wait up to 10 seconds for sharing
+           * violation to go away.  */
+#ifdef HAVE_W32_SYSTEM
+          gnupg_remove_ext (sockname, 10000);
+#endif
           err = gnupg_spawn_process_detached (program? program : agent_program,
                                               argv, NULL);
           if (err)
@@ -612,6 +621,10 @@ start_new_dirmngr (assuan_context_t *r_ctx,
       if (!(err = lock_spawning (&lock, gnupg_homedir (), "dirmngr", verbose))
           && assuan_socket_connect (ctx, sockname, 0, 0))
         {
+#ifdef HAVE_W32_SYSTEM
+          /* See start_new_gpg_agent for an explanation.  */
+          gnupg_remove_ext (sockname, 10000);
+#endif
           err = gnupg_spawn_process_detached (dirmngr_program, argv, NULL);
           if (err)
             log_error ("failed to start the dirmngr '%s': %s\n",
