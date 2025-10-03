@@ -557,22 +557,18 @@ start_new_service (assuan_context_t *r_ctx,
                      to serve, by reading from the pipe.  */
                   r = read (pipe_in, buf, sizeof buf);
                   close (pipe_in);
-                  /* Older versions of Windows (< Vista), it cannot
-                   * support spawing with pipe I/O for
-                   * GPGRT_PROCESS_DETACHED flag (since inheriting
-                   * specific HANDLEs are not supported).  In this
-                   * case, read from child process fails.
-                   */
                   if (r < 0)
                     {
                       if (verbose)
                         log_info ("read from child process failed: %s\n",
                                   strerror (errno));
-/* NOTE: Remove following line when we can assume newer Windows.  */
-#define SUPPORT_OLDER_WINDOWS 1
-#if !defined(SUPPORT_OLDER_WINDOWS)
-                      err = gpg_error (GPG_ERR_SERVER_FAILED);
-#endif
+                      /*
+                       * Go ahead, ignoring the read error, so that
+                       * we can still support older Windows (< Vista).
+                       *
+                       * In future, we should return error with
+                       * GPG_ERR_SERVER_FAILED here.
+                       */
                     }
                 }
               gpgrt_process_release (proc);
