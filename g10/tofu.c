@@ -2029,7 +2029,7 @@ ask_about_binding (ctrl_t ctrl,
 
   tofu_resume_batch_transaction (ctrl);
 
-  xfree (prompt);
+  es_free (prompt);
 
   signature_stats_free (stats);
 }

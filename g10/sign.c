@@ -1728,7 +1728,18 @@ sign_symencrypt_file (ctrl_t ctrl, const char *fname, strlist_t locusr)
   /* Write the symmetric key packet */
   /* (current filters: armor)*/
   {
-    PKT_symkey_enc *enc = xmalloc_clear( sizeof *enc );
+    PKT_symkey_enc *enc = xmalloc_clear (sizeof *enc);
+
+    /* FIXME: seskeylen is 0, thus we directly encrypt the session key:
+     *
+     *     ...then the S2K algorithm applied to the passphrase produces
+     *    the session key for decrypting the file, using the symmetric
+     *    cipher algorithm from the Symmetric-Key Encrypted Session Key
+     *    packet.
+     *
+     * The problem is that this does not allow us to add additional
+     * encrypted session keys.
+     */
 
     enc->version = cfx.dek->use_aead ? 5 : 4;
     enc->cipher_algo = cfx.dek->algo;
@@ -1817,7 +1828,7 @@ sign_symencrypt_file (ctrl_t ctrl, const char *fname, strlist_t locusr)
  * expires.
  *
  * If CACHED_NONCE is not NULL the agent may use it to avoid
- * additional pinnetry popups for the same keyblock.
+ * additional Pinentry popups for the same keyblock.
  *
  * This function creates the following subpackets: issuer, created,
  * and expire (if duration is not 0).  Additional subpackets can be

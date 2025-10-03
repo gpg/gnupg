@@ -1816,7 +1816,7 @@ msgid "Invalid command  (try \"help\")\n"
 msgstr "L'ordre no és vàlida (proveu «help»)\n"
 
 #, fuzzy, c-format
-msgid "modifiying the recipients is not possible: %s\n"
+msgid "modifying the recipients is not possible: %s\n"
 msgstr "La generació de claus ha fallat: %s\n"
 
 #, fuzzy
@@ -5071,6 +5071,9 @@ msgstr ""
 msgid "honor the preferred keyserver URL set on the key"
 msgstr "la URL de política de signatura donada no és vàlida\n"
 
+msgid "update a key before sending it"
+msgstr ""
+
 #, fuzzy
 msgid "disabled"
 msgstr "disable"
@@ -5085,6 +5088,10 @@ msgstr ""
 #, fuzzy, c-format
 msgid "\"%s\" not a key ID: skipping\n"
 msgstr "%s: no és un ID vàlid\n"
+
+#, fuzzy, c-format
+msgid "\"%s\" not a fingerprint: skipping\n"
+msgstr "error: l'empremta digital és invàlida\n"
 
 #, fuzzy, c-format
 msgid "refreshing %d key from %s\n"
@@ -5112,6 +5119,10 @@ msgstr "s'està sol·licitant la clau %08lX de %s\n"
 #, fuzzy, c-format
 msgid "no keyserver known\n"
 msgstr "error de servidor de claus"
+
+#, c-format
+msgid "upload skipped due to non-LDAP keyserver\n"
+msgstr ""
 
 #, fuzzy, c-format
 msgid "skipped \"%s\": %s\n"
@@ -5456,6 +5467,10 @@ msgstr "No comprimit"
 #, c-format
 msgid "this message may not be usable by %s\n"
 msgstr "aquest missatge pot no ser usable per %s\n"
+
+#, fuzzy
+msgid "enabled"
+msgstr "activa una clau"
 
 #, fuzzy, c-format
 msgid "ambiguous option '%s'\n"

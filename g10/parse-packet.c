@@ -1376,8 +1376,7 @@ parse_symkeyenc (IOBUF inp, int pkttype, unsigned long pktlen,
       goto leave;
     }
   seskeylen = pktlen - minlen;
-  k = packet->pkt.symkey_enc = xmalloc_clear (sizeof *packet->pkt.symkey_enc
-					      + seskeylen - 1);
+  k = packet->pkt.symkey_enc = xmalloc_clear (sizeof *packet->pkt.symkey_enc);
   k->version = version;
   k->cipher_algo = cipher_algo;
   k->aead_algo = aead_algo;
@@ -1396,6 +1395,7 @@ parse_symkeyenc (IOBUF inp, int pkttype, unsigned long pktlen,
   k->seskeylen = seskeylen;
   if (k->seskeylen)
     {
+      k->seskey = xcalloc (1, seskeylen);
       for (i = 0; i < seskeylen && pktlen; i++, pktlen--)
 	k->seskey[i] = iobuf_get_noeof (inp);
 

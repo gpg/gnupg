@@ -3057,7 +3057,7 @@ is_file_compressed (iobuf_t inp)
   {
     byte len;
     byte extchk;
-    byte magic[5];
+    byte magic[6];
   } magic[] =
       {
        { 3, 0, { 0x42, 0x5a, 0x68, 0x00 } }, /* bzip2 */
@@ -3065,7 +3065,8 @@ is_file_compressed (iobuf_t inp)
        { 4, 0, { 0x50, 0x4b, 0x03, 0x04 } }, /* (pk)zip */
        { 5, 0, { '%', 'P', 'D', 'F', '-'} }, /* PDF */
        { 4, 1, { 0xff, 0xd8, 0xff, 0xe0 } }, /* Maybe JFIF */
-       { 5, 2, { 0x89, 'P','N','G', 0x0d} }  /* Likely PNG */
+       { 5, 2, { 0x89, 'P','N','G', 0x0d} }, /* Likely PNG */
+       { 6, 0, { '7', 'z', 0xbc, 0xaf, 0x27, 0x1c} } /* 7z */
   };
 
   if (!inp)

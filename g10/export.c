@@ -1403,7 +1403,7 @@ transfer_format_to_openpgp (gcry_sexp_t s_pgp, PKT_public_key *pk)
 
 
 /* Print an "EXPORTED" status line.  PK is the primary public key.  */
-static void
+void
 print_status_exported (PKT_public_key *pk)
 {
   char *hexfpr;
@@ -2018,7 +2018,8 @@ do_export_one_keyblock (ctrl_t ctrl, kbnode_t keyblock, u32 *keyid,
               if (!err && node->pkt->pkttype == PKT_PUBLIC_KEY)
                 {
                   stats->exported++;
-                  print_status_exported (node->pkt->pkt.public_key);
+                  if (!(options & EXPORT_NO_STATUS))
+                    print_status_exported (node->pkt->pkt.public_key);
                 }
             }
           else if (!err)
@@ -2054,7 +2055,8 @@ do_export_one_keyblock (ctrl_t ctrl, kbnode_t keyblock, u32 *keyid,
                   if (node->pkt->pkttype == PKT_PUBLIC_KEY)
                     {
                       stats->exported++;
-                      print_status_exported (node->pkt->pkt.public_key);
+                      if (!(options & EXPORT_NO_STATUS))
+                        print_status_exported (node->pkt->pkt.public_key);
                     }
                 }
             }
@@ -2088,7 +2090,8 @@ do_export_one_keyblock (ctrl_t ctrl, kbnode_t keyblock, u32 *keyid,
           if (!err && node->pkt->pkttype == PKT_PUBLIC_KEY)
             {
               stats->exported++;
-              print_status_exported (node->pkt->pkt.public_key);
+              if (!(options & EXPORT_NO_STATUS))
+                print_status_exported (node->pkt->pkt.public_key);
             }
         }
 

@@ -280,6 +280,19 @@ write_status_printf (int no, const char *format, ...)
     g10_exit (0);
 }
 
+/* Write a WARNING status line using a full gpg-error error value.  */
+void
+write_status_warning (const char *where, gpg_error_t err)
+{
+  if (!statusfp || !status_currently_allowed (STATUS_WARNING))
+    return;  /* Not enabled or allowed. */
+
+  es_fprintf (statusfp, "[GNUPG:] %s %s %u\n",
+              get_status_string (STATUS_WARNING), where, err);
+  if (es_fflush (statusfp) && opt.exit_on_status_write_error)
+    g10_exit (0);
+}
+
 
 /* Write an ERROR status line using a full gpg-error error value.  */
 void

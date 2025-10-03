@@ -1770,7 +1770,7 @@ msgstr "Comandă invalidă  (încercaţi \"ajutor\")\n"
 
 #, fuzzy, c-format
 #| msgid "key operation not possible: %s\n"
-msgid "modifiying the recipients is not possible: %s\n"
+msgid "modifying the recipients is not possible: %s\n"
 msgstr "operaţia pe cheie nu e posibilă: %s\n"
 
 #, fuzzy
@@ -4995,6 +4995,9 @@ msgstr ""
 msgid "honor the preferred keyserver URL set on the key"
 msgstr "Introduceţi URL-ul serverului de chei preferat: "
 
+msgid "update a key before sending it"
+msgstr ""
+
 msgid "disabled"
 msgstr "deactivat(ă)"
 
@@ -5008,6 +5011,11 @@ msgstr "protocol server de chei invalid (us %d!=handler %d)\n"
 #, c-format
 msgid "\"%s\" not a key ID: skipping\n"
 msgstr "\"%s\" nu este un ID de cheie: sărit\n"
+
+#, fuzzy, c-format
+#| msgid "invalid fingerprint"
+msgid "\"%s\" not a fingerprint: skipping\n"
+msgstr "amprentă invalidă"
 
 #, fuzzy, c-format
 #| msgid "refreshing %d keys from %s\n"
@@ -5036,6 +5044,10 @@ msgstr "cer cheia %s de la %s\n"
 #| msgid "no keyserver action!\n"
 msgid "no keyserver known\n"
 msgstr "nici o acţiune pentru serverul de chei!\n"
+
+#, c-format
+msgid "upload skipped due to non-LDAP keyserver\n"
+msgstr ""
 
 #, c-format
 msgid "skipped \"%s\": %s\n"
@@ -5374,6 +5386,11 @@ msgstr "necompresat|niciunul"
 #, c-format
 msgid "this message may not be usable by %s\n"
 msgstr "acest mesaj s-ar putea să nu poată fi folosit de %s\n"
+
+#, fuzzy
+#| msgid "enable key"
+msgid "enabled"
+msgstr "activează cheia"
 
 #, fuzzy, c-format
 #| msgid "ambiguous option `%s'\n"

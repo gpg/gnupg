@@ -17,7 +17,7 @@ if [ "$1" = "--dry-run" ]; then
    shift
 fi
 
-if [ -z "$1" -o -z "$2" -o -z "$3" ]; then
+if [ -z "$1" ] || [ -z "$2" ] || [ -z "$3" ]; then
    echo "usage: mail-signed-keys keyring signedby signame" >&2
    exit 1
 fi
@@ -44,7 +44,7 @@ if [ "$dryrun" = "0" ]; then
   echo "About to send the keys signed by $signedby" >&2
   echo -n "to their owners.  Do you really want to do this? (y/N)" >&2
   read
-  [ "$REPLY" != "y" -a "$REPLY" != "Y" ] && exit 0
+  [ "$REPLY" != "y" ] && [ "$REPLY" != "Y" ] && exit 0
 fi
 
 gpg $ro --check-sigs --with-colons 2>/dev/null \

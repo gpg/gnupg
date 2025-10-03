@@ -1263,6 +1263,7 @@ append_all_default_adsks (ctrl_t ctrl, kbnode_t keyblock)
   struct para_data_s *para;
   byte adskfpr[MAX_FINGERPRINT_LEN];
   size_t adskfprlen;
+  u32 sigtimestamp = make_timestamp ();
 
   keygen_prepare_new_key_adsks ();
   for (sl = opt.def_new_key_adsks; sl && !err; sl = sl->next)
@@ -1275,7 +1276,10 @@ append_all_default_adsks (ctrl_t ctrl, kbnode_t keyblock)
           fingerprint_from_pk (para->u.adsk, adskfpr, &adskfprlen);
           if (!has_key_with_fingerprint (keyblock, adskfpr, adskfprlen))
             {
-              err = append_adsk_to_key (ctrl, keyblock, para->u.adsk);
+              /* Fixme: We should use a cache nonce so that only one
+               * pinentry pops up.  */
+              err = append_adsk_to_key (ctrl, keyblock, para->u.adsk,
+                                        sigtimestamp, NULL);
               if (!err)
                 any_done = 1;
             }
@@ -2661,11 +2665,10 @@ ask_algo (ctrl_t ctrl, int addmode, int *r_subkey_algo, unsigned int *r_usage,
     tty_printf (_("  (%d) Existing key from card%s\n"), 14, "");
 
   /* Reserve 15 for Dilithium primary + Kyber subkey.  */
-  tty_printf (_("  (%d) ECC and Kyber%s\n"), 16, "");
+  if (!addmode)
+    tty_printf (_("  (%d) ECC and Kyber%s\n"), 16, "");
   if (addmode)
-    {
-      tty_printf (_("  (%d) Kyber (encrypt only)%s\n"), 17, "");
-    }
+    tty_printf (_("  (%d) Kyber (encrypt only)%s\n"), 17, "");
 
   for (;;)
     {
@@ -6630,7 +6633,8 @@ do_generate_keypair (ctrl_t ctrl, struct para_data_s *para,
 
       for (idx=0; (adsk = get_parameter_adsk (para, idx)); idx++)
         {
-          err = append_adsk_to_key (ctrl, pub_root, adsk);
+          err = append_adsk_to_key (ctrl, pub_root, adsk,
+                                    signtimestamp, cache_nonce);
           if (err)
             break;
           any_adsk++;
@@ -6741,6 +6745,16 @@ do_generate_keypair (ctrl_t ctrl, struct para_data_s *para,
       es_fflush (es_stdout);
       if (any_adsk)
         log_info (_("Note: The key has been created with one or more ADSK!\n"));
+
+      if (opt.flags.auto_key_upload)
+        {
+          unsigned int saved_options = opt.keyserver_options.options;
+
+          opt.keyserver_options.options |= KEYSERVER_LDAP_ONLY;
+          opt.keyserver_options.options |= KEYSERVER_WARN_ONLY;
+          keyserver_export_pubkey (ctrl, pk, 1/*Assume new key*/);
+          opt.keyserver_options.options = saved_options;
+         }
     }
 
   release_kbnode (pub_root);
@@ -6963,8 +6977,16 @@ generate_subkeypair (ctrl_t ctrl, kbnode_t keyblock, const char *algostr,
         }
       else if (algo == PUBKEY_ALGO_KYBER)
         {
-          nbits = 768;
-          curve = "brainpoolP256r1";
+          const char *kyberalgostr;
+
+          kyberalgostr = ask_kyber_variant ();
+          if (!kyberalgostr)  /* Should not happen.  */
+            kyberalgostr = PQC_STD_KEY_PARAM_SUB;
+
+          nbits = strstr (kyberalgostr, "768_")? 768 : 1024;
+          curve = strchr (kyberalgostr, '_');
+          log_assert (curve && curve[1]);
+          curve++;
         }
       else
         nbits = ask_keysize (algo, 0);

@@ -988,9 +988,10 @@ w32_commondir (void)
   return dir;
 }
 
+
 /*
  * On Windows, isatty returns TRUE when it's NUL device.
- * We need more checks.
+ * We need additional check.
  */
 int
 gnupg_isatty (int fd)

@@ -209,7 +209,7 @@ gpgsm_qualified_consent (ctrl_t ctrl, ksba_cert_t cert)
                   "equated to a handwritten signature.\n\n%s%s"
                   "Are you really sure that you want to do this?"),
                 subject? subject:"?",
-                opt.qualsig_approval?
+                (opt.qualsig_approval || opt.no_qes_note)?
                 "":
                 _("Note, that this software is not officially approved "
                   "to create or verify such signatures.\n"),

@@ -1753,7 +1753,7 @@ msgid "Invalid command  (try \"help\")\n"
 msgstr "Comando incorrecto (tente \"help\")\n"
 
 #, fuzzy, c-format
-msgid "modifiying the recipients is not possible: %s\n"
+msgid "modifying the recipients is not possible: %s\n"
 msgstr "A xeración da chave fallou: %s\n"
 
 #, fuzzy
@@ -4956,6 +4956,9 @@ msgstr ""
 msgid "honor the preferred keyserver URL set on the key"
 msgstr "o URL de normativa de sinaturas dado non é válido\n"
 
+msgid "update a key before sending it"
+msgstr ""
+
 #, fuzzy
 msgid "disabled"
 msgstr "disable"
@@ -4970,6 +4973,10 @@ msgstr "opcións de exportación non válidas\n"
 #, fuzzy, c-format
 msgid "\"%s\" not a key ID: skipping\n"
 msgstr "%s: non é un ID de chave válido\n"
+
+#, fuzzy, c-format
+msgid "\"%s\" not a fingerprint: skipping\n"
+msgstr "erro: pegada dactilar non válida\n"
 
 #, fuzzy, c-format
 msgid "refreshing %d key from %s\n"
@@ -4996,6 +5003,10 @@ msgstr "solicitando a chave %08lX de %s\n"
 #, fuzzy, c-format
 msgid "no keyserver known\n"
 msgstr "opcións de exportación non válidas\n"
+
+#, c-format
+msgid "upload skipped due to non-LDAP keyserver\n"
+msgstr ""
 
 #, fuzzy, c-format
 msgid "skipped \"%s\": %s\n"
@@ -5333,6 +5344,11 @@ msgstr "Sen comprimir"
 #, c-format
 msgid "this message may not be usable by %s\n"
 msgstr "esta mensaxe pode non ser utilizable por %s\n"
+
+#, fuzzy
+#| msgid "enable"
+msgid "enabled"
+msgstr "enable"
 
 #, fuzzy, c-format
 msgid "ambiguous option '%s'\n"
@@ -11230,9 +11246,6 @@ msgstr ""
 
 #~ msgid "disable"
 #~ msgstr "disable"
-
-#~ msgid "enable"
-#~ msgstr "enable"
 
 #~ msgid "showphoto"
 #~ msgstr "showphoto"

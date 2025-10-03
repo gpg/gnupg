@@ -1884,7 +1884,7 @@ msgstr "Ogiltigt kommando (prova med \"help\")\n"
 
 #, fuzzy, c-format
 #| msgid "key operation not possible: %s\n"
-msgid "modifiying the recipients is not possible: %s\n"
+msgid "modifying the recipients is not possible: %s\n"
 msgstr "nyckelåtgärden är inte möjlig: %s\n"
 
 #, fuzzy
@@ -5164,6 +5164,9 @@ msgstr "hämta automatiskt nycklar vid validering av signaturer"
 msgid "honor the preferred keyserver URL set on the key"
 msgstr "respektera föredragen nyckelserver-url inställd i nyckeln"
 
+msgid "update a key before sending it"
+msgstr ""
+
 msgid "disabled"
 msgstr "inaktiverad"
 
@@ -5177,6 +5180,11 @@ msgstr "ogiltigt nyckelserverprotokoll (vi %d!=hanterare %d)\n"
 #, c-format
 msgid "\"%s\" not a key ID: skipping\n"
 msgstr "\"%s\" inte ett nyckel-id: hoppar över\n"
+
+#, fuzzy, c-format
+#| msgid "invalid fingerprint"
+msgid "\"%s\" not a fingerprint: skipping\n"
+msgstr "ogiltigt fingeravtryck"
 
 #, fuzzy, c-format
 #| msgid "refreshing %d keys from %s\n"
@@ -5205,6 +5213,10 @@ msgstr "begär nyckeln %s från %s\n"
 #| msgid "no keyserver action!\n"
 msgid "no keyserver known\n"
 msgstr "ingen nyckelserveråtgärd!\n"
+
+#, c-format
+msgid "upload skipped due to non-LDAP keyserver\n"
+msgstr ""
 
 #, c-format
 msgid "skipped \"%s\": %s\n"
@@ -5554,6 +5566,11 @@ msgstr "okomprimerad|ingen"
 #, c-format
 msgid "this message may not be usable by %s\n"
 msgstr "detta meddelande kanske inte kan användas av %s\n"
+
+#, fuzzy
+#| msgid "enable key"
+msgid "enabled"
+msgstr "aktivera nyckel"
 
 #, fuzzy, c-format
 #| msgid "ambiguous option `%s'\n"

@@ -486,7 +486,8 @@ gnupg_cipher_is_compliant (enum gnupg_compliance_mode compliance,
 	  switch (module)
 	    {
 	    case GNUPG_MODULE_NAME_GPG:
-	      return mode == GCRY_CIPHER_MODE_CFB;
+	      return (mode == GCRY_CIPHER_MODE_CFB
+                      || mode == GCRY_CIPHER_MODE_OCB);
 	    case GNUPG_MODULE_NAME_GPGSM:
 	      return mode == GCRY_CIPHER_MODE_CBC;
 	    }
@@ -530,7 +531,8 @@ gnupg_cipher_is_allowed (enum gnupg_compliance_mode compliance, int producer,
 	    {
 	    case GNUPG_MODULE_NAME_GPG:
 	      return (mode == GCRY_CIPHER_MODE_NONE
-                      || mode == GCRY_CIPHER_MODE_CFB);
+                      || mode == GCRY_CIPHER_MODE_CFB
+                      || mode == GCRY_CIPHER_MODE_OCB);
 	    case GNUPG_MODULE_NAME_GPGSM:
 	      return (mode == GCRY_CIPHER_MODE_NONE
                       || mode == GCRY_CIPHER_MODE_CBC
@@ -547,7 +549,8 @@ gnupg_cipher_is_allowed (enum gnupg_compliance_mode compliance, int producer,
 	case CIPHER_ALGO_TWOFISH:
 	  return (module == GNUPG_MODULE_NAME_GPG
 		  && (mode == GCRY_CIPHER_MODE_NONE
-                      || mode == GCRY_CIPHER_MODE_CFB)
+                      || mode == GCRY_CIPHER_MODE_CFB
+                      || mode == GCRY_CIPHER_MODE_OCB)
 		  && ! producer);
 	default:
 	  return 0;

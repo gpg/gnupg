@@ -1660,7 +1660,7 @@ msgstr "Niepoprawne polecenie  (spróbuj „help”)\n"
 
 #, fuzzy, c-format
 #| msgid "key operation not possible: %s\n"
-msgid "modifiying the recipients is not possible: %s\n"
+msgid "modifying the recipients is not possible: %s\n"
 msgstr "operacja na kluczu niewykonalna: %s\n"
 
 #, fuzzy
@@ -4714,6 +4714,9 @@ msgstr "automatyczne pobieranie kluczy przy sprawdzaniu podpisów"
 msgid "honor the preferred keyserver URL set on the key"
 msgstr "honorowanie URL-a preferowanego serwera kluczy ustawionego w kluczu"
 
+msgid "update a key before sending it"
+msgstr ""
+
 msgid "disabled"
 msgstr "wyłączony"
 
@@ -4727,6 +4730,11 @@ msgstr "niepoprawny protokół serwera kluczy (nasz %d != moduł obsługi %d)\n"
 #, c-format
 msgid "\"%s\" not a key ID: skipping\n"
 msgstr "„%s” nie jest identyfikatorem klucza - pominięto\n"
+
+#, fuzzy, c-format
+#| msgid "\"%s\" is not a fingerprint\n"
+msgid "\"%s\" not a fingerprint: skipping\n"
+msgstr "„%s” nie jest odciskiem\n"
 
 #, c-format
 msgid "refreshing %d key from %s\n"
@@ -4754,6 +4762,10 @@ msgstr "zapytanie o klucz %s z %s\n"
 #, c-format
 msgid "no keyserver known\n"
 msgstr "brak znanego serwera kluczy\n"
+
+#, c-format
+msgid "upload skipped due to non-LDAP keyserver\n"
+msgstr ""
 
 #, c-format
 msgid "skipped \"%s\": %s\n"
@@ -5086,6 +5098,11 @@ msgstr "nieskompresowany|brak"
 #, c-format
 msgid "this message may not be usable by %s\n"
 msgstr "ta wiadomość może nie dać się odczytać za pomocą %s\n"
+
+#, fuzzy
+#| msgid "enable key"
+msgid "enabled"
+msgstr "włączenie klucza do użycia"
 
 #, c-format
 msgid "ambiguous option '%s'\n"

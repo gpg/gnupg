@@ -891,7 +891,12 @@ gpgsm_sign (ctrl_t ctrl, certlist_t signerlist,
               goto leave;
             }
           if (*buffer)
-            err = gpgsm_qualified_consent (ctrl, cl->cert);
+            {
+              if (*buffer == 2)
+                err = 0;  /* No consent required.  */
+              else
+                err = gpgsm_qualified_consent (ctrl, cl->cert);
+            }
           else
             err = gpgsm_not_qualified_warning (ctrl, cl->cert);
           if (err)
@@ -1158,7 +1163,7 @@ gpgsm_sign (ctrl_t ctrl, certlist_t signerlist,
       if (err)
         goto leave;
       err = write_detached_signature (ctrl, blob, bloblen, out_fp);
-      xfree (blob);
+      es_free (blob);
       if (err)
         goto leave;
     }

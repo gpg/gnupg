@@ -782,7 +782,7 @@ map_supervised_sockets (gnupg_fd_t *r_fd,
                    fd_count);
       if (fstat (3, &statbuf) == -1 && errno ==EBADF)
         log_fatal ("file descriptor 3 must be valid in"
-                   " --depreacted-supervised mode"
+                   " --deprecated-supervised mode"
                    " if LISTEN_FDNAMES is not set\n");
       *r_fd = 3;
       socket_name = gnupg_get_socket_name (3);
@@ -2688,7 +2688,6 @@ putty_message_proc (HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
   xfree (ctrl);
   if (data)
     UnmapViewOfFile (data);
-  xfree (mapsid);
   if (psd)
     LocalFree (psd);
   xfree (mysid);

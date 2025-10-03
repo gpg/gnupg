@@ -874,6 +874,7 @@ cmd_readkey (assuan_context_t ctx, char *line)
       gcry_sexp_release (s_key);
       if (!err)
         err = assuan_send_data (ctx, buf, buflen);
+      es_free (buf);
     }
   else if (advanced)
     {
@@ -1766,7 +1767,7 @@ static const char hlp_checkpin[] =
   "\n"
   "   For a definitive list, see the implementation in app-nks.c.\n"
   "   Note that we call a PW2.* PIN a \"PUK\" despite that since TCOS\n"
-  "   3.0 they are technically alternative PINs used to mutally\n"
+  "   3.0 they are technically alternative PINs used to mutually\n"
   "   unblock each other.\n"
   "\n"
   "For PKCS#15:\n"

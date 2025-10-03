@@ -1757,7 +1757,7 @@ msgstr "Orden inválida (pruebe \"help\")\n"
 
 #, fuzzy, c-format
 #| msgid "key operation not possible: %s\n"
-msgid "modifiying the recipients is not possible: %s\n"
+msgid "modifying the recipients is not possible: %s\n"
 msgstr "la operación con la clave no es posible: %s\n"
 
 #, fuzzy
@@ -4811,6 +4811,9 @@ msgstr "recuperar automáticamente claves al verificar firmas"
 msgid "honor the preferred keyserver URL set on the key"
 msgstr "usar la URL de servidor de claves preferido presente en la clave"
 
+msgid "update a key before sending it"
+msgstr ""
+
 msgid "disabled"
 msgstr "deshabilitado"
 
@@ -4824,6 +4827,11 @@ msgstr "protocolo del servidor de claves inválido (us %d!=handler %d)\n"
 #, c-format
 msgid "\"%s\" not a key ID: skipping\n"
 msgstr "\"%s\" no es un identificador de clave válido: omitido\n"
+
+#, fuzzy, c-format
+#| msgid "\"%s\" is not a fingerprint\n"
+msgid "\"%s\" not a fingerprint: skipping\n"
+msgstr "\"%s\" no es una huella digital\n"
 
 #, c-format
 msgid "refreshing %d key from %s\n"
@@ -4850,6 +4858,10 @@ msgstr "solicitando clave %s de %s\n"
 #, c-format
 msgid "no keyserver known\n"
 msgstr "ningún servidor de claves conocido\n"
+
+#, c-format
+msgid "upload skipped due to non-LDAP keyserver\n"
+msgstr ""
 
 #, c-format
 msgid "skipped \"%s\": %s\n"
@@ -5180,6 +5192,11 @@ msgstr "sin_comprimir|ninguno"
 #, c-format
 msgid "this message may not be usable by %s\n"
 msgstr "este mensaje podría no ser utilizable por %s\n"
+
+#, fuzzy
+#| msgid "enable key"
+msgid "enabled"
+msgstr "habilita clave"
 
 #, c-format
 msgid "ambiguous option '%s'\n"

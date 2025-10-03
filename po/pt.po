@@ -1,11 +1,14 @@
-# pt messages for gnupg
-# Copyright (C) 1999, 2000, 2001, 2002, 2023 Free Software Foundation, Inc.
-# Daniel Cerqueira <dan.git@lispclub.com>
+# Portuguese translation of gnupg.
+# Copyright (C) 1999-2002, 2023-2025 Free Software Foundation, Inc.
+# This file is distributed under the same license as the gnupg package.
 #
-# Based on pt_PT work done by:
-# Pedro Morais <morais@kde.org>
-# Thiago Jung Bauermann <jungmann@cwb.matrix.com.br>
-# Rafael Caetano dos Santos <rcaetano@linux.ime.usp.br>
+# Current contributors:
+#  - Daniel Cerqueira <dan.git@lispclub.com>
+#
+# Glossary based on pt_PT work done by:
+#  - Pedro Morais <morais@kde.org>
+#  - Thiago Jung Bauermann <jungmann@cwb.matrix.com.br>
+#  - Rafael Caetano dos Santos <rcaetano@linux.ime.usp.br>
 #
 #
 #  GnuPG glossary for Portuguese translators
@@ -62,11 +65,11 @@
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: gnupg\n"
+"Project-Id-Version: gnupg 2.5.5\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"PO-Revision-Date: 2025-02-03 08:47+0000\n"
+"PO-Revision-Date: 2025-09-02 14:03+0200\n"
 "Last-Translator: Daniel Cerqueira <dan.git@lispclub.com>\n"
-"Language-Team: pt <dan.git@lispclub.com>\n"
+"Language-Team: Portuguese <dan.git@lispclub.com>\n"
 "Language: pt\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -577,10 +580,9 @@ msgstr "tentando roubar o socket de executar %s\n"
 msgid "a gpg-agent is already running - not starting a new one\n"
 msgstr "um gpg-agent já está em execução - não iniciando um novo\n"
 
-#, fuzzy, c-format
-#| msgid "key %s: removed multiple subkey binding\n"
+#, c-format
 msgid "socket file removed - retrying binding\n"
-msgstr "chave %s: vinculação de várias subchaves removida\n"
+msgstr "ficheiro socket removido - tentando vinculação novamente\n"
 
 #, c-format
 msgid "error getting nonce for the socket\n"
@@ -1724,7 +1726,7 @@ msgid "Invalid command  (try \"help\")\n"
 msgstr "Comando inválido (tente \"help\")\n"
 
 #, c-format
-msgid "modifiying the recipients is not possible: %s\n"
+msgid "modifying the recipients is not possible: %s\n"
 msgstr "não é possível modificar os destinatários: %s\n"
 
 msgid "decryption failed"
@@ -4136,7 +4138,7 @@ msgstr "escrevendo a auto-assinatura\n"
 
 #, c-format
 msgid "writing key binding signature\n"
-msgstr "escrevendo a assinatura ligada a uma chave\n"
+msgstr "escrevendo a assinatura de vinculação a uma chave\n"
 
 #, c-format
 msgid "keysize invalid; using %u bits\n"
@@ -4731,6 +4733,9 @@ msgstr "obter chaves automaticamente quando se verifica assinaturas"
 msgid "honor the preferred keyserver URL set on the key"
 msgstr "honrar a URL do servidor de chaves preferencial definida na chave"
 
+msgid "update a key before sending it"
+msgstr ""
+
 msgid "disabled"
 msgstr "desabilitado"
 
@@ -4744,6 +4749,11 @@ msgstr "protocolo de servidor de chaves inválido (nós %d!=handler %d)\n"
 #, c-format
 msgid "\"%s\" not a key ID: skipping\n"
 msgstr "\"%s\" não é uma ID de chave: ignorando\n"
+
+#, fuzzy, c-format
+#| msgid "\"%s\" is not a fingerprint\n"
+msgid "\"%s\" not a fingerprint: skipping\n"
+msgstr "\"%s\" não é uma impressão digital\n"
 
 #, c-format
 msgid "refreshing %d key from %s\n"
@@ -4770,6 +4780,10 @@ msgstr "pedindo chave %s de %s\n"
 #, c-format
 msgid "no keyserver known\n"
 msgstr "nenhum servidor de chaves conhecido\n"
+
+#, c-format
+msgid "upload skipped due to non-LDAP keyserver\n"
+msgstr ""
 
 #, c-format
 msgid "skipped \"%s\": %s\n"
@@ -5096,6 +5110,11 @@ msgstr "descomprimido|nenhum"
 #, c-format
 msgid "this message may not be usable by %s\n"
 msgstr "esta mensagem poderá não ser utilizável pelo %s\n"
+
+#, fuzzy
+#| msgid "enable key"
+msgid "enabled"
+msgstr "habilitar chave"
 
 #, c-format
 msgid "ambiguous option '%s'\n"
@@ -9071,8 +9090,3 @@ msgstr "comandos de gerir uma Yubikey"
 
 msgid "manage the command history"
 msgstr "gerir o histórico de comandos"
-
-#, c-format
-#~ msgid "GPG_TTY has not been set - using maybe bogus default\n"
-#~ msgstr ""
-#~ "GPG_TTY não foi definido - talvez esteja usando falsa pré-definição\n"

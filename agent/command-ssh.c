@@ -1882,7 +1882,7 @@ sexp_key_construct (gcry_sexp_t *r_sexp,
  out:
   es_fclose (format);
   xfree (arg_list);
-  xfree (formatbuf);
+  es_free (formatbuf);
   xfree (algo_name);
 
   return err;
@@ -2963,7 +2963,7 @@ data_sign (ctrl_t ctrl, ssh_key_type_spec_t *spec,
   *r_siglen = bloblen;
 
  out:
-  xfree (blob);
+  es_free (blob);
   es_fclose (stream);
   gcry_sexp_release (signature_sexp);
 

@@ -451,6 +451,11 @@
     (rename source pathname)
     (list tmpfiles pathname #f)))
 
+(define (tr:unlink pathname)
+  (lambda (tmpfiles source)
+    (unlink pathname)
+    (list tmpfiles pathname #f)))
+
 (define (tr:pipe-do . commands)
   (lambda (tmpfiles source)
     (let ((t (make-temporary-file)))

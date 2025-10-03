@@ -19,12 +19,16 @@ pgpSoftware: GnuPG
 #          1 = Classic PGP schema (default)
 #          2 = The attributes gpgFingerprint, gpgSubFingerprint,
 #              gpgSubCertID, and gpgMailbox are part of the schema.
-# Item 2 - A string with the used LDAP server
+# Item 2 - A string with the LDAP server type
 #          "-"        = Unknown (default)
 #          "ntds"     = Windows Directory Service (AD DS)
 #          "openldap" = OpenLDAP
+#          "cnfpr"    = As with "ntds" the DN has CN=fingerprint
+#                       instead of the legacy pgpCertID=keyid.
+#                       Use this for openldap if your client software
+#                       is new enough (gnupg >= (2.2.28 or 2.5.12).
 #
-pgpVersion: 2
+pgpVersion: 2 cnfpr
 
 dn: ou=GnuPG Keys,dc=example,dc=com
 objectClass: organizationalUnit

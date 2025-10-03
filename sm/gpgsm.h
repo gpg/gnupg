@@ -141,6 +141,9 @@ struct
                                runtime option in case we want to check
                                the integrity of the software at
                                runtime. */
+  int no_qes_note;          /* Do not print a note that the software
+                             * has not been approved for creating or
+                             * verifying qualified signatures.  */
 
   unsigned int min_rsa_length;   /* Used for compliance checks.  */
 
@@ -341,6 +344,7 @@ struct rootca_flags_s
   unsigned int relax:1;  /* Relax checking of root certificates.  */
   unsigned int chain_model:1; /* Root requires the use of the chain model.  */
   unsigned int qualified:1;   /* Root CA used for qualified signatures.   */
+  unsigned int noconsent:1;   /* Consent is not required "qualified".     */
   unsigned int de_vs:1;       /* Root CA is de-vs compliant.             */
 };
 

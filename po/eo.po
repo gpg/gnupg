@@ -1746,7 +1746,7 @@ msgid "Invalid command  (try \"help\")\n"
 msgstr "Nevalida komando (provu per \"helpo\")\n"
 
 #, fuzzy, c-format
-msgid "modifiying the recipients is not possible: %s\n"
+msgid "modifying the recipients is not possible: %s\n"
 msgstr "Kreado de ŝlosiloj malsukcesis: %s\n"
 
 #, fuzzy
@@ -4924,6 +4924,9 @@ msgstr ""
 msgid "honor the preferred keyserver URL set on the key"
 msgstr "la donita gvidlinia URL por subskriboj ne validas\n"
 
+msgid "update a key before sending it"
+msgstr ""
+
 #, fuzzy
 msgid "disabled"
 msgstr "el"
@@ -4938,6 +4941,10 @@ msgstr "nevalida ŝlosilaro"
 #, fuzzy, c-format
 msgid "\"%s\" not a key ID: skipping\n"
 msgstr "%s: ne valida ŝlosilidentigilo\n"
+
+#, fuzzy, c-format
+msgid "\"%s\" not a fingerprint: skipping\n"
+msgstr "%s: nevalida dosiero-versio %d\n"
 
 #, fuzzy, c-format
 msgid "refreshing %d key from %s\n"
@@ -4964,6 +4971,10 @@ msgstr "petas la ŝlosilon %08lX de HKP-ŝlosilservilo %s ...\n"
 #, fuzzy, c-format
 msgid "no keyserver known\n"
 msgstr "nevalida ŝlosilaro"
+
+#, c-format
+msgid "upload skipped due to non-LDAP keyserver\n"
+msgstr ""
 
 #, fuzzy, c-format
 msgid "skipped \"%s\": %s\n"
@@ -5295,6 +5306,11 @@ msgstr "ne traktita"
 #, fuzzy, c-format
 msgid "this message may not be usable by %s\n"
 msgstr "ĉi tiu mesaĝo povas ne esti uzebla de PGP 2.x\n"
+
+#, fuzzy
+#| msgid "enable"
+msgid "enabled"
+msgstr "en"
 
 #, fuzzy, c-format
 msgid "ambiguous option '%s'\n"
@@ -11005,9 +11021,6 @@ msgstr ""
 
 #~ msgid "disable"
 #~ msgstr "el"
-
-#~ msgid "enable"
-#~ msgstr "en"
 
 #~ msgid "showphoto"
 #~ msgstr "monfoto"

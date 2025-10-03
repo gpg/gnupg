@@ -1630,8 +1630,9 @@ msgstr "未允許使用管理者指令\n"
 msgid "Invalid command  (try \"help\")\n"
 msgstr "無效的指令  (試試看 \"help\")\n"
 
-#, c-format
-msgid "modifiying the recipients is not possible: %s\n"
+#, fuzzy, c-format
+#| msgid "modifiying the recipients is not possible: %s\n"
+msgid "modifying the recipients is not possible: %s\n"
 msgstr "不可能修改收件者: %s\n"
 
 msgid "decryption failed"
@@ -4545,6 +4546,9 @@ msgstr "驗證簽章時自動取回金鑰"
 msgid "honor the preferred keyserver URL set on the key"
 msgstr "尊重金鑰上所設定的偏好金鑰伺服器 URL"
 
+msgid "update a key before sending it"
+msgstr ""
+
 msgid "disabled"
 msgstr "已停用"
 
@@ -4558,6 +4562,11 @@ msgstr "無效的金鑰伺服器協定 (我們用 %d!=經手程式 %d)\n"
 #, c-format
 msgid "\"%s\" not a key ID: skipping\n"
 msgstr "\"%s\" 並非金鑰 ID: 跳過中\n"
+
+#, fuzzy, c-format
+#| msgid "\"%s\" is not a fingerprint\n"
+msgid "\"%s\" not a fingerprint: skipping\n"
+msgstr "\"%s\" 不是指紋\n"
 
 #, c-format
 msgid "refreshing %d key from %s\n"
@@ -4583,6 +4592,10 @@ msgstr "正在請求金鑰 %s 自 %s\n"
 #, c-format
 msgid "no keyserver known\n"
 msgstr "沒有已知的金鑰伺服器\n"
+
+#, c-format
+msgid "upload skipped due to non-LDAP keyserver\n"
+msgstr ""
 
 #, c-format
 msgid "skipped \"%s\": %s\n"
@@ -4903,6 +4916,11 @@ msgstr "uncompressed|none|未壓縮|無"
 #, c-format
 msgid "this message may not be usable by %s\n"
 msgstr "這個訊息對 %s 來說無法使用\n"
+
+#, fuzzy
+#| msgid "enable key"
+msgid "enabled"
+msgstr "啟用金鑰"
 
 #, c-format
 msgid "ambiguous option '%s'\n"

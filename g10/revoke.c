@@ -611,7 +611,7 @@ gen_standard_revoke (ctrl_t ctrl, PKT_public_key *psk, const char *cache_nonce)
   if (!rc && !opt.quiet)
     log_info (_("revocation certificate stored as '%s.rev'\n"), fname);
 
-  xfree (leadin);
+  es_free (leadin);
   xfree (fname);
 
   return rc;

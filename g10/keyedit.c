@@ -53,6 +53,7 @@
 #include "key-clean.h"
 #include "keyedit.h"
 
+static void maybe_upload_key (ctrl_t ctrl, kbnode_t keyblock);
 static void show_prefs (PKT_user_id * uid, PKT_signature * selfsig,
 			int verbose);
 static void show_names (ctrl_t ctrl, estream_t fp,
@@ -1550,6 +1551,7 @@ keyedit_menu (ctrl_t ctrl, const char *username, strlist_t locusr,
   char *answer = NULL;
   int redisplay = 1;
   int modified = 0;
+  int upload = 0;  /* Set if the key maybe be uploaded.  */
   int sec_shadowing = 0;
   int run_subkey_warnings = 0;
   int have_commands = !!commands;
@@ -1792,6 +1794,7 @@ keyedit_menu (ctrl_t ctrl, const char *username, strlist_t locusr,
 	case cmdSIGN:
 	  {
             unsigned int myflags = 0;
+            int my_modified = 0;
 
 	    if (pk->flags.revoked)
 	      {
@@ -1845,7 +1848,12 @@ keyedit_menu (ctrl_t ctrl, const char *username, strlist_t locusr,
 		break;
 	      }
 
-	    sign_uids (ctrl, NULL, keyblock, locusr, myflags, NULL, &modified);
+	    sign_uids (ctrl, NULL, keyblock, locusr, myflags,
+                       NULL, &my_modified);
+            if (my_modified)  /* sign_uids modified the keyblock      */
+              modified = 1;   /* thus set the general modified flag.  */
+            if (my_modified && !(myflags & SIGN_UIDS_LOCAL))
+              upload = 1;     /* exportable signature -> mark uploadable.  */
 	  }
 	  break;
 
@@ -1876,6 +1884,7 @@ keyedit_menu (ctrl_t ctrl, const char *username, strlist_t locusr,
 	      update_trust = 1;
 	      redisplay = 1;
 	      modified = 1;
+              upload = 1;
 	      merge_keys_and_selfsig (ctrl, keyblock);
 	    }
 	  break;
@@ -1900,6 +1909,8 @@ keyedit_menu (ctrl_t ctrl, const char *username, strlist_t locusr,
 		menu_deluid (keyblock);
 		redisplay = 1;
 		modified = 1;
+                /* upload does not make sense here.  Eventually we may
+                 * decide to delete a key from the keyserver.*/
 	      }
 	  }
 	  break;
@@ -1928,6 +1939,7 @@ keyedit_menu (ctrl_t ctrl, const char *username, strlist_t locusr,
 	    {
 	      redisplay = 1;
 	      modified = 1;
+              upload = 1;
 	      merge_keys_and_selfsig (ctrl, keyblock);
 	    }
 	  break;
@@ -1938,6 +1950,7 @@ keyedit_menu (ctrl_t ctrl, const char *username, strlist_t locusr,
 	    {
 	      redisplay = 1;
 	      modified = 1;
+              upload = 1;
 	      merge_keys_and_selfsig (ctrl, keyblock);
 	    }
 	  break;
@@ -2137,6 +2150,7 @@ keyedit_menu (ctrl_t ctrl, const char *username, strlist_t locusr,
 		menu_delkey (keyblock);
 		redisplay = 1;
 		modified = 1;
+                /* upload does not make sense. */
 	      }
 	  }
 	  break;
@@ -2151,6 +2165,7 @@ keyedit_menu (ctrl_t ctrl, const char *username, strlist_t locusr,
 	      {
 		redisplay = 1;
 		modified = 1;
+                upload = 1;
 		merge_keys_and_selfsig (ctrl, keyblock);
 	      }
 	  }
@@ -2161,6 +2176,7 @@ keyedit_menu (ctrl_t ctrl, const char *username, strlist_t locusr,
             {
               redisplay = 1;
               modified = 1;
+              upload = 1;
               merge_keys_and_selfsig (ctrl, keyblock);
             }
 	  break;
@@ -2184,6 +2200,7 @@ keyedit_menu (ctrl_t ctrl, const char *username, strlist_t locusr,
 		  {
 		    modified = 1;
 		    redisplay = 1;
+                    upload = 1;
 		  }
 	      }
 	  }
@@ -2200,7 +2217,10 @@ keyedit_menu (ctrl_t ctrl, const char *username, strlist_t locusr,
 					     " the entire key? (y/N) ")))
 		  {
 		    if (menu_revkey (ctrl, keyblock))
-		      modified = 1;
+                      {
+                        modified = 1;
+                        upload = 1;
+                      }
 
 		    redisplay = 1;
 		  }
@@ -2213,7 +2233,10 @@ keyedit_menu (ctrl_t ctrl, const char *username, strlist_t locusr,
 						" this subkey? (y/N) ")))
 	      {
 		if (menu_revsubkey (ctrl, keyblock))
-		  modified = 1;
+                  {
+                    modified = 1;
+                    upload = 1;
+                  }
 
 		redisplay = 1;
 	      }
@@ -2229,6 +2252,7 @@ keyedit_menu (ctrl_t ctrl, const char *username, strlist_t locusr,
 	      merge_keys_and_selfsig (ctrl, keyblock);
               run_subkey_warnings = 1;
 	      modified = 1;
+              upload = 1;
 	      redisplay = 1;
 	    }
 	  break;
@@ -2238,6 +2262,7 @@ keyedit_menu (ctrl_t ctrl, const char *username, strlist_t locusr,
 	    {
 	      merge_keys_and_selfsig (ctrl, keyblock);
 	      modified = 1;
+              upload = 1;
 	      redisplay = 1;
 	    }
 	  break;
@@ -2246,6 +2271,7 @@ keyedit_menu (ctrl_t ctrl, const char *username, strlist_t locusr,
 	  if (menu_backsign (ctrl, keyblock))
 	    {
 	      modified = 1;
+              upload = 1;
 	      redisplay = 1;
 	    }
 	  break;
@@ -2255,6 +2281,7 @@ keyedit_menu (ctrl_t ctrl, const char *username, strlist_t locusr,
 	    {
 	      merge_keys_and_selfsig (ctrl, keyblock);
 	      modified = 1;
+              upload = 1;
 	      redisplay = 1;
 	    }
 	  break;
@@ -2327,6 +2354,7 @@ keyedit_menu (ctrl_t ctrl, const char *username, strlist_t locusr,
 		  {
 		    merge_keys_and_selfsig (ctrl, keyblock);
 		    modified = 1;
+                    upload = 1;
 		    redisplay = 1;
 		  }
 	      }
@@ -2339,6 +2367,7 @@ keyedit_menu (ctrl_t ctrl, const char *username, strlist_t locusr,
 	    {
 	      merge_keys_and_selfsig (ctrl, keyblock);
 	      modified = 1;
+              upload = 1;
 	      redisplay = 1;
 	    }
 	  break;
@@ -2349,6 +2378,7 @@ keyedit_menu (ctrl_t ctrl, const char *username, strlist_t locusr,
 	    {
 	      merge_keys_and_selfsig (ctrl, keyblock);
 	      modified = 1;
+              upload = 1;
 	      redisplay = 1;
 	    }
 	  break;
@@ -2361,6 +2391,7 @@ keyedit_menu (ctrl_t ctrl, const char *username, strlist_t locusr,
 	    {
 	      redisplay = 1;
 	      modified = 1;
+              upload = 1;
 	    }
 	  break;
 
@@ -2412,6 +2443,11 @@ keyedit_menu (ctrl_t ctrl, const char *username, strlist_t locusr,
                 {
                   log_error (_("update failed: %s\n"), gpg_strerror (err));
                   break;
+                }
+              if (upload)
+                {
+                  maybe_upload_key (ctrl, keyblock);
+                  upload = 0;
                 }
 	    }
 
@@ -2469,6 +2505,23 @@ keyedit_menu (ctrl_t ctrl, const char *username, strlist_t locusr,
   release_kbnode (keyblock);
   keydb_release (kdbhd);
   xfree (answer);
+}
+
+
+/* Helper to upload a key to an LDAP server if configured.  */
+static void
+maybe_upload_key (ctrl_t ctrl, kbnode_t keyblock)
+{
+  unsigned int saved_options;
+
+  if (!opt.flags.auto_key_upload)
+    return;
+
+  saved_options = opt.keyserver_options.options;
+  opt.keyserver_options.options |= KEYSERVER_LDAP_ONLY;
+  opt.keyserver_options.options |= KEYSERVER_WARN_ONLY;
+  keyserver_export_pubkey (ctrl, keyblock->pkt->pkt.public_key, 0);
+  opt.keyserver_options.options = saved_options;
 }
 
 
@@ -2623,7 +2676,7 @@ keyedit_quick_adduid (ctrl_t ctrl, const char *username, const char *newuid)
           log_error (_("update failed: %s\n"), gpg_strerror (err));
           goto leave;
         }
-
+      maybe_upload_key (ctrl, keyblock);
       if (update_trust)
         revalidation_mark (ctrl);
     }
@@ -2758,7 +2811,7 @@ keyedit_quick_revuid (ctrl_t ctrl, const char *username, const char *uidtorev)
           log_error (_("update failed: %s\n"), gpg_strerror (err));
           goto leave;
         }
-
+      maybe_upload_key (ctrl, keyblock);
       revalidation_mark (ctrl);
       goto leave;
     }
@@ -2824,6 +2877,7 @@ keyedit_quick_set_primary (ctrl_t ctrl, const char *username,
           log_error (_("update failed: %s\n"), gpg_strerror (err));
           goto leave;
         }
+      maybe_upload_key (ctrl, keyblock);
       revalidation_mark (ctrl);
     }
   else
@@ -2871,6 +2925,7 @@ keyedit_quick_update_pref (ctrl_t ctrl, const char *username)
           log_error (_("update failed: %s\n"), gpg_strerror (err));
           goto leave;
         }
+      maybe_upload_key (ctrl, keyblock);
     }
 
  leave:
@@ -3184,6 +3239,8 @@ keyedit_quick_sign (ctrl_t ctrl, const char *fpr, strlist_t uids,
           log_error (_("update failed: %s\n"), gpg_strerror (err));
           goto leave;
         }
+      if (!local) /* No need to upload new non-expotable sigs.  */
+        maybe_upload_key (ctrl, keyblock);
     }
   else
     log_info (_("Key not changed so no update needed.\n"));
@@ -3418,6 +3475,7 @@ keyedit_quick_revsig (ctrl_t ctrl, const char *username, const char *sigtorev,
       log_error (_("update failed: %s\n"), gpg_strerror (err));
       goto leave;
     }
+  maybe_upload_key (ctrl, keyblock);
   revalidation_mark (ctrl);
 
  leave:
@@ -3488,6 +3546,7 @@ keyedit_quick_addkey (ctrl_t ctrl, const char *fpr, const char *algostr,
           log_error (_("update failed: %s\n"), gpg_strerror (err));
           goto leave;
         }
+      maybe_upload_key (ctrl, keyblock);
     }
   else
     log_info (_("Key not changed so no update needed.\n"));
@@ -3564,6 +3623,7 @@ keyedit_quick_addadsk (ctrl_t ctrl, const char *fpr, const char *adskfpr)
           log_error (_("update failed: %s\n"), gpg_strerror (err));
           goto leave;
         }
+      maybe_upload_key (ctrl, keyblock);
     }
 
  leave:
@@ -3714,6 +3774,7 @@ keyedit_quick_set_expire (ctrl_t ctrl, const char *fpr, const char *expirestr,
           log_error (_("update failed: %s\n"), gpg_strerror (err));
           goto leave;
         }
+      maybe_upload_key (ctrl, keyblock);
       if (update_trust)
         revalidation_mark (ctrl);
     }
@@ -5053,9 +5114,13 @@ fail:
 
 
 /* Core function to add an ADSK to the KEYBLOCK.  Returns 0 on success
- * or an error code.  */
+ * or an error code.  If SIGTIMESTAMP is not 0 it is used for the key
+ * binding signature creation time; if not given the current time is
+ * used.  CACHE_NONCE can be used to avoid a second Pinetry pop-up for
+ * appending the ADSK. */
 gpg_error_t
-append_adsk_to_key (ctrl_t ctrl, kbnode_t keyblock, PKT_public_key *adsk)
+append_adsk_to_key (ctrl_t ctrl, kbnode_t keyblock, PKT_public_key *adsk,
+                    u32 sigtimestamp, const char *cache_nonce)
 {
   gpg_error_t err;
   PKT_public_key *main_pk;  /* The primary key.  */
@@ -5100,8 +5165,8 @@ append_adsk_to_key (ctrl_t ctrl, kbnode_t keyblock, PKT_public_key *adsk)
 
   /* Make the signature.  */
   err = make_keysig_packet (ctrl, &sig, main_pk, NULL, adsk, main_pk, 0x18,
-                            adsk->timestamp, 0,
-                            keygen_add_key_flags_and_expire, adsk, NULL);
+                            sigtimestamp, 0,
+                            keygen_add_key_flags_and_expire, adsk, cache_nonce);
   adsk = NULL; /* (owned by adsknode - avoid double free.)  */
   if (err)
     {
@@ -5148,6 +5213,7 @@ menu_addadsk (ctrl_t ctrl, kbnode_t pub_keyblock, const char *adskfpr)
   byte fpr[MAX_FINGERPRINT_LEN];
   size_t fprlen;
   kbnode_t node;
+  u32 sigtimestamp = make_timestamp ();
 
   log_assert (pub_keyblock->pkt->pkttype == PKT_PUBLIC_KEY);
 
@@ -5248,7 +5314,8 @@ menu_addadsk (ctrl_t ctrl, kbnode_t pub_keyblock, const char *adskfpr)
   /* Append the subkey.  */
   log_assert (node->pkt->pkttype == PKT_PUBLIC_KEY
               || node->pkt->pkttype == PKT_PUBLIC_SUBKEY);
-  err = append_adsk_to_key (ctrl, pub_keyblock, node->pkt->pkt.public_key);
+  err = append_adsk_to_key (ctrl, pub_keyblock, node->pkt->pkt.public_key,
+                            sigtimestamp, NULL);
 
 
  leave:

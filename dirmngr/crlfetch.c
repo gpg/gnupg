@@ -516,7 +516,7 @@ fetch_cert_by_url (ctrl_t ctrl, const char *url,
         }
 
       err = ksba_cert_init_from_mem (cert, der, derlen);
-      xfree (der);
+      es_free (der);
       if (err)
         goto leave;
     }

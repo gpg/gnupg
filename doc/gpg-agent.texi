@@ -844,11 +844,14 @@ caller:
 @table @code
 
 @item relax
+@itemx norelax
 @cindex relax
+@cindex norelax
 Relax checking of some root certificate requirements.  As of now this
 flag allows the use of root certificates with a missing basicConstraints
 attribute (despite that it is a MUST for CA certificates) and disables
-CRL checking for the root certificate.
+CRL checking for the root certificate.  This is by default enabled.
+Use "norelax" to disable it.
 
 @item cm
 If validation of a certificate finally issued by a CA with this flag set
@@ -859,6 +862,9 @@ The CA is allowed to issue certificates for qualified signatures.
 This flag has an effect only if used in the global list.  This is now
 the preferred way to mark such CA; the old way of having a separate
 file @file{qualified.txt} is still supported.
+
+@item noconsent
+Do not require consent from a user to create a qualified signature.
 
 @item de-vs
 The CA is part of an approved PKI for the German classification level

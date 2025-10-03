@@ -29,7 +29,7 @@ min_automake_version="1.16.3"
 m4_define([mym4_package],[gnupg])
 m4_define([mym4_major], [2])
 m4_define([mym4_minor], [5])
-m4_define([mym4_micro], [12])
+m4_define([mym4_micro], [13])
 
 # To start a new development series, i.e a new major or minor number
 # you need to mark an arbitrary commit before the first beta release
@@ -1427,7 +1427,7 @@ fi
 AC_CHECK_TYPES([struct sigaction, sigset_t],,,[#include <signal.h>])
 
 # Dirmngr requires mmap on Unix systems.
-if test $ac_cv_func_mmap != yes -a $mmap_needed = yes; then
+if test $ac_cv_func_mmap != yes && test $mmap_needed = yes; then
   AC_MSG_ERROR([[Sorry, the current implementation requires mmap.]])
 fi
 
@@ -1611,7 +1611,8 @@ fi
 AC_SUBST(LIBTSS_LIBS)
 AC_SUBST(LIBTSS_CFLAGS)
 AM_CONDITIONAL(HAVE_LIBTSS, test "$have_libtss" != no)
-AM_CONDITIONAL(TEST_LIBTSS, test -n "$SWTPM" -o -n "$TPMSERVER" -a -n "$TSSSTARTUP")
+AM_CONDITIONAL(TEST_LIBTSS, [test -n "$SWTPM" \
+               || { test -n "$TPMSERVER" && test -n "$TSSSTARTUP"; }])
 AC_SUBST(HAVE_LIBTSS)
 
 #
@@ -2146,7 +2147,7 @@ echo "
         TOFU support:        $use_tofu
         Tor support:         $show_tor_support
 "
-if test "$have_libtss" != no -a -z "$TPMSERVER" -a -z "$SWTPM"; then
+if test "$have_libtss" != no && test -z "$TPMSERVER" && test -z "$SWTPM"; then
 cat <<G10EOF
         Warning: TPM support is compiled in but no software TPM
                  for testing was discovered. TPM tests are disabled

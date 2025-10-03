@@ -9,7 +9,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnupg-2.4.1\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"PO-Revision-Date: 2025-07-25 15:50+0200\n"
+"PO-Revision-Date: 2025-09-02 14:02+0200\n"
 "Last-Translator: Werner Koch <wk@gnupg.org>\n"
 "Language-Team: German\n"
 "Language: de\n"
@@ -1693,7 +1693,7 @@ msgid "Invalid command  (try \"help\")\n"
 msgstr "Ungültiger Befehl (versuchen Sie's mal mit \"help\")\n"
 
 #, c-format
-msgid "modifiying the recipients is not possible: %s\n"
+msgid "modifying the recipients is not possible: %s\n"
 msgstr "Änderung der Empfänger ist nicht möglich: %s\n"
 
 msgid "decryption failed"
@@ -4730,6 +4730,9 @@ msgid "honor the preferred keyserver URL set on the key"
 msgstr ""
 "Die im Schlüssel enthaltene bevorzugte URL für Schlüsselserver beachten"
 
+msgid "update a key before sending it"
+msgstr "Schlüssel for dem senden aktualisieren"
+
 msgid "disabled"
 msgstr "abgeschaltet"
 
@@ -4743,6 +4746,10 @@ msgstr "Ungültiges Schlüsselserverprotokoll (wir %d!=Handhabungsroutine %d)\n"
 #, c-format
 msgid "\"%s\" not a key ID: skipping\n"
 msgstr "\"%s\" ist keine Schlüssel-ID: überspringe\n"
+
+#, c-format
+msgid "\"%s\" not a fingerprint: skipping\n"
+msgstr "\"%s\" ist kein Fingerabdruck: wird übersprungen\n"
 
 #, c-format
 msgid "refreshing %d key from %s\n"
@@ -4769,6 +4776,10 @@ msgstr "fordere Schlüssel %s von %s an\n"
 #, c-format
 msgid "no keyserver known\n"
 msgstr "Kein Schlüsselserver bekannt\n"
+
+#, c-format
+msgid "upload skipped due to non-LDAP keyserver\n"
+msgstr "\"Upload\" wurde übersprungen da es kein LDAP Keyserver ist\n"
 
 #, c-format
 msgid "skipped \"%s\": %s\n"
@@ -5105,6 +5116,9 @@ msgstr "unkomprimiert|kein|keine"
 #, c-format
 msgid "this message may not be usable by %s\n"
 msgstr "Diese Botschaft könnte für %s unbrauchbar sein\n"
+
+msgid "enabled"
+msgstr "eingeschaltet"
 
 #, c-format
 msgid "ambiguous option '%s'\n"

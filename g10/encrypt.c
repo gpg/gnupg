@@ -43,8 +43,10 @@
 
 
 static int encrypt_simple( const char *filename, int mode, int use_seskey );
-static int write_pubkey_enc_from_list (ctrl_t ctrl,
-                                       PK_LIST pk_list, DEK *dek, iobuf_t out);
+static int write_pubkey_enc_from_list (ctrl_t ctrl, pk_list_t pk_list,
+                                       DEK *dek, iobuf_t out,
+                                       struct pubkey_enc_info_item *restrct);
+
 
 
 /* Helper for show the "encrypted for USER" during encryption.
@@ -570,7 +572,7 @@ encrypt_simple (const char *filename, int mode, int use_seskey)
   if ( s2k )
     {
       /* Fixme: This is quite similar to write_symkey_enc.  */
-      PKT_symkey_enc *enc = xmalloc_clear (sizeof *enc + enckeylen);
+      PKT_symkey_enc *enc = xmalloc_clear (sizeof *enc);
       enc->version = cfx.dek->use_aead ? 5 : 4;
       enc->cipher_algo = cfx.dek->algo;
       enc->aead_algo = cfx.dek->use_aead;
@@ -578,13 +580,14 @@ encrypt_simple (const char *filename, int mode, int use_seskey)
       if (enckeylen)
         {
           enc->seskeylen = enckeylen;
+          enc->seskey = xmalloc (enckeylen);
           memcpy (enc->seskey, enckey, enckeylen);
         }
       pkt.pkttype = PKT_SYMKEY_ENC;
       pkt.pkt.symkey_enc = enc;
       if ((rc = build_packet( out, &pkt )))
         log_error("build symkey packet failed: %s\n", gpg_strerror (rc) );
-      xfree (enc);
+      free_symkey_enc (enc);
       xfree (enckey);
       enckey = NULL;
     }
@@ -775,7 +778,7 @@ write_symkey_enc (STRING2KEY *symkey_s2k, aead_algo_t aead_algo,
   rc = encrypt_seskey (symkey_dek, aead_algo, &dek, &enckey, &enckeylen);
   if (rc)
     return rc;
-  enc = xtrycalloc (1, sizeof (PKT_symkey_enc) + enckeylen);
+  enc = xtrycalloc (1, sizeof (PKT_symkey_enc));
   if (!enc)
     {
       rc = gpg_error_from_syserror ();
@@ -788,6 +791,14 @@ write_symkey_enc (STRING2KEY *symkey_s2k, aead_algo_t aead_algo,
   enc->aead_algo = aead_algo;
   enc->s2k = *symkey_s2k;
   enc->seskeylen = enckeylen;
+  enc->seskey = xtrymalloc (enckeylen);
+  if (!enc->seskey)
+    {
+      rc = gpg_error_from_syserror ();
+      xfree (enc);
+      xfree (enckey);
+      return rc;
+    }
   memcpy (enc->seskey, enckey, enckeylen);
   xfree (enckey);
 
@@ -797,7 +808,7 @@ write_symkey_enc (STRING2KEY *symkey_s2k, aead_algo_t aead_algo,
   if ((rc=build_packet(out,&pkt)))
     log_error("build symkey_enc packet failed: %s\n",gpg_strerror (rc));
 
-  xfree (enc);
+  free_symkey_enc (enc);
   return rc;
 }
 
@@ -933,7 +944,7 @@ encrypt_crypt (ctrl_t ctrl, gnupg_fd_t filefd, const char *filename,
   if (DBG_CRYPTO)
     log_printhex (cfx.dek->key, cfx.dek->keylen, "DEK is: ");
 
-  rc = write_pubkey_enc_from_list (ctrl, pk_list, cfx.dek, out);
+  rc = write_pubkey_enc_from_list (ctrl, pk_list, cfx.dek, out, NULL);
   if (rc)
     goto leave;
 
@@ -1085,16 +1096,39 @@ encrypt_crypt (ctrl_t ctrl, gnupg_fd_t filefd, const char *filename,
 gpg_error_t
 reencrypt_to_new_recipients (ctrl_t ctrl, int armor, const char *filename,
                              iobuf_t infp, strlist_t recipients,
-                             DEK *dek, struct pubkey_enc_list *pkenc_list)
+                             DEK *dek, struct seskey_enc_list *sesenc_list)
 {
   gpg_error_t err;
   int save_no_encrypt_to;
   pk_list_t newpk_list = NULL;
+  struct pubkey_enc_info_item *restrict_pk_list = NULL;
+  struct pubkey_enc_info_item *pkei;  /* Iterator */
   iobuf_t outfp = NULL;
   armor_filter_context_t *outafx = NULL;
   PACKET pkt;
-  struct pubkey_enc_list *el;
+  struct seskey_enc_list *el;
   unsigned int count;
+
+  /* Unless we want to clear the recipients, record the pubkey encrypt
+   * infos so hat we can avoid to double encrypt to the same
+   * recipient.  We can't do that for wildcards, though.  */
+  if (!ctrl->clear_recipients)
+    {
+      for (el = sesenc_list; el; el = el->next, count++)
+        {
+          if (el->u_sym)
+            continue;
+          if (!el->u.pub.keyid[0] && !el->u.pub.keyid[1])
+            continue;  /* Wildcard encrypt - no useful info.  */
+          pkei = xcalloc (1, sizeof *pkei);
+          pkei->keyid[0] = el->u.pub.keyid[0];
+          pkei->keyid[1] = el->u.pub.keyid[1];
+          pkei->version  = el->u.pub.version;
+          pkei->pubkey_algo  = el->u.pub.pubkey_algo;
+          pkei->next = restrict_pk_list;
+          restrict_pk_list = pkei;
+        }
+    }
 
   /* Get the keys for all additional recipients but do not encrypt to
    * the encrypt-to keys. */
@@ -1117,19 +1151,20 @@ reencrypt_to_new_recipients (ctrl_t ctrl, int armor, const char *filename,
     }
 
   /* Write the new recipients first.  */
-  err = write_pubkey_enc_from_list (ctrl, newpk_list, dek, outfp);
+  err = write_pubkey_enc_from_list (ctrl, newpk_list, dek, outfp,
+                                    restrict_pk_list);
   if (err)
     goto leave;
 
   /* Write the old recipients in --add-recipients mode.  */
-  for (count=0, el = pkenc_list; el; el = el->next, count++)
-    if (!ctrl->clear_recipients)
+  for (count=0, el = sesenc_list; el; el = el->next, count++)
+    if (!ctrl->clear_recipients && !el->u_sym)
       {
         if (opt.verbose)
-          show_encrypted_for_user_info (ctrl, 0, &el->d, dek);
+          show_encrypted_for_user_info (ctrl, 0, &el->u.pub, dek);
         init_packet (&pkt);
         pkt.pkttype = PKT_PUBKEY_ENC;
-        pkt.pkt.pubkey_enc = &el->d;
+        pkt.pkt.pubkey_enc = &el->u.pub;
         err = build_packet (outfp, &pkt);
         if (err)
           log_error ("build_packet(pubkey_enc) failed: %s\n",
@@ -1157,6 +1192,12 @@ reencrypt_to_new_recipients (ctrl_t ctrl, int armor, const char *filename,
     iobuf_close (outfp);
   release_armor_context (outafx);
   release_pk_list (newpk_list);
+  while (restrict_pk_list)
+    {
+      pkei = restrict_pk_list->next;
+      xfree (restrict_pk_list);
+      restrict_pk_list = pkei;
+    }
   return err;
 }
 
@@ -1198,7 +1239,7 @@ encrypt_filter (void *opaque, int control,
             log_printhex (efx->cfx.dek->key, efx->cfx.dek->keylen, "DEK is: ");
 
           rc = write_pubkey_enc_from_list (efx->ctrl,
-                                           efx->pk_list, efx->cfx.dek, a);
+                                           efx->pk_list, efx->cfx.dek, a, NULL);
           if (rc)
             return rc;
 
@@ -1288,11 +1329,19 @@ write_pubkey_enc (ctrl_t ctrl,
 
 
 /*
- * Write pubkey-enc packets from the list of PKs to OUT.
+ * Write pubkey-enc packets from the list of PKs PKLIST to OUT.  DEK
+ * has the session key.  If a packet with the same key is also found
+ * in RESTRICT_PK_LIST, it is not written.
  */
 static int
-write_pubkey_enc_from_list (ctrl_t ctrl, PK_LIST pk_list, DEK *dek, iobuf_t out)
+write_pubkey_enc_from_list (ctrl_t ctrl, pk_list_t pk_list, DEK *dek,
+                            iobuf_t out,
+                            struct pubkey_enc_info_item *restrict_pk_list)
 {
+  PKT_public_key *pk;
+  struct pubkey_enc_info_item *pkei;
+  int throw_keyid, rc;
+
   if (opt.throw_keyids && (PGP7 || PGP8))
     {
       log_info(_("option '%s' may not be used in %s mode\n"),
@@ -1303,9 +1352,23 @@ write_pubkey_enc_from_list (ctrl_t ctrl, PK_LIST pk_list, DEK *dek, iobuf_t out)
 
   for ( ; pk_list; pk_list = pk_list->next )
     {
-      PKT_public_key *pk = pk_list->pk;
-      int throw_keyid = (opt.throw_keyids || (pk_list->flags&1));
-      int rc = write_pubkey_enc (ctrl, pk, throw_keyid, dek, out);
+      pk = pk_list->pk;
+      for (pkei = restrict_pk_list; pkei; pkei = pkei->next)
+        if (pk->keyid[0] == pkei->keyid[0]
+            && pk->keyid[1] == pkei->keyid[1]
+            && pk->version == pkei->version
+            && pk->pubkey_algo == pkei->pubkey_algo)
+          break;
+      if (pkei)
+        {
+          if (opt.verbose)
+            log_info (_("already encrypted to %08lX\n"),
+                      (ulong) keyid_from_pk (pk, NULL));
+          continue;
+        }
+
+      throw_keyid = (opt.throw_keyids || (pk_list->flags&1));
+      rc = write_pubkey_enc (ctrl, pk, throw_keyid, dek, out);
       if (rc)
         return rc;
     }

@@ -1,5 +1,46 @@
-Noteworthy changes in version 2.5.12 (unreleased)
+Noteworthy changes in version 2.5.13 (unreleased)
 -------------------------------------------------
+
+
+Noteworthy changes in version 2.5.12 (2025-09-02)
+-------------------------------------------------
+
+  * gpg: New options --[no-]auto-key-upload.  [T7333]
+
+  * gpg: Keys send to an LDAP server are now first updated from that
+    server.  New keyserver option "no-update-before-send" to disable
+    this feature.  [T7730]
+
+  * gpg: Disable default compression for 7z compressed input.
+    [rG53252628de]
+
+  * gpg: Fix a regression with composite PQC and ECC algos.  [T7649]
+
+  * gpg: Fix the list of possible algos for --edit-key:addkey.
+    [T7788]
+
+  * gpg: Allow to select the Kyber variants with --edit-key:addkey.
+    [T7792]
+
+  * gpg: Avoid a second Pinentry pop-up for a configured ADSK during
+    key generation.  [T7491]
+
+  * gpg: Change the ADSK key binding time to use the current time.
+    [T6882]
+
+  * gpgsm: Add option --no-qes-note and new trustlist flag
+    "noconsent".  [T7713]
+
+  * agent: Enable "relax" in the trustlist by default and add flag
+    "norelax".  [rG7b133027ae]
+
+  * agent: Fix a crash on Windows in the Putty support.  [T7799]
+
+  * dirmgr: Support LDAP servers using a schema like the Windows LDS
+    servers.  [T7742]
+
+  * scd:openpgp: Support Yubikey attestation generation.
+    [rG5ddfedf24a]
 
   * gpgtar: Fix regression in end-of-archive detection.  [T7757]
 

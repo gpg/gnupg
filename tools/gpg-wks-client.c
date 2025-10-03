@@ -1453,7 +1453,7 @@ command_create (const char *fingerprint, const char *userid)
         }
       key = NULL;
       err = mime_maker_add_body_data (mime, data, datalen);
-      xfree (data);
+      es_free (data);
       if (err)
         goto leave;
     }

@@ -147,9 +147,9 @@ typedef struct {
      S2K function on the password is the session key. See RFC 4880,
      Section 5.3.)  */
   byte seskeylen;
-  /* The session key as encrypted by the S2K specifier.  For AEAD this
-   * includes the nonce and the authentication tag.  */
-  byte seskey[1];
+  /* The malloced session key as encrypted by the S2K specifier.  For
+   * AEAD this includes the nonce and the authentication tag.  */
+  byte *seskey;
 } PKT_symkey_enc;
 
 /* A public-key encrypted session key packet as defined in RFC 4880,
@@ -166,17 +166,34 @@ typedef struct {
   /* Whether to hide the key id.  This value is not directly
      serialized.  */
   byte    throw_keyid;
-  /* The session key.  */
+  /* The encrypted session key.  */
   gcry_mpi_t     data[PUBKEY_MAX_NENC];
 } PKT_pubkey_enc;
 
 
-/* An object to build a list of public-key encrypted session key.  */
-struct pubkey_enc_list
+/* An object to build a list of public-key and symkey encrypted
+ * session key.  Note that we use a dedicated union here instead of
+ * the usual PACKET type to avoid the need for extra allocations. */
+struct seskey_enc_list
 {
-  struct pubkey_enc_list *next;
-  int result;
-  PKT_pubkey_enc d;
+  struct seskey_enc_list *next;
+  int result; /* The error code decrypting the session key.  */
+  int u_sym;  /* Use the sym member.  */
+  union {
+    PKT_pubkey_enc pub;
+    PKT_symkey_enc sym;
+  } u;
+};
+
+
+/* An object to record some properties of a PKT_pubkey_enc packet.  */
+struct pubkey_enc_info_item
+{
+  struct pubkey_enc_info_item *next;
+  /* 3 fields copied from a PKT_pubkey_enc:  */
+  u32     keyid[2];
+  byte    version;
+  byte    pubkey_algo;
 };
 
 
@@ -608,7 +625,7 @@ struct packet_struct {
 	PKT_comment	*comment;	/* PKT_COMMENT */
 	PKT_user_id	*user_id;	/* PKT_USER_ID */
 	PKT_compressed	*compressed;	/* PKT_COMPRESSED */
-	PKT_encrypted	*encrypted;	/* PKT_ENCRYPTED[_MDC] */
+	PKT_encrypted	*encrypted;	/* PKT_ENCRYPTED[_MDC|_AEAD] */
 	PKT_mdc 	*mdc;		/* PKT_MDC */
 	PKT_plaintext	*plaintext;	/* PKT_PLAINTEXT */
         PKT_gpg_control *gpg_control;   /* PKT_GPG_CONTROL */
@@ -669,7 +686,7 @@ int proc_signature_packets_by_fd (ctrl_t ctrl, void *anchor, IOBUF a,
                                   gnupg_fd_t signed_data_fd);
 gpg_error_t proc_encryption_packets (ctrl_t ctrl, void *ctx, iobuf_t a,
                                      DEK **r_dek,
-                                     struct pubkey_enc_list **r_list);
+                                     struct seskey_enc_list **r_list);
 
 int list_packets( iobuf_t a );
 
@@ -945,6 +962,8 @@ PKT_public_key *copy_public_key( PKT_public_key *d, PKT_public_key *s );
 PKT_signature *copy_signature( PKT_signature *d, PKT_signature *s );
 PKT_user_id *scopy_user_id (PKT_user_id *sd );
 
+void free_seskey_enc_list (struct seskey_enc_list *sesenc_list);
+
 int cmp_public_keys( PKT_public_key *a, PKT_public_key *b );
 int cmp_signatures( PKT_signature *a, PKT_signature *b );
 int cmp_user_ids( PKT_user_id *a, PKT_user_id *b );
@@ -965,7 +984,7 @@ gpg_error_t check_signature (ctrl_t ctrl,
 
 
 /*-- pubkey-enc.c --*/
-gpg_error_t get_session_key (ctrl_t ctrl, struct pubkey_enc_list *k, DEK *dek);
+gpg_error_t get_session_key (ctrl_t ctrl, struct seskey_enc_list *k, DEK *dek);
 gpg_error_t get_override_session_key (DEK *dek, const char *string);
 
 /*-- compress.c --*/

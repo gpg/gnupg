@@ -1710,7 +1710,7 @@ msgstr "Недопустимая команда (список команд: \"he
 
 #, fuzzy, c-format
 #| msgid "key operation not possible: %s\n"
-msgid "modifiying the recipients is not possible: %s\n"
+msgid "modifying the recipients is not possible: %s\n"
 msgstr "операция с ключом невозможна: %s\n"
 
 #, fuzzy
@@ -4798,6 +4798,9 @@ msgstr "автоматически получать ключи при прове
 msgid "honor the preferred keyserver URL set on the key"
 msgstr "учитывать набор URL предпочтительных серверов ключей для этого ключа"
 
+msgid "update a key before sending it"
+msgstr ""
+
 msgid "disabled"
 msgstr "отключен"
 
@@ -4811,6 +4814,11 @@ msgstr "недопустимый протокол сервера ключей (�
 #, c-format
 msgid "\"%s\" not a key ID: skipping\n"
 msgstr "\"%s\" - не идентификатор ключа: пропущен\n"
+
+#, fuzzy, c-format
+#| msgid "\"%s\" is not a fingerprint\n"
+msgid "\"%s\" not a fingerprint: skipping\n"
+msgstr "\"%s\" - не отпечаток\n"
 
 #, c-format
 msgid "refreshing %d key from %s\n"
@@ -4838,6 +4846,10 @@ msgstr "получение ключа %s с %s\n"
 #, c-format
 msgid "no keyserver known\n"
 msgstr "не известно ни одного сервера ключей\n"
+
+#, c-format
+msgid "upload skipped due to non-LDAP keyserver\n"
+msgstr ""
 
 #, c-format
 msgid "skipped \"%s\": %s\n"
@@ -5169,6 +5181,11 @@ msgstr "без сжатия|без|none"
 #, c-format
 msgid "this message may not be usable by %s\n"
 msgstr "данное сообщение может быть непригодно для %s\n"
+
+#, fuzzy
+#| msgid "enable key"
+msgid "enabled"
+msgstr "подключить ключ"
 
 #, c-format
 msgid "ambiguous option '%s'\n"

@@ -17,7 +17,7 @@
 # sure while creating the mo.  A conversion is not done if the source
 # file does not exist or if it is not newer than the mo file.
 
-if [ "$1" = "--get-linguas" -a $# -eq 2 ]; then
+if [ "$1" = "--get-linguas" ] && [ $# -eq 2 ]; then
    if [ ! -f "$2/LINGUAS" ]; then
        echo "potomo: directory '$2' has no LINGUAS file" >&2
        exit 1

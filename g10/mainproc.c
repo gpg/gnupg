@@ -52,7 +52,7 @@ struct symlist_item
 {
   struct symlist_item *next;
   int cipher_algo;
-  int cfb_mode;
+  enum gcry_cipher_modes cipher_mode;
   int other_error;
 };
 
@@ -96,7 +96,7 @@ struct mainproc_context
   iobuf_t iobuf;    /* Used to get the filename etc. */
   int trustletter;  /* Temporary usage in list_node. */
   ulong symkeys;    /* Number of symmetrically encrypted session keys.  */
-  struct pubkey_enc_list *pkenc_list; /* List of encryption packets. */
+  struct seskey_enc_list *sesenc_list; /* List of encryption packets. */
   struct symlist_item *symenc_list;   /* List of sym. encryption packets. */
   int seen_pkt_encrypted_aead; /* PKT_ENCRYPTED_AEAD packet seen. */
   int seen_pkt_encrypted_mdc;  /* PKT_ENCRYPTED_MDC packet seen. */
@@ -137,15 +137,8 @@ release_list( CTX c )
 {
   proc_tree (c, c->list);
   release_kbnode (c->list);
-  while (c->pkenc_list)
-    {
-      struct pubkey_enc_list *tmp = c->pkenc_list->next;
-
-      release_pubkey_enc_parts (&c->pkenc_list->d);
-      xfree (c->pkenc_list);
-      c->pkenc_list = tmp;
-    }
-  c->pkenc_list = NULL;
+  free_seskey_enc_list (c->sesenc_list);
+  c->sesenc_list = NULL;
   while (c->symenc_list)
     {
       struct symlist_item *tmp = c->symenc_list->next;
@@ -484,7 +477,11 @@ proc_symkey_enc (CTX c, PACKET *pkt)
     if (enc)
       {
         symitem->cipher_algo = enc->cipher_algo;
-        symitem->cfb_mode = !enc->aead_algo;
+        symitem->cipher_mode = !enc->aead_algo;
+        symitem->cipher_mode
+          = (enc->aead_algo == AEAD_ALGO_NONE? GCRY_CIPHER_MODE_CFB :
+             enc->aead_algo == AEAD_ALGO_OCB?  GCRY_CIPHER_MODE_OCB :
+             GCRY_CIPHER_MODE_NONE);
       }
     else
       symitem->other_error = 1;
@@ -520,12 +517,12 @@ proc_pubkey_enc (CTX c, PACKET *pkt)
 
   if (!opt.list_only && !opt.override_session_key)
     {
-      struct pubkey_enc_list *x = xcalloc (1, sizeof *x);
+      struct seskey_enc_list *x = xcalloc (1, sizeof *x);
 
-      copy_pubkey_enc_parts (&x->d, enc);
+      copy_pubkey_enc_parts (&x->u.pub, enc);
       x->result = -1;
-      x->next = c->pkenc_list;
-      c->pkenc_list = x;
+      x->next = c->sesenc_list;
+      c->sesenc_list = x;
     }
 
   free_packet(pkt, NULL);
@@ -537,7 +534,7 @@ proc_pubkey_enc (CTX c, PACKET *pkt)
  * not decrypt.
  */
 static void
-print_pkenc_list (ctrl_t ctrl, struct pubkey_enc_list *list)
+print_sesenc_list (ctrl_t ctrl, struct seskey_enc_list *list)
 {
   for (; list; list = list->next)
     {
@@ -545,24 +542,27 @@ print_pkenc_list (ctrl_t ctrl, struct pubkey_enc_list *list)
       char pkstrbuf[PUBKEY_STRING_SIZE];
       char *p;
 
+      if (list->u_sym)
+        continue;
+
       pk = xmalloc_clear (sizeof *pk);
 
-      pk->pubkey_algo = list->d.pubkey_algo;
-      if (!get_pubkey (ctrl, pk, list->d.keyid))
+      pk->pubkey_algo = list->u.pub.pubkey_algo;
+      if (!get_pubkey (ctrl, pk, list->u.pub.keyid))
         {
           pubkey_string (pk, pkstrbuf, sizeof pkstrbuf);
 
           log_info (_("encrypted with %s key, ID %s, created %s\n"),
                     pkstrbuf, keystr_from_pk (pk),
                     strtimestamp (pk->timestamp));
-          p = get_user_id_native (ctrl, list->d.keyid);
+          p = get_user_id_native (ctrl, list->u.pub.keyid);
           log_printf (_("      \"%s\"\n"), p);
           xfree (p);
         }
       else
         log_info (_("encrypted with %s key, ID %s\n"),
-                  openpgp_pk_algo_name (list->d.pubkey_algo),
-                  keystr (list->d.keyid));
+                  openpgp_pk_algo_name (list->u.pub.pubkey_algo),
+                  keystr (list->u.pub.keyid));
 
       if (opt.flags.require_pqc_encryption
           && pk->pubkey_algo != PUBKEY_ALGO_KYBER)
@@ -579,6 +579,8 @@ proc_encrypted (CTX c, PACKET *pkt)
   int result = 0;
   int early_plaintext = literals_seen;
   unsigned int compliance_de_vs = 0;
+  enum gcry_cipher_modes ciphermode;
+  int unknown_ciphermode;
 
   if (pkt)
     {
@@ -587,7 +589,7 @@ proc_encrypted (CTX c, PACKET *pkt)
       if (pkt->pkttype == PKT_ENCRYPTED_MDC)
         c->seen_pkt_encrypted_mdc = 1;
     }
-  else /* No PKT indicates the the add-recipients mode.  */
+  else /* No PKT indicates the add-recipients mode.  */
     log_assert (c->ctrl->modify_recipients);
 
   if (early_plaintext)
@@ -603,7 +605,7 @@ proc_encrypted (CTX c, PACKET *pkt)
         log_info (_("encrypted with %lu passphrases\n"), c->symkeys);
       else if (c->symkeys == 1)
         log_info (_("encrypted with 1 passphrase\n"));
-      print_pkenc_list (c->ctrl, c->pkenc_list);
+      print_sesenc_list (c->ctrl, c->sesenc_list);
     }
 
   /* Figure out the session key by looking at all pkenc packets. */
@@ -622,20 +624,21 @@ proc_encrypted (CTX c, PACKET *pkt)
           write_status_error ("pkdecrypt_failed", result);
         }
     }
-  else if (c->pkenc_list)
+  else if (c->sesenc_list)
     {
       c->dek = xmalloc_secure_clear (sizeof *c->dek);
-      result = get_session_key (c->ctrl, c->pkenc_list, c->dek);
+      result = get_session_key (c->ctrl, c->sesenc_list, c->dek);
       if (is_status_enabled ())
         {
-          struct pubkey_enc_list *list;
+          struct seskey_enc_list *list;
 
-          for (list = c->pkenc_list; list; list = list->next)
-            if (list->result)
+          for (list = c->sesenc_list; list; list = list->next)
+            if (list->result && !list->u_sym)
               { /* Key was not tried or it caused an error.  */
                 char buf[20];
                 snprintf (buf, sizeof buf, "%08lX%08lX",
-                          (ulong)list->d.keyid[0], (ulong)list->d.keyid[1]);
+                          (ulong)list->u.pub.keyid[0],
+                          (ulong)list->u.pub.keyid[1]);
                 write_status_text (STATUS_NO_SECKEY, buf);
               }
         }
@@ -735,12 +738,24 @@ proc_encrypted (CTX c, PACKET *pkt)
     }
   else if (!c->dek)
     {
-      if (c->symkeys && !c->pkenc_list)
+      if (c->symkeys && !c->sesenc_list)
         result = gpg_error (GPG_ERR_BAD_KEY);
 
       if (!result)
         result = gpg_error (GPG_ERR_NO_SECKEY);
     }
+
+  /* We need to know the ciphermode for gnupg_cipher_is_compliant.  */
+  unknown_ciphermode = 0;
+  if (pkt->pkt.encrypted->aead_algo)
+    {
+      unsigned int dummy;
+      if (openpgp_aead_algo_info (pkt->pkt.encrypted->aead_algo,
+                                  &ciphermode, &dummy))
+        unknown_ciphermode = 1;  /* error -> unknown mode */
+    }
+  else
+    ciphermode = GCRY_CIPHER_MODE_CFB;
 
   /* Compute compliance with CO_DE_VS.  */
   if (!result && (is_status_enabled () || opt.flags.require_compliance)
@@ -748,15 +763,15 @@ proc_encrypted (CTX c, PACKET *pkt)
       && !opt.override_session_key
       /* Check symmetric cipher.  */
       && gnupg_gcrypt_is_compliant (CO_DE_VS)
-      && gnupg_cipher_is_compliant (CO_DE_VS, c->dek->algo,
-                                    GCRY_CIPHER_MODE_CFB))
+      && !unknown_ciphermode
+      && gnupg_cipher_is_compliant (CO_DE_VS, c->dek->algo, ciphermode))
     {
-      struct pubkey_enc_list *i;
+      struct seskey_enc_list *i;
       struct symlist_item *si;
       int compliant = 1;
       PKT_public_key *pk = xmalloc (sizeof *pk);
 
-      if ( !(c->pkenc_list || c->symkeys) )
+      if ( !(c->sesenc_list || c->symkeys) )
         log_debug ("%s: where else did the session key come from?\n", __func__);
 
       /* Check that all seen symmetric key packets use compliant
@@ -764,19 +779,21 @@ proc_encrypted (CTX c, PACKET *pkt)
        * key can be sneaked in.  */
       for (si = c->symenc_list; si && compliant; si = si->next)
         {
-          if (!si->cfb_mode
+          if (si->cipher_mode == GCRY_CIPHER_MODE_NONE
               || !gnupg_cipher_is_compliant (CO_DE_VS, si->cipher_algo,
-                                             GCRY_CIPHER_MODE_CFB))
+                                             si->cipher_mode))
             compliant = 0;
         }
 
       /* Check that every known public key used to encrypt the session key
        * is compliant.  */
-      for (i = c->pkenc_list; i && compliant; i = i->next)
+      for (i = c->sesenc_list; i && compliant; i = i->next)
         {
+          if (i->u_sym)
+            continue;
           memset (pk, 0, sizeof *pk);
-          pk->pubkey_algo = i->d.pubkey_algo;
-          if (!get_pubkey (c->ctrl, pk, i->d.keyid)
+          pk->pubkey_algo = i->u.pub.pubkey_algo;
+          if (!get_pubkey (c->ctrl, pk, i->u.pub.keyid)
               && !gnupg_pk_is_compliant (CO_DE_VS, pk->pubkey_algo, 0,
                                          pk->pkey, nbits_from_pk (pk), NULL))
             compliant = 0;
@@ -1622,7 +1639,7 @@ proc_signature_packets_by_fd (ctrl_t ctrl, void *anchor, iobuf_t a,
  * needs to release them; even if the function returns an error. */
 gpg_error_t
 proc_encryption_packets (ctrl_t ctrl, void *anchor, iobuf_t a,
-                         DEK **r_dek, struct pubkey_enc_list **r_list)
+                         DEK **r_dek, struct seskey_enc_list **r_list)
 {
   CTX c = xmalloc_clear (sizeof *c);
   int rc;
@@ -1635,8 +1652,8 @@ proc_encryption_packets (ctrl_t ctrl, void *anchor, iobuf_t a,
       rc = do_proc_packets (c, a, 1);
       *r_dek = c->dek;
       c->dek = NULL;
-      *r_list = c->pkenc_list;
-      c->pkenc_list = NULL;
+      *r_list = c->sesenc_list;
+      c->sesenc_list = NULL;
     }
   else
     rc = do_proc_packets (c, a, 0);
@@ -1665,7 +1682,7 @@ check_nesting (CTX c)
 
 
 /* Main processing loop.  If KEEP_DEK_AND_LIST is set the DEK and
- * PKENC_LIST of the context C are not released at the end of the
+ * SESENC_LIST of the context C are not released at the end of the
  * function.  The caller is then required to do this.  */
 static int
 do_proc_packets (CTX c, iobuf_t a, int keep_dek_and_list)

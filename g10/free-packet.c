@@ -49,8 +49,11 @@ my_mpi_copy (gcry_mpi_t a)
 void
 free_symkey_enc( PKT_symkey_enc *enc )
 {
-    xfree(enc);
+  if (enc)
+    xfree (enc->seskey);
+  xfree(enc);
 }
+
 
 /* This is the core of free_pubkey_enc but does only release the
  * allocated members of ENC.  */
@@ -535,6 +538,22 @@ free_packet (PACKET *pkt, parse_packet_ctx_t parsectx)
     }
 
   pkt->pkt.generic = NULL;
+}
+
+
+/* Free an entire list of public or symmetric key encrypted data.  */
+void
+free_seskey_enc_list (struct seskey_enc_list *sesenc_list)
+{
+  while (sesenc_list)
+    {
+      struct seskey_enc_list *tmp = sesenc_list->next;
+
+      if (!sesenc_list->u_sym)
+        release_pubkey_enc_parts (&sesenc_list->u.pub);
+      xfree (sesenc_list);
+      sesenc_list = tmp;
+    }
 }
 
 

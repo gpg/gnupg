@@ -1671,8 +1671,9 @@ msgstr "Yönetici komutlarına izin verilmez\n"
 msgid "Invalid command  (try \"help\")\n"
 msgstr "Komut geçersiz (\"help\" komutunu deneyin)\n"
 
-#, c-format
-msgid "modifiying the recipients is not possible: %s\n"
+#, fuzzy, c-format
+#| msgid "modifiying the recipients is not possible: %s\n"
+msgid "modifying the recipients is not possible: %s\n"
 msgstr "alıcılarda değişiklik yapmak olanaklı değil: %s\n"
 
 msgid "decryption failed"
@@ -4678,6 +4679,9 @@ msgstr "imzaları doğrularken anahtarları kendiliğinden al"
 msgid "honor the preferred keyserver URL set on the key"
 msgstr "tercihli anahtar sunucusunun adresini adrese ata"
 
+msgid "update a key before sending it"
+msgstr ""
+
 msgid "disabled"
 msgstr "devre dışı bırakıldı"
 
@@ -4691,6 +4695,11 @@ msgstr "anahtar sunucu protokolü geçersiz (bizimki %d!=eylemci %d)\n"
 #, c-format
 msgid "\"%s\" not a key ID: skipping\n"
 msgstr "\"%s\" bir anahtar kimliği değil: Atlanıyor\n"
+
+#, fuzzy, c-format
+#| msgid "\"%s\" is not a fingerprint\n"
+msgid "\"%s\" not a fingerprint: skipping\n"
+msgstr "\"%s\", bir parmak izi değil\n"
 
 #, c-format
 msgid "refreshing %d key from %s\n"
@@ -4717,6 +4726,10 @@ msgstr "%s anahtarı %s adresinden isteniyor\n"
 #, c-format
 msgid "no keyserver known\n"
 msgstr "bilinen bir anahtar sunucusu yok\n"
+
+#, c-format
+msgid "upload skipped due to non-LDAP keyserver\n"
+msgstr ""
 
 #, c-format
 msgid "skipped \"%s\": %s\n"
@@ -5042,6 +5055,11 @@ msgstr "sıkıştırılmamış|yok"
 #, c-format
 msgid "this message may not be usable by %s\n"
 msgstr "bu ileti %s tarafından kullanılamayabilir\n"
+
+#, fuzzy
+#| msgid "enable key"
+msgid "enabled"
+msgstr "anahtarı etkinleştir"
 
 #, c-format
 msgid "ambiguous option '%s'\n"
