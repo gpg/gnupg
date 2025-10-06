@@ -423,45 +423,6 @@ agent_scd_getattr (const char *name, struct agent_card_info_s *info)
 }
 #endif /* ENABLE_CARD_SUPPORT */
 
-/* We do not do any locking, so use these stubs here */
-void
-dotlock_disable (void)
-{
-}
-
-dotlock_t
-dotlock_create (const char *file_to_lock, unsigned int flags)
-{
-  (void)file_to_lock;
-  (void)flags;
-  return NULL;
-}
-
-void
-dotlock_destroy (dotlock_t h)
-{
-  (void)h;
-}
-
-int
-dotlock_take (dotlock_t h, long timeout)
-{
-  (void)h;
-  (void)timeout;
-  return 0;
-}
-
-int
-dotlock_release (dotlock_t h)
-{
-  (void)h;
-  return 0;
-}
-
-void
-dotlock_remove_lockfiles (void)
-{
-}
 
 int
 agent_probe_secret_key (ctrl_t ctrl, PKT_public_key *pk)
