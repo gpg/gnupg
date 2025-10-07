@@ -1924,13 +1924,7 @@ keydb_search (KEYDB_HANDLE hd, KEYDB_SEARCH_DESC *desc,
       return gpg_error (GPG_ERR_NOT_FOUND);
     }
 
-  /* Make sure we are locked.  */
-  /* if (!hd->locked) */
-  /*   { */
-  /*     rc = lock_all (hd); */
-  /*     if (rc) */
-  /*       return rc; */
-  /*   } */
+  /* Note that we are not explicitly locking the keybox.  */
 
   /* NB: If one of the exact search modes below is used in a loop to
      walk over all keys (with the same fingerprint) the caching must

@@ -342,8 +342,14 @@ keydb_add_resource (ctrl_t ctrl, const char *url, int force, int *auto_created)
 
                 if (kbxhd)
                   keybox_compress (kbxhd);
-                dotlock_release (all_resources[used_resources].lockhandle);
                 keybox_release (kbxhd);
+                /* The release of the lock is okay here because we
+                 * known that this process has currently no other
+                 * users of the lock.  In general we should change the
+                 * simple already-locked optimization to use reference
+                 * counting.  But that will introduce new sources for
+                 * error locking errors. */
+                dotlock_release (all_resources[used_resources].lockhandle);
               }
 
             used_resources++;
