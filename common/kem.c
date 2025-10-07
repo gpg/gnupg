@@ -144,60 +144,67 @@ compute_kmac256 (void *digest, size_t digestlen,
 }
 
 
-/* Compute KEK for ECC with HASHALGO, ECDH result, ciphertext in
- * ECC_CT (which is an ephemeral key), and public key in ECC_PK.
+/* Compute KEK for ECC with HASHALGO, ECDH result, and KDF_PARAMS.
  *
- * For traditional ECC (of v4), KDF_PARAMS is specified by upper layer
- * and an ephemeral key and public key are not used for the
- * computation.
+ * KDF_PARAMS is specified by upper layer.
  */
 gpg_error_t
-gnupg_ecc_kem_kdf (void *kek, size_t kek_len,
+gnupg_ecc_kem_kdf (void *kek, size_t kek_len, int is_pgp,
                    int hashalgo, const void *ecdh, size_t ecdh_len,
-                   const void *ecc_ct, size_t ecc_ct_len,
-                   const void *ecc_pk, size_t ecc_pk_len,
-                   unsigned char *kdf_params, size_t kdf_params_len)
+                   const unsigned char *kdf_params, size_t kdf_params_len)
 {
-  if (kdf_params)
-    {
-      /* Traditional ECC */
-      gpg_error_t err;
-      gcry_kdf_hd_t hd;
-      unsigned long param[1];
+  /* Traditional ECC */
+  gpg_error_t err;
+  gcry_kdf_hd_t hd;
+  unsigned long param[1];
+  int kdf_algo;
 
-      param[0] = kek_len;
-      err = gcry_kdf_open (&hd, GCRY_KDF_ONESTEP_KDF, hashalgo, param, 1,
-                           ecdh, ecdh_len, NULL, 0, NULL, 0,
-                           kdf_params, kdf_params_len);
-      if (!err)
-        {
-          gcry_kdf_compute (hd, NULL);
-          gcry_kdf_final (hd, kek_len, kek);
-          gcry_kdf_close (hd);
-        }
-
-      return err;
-    }
+  if (is_pgp)
+    kdf_algo = GCRY_KDF_ONESTEP_KDF;
   else
+    kdf_algo = GCRY_KDF_X963_KDF;
+
+  param[0] = kek_len;
+  err = gcry_kdf_open (&hd, kdf_algo, hashalgo, param, 1,
+                       ecdh, ecdh_len, NULL, 0, NULL, 0,
+                       kdf_params, kdf_params_len);
+  if (!err)
     {
-      /* ECC in composite KEM */
-      gcry_buffer_t iov[3];
-      unsigned int dlen;
-
-      dlen = gcry_md_get_algo_dlen (hashalgo);
-      if (kek_len != dlen)
-        return gpg_error (GPG_ERR_INV_LENGTH);
-
-      memset (iov, 0, sizeof (iov));
-
-      iov[0].data = (unsigned char *)ecdh;
-      iov[0].len = ecdh_len;
-      iov[1].data = (unsigned char *)ecc_ct;
-      iov[1].len = ecc_ct_len;
-      iov[2].data = (unsigned char *)ecc_pk;
-      iov[2].len = ecc_pk_len;
-      gcry_md_hash_buffers (hashalgo, 0, kek, iov, 3);
+      gcry_kdf_compute (hd, NULL);
+      gcry_kdf_final (hd, kek_len, kek);
+      gcry_kdf_close (hd);
     }
+
+  return err;
+}
+
+
+/* Compute KEK for ECC with HASHALGO, ECDH result, ciphertext in
+ * ECC_CT (which is an ephemeral key), and public key in ECC_PK.
+ */
+gpg_error_t
+gnupg_ecc_kem_simple_kdf (void *kek, size_t kek_len,
+                          int hashalgo, const void *ecdh, size_t ecdh_len,
+                          const void *ecc_ct, size_t ecc_ct_len,
+                          const void *ecc_pk, size_t ecc_pk_len)
+{
+  /* ECC part in composite KEM */
+  gcry_buffer_t iov[3];
+  unsigned int dlen;
+
+  dlen = gcry_md_get_algo_dlen (hashalgo);
+  if (kek_len != dlen)
+    return gpg_error (GPG_ERR_INV_LENGTH);
+
+  memset (iov, 0, sizeof (iov));
+
+  iov[0].data = (unsigned char *)ecdh;
+  iov[0].len = ecdh_len;
+  iov[1].data = (unsigned char *)ecc_ct;
+  iov[1].len = ecc_ct_len;
+  iov[2].data = (unsigned char *)ecc_pk;
+  iov[2].len = ecc_pk_len;
+  gcry_md_hash_buffers (hashalgo, 0, kek, iov, 3);
 
   return 0;
 }

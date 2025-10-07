@@ -455,7 +455,7 @@ ecc_pgp_kem_decap (ctrl_t ctrl, gcry_sexp_t s_skey0,
    First keygrip is for ECC, second keygrip is for PQC.  CIPHERTEXT
    should follow the format of:
 
-	(enc-val(pqc(c%d)(e%m)(k%m)(s%m)(fixed-info&)))
+        (enc-val(pqc(c%d)(e%m)(k%m)(s%m)(fixed-info%b)))
         c: cipher identifier (of session key (wrapped key))
         e: ECDH ciphertext
         k: ML-KEM ciphertext
@@ -563,9 +563,10 @@ composite_pgp_kem_decrypt (ctrl_t ctrl, const char *desc_text,
     goto leave;
   ecc_hashalgo = ecc->hash_algo;
   ecc_shared_len = gcry_md_get_algo_dlen (ecc_hashalgo);
-  err = gnupg_ecc_kem_kdf (ecc_ss, ecc_shared_len, ecc_hashalgo,
-                           ecc_ecdh, ecc_point_len, ecc_ct, ecc_point_len,
-                           ecc_pk, ecc_point_len, NULL, 0);
+  err = gnupg_ecc_kem_simple_kdf (ecc_ss, ecc_shared_len, ecc_hashalgo,
+                                  ecc_ecdh, ecc_point_len,
+                                  ecc_ct, ecc_point_len,
+                                  ecc_pk, ecc_point_len);
   if (err)
     {
       if (opt.verbose)
@@ -706,19 +707,19 @@ composite_pgp_kem_decrypt (ctrl_t ctrl, const char *desc_text,
   return err;
 }
 
-/* For ECC PGP KEM, decrypt CIPHERTEXT using KEM API.  CIPHERTEXT
+/* For ECC PGP/CMS KEM, decrypt CIPHERTEXT using KEM API.  CIPHERTEXT
    should follow the format of:
 
-	(enc-val(ecc(c%d)(h%d)(e%m)(s%m)(kdf-params&)))
+        (enc-val(ecc(c%d)(h%d)(e%m)(s%m)(kdf-params%b)))
         c: cipher identifier (of wrapping key)
         h: hash identifier
         e: ECDH ciphertext
         s: encrypted session key
-        fixed-info: A buffer with the fixed info (the KDF parameters).
+        kdf-params: A buffer with the KDF parameters.
 
   */
 static gpg_error_t
-ecc_kem_decrypt (ctrl_t ctrl, const char *desc_text,
+ecc_kem_decrypt (int is_pgp, ctrl_t ctrl, const char *desc_text,
                  gcry_sexp_t s_cipher, membuf_t *outbuf)
 {
   gcry_sexp_t s_skey = NULL;
@@ -783,7 +784,7 @@ ecc_kem_decrypt (ctrl_t ctrl, const char *desc_text,
   encrypted_sessionkey_len = (nbits+7)/8;
 
   kek_len = gcry_cipher_get_algo_keylen (algo);
-  if (kek_len == 0 || kek_len > gcry_md_get_algo_dlen (hashalgo))
+  if (kek_len == 0)
     {
       err = gpg_error (GPG_ERR_INV_DATA);
       goto leave;
@@ -802,13 +803,12 @@ ecc_kem_decrypt (ctrl_t ctrl, const char *desc_text,
                            ecc_ecdh, ecc_pk, &ecc);
   if (err)
     goto leave;
-  err = gnupg_ecc_kem_kdf (kek, kek_len, hashalgo,
+  err = gnupg_ecc_kem_kdf (kek, kek_len, is_pgp, hashalgo,
                            ecc->point_len > ecc->scalar_len ?
                            /* For Weierstrass curve, extract
                               x-component from the point.  */
                            ecc_ecdh + 1 : ecc_ecdh,
-                           ecc->scalar_len, ecc_ct, ecc_point_len,
-                           ecc_pk, ecc_point_len,
+                           ecc->scalar_len,
                            (char *)kdf_params.data+kdf_params.off,
                            kdf_params.len);
   if (err)
@@ -832,18 +832,18 @@ ecc_kem_decrypt (ctrl_t ctrl, const char *desc_text,
       goto leave;
     }
 
-  if (encrypted_sessionkey[0] != encrypted_sessionkey_len - 1)
+  if (is_pgp && encrypted_sessionkey[0] != encrypted_sessionkey_len - 1)
     {
       err = gpg_error (GPG_ERR_INV_DATA);
       goto leave;
     }
 
   err = gcry_cipher_setkey (hd, kek, kek_len);
-  sessionkey_len = encrypted_sessionkey_len - 8 - 1;
+  sessionkey_len = encrypted_sessionkey_len - 8 - !!is_pgp;
   if (!err)
     err = gcry_cipher_decrypt (hd, sessionkey, sessionkey_len,
-                               encrypted_sessionkey + 1,
-                               encrypted_sessionkey_len - 1);
+                               encrypted_sessionkey + !!is_pgp,
+                               encrypted_sessionkey_len - !!is_pgp);
   gcry_cipher_close (hd);
 
   if (err)
@@ -873,20 +873,15 @@ ecc_kem_decrypt (ctrl_t ctrl, const char *desc_text,
 /* DECRYPT the encrypted stuff (like encrypted session key) in
  * CIPHERTEXT using KEM API, with KEMID.  Keys (or a key) are
  * specified in CTRL.  DESC_TEXT is used to retrieve private key.
- * OPTION can be specified for upper layer option for KEM.  Decrypted
- * stuff (like session key) is written to OUTBUF.  For now,
- * KEMID==KEM_CMS is _not_ yet supported.
+ * Decrypted stuff (like session key) is written to OUTBUF.
  */
 gpg_error_t
 agent_kem_decrypt (ctrl_t ctrl, const char *desc_text, int kemid,
                    const unsigned char *ciphertext, size_t ciphertextlen,
-                   const unsigned char *option, size_t optionlen,
                    membuf_t *outbuf)
 {
   gcry_sexp_t s_cipher = NULL;
   gpg_error_t err = 0;
-
-  (void)optionlen;
 
   err = gcry_sexp_sscan (&s_cipher, NULL, (char*)ciphertext, ciphertextlen);
   if (err)
@@ -895,15 +890,8 @@ agent_kem_decrypt (ctrl_t ctrl, const char *desc_text, int kemid,
       return gpg_error (GPG_ERR_INV_DATA);
     }
 
-  if (option)
-    {
-      log_error ("KEM (%d) requires no option\n", kemid);
-      err = gpg_error (GPG_ERR_INV_ARG);
-      goto leave;
-    }
-
-  if (kemid == KEM_PGP)
-    err = ecc_kem_decrypt  (ctrl, desc_text, s_cipher, outbuf);
+  if (kemid == KEM_PGP || kemid == KEM_CMS)
+    err = ecc_kem_decrypt (kemid == KEM_PGP, ctrl, desc_text, s_cipher, outbuf);
   else if (kemid == KEM_PQC_PGP)
     {
       if (!ctrl->have_keygrip)
@@ -927,8 +915,9 @@ agent_kem_decrypt (ctrl_t ctrl, const char *desc_text, int kemid,
 
       err = composite_pgp_kem_decrypt (ctrl, desc_text, s_cipher, outbuf);
     }
+  else
+    err = gpg_error (GPG_ERR_INV_ARG);
 
- leave:
   gcry_sexp_release (s_cipher);
   return err;
 }

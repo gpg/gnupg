@@ -544,11 +544,11 @@ do_encrypt_kem (PKT_public_key *pk, gcry_mpi_t data, int seskey_algo,
       log_printhex (ecc_ct, ecc_ct_len, "ECC    ephem:");
       log_printhex (ecc_ecdh, ecc_ecdh_len, "ECC     ecdh:");
     }
-  err = gnupg_ecc_kem_kdf (ecc_ss, ecc_ss_len,
-                           ecc_hash_algo,
-                           ecc_ecdh, ecc_ecdh_len,
-                           ecc_ct, ecc_ct_len,
-                           ecc_pubkey, ecc_pubkey_len, NULL, 0);
+  err = gnupg_ecc_kem_simple_kdf (ecc_ss, ecc_ss_len,
+                                  ecc_hash_algo,
+                                  ecc_ecdh, ecc_ecdh_len,
+                                  ecc_ct, ecc_ct_len,
+                                  ecc_pubkey, ecc_pubkey_len);
   if (err)
     {
       if (opt.verbose)
@@ -851,12 +851,11 @@ do_encrypt_ecdh (PKT_public_key *pk, gcry_mpi_t data,  gcry_mpi_t *resarr)
       goto leave;
     }
 
-  err = gnupg_ecc_kem_kdf (kek, kek_len, kdf_hash_algo,
+  err = gnupg_ecc_kem_kdf (kek, kek_len, 1, kdf_hash_algo,
                            ecc->is_weierstrauss ?
                            ecc_ecdh + 1 : ecc_ecdh,
                            ecc->is_weierstrauss ?
                            (ecc_ecdh_len - 1) / 2 : ecc_ecdh_len,
-                           NULL, 0, NULL, 0,
                            kdf_params, kdf_params_len);
   xfree (kdf_params);
   if (err)

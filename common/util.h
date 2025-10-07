@@ -315,12 +315,21 @@ char *gnupg_get_help_string (const char *key, int only_current_locale);
 const char *gnupg_messages_locale_name (void);
 
 /*-- kem.c --*/
-gpg_error_t gnupg_ecc_kem_kdf (void *kek, size_t kek_len,
+gpg_error_t
+gpgsm_ecc_kem_kdf (void *kek, size_t kek_len,
+                   int hashalgo, const void *ecdh, size_t ecdh_len,
+                   const unsigned char *wrap, size_t wrap_len,
+                   const unsigned char *ukm, size_t ukm_len);
+
+gpg_error_t gnupg_ecc_kem_kdf (void *kek, size_t kek_len, int is_pgp,
                                int hashalgo, const void *ecdh, size_t ecdh_len,
-                               const void *ecc_ct, size_t ecc_ct_len,
-                               const void *ecc_pk, size_t ecc_pk_len,
-                               unsigned char *kdf_params,
+                               const unsigned char *kdf_params,
                                size_t kdf_params_len);
+
+gpg_error_t gnupg_ecc_kem_simple_kdf (void *kek, size_t kek_len, int hashalgo,
+                                      const void *ecdh, size_t ecdh_len,
+                                      const void *ecc_ct, size_t ecc_ct_len,
+                                      const void *ecc_pk, size_t ecc_pk_len);
 
 gpg_error_t gnupg_kem_combiner  (void *kek, size_t kek_len,
                                  const void *ecc_ss, size_t ecc_ss_len,

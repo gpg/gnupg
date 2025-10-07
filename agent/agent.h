@@ -569,7 +569,6 @@ enum kemids
 
 gpg_error_t agent_kem_decrypt (ctrl_t ctrl, const char *desc_text, int kemid,
                                const unsigned char *ct, size_t ctlen,
-                               const unsigned char *option, size_t optionlen,
                                membuf_t *outbuf);
 
 /*-- genkey.c --*/

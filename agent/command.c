@@ -1080,8 +1080,6 @@ cmd_pkdecrypt (assuan_context_t ctx, char *line)
   size_t valuelen;
   membuf_t outbuf;
   int padding = -1;
-  unsigned char *option = NULL;
-  size_t optionlen = 0;
   const char *p;
   int kemid = -1;
 
@@ -1107,10 +1105,7 @@ cmd_pkdecrypt (assuan_context_t ctx, char *line)
   rc = print_assuan_status (ctx, "INQUIRE_MAXLEN", "%u", MAXLEN_CIPHERTEXT);
   if (!rc)
     rc = assuan_inquire (ctx, "CIPHERTEXT",
-			&value, &valuelen, MAXLEN_CIPHERTEXT);
-  if (!rc && kemid > KEM_PGP)
-    rc = assuan_inquire (ctx, "OPTION",
-                         &option, &optionlen, MAXLEN_CIPHERTEXT);
+                        &value, &valuelen, MAXLEN_CIPHERTEXT);
   if (rc)
     return rc;
 
@@ -1120,11 +1115,8 @@ cmd_pkdecrypt (assuan_context_t ctx, char *line)
     rc = agent_pkdecrypt (ctrl, ctrl->server_local->keydesc,
                           value, valuelen, &outbuf, &padding);
   else
-    {
-      rc = agent_kem_decrypt (ctrl, ctrl->server_local->keydesc, kemid,
-                              value, valuelen, option, optionlen, &outbuf);
-      xfree (option);
-    }
+    rc = agent_kem_decrypt (ctrl, ctrl->server_local->keydesc, kemid,
+                            value, valuelen, &outbuf);
   xfree (value);
   if (rc)
     clear_outbuf (&outbuf);
