@@ -73,126 +73,6 @@ string_from_gcry_buffer (gcry_buffer_t *buffer)
 }
 
 
-/* Helper to construct and hash the
- *  ECC-CMS-SharedInfo ::= SEQUENCE {
- *      keyInfo         AlgorithmIdentifier,
- *      entityUInfo [0] EXPLICIT OCTET STRING OPTIONAL,
- *      suppPubInfo [2] EXPLICIT OCTET STRING  }
- * as described in RFC-5753, 7.2.  */
-static gpg_error_t
-hash_ecc_cms_shared_info (gcry_md_hd_t hash_hd, const char *wrap_algo_str,
-                          unsigned int keylen,
-                          const void *ukm, unsigned int ukmlen)
-{
-  gpg_error_t err;
-  void *p;
-  unsigned char *oid;
-  size_t n, oidlen, toidlen, tkeyinfo, tukmlen, tsupppubinfo;
-  unsigned char keylenbuf[6];
-  membuf_t mb = MEMBUF_ZERO;
-
-  err = ksba_oid_from_str (wrap_algo_str, &oid, &oidlen);
-  if (err)
-    return err;
-  toidlen = get_tlv_length (CLASS_UNIVERSAL, TAG_OBJECT_ID, 0, oidlen);
-  tkeyinfo = get_tlv_length (CLASS_UNIVERSAL, TAG_SEQUENCE, 1, toidlen);
-
-  tukmlen = ukm? get_tlv_length (CLASS_CONTEXT, 0, 1, ukmlen) : 0;
-
-  keylen *= 8;
-  keylenbuf[0] = TAG_OCTET_STRING;
-  keylenbuf[1] = 4;
-  keylenbuf[2] = (keylen >> 24);
-  keylenbuf[3] = (keylen >> 16);
-  keylenbuf[4] = (keylen >> 8);
-  keylenbuf[5] = keylen;
-
-  tsupppubinfo = get_tlv_length (CLASS_CONTEXT, 2, 1, sizeof keylenbuf);
-
-  put_tlv_to_membuf (&mb, CLASS_UNIVERSAL, TAG_SEQUENCE, 1,
-                     tkeyinfo + tukmlen + tsupppubinfo);
-  put_tlv_to_membuf (&mb, CLASS_UNIVERSAL, TAG_SEQUENCE, 1,
-                     toidlen);
-  put_tlv_to_membuf (&mb, CLASS_UNIVERSAL, TAG_OBJECT_ID, 0, oidlen);
-  put_membuf (&mb, oid, oidlen);
-  ksba_free (oid);
-
-  if (ukm)
-    {
-      put_tlv_to_membuf (&mb, CLASS_CONTEXT, 0, 1, ukmlen);
-      put_membuf (&mb, ukm, ukmlen);
-    }
-
-  put_tlv_to_membuf (&mb, CLASS_CONTEXT, 2, 1, sizeof keylenbuf);
-  put_membuf (&mb, keylenbuf, sizeof keylenbuf);
-
-  p = get_membuf (&mb, &n);
-  if (!p)
-    return gpg_error_from_syserror ();
-
-  gcry_md_write (hash_hd, p, n);
-  xfree (p);
-  return 0;
-}
-
-
-
-/* Derive a KEK (key wrapping key) using (SECRET,SECRETLEN), an
- * optional (UKM,ULMLEN), the wrap algorithm WRAP_ALGO_STR in decimal
- * dotted form, and the hash algorithm HASH_ALGO.  On success a key of
- * length KEYLEN is stored at KEY.  */
-gpg_error_t
-ecdh_derive_kek (unsigned char *key, unsigned int keylen,
-                 int hash_algo, const char *wrap_algo_str,
-                 const void *secret, unsigned int secretlen,
-                 const void *ukm, unsigned int ukmlen)
-{
-  gpg_error_t err = 0;
-  unsigned int hashlen;
-  gcry_md_hd_t hash_hd;
-  unsigned char counter;
-  unsigned int n, ncopy;
-
-  hashlen = gcry_md_get_algo_dlen (hash_algo);
-  if (!hashlen)
-    return gpg_error (GPG_ERR_INV_ARG);
-
-  err = gcry_md_open (&hash_hd, hash_algo, 0);
-  if (err)
-    return err;
-
-  /* According to SEC1 3.6.1 we should check that
-   *   SECRETLEN + UKMLEN + 4 < maxhashlen
-   * However, we have no practical limit on the hash length and thus
-   * there is no point in checking this.  The second check that
-   *   KEYLEN < hashlen*(2^32-1)
-   * is obviously also not needed.
-   */
-  for (n=0, counter=1; n < keylen; counter++)
-    {
-      if (counter > 1)
-        gcry_md_reset (hash_hd);
-      gcry_md_write (hash_hd, secret, secretlen);
-      gcry_md_write (hash_hd, "\x00\x00\x00", 3);  /* MSBs of counter */
-      gcry_md_write (hash_hd, &counter, 1);
-      err = hash_ecc_cms_shared_info (hash_hd, wrap_algo_str, keylen,
-                                      ukm, ukmlen);
-      if (err)
-        break;
-      gcry_md_final (hash_hd);
-      if (n + hashlen > keylen)
-        ncopy = keylen - n;
-      else
-        ncopy = hashlen;
-      memcpy (key+n, gcry_md_read (hash_hd, 0), ncopy);
-      n += ncopy;
-    }
-
-  gcry_md_close (hash_hd);
-  return err;
-}
-
-
 /* Helper for pwri_decrypt to parse the derive info.
  * Example data for (DER,DERLEN):
  * SEQUENCE {
@@ -656,6 +536,32 @@ build_shared_info (size_t kek_len, const char *wrap_algo_str,
   if (!(*result_p = get_membuf (&mb, len_p)))
     err = gpg_error_from_syserror ();
 
+  return err;
+}
+
+
+/* Derive a KEK (key wrapping/encoding key) using (SECRET,SECRETLEN), an
+ * optional (UKM,ULMLEN), the wrap algorithm WRAP_ALGO_STR in decimal
+ * dotted form, and the hash algorithm HASH_ALGO.  On success a key of
+ * length KEK_LEN is stored at KEK_KEY.  */
+gpg_error_t
+ecdh_derive_kek (unsigned char *kek_key, unsigned int kek_len,
+                 int hash_algo, const char *wrap_algo_str,
+                 const void *secret, unsigned int secretlen,
+                 const void *ukm, unsigned int ukmlen)
+{
+  gpg_error_t err;
+  unsigned char *kdf_params = NULL;
+  size_t kdf_params_len;
+
+  err = build_shared_info (kek_len, wrap_algo_str, ukm, ukmlen,
+                           &kdf_params, &kdf_params_len);
+  if (err)
+    return err;
+
+  err = gnupg_ecc_kem_kdf (kek_key, kek_len, 0, hash_algo,
+                           secret, secretlen,
+                           (char *)kdf_params, kdf_params_len);
   return err;
 }
 
