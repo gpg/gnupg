@@ -554,7 +554,7 @@ inq_ciphertext_cb (void *opaque, const char *line)
    the hex string KEYGRIP. */
 int
 gpgsm_agent_pkdecrypt (ctrl_t ctrl, const char *keygrip, const char *desc,
-                       ksba_const_sexp_t ciphertext,
+                       int use_kem, ksba_const_sexp_t ciphertext,
                        char **r_buf, size_t *r_buflen )
 {
   int rc;
@@ -601,7 +601,7 @@ gpgsm_agent_pkdecrypt (ctrl_t ctrl, const char *keygrip, const char *desc,
   cipher_parm.ctx = agent_ctx;
   cipher_parm.ciphertext = ciphertext;
   cipher_parm.ciphertextlen = ciphertextlen;
-  rc = assuan_transact (agent_ctx, "PKDECRYPT",
+  rc = assuan_transact (agent_ctx, use_kem? "PKDECRYPT --kem=CMS": "PKDECRYPT",
                         put_membuf_cb, &data,
                         inq_ciphertext_cb, &cipher_parm, NULL, NULL);
   if (rc)

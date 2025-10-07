@@ -536,7 +536,7 @@ int gpgsm_scd_pksign (ctrl_t ctrl, const char *keyid, const char *desc,
                       unsigned char *digest, size_t digestlen, int digestalgo,
                       unsigned char **r_buf, size_t *r_buflen);
 int gpgsm_agent_pkdecrypt (ctrl_t ctrl, const char *keygrip, const char *desc,
-                           ksba_const_sexp_t ciphertext,
+                           int use_kem, ksba_const_sexp_t ciphertext,
                            char **r_buf, size_t *r_buflen);
 gpg_error_t gpgsm_agent_genkey (ctrl_t ctrl, int no_protection,
                                 ksba_const_sexp_t keyparms,
