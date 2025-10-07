@@ -754,8 +754,8 @@ keydb_set_flags (KEYDB_HANDLE hd, int which, int idx, unsigned int value)
 /*
  * Insert a new Certificate into one of the resources.
  */
-int
-keydb_insert_cert (KEYDB_HANDLE hd, ksba_cert_t cert)
+static int
+do_insert_cert (KEYDB_HANDLE hd, ksba_cert_t cert)
 {
   int rc = -1;
   int idx;
@@ -789,16 +789,16 @@ keydb_insert_cert (KEYDB_HANDLE hd, ksba_cert_t cert)
       break;
     }
 
-  unlock_all (hd);
   return rc;
 }
 
 
 /*
- * The current keyblock or cert will be deleted.
+ * The current keyblock or cert will be deleted.  Note that this needs
+ * to be called file the file lock held.
  */
 int
-keydb_delete (KEYDB_HANDLE hd, int unlock)
+keydb_delete (KEYDB_HANDLE hd)
 {
   int rc = -1;
 
@@ -824,8 +824,6 @@ keydb_delete (KEYDB_HANDLE hd, int unlock)
       break;
     }
 
-  if (unlock)
-    unlock_all (hd);
   return rc;
 }
 
@@ -1109,6 +1107,8 @@ keydb_store_cert (ctrl_t ctrl, ksba_cert_t cert, int ephemeral, int *existed)
   keydb_set_ephemeral (kh, 1);
 
   keydb_close_all_files ();
+  unlock_all (kh);
+  gnupg_usleep (20);  /* Give other processes a chance to take the lock.  */
   rc = lock_all (kh);
   if (rc)
     return rc;
@@ -1153,7 +1153,7 @@ keydb_store_cert (ctrl_t ctrl, ksba_cert_t cert, int ephemeral, int *existed)
       return rc;
     }
 
-  rc = keydb_insert_cert (kh, cert);
+  rc = do_insert_cert (kh, cert);
   if (rc)
     {
       log_error (_("error storing certificate: %s\n"), gpg_strerror (rc));
@@ -1293,6 +1293,7 @@ keydb_clear_some_cert_flags (ctrl_t ctrl, strlist_t names)
 
   keydb_close_all_files ();
   unlock_all (hd);
+  gnupg_usleep (20);  /* Give other processes a chance to take the lock.  */
   err = lock_all (hd);
   if (err)
     {

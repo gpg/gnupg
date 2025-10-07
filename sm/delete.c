@@ -134,7 +134,7 @@ delete_one (ctrl_t ctrl, const char *username)
           goto leave;
         }
 
-      rc = keydb_delete (kh, duplicates ? 0 : 1);
+      rc = keydb_delete (kh);
       if (rc)
         goto leave;
       if (opt.verbose)
