@@ -780,21 +780,6 @@ prepare_decryption (ctrl_t ctrl, const char *hexkeygrip,
   if (DBG_CRYPTO)
     log_printcanon ("decrypting:", enc_val, 0);
 
-  if (!pwri)
-    {
-      rc = gpgsm_agent_pkdecrypt (ctrl, hexkeygrip, desc, enc_val,
-                                  &seskey, &seskeylen);
-      if (rc)
-        {
-          log_error ("error decrypting session key: %s\n", gpg_strerror (rc));
-          goto leave;
-        }
-
-      if (DBG_CRYPTO)
-        log_printhex (seskey, seskeylen, "DEK frame:");
-    }
-
-  n=0;
   if (pwri) /* Password based encryption.  */
     {
       gcry_sexp_t s_enc_val;
@@ -813,64 +798,79 @@ prepare_decryption (ctrl_t ctrl, const char *hexkeygrip,
       xfree (seskey);
       seskey = decrypted;
       seskeylen = decryptedlen;
-    }
-  else if (pk_algo == GCRY_PK_ECC)
-    {
-      gcry_sexp_t s_enc_val;
-      unsigned char *decrypted;
-      unsigned int decryptedlen;
-
-      rc = gcry_sexp_sscan (&s_enc_val, NULL, enc_val,
-                            gcry_sexp_canon_len (enc_val, 0, NULL, NULL));
-      if (rc)
-        goto leave;
-
-      rc = ecdh_decrypt (seskey, seskeylen, nbits, s_enc_val,
-                         &decrypted, &decryptedlen);
-      gcry_sexp_release (s_enc_val);
-      if (rc)
-        goto leave;
-      xfree (seskey);
-      seskey = decrypted;
-      seskeylen = decryptedlen;
-
-    }
-  else if (seskeylen == 32 || seskeylen == 24 || seskeylen == 16)
-    {
-      /* Smells like an AES-128, 3-DES, or AES-256 key.  This might
-       * happen because a SC has already done the unpacking.  A better
-       * solution would be to test for this only after we triggered
-       * the GPG_ERR_INV_SESSION_KEY. */
+      n = 0;
     }
   else
     {
-      if (n + 7 > seskeylen )
+      rc = gpgsm_agent_pkdecrypt (ctrl, hexkeygrip, desc, enc_val,
+                                  &seskey, &seskeylen);
+      if (rc)
         {
-          rc = gpg_error (GPG_ERR_INV_SESSION_KEY);
+          log_error ("error decrypting session key: %s\n", gpg_strerror (rc));
           goto leave;
         }
 
-      /* FIXME: Actually the leading zero is required but due to the way
-         we encode the output in libgcrypt as an MPI we are not able to
-         encode that leading zero.  However, when using a Smartcard we are
-         doing it the right way and therefore we have to skip the zero.  This
-         should be fixed in gpg-agent of course. */
-      if (!seskey[n])
-        n++;
+      if (DBG_CRYPTO)
+        log_printhex (seskey, seskeylen, "DEK frame:");
 
-      if (seskey[n] != 2 )  /* Wrong block type version. */
+      n = 0;
+      if (pk_algo == GCRY_PK_ECC)
         {
-          rc = gpg_error (GPG_ERR_INV_SESSION_KEY);
-          goto leave;
+          gcry_sexp_t s_enc_val;
+          unsigned char *decrypted;
+          unsigned int decryptedlen;
+
+          rc = gcry_sexp_sscan (&s_enc_val, NULL, enc_val,
+                                gcry_sexp_canon_len (enc_val, 0, NULL, NULL));
+          if (rc)
+            goto leave;
+
+          rc = ecdh_decrypt (seskey, seskeylen, nbits, s_enc_val,
+                             &decrypted, &decryptedlen);
+          gcry_sexp_release (s_enc_val);
+          if (rc)
+            goto leave;
+          xfree (seskey);
+          seskey = decrypted;
+          seskeylen = decryptedlen;
         }
-
-      for (n++; n < seskeylen && seskey[n]; n++) /* Skip the random bytes. */
-        ;
-      n++; /* and the zero byte */
-      if (n >= seskeylen )
+      else if (seskeylen == 32 || seskeylen == 24 || seskeylen == 16)
         {
-          rc = gpg_error (GPG_ERR_INV_SESSION_KEY);
-          goto leave;
+          /* Smells like an AES-128, 3-DES, or AES-256 key.  This might
+           * happen because a SC has already done the unpacking.  A better
+           * solution would be to test for this only after we triggered
+           * the GPG_ERR_INV_SESSION_KEY. */
+        }
+      else
+        {
+          if (n + 7 > seskeylen )
+            {
+              rc = gpg_error (GPG_ERR_INV_SESSION_KEY);
+              goto leave;
+            }
+
+          /* FIXME: Actually the leading zero is required but due to the way
+             we encode the output in libgcrypt as an MPI we are not able to
+             encode that leading zero.  However, when using a Smartcard we are
+             doing it the right way and therefore we have to skip the zero.  This
+             should be fixed in gpg-agent of course. */
+          if (!seskey[n])
+            n++;
+
+          if (seskey[n] != 2 )  /* Wrong block type version. */
+            {
+              rc = gpg_error (GPG_ERR_INV_SESSION_KEY);
+              goto leave;
+            }
+
+          for (n++; n < seskeylen && seskey[n]; n++) /* Skip the random bytes. */
+            ;
+          n++; /* and the zero byte */
+          if (n >= seskeylen )
+            {
+              rc = gpg_error (GPG_ERR_INV_SESSION_KEY);
+              goto leave;
+            }
         }
     }
 
