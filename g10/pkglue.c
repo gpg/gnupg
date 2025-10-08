@@ -717,6 +717,10 @@ do_encrypt_ecdh (PKT_public_key *pk, gcry_mpi_t data,  gcry_mpi_t *resarr)
   unsigned char ecc_ct[ECC_POINT_LEN_MAX];
   unsigned char ecc_ecdh[ECC_POINT_LEN_MAX];
   size_t ecc_ct_len, ecc_ecdh_len;
+  const char *shared_secret;
+  size_t shared_secretlen;
+  const char *ephemeral_pubkey;
+  size_t ephemeral_pubkeylen;
 
   unsigned char *kek = NULL;
   size_t kek_len;
@@ -808,6 +812,30 @@ do_encrypt_ecdh (PKT_public_key *pk, gcry_mpi_t data,  gcry_mpi_t *resarr)
       log_printhex (ecc_ecdh, ecc_ecdh_len, "ECC     ecdh:");
     }
 
+  if (ecc->is_weierstrauss)
+    {
+      shared_secret = ecc_ecdh + 1;
+      shared_secretlen = (ecc_ecdh_len - 1) / 2;
+      ephemeral_pubkey = ecc_ct;
+      ephemeral_pubkeylen = ecc_ct_len;
+    }
+  else
+    {
+      shared_secret = ecc_ecdh;
+      shared_secretlen = ecc_ecdh_len;
+
+      if (ecc->may_have_prefix)
+        {
+          ephemeral_pubkeylen = ecc_ct_len + 1;
+          memmove (ecc_ct + 1, ecc_ct, ecc_ct_len);
+          ecc_ct[0] = 0x40;
+        }
+      else
+        ephemeral_pubkeylen = ecc_ct_len;
+
+      ephemeral_pubkey = ecc_ct;
+    }
+
   err = ecc_build_kdf_params (&kdf_params, &kdf_params_len,
                               &kdf_params_spec, pk->pkey, fp);
   if (err)
@@ -852,10 +880,7 @@ do_encrypt_ecdh (PKT_public_key *pk, gcry_mpi_t data,  gcry_mpi_t *resarr)
     }
 
   err = gnupg_ecc_kem_kdf (kek, kek_len, 1, kdf_hash_algo,
-                           ecc->is_weierstrauss ?
-                           ecc_ecdh + 1 : ecc_ecdh,
-                           ecc->is_weierstrauss ?
-                           (ecc_ecdh_len - 1) / 2 : ecc_ecdh_len,
+                           shared_secret, shared_secretlen,
                            kdf_params, kdf_params_len);
   xfree (kdf_params);
   if (err)
@@ -902,7 +927,8 @@ do_encrypt_ecdh (PKT_public_key *pk, gcry_mpi_t data,  gcry_mpi_t *resarr)
   if (DBG_CRYPTO)
     log_printhex (enc_seskey, enc_seskey_len, "enc_seskey:");
 
-  resarr[0] = gcry_mpi_set_opaque_copy (NULL, ecc_ct, 8 * ecc_ct_len);
+  resarr[0] = gcry_mpi_set_opaque_copy (NULL, ephemeral_pubkey,
+                                        8 * ephemeral_pubkeylen);
   if (!resarr[0])
     {
       err = gpg_error_from_syserror ();
