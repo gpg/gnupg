@@ -358,12 +358,12 @@ ecc_get_curve (ctrl_t ctrl, gcry_sexp_t s_skey, const char **r_curve)
  * if the private key is actually on smartcard.  CTRL is used to
  * access smartcard, internally.  */
 static gpg_error_t
-ecc_pgp_kem_decap (ctrl_t ctrl, gcry_sexp_t s_skey0,
-                   const unsigned char *shadow_info0,
-                   const unsigned char *ecc_ct, size_t ecc_point_len,
-                   unsigned char ecc_ecdh[ECC_POINT_LEN_MAX],
-                   unsigned char ecc_pk[ECC_POINT_LEN_MAX],
-                   const struct gnupg_ecc_params **r_ecc)
+ecc_kem_decap (ctrl_t ctrl, gcry_sexp_t s_skey0,
+               const unsigned char *shadow_info0,
+               const unsigned char *ecc_ct, size_t ecc_point_len,
+               unsigned char ecc_ecdh[ECC_POINT_LEN_MAX],
+               unsigned char ecc_pk[ECC_POINT_LEN_MAX],
+               const struct gnupg_ecc_params **r_ecc)
 {
   gpg_error_t err;
   const char *curve;
@@ -557,8 +557,8 @@ composite_pgp_kem_decrypt (ctrl_t ctrl, const char *desc_text,
 
   /* Firstly, ECC part.  */
   ecc_point_len = ecc_ct_len;
-  err = ecc_pgp_kem_decap (ctrl, s_skey0, shadow_info0, ecc_ct, ecc_point_len,
-                           ecc_ecdh, ecc_pk, &ecc);
+  err = ecc_kem_decap (ctrl, s_skey0, shadow_info0, ecc_ct, ecc_point_len,
+                       ecc_ecdh, ecc_pk, &ecc);
   if (err)
     goto leave;
   ecc_hashalgo = ecc->hash_algo;
@@ -798,9 +798,9 @@ ecc_kem_decrypt (int is_pgp, ctrl_t ctrl, const char *desc_text,
     }
 
   ecc_point_len = ecc_ct_len;
-  err = ecc_pgp_kem_decap (ctrl, s_skey, shadow_info,
-                           ecc_ct, ecc_point_len,
-                           ecc_ecdh, ecc_pk, &ecc);
+  err = ecc_kem_decap (ctrl, s_skey, shadow_info,
+                       ecc_ct, ecc_point_len,
+                       ecc_ecdh, ecc_pk, &ecc);
   if (err)
     goto leave;
   err = gnupg_ecc_kem_kdf (kek, kek_len, is_pgp, hashalgo,
