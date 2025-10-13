@@ -1,6 +1,14 @@
-Noteworthy changes in version 2.2.50 (unreleased)
+Noteworthy changes in version 2.2.50 (2025-10-13)
 -------------------------------------------------
 
+  * gpgsm: Fix delete and store certificate locking glitches.  [T2196]
+
+  * gpg: Release lock after close also in the compress code path.  [T7855]
+
+  * agent,dirmngr: Fix possible races on startup under Windows.  [T7829]
+
+  * On Windows use the nPth friendly gnupg_usleep instead of Sleep in
+    the sharing violation retry code.  [rG8491117f09]
 
   Release-info: https://dev.gnupg.org/T7822
 
@@ -15,7 +23,7 @@ Noteworthy changes in version 2.2.49 (2025-09-25)
     be disabled using "keyserver-flags=no-update-before-send"  [T7730]
 
   * dirmngr: Fix assertion failure due to wrong buffer length
-    for some certain public keys.  [rGafb0aa2674]
+    for certain public keys.  [rGafb0aa2674]
 
   Release-info: https://dev.gnupg.org/T7821
 
