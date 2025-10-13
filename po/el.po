@@ -1156,101 +1156,6 @@ msgstr ""
 msgid "Control-D detected\n"
 msgstr ""
 
-#, fuzzy
-msgid "argument not expected"
-msgstr "εγγραφή του μυστικού κλειδιού στο `%s'\n"
-
-#, fuzzy
-msgid "read error"
-msgstr "σφάλμα ανάγνωσης αρχείου"
-
-#, fuzzy
-msgid "keyword too long"
-msgstr "η γραμμή είναι πολύ μεγάλη\n"
-
-#, fuzzy
-msgid "missing argument"
-msgstr "μη έγκυρο όρισμα"
-
-#, fuzzy
-#| msgid "invalid armor"
-msgid "invalid argument"
-msgstr "μη έγκυρη θωράκιση"
-
-#, fuzzy
-msgid "invalid command"
-msgstr "συγκρουόμενες εντολές\n"
-
-#, fuzzy
-msgid "invalid alias definition"
-msgstr "μη έγκυρες επιλογές ειγαγωγής\n"
-
-msgid "permission error"
-msgstr ""
-
-#, fuzzy
-msgid "out of core"
-msgstr "μη επεξεργασμένο"
-
-#, fuzzy
-msgid "invalid meta command"
-msgstr "συγκρουόμενες εντολές\n"
-
-#, fuzzy
-msgid "unknown meta command"
-msgstr "άγνωστος προκαθορισμένος παραλήπτης `%s'\n"
-
-#, fuzzy
-#| msgid "unexpected data"
-msgid "unexpected meta command"
-msgstr "μη αναμενόμενα δεδομένα"
-
-#, fuzzy
-msgid "invalid option"
-msgstr "μη έγκυρες επιλογές ειγαγωγής\n"
-
-#, c-format
-msgid "missing argument for option \"%.50s\"\n"
-msgstr ""
-
-#, fuzzy, c-format
-msgid "invalid argument for option \"%.50s\"\n"
-msgstr "μη έγκυρες επιλογές ειγαγωγής\n"
-
-#, c-format
-msgid "option \"%.50s\" does not expect an argument\n"
-msgstr ""
-
-#, fuzzy, c-format
-msgid "invalid command \"%.50s\"\n"
-msgstr "Μη έγκυρη εντολή  (δοκιμάστε \"help\")\n"
-
-#, c-format
-msgid "option \"%.50s\" is ambiguous\n"
-msgstr ""
-
-#, c-format
-msgid "command \"%.50s\" is ambiguous\n"
-msgstr ""
-
-#, fuzzy, c-format
-msgid "invalid option \"%.50s\"\n"
-msgstr "μη έγκυρες επιλογές ειγαγωγής\n"
-
-#, fuzzy, c-format
-#| msgid "NOTE: no default option file `%s'\n"
-msgid "Note: no default option file '%s'\n"
-msgstr "ΣΗΜΕΙΩΣΗ: μη προκαθορισμένο αρχείο επιλογών `%s'\n"
-
-#, fuzzy, c-format
-#| msgid "option file `%s': %s\n"
-msgid "option file '%s': %s\n"
-msgstr "αρχείο επιλογών `%s': %s\n"
-
-#, c-format
-msgid "Note: ignoring option \"--%s\" due to global config\n"
-msgstr ""
-
 #, fuzzy, c-format
 msgid "conversion from '%s' to '%s' not available\n"
 msgstr "θωράκιση απέτυχε: %s\n"
@@ -2688,6 +2593,10 @@ msgstr "%s:%d: μη έγκυρες επιλογές εξαγωγής\n"
 #, c-format
 msgid "invalid auto-key-locate list\n"
 msgstr ""
+
+#, fuzzy, c-format
+msgid "invalid argument for option \"%.50s\"\n"
+msgstr "μη έγκυρες επιλογές ειγαγωγής\n"
 
 #, fuzzy, c-format
 msgid "error parsing value for option '%s': %s\n"
@@ -9205,6 +9114,74 @@ msgid ""
 "Syntax: gpg-check-pattern [options] patternfile\n"
 "Check a passphrase given on stdin against the patternfile\n"
 msgstr ""
+
+#, fuzzy
+#~ msgid "argument not expected"
+#~ msgstr "εγγραφή του μυστικού κλειδιού στο `%s'\n"
+
+#, fuzzy
+#~ msgid "read error"
+#~ msgstr "σφάλμα ανάγνωσης αρχείου"
+
+#, fuzzy
+#~ msgid "keyword too long"
+#~ msgstr "η γραμμή είναι πολύ μεγάλη\n"
+
+#, fuzzy
+#~ msgid "missing argument"
+#~ msgstr "μη έγκυρο όρισμα"
+
+#, fuzzy
+#~| msgid "invalid armor"
+#~ msgid "invalid argument"
+#~ msgstr "μη έγκυρη θωράκιση"
+
+#, fuzzy
+#~ msgid "invalid command"
+#~ msgstr "συγκρουόμενες εντολές\n"
+
+#, fuzzy
+#~ msgid "invalid alias definition"
+#~ msgstr "μη έγκυρες επιλογές ειγαγωγής\n"
+
+#, fuzzy
+#~ msgid "out of core"
+#~ msgstr "μη επεξεργασμένο"
+
+#, fuzzy
+#~ msgid "invalid meta command"
+#~ msgstr "συγκρουόμενες εντολές\n"
+
+#, fuzzy
+#~ msgid "unknown meta command"
+#~ msgstr "άγνωστος προκαθορισμένος παραλήπτης `%s'\n"
+
+#, fuzzy
+#~| msgid "unexpected data"
+#~ msgid "unexpected meta command"
+#~ msgstr "μη αναμενόμενα δεδομένα"
+
+#, fuzzy
+#~ msgid "invalid option"
+#~ msgstr "μη έγκυρες επιλογές ειγαγωγής\n"
+
+#, fuzzy, c-format
+#~ msgid "invalid command \"%.50s\"\n"
+#~ msgstr "Μη έγκυρη εντολή  (δοκιμάστε \"help\")\n"
+
+#, fuzzy, c-format
+#~ msgid "invalid option \"%.50s\"\n"
+#~ msgstr "μη έγκυρες επιλογές ειγαγωγής\n"
+
+#, fuzzy, c-format
+#~| msgid "NOTE: no default option file `%s'\n"
+#~ msgid "Note: no default option file '%s'\n"
+#~ msgstr "ΣΗΜΕΙΩΣΗ: μη προκαθορισμένο αρχείο επιλογών `%s'\n"
+
+#, fuzzy, c-format
+#~| msgid "option file `%s': %s\n"
+#~ msgid "option file '%s': %s\n"
+#~ msgstr "αρχείο επιλογών `%s': %s\n"
 
 #, fuzzy, c-format
 #~ msgid "public key of ultimately trusted key %s not found\n"

@@ -1130,91 +1130,6 @@ msgstr ""
 msgid "Control-D detected\n"
 msgstr ""
 
-msgid "argument not expected"
-msgstr "沒料到有引數"
-
-msgid "read error"
-msgstr "讀取錯誤"
-
-msgid "keyword too long"
-msgstr "關鍵字太長"
-
-msgid "missing argument"
-msgstr "無效的引數"
-
-msgid "invalid argument"
-msgstr "無效的引數"
-
-msgid "invalid command"
-msgstr "無效的指令"
-
-msgid "invalid alias definition"
-msgstr "無效的別名定義"
-
-msgid "permission error"
-msgstr ""
-
-msgid "out of core"
-msgstr "超出核心"
-
-#, fuzzy
-#| msgid "invalid command"
-msgid "invalid meta command"
-msgstr "無效的指令"
-
-#, fuzzy
-#| msgid "unknown command '%s'\n"
-msgid "unknown meta command"
-msgstr "未知的指令 '%s'\n"
-
-#, fuzzy
-#| msgid "unexpected armor: "
-msgid "unexpected meta command"
-msgstr "未預期的封裝: "
-
-msgid "invalid option"
-msgstr "無效的選項"
-
-#, c-format
-msgid "missing argument for option \"%.50s\"\n"
-msgstr "\"%.50s\" 選項遺失了引數\n"
-
-#, c-format
-msgid "invalid argument for option \"%.50s\"\n"
-msgstr "選項 \"%.50s\" 的引數無效\n"
-
-#, c-format
-msgid "option \"%.50s\" does not expect an argument\n"
-msgstr "\"%.50s\" 選項沒料到會有引數\n"
-
-#, c-format
-msgid "invalid command \"%.50s\"\n"
-msgstr "無效的指令 \"%.50s\"\n"
-
-#, c-format
-msgid "option \"%.50s\" is ambiguous\n"
-msgstr "\"%.50s\" 選項不明確\n"
-
-#, c-format
-msgid "command \"%.50s\" is ambiguous\n"
-msgstr "\"%.50s\" 指令不明確\n"
-
-#, c-format
-msgid "invalid option \"%.50s\"\n"
-msgstr "無效的選項 \"%.50s\"\n"
-
-#, c-format
-msgid "Note: no default option file '%s'\n"
-msgstr "請注意: 沒有預設選項檔 '%s'\n"
-
-#, c-format
-msgid "option file '%s': %s\n"
-msgstr "選項檔 '%s': %s\n"
-
-#, c-format
-msgid "Note: ignoring option \"--%s\" due to global config\n"
-msgstr ""
-
 #, c-format
 msgid "conversion from '%s' to '%s' not available\n"
 msgstr "沒有從 '%s' 到 '%s' 之間的轉換可用\n"
@@ -2594,6 +2509,10 @@ msgstr "%s:%d: 無效的自動金鑰定址清單\n"
 #, c-format
 msgid "invalid auto-key-locate list\n"
 msgstr "無效的自動金鑰定址清單\n"
+
+#, c-format
+msgid "invalid argument for option \"%.50s\"\n"
+msgstr "選項 \"%.50s\" 的引數無效\n"
 
 #, fuzzy, c-format
 #| msgid "error loading certificate '%s': %s\n"
@@ -8861,6 +8780,80 @@ msgid ""
 msgstr ""
 "語法: gpg-check-pattern [選項] 樣式檔案\n"
 "用樣式檔案來檢查由標準輸入給定的密語\n"
+
+#~ msgid "argument not expected"
+#~ msgstr "沒料到有引數"
+
+#~ msgid "read error"
+#~ msgstr "讀取錯誤"
+
+#~ msgid "keyword too long"
+#~ msgstr "關鍵字太長"
+
+#~ msgid "missing argument"
+#~ msgstr "無效的引數"
+
+#~ msgid "invalid argument"
+#~ msgstr "無效的引數"
+
+#~ msgid "invalid command"
+#~ msgstr "無效的指令"
+
+#~ msgid "invalid alias definition"
+#~ msgstr "無效的別名定義"
+
+#~ msgid "out of core"
+#~ msgstr "超出核心"
+
+#, fuzzy
+#~| msgid "invalid command"
+#~ msgid "invalid meta command"
+#~ msgstr "無效的指令"
+
+#, fuzzy
+#~| msgid "unknown command '%s'\n"
+#~ msgid "unknown meta command"
+#~ msgstr "未知的指令 '%s'\n"
+
+#, fuzzy
+#~| msgid "unexpected armor: "
+#~ msgid "unexpected meta command"
+#~ msgstr "未預期的封裝: "
+
+#~ msgid "invalid option"
+#~ msgstr "無效的選項"
+
+#, c-format
+#~ msgid "missing argument for option \"%.50s\"\n"
+#~ msgstr "\"%.50s\" 選項遺失了引數\n"
+
+#, c-format
+#~ msgid "option \"%.50s\" does not expect an argument\n"
+#~ msgstr "\"%.50s\" 選項沒料到會有引數\n"
+
+#, c-format
+#~ msgid "invalid command \"%.50s\"\n"
+#~ msgstr "無效的指令 \"%.50s\"\n"
+
+#, c-format
+#~ msgid "option \"%.50s\" is ambiguous\n"
+#~ msgstr "\"%.50s\" 選項不明確\n"
+
+#, c-format
+#~ msgid "command \"%.50s\" is ambiguous\n"
+#~ msgstr "\"%.50s\" 指令不明確\n"
+
+#, c-format
+#~ msgid "invalid option \"%.50s\"\n"
+#~ msgstr "無效的選項 \"%.50s\"\n"
+
+#, c-format
+#~ msgid "Note: no default option file '%s'\n"
+#~ msgstr "請注意: 沒有預設選項檔 '%s'\n"
+
+#, c-format
+#~ msgid "option file '%s': %s\n"
+#~ msgstr "選項檔 '%s': %s\n"
 
 #, c-format
 #~ msgid "public key of ultimately trusted key %s not found\n"

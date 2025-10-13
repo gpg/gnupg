@@ -1158,101 +1158,6 @@ msgstr ""
 msgid "Control-D detected\n"
 msgstr ""
 
-#, fuzzy
-msgid "argument not expected"
-msgstr "zapisujem tajný kľúč do `%s'\n"
-
-#, fuzzy
-msgid "read error"
-msgstr "chyba pri čítaní súboru"
-
-#, fuzzy
-msgid "keyword too long"
-msgstr "riadok je príliš dlhý\n"
-
-#, fuzzy
-msgid "missing argument"
-msgstr "neplatný argument"
-
-#, fuzzy
-#| msgid "invalid armor"
-msgid "invalid argument"
-msgstr "neplatný spôsob reprezentácie v ASCII"
-
-#, fuzzy
-msgid "invalid command"
-msgstr "konfliktné príkazy\n"
-
-#, fuzzy
-msgid "invalid alias definition"
-msgstr "neplatný parameter pre import\n"
-
-msgid "permission error"
-msgstr ""
-
-#, fuzzy
-msgid "out of core"
-msgstr "nespracované"
-
-#, fuzzy
-msgid "invalid meta command"
-msgstr "konfliktné príkazy\n"
-
-#, fuzzy
-msgid "unknown meta command"
-msgstr "neznámy implicitný adresát `%s'\n"
-
-#, fuzzy
-#| msgid "unexpected data"
-msgid "unexpected meta command"
-msgstr "neočakávané dáta"
-
-#, fuzzy
-msgid "invalid option"
-msgstr "neplatný parameter pre import\n"
-
-#, c-format
-msgid "missing argument for option \"%.50s\"\n"
-msgstr ""
-
-#, fuzzy, c-format
-msgid "invalid argument for option \"%.50s\"\n"
-msgstr "neplatný parameter pre import\n"
-
-#, c-format
-msgid "option \"%.50s\" does not expect an argument\n"
-msgstr ""
-
-#, fuzzy, c-format
-msgid "invalid command \"%.50s\"\n"
-msgstr "Neplatný príkaz (skúste \"help\")\n"
-
-#, c-format
-msgid "option \"%.50s\" is ambiguous\n"
-msgstr ""
-
-#, c-format
-msgid "command \"%.50s\" is ambiguous\n"
-msgstr ""
-
-#, fuzzy, c-format
-msgid "invalid option \"%.50s\"\n"
-msgstr "neplatný parameter pre import\n"
-
-#, fuzzy, c-format
-#| msgid "NOTE: no default option file `%s'\n"
-msgid "Note: no default option file '%s'\n"
-msgstr "POZNÁMKA: neexistuje implicitný súbor s možnosťami `%s'\n"
-
-#, fuzzy, c-format
-#| msgid "option file `%s': %s\n"
-msgid "option file '%s': %s\n"
-msgstr "súbor s možnosťami `%s': %s\n"
-
-#, c-format
-msgid "Note: ignoring option \"--%s\" due to global config\n"
-msgstr ""
-
 #, fuzzy, c-format
 msgid "conversion from '%s' to '%s' not available\n"
 msgstr "kódovanie do ASCII formátu zlyhalo: %s\n"
@@ -2692,6 +2597,10 @@ msgstr "%s:%d: neplatný parameter pre export\n"
 #, c-format
 msgid "invalid auto-key-locate list\n"
 msgstr ""
+
+#, fuzzy, c-format
+msgid "invalid argument for option \"%.50s\"\n"
+msgstr "neplatný parameter pre import\n"
 
 #, fuzzy, c-format
 msgid "error parsing value for option '%s': %s\n"
@@ -9183,6 +9092,74 @@ msgid ""
 "Syntax: gpg-check-pattern [options] patternfile\n"
 "Check a passphrase given on stdin against the patternfile\n"
 msgstr ""
+
+#, fuzzy
+#~ msgid "argument not expected"
+#~ msgstr "zapisujem tajný kľúč do `%s'\n"
+
+#, fuzzy
+#~ msgid "read error"
+#~ msgstr "chyba pri čítaní súboru"
+
+#, fuzzy
+#~ msgid "keyword too long"
+#~ msgstr "riadok je príliš dlhý\n"
+
+#, fuzzy
+#~ msgid "missing argument"
+#~ msgstr "neplatný argument"
+
+#, fuzzy
+#~| msgid "invalid armor"
+#~ msgid "invalid argument"
+#~ msgstr "neplatný spôsob reprezentácie v ASCII"
+
+#, fuzzy
+#~ msgid "invalid command"
+#~ msgstr "konfliktné príkazy\n"
+
+#, fuzzy
+#~ msgid "invalid alias definition"
+#~ msgstr "neplatný parameter pre import\n"
+
+#, fuzzy
+#~ msgid "out of core"
+#~ msgstr "nespracované"
+
+#, fuzzy
+#~ msgid "invalid meta command"
+#~ msgstr "konfliktné príkazy\n"
+
+#, fuzzy
+#~ msgid "unknown meta command"
+#~ msgstr "neznámy implicitný adresát `%s'\n"
+
+#, fuzzy
+#~| msgid "unexpected data"
+#~ msgid "unexpected meta command"
+#~ msgstr "neočakávané dáta"
+
+#, fuzzy
+#~ msgid "invalid option"
+#~ msgstr "neplatný parameter pre import\n"
+
+#, fuzzy, c-format
+#~ msgid "invalid command \"%.50s\"\n"
+#~ msgstr "Neplatný príkaz (skúste \"help\")\n"
+
+#, fuzzy, c-format
+#~ msgid "invalid option \"%.50s\"\n"
+#~ msgstr "neplatný parameter pre import\n"
+
+#, fuzzy, c-format
+#~| msgid "NOTE: no default option file `%s'\n"
+#~ msgid "Note: no default option file '%s'\n"
+#~ msgstr "POZNÁMKA: neexistuje implicitný súbor s možnosťami `%s'\n"
+
+#, fuzzy, c-format
+#~| msgid "option file `%s': %s\n"
+#~ msgid "option file '%s': %s\n"
+#~ msgstr "súbor s možnosťami `%s': %s\n"
 
 #, fuzzy, c-format
 #~ msgid "public key of ultimately trusted key %s not found\n"

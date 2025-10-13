@@ -1162,101 +1162,6 @@ msgstr ""
 msgid "Control-D detected\n"
 msgstr ""
 
-#, fuzzy
-msgid "argument not expected"
-msgstr "gravando a chave secreta en `%s'\n"
-
-#, fuzzy
-msgid "read error"
-msgstr "erro de lectura de ficheiro"
-
-#, fuzzy
-msgid "keyword too long"
-msgstr "liña longa de máis\n"
-
-#, fuzzy
-msgid "missing argument"
-msgstr "argumento non válido"
-
-#, fuzzy
-#| msgid "invalid armor"
-msgid "invalid argument"
-msgstr "armadura non válida"
-
-#, fuzzy
-msgid "invalid command"
-msgstr "comandos conflictivos\n"
-
-#, fuzzy
-msgid "invalid alias definition"
-msgstr "opcións de importación non válidas\n"
-
-msgid "permission error"
-msgstr ""
-
-#, fuzzy
-msgid "out of core"
-msgstr "non procesado"
-
-#, fuzzy
-msgid "invalid meta command"
-msgstr "comandos conflictivos\n"
-
-#, fuzzy
-msgid "unknown meta command"
-msgstr "destinatario por defecto `%s' descoñecido\n"
-
-#, fuzzy
-#| msgid "unexpected data"
-msgid "unexpected meta command"
-msgstr "datos inesperados"
-
-#, fuzzy
-msgid "invalid option"
-msgstr "opcións de importación non válidas\n"
-
-#, c-format
-msgid "missing argument for option \"%.50s\"\n"
-msgstr ""
-
-#, fuzzy, c-format
-msgid "invalid argument for option \"%.50s\"\n"
-msgstr "opcións de importación non válidas\n"
-
-#, c-format
-msgid "option \"%.50s\" does not expect an argument\n"
-msgstr ""
-
-#, fuzzy, c-format
-msgid "invalid command \"%.50s\"\n"
-msgstr "Comando incorrecto (tente \"help\")\n"
-
-#, c-format
-msgid "option \"%.50s\" is ambiguous\n"
-msgstr ""
-
-#, c-format
-msgid "command \"%.50s\" is ambiguous\n"
-msgstr ""
-
-#, fuzzy, c-format
-msgid "invalid option \"%.50s\"\n"
-msgstr "opcións de importación non válidas\n"
-
-#, fuzzy, c-format
-#| msgid "NOTE: no default option file `%s'\n"
-msgid "Note: no default option file '%s'\n"
-msgstr "NOTA: non existe o ficheiro de opcións por defecto `%s'\n"
-
-#, fuzzy, c-format
-#| msgid "option file `%s': %s\n"
-msgid "option file '%s': %s\n"
-msgstr "ficheiro de opcións `%s': %s\n"
-
-#, c-format
-msgid "Note: ignoring option \"--%s\" due to global config\n"
-msgstr ""
-
 #, fuzzy, c-format
 msgid "conversion from '%s' to '%s' not available\n"
 msgstr "non se puido poñe-la armadura: %s\n"
@@ -2685,6 +2590,10 @@ msgstr "%s:%d: opcións de exportación non válidas\n"
 #, c-format
 msgid "invalid auto-key-locate list\n"
 msgstr ""
+
+#, fuzzy, c-format
+msgid "invalid argument for option \"%.50s\"\n"
+msgstr "opcións de importación non válidas\n"
 
 #, fuzzy, c-format
 msgid "error parsing value for option '%s': %s\n"
@@ -9201,6 +9110,74 @@ msgid ""
 "Syntax: gpg-check-pattern [options] patternfile\n"
 "Check a passphrase given on stdin against the patternfile\n"
 msgstr ""
+
+#, fuzzy
+#~ msgid "argument not expected"
+#~ msgstr "gravando a chave secreta en `%s'\n"
+
+#, fuzzy
+#~ msgid "read error"
+#~ msgstr "erro de lectura de ficheiro"
+
+#, fuzzy
+#~ msgid "keyword too long"
+#~ msgstr "liña longa de máis\n"
+
+#, fuzzy
+#~ msgid "missing argument"
+#~ msgstr "argumento non válido"
+
+#, fuzzy
+#~| msgid "invalid armor"
+#~ msgid "invalid argument"
+#~ msgstr "armadura non válida"
+
+#, fuzzy
+#~ msgid "invalid command"
+#~ msgstr "comandos conflictivos\n"
+
+#, fuzzy
+#~ msgid "invalid alias definition"
+#~ msgstr "opcións de importación non válidas\n"
+
+#, fuzzy
+#~ msgid "out of core"
+#~ msgstr "non procesado"
+
+#, fuzzy
+#~ msgid "invalid meta command"
+#~ msgstr "comandos conflictivos\n"
+
+#, fuzzy
+#~ msgid "unknown meta command"
+#~ msgstr "destinatario por defecto `%s' descoñecido\n"
+
+#, fuzzy
+#~| msgid "unexpected data"
+#~ msgid "unexpected meta command"
+#~ msgstr "datos inesperados"
+
+#, fuzzy
+#~ msgid "invalid option"
+#~ msgstr "opcións de importación non válidas\n"
+
+#, fuzzy, c-format
+#~ msgid "invalid command \"%.50s\"\n"
+#~ msgstr "Comando incorrecto (tente \"help\")\n"
+
+#, fuzzy, c-format
+#~ msgid "invalid option \"%.50s\"\n"
+#~ msgstr "opcións de importación non válidas\n"
+
+#, fuzzy, c-format
+#~| msgid "NOTE: no default option file `%s'\n"
+#~ msgid "Note: no default option file '%s'\n"
+#~ msgstr "NOTA: non existe o ficheiro de opcións por defecto `%s'\n"
+
+#, fuzzy, c-format
+#~| msgid "option file `%s': %s\n"
+#~ msgid "option file '%s': %s\n"
+#~ msgstr "ficheiro de opcións `%s': %s\n"
 
 #, fuzzy, c-format
 #~ msgid "public key of ultimately trusted key %s not found\n"

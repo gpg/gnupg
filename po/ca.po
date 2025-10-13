@@ -1208,104 +1208,6 @@ msgstr ""
 msgid "Control-D detected\n"
 msgstr ""
 
-msgid "argument not expected"
-msgstr ""
-
-#, fuzzy
-msgid "read error"
-msgstr "error de lectura"
-
-#, fuzzy
-msgid "keyword too long"
-msgstr "la línia és massa llarga\n"
-
-#, fuzzy
-msgid "missing argument"
-msgstr "l'argument és invàlid"
-
-#, fuzzy
-#| msgid "invalid armor"
-msgid "invalid argument"
-msgstr "l'armadura és invàlida"
-
-#, fuzzy
-msgid "invalid command"
-msgstr "les ordres entren en conflicte\n"
-
-#, fuzzy
-msgid "invalid alias definition"
-msgstr "opcions d'importació no vàlides\n"
-
-msgid "permission error"
-msgstr ""
-
-# Gènere?  Nombre?  Passat, futur?  ivb
-# Probablement és una clau, femení. jm
-# Werner FIXME: please add translator comment saying *what* is
-# uncompressed so we know the gender. jm
-#, fuzzy
-msgid "out of core"
-msgstr "no forçat"
-
-#, fuzzy
-msgid "invalid meta command"
-msgstr "les ordres entren en conflicte\n"
-
-#, fuzzy
-msgid "unknown meta command"
-msgstr "el destinatari predeterminat és desconegut «%s»\n"
-
-#, fuzzy
-#| msgid "unexpected data"
-msgid "unexpected meta command"
-msgstr "dades inesperades"
-
-#, fuzzy
-msgid "invalid option"
-msgstr "opcions d'importació no vàlides\n"
-
-#, c-format
-msgid "missing argument for option \"%.50s\"\n"
-msgstr ""
-
-#, fuzzy, c-format
-msgid "invalid argument for option \"%.50s\"\n"
-msgstr "opcions d'importació no vàlides\n"
-
-#, c-format
-msgid "option \"%.50s\" does not expect an argument\n"
-msgstr ""
-
-#, fuzzy, c-format
-msgid "invalid command \"%.50s\"\n"
-msgstr "L'ordre no és vàlida (proveu «help»)\n"
-
-#, c-format
-msgid "option \"%.50s\" is ambiguous\n"
-msgstr ""
-
-#, c-format
-msgid "command \"%.50s\" is ambiguous\n"
-msgstr ""
-
-#, fuzzy, c-format
-msgid "invalid option \"%.50s\"\n"
-msgstr "opcions d'importació no vàlides\n"
-
-#, fuzzy, c-format
-#| msgid "NOTE: no default option file `%s'\n"
-msgid "Note: no default option file '%s'\n"
-msgstr "NOTA: no existeix el fitxer d'opcions predeterminades «%s»\n"
-
-#, fuzzy, c-format
-#| msgid "option file `%s': %s\n"
-msgid "option file '%s': %s\n"
-msgstr "fitxer d'opcions «%s»: %s\n"
-
-#, c-format
-msgid "Note: ignoring option \"--%s\" due to global config\n"
-msgstr ""
-
 #, fuzzy, c-format
 msgid "conversion from '%s' to '%s' not available\n"
 msgstr "no s'ha pogut crear l'armadura: %s\n"
@@ -2767,6 +2669,10 @@ msgstr "%s:%d opcions d'exportació no vàlides\n"
 #, c-format
 msgid "invalid auto-key-locate list\n"
 msgstr ""
+
+#, fuzzy, c-format
+msgid "invalid argument for option \"%.50s\"\n"
+msgstr "opcions d'importació no vàlides\n"
 
 #, fuzzy, c-format
 msgid "error parsing value for option '%s': %s\n"
@@ -9376,6 +9282,74 @@ msgid ""
 "Syntax: gpg-check-pattern [options] patternfile\n"
 "Check a passphrase given on stdin against the patternfile\n"
 msgstr ""
+
+#, fuzzy
+#~ msgid "read error"
+#~ msgstr "error de lectura"
+
+#, fuzzy
+#~ msgid "keyword too long"
+#~ msgstr "la línia és massa llarga\n"
+
+#, fuzzy
+#~ msgid "missing argument"
+#~ msgstr "l'argument és invàlid"
+
+#, fuzzy
+#~| msgid "invalid armor"
+#~ msgid "invalid argument"
+#~ msgstr "l'armadura és invàlida"
+
+#, fuzzy
+#~ msgid "invalid command"
+#~ msgstr "les ordres entren en conflicte\n"
+
+#, fuzzy
+#~ msgid "invalid alias definition"
+#~ msgstr "opcions d'importació no vàlides\n"
+
+# Gènere?  Nombre?  Passat, futur?  ivb
+# Probablement és una clau, femení. jm
+# Werner FIXME: please add translator comment saying *what* is
+# uncompressed so we know the gender. jm
+#, fuzzy
+#~ msgid "out of core"
+#~ msgstr "no forçat"
+
+#, fuzzy
+#~ msgid "invalid meta command"
+#~ msgstr "les ordres entren en conflicte\n"
+
+#, fuzzy
+#~ msgid "unknown meta command"
+#~ msgstr "el destinatari predeterminat és desconegut «%s»\n"
+
+#, fuzzy
+#~| msgid "unexpected data"
+#~ msgid "unexpected meta command"
+#~ msgstr "dades inesperades"
+
+#, fuzzy
+#~ msgid "invalid option"
+#~ msgstr "opcions d'importació no vàlides\n"
+
+#, fuzzy, c-format
+#~ msgid "invalid command \"%.50s\"\n"
+#~ msgstr "L'ordre no és vàlida (proveu «help»)\n"
+
+#, fuzzy, c-format
+#~ msgid "invalid option \"%.50s\"\n"
+#~ msgstr "opcions d'importació no vàlides\n"
+
+#, fuzzy, c-format
+#~| msgid "NOTE: no default option file `%s'\n"
+#~ msgid "Note: no default option file '%s'\n"
+#~ msgstr "NOTA: no existeix el fitxer d'opcions predeterminades «%s»\n"
+
+#, fuzzy, c-format
+#~| msgid "option file `%s': %s\n"
+#~ msgid "option file '%s': %s\n"
+#~ msgstr "fitxer d'opcions «%s»: %s\n"
 
 #, fuzzy, c-format
 #~ msgid "public key of ultimately trusted key %s not found\n"

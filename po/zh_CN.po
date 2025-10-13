@@ -1092,85 +1092,6 @@ msgstr "错误过多；放弃\n"
 msgid "Control-D detected\n"
 msgstr "检测到 Control-D\n"
 
-msgid "argument not expected"
-msgstr "未预期的参数"
-
-msgid "read error"
-msgstr "读取错误"
-
-msgid "keyword too long"
-msgstr "关键字太长"
-
-msgid "missing argument"
-msgstr "缺少参数"
-
-msgid "invalid argument"
-msgstr "无效的参数"
-
-msgid "invalid command"
-msgstr "无效的命令"
-
-msgid "invalid alias definition"
-msgstr "无效的别名定义"
-
-msgid "permission error"
-msgstr "权限错误"
-
-msgid "out of core"
-msgstr "内存不足"
-
-msgid "invalid meta command"
-msgstr "无效元命令"
-
-msgid "unknown meta command"
-msgstr "未知元命令"
-
-msgid "unexpected meta command"
-msgstr "意外的元命令"
-
-msgid "invalid option"
-msgstr "无效的选项"
-
-#, c-format
-msgid "missing argument for option \"%.50s\"\n"
-msgstr "选项 “%.50s” 的参数缺失\n"
-
-#, c-format
-msgid "invalid argument for option \"%.50s\"\n"
-msgstr "选项 “%.50s” 的参数无效\n"
-
-#, c-format
-msgid "option \"%.50s\" does not expect an argument\n"
-msgstr "选项 “%.50s” 不需要参数\n"
-
-#, c-format
-msgid "invalid command \"%.50s\"\n"
-msgstr "无效的命令 \"%.50s\"\n"
-
-#, c-format
-msgid "option \"%.50s\" is ambiguous\n"
-msgstr "选项 “%.50s” 含义模糊\n"
-
-#, c-format
-msgid "command \"%.50s\" is ambiguous\n"
-msgstr "命令 “%.50s” 含义模糊\n"
-
-#, c-format
-msgid "invalid option \"%.50s\"\n"
-msgstr "无效的选项 “%.50s”\n"
-
-#, c-format
-msgid "Note: no default option file '%s'\n"
-msgstr "注意：没有默认配置文件‘%s’\n"
-
-#, c-format
-msgid "option file '%s': %s\n"
-msgstr "选项文件‘%s’：%s\n"
-
-#, c-format
-msgid "Note: ignoring option \"--%s\" due to global config\n"
-msgstr "注意：由于全局配置，忽略选项 “--%s”\n"
-
 #, c-format
 msgid "conversion from '%s' to '%s' not available\n"
 msgstr "不能从 ‘%s’ 转换到 ‘%s’\n"
@@ -2469,6 +2390,10 @@ msgstr "%s%d: 无效的 auto-key-locate 列表\n"
 #, c-format
 msgid "invalid auto-key-locate list\n"
 msgstr "无效的 auto-key-locate 列表\n"
+
+#, c-format
+msgid "invalid argument for option \"%.50s\"\n"
+msgstr "选项 “%.50s” 的参数无效\n"
 
 #, fuzzy, c-format
 #| msgid "error parsing key specification '%s': %s\n"
@@ -8571,6 +8496,81 @@ msgid ""
 msgstr ""
 "语法：gpg-check-pattern [选项] patternfile\n"
 "按照 patternfile 检查一个由标准输入（stdin）给定的密码\n"
+
+#~ msgid "argument not expected"
+#~ msgstr "未预期的参数"
+
+#~ msgid "read error"
+#~ msgstr "读取错误"
+
+#~ msgid "keyword too long"
+#~ msgstr "关键字太长"
+
+#~ msgid "missing argument"
+#~ msgstr "缺少参数"
+
+#~ msgid "invalid argument"
+#~ msgstr "无效的参数"
+
+#~ msgid "invalid command"
+#~ msgstr "无效的命令"
+
+#~ msgid "invalid alias definition"
+#~ msgstr "无效的别名定义"
+
+#~ msgid "permission error"
+#~ msgstr "权限错误"
+
+#~ msgid "out of core"
+#~ msgstr "内存不足"
+
+#~ msgid "invalid meta command"
+#~ msgstr "无效元命令"
+
+#~ msgid "unknown meta command"
+#~ msgstr "未知元命令"
+
+#~ msgid "unexpected meta command"
+#~ msgstr "意外的元命令"
+
+#~ msgid "invalid option"
+#~ msgstr "无效的选项"
+
+#, c-format
+#~ msgid "missing argument for option \"%.50s\"\n"
+#~ msgstr "选项 “%.50s” 的参数缺失\n"
+
+#, c-format
+#~ msgid "option \"%.50s\" does not expect an argument\n"
+#~ msgstr "选项 “%.50s” 不需要参数\n"
+
+#, c-format
+#~ msgid "invalid command \"%.50s\"\n"
+#~ msgstr "无效的命令 \"%.50s\"\n"
+
+#, c-format
+#~ msgid "option \"%.50s\" is ambiguous\n"
+#~ msgstr "选项 “%.50s” 含义模糊\n"
+
+#, c-format
+#~ msgid "command \"%.50s\" is ambiguous\n"
+#~ msgstr "命令 “%.50s” 含义模糊\n"
+
+#, c-format
+#~ msgid "invalid option \"%.50s\"\n"
+#~ msgstr "无效的选项 “%.50s”\n"
+
+#, c-format
+#~ msgid "Note: no default option file '%s'\n"
+#~ msgstr "注意：没有默认配置文件‘%s’\n"
+
+#, c-format
+#~ msgid "option file '%s': %s\n"
+#~ msgstr "选项文件‘%s’：%s\n"
+
+#, c-format
+#~ msgid "Note: ignoring option \"--%s\" due to global config\n"
+#~ msgstr "注意：由于全局配置，忽略选项 “--%s”\n"
 
 #, c-format
 #~ msgid "public key of ultimately trusted key %s not found\n"

@@ -1106,85 +1106,6 @@ msgstr "エラーが多すぎます。あきらめます\n"
 msgid "Control-D detected\n"
 msgstr "コントロールD が検出されました\n"
 
-msgid "argument not expected"
-msgstr "引数は期待されていません"
-
-msgid "read error"
-msgstr "読み込みエラー"
-
-msgid "keyword too long"
-msgstr "キーワードが長すぎます"
-
-msgid "missing argument"
-msgstr "引数がありません"
-
-msgid "invalid argument"
-msgstr "無効な引数"
-
-msgid "invalid command"
-msgstr "無効なコマンド"
-
-msgid "invalid alias definition"
-msgstr "無効なエイリアス定義です"
-
-msgid "permission error"
-msgstr "許可のエラー"
-
-msgid "out of core"
-msgstr "メモリがありません"
-
-msgid "invalid meta command"
-msgstr "無効なメタコマンド"
-
-msgid "unknown meta command"
-msgstr "不明のメタコマンド"
-
-msgid "unexpected meta command"
-msgstr "予期せぬメタコマンド"
-
-msgid "invalid option"
-msgstr "無効なオプション"
-
-#, c-format
-msgid "missing argument for option \"%.50s\"\n"
-msgstr "オプション\"%.50s\"に引数がありません\n"
-
-#, c-format
-msgid "invalid argument for option \"%.50s\"\n"
-msgstr "オプション\"%.50s\"には無効な引数です\n"
-
-#, c-format
-msgid "option \"%.50s\" does not expect an argument\n"
-msgstr "オプション\"%.50s\"は引数をとりません\n"
-
-#, c-format
-msgid "invalid command \"%.50s\"\n"
-msgstr "無効なコマンド \"%.50s\"\n"
-
-#, c-format
-msgid "option \"%.50s\" is ambiguous\n"
-msgstr "オプション\"%.50s\"はあいまいです\n"
-
-#, c-format
-msgid "command \"%.50s\" is ambiguous\n"
-msgstr "コマンド\"%.50s\"はあいまいです\n"
-
-#, c-format
-msgid "invalid option \"%.50s\"\n"
-msgstr "無効なオプション \"%.50s\"\n"
-
-#, c-format
-msgid "Note: no default option file '%s'\n"
-msgstr "注意: デフォルトのオプション・ファイル '%s' がありません\n"
-
-#, c-format
-msgid "option file '%s': %s\n"
-msgstr "オプション・ファイル '%s': %s\n"
-
-#, c-format
-msgid "Note: ignoring option \"--%s\" due to global config\n"
-msgstr "注意: オプション \"--%s\" をグローバルコンフィグのために無視してます\n"
-
 #, c-format
 msgid "conversion from '%s' to '%s' not available\n"
 msgstr "'%s'から'%s'への変換は利用できません\n"
@@ -2485,6 +2406,10 @@ msgstr "%s:%d: 無効な auto-key-locate リストです\n"
 #, c-format
 msgid "invalid auto-key-locate list\n"
 msgstr "無効な auto-key-locate リストです\n"
+
+#, c-format
+msgid "invalid argument for option \"%.50s\"\n"
+msgstr "オプション\"%.50s\"には無効な引数です\n"
 
 #, c-format
 msgid "error parsing value for option '%s': %s\n"
@@ -8630,6 +8555,82 @@ msgid ""
 msgstr ""
 "形式: gpg-check-pattern [オプション] パターンファイル\n"
 "パターンファイルに対して標準入力のパスフレーズを確認する\n"
+
+#~ msgid "argument not expected"
+#~ msgstr "引数は期待されていません"
+
+#~ msgid "read error"
+#~ msgstr "読み込みエラー"
+
+#~ msgid "keyword too long"
+#~ msgstr "キーワードが長すぎます"
+
+#~ msgid "missing argument"
+#~ msgstr "引数がありません"
+
+#~ msgid "invalid argument"
+#~ msgstr "無効な引数"
+
+#~ msgid "invalid command"
+#~ msgstr "無効なコマンド"
+
+#~ msgid "invalid alias definition"
+#~ msgstr "無効なエイリアス定義です"
+
+#~ msgid "permission error"
+#~ msgstr "許可のエラー"
+
+#~ msgid "out of core"
+#~ msgstr "メモリがありません"
+
+#~ msgid "invalid meta command"
+#~ msgstr "無効なメタコマンド"
+
+#~ msgid "unknown meta command"
+#~ msgstr "不明のメタコマンド"
+
+#~ msgid "unexpected meta command"
+#~ msgstr "予期せぬメタコマンド"
+
+#~ msgid "invalid option"
+#~ msgstr "無効なオプション"
+
+#, c-format
+#~ msgid "missing argument for option \"%.50s\"\n"
+#~ msgstr "オプション\"%.50s\"に引数がありません\n"
+
+#, c-format
+#~ msgid "option \"%.50s\" does not expect an argument\n"
+#~ msgstr "オプション\"%.50s\"は引数をとりません\n"
+
+#, c-format
+#~ msgid "invalid command \"%.50s\"\n"
+#~ msgstr "無効なコマンド \"%.50s\"\n"
+
+#, c-format
+#~ msgid "option \"%.50s\" is ambiguous\n"
+#~ msgstr "オプション\"%.50s\"はあいまいです\n"
+
+#, c-format
+#~ msgid "command \"%.50s\" is ambiguous\n"
+#~ msgstr "コマンド\"%.50s\"はあいまいです\n"
+
+#, c-format
+#~ msgid "invalid option \"%.50s\"\n"
+#~ msgstr "無効なオプション \"%.50s\"\n"
+
+#, c-format
+#~ msgid "Note: no default option file '%s'\n"
+#~ msgstr "注意: デフォルトのオプション・ファイル '%s' がありません\n"
+
+#, c-format
+#~ msgid "option file '%s': %s\n"
+#~ msgstr "オプション・ファイル '%s': %s\n"
+
+#, c-format
+#~ msgid "Note: ignoring option \"--%s\" due to global config\n"
+#~ msgstr ""
+#~ "注意: オプション \"--%s\" をグローバルコンフィグのために無視してます\n"
 
 #, c-format
 #~ msgid "public key of ultimately trusted key %s not found\n"

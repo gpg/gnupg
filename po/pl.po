@@ -1115,91 +1115,6 @@ msgstr ""
 msgid "Control-D detected\n"
 msgstr ""
 
-msgid "argument not expected"
-msgstr "nieoczekiwany argument"
-
-msgid "read error"
-msgstr "błąd odczytu"
-
-msgid "keyword too long"
-msgstr "słowo kluczowe zbyt długie"
-
-msgid "missing argument"
-msgstr "brak argumentu"
-
-msgid "invalid argument"
-msgstr "niepoprawny argument"
-
-msgid "invalid command"
-msgstr "błędne polecenie"
-
-msgid "invalid alias definition"
-msgstr "błędna definicja aliasu"
-
-msgid "permission error"
-msgstr ""
-
-msgid "out of core"
-msgstr "brak pamięci"
-
-#, fuzzy
-#| msgid "invalid command"
-msgid "invalid meta command"
-msgstr "błędne polecenie"
-
-#, fuzzy
-#| msgid "unknown command '%s'\n"
-msgid "unknown meta command"
-msgstr "nieznane polecenie ,,%s''\n"
-
-#, fuzzy
-#| msgid "unexpected armor: "
-msgid "unexpected meta command"
-msgstr "nieoczekiwane opakowanie: "
-
-msgid "invalid option"
-msgstr "błędna opcja"
-
-#, c-format
-msgid "missing argument for option \"%.50s\"\n"
-msgstr "brak argumentu dla opcji ,,%.50s''\n"
-
-#, c-format
-msgid "invalid argument for option \"%.50s\"\n"
-msgstr "błędny argument dla opcji ,,%.50s''\n"
-
-#, c-format
-msgid "option \"%.50s\" does not expect an argument\n"
-msgstr "opcja ,,%.50s'' nie może mieć argumentów\n"
-
-#, c-format
-msgid "invalid command \"%.50s\"\n"
-msgstr "błędne polecenie ,,%.50s''\n"
-
-#, c-format
-msgid "option \"%.50s\" is ambiguous\n"
-msgstr "opcja ,,%.50s'' jest niejednoznaczna\n"
-
-#, c-format
-msgid "command \"%.50s\" is ambiguous\n"
-msgstr "polecenie ,,%.50s'' jest niejednoznaczne\n"
-
-#, c-format
-msgid "invalid option \"%.50s\"\n"
-msgstr "błędna opcja ,,%.50s''\n"
-
-#, c-format
-msgid "Note: no default option file '%s'\n"
-msgstr "Uwaga: brak domyślnego pliku opcji ,,%s''\n"
-
-#, c-format
-msgid "option file '%s': %s\n"
-msgstr "plik opcji ,,%s'': %s\n"
-
-#, c-format
-msgid "Note: ignoring option \"--%s\" due to global config\n"
-msgstr ""
-
 #, c-format
 msgid "conversion from '%s' to '%s' not available\n"
 msgstr "konwersja z ,,%s'' do ,,%s'' niedostępna\n"
@@ -2549,6 +2464,10 @@ msgstr "%s:%d: niepoprawna lista auto-key-locate\n"
 #, c-format
 msgid "invalid auto-key-locate list\n"
 msgstr "Niepoprawna lista auto-key-locate\n"
+
+#, c-format
+msgid "invalid argument for option \"%.50s\"\n"
+msgstr "błędny argument dla opcji ,,%.50s''\n"
 
 #, fuzzy, c-format
 #| msgid "error parsing key specification '%s': %s\n"
@@ -8966,6 +8885,80 @@ msgid ""
 msgstr ""
 "Składnia: gpg-check-pattern [opcje] plik-wzorców\n"
 "Sprawdzanie hasła ze standardowego wejścia względem pliku wzorców\n"
+
+#~ msgid "argument not expected"
+#~ msgstr "nieoczekiwany argument"
+
+#~ msgid "read error"
+#~ msgstr "błąd odczytu"
+
+#~ msgid "keyword too long"
+#~ msgstr "słowo kluczowe zbyt długie"
+
+#~ msgid "missing argument"
+#~ msgstr "brak argumentu"
+
+#~ msgid "invalid argument"
+#~ msgstr "niepoprawny argument"
+
+#~ msgid "invalid command"
+#~ msgstr "błędne polecenie"
+
+#~ msgid "invalid alias definition"
+#~ msgstr "błędna definicja aliasu"
+
+#~ msgid "out of core"
+#~ msgstr "brak pamięci"
+
+#, fuzzy
+#~| msgid "invalid command"
+#~ msgid "invalid meta command"
+#~ msgstr "błędne polecenie"
+
+#, fuzzy
+#~| msgid "unknown command '%s'\n"
+#~ msgid "unknown meta command"
+#~ msgstr "nieznane polecenie ,,%s''\n"
+
+#, fuzzy
+#~| msgid "unexpected armor: "
+#~ msgid "unexpected meta command"
+#~ msgstr "nieoczekiwane opakowanie: "
+
+#~ msgid "invalid option"
+#~ msgstr "błędna opcja"
+
+#, c-format
+#~ msgid "missing argument for option \"%.50s\"\n"
+#~ msgstr "brak argumentu dla opcji ,,%.50s''\n"
+
+#, c-format
+#~ msgid "option \"%.50s\" does not expect an argument\n"
+#~ msgstr "opcja ,,%.50s'' nie może mieć argumentów\n"
+
+#, c-format
+#~ msgid "invalid command \"%.50s\"\n"
+#~ msgstr "błędne polecenie ,,%.50s''\n"
+
+#, c-format
+#~ msgid "option \"%.50s\" is ambiguous\n"
+#~ msgstr "opcja ,,%.50s'' jest niejednoznaczna\n"
+
+#, c-format
+#~ msgid "command \"%.50s\" is ambiguous\n"
+#~ msgstr "polecenie ,,%.50s'' jest niejednoznaczne\n"
+
+#, c-format
+#~ msgid "invalid option \"%.50s\"\n"
+#~ msgstr "błędna opcja ,,%.50s''\n"
+
+#, c-format
+#~ msgid "Note: no default option file '%s'\n"
+#~ msgstr "Uwaga: brak domyślnego pliku opcji ,,%s''\n"
+
+#, c-format
+#~ msgid "option file '%s': %s\n"
+#~ msgstr "plik opcji ,,%s'': %s\n"
 
 #, c-format
 #~ msgid "public key of ultimately trusted key %s not found\n"

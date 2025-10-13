@@ -1132,86 +1132,6 @@ msgstr "Zu viele Fehler; hat keinen Zweck mehr\n"
 msgid "Control-D detected\n"
 msgstr "Control-D (Strg-D) erkannt\n"
 
-msgid "argument not expected"
-msgstr "Argument nicht erwartet"
-
-msgid "read error"
-msgstr "Lesefehler"
-
-msgid "keyword too long"
-msgstr "Schlüsselwort ist zu lang"
-
-msgid "missing argument"
-msgstr "Fehlendes Argument"
-
-msgid "invalid argument"
-msgstr "Ungültiges Argument"
-
-msgid "invalid command"
-msgstr "Ungültiger Befehl"
-
-msgid "invalid alias definition"
-msgstr "Ungültige Alias-Definition"
-
-msgid "permission error"
-msgstr "Zugriffsrechte nicht ausreichend"
-
-msgid "out of core"
-msgstr "Nicht genügend Speicher"
-
-msgid "invalid meta command"
-msgstr "Ungültige Meta-Anweisung"
-
-msgid "unknown meta command"
-msgstr "Unbekannte Meta-Anweisung"
-
-msgid "unexpected meta command"
-msgstr "Unerwartete Meta-Anweisung"
-
-msgid "invalid option"
-msgstr "Ungültige Option"
-
-#, c-format
-msgid "missing argument for option \"%.50s\"\n"
-msgstr "Fehlendes Argument für Option \"%.50s\"\n"
-
-#, c-format
-msgid "invalid argument for option \"%.50s\"\n"
-msgstr "Ungültiges Argument für Option \"%.50s\"\n"
-
-#, c-format
-msgid "option \"%.50s\" does not expect an argument\n"
-msgstr "Option \"%.50s\" erwartet kein Argument\n"
-
-#, c-format
-msgid "invalid command \"%.50s\"\n"
-msgstr "Ungültiger Befehl \"%.50s\"\n"
-
-#, c-format
-msgid "option \"%.50s\" is ambiguous\n"
-msgstr "Option \"%.50s\" ist mehrdeutig\n"
-
-#, c-format
-msgid "command \"%.50s\" is ambiguous\n"
-msgstr "Befehl \"%.50s\" ist mehrdeutig\n"
-
-#, c-format
-msgid "invalid option \"%.50s\"\n"
-msgstr "Ungültige Option \"%.50s\"\n"
-
-#, c-format
-msgid "Note: no default option file '%s'\n"
-msgstr "Hinweis: Keine voreingestellte Optionendatei '%s' vorhanden\n"
-
-#, c-format
-msgid "option file '%s': %s\n"
-msgstr "Optionendatei '%s': %s\n"
-
-#, c-format
-msgid "Note: ignoring option \"--%s\" due to global config\n"
-msgstr ""
-"Hinweis: Option \\\"--%s\\\" aufgrund der globalen Konfiguration ignoriert\n"
-
 #, c-format
 msgid "conversion from '%s' to '%s' not available\n"
 msgstr "Umwandlung von `%s' in `%s' ist nicht verfügbar\n"
@@ -2556,6 +2476,10 @@ msgstr "%s:%d: ungültige \"auto-key-locate\"-Liste\n"
 #, c-format
 msgid "invalid auto-key-locate list\n"
 msgstr "ungültige \"auto-key-locate\"-Liste\n"
+
+#, c-format
+msgid "invalid argument for option \"%.50s\"\n"
+msgstr "Ungültiges Argument für Option \"%.50s\"\n"
 
 #, c-format
 msgid "error parsing value for option '%s': %s\n"
@@ -9004,6 +8928,83 @@ msgid ""
 msgstr ""
 "Syntax: gpg-check-pattern [optionen] Musterdatei\n"
 "Das von stdin gelesene Passwort gegen die Musterdatei prüfen\n"
+
+#~ msgid "argument not expected"
+#~ msgstr "Argument nicht erwartet"
+
+#~ msgid "read error"
+#~ msgstr "Lesefehler"
+
+#~ msgid "keyword too long"
+#~ msgstr "Schlüsselwort ist zu lang"
+
+#~ msgid "missing argument"
+#~ msgstr "Fehlendes Argument"
+
+#~ msgid "invalid argument"
+#~ msgstr "Ungültiges Argument"
+
+#~ msgid "invalid command"
+#~ msgstr "Ungültiger Befehl"
+
+#~ msgid "invalid alias definition"
+#~ msgstr "Ungültige Alias-Definition"
+
+#~ msgid "permission error"
+#~ msgstr "Zugriffsrechte nicht ausreichend"
+
+#~ msgid "out of core"
+#~ msgstr "Nicht genügend Speicher"
+
+#~ msgid "invalid meta command"
+#~ msgstr "Ungültige Meta-Anweisung"
+
+#~ msgid "unknown meta command"
+#~ msgstr "Unbekannte Meta-Anweisung"
+
+#~ msgid "unexpected meta command"
+#~ msgstr "Unerwartete Meta-Anweisung"
+
+#~ msgid "invalid option"
+#~ msgstr "Ungültige Option"
+
+#, c-format
+#~ msgid "missing argument for option \"%.50s\"\n"
+#~ msgstr "Fehlendes Argument für Option \"%.50s\"\n"
+
+#, c-format
+#~ msgid "option \"%.50s\" does not expect an argument\n"
+#~ msgstr "Option \"%.50s\" erwartet kein Argument\n"
+
+#, c-format
+#~ msgid "invalid command \"%.50s\"\n"
+#~ msgstr "Ungültiger Befehl \"%.50s\"\n"
+
+#, c-format
+#~ msgid "option \"%.50s\" is ambiguous\n"
+#~ msgstr "Option \"%.50s\" ist mehrdeutig\n"
+
+#, c-format
+#~ msgid "command \"%.50s\" is ambiguous\n"
+#~ msgstr "Befehl \"%.50s\" ist mehrdeutig\n"
+
+#, c-format
+#~ msgid "invalid option \"%.50s\"\n"
+#~ msgstr "Ungültige Option \"%.50s\"\n"
+
+#, c-format
+#~ msgid "Note: no default option file '%s'\n"
+#~ msgstr "Hinweis: Keine voreingestellte Optionendatei '%s' vorhanden\n"
+
+#, c-format
+#~ msgid "option file '%s': %s\n"
+#~ msgstr "Optionendatei '%s': %s\n"
+
+#, c-format
+#~ msgid "Note: ignoring option \"--%s\" due to global config\n"
+#~ msgstr ""
+#~ "Hinweis: Option \\\"--%s\\\" aufgrund der globalen Konfiguration "
+#~ "ignoriert\n"
 
 #, c-format
 #~ msgid "public key of ultimately trusted key %s not found\n"

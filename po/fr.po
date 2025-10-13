@@ -1135,85 +1135,6 @@ msgstr "trop d'erreurs : abandon\n"
 msgid "Control-D detected\n"
 msgstr "Control-D detecté\n"
 
-msgid "argument not expected"
-msgstr "argument inattendu"
-
-msgid "read error"
-msgstr "erreur de lecture"
-
-msgid "keyword too long"
-msgstr "mot-clef trop long"
-
-msgid "missing argument"
-msgstr "argument manquant"
-
-msgid "invalid argument"
-msgstr "argument incorrect"
-
-msgid "invalid command"
-msgstr "commande incorrecte"
-
-msgid "invalid alias definition"
-msgstr "définition d'alias incorrecte"
-
-msgid "permission error"
-msgstr "erreur de permissions"
-
-msgid "out of core"
-msgstr "hors limite"
-
-msgid "invalid meta command"
-msgstr "commande meta incorrecte"
-
-msgid "unknown meta command"
-msgstr "commande meta inconnue"
-
-msgid "unexpected meta command"
-msgstr "commande meta inattendue"
-
-msgid "invalid option"
-msgstr "option incorrecte"
-
-#, c-format
-msgid "missing argument for option \"%.50s\"\n"
-msgstr "argument manquant pour l'option « %.50s »\n"
-
-#, c-format
-msgid "invalid argument for option \"%.50s\"\n"
-msgstr "argument incorrect pour l'option « %.50s »\n"
-
-#, c-format
-msgid "option \"%.50s\" does not expect an argument\n"
-msgstr "l'option « %.50s » n'attend pas d'argument\n"
-
-#, c-format
-msgid "invalid command \"%.50s\"\n"
-msgstr "commande « %.50s » incorrecte\n"
-
-#, c-format
-msgid "option \"%.50s\" is ambiguous\n"
-msgstr "l'option « %.50s » est ambiguë\n"
-
-#, c-format
-msgid "command \"%.50s\" is ambiguous\n"
-msgstr "la commande « %.50s » est ambiguë\n"
-
-#, c-format
-msgid "invalid option \"%.50s\"\n"
-msgstr "option « %.50s » incorrecte\n"
-
-#, c-format
-msgid "Note: no default option file '%s'\n"
-msgstr "Remarque : pas de fichier d'options par défaut « %s »\n"
-
-#, c-format
-msgid "option file '%s': %s\n"
-msgstr "fichier d'options « %s » : %s\n"
-
-#, c-format
-msgid "Note: ignoring option \"--%s\" due to global config\n"
-msgstr "Note : ignorer l'option « --%s » à cause de la configuration globale\n"
-
 #, c-format
 msgid "conversion from '%s' to '%s' not available\n"
 msgstr "conversion de « %s » vers « %s » non disponible\n"
@@ -2576,6 +2497,10 @@ msgstr "%s : %d : liste de recherche automatique de clef incorrecte\n"
 #, c-format
 msgid "invalid auto-key-locate list\n"
 msgstr "liste de recherche automatique de clef incorrecte\n"
+
+#, c-format
+msgid "invalid argument for option \"%.50s\"\n"
+msgstr "argument incorrect pour l'option « %.50s »\n"
 
 #, c-format
 msgid "error parsing value for option '%s': %s\n"
@@ -9079,6 +9004,82 @@ msgstr ""
 "Syntaxe : gpg-check-pattern [options] ficmotif\n"
 "Vérifier une phrase secrète donnée sur l'entrée standard par rapport à "
 "ficmotif\n"
+
+#~ msgid "argument not expected"
+#~ msgstr "argument inattendu"
+
+#~ msgid "read error"
+#~ msgstr "erreur de lecture"
+
+#~ msgid "keyword too long"
+#~ msgstr "mot-clef trop long"
+
+#~ msgid "missing argument"
+#~ msgstr "argument manquant"
+
+#~ msgid "invalid argument"
+#~ msgstr "argument incorrect"
+
+#~ msgid "invalid command"
+#~ msgstr "commande incorrecte"
+
+#~ msgid "invalid alias definition"
+#~ msgstr "définition d'alias incorrecte"
+
+#~ msgid "permission error"
+#~ msgstr "erreur de permissions"
+
+#~ msgid "out of core"
+#~ msgstr "hors limite"
+
+#~ msgid "invalid meta command"
+#~ msgstr "commande meta incorrecte"
+
+#~ msgid "unknown meta command"
+#~ msgstr "commande meta inconnue"
+
+#~ msgid "unexpected meta command"
+#~ msgstr "commande meta inattendue"
+
+#~ msgid "invalid option"
+#~ msgstr "option incorrecte"
+
+#, c-format
+#~ msgid "missing argument for option \"%.50s\"\n"
+#~ msgstr "argument manquant pour l'option « %.50s »\n"
+
+#, c-format
+#~ msgid "option \"%.50s\" does not expect an argument\n"
+#~ msgstr "l'option « %.50s » n'attend pas d'argument\n"
+
+#, c-format
+#~ msgid "invalid command \"%.50s\"\n"
+#~ msgstr "commande « %.50s » incorrecte\n"
+
+#, c-format
+#~ msgid "option \"%.50s\" is ambiguous\n"
+#~ msgstr "l'option « %.50s » est ambiguë\n"
+
+#, c-format
+#~ msgid "command \"%.50s\" is ambiguous\n"
+#~ msgstr "la commande « %.50s » est ambiguë\n"
+
+#, c-format
+#~ msgid "invalid option \"%.50s\"\n"
+#~ msgstr "option « %.50s » incorrecte\n"
+
+#, c-format
+#~ msgid "Note: no default option file '%s'\n"
+#~ msgstr "Remarque : pas de fichier d'options par défaut « %s »\n"
+
+#, c-format
+#~ msgid "option file '%s': %s\n"
+#~ msgstr "fichier d'options « %s » : %s\n"
+
+#, c-format
+#~ msgid "Note: ignoring option \"--%s\" due to global config\n"
+#~ msgstr ""
+#~ "Note : ignorer l'option « --%s » à cause de la configuration globale\n"
 
 #, c-format
 #~ msgid "public key of ultimately trusted key %s not found\n"

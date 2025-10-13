@@ -1178,101 +1178,6 @@ msgstr ""
 msgid "Control-D detected\n"
 msgstr ""
 
-#, fuzzy
-msgid "argument not expected"
-msgstr "Nu sunt permise comenzi administrare\n"
-
-#, fuzzy
-msgid "read error"
-msgstr "eroare citire fişier"
-
-#, fuzzy
-msgid "keyword too long"
-msgstr "linie prea lungă"
-
-#, fuzzy
-msgid "missing argument"
-msgstr "argument invalid"
-
-#, fuzzy
-#| msgid "invalid armor"
-msgid "invalid argument"
-msgstr "armură invalidă"
-
-#, fuzzy
-msgid "invalid command"
-msgstr "Comandă numai-administrare\n"
-
-#, fuzzy
-msgid "invalid alias definition"
-msgstr "opţiuni enumerare invalide\n"
-
-msgid "permission error"
-msgstr ""
-
-#, fuzzy
-msgid "out of core"
-msgstr "neforţat(ă)"
-
-#, fuzzy
-msgid "invalid meta command"
-msgstr "Comandă numai-administrare\n"
-
-#, fuzzy
-msgid "unknown meta command"
-msgstr "opţiune necunoscută `%s'\n"
-
-#, fuzzy
-#| msgid "unexpected data"
-msgid "unexpected meta command"
-msgstr "date neaşteptate"
-
-#, fuzzy
-msgid "invalid option"
-msgstr "opţiuni enumerare invalide\n"
-
-#, c-format
-msgid "missing argument for option \"%.50s\"\n"
-msgstr ""
-
-#, fuzzy, c-format
-msgid "invalid argument for option \"%.50s\"\n"
-msgstr "opţiuni enumerare invalide\n"
-
-#, c-format
-msgid "option \"%.50s\" does not expect an argument\n"
-msgstr ""
-
-#, fuzzy, c-format
-msgid "invalid command \"%.50s\"\n"
-msgstr "Comandă invalidă  (încercaţi \"ajutor\")\n"
-
-#, c-format
-msgid "option \"%.50s\" is ambiguous\n"
-msgstr ""
-
-#, c-format
-msgid "command \"%.50s\" is ambiguous\n"
-msgstr ""
-
-#, fuzzy, c-format
-msgid "invalid option \"%.50s\"\n"
-msgstr "opţiuni enumerare invalide\n"
-
-#, fuzzy, c-format
-#| msgid "NOTE: no default option file `%s'\n"
-msgid "Note: no default option file '%s'\n"
-msgstr "NOTĂ: nici un fişier opţiuni implicit `%s'\n"
-
-#, fuzzy, c-format
-#| msgid "option file `%s': %s\n"
-msgid "option file '%s': %s\n"
-msgstr "fişier opţiuni `%s': %s\n"
-
-#, c-format
-msgid "Note: ignoring option \"--%s\" due to global config\n"
-msgstr ""
-
 #, fuzzy, c-format
 msgid "conversion from '%s' to '%s' not available\n"
 msgstr "redenumirea `%s' ca `%s' a eşuat: %s\n"
@@ -2739,6 +2644,10 @@ msgstr "%s:%d: opţiuni verificare invalide\n"
 #, c-format
 msgid "invalid auto-key-locate list\n"
 msgstr ""
+
+#, fuzzy, c-format
+msgid "invalid argument for option \"%.50s\"\n"
+msgstr "opţiuni enumerare invalide\n"
 
 #, fuzzy, c-format
 msgid "error parsing value for option '%s': %s\n"
@@ -9274,6 +9183,74 @@ msgid ""
 "Syntax: gpg-check-pattern [options] patternfile\n"
 "Check a passphrase given on stdin against the patternfile\n"
 msgstr ""
+
+#, fuzzy
+#~ msgid "argument not expected"
+#~ msgstr "Nu sunt permise comenzi administrare\n"
+
+#, fuzzy
+#~ msgid "read error"
+#~ msgstr "eroare citire fişier"
+
+#, fuzzy
+#~ msgid "keyword too long"
+#~ msgstr "linie prea lungă"
+
+#, fuzzy
+#~ msgid "missing argument"
+#~ msgstr "argument invalid"
+
+#, fuzzy
+#~| msgid "invalid armor"
+#~ msgid "invalid argument"
+#~ msgstr "armură invalidă"
+
+#, fuzzy
+#~ msgid "invalid command"
+#~ msgstr "Comandă numai-administrare\n"
+
+#, fuzzy
+#~ msgid "invalid alias definition"
+#~ msgstr "opţiuni enumerare invalide\n"
+
+#, fuzzy
+#~ msgid "out of core"
+#~ msgstr "neforţat(ă)"
+
+#, fuzzy
+#~ msgid "invalid meta command"
+#~ msgstr "Comandă numai-administrare\n"
+
+#, fuzzy
+#~ msgid "unknown meta command"
+#~ msgstr "opţiune necunoscută `%s'\n"
+
+#, fuzzy
+#~| msgid "unexpected data"
+#~ msgid "unexpected meta command"
+#~ msgstr "date neaşteptate"
+
+#, fuzzy
+#~ msgid "invalid option"
+#~ msgstr "opţiuni enumerare invalide\n"
+
+#, fuzzy, c-format
+#~ msgid "invalid command \"%.50s\"\n"
+#~ msgstr "Comandă invalidă  (încercaţi \"ajutor\")\n"
+
+#, fuzzy, c-format
+#~ msgid "invalid option \"%.50s\"\n"
+#~ msgstr "opţiuni enumerare invalide\n"
+
+#, fuzzy, c-format
+#~| msgid "NOTE: no default option file `%s'\n"
+#~ msgid "Note: no default option file '%s'\n"
+#~ msgstr "NOTĂ: nici un fişier opţiuni implicit `%s'\n"
+
+#, fuzzy, c-format
+#~| msgid "option file `%s': %s\n"
+#~ msgid "option file '%s': %s\n"
+#~ msgstr "fişier opţiuni `%s': %s\n"
 
 #, c-format
 #~ msgid "public key of ultimately trusted key %s not found\n"

@@ -1155,91 +1155,6 @@ msgstr ""
 msgid "Control-D detected\n"
 msgstr ""
 
-msgid "argument not expected"
-msgstr "parámetro inesperado"
-
-msgid "read error"
-msgstr "error de lectura"
-
-msgid "keyword too long"
-msgstr "palabra clave demasiado larga"
-
-msgid "missing argument"
-msgstr "falta el parámetro"
-
-msgid "invalid argument"
-msgstr "parámetro incorrecto"
-
-msgid "invalid command"
-msgstr "orden inválida"
-
-msgid "invalid alias definition"
-msgstr "definición de alias inválida"
-
-msgid "permission error"
-msgstr ""
-
-msgid "out of core"
-msgstr "memoria desbordada"
-
-#, fuzzy
-#| msgid "invalid command"
-msgid "invalid meta command"
-msgstr "orden inválida"
-
-#, fuzzy
-#| msgid "unknown command '%s'\n"
-msgid "unknown meta command"
-msgstr "orden desconocida '%s'\n"
-
-#, fuzzy
-#| msgid "unexpected data"
-msgid "unexpected meta command"
-msgstr "datos inesperados"
-
-msgid "invalid option"
-msgstr "opción inválida"
-
-#, c-format
-msgid "missing argument for option \"%.50s\"\n"
-msgstr "falta parámetro para la opción \"%.50s\"\n"
-
-#, c-format
-msgid "invalid argument for option \"%.50s\"\n"
-msgstr "parámetro incorrecto para la opción \"%.50s\"\n"
-
-#, c-format
-msgid "option \"%.50s\" does not expect an argument\n"
-msgstr "la opción \"%.50s\" no necesita parámetros\n"
-
-#, c-format
-msgid "invalid command \"%.50s\"\n"
-msgstr "orden inválida \"%.50s\"\n"
-
-#, c-format
-msgid "option \"%.50s\" is ambiguous\n"
-msgstr "la opción \"%.50s\" es ambigua\n"
-
-#, c-format
-msgid "command \"%.50s\" is ambiguous\n"
-msgstr "la orden \"%.50s\" es ambigua\n"
-
-#, c-format
-msgid "invalid option \"%.50s\"\n"
-msgstr "opción inválida \"%.50s\"\n"
-
-#, c-format
-msgid "Note: no default option file '%s'\n"
-msgstr "NOTA: no existe el fichero de opciones predeterminado '%s'\n"
-
-#, c-format
-msgid "option file '%s': %s\n"
-msgstr "fichero de opciones '%s': %s\n"
-
-#, c-format
-msgid "Note: ignoring option \"--%s\" due to global config\n"
-msgstr ""
-
 #, c-format
 msgid "conversion from '%s' to '%s' not available\n"
 msgstr "la conversión de '%s' a '%s' no está disponible\n"
@@ -2591,6 +2506,10 @@ msgstr "%s:%d: lista de auto-localización de claves inválida\n"
 #, c-format
 msgid "invalid auto-key-locate list\n"
 msgstr "lista de auto-localización de claves inválida\n"
+
+#, c-format
+msgid "invalid argument for option \"%.50s\"\n"
+msgstr "parámetro incorrecto para la opción \"%.50s\"\n"
 
 #, fuzzy, c-format
 #| msgid "error parsing key specification '%s': %s\n"
@@ -8945,6 +8864,80 @@ msgstr ""
 "Sintaxis: gpg-check-pattern [opciones] fichero_de_patrones\n"
 "Compara frase contraseña dada en entrada estándar con un fichero de "
 "patrones\n"
+
+#~ msgid "argument not expected"
+#~ msgstr "parámetro inesperado"
+
+#~ msgid "read error"
+#~ msgstr "error de lectura"
+
+#~ msgid "keyword too long"
+#~ msgstr "palabra clave demasiado larga"
+
+#~ msgid "missing argument"
+#~ msgstr "falta el parámetro"
+
+#~ msgid "invalid argument"
+#~ msgstr "parámetro incorrecto"
+
+#~ msgid "invalid command"
+#~ msgstr "orden inválida"
+
+#~ msgid "invalid alias definition"
+#~ msgstr "definición de alias inválida"
+
+#~ msgid "out of core"
+#~ msgstr "memoria desbordada"
+
+#, fuzzy
+#~| msgid "invalid command"
+#~ msgid "invalid meta command"
+#~ msgstr "orden inválida"
+
+#, fuzzy
+#~| msgid "unknown command '%s'\n"
+#~ msgid "unknown meta command"
+#~ msgstr "orden desconocida '%s'\n"
+
+#, fuzzy
+#~| msgid "unexpected data"
+#~ msgid "unexpected meta command"
+#~ msgstr "datos inesperados"
+
+#~ msgid "invalid option"
+#~ msgstr "opción inválida"
+
+#, c-format
+#~ msgid "missing argument for option \"%.50s\"\n"
+#~ msgstr "falta parámetro para la opción \"%.50s\"\n"
+
+#, c-format
+#~ msgid "option \"%.50s\" does not expect an argument\n"
+#~ msgstr "la opción \"%.50s\" no necesita parámetros\n"
+
+#, c-format
+#~ msgid "invalid command \"%.50s\"\n"
+#~ msgstr "orden inválida \"%.50s\"\n"
+
+#, c-format
+#~ msgid "option \"%.50s\" is ambiguous\n"
+#~ msgstr "la opción \"%.50s\" es ambigua\n"
+
+#, c-format
+#~ msgid "command \"%.50s\" is ambiguous\n"
+#~ msgstr "la orden \"%.50s\" es ambigua\n"
+
+#, c-format
+#~ msgid "invalid option \"%.50s\"\n"
+#~ msgstr "opción inválida \"%.50s\"\n"
+
+#, c-format
+#~ msgid "Note: no default option file '%s'\n"
+#~ msgstr "NOTA: no existe el fichero de opciones predeterminado '%s'\n"
+
+#, c-format
+#~ msgid "option file '%s': %s\n"
+#~ msgstr "fichero de opciones '%s': %s\n"
 
 #, c-format
 #~ msgid "public key of ultimately trusted key %s not found\n"

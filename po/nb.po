@@ -1126,91 +1126,6 @@ msgstr ""
 msgid "Control-D detected\n"
 msgstr ""
 
-msgid "argument not expected"
-msgstr "uforventet argument"
-
-msgid "read error"
-msgstr "lesefeil"
-
-msgid "keyword too long"
-msgstr "nøkkelord er for langt"
-
-msgid "missing argument"
-msgstr "argument mangler"
-
-msgid "invalid argument"
-msgstr "ugydig argument"
-
-msgid "invalid command"
-msgstr "ugyldig kommando"
-
-msgid "invalid alias definition"
-msgstr "ugyldig aliasdefinisjon"
-
-msgid "permission error"
-msgstr ""
-
-msgid "out of core"
-msgstr "kjernen er full"
-
-#, fuzzy
-#| msgid "invalid command"
-msgid "invalid meta command"
-msgstr "ugyldig kommando"
-
-#, fuzzy
-#| msgid "unknown command '%s'\n"
-msgid "unknown meta command"
-msgstr "«%s» er en ukjent kommando\n"
-
-#, fuzzy
-#| msgid "unexpected armor: "
-msgid "unexpected meta command"
-msgstr "uforventet armering: "
-
-msgid "invalid option"
-msgstr "ugyldig valg"
-
-#, c-format
-msgid "missing argument for option \"%.50s\"\n"
-msgstr "valget «%.50s» mangler et argument\n"
-
-#, c-format
-msgid "invalid argument for option \"%.50s\"\n"
-msgstr "ugyldig argument for valget «%.50s»\n"
-
-#, c-format
-msgid "option \"%.50s\" does not expect an argument\n"
-msgstr "valget «%.50s» skal ikke brukes med argumenter\n"
-
-#, c-format
-msgid "invalid command \"%.50s\"\n"
-msgstr "kommandoen «%.50s» er ugyldig\n"
-
-#, c-format
-msgid "option \"%.50s\" is ambiguous\n"
-msgstr "valget «%.50s» er flertydig\n"
-
-#, c-format
-msgid "command \"%.50s\" is ambiguous\n"
-msgstr "kommandoen «%.50s» er flertydig\n"
-
-#, c-format
-msgid "invalid option \"%.50s\"\n"
-msgstr "valget «%.50s» er ugyldig\n"
-
-#, c-format
-msgid "Note: no default option file '%s'\n"
-msgstr "Merk: standardvalg-fil «%s» finnes ikke\n"
-
-#, c-format
-msgid "option file '%s': %s\n"
-msgstr "valgfil «%s»: %s\n"
-
-#, c-format
-msgid "Note: ignoring option \"--%s\" due to global config\n"
-msgstr ""
-
 #, c-format
 msgid "conversion from '%s' to '%s' not available\n"
 msgstr "konvertering fra «%s» til «%s» er ikke tilgjengelig\n"
@@ -2562,6 +2477,10 @@ msgstr "%s:%d: ugyldig «auto-key-locate»-liste\n"
 #, c-format
 msgid "invalid auto-key-locate list\n"
 msgstr "ugyldig «auto-key-locate»-liste\n"
+
+#, c-format
+msgid "invalid argument for option \"%.50s\"\n"
+msgstr "ugyldig argument for valget «%.50s»\n"
 
 #, fuzzy, c-format
 #| msgid "error parsing key specification '%s': %s\n"
@@ -8852,6 +8771,80 @@ msgid ""
 msgstr ""
 "Syntaks: gpg-check-pattern [valg] mønsterfil\n"
 "Kontroller passordfrase oppgitt på standard innkanal mot valgt mønsterfil\n"
+
+#~ msgid "argument not expected"
+#~ msgstr "uforventet argument"
+
+#~ msgid "read error"
+#~ msgstr "lesefeil"
+
+#~ msgid "keyword too long"
+#~ msgstr "nøkkelord er for langt"
+
+#~ msgid "missing argument"
+#~ msgstr "argument mangler"
+
+#~ msgid "invalid argument"
+#~ msgstr "ugydig argument"
+
+#~ msgid "invalid command"
+#~ msgstr "ugyldig kommando"
+
+#~ msgid "invalid alias definition"
+#~ msgstr "ugyldig aliasdefinisjon"
+
+#~ msgid "out of core"
+#~ msgstr "kjernen er full"
+
+#, fuzzy
+#~| msgid "invalid command"
+#~ msgid "invalid meta command"
+#~ msgstr "ugyldig kommando"
+
+#, fuzzy
+#~| msgid "unknown command '%s'\n"
+#~ msgid "unknown meta command"
+#~ msgstr "«%s» er en ukjent kommando\n"
+
+#, fuzzy
+#~| msgid "unexpected armor: "
+#~ msgid "unexpected meta command"
+#~ msgstr "uforventet armering: "
+
+#~ msgid "invalid option"
+#~ msgstr "ugyldig valg"
+
+#, c-format
+#~ msgid "missing argument for option \"%.50s\"\n"
+#~ msgstr "valget «%.50s» mangler et argument\n"
+
+#, c-format
+#~ msgid "option \"%.50s\" does not expect an argument\n"
+#~ msgstr "valget «%.50s» skal ikke brukes med argumenter\n"
+
+#, c-format
+#~ msgid "invalid command \"%.50s\"\n"
+#~ msgstr "kommandoen «%.50s» er ugyldig\n"
+
+#, c-format
+#~ msgid "option \"%.50s\" is ambiguous\n"
+#~ msgstr "valget «%.50s» er flertydig\n"
+
+#, c-format
+#~ msgid "command \"%.50s\" is ambiguous\n"
+#~ msgstr "kommandoen «%.50s» er flertydig\n"
+
+#, c-format
+#~ msgid "invalid option \"%.50s\"\n"
+#~ msgstr "valget «%.50s» er ugyldig\n"
+
+#, c-format
+#~ msgid "Note: no default option file '%s'\n"
+#~ msgstr "Merk: standardvalg-fil «%s» finnes ikke\n"
+
+#, c-format
+#~ msgid "option file '%s': %s\n"
+#~ msgstr "valgfil «%s»: %s\n"
 
 #, c-format
 #~ msgid "public key of ultimately trusted key %s not found\n"

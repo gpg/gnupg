@@ -1133,91 +1133,6 @@ msgstr ""
 msgid "Control-D detected\n"
 msgstr ""
 
-msgid "argument not expected"
-msgstr "неочікуваний аргумент"
-
-msgid "read error"
-msgstr "помилка читання"
-
-msgid "keyword too long"
-msgstr "занадто довге ключове слово"
-
-msgid "missing argument"
-msgstr "не вистачає аргументу"
-
-msgid "invalid argument"
-msgstr "некоректний аргумент"
-
-msgid "invalid command"
-msgstr "некоректна команда"
-
-msgid "invalid alias definition"
-msgstr "некоректне визначення замінника"
-
-msgid "permission error"
-msgstr ""
-
-msgid "out of core"
-msgstr "вихід за межі області пам’яті"
-
-#, fuzzy
-#| msgid "invalid command"
-msgid "invalid meta command"
-msgstr "некоректна команда"
-
-#, fuzzy
-#| msgid "unknown command '%s'\n"
-msgid "unknown meta command"
-msgstr "невідома команда «%s»\n"
-
-#, fuzzy
-#| msgid "unexpected armor: "
-msgid "unexpected meta command"
-msgstr "неочікуваний формат ASCII: "
-
-msgid "invalid option"
-msgstr "некоректний параметр"
-
-#, c-format
-msgid "missing argument for option \"%.50s\"\n"
-msgstr "не вказано аргументу до параметра «%.50s»\n"
-
-#, c-format
-msgid "invalid argument for option \"%.50s\"\n"
-msgstr "некоректний аргумент параметра «%.50s»\n"
-
-#, c-format
-msgid "option \"%.50s\" does not expect an argument\n"
-msgstr "для параметра «%.50s» аргументи не потрібно вказувати\n"
-
-#, c-format
-msgid "invalid command \"%.50s\"\n"
-msgstr "некоректна команда «%.50s»\n"
-
-#, c-format
-msgid "option \"%.50s\" is ambiguous\n"
-msgstr "параметр «%.50s» є неоднозначним\n"
-
-#, c-format
-msgid "command \"%.50s\" is ambiguous\n"
-msgstr "команда «%.50s» є неоднозначною\n"
-
-#, c-format
-msgid "invalid option \"%.50s\"\n"
-msgstr "некоректний параметр «%.50s»\n"
-
-#, c-format
-msgid "Note: no default option file '%s'\n"
-msgstr "ЗАУВАЖЕННЯ: не виявлено файла типових параметрів «%s»\n"
-
-#, c-format
-msgid "option file '%s': %s\n"
-msgstr "файл параметрів «%s»: %s\n"
-
-#, c-format
-msgid "Note: ignoring option \"--%s\" due to global config\n"
-msgstr ""
-
 #, c-format
 msgid "conversion from '%s' to '%s' not available\n"
 msgstr "перетворення з «%s» у «%s» недоступне\n"
@@ -2594,6 +2509,10 @@ msgstr "%s:%d: некоректний список auto-key-locate\n"
 #, c-format
 msgid "invalid auto-key-locate list\n"
 msgstr "некоректний список auto-key-locate\n"
+
+#, c-format
+msgid "invalid argument for option \"%.50s\"\n"
+msgstr "некоректний аргумент параметра «%.50s»\n"
 
 #, fuzzy, c-format
 #| msgid "error parsing key specification '%s': %s\n"
@@ -9047,6 +8966,80 @@ msgid ""
 msgstr ""
 "Синтаксис: gpg-check-pattern [параметри] файл_шаблонів\n"
 "Перевірити пароль, вказаний у stdin, за допомогою файла_шаблонів\n"
+
+#~ msgid "argument not expected"
+#~ msgstr "неочікуваний аргумент"
+
+#~ msgid "read error"
+#~ msgstr "помилка читання"
+
+#~ msgid "keyword too long"
+#~ msgstr "занадто довге ключове слово"
+
+#~ msgid "missing argument"
+#~ msgstr "не вистачає аргументу"
+
+#~ msgid "invalid argument"
+#~ msgstr "некоректний аргумент"
+
+#~ msgid "invalid command"
+#~ msgstr "некоректна команда"
+
+#~ msgid "invalid alias definition"
+#~ msgstr "некоректне визначення замінника"
+
+#~ msgid "out of core"
+#~ msgstr "вихід за межі області пам’яті"
+
+#, fuzzy
+#~| msgid "invalid command"
+#~ msgid "invalid meta command"
+#~ msgstr "некоректна команда"
+
+#, fuzzy
+#~| msgid "unknown command '%s'\n"
+#~ msgid "unknown meta command"
+#~ msgstr "невідома команда «%s»\n"
+
+#, fuzzy
+#~| msgid "unexpected armor: "
+#~ msgid "unexpected meta command"
+#~ msgstr "неочікуваний формат ASCII: "
+
+#~ msgid "invalid option"
+#~ msgstr "некоректний параметр"
+
+#, c-format
+#~ msgid "missing argument for option \"%.50s\"\n"
+#~ msgstr "не вказано аргументу до параметра «%.50s»\n"
+
+#, c-format
+#~ msgid "option \"%.50s\" does not expect an argument\n"
+#~ msgstr "для параметра «%.50s» аргументи не потрібно вказувати\n"
+
+#, c-format
+#~ msgid "invalid command \"%.50s\"\n"
+#~ msgstr "некоректна команда «%.50s»\n"
+
+#, c-format
+#~ msgid "option \"%.50s\" is ambiguous\n"
+#~ msgstr "параметр «%.50s» є неоднозначним\n"
+
+#, c-format
+#~ msgid "command \"%.50s\" is ambiguous\n"
+#~ msgstr "команда «%.50s» є неоднозначною\n"
+
+#, c-format
+#~ msgid "invalid option \"%.50s\"\n"
+#~ msgstr "некоректний параметр «%.50s»\n"
+
+#, c-format
+#~ msgid "Note: no default option file '%s'\n"
+#~ msgstr "ЗАУВАЖЕННЯ: не виявлено файла типових параметрів «%s»\n"
+
+#, c-format
+#~ msgid "option file '%s': %s\n"
+#~ msgstr "файл параметрів «%s»: %s\n"
 
 #, c-format
 #~ msgid "public key of ultimately trusted key %s not found\n"

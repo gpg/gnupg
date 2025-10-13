@@ -1150,91 +1150,6 @@ msgstr ""
 msgid "Control-D detected\n"
 msgstr ""
 
-msgid "argument not expected"
-msgstr "argument nebyl očekáván"
-
-msgid "read error"
-msgstr "chyba při čtení"
-
-msgid "keyword too long"
-msgstr "klíčové slovo je příliš dlouhé"
-
-msgid "missing argument"
-msgstr "postrádám argument"
-
-msgid "invalid argument"
-msgstr "neplatný argument"
-
-msgid "invalid command"
-msgstr "neplatný příkaz"
-
-msgid "invalid alias definition"
-msgstr "neplatný definice aliasu"
-
-msgid "permission error"
-msgstr ""
-
-msgid "out of core"
-msgstr "nedostatek paměti"
-
-#, fuzzy
-#| msgid "invalid command"
-msgid "invalid meta command"
-msgstr "neplatný příkaz"
-
-#, fuzzy
-#| msgid "unknown command '%s'\n"
-msgid "unknown meta command"
-msgstr "neznámý příkaz „%s“\n"
-
-#, fuzzy
-#| msgid "unexpected data"
-msgid "unexpected meta command"
-msgstr "neočekávaná data"
-
-msgid "invalid option"
-msgstr "neplatný parametr"
-
-#, c-format
-msgid "missing argument for option \"%.50s\"\n"
-msgstr "postrádám argument u volby „%.50s“\n"
-
-#, c-format
-msgid "invalid argument for option \"%.50s\"\n"
-msgstr "neplatný argument u volby „%.50s“\n"
-
-#, c-format
-msgid "option \"%.50s\" does not expect an argument\n"
-msgstr "volba „%.50s“ nečeká argument\n"
-
-#, c-format
-msgid "invalid command \"%.50s\"\n"
-msgstr "neplatný příkaz „%.50s“\n"
-
-#, c-format
-msgid "option \"%.50s\" is ambiguous\n"
-msgstr "volba „%.50s“ není jednoznačná\n"
-
-#, c-format
-msgid "command \"%.50s\" is ambiguous\n"
-msgstr "příkaz „%.50s“ není jednoznačný\n"
-
-#, c-format
-msgid "invalid option \"%.50s\"\n"
-msgstr "neplatný parametr „%.50s“\n"
-
-#, c-format
-msgid "Note: no default option file '%s'\n"
-msgstr "Poznámka: neexistuje implicitní soubor s možnostmi „%s“\n"
-
-#, c-format
-msgid "option file '%s': %s\n"
-msgstr "soubor s možnostmi „%s“: %s\n"
-
-#, c-format
-msgid "Note: ignoring option \"--%s\" due to global config\n"
-msgstr ""
-
 #, c-format
 msgid "conversion from '%s' to '%s' not available\n"
 msgstr "převod z „%s“ na „%s“ není k dispozici\n"
@@ -2583,6 +2498,10 @@ msgstr "%s:%d: neplatný seznam auto-key-locate\n"
 #, c-format
 msgid "invalid auto-key-locate list\n"
 msgstr "neplatný seznam auto-key-locate\n"
+
+#, c-format
+msgid "invalid argument for option \"%.50s\"\n"
+msgstr "neplatný argument u volby „%.50s“\n"
 
 #, fuzzy, c-format
 #| msgid "error parsing key specification '%s': %s\n"
@@ -8940,6 +8859,80 @@ msgid ""
 msgstr ""
 "Syntaxe: gpg-check-pattern [volby] soubor_se_vzorem\n"
 "Prověří heslo zadané na vstupu proti souboru se vzory\n"
+
+#~ msgid "argument not expected"
+#~ msgstr "argument nebyl očekáván"
+
+#~ msgid "read error"
+#~ msgstr "chyba při čtení"
+
+#~ msgid "keyword too long"
+#~ msgstr "klíčové slovo je příliš dlouhé"
+
+#~ msgid "missing argument"
+#~ msgstr "postrádám argument"
+
+#~ msgid "invalid argument"
+#~ msgstr "neplatný argument"
+
+#~ msgid "invalid command"
+#~ msgstr "neplatný příkaz"
+
+#~ msgid "invalid alias definition"
+#~ msgstr "neplatný definice aliasu"
+
+#~ msgid "out of core"
+#~ msgstr "nedostatek paměti"
+
+#, fuzzy
+#~| msgid "invalid command"
+#~ msgid "invalid meta command"
+#~ msgstr "neplatný příkaz"
+
+#, fuzzy
+#~| msgid "unknown command '%s'\n"
+#~ msgid "unknown meta command"
+#~ msgstr "neznámý příkaz „%s“\n"
+
+#, fuzzy
+#~| msgid "unexpected data"
+#~ msgid "unexpected meta command"
+#~ msgstr "neočekávaná data"
+
+#~ msgid "invalid option"
+#~ msgstr "neplatný parametr"
+
+#, c-format
+#~ msgid "missing argument for option \"%.50s\"\n"
+#~ msgstr "postrádám argument u volby „%.50s“\n"
+
+#, c-format
+#~ msgid "option \"%.50s\" does not expect an argument\n"
+#~ msgstr "volba „%.50s“ nečeká argument\n"
+
+#, c-format
+#~ msgid "invalid command \"%.50s\"\n"
+#~ msgstr "neplatný příkaz „%.50s“\n"
+
+#, c-format
+#~ msgid "option \"%.50s\" is ambiguous\n"
+#~ msgstr "volba „%.50s“ není jednoznačná\n"
+
+#, c-format
+#~ msgid "command \"%.50s\" is ambiguous\n"
+#~ msgstr "příkaz „%.50s“ není jednoznačný\n"
+
+#, c-format
+#~ msgid "invalid option \"%.50s\"\n"
+#~ msgstr "neplatný parametr „%.50s“\n"
+
+#, c-format
+#~ msgid "Note: no default option file '%s'\n"
+#~ msgstr "Poznámka: neexistuje implicitní soubor s možnostmi „%s“\n"
+
+#, c-format
+#~ msgid "option file '%s': %s\n"
+#~ msgstr "soubor s možnostmi „%s“: %s\n"
 
 #, c-format
 #~ msgid "public key of ultimately trusted key %s not found\n"

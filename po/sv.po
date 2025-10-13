@@ -1249,96 +1249,6 @@ msgstr ""
 msgid "Control-D detected\n"
 msgstr ""
 
-msgid "argument not expected"
-msgstr "argument förväntades inte"
-
-msgid "read error"
-msgstr "läsfel"
-
-msgid "keyword too long"
-msgstr "nyckelordet är för långt"
-
-msgid "missing argument"
-msgstr "argument saknas"
-
-#, fuzzy
-#| msgid "invalid value\n"
-msgid "invalid argument"
-msgstr "ogiltigt värde\n"
-
-msgid "invalid command"
-msgstr "ogiltigt kommando"
-
-msgid "invalid alias definition"
-msgstr "ogiltig aliasdefinition"
-
-msgid "permission error"
-msgstr ""
-
-msgid "out of core"
-msgstr "slut på minne"
-
-#, fuzzy
-#| msgid "invalid command"
-msgid "invalid meta command"
-msgstr "ogiltigt kommando"
-
-#, fuzzy
-#| msgid "unknown command `%s'\n"
-msgid "unknown meta command"
-msgstr "okänt kommando \"%s\"\n"
-
-#, fuzzy
-#| msgid "unexpected armor: "
-msgid "unexpected meta command"
-msgstr "oväntat skal: "
-
-msgid "invalid option"
-msgstr "ogiltig flagga"
-
-#, c-format
-msgid "missing argument for option \"%.50s\"\n"
-msgstr "argument för flaggan \"%.50s\" saknas\n"
-
-#, fuzzy, c-format
-#| msgid "missing argument for option \"%.50s\"\n"
-msgid "invalid argument for option \"%.50s\"\n"
-msgstr "argument för flaggan \"%.50s\" saknas\n"
-
-#, c-format
-msgid "option \"%.50s\" does not expect an argument\n"
-msgstr "flaggan \"%.50s\" förväntar sig inte ett argument\n"
-
-#, c-format
-msgid "invalid command \"%.50s\"\n"
-msgstr "ogiltigt kommando \"%.50s\"\n"
-
-#, c-format
-msgid "option \"%.50s\" is ambiguous\n"
-msgstr "flagga \"%.50s\" är tvetydig\n"
-
-#, c-format
-msgid "command \"%.50s\" is ambiguous\n"
-msgstr "kommandot \"%.50s\" är tvetydigt\n"
-
-#, c-format
-msgid "invalid option \"%.50s\"\n"
-msgstr "ogiltig flagga \"%.50s\"\n"
-
-#, fuzzy, c-format
-#| msgid "NOTE: no default option file `%s'\n"
-msgid "Note: no default option file '%s'\n"
-msgstr "OBS: inställningsfilen \"%s\" saknas\n"
-
-#, fuzzy, c-format
-#| msgid "option file `%s': %s\n"
-msgid "option file '%s': %s\n"
-msgstr "inställningsfil \"%s\": %s\n"
-
-#, c-format
-msgid "Note: ignoring option \"--%s\" due to global config\n"
-msgstr ""
-
 #, fuzzy, c-format
 #| msgid "conversion from `%s' to `%s' not available\n"
 msgid "conversion from '%s' to '%s' not available\n"
@@ -2833,6 +2743,11 @@ msgstr "%s:%d: ogiltig auto-key-locate-lista\n"
 #, c-format
 msgid "invalid auto-key-locate list\n"
 msgstr "ogiltig auto-key-locate-lista\n"
+
+#, fuzzy, c-format
+#| msgid "missing argument for option \"%.50s\"\n"
+msgid "invalid argument for option \"%.50s\"\n"
+msgstr "argument för flaggan \"%.50s\" saknas\n"
 
 #, fuzzy, c-format
 #| msgid "error storing certificate: %s\n"
@@ -9681,6 +9596,84 @@ msgid ""
 msgstr ""
 "Syntax: gpg-check-pattern [flaggor] mönsterfil\n"
 "Kontrollera en lösenfras angiven på standard in mot mönsterfilen\n"
+
+#~ msgid "argument not expected"
+#~ msgstr "argument förväntades inte"
+
+#~ msgid "read error"
+#~ msgstr "läsfel"
+
+#~ msgid "keyword too long"
+#~ msgstr "nyckelordet är för långt"
+
+#~ msgid "missing argument"
+#~ msgstr "argument saknas"
+
+#, fuzzy
+#~| msgid "invalid value\n"
+#~ msgid "invalid argument"
+#~ msgstr "ogiltigt värde\n"
+
+#~ msgid "invalid command"
+#~ msgstr "ogiltigt kommando"
+
+#~ msgid "invalid alias definition"
+#~ msgstr "ogiltig aliasdefinition"
+
+#~ msgid "out of core"
+#~ msgstr "slut på minne"
+
+#, fuzzy
+#~| msgid "invalid command"
+#~ msgid "invalid meta command"
+#~ msgstr "ogiltigt kommando"
+
+#, fuzzy
+#~| msgid "unknown command `%s'\n"
+#~ msgid "unknown meta command"
+#~ msgstr "okänt kommando \"%s\"\n"
+
+#, fuzzy
+#~| msgid "unexpected armor: "
+#~ msgid "unexpected meta command"
+#~ msgstr "oväntat skal: "
+
+#~ msgid "invalid option"
+#~ msgstr "ogiltig flagga"
+
+#, c-format
+#~ msgid "missing argument for option \"%.50s\"\n"
+#~ msgstr "argument för flaggan \"%.50s\" saknas\n"
+
+#, c-format
+#~ msgid "option \"%.50s\" does not expect an argument\n"
+#~ msgstr "flaggan \"%.50s\" förväntar sig inte ett argument\n"
+
+#, c-format
+#~ msgid "invalid command \"%.50s\"\n"
+#~ msgstr "ogiltigt kommando \"%.50s\"\n"
+
+#, c-format
+#~ msgid "option \"%.50s\" is ambiguous\n"
+#~ msgstr "flagga \"%.50s\" är tvetydig\n"
+
+#, c-format
+#~ msgid "command \"%.50s\" is ambiguous\n"
+#~ msgstr "kommandot \"%.50s\" är tvetydigt\n"
+
+#, c-format
+#~ msgid "invalid option \"%.50s\"\n"
+#~ msgstr "ogiltig flagga \"%.50s\"\n"
+
+#, fuzzy, c-format
+#~| msgid "NOTE: no default option file `%s'\n"
+#~ msgid "Note: no default option file '%s'\n"
+#~ msgstr "OBS: inställningsfilen \"%s\" saknas\n"
+
+#, fuzzy, c-format
+#~| msgid "option file `%s': %s\n"
+#~ msgid "option file '%s': %s\n"
+#~ msgstr "inställningsfil \"%s\": %s\n"
 
 #, c-format
 #~ msgid "public key of ultimately trusted key %s not found\n"
