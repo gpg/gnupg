@@ -1320,53 +1320,7 @@ gnupg_unsetenv (const char *name)
 char *
 gnupg_getcwd (void)
 {
-#if GPGRT_VERSION_NUMBER < 0x012800 /* 1.40 */
-# ifdef HAVE_W32_SYSTEM
-  wchar_t wbuffer[MAX_PATH + sizeof(wchar_t)];
-  DWORD wlen;
-  char *buf, *p;
-
-  wlen = GetCurrentDirectoryW (MAX_PATH, wbuffer);
-  if (!wlen)
-    {
-      gpg_err_set_errno (EINVAL);
-      return NULL;
-
-    }
-  else if (wlen > MAX_PATH)
-    {
-      gpg_err_set_errno (ENAMETOOLONG);
-      return NULL;
-    }
-  buf = wchar_to_utf8 (wbuffer);
-  if (buf)
-    {
-      for (p=buf; *p; p++)
-        if (*p == '\\')
-          *p = '/';
-    }
-  return buf;
-
-# else /*Unix*/
-  char *buffer;
-  size_t size = 100;
-
-  for (;;)
-    {
-      buffer = xtrymalloc (size+1);
-      if (!buffer)
-        return NULL;
-      if (getcwd (buffer, size) == buffer)
-        return buffer;
-      xfree (buffer);
-      if (errno != ERANGE)
-        return NULL;
-      size *= 2;
-    }
-# endif /*Unix*/
-#else
   return gpgrt_getcwd ();
-#endif
 }
 
 
@@ -1375,26 +1329,7 @@ gnupg_getcwd (void)
 gpg_err_code_t
 gnupg_access (const char *name, int mode)
 {
-#if GPGRT_VERSION_NUMBER < 0x012800 /* 1.40 */
-# ifdef HAVE_W32_SYSTEM
-  wchar_t *wfname;
-  gpg_err_code_t ec;
-
-  wfname = utf8_to_wchar (name);
-  if (!wfname)
-    ec = gpg_err_code_from_syserror ();
-  else
-    {
-      ec = _waccess (wfname, mode)? gpg_err_code_from_syserror () : 0;
-      xfree (wfname);
-    }
-  return ec;
-# else
-  return access (name, mode)? gpg_err_code_from_syserror () : 0;
-# endif
-#else /* gpgrt 1.40 or newer.  */
   return gpgrt_access (name, mode);
-#endif
 }
 
 
