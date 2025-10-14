@@ -57,7 +57,7 @@ AC_INIT([mym4_package],[mym4_version],[https://bugs.gnupg.org])
 # As well as the source info for the man pages.
 AC_DEFINE_UNQUOTED(GNUPG_SWDB_TAG, "gnupg26", [swdb tag for this branch])
 
-NEED_GPGRT_VERSION=1.51
+NEED_GPGRT_VERSION=1.56
 
 NEED_LIBGCRYPT_API=1
 NEED_LIBGCRYPT_VERSION=1.11.0

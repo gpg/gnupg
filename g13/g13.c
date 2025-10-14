@@ -454,9 +454,7 @@ main (int argc, char **argv)
   pargs.argv  = &argv;
   pargs.flags |=  (ARGPARSE_FLAG_RESET
                    | ARGPARSE_FLAG_KEEP
-#if GPGRT_VERSION_NUMBER >= 0x013000 /* >= 1.48 */
                    | ARGPARSE_FLAG_COMMAND
-#endif
                    | ARGPARSE_FLAG_SYS
                    | ARGPARSE_FLAG_USER);
 

@@ -1493,7 +1493,7 @@ my_read_reg_string (const char *name, int *r_hklm_fallback)
 {
 #ifdef HAVE_W32_SYSTEM
   return read_w32_reg_string (name, r_hklm_fallback);
-#elif GPGRT_VERSION_NUMBER >= 0x013400 /* 1.52 */
+#else
   static gpgrt_nvc_t registry;
   static int no_registry;
   const char *s;
@@ -1558,8 +1558,6 @@ my_read_reg_string (const char *name, int *r_hklm_fallback)
   xfree (namebuffer);
   s = e? gpgrt_nve_value (e) : NULL;
   return s? xtrystrdup (s) : NULL;
-#else /* GpgRT too old  */
-  return NULL;
 #endif
 }
 
