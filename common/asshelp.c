@@ -536,6 +536,12 @@ start_new_service (assuan_context_t *r_ctx,
           && assuan_socket_connect (ctx, sockname, 0, connect_flags))
         {
 #ifdef HAVE_W32_SYSTEM
+          /* On Windows we remove the socketname before creating it.
+           * This is so that we can wait for a client which is
+           * currently trying to connect.  The 10000 will make the
+           * remove function wait up to 10 seconds for sharing
+           * violation to go away.  */
+          gnupg_remove_ext (sockname, 10000);
           err = gpgrt_process_spawn (program? program : program_name, argv,
                                      GPGRT_PROCESS_DETACHED, NULL, NULL);
 #else /*!W32*/
