@@ -326,20 +326,6 @@ keydb_release (KEYDB_HANDLE hd)
 }
 
 
-/* Take a lock if we are not using the keyboxd.  */
-gpg_error_t
-keydb_lock (KEYDB_HANDLE hd)
-{
-  if (!hd)
-    return gpg_error (GPG_ERR_INV_ARG);
-
-  if (!hd->use_keyboxd)
-    return internal_keydb_lock (hd);
-
-  return 0;
-}
-
-
 /* Return the keyblock last found by keydb_search() in *RET_KB.
  *
  * On success, the function returns 0 and the caller must free *RET_KB

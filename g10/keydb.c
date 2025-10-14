@@ -929,7 +929,7 @@ internal_keydb_deinit (KEYDB_HANDLE hd)
 
 /* Take a lock on the files immediately and not only during insert or
  * update.  This lock is released with keydb_release.  */
-gpg_error_t
+static gpg_error_t
 internal_keydb_lock (KEYDB_HANDLE hd)
 {
   gpg_error_t err;
@@ -941,6 +941,20 @@ internal_keydb_lock (KEYDB_HANDLE hd)
     hd->keep_lock = 1;
 
   return err;
+}
+
+
+/* Take a lock if we are not using the keyboxd.  */
+gpg_error_t
+keydb_lock (KEYDB_HANDLE hd)
+{
+  if (!hd)
+    return gpg_error (GPG_ERR_INV_ARG);
+
+  if (!hd->use_keyboxd)
+    return internal_keydb_lock (hd);
+
+  return 0;
 }
 
 

@@ -162,7 +162,6 @@ gpg_error_t keydb_parse_keyblock (iobuf_t iobuf, int pk_no, int uid_no,
 
 gpg_error_t internal_keydb_init (KEYDB_HANDLE hd);
 void internal_keydb_deinit (KEYDB_HANDLE hd);
-gpg_error_t internal_keydb_lock (KEYDB_HANDLE hd);
 
 gpg_error_t internal_keydb_get_keyblock (KEYDB_HANDLE hd, KBNODE *ret_kb);
 gpg_error_t internal_keydb_update_keyblock (ctrl_t ctrl,
