@@ -763,12 +763,7 @@ keydb_add_resource (const char *url, unsigned int flags)
                     kbxhd = keybox_new_openpgp (token, 0);
                     if (kbxhd)
                       {
-                        if (!keybox_lock (kbxhd, 1, 0))
-                          {
-                            keybox_compress (kbxhd);
-                            keybox_lock (kbxhd, 0, 0);
-                          }
-
+                        keybox_compress_when_no_other_users (kbxhd);
                         keybox_release (kbxhd);
                       }
                   }

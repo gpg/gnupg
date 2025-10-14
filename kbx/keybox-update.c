@@ -624,12 +624,12 @@ keybox_delete (KEYBOX_HANDLE hd)
 }
 
 
-/* Compress the keybox file.  This should be run with the file
-   locked. */
-int
-keybox_compress (KEYBOX_HANDLE hd)
+/* Compress the keybox file.  If locked already by other process,
+ * return GPG_ERR_LOCKED.  */
+gpg_error_t
+keybox_compress_when_no_other_users (KEYBOX_HANDLE hd)
 {
-  gpg_err_code_t ec;
+  gpg_error_t err;
   int read_rc, rc, rc2;
   const char *fname;
   estream_t fp, newfp;
@@ -651,18 +651,30 @@ keybox_compress (KEYBOX_HANDLE hd)
   if (!fname)
     return gpg_error (GPG_ERR_INV_HANDLE);
 
+  if (keybox_lock (hd, 1, 0))
+    return gpg_error (GPG_ERR_LOCKED);
+
   _keybox_close_file (hd);
 
   /* Open the source file. Because we do a rename, we have to check the
      permissions of the file */
-  if ((ec = gnupg_access (fname, W_OK)))
-    return gpg_error (ec);
+  if ((rc = gnupg_access (fname, W_OK)))
+    {
+      err = gpg_error (rc);
+      goto leave;
+    }
 
   rc = _keybox_ll_open (&fp, fname, 0);
   if (gpg_err_code (rc) == GPG_ERR_ENOENT)
-    return 0; /* Ready. File has been deleted right after the access above. */
+    {
+      err = 0; /* Ready. File has been deleted right after the access above. */
+      goto leave;
+    }
   if (rc)
-    return rc;
+    {
+      err = gpg_error (rc);
+      goto leave;
+    }
 
   /* A quick test to see if we need to compress the file at all.  We
      schedule a compress run after 3 hours. */
@@ -680,7 +692,8 @@ keybox_compress (KEYBOX_HANDLE hd)
             {
               _keybox_ll_close (fp);
               _keybox_release_blob (blob);
-              return 0; /* Compress run not yet needed. */
+              err = 0;
+              goto leave; /* Compress run not yet needed. */
             }
         }
       _keybox_release_blob (blob);
@@ -693,7 +706,8 @@ keybox_compress (KEYBOX_HANDLE hd)
   if (rc)
     {
       _keybox_ll_close (fp);
-      return rc;;
+      err = gpg_error (rc);
+      goto leave;
     }
 
 
@@ -747,7 +761,7 @@ keybox_compress (KEYBOX_HANDLE hd)
                                      KEYBOX_FLAG_BLOB, &pos, &size)
           || size != 2)
         {
-          rc = gpg_error (GPG_ERR_BUG);
+          rc = GPG_ERR_BUG;
           break;
         }
       blobflags = buf16_to_uint (buffer+pos);
@@ -794,5 +808,14 @@ keybox_compress (KEYBOX_HANDLE hd)
 
   xfree(bakfname);
   xfree(tmpfname);
-  return rc;
+  if (rc)
+    err = gpg_error (rc);
+  else
+    err = 0;
+
+ leave:
+  /* Unlock */
+  keybox_lock (hd, 0, 0);
+
+  return err;
 }
