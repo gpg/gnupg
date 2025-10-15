@@ -1197,8 +1197,8 @@ store_inq_cb (void *opaque, const char *line)
 /*
  * Insert a new Certificate into one of the resources.
  */
-gpg_error_t
-keydb_insert_cert (KEYDB_HANDLE hd, ksba_cert_t cert)
+static gpg_error_t
+do_insert_cert (KEYDB_HANDLE hd, ksba_cert_t cert)
 {
   gpg_error_t err;
   int idx;
@@ -1260,8 +1260,6 @@ keydb_insert_cert (KEYDB_HANDLE hd, ksba_cert_t cert)
       err = keybox_insert_cert (hd->active[idx].u.kr, cert, digest);
       break;
     }
-
-  unlock_all (hd);
 
  leave:
   if (DBG_CLOCK)
@@ -1383,8 +1381,6 @@ keydb_delete (KEYDB_HANDLE hd)
       err = keybox_delete (hd->active[hd->found].u.kr);
       break;
     }
-
-  unlock_all (hd);
 
  leave:
   if (DBG_CLOCK)
@@ -1985,7 +1981,7 @@ keydb_store_cert (ctrl_t ctrl, ksba_cert_t cert, int ephemeral, int *existed)
 
   if (!kh->use_keyboxd)
     {
-      rc = lock_all (kh);
+      rc = keydb_lock (kh);
       if (rc)
         return rc;
     }
@@ -2030,7 +2026,7 @@ keydb_store_cert (ctrl_t ctrl, ksba_cert_t cert, int ephemeral, int *existed)
       return rc;
     }
 
-  rc = keydb_insert_cert (kh, cert);
+  rc = do_insert_cert (kh, cert);
   if (rc)
     {
       log_error (_("error storing certificate: %s\n"), gpg_strerror (rc));
