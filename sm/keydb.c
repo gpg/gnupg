@@ -447,21 +447,13 @@ keydb_add_resource (ctrl_t ctrl, const char *url, int force, int *auto_created)
           err = gpg_error (GPG_ERR_RESOURCE_LIMIT);
         else
           {
-            KEYBOX_HANDLE kbxhd;
-
             all_resources[used_resources].type = rt;
             all_resources[used_resources].u.kr = NULL; /* Not used here */
             all_resources[used_resources].token = token;
 
             /* Do a compress run if needed and no other user is
              * currently using the keybox. */
-            kbxhd = keybox_new_x509 (token, 0);
-            if (kbxhd)
-              {
-                keybox_compress_when_no_other_users (kbxhd);
-                keybox_release (kbxhd);
-              }
-
+            keybox_compress_when_no_other_users (token, 0);
             used_resources++;
           }
       }

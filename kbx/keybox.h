@@ -119,7 +119,7 @@ int keybox_update_cert (KEYBOX_HANDLE hd, ksba_cert_t cert,
 int keybox_set_flags (KEYBOX_HANDLE hd, int what, int idx, unsigned int value);
 
 int keybox_delete (KEYBOX_HANDLE hd);
-gpg_error_t keybox_compress_when_no_other_users (KEYBOX_HANDLE hd);
+void keybox_compress_when_no_other_users (void *token, int for_openpgp);
 
 
 /*--  --*/

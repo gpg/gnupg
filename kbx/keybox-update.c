@@ -624,11 +624,12 @@ keybox_delete (KEYBOX_HANDLE hd)
 }
 
 
-/* Compress the keybox file.  If locked already by other process,
- * return GPG_ERR_LOCKED.  */
-gpg_error_t
-keybox_compress_when_no_other_users (KEYBOX_HANDLE hd)
+/* Compress the keybox file, if needed and not used by other
+ * process.  */
+void
+keybox_compress_when_no_other_users (void *token, int for_openpgp)
 {
+  KEYBOX_HANDLE hd;
   gpg_error_t err;
   int read_rc, rc, rc2;
   const char *fname;
@@ -641,18 +642,27 @@ keybox_compress_when_no_other_users (KEYBOX_HANDLE hd)
   int any_changes = 0;
   int skipped_deleted;
 
-  if (!hd)
-    return gpg_error (GPG_ERR_INV_HANDLE);
-  if (!hd->kb)
-    return gpg_error (GPG_ERR_INV_HANDLE);
+  if (for_openpgp)
+    hd = keybox_new_openpgp (token, 0);
+  else
+    hd = keybox_new_x509 (token, 0);
+  if (!hd || !hd->kb)
+    return;
+
   if (hd->secret)
-    return gpg_error (GPG_ERR_NOT_IMPLEMENTED);
+    return;
   fname = hd->kb->fname;
   if (!fname)
-    return gpg_error (GPG_ERR_INV_HANDLE);
+    {
+      keybox_release (hd);
+      return;
+    }
 
   if (keybox_lock (hd, 1, 0))
-    return gpg_error (GPG_ERR_LOCKED);
+    {
+      keybox_release (hd);
+      return;
+    }
 
   _keybox_close_file (hd);
 
@@ -813,9 +823,14 @@ keybox_compress_when_no_other_users (KEYBOX_HANDLE hd)
   else
     err = 0;
 
- leave:
-  /* Unlock */
-  keybox_lock (hd, 0, 0);
+  if (err)
+    log_error ("keybox: error compressing keybox '%s': %s\n",
+               fname, gpg_strerror (err));
 
-  return err;
+ leave:
+  /* Here, we unlock before the release of HD.  It's safe because
+     references to the resource are all closed.  */
+  keybox_lock (hd, 0, 0);
+  keybox_release (hd);
+  return;
 }
