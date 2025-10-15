@@ -1012,6 +1012,9 @@ lock_all (KEYDB_HANDLE hd)
 
      To fix this we need to use a lock file to protect lock_all.  */
 
+  if (hd->keep_lock)
+    return 0;
+
   for (i=0; !rc && i < hd->used; i++)
     {
       switch (hd->active[i].type)

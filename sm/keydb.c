@@ -811,6 +811,9 @@ lock_all (KEYDB_HANDLE hd)
   if (hd->use_keyboxd)
     return 0;
 
+  if (hd->keep_lock)
+    return 0;
+
   /* Fixme: This locking scheme may lead to deadlock if the resources
      are not added in the same order by all processes.  We are
      currently only allowing one resource so it is not a problem. */
