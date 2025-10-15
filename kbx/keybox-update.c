@@ -654,12 +654,14 @@ keybox_compress_when_no_other_users (void *token, int for_openpgp)
   fname = hd->kb->fname;
   if (!fname)
     {
+      keybox_fp_close (hd);
       keybox_release (hd);
       return;
     }
 
   if (keybox_lock (hd, 1, 0))
     {
+      keybox_fp_close (hd);
       keybox_release (hd);
       return;
     }
@@ -828,8 +830,7 @@ keybox_compress_when_no_other_users (void *token, int for_openpgp)
                fname, gpg_strerror (err));
 
  leave:
-  /* Here, we unlock before the release of HD.  It's safe because
-     references to the resource are all closed.  */
+  keybox_fp_close (hd);
   keybox_lock (hd, 0, 0);
   keybox_release (hd);
   return;

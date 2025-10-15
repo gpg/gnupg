@@ -253,6 +253,14 @@ keyring_new (void *token)
 }
 
 void
+keyring_fp_close (KEYRING_HANDLE hd)
+{
+  if (!hd)
+    return;
+  iobuf_close (hd->current.iobuf);
+}
+
+void
 keyring_release (KEYRING_HANDLE hd)
 {
     if (!hd)
@@ -261,7 +269,6 @@ keyring_release (KEYRING_HANDLE hd)
     active_handles--;
     xfree (hd->word_match.name);
     xfree (hd->word_match.pattern);
-    iobuf_close (hd->current.iobuf);
     xfree (hd);
 }
 
@@ -1594,6 +1601,7 @@ keyring_rebuild_cache (ctrl_t ctrl, void *token, int noisy)
   xfree (tmpfilename);
   xfree (bakfilename);
   release_kbnode (keyblock);
+  keyring_fp_close (hd);
   keyring_lock (hd, 0);
   keyring_release (hd);
   return rc;

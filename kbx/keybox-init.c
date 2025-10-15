@@ -193,6 +193,18 @@ keybox_new_x509 (void *token, int secret)
 
 
 void
+keybox_fp_close (KEYBOX_HANDLE hd)
+{
+  if (!hd)
+    return;
+  if (hd->fp)
+    {
+      _keybox_ll_close (hd->fp);
+      hd->fp = NULL;
+    }
+}
+
+void
 keybox_release (KEYBOX_HANDLE hd)
 {
   if (!hd)
@@ -206,11 +218,6 @@ keybox_release (KEYBOX_HANDLE hd)
     }
   _keybox_release_blob (hd->found.blob);
   _keybox_release_blob (hd->saved_found.blob);
-  if (hd->fp)
-    {
-      _keybox_ll_close (hd->fp);
-      hd->fp = NULL;
-    }
   xfree (hd->word_match.name);
   xfree (hd->word_match.pattern);
   xfree (hd);

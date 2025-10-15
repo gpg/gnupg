@@ -222,6 +222,7 @@ be_kbx_release_resource (ctrl_t ctrl, backend_handle_t hd)
 void
 be_kbx_release_kbx_hd (KEYBOX_HANDLE kbx_hd)
 {
+  keybox_fp_close (kbx_hd);
   keybox_release (kbx_hd);
 }
 

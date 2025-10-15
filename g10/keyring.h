@@ -28,6 +28,7 @@ int keyring_register_filename (const char *fname, int read_only, void **ptr);
 int keyring_is_writable (void *token);
 
 KEYRING_HANDLE keyring_new (void *token);
+void keyring_fp_close (KEYRING_HANDLE hd);
 void keyring_release (KEYRING_HANDLE hd);
 void keyring_push_found_state (KEYRING_HANDLE hd);
 void keyring_pop_found_state (KEYRING_HANDLE hd);

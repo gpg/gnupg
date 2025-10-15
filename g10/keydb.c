@@ -1059,12 +1059,35 @@ lock_all (KEYDB_HANDLE hd)
 
 
 static void
+do_fp_close (KEYDB_HANDLE hd)
+{
+  int i;
+
+  for (i=0; i < hd->used; i++)
+    {
+      switch (hd->active[i].type)
+        {
+        case KEYDB_RESOURCE_TYPE_NONE:
+          break;
+        case KEYDB_RESOURCE_TYPE_KEYRING:
+          keyring_fp_close (hd->active[i].u.kr);
+          break;
+        case KEYDB_RESOURCE_TYPE_KEYBOX:
+          keybox_fp_close (hd->active[i].u.kb);
+          break;
+        }
+    }
+}
+
+static void
 unlock_all (KEYDB_HANDLE hd)
 {
   int i;
 
   if (!hd->locked || hd->keep_lock)
     return;
+
+  do_fp_close (hd);
 
   for (i=hd->used-1; i >= 0; i--)
     {
