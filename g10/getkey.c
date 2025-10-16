@@ -799,10 +799,10 @@ leave:
    should be freed using release_kbnode().
 
    If RET_KDBHD is not NULL, then the new database handle used to
-   conduct the search is returned in *RET_KDBHD.  This can be used to
-   get subsequent results using keydb_search_next.  Note: in this
-   case, no advanced filtering is done for subsequent results (e.g.,
-   WANT_SECRET and PK->REQ_USAGE are not respected).
+   conduct the search is returned in *RET_KDBHD, holding the lock.
+   This can be used to get subsequent results using keydb_search_next.
+   Note: in this case, no advanced filtering is done for subsequent
+   results (e.g., WANT_SECRET and PK->REQ_USAGE are not respected).
 
    This function returns 0 on success.  Otherwise, an error code is
    returned.  In particular, GPG_ERR_NO_PUBKEY or GPG_ERR_NO_SECKEY
@@ -894,6 +894,9 @@ key_byname (ctrl_t ctrl, GETKEY_CTX *retctx, strlist_t namelist,
 
   if (!ret_kb)
     ret_kb = &help_kb;
+
+  if (ret_kdbhd)
+    keydb_lock (ctx->kr_handle);
 
   if (pk)
     {

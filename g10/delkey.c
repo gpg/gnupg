@@ -74,6 +74,14 @@ do_delete_key (ctrl_t ctrl, const char *username, int secret, int force,
   err = classify_user_id (username, &desc, 1);
   exactmatch = (desc.mode == KEYDB_SEARCH_MODE_FPR);
   thiskeyonly = desc.exact;
+
+  err = keydb_lock (hd);
+  if (err)
+    {
+      keydb_release (hd);
+      goto leave;
+    }
+
   if (!err)
     err = keydb_search (hd, &desc, 1, NULL);
   if (err)

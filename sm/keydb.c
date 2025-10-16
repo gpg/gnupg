@@ -1102,8 +1102,8 @@ keydb_get_flags (KEYDB_HANDLE hd, int which, int idx, unsigned int *value)
    that some flag values can't be updated and thus may return an
    error, some other flag values may be masked out before an update.
    Returns 0 on success or an error code. */
-gpg_error_t
-keydb_set_flags (KEYDB_HANDLE hd, int which, int idx, unsigned int value)
+static gpg_error_t
+do_set_flags (KEYDB_HANDLE hd, int which, int idx, unsigned int value)
 {
   gpg_error_t err = 0;
 
@@ -1232,6 +1232,12 @@ do_insert_cert (KEYDB_HANDLE hd, ksba_cert_t cert)
       goto leave;
     }
 
+  if (!hd->locked)
+    {
+      err = gpg_error (GPG_ERR_NOT_LOCKED);
+      goto leave;
+    }
+
   if ( hd->found >= 0 && hd->found < hd->used)
     idx = hd->found;
   else if ( hd->current >= 0 && hd->current < hd->used)
@@ -1239,12 +1245,6 @@ do_insert_cert (KEYDB_HANDLE hd, ksba_cert_t cert)
   else
     {
       err = gpg_error (GPG_ERR_GENERAL);
-      goto leave;
-    }
-
-  if (!hd->locked)
-    {
-      err = gpg_error (GPG_ERR_NOT_LOCKED);
       goto leave;
     }
 
@@ -1284,6 +1284,18 @@ keydb_update_cert (KEYDB_HANDLE hd, ksba_cert_t cert)
   if (!hd)
     return gpg_error (GPG_ERR_INV_VALUE);
 
+  if (hd->use_keyboxd)
+    {
+      /* FIXME */
+      goto leave;
+    }
+
+  if (!hd->locked)
+    {
+      err = gpg_error (GPG_ERR_NOT_LOCKED);
+      goto leave;
+    }
+
   if ( hd->found < 0 || hd->found >= hd->used)
     return gpg_error (GPG_ERR_NOT_FOUND);
 
@@ -1292,16 +1304,6 @@ keydb_update_cert (KEYDB_HANDLE hd, ksba_cert_t cert)
 
   if (DBG_CLOCK)
     log_clock ("%s: enter (hd=%p)\n", __func__, hd);
-
-  if (hd->use_keyboxd)
-    {
-      /* FIXME */
-      goto leave;
-    }
-
-  err = lock_all (hd);
-  if (err)
-    goto leave;
 
   gpgsm_get_fingerprint (cert, GCRY_MD_SHA1, digest, NULL); /* kludge*/
 
@@ -1316,7 +1318,6 @@ keydb_update_cert (KEYDB_HANDLE hd, ksba_cert_t cert)
       break;
     }
 
-  unlock_all (hd);
  leave:
   if (DBG_CLOCK)
     log_clock ("%s: leave (err=%s)\n", __func__, gpg_strerror (err));
@@ -2038,7 +2039,7 @@ keydb_store_cert (ctrl_t ctrl, ksba_cert_t cert, int ephemeral, int *existed)
 }
 
 
-/* This is basically keydb_set_flags but it implements a complete
+/* This is basically do_set_flags but it implements a complete
    transaction by locating the certificate in the DB and updating the
    flags. */
 gpg_error_t
@@ -2100,7 +2101,7 @@ keydb_set_cert_flags (ctrl_t ctrl, ksba_cert_t cert, int ephemeral,
 
   if (value != old_value)
     {
-      err = keydb_set_flags (kh, which, idx, value);
+      err = do_set_flags (kh, which, idx, value);
       if (err)
         {
           log_error (_("error storing flags: %s\n"), gpg_strerror (err));
@@ -2192,7 +2193,7 @@ keydb_clear_some_cert_flags (ctrl_t ctrl, strlist_t names)
       value = (old_value & ~VALIDITY_REVOKED);
       if (value != old_value)
         {
-          err = keydb_set_flags (hd, KEYBOX_FLAG_VALIDITY, 0, value);
+          err = do_set_flags (hd, KEYBOX_FLAG_VALIDITY, 0, value);
           if (err)
             {
               log_error (_("error storing flags: %s\n"), gpg_strerror (err));

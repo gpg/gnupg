@@ -6660,6 +6660,8 @@ do_generate_keypair (ctrl_t ctrl, struct para_data_s *para,
           if (err)
             log_error (_("no writable public keyring found: %s\n"),
                        gpg_strerror (err));
+          else
+            err = keydb_lock (pub_hd);
         }
 
       if (!err && opt.verbose)

@@ -42,8 +42,6 @@ gpg_error_t keydb_lock (KEYDB_HANDLE hd);
 
 gpg_error_t keydb_get_flags (KEYDB_HANDLE hd, int which, int idx,
                              unsigned int *value);
-gpg_error_t keydb_set_flags (KEYDB_HANDLE hd, int which, int idx,
-                             unsigned int value);
 void keydb_push_found_state (KEYDB_HANDLE hd);
 void keydb_pop_found_state (KEYDB_HANDLE hd);
 int keydb_get_cert (KEYDB_HANDLE hd, ksba_cert_t *r_cert);

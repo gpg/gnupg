@@ -1434,6 +1434,10 @@ internal_keydb_update_keyblock (ctrl_t ctrl, KEYDB_HANDLE hd, kbnode_t kb)
   size_t len;
 
   log_assert (!hd->use_keyboxd);
+
+  if (!hd->locked)
+    return gpg_error (GPG_ERR_NOT_LOCKED);
+
   pk = kb->pkt->pkt.public_key;
 
   kid_not_found_flush ();
@@ -1441,10 +1445,6 @@ internal_keydb_update_keyblock (ctrl_t ctrl, KEYDB_HANDLE hd, kbnode_t kb)
 
   if (opt.dry_run)
     return 0;
-
-  err = lock_all (hd);
-  if (err)
-    return err;
 
 #ifdef USE_TOFU
   tofu_notice_key_changed (ctrl, kb);
@@ -1493,7 +1493,6 @@ internal_keydb_update_keyblock (ctrl_t ctrl, KEYDB_HANDLE hd, kbnode_t kb)
       break;
     }
 
-  unlock_all (hd);
   if (!err)
     keydb_stats.update_keyblocks++;
   return err;
@@ -1514,10 +1513,13 @@ internal_keydb_update_keyblock (ctrl_t ctrl, KEYDB_HANDLE hd, kbnode_t kb)
 gpg_error_t
 internal_keydb_insert_keyblock (KEYDB_HANDLE hd, kbnode_t kb)
 {
-  gpg_error_t err;
+  gpg_error_t err = 0;
   int idx;
 
   log_assert (!hd->use_keyboxd);
+
+  if (!hd->locked)
+    return gpg_error (GPG_ERR_NOT_LOCKED);
 
   kid_not_found_flush ();
   keyblock_cache_clear (hd);
@@ -1531,10 +1533,6 @@ internal_keydb_insert_keyblock (KEYDB_HANDLE hd, kbnode_t kb)
     idx = hd->current;
   else
     return gpg_error (GPG_ERR_GENERAL);
-
-  err = lock_all (hd);
-  if (err)
-    return err;
 
   switch (hd->active[idx].type)
     {
@@ -1564,7 +1562,6 @@ internal_keydb_insert_keyblock (KEYDB_HANDLE hd, kbnode_t kb)
       break;
     }
 
-  unlock_all (hd);
   if (!err)
     keydb_stats.insert_keyblocks++;
   return err;
@@ -1579,9 +1576,12 @@ internal_keydb_insert_keyblock (KEYDB_HANDLE hd, kbnode_t kb)
 gpg_error_t
 internal_keydb_delete_keyblock (KEYDB_HANDLE hd)
 {
-  gpg_error_t rc;
+  gpg_error_t err = 0;
 
   log_assert (!hd->use_keyboxd);
+
+  if (!hd->locked)
+    return gpg_error (GPG_ERR_NOT_LOCKED);
 
   kid_not_found_flush ();
   keyblock_cache_clear (hd);
@@ -1592,27 +1592,22 @@ internal_keydb_delete_keyblock (KEYDB_HANDLE hd)
   if (opt.dry_run)
     return 0;
 
-  rc = lock_all (hd);
-  if (rc)
-    return rc;
-
   switch (hd->active[hd->found].type)
     {
     case KEYDB_RESOURCE_TYPE_NONE:
-      rc = gpg_error (GPG_ERR_GENERAL);
+      err = gpg_error (GPG_ERR_GENERAL);
       break;
     case KEYDB_RESOURCE_TYPE_KEYRING:
-      rc = keyring_delete_keyblock (hd->active[hd->found].u.kr);
+      err = keyring_delete_keyblock (hd->active[hd->found].u.kr);
       break;
     case KEYDB_RESOURCE_TYPE_KEYBOX:
-      rc = keybox_delete (hd->active[hd->found].u.kb);
+      err = keybox_delete (hd->active[hd->found].u.kb);
       break;
     }
 
-  unlock_all (hd);
-  if (!rc)
+  if (!err)
     keydb_stats.delete_keyblocks++;
-  return rc;
+  return err;
 }
 
 

@@ -2583,6 +2583,9 @@ quick_find_keyblock (ctrl_t ctrl, const char *username, int want_secret,
       err = gpg_error_from_syserror ();
       goto leave;
     }
+  err = keydb_lock (kdbhd);
+  if (err)
+    goto leave;
 
   err = classify_user_id (username, &desc, 1);
   if (!err)

@@ -60,6 +60,14 @@ delete_one (ctrl_t ctrl, const char *username)
       goto leave;
     }
 
+  /* Note that the lock is kept until the KH is released.  */
+  rc = keydb_lock (kh);
+  if (rc)
+    {
+      log_error (_("error locking keybox: %s\n"), gpg_strerror (rc));
+      goto leave;
+    }
+
   /* If the key is specified in a unique way, include ephemeral keys
      in the search.  */
   if ( desc.mode == KEYDB_SEARCH_MODE_FPR
@@ -112,15 +120,7 @@ delete_one (ctrl_t ctrl, const char *username)
       goto leave;
     }
 
-  /* We need to search again to get back to the right position.  Note
-   * that the lock is kept until the KH is released.  */
-  rc = keydb_lock (kh);
-  if (rc)
-    {
-      log_error (_("error locking keybox: %s\n"), gpg_strerror (rc));
-      goto leave;
-    }
-
+  /* We need to search again to get back to the right position.  */
   do
     {
       keydb_search_reset (kh);

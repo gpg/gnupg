@@ -2280,7 +2280,7 @@ import_one_real (ctrl_t ctrl,
             }
         }
 
-      err = keydb_insert_keyblock (hd, keyblock );
+      err = keydb_insert_keyblock (hd, keyblock);
       if (err)
         log_error (_("error writing keyring '%s': %s\n"),
                    keydb_get_resource_name (hd), gpg_strerror (err));
@@ -3615,6 +3615,13 @@ import_revoke_cert (ctrl_t ctrl, kbnode_t node, unsigned int options,
   if (!hd)
     {
       rc = gpg_error_from_syserror ();
+      goto leave;
+    }
+
+  rc = keydb_lock (hd);
+  if (rc)
+    {
+      keydb_release (hd);
       goto leave;
     }
 
