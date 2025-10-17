@@ -808,9 +808,6 @@ lock_all (KEYDB_HANDLE hd)
 {
   int i, rc = 0;
 
-  if (hd->use_keyboxd)
-    return 0;
-
   if (hd->keep_lock)
     return 0;
 
@@ -875,13 +872,10 @@ unlock_all (KEYDB_HANDLE hd)
 {
   int i;
 
-  if (hd->use_keyboxd)
-    return;
-
-  if (!hd->locked || hd->keep_lock)
-    return;
-
   do_fp_close (hd);
+
+  if (!hd->locked)
+    return;
 
   for (i=hd->used-1; i >= 0; i--)
     {

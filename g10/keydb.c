@@ -1084,10 +1084,10 @@ unlock_all (KEYDB_HANDLE hd)
 {
   int i;
 
-  if (!hd->locked || hd->keep_lock)
-    return;
-
   do_fp_close (hd);
+
+  if (!hd->locked)
+    return;
 
   for (i=hd->used-1; i >= 0; i--)
     {
