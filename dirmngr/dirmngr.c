@@ -991,7 +991,7 @@ my_ntbtls_log_handler (void *opaque, int level, const char *fmt, va_list argv)
 
 /* Helper for initialize_modules.  */
 static void
-thread_init (void)
+thread_init_dirmngr (void)
 {
   static int npth_initialized = 0;
 
@@ -1023,7 +1023,7 @@ thread_init (void)
 static void
 initialize_modules (void)
 {
-  thread_init ();
+  thread_init_dirmngr ();
   cert_cache_init (hkp_cacert_filenames);
   crl_cache_init ();
   ks_hkp_init ();
