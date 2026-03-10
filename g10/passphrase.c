@@ -384,8 +384,16 @@ passphrase_to_dek (int cipher_algo, STRING2KEY *s2k,
      get_last_passphrase(). */
   dek = xmalloc_secure_clear ( sizeof *dek );
   dek->algo = cipher_algo;
-  if ( (!pw || !*pw) && create)
-    dek->keylen = 0;
+  if (!pw || !*pw)
+    {
+      if (create)
+        dek->keylen = 0;
+      else
+        {
+          xfree (dek);
+          return NULL;
+        }
+    }
   else
     {
       gpg_error_t err;
