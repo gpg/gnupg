@@ -24,6 +24,8 @@
 #include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <dirent.h>
+#include <fcntl.h>
 #include <string.h>
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -370,6 +372,112 @@ create_directory (const char *dirprefix)
 }
 
 
+/* Check the output directory DIRNAME if it's not symlink and empty.
+   Return 1 if good, 0 otherwise.  */
+static int
+check_output_directory (const char *dirname)
+{
+#ifdef HAVE_W32_SYSTEM
+#define dirent _wdirent
+#define DIR _WDIR
+#define readdir _wreaddir
+#define closedir _wclosedir
+#endif
+  DIR *d;
+  struct dirent *dent;
+  int count = 0;
+
+#ifdef HAVE_W32_SYSTEM
+  wchar_t *wdirname;
+  DWORD attr;
+
+  wdirname = utf8_to_wchar (dirname);
+  if (!wdirname)
+    return 0;
+
+  attr = GetFileAttributesW (wdirname);
+
+  if (attr == INVALID_FILE_ATTRIBUTES)
+    {
+      log_error ("error getting attributes '%s': %s\n", dirname, w32_strerror (-1));
+      xfree (wdirname);
+      return 0;
+    }
+  else if ((attr & FILE_ATTRIBUTE_REPARSE_POINT))
+    {
+      /* It's reparse point (possibly symlink), not good.  */
+      log_error ("Not a regular directory (may be symlink): %s\n", dirname);
+      xfree (wdirname);
+      return 0;
+    }
+
+  d = _wopendir (wdirname);
+  xfree (wdirname);
+#else
+# if O_NOFOLLOW == 0
+  struct stat sbuf;
+
+  if (lstat (dirname, &sbuf))
+    return 0;
+
+  if (S_ISLNK (sbuf.st_mode))
+    {
+      /* It's symlink, not good.  */
+      log_error ("It's symbolic link: %s\n", dirname);
+      return 0;
+    }
+
+  d = opendir (dirname);
+# else
+  int fd;
+
+  /* With O_NOFOLLOW, make sure it's not symlink.  */
+  fd = open (dirname, (O_RDONLY | O_NOFOLLOW));
+  if (fd < 0)
+    {
+      log_error ("Can't open (symlink?): %s\n", dirname);
+      return 0;
+    }
+
+  d = fdopendir (fd);
+# endif
+#endif
+
+  if (d == NULL)
+    return 0;
+
+  while ((dent = readdir (d)) != NULL)
+    {
+      if (dent->d_name[0] == '.' && dent->d_name[1] == 0)
+        continue;
+
+      if (dent->d_name[0] == '.' && dent->d_name[1] == '.'
+          && dent->d_name[2] == 0)
+        continue;
+
+      count++;
+    }
+
+  /* In case of fdopendir, FD is released by closedir. */
+  closedir (d);
+
+  if (count)
+    {
+      /* It's not empty, not good.  */
+      log_error ("Directory not empty: %s\n", dirname);
+      return 0;
+    }
+
+  /* Good.  */
+  return 1;
+}
+
+#ifdef HAVE_W32_SYSTEM
+#undef dirent
+#undef DIR
+#undef readdir
+#undef closedir
+#endif
 
 gpg_error_t
 gpgtar_extract (const char *filename, int decrypt)
@@ -389,7 +497,20 @@ gpgtar_extract (const char *filename, int decrypt)
   memset (&tarinfo_buffer, 0, sizeof tarinfo_buffer);
 
   if (opt.directory)
-    dirname = xtrystrdup (opt.directory);
+    {
+      dirname = xtrystrdup (opt.directory);
+      if (!dirname)
+        {
+          err = gpg_error_from_syserror ();
+          goto leave;
+        }
+
+      if (!check_output_directory (dirname))
+        {
+          err = gpg_error (GPG_ERR_INV_ARG);
+          goto leave;
+        }
+    }
   else
     {
       if (opt.filename)
