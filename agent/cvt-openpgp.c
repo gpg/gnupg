@@ -141,6 +141,14 @@ convert_secret_key (gcry_sexp_t *r_key, int pubkey_algo, gcry_mpi_t *skey,
     case GCRY_PK_RSA:
     case GCRY_PK_RSA_E:
     case GCRY_PK_RSA_S:
+      /*
+       * Check the condition if p < q, since libgcrypt requires that.
+       * LibrePGP/OpenPGP also requires this condition.
+       */
+      if (gcry_mpi_cmp (skey[3], skey[4]) >= 0)
+        /* Note that it may come here by bad passphrase input.  */
+        return GPG_ERR_BAD_SECKEY;
+
       err = gcry_sexp_build (&s_skey, NULL,
                              "(private-key(rsa(n%m)(e%m)(d%m)(p%m)(q%m)(u%m)))",
                              skey[0], skey[1], skey[2], skey[3], skey[4],
