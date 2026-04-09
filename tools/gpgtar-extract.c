@@ -505,7 +505,8 @@ gpgtar_extract (const char *filename, int decrypt)
           goto leave;
         }
 
-      if (!check_output_directory (dirname))
+      if (!(opt.compat_flags & COMPAT_NO_DIR_CHECK)
+          && !check_output_directory (dirname))
         {
           err = gpg_error (GPG_ERR_INV_ARG);
           goto leave;

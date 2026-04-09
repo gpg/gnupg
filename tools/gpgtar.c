@@ -84,6 +84,7 @@ enum cmd_and_opt_values
     oStatusFD,
     oRequireCompliance,
     oWithLog,
+    oCompatibilityFlags,
 
     /* Compatibility with gpg-zip.  */
     oGpgArgs,
@@ -130,6 +131,7 @@ static gpgrt_opt_t opts[] = {
   ARGPARSE_s_i (oStatusFD, "status-fd", "@"),
   ARGPARSE_s_n (oRequireCompliance, "require-compliance", "@"),
   ARGPARSE_s_n (oWithLog, "with-log", "@"),
+  ARGPARSE_s_s (oCompatibilityFlags, "compatibility-flags", "@"),
 
   ARGPARSE_group (302, N_("@\nTar options:\n ")),
 
@@ -165,6 +167,16 @@ static gpgrt_opt_t tar_opts[] = {
 
   ARGPARSE_end ()
 };
+
+
+/* The list of compatibility flags.  */
+static struct compatibility_flags_s compatibility_flags [] =
+  {
+    { COMPAT_NO_DIR_CHECK, "no-dir-check" },
+    { 0, NULL }
+  };
+
+
 
 
 /* Global flags.  */
@@ -402,6 +414,15 @@ parse_arguments (gpgrt_argparse_t *pargs, gpgrt_opt_t *popts)
         case oRequireCompliance: opt.require_compliance = 1; break;
         case oWithLog: opt.with_log = 1; break;
 
+        case oCompatibilityFlags:
+          if (parse_compatibility_flags (pargs->r.ret_str, &opt.compat_flags,
+                                         compatibility_flags))
+            {
+              pargs->r_opt = ARGPARSE_INVALID_ARG;
+              pargs->err = ARGPARSE_PRINT_ERROR;
+            }
+          break;
+
         case oGpgArgs:;
           {
             strlist_t list;
@@ -453,7 +474,7 @@ parse_arguments (gpgrt_argparse_t *pargs, gpgrt_opt_t *popts)
           opt.dry_run = 1;
           break;
 
-        default: pargs->err = 2; break;
+        default: pargs->err = ARGPARSE_PRINT_ERROR; break;
 	}
     }
 }
