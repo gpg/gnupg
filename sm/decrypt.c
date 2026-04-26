@@ -1209,9 +1209,9 @@ gpgsm_decrypt (ctrl_t ctrl, int in_fd, estream_t out_fp)
 
           for (recp=0; !any_key; recp++)
             {
-              char *issuer;
-              ksba_sexp_t serial;
-              ksba_sexp_t enc_val;
+              char *issuer = NULL;
+              ksba_sexp_t serial = NULL;
+              ksba_sexp_t enc_val = NULL;
               char *hexkeygrip = NULL;
               char *pkalgostr = NULL;
               char *pkfpr = NULL;
@@ -1368,6 +1368,7 @@ gpgsm_decrypt (ctrl_t ctrl, int in_fd, estream_t out_fp)
                   rc = prepare_decryption (ctrl, hexkeygrip, pk_algo, nbits,
                                            desc, enc_val, &dfparm);
                   xfree (enc_val);
+                  enc_val = NULL;
                   if (rc)
                     {
                       log_info ("decrypting session key failed: %s\n",
@@ -1410,8 +1411,8 @@ gpgsm_decrypt (ctrl_t ctrl, int in_fd, estream_t out_fp)
             {
               for (;; recp++)
                 {
-                  char *issuer;
-                  ksba_sexp_t serial;
+                  char *issuer = NULL;
+                  ksba_sexp_t serial = NULL;
                   int tmp_rc;
 
                   tmp_rc = ksba_cms_get_issuer_serial (cms, recp,
