@@ -163,7 +163,7 @@ _keybox_get_flag_location (const unsigned char *buffer, size_t length,
           break;
         case KEYBOX_FLAG_CREATED_AT:
           *flag_size = 4;
-          *flag_off += 1+2+4+4+4;
+          *flag_off += 1+1+2+4+4;
           break;
         case KEYBOX_FLAG_SIG_INFO:
           *flag_size = siginfolen * nsigs;
