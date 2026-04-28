@@ -735,7 +735,7 @@ check_revocation_keys (ctrl_t ctrl, PKT_public_key *pk, PKT_signature *sig)
   int rc = GPG_ERR_GENERAL;
 
   log_assert (IS_KEY_REV(sig));
-  log_assert ((sig->keyid[0]!=pk->keyid[0]) || (sig->keyid[0]!=pk->keyid[1]));
+  log_assert ((sig->keyid[0]!=pk->keyid[0]) || (sig->keyid[1]!=pk->keyid[1]));
 
   /* Avoid infinite recursion.  Consider the following:
    *
