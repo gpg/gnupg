@@ -1669,7 +1669,7 @@ proc_msg_confirm (nvc_t state, const unsigned char *msg, size_t msglen)
              msg, (size_t)16,
              symxkey, sizeof symxkey,
              NULL);
-  if (!memcmp (msg+48, hash, 32))
+  if (memcmp (msg+16, hash, 32))
     {
       err = gpg_error (GPG_ERR_BAD_DATA);
       log_error ("manipulation of received %s message detected: %s\n",
