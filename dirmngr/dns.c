@@ -3012,10 +3012,10 @@ int dns_rr_cmp(struct dns_rr *r0, struct dns_packet *P0, struct dns_rr *r1, stru
 		return (r0->section == DNS_S_QD)? -1 : 1;
 	}
 
-	if ((error = dns_any_parse(&any0, r0, P0)))
+	if ((error = dns_any_parse(dns_any_init (&any0, sizeof any0), r0, P0)))
 		return -1;
 
-	if ((error = dns_any_parse(&any1, r1, P1)))
+	if ((error = dns_any_parse(dns_any_init (&any1, sizeof any1), r1, P1)))
 		return 1;
 
 	return dns_any_cmp(&any0, r0->type, &any1, r1->type);
