@@ -272,7 +272,7 @@ strlist_copy (strlist_t list)
       strcpy(sl->d, list->d);
       sl->next = NULL;
       *last = sl;
-      last = &sl;
+      last = &sl->next;
     }
   return newlist;
 }
