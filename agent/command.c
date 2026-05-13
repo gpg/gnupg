@@ -1977,8 +1977,8 @@ cmd_get_passphrase (assuan_context_t ctx, char *line)
   char *pw;
   char *response = NULL;
   char *response2 = NULL;
-  char *cacheid = NULL;  /* May point into LINE.  */
-  char *desc = NULL;     /* Ditto  */
+  char *cacheid = NULL;
+  char *desc = NULL;     /* May point into LINE.  */
   char *prompt = NULL;   /* Ditto  */
   char *errtext = NULL;  /* Ditto  */
   const char *desc2 = _("Please re-enter this passphrase");
@@ -2042,6 +2042,8 @@ cmd_get_passphrase (assuan_context_t ctx, char *line)
    * the cache.  */
   if (ctrl->restricted || !strcmp (cacheid, "X"))
     cacheid = NULL;
+  else
+    cacheid = xstrdup (cacheid);
   if (!strcmp (errtext, "X"))
     errtext = NULL;
   if (!strcmp (prompt, "X"))
@@ -2236,6 +2238,7 @@ cmd_get_passphrase (assuan_context_t ctx, char *line)
   xfree (entry_errtext);
   xfree (pi2);
   xfree (pi);
+  xfree (cacheid);
   return leave_cmd (ctx, rc);
 }
 
