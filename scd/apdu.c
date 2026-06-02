@@ -3145,6 +3145,9 @@ send_le (int slot, int class, int ins, int p0, int p1,
                   if (p - *retbuf + resultlen > bufsize)
                     {
                       bufsize += resultlen > 4096? resultlen: 4096;
+                      /* Avoid possible DoS by a device.  */
+                      if (bufsize > 65535)
+                        return SW_WRONG_LENGTH;
                       tmp = xtryrealloc (*retbuf, bufsize);
                       if (!tmp)
                         {
@@ -3418,6 +3421,9 @@ apdu_send_direct (int slot, size_t extended_length,
                   if (p - *retbuf + resultlen > bufsize)
                     {
                       bufsize += resultlen > 4096? resultlen: 4096;
+                      /* Avoid possible DoS by a device.  */
+                      if (bufsize > 65535)
+                        return SW_WRONG_LENGTH;
                       tmp = xtryrealloc (*retbuf, bufsize + 2);
                       if (!tmp)
                         {
