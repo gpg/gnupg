@@ -4444,8 +4444,10 @@ proc_parameter_file (ctrl_t ctrl, struct para_data_s *para, const char *fname,
   strlist_t sl;
   int is_default = 0;
   int have_user_id = 0;
+  const char *saved_def_keyserver_url = opt.def_keyserver_url;
   int err, algo;
   u32 creation_time = (u32)-1;
+  int res = -1;
 
   /* Check that we have all required parameters. */
   r = get_parameter( para, pKEYTYPE );
@@ -4455,13 +4457,13 @@ proc_parameter_file (ctrl_t ctrl, struct para_data_s *para, const char *fname,
       if (openpgp_pk_test_algo2 (algo, PUBKEY_USAGE_SIG))
 	{
 	  log_error ("%s:%d: invalid algorithm\n", fname, r->lnr );
-	  return -1;
+          goto leave;
 	}
     }
   else
     {
       log_error ("%s: no Key-Type specified\n",fname);
-      return -1;
+      goto leave;
     }
 
   err = parse_parameter_usage (fname, para, pKEYUSAGE);
@@ -4477,7 +4479,7 @@ proc_parameter_file (ctrl_t ctrl, struct para_data_s *para, const char *fname,
       append_to_parameter (para, r);
     }
   else if (err == -1)
-    return -1;
+    goto leave;
   else
     {
       r = get_parameter (para, pKEYUSAGE);
@@ -4486,7 +4488,7 @@ proc_parameter_file (ctrl_t ctrl, struct para_data_s *para, const char *fname,
         {
           log_error ("%s:%d: specified Key-Usage not allowed for algo %d\n",
                      fname, r->lnr, algo);
-          return -1;
+          goto leave;
         }
     }
 
@@ -4498,7 +4500,7 @@ proc_parameter_file (ctrl_t ctrl, struct para_data_s *para, const char *fname,
       if (openpgp_pk_test_algo (algo))
 	{
 	  log_error ("%s:%d: invalid algorithm\n", fname, r->lnr );
-	  return -1;
+          goto leave;
 	}
 
       err = parse_parameter_usage (fname, para, pSUBKEYUSAGE);
@@ -4515,7 +4517,7 @@ proc_parameter_file (ctrl_t ctrl, struct para_data_s *para, const char *fname,
           append_to_parameter (para, r);
 	}
       else if (err == -1)
-	return -1;
+        goto leave;
       else
         {
           r = get_parameter (para, pSUBKEYUSAGE);
@@ -4524,7 +4526,7 @@ proc_parameter_file (ctrl_t ctrl, struct para_data_s *para, const char *fname,
             {
               log_error ("%s:%d: specified Subkey-Usage not allowed"
                          " for algo %d\n", fname, r->lnr, algo);
-              return -1;
+              goto leave;
             }
         }
     }
@@ -4565,7 +4567,7 @@ proc_parameter_file (ctrl_t ctrl, struct para_data_s *para, const char *fname,
   if(!have_user_id)
     {
       log_error("%s: no User-ID specified\n",fname);
-      return -1;
+      goto leave;
     }
 
   /* Set preferences, if any. */
@@ -4587,21 +4589,21 @@ proc_parameter_file (ctrl_t ctrl, struct para_data_s *para, const char *fname,
 	{
           r = get_parameter (para, pKEYSERVER);
 	  log_error("%s:%d: invalid keyserver url\n", fname, r->lnr );
-	  return -1;
+          goto leave;
 	}
     }
 
   /* Set revoker from parameter file, if any.  Must be done first so
    * that we don't find a parameter set via prepare_desig_revoker.  */
   if (parse_revocation_key (fname, para, pREVOKER))
-    return -1;
+    goto leave;
 
   /* Check and appened revokers from the config file.  */
   for (sl = opt.desig_revokers; sl; sl = sl->next)
     {
       r = prepare_desig_revoker (ctrl, sl->d);
       if (!r)
-        return -1;
+        goto leave;
       append_to_parameter (para, r);
      }
 
@@ -4618,7 +4620,7 @@ proc_parameter_file (ctrl_t ctrl, struct para_data_s *para, const char *fname,
 
       r = prepare_adsk (ctrl, sl->d);
       if (!r)
-        return -1;
+        goto leave;
       append_to_parameter (para, r);
      }
 
@@ -4635,7 +4637,7 @@ proc_parameter_file (ctrl_t ctrl, struct para_data_s *para, const char *fname,
       if (!creation_time)
 	{
 	  log_error ("%s:%d: invalid creation date\n", fname, r->lnr );
-	  return -1;
+          goto leave;
 	}
       r->u.creation = creation_time;
       r->key = pKEYCREATIONDATE;  /* Change that entry. */
@@ -4651,7 +4653,7 @@ proc_parameter_file (ctrl_t ctrl, struct para_data_s *para, const char *fname,
       if( seconds == (u32)-1 )
 	{
 	  log_error("%s:%d: invalid expire date\n", fname, r->lnr );
-	  return -1;
+          goto leave;
 	}
       r->u.expire = seconds;
       r->key = pKEYEXPIRE;  /* change that entry */
@@ -4664,7 +4666,7 @@ proc_parameter_file (ctrl_t ctrl, struct para_data_s *para, const char *fname,
           if( seconds == (u32)-1 )
             {
               log_error("%s:%d: invalid subkey expire date\n", fname, r->lnr );
-              return -1;
+              goto leave;
             }
           r->key = pSUBKEYEXPIRE;  /* change that entry */
           r->u.expire = seconds;
@@ -4678,9 +4680,12 @@ proc_parameter_file (ctrl_t ctrl, struct para_data_s *para, const char *fname,
           append_to_parameter (para, r);
         }
     }
+  res = 0;
 
   do_generate_keypair (ctrl, para, outctrl, card );
-  return 0;
+ leave:
+  opt.def_keyserver_url = saved_def_keyserver_url;
+  return res;
 }
 
 
