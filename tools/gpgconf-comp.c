@@ -2576,7 +2576,12 @@ change_options_program (gc_component_id_t component,
 
                   if (!verbatim)
                     {
-                      log_assert (*arg == '"');
+                      if (*arg != '"')
+                        {
+                          gpg_err_set_errno (EINVAL);
+                          goto change_one_err;
+                        }
+
                       arg++;
 
                       end = strchr (arg, ',');
