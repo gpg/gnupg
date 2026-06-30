@@ -661,7 +661,7 @@ atr_to_cardtype (int slot, const unsigned char *atr, size_t atrlen)
   cardtype_t cardtype = 0;
   int i;
 
-  if (atr)
+  if (!atr)
     {
       atrbuf = apdu_get_atr (slot, &atrlen);
       if (!atrbuf)
