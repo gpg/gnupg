@@ -439,6 +439,7 @@ enum cmd_and_opt_values
     oDisableDSA2,
     oAllowWeakDigestAlgos,
     oAllowWeakKeySignatures,
+    oAllow9980,
     oFakedSystemTime,
     oNoAutostart,
     oPrintDANERecords,
@@ -921,6 +922,7 @@ static gpgrt_opt_t opts[] = {
   ARGPARSE_s_s (oCipherAlgo, "cipher-algo", "@"),
   ARGPARSE_s_s (oDigestAlgo, "digest-algo", "@"),
   ARGPARSE_s_s (oCertDigestAlgo, "cert-digest-algo", "@"),
+  ARGPARSE_s_n (oAllow9980,      "allow-9980", "@"),
   ARGPARSE_s_n (oRequirePQCEncryption, "require-pqc-encryption", "@"),
   ARGPARSE_s_n (oDisablePQCEncryption, "disable-pqc-encryption", "@"),
 
@@ -3587,6 +3589,7 @@ main (int argc, char **argv)
             }
             break;
           case oNoSigCache: opt.no_sig_cache = 1; break;
+          case oAllow9980:  opt.flags.allow_9980 = 1; break;
 	  case oAllowNonSelfsignedUID: opt.allow_non_selfsigned_uid = 1; break;
 	  case oNoAllowNonSelfsignedUID: opt.allow_non_selfsigned_uid=0; break;
 	  case oAllowFreeformUID: opt.allow_freeform_uid = 1; break;

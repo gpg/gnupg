@@ -238,6 +238,13 @@ pk_verify (pubkey_algo_t pkalgo, gcry_mpi_t hash,
           xfree (curve);
         }
     }
+  else if (pkalgo == PUBKEY_ALGO_ED25519)
+    {
+      rc = gcry_sexp_build (&s_pkey, NULL,
+                            "(public-key(ecc(curve Ed25519)"
+                            "(flags eddsa)(q%m)))",
+                            pkey[0]);
+    }
   else
     return GPG_ERR_PUBKEY_ALGO;
 
@@ -255,6 +262,13 @@ pk_verify (pubkey_algo_t pkalgo, gcry_mpi_t hash,
         fmt = "(data(value %m))";
 
       if (gcry_sexp_build (&s_hash, NULL, fmt, hash))
+        BUG (); /* gcry_sexp_build should never fail.  */
+    }
+  else if (pkalgo == PUBKEY_ALGO_ED25519)
+    {
+      if (gcry_sexp_build (&s_hash, NULL,
+                           "(data(flags eddsa)(hash-algo sha512)(value %m))",
+                           hash))
         BUG (); /* gcry_sexp_build should never fail.  */
     }
   else
@@ -380,6 +394,23 @@ pk_verify (pubkey_algo_t pkalgo, gcry_mpi_t hash,
         gcry_mpi_release (r);
       if (s != data[1])
         gcry_mpi_release (s);
+    }
+  else if (pkalgo == PUBKEY_ALGO_ED25519)
+    {
+      const unsigned char *p;
+      unsigned int nbits;
+
+      if (!gcry_mpi_get_flag (data[0], GCRYMPI_FLAG_OPAQUE))
+        rc = gpg_error (GPG_ERR_BAD_MPI);
+      else
+        {
+          p = gcry_mpi_get_opaque (data[0], &nbits);
+          if ((nbits+7)/8 != 64)
+            rc = gpg_error (GPG_ERR_BAD_MPI);
+          else
+            rc = gcry_sexp_build (&s_sig, NULL, "(sig-val(eddsa(r%b)(s%b)))",
+                                  32, p, 32, p+32);
+        }
     }
   else if (pkalgo == PUBKEY_ALGO_ELGAMAL || pkalgo == PUBKEY_ALGO_ELGAMAL_E)
     {

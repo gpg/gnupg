@@ -28,6 +28,8 @@ pqc-sample-2.key.asc   ky1024_cv448 public key. [*]
 pqc-sample-3.key.asc   ky768_bp256 public key. [*]
 pqc-sample-4.key.asc   ky1024_bp384 public key. [*]
 pqc-sample-5.key.asc   ky1024_bp384 public key. [*]
+ietf27-mlk768-v4-pub.asc  RFC-9980, A.2.2.
+ietf27-mlk768-v6-pub.asc  RFC-9980, gA.1.2.
 
 
 Notes:

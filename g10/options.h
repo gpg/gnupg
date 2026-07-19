@@ -284,6 +284,7 @@ struct
     unsigned int allow_old_cipher_algos:1;
     unsigned int allow_weak_digest_algos:1;
     unsigned int allow_weak_key_signatures:1;
+    unsigned int allow_9980:1;  /* Use the RFC9980 macro in conditions.  */
     unsigned int large_rsa:1;
     unsigned int disable_signer_uid:1;
     unsigned int include_key_block:1;
@@ -421,6 +422,7 @@ EXTERN_UNLESS_MAIN_MODULE int memory_stat_debug_mode;
 #define PGP7    (opt.compliance==CO_PGP7)
 #define PGP8    (opt.compliance==CO_PGP8)
 #define PGPX    (PGP7 || PGP8)
+#define RFC9980 (opt.flags.allow_9980)
 
 /* Various option flags.  Note that there should be no common string
    names between the IMPORT_ and EXPORT_ flags as they can be mixed in

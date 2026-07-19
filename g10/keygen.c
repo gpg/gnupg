@@ -4067,20 +4067,14 @@ parse_key_parameter_part (ctrl_t ctrl,
       size = strstr (string, "768_")? 768 : 1024;
       is_pqc = 1;
     }
-  else if (!ascii_strcasecmp (string, "dil3"))
+  else if (!ascii_strcasecmp (string, "mld65"))
     {
-      algo = PUBKEY_ALGO_DIL3_25519;
+      algo = PUBKEY_ALGO_MLD65_25519;
       is_pqc = 1;
     }
-  else if (!ascii_strcasecmp (string, "dil5"))
+  else if (!ascii_strcasecmp (string, "mld87"))
     {
-      algo = PUBKEY_ALGO_DIL5_448;
-      is_pqc = 1;
-    }
-  else if (!ascii_strcasecmp (string, "sphinx")
-           || !ascii_strcasecmp (string, "sphinx_sha2"))
-    {
-      algo = PUBKEY_ALGO_SPHINX_SHA2;
+      algo = PUBKEY_ALGO_MLD87_448;
       is_pqc = 1;
     }
   else if ((curve = openpgp_is_curve_supported (string, &algo, &size)))

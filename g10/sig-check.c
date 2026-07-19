@@ -564,6 +564,11 @@ check_signature_end_simple (PKT_public_key *pk, PKT_signature *sig,
       if (sig->hashed)
         {
           n = sig->hashed->len;
+          if (sig->version >= 6) /* (v6 and later use 4 octets) */
+            {
+              gcry_md_putc (digest, (n >> 24));
+              gcry_md_putc (digest, (n >> 16));
+            }
           gcry_md_putc (digest, (n >> 8) );
           gcry_md_putc (digest,  n       );
           gcry_md_write (digest, sig->hashed->data, n);
@@ -573,12 +578,20 @@ check_signature_end_simple (PKT_public_key *pk, PKT_signature *sig,
         {
 	  /* Two octets for the (empty) length of the hashed
            * section. */
+          if (sig->version >= 6)
+            {
+              gcry_md_putc (digest, 0);
+              gcry_md_putc (digest, 0);
+            }
           gcry_md_putc (digest, 0);
 	  gcry_md_putc (digest, 0);
-	  n = 6;
+          n = 6;
 	}
+      if (sig->version >= 6)
+        n += 2; /* Fixup for the two extra octets hashed.  */
+
       /* Hash data from the literal data packet.  */
-      if (sig->version >= 5
+      if (sig->version >= 5 && sig->version != 6
           && (sig->sig_class == 0x00 || sig->sig_class == 0x01))
         {
           /* - One octet content format
@@ -596,7 +609,7 @@ check_signature_end_simple (PKT_public_key *pk, PKT_signature *sig,
       i = 0;
       buf[i++] = sig->version;
       buf[i++] = 0xff;
-      if (sig->version >= 5)
+      if (sig->version >= 5 && sig->version != 6)
         {
 #if SIZEOF_SIZE_T > 4
           buf[i++] = n >> 56;
@@ -621,7 +634,7 @@ check_signature_end_simple (PKT_public_key *pk, PKT_signature *sig,
     /* Convert the digest to an MPI.  */
     result = encode_md_value (pk, digest, sig->digest_algo );
     if (!result)
-        return GPG_ERR_GENERAL;
+      return GPG_ERR_GENERAL;
 
     /* Verify the signature.  */
     if (DBG_CLOCK && sig->sig_class <= 0x01)
@@ -793,7 +806,7 @@ check_revocation_keys (ctrl_t ctrl, PKT_public_key *pk, PKT_signature *sig)
 
           if (gcry_md_open (&md, sig->digest_algo, 0))
             BUG ();
-          hash_public_key (md, pk);
+          hash_public_key (md, pk, sig);
           /* Note: check_signature only checks that the signature
            * is good.  It does not fail if the key is revoked.  */
           err = check_signature (ctrl, sig, md, NULL, 0, NULL,
@@ -838,8 +851,8 @@ check_backsig (PKT_public_key *main_pk,PKT_public_key *sub_pk,
   rc = gcry_md_open (&md, backsig->digest_algo,0);
   if (!rc)
     {
-      hash_public_key(md,main_pk);
-      hash_public_key(md,sub_pk);
+      hash_public_key (md, main_pk, backsig);
+      hash_public_key (md, sub_pk, backsig);
       rc = check_signature_end (sub_pk, backsig, md, NULL, 0, NULL, NULL, NULL);
       cache_sig_result(backsig,rc);
       gcry_md_close(md);
@@ -1022,27 +1035,29 @@ check_signature_over_key_or_uid (ctrl_t ctrl, PKT_public_key *signer,
    * a bug.  */
   if (gcry_md_open (&md, sig->digest_algo, 0))
     BUG ();
+  if (DBG_HASHING)
+    gcry_md_debug (md, "keysig");
 
   /* Hash the relevant data.  */
 
   if (IS_KEY_SIG (sig) || IS_KEY_REV (sig))
     {
       log_assert (packet->pkttype == PKT_PUBLIC_KEY);
-      hash_public_key (md, packet->pkt.public_key);
+      hash_public_key (md, packet->pkt.public_key, sig);
       rc = check_signature_end_simple (signer, sig, md, NULL, 0);
     }
   else if (IS_BACK_SIG (sig))
     {
       log_assert (packet->pkttype == PKT_PUBLIC_KEY);
-      hash_public_key (md, packet->pkt.public_key);
-      hash_public_key (md, signer);
+      hash_public_key (md, packet->pkt.public_key, sig);
+      hash_public_key (md, signer, sig);
       rc = check_signature_end_simple (signer, sig, md, NULL, 0);
     }
   else if (IS_SUBKEY_SIG (sig) || IS_SUBKEY_REV (sig))
     {
       log_assert (packet->pkttype == PKT_PUBLIC_SUBKEY);
-      hash_public_key (md, pripk);
-      hash_public_key (md, packet->pkt.public_key);
+      hash_public_key (md, pripk, sig);
+      hash_public_key (md, packet->pkt.public_key, NULL);
       rc = check_signature_end_simple (signer, sig, md, NULL, 0);
     }
   else if (IS_UID_SIG (sig) || IS_UID_REV (sig))
@@ -1060,7 +1075,7 @@ check_signature_over_key_or_uid (ctrl_t ctrl, PKT_public_key *signer,
         }
       else
         {
-          hash_public_key (md, pripk);
+          hash_public_key (md, pripk, sig);
           hash_uid_packet (packet->pkt.user_id, md, sig);
           rc = check_signature_end_simple (signer, sig, md, NULL, 0);
         }

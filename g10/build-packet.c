@@ -452,6 +452,52 @@ gpg_mpi_write_opaque_nohdr (iobuf_t out, gcry_mpi_t a)
 }
 
 
+/* Write an opaque MPI string with a one-byte octet count to the
+ * output stream.  If R_NWRITTEN is not NULL the number of written
+ * bytes is stored there.  OUT may be NULL in which case only
+ * R_NWRITTEN is updated and error checking is done.   */
+gpg_error_t
+gpg_mpi_write_opaque_8 (iobuf_t out, gcry_mpi_t a, unsigned int *r_nwritten)
+{
+  gpg_error_t err;
+
+  if (gcry_mpi_get_flag (a, GCRYMPI_FLAG_OPAQUE))
+    {
+      unsigned int nbits, nbytes;
+      const void *p;
+
+      p = gcry_mpi_get_opaque (a, &nbits);
+      nbytes = (nbits + 7)/8;
+      if (nbytes > 255)
+        {
+          err = gpg_error (GPG_ERR_TOO_LARGE);
+          if (r_nwritten)
+            *r_nwritten = 0;
+        }
+      else
+        {
+          if (out)
+            {
+              iobuf_put (out, nbytes);
+              err = p ? iobuf_write (out, p, nbytes) : 0;
+            }
+          else
+            err = 0;
+          if (r_nwritten)
+            *r_nwritten = 4 + (p? nbytes : 0);
+        }
+    }
+  else
+    {
+      err = gpg_error (GPG_ERR_BAD_MPI);
+      if (r_nwritten)
+        *r_nwritten = 0;
+    }
+
+  return err;
+}
+
+
 /*
  * Write an opaque MPI string with a four-byte octet count to the
  * output stream.  If R_NWRITTEN is not NULL the number of written
@@ -640,7 +686,8 @@ do_key (iobuf_t out, int ctb, PKT_public_key *pk)
   u32 pkbytes = 0;
   int is_v5;
 
-  log_assert (pk->version == 0 || pk->version == 4 || pk->version == 5);
+  log_assert (pk->version == 0 || pk->version == 4 || pk->version == 5
+              || pk->version == 6);
   log_assert (ctb_pkttype (ctb) == PKT_PUBLIC_KEY
               || ctb_pkttype (ctb) == PKT_PUBLIC_SUBKEY
               || ctb_pkttype (ctb) == PKT_SECRET_KEY
@@ -657,7 +704,7 @@ do_key (iobuf_t out, int ctb, PKT_public_key *pk)
   /* Note that the Version number, Timestamp, Algo, and the v5 Key
    * material count are written at the end of the function. */
 
-  is_v5 = (pk->version == 5);
+  is_v5 = (pk->version >= 5);
 
   /* Get number of secret and public parameters.  They are held in one
      array: the public ones followed by the secret ones.  */
@@ -685,6 +732,12 @@ do_key (iobuf_t out, int ctb, PKT_public_key *pk)
         {
           /* Write a four-octet count prefixed Kyber public key.  */
           err = gpg_mpi_write_opaque_32 (a, pk->pkey[2], NULL);
+        }
+      else if (RFC9980 && (pk->pubkey_algo == PUBKEY_ALGO_MLK768_25519
+                           || pk->pubkey_algo == PUBKEY_ALGO_MLK1024_448
+                           || pk->pubkey_algo == PUBKEY_ALGO_ED25519))
+        {
+          err = gpg_mpi_write_opaque_nohdr (a, pk->pkey[i]);
         }
       else if (pk->pubkey_algo == PUBKEY_ALGO_ECDSA
                || pk->pubkey_algo == PUBKEY_ALGO_EDDSA
@@ -887,7 +940,10 @@ do_key (iobuf_t out, int ctb, PKT_public_key *pk)
       if (is_v5)
         len += 4; /* public key material count  */
 
-      write_header2 (out, ctb, len, 0);
+      if (pk->version == 6)
+        write_new_header (out, (0xc0|(ctb_pkttype(ctb)&0x3f)), len, 0);
+      else
+        write_header2 (out, ctb, len, 0);
        /* And finally write it out to the real stream. */
       iobuf_put (out, pk->version? pk->version : 4); /* version number  */
       write_32 (out, pk->timestamp );
@@ -1987,36 +2043,67 @@ do_signature( IOBUF out, int ctb, PKT_signature *sig )
 	 prior to the call of this function, because these subpackets
 	 are hashed. */
       nn = sig->hashed? sig->hashed->len : 0;
-      write_16(a, nn);
+      if (sig->version >= 6)
+        write_32(a, nn);
+      else
+        write_16(a, nn);
       if (nn)
         iobuf_write( a, sig->hashed->data, nn );
       nn = sig->unhashed? sig->unhashed->len : 0;
-      write_16(a, nn);
+      if (sig->version >= 6)
+        write_32(a, nn);
+      else
+        write_16(a, nn);
       if (nn)
         iobuf_write( a, sig->unhashed->data, nn );
     }
   iobuf_put(a, sig->digest_start[0] );
   iobuf_put(a, sig->digest_start[1] );
+
+  if (sig->version == 6)
+    {
+      if (sig->salt)
+        {
+          rc = gpg_mpi_write_opaque_8 (a, sig->salt, NULL);
+          if (rc)
+            goto leave;
+        }
+      else
+        iobuf_put (a, 0);
+    }
+
   n = pubkey_get_nsig( sig->pubkey_algo );
   if ( !n )
     write_fake_data( a, sig->data[0] );
   if (sig->pubkey_algo == PUBKEY_ALGO_ECDSA
       || sig->pubkey_algo == PUBKEY_ALGO_EDDSA)
-    for (i=0; i < n && !rc ; i++ )
-      rc = sos_write (a, sig->data[i], NULL);
+    {
+      for (i=0; i < n && !rc ; i++ )
+        rc = sos_write (a, sig->data[i], NULL);
+    }
+  else if (sig->pubkey_algo == PUBKEY_ALGO_ED25519)
+    {
+      rc = gpg_mpi_write_opaque_nohdr (a, sig->data[0]);
+    }
   else
-    for (i=0; i < n && !rc ; i++ )
-      rc = gpg_mpi_write (a, sig->data[i], NULL);
+    {
+      for (i=0; i < n && !rc ; i++ )
+        rc = gpg_mpi_write (a, sig->data[i], NULL);
+    }
 
   if (!rc)
     {
       if ( is_RSA(sig->pubkey_algo) && sig->version < 4 )
         write_sign_packet_header(out, ctb, iobuf_get_temp_length(a) );
+      else if (sig->version == 6)
+        write_new_header (out, (0xc0|(ctb_pkttype(ctb)&0x3f)),
+                          iobuf_get_temp_length (a), 0);
       else
         write_header(out, ctb, iobuf_get_temp_length(a) );
       rc = iobuf_write_temp( out, a );
     }
 
+ leave:
   iobuf_close(a);
   return rc;
 }

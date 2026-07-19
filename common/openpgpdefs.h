@@ -174,10 +174,13 @@ typedef enum
     PUBKEY_ALGO_ELGAMAL     = 20, /* Elgamal encrypt+sign (legacy).  */
     /*                        21     reserved by OpenPGP.            */
     PUBKEY_ALGO_EDDSA       = 22, /* EdDSA.                          */
+    PUBKEY_ALGO_ED25519     = 27, /* ED25519 (RFC9580).              */
     /*                        29     (was fips203.ipd.2023-08-24 in 1.5.0)   */
-    PUBKEY_ALGO_DIL3_25519  = 35, /* Dilithium3 + Ed25519 (aka ML-DSA-65)    */
-    PUBKEY_ALGO_DIL5_448    = 36, /* Dilithium5 + Ed448   (aka ML-DSA-87)    */
-    PUBKEY_ALGO_SPHINX_SHA2 = 41, /* SPHINX+-simple-SHA2  (aka SLH-DSA-SHA2) */
+    PUBKEY_ALGO_MLD65_25519 = 30, /* ML-DSA-65+Ed25519 (RFC9980)     */
+    PUBKEY_ALGO_MLD87_448   = 31, /* ML-DSA-65+Ed25519 (RFC9980)     */
+    PUBKEY_ALGO_MLK768_25519= 35, /* ML-KEM-768+X25519 (RFC9980)     */
+    PUBKEY_ALGO_MLK1024_448 = 36, /* ML-KEM-1024+X448 (RFC9980)      */
+
     PUBKEY_ALGO_PRIVATE10   = 110
   }
 pubkey_algo_t;

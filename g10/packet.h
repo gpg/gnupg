@@ -303,6 +303,7 @@ typedef struct
                               * already been sanitized.  */
   subpktarea_t *hashed;      /* All subpackets with hashed data (v4, v5 only). */
   subpktarea_t *unhashed;    /* Ditto for unhashed data. */
+  gcry_mpi_t salt;            /* The v6 sigature salt.    */
   /* First 2 bytes of the digest.  (Serialized.  Note: this is not
      automatically filled in when serializing a signature!)  */
   byte digest_start[2];

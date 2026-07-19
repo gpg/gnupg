@@ -2235,8 +2235,8 @@ parse_signature (IOBUF inp, int pkttype, unsigned long pktlen,
 		 PKT_signature * sig)
 {
   int md5_len = 0;
-  unsigned n;
-  int is_v4or5 = 0;
+  unsigned int n;
+  int is_v4plus = 0;
   int rc = 0;
   int i, ndata;
 
@@ -2249,8 +2249,9 @@ parse_signature (IOBUF inp, int pkttype, unsigned long pktlen,
     }
   sig->version = iobuf_get_noeof (inp);
   pktlen--;
-  if (sig->version == 4 || sig->version == 5)
-    is_v4or5 = 1;
+  if (sig->version == 4 || sig->version == 5
+      || (sig->version == 6 && RFC9980))
+    is_v4plus = 1;
   else if (sig->version != 2 && sig->version != 3)
     {
       log_error ("packet(%d) with unknown version %d\n",
@@ -2261,7 +2262,7 @@ parse_signature (IOBUF inp, int pkttype, unsigned long pktlen,
       goto leave;
     }
 
-  if (!is_v4or5)
+  if (!is_v4plus)
     {
       if (pktlen == 0)
 	goto underflow;
@@ -2272,7 +2273,7 @@ parse_signature (IOBUF inp, int pkttype, unsigned long pktlen,
     goto underflow;
   sig->sig_class = iobuf_get_noeof (inp);
   pktlen--;
-  if (!is_v4or5)
+  if (!is_v4plus)
     {
       if (pktlen < 12)
 	goto underflow;
@@ -2291,12 +2292,22 @@ parse_signature (IOBUF inp, int pkttype, unsigned long pktlen,
   pktlen--;
   sig->flags.exportable = 1;
   sig->flags.revocable = 1;
-  if (is_v4or5) /* Read subpackets.  */
+  if (is_v4plus) /* Read subpackets.  */
     {
-      if (pktlen < 2)
-	goto underflow;
-      n = read_16 (inp);
-      pktlen -= 2;  /* Length of hashed data. */
+      if (sig->version == 6)
+        {
+          if (pktlen < 4)
+            goto underflow;
+          n = read_32 (inp);
+          pktlen -= 4;  /* Length of hashed data. */
+        }
+      else
+        {
+          if (pktlen < 2)
+            goto underflow;
+          n = read_16 (inp);
+          pktlen -= 2;  /* Length of hashed data. */
+        }
       if (pktlen < n)
 	goto underflow;
       if (n > 30000)
@@ -2324,10 +2335,20 @@ parse_signature (IOBUF inp, int pkttype, unsigned long pktlen,
 	    }
 	  pktlen -= n;
 	}
-      if (pktlen < 2)
-	goto underflow;
-      n = read_16 (inp);
-      pktlen -= 2;  /* Length of unhashed data.  */
+      if (sig->version == 6)
+        {
+          if (pktlen < 4)
+            goto underflow;
+          n = read_32 (inp);
+          pktlen -= 4;  /* Length of unhashed data.  */
+        }
+      else
+        {
+          if (pktlen < 2)
+            goto underflow;
+          n = read_16 (inp);
+          pktlen -= 2;  /* Length of unhashed data.  */
+        }
       if (pktlen < n)
 	goto underflow;
       if (n > 10000)
@@ -2365,7 +2386,14 @@ parse_signature (IOBUF inp, int pkttype, unsigned long pktlen,
   sig->digest_start[1] = iobuf_get_noeof (inp);
   pktlen--;
 
-  if (is_v4or5 && sig->pubkey_algo)  /* Extract required information.  */
+  if (sig->version == 6)
+    {
+      rc = read_octet_string (inp, &pktlen, 1, 0, 0, &sig->salt);
+      if (rc)
+        goto leave;
+    }
+
+  if (is_v4plus && sig->pubkey_algo)  /* Extract required information.  */
     {
       const byte *p;
       size_t len;
@@ -2392,7 +2420,7 @@ parse_signature (IOBUF inp, int pkttype, unsigned long pktlen,
           sig->keyid[0] = buf32_to_u32 (p + 1 + 12);
 	  sig->keyid[1] = buf32_to_u32 (p + 1 + 16);
 	}
-      else if (p && len == 33 && p[0] == 5)
+      else if (p && len == 33 && (p[0] == 5 || p[0] == 6))
         {
           sig->keyid[0] = buf32_to_u32 (p + 1 );
 	  sig->keyid[1] = buf32_to_u32 (p + 1 + 4);
@@ -2512,7 +2540,14 @@ parse_signature (IOBUF inp, int pkttype, unsigned long pktlen,
                   (ulong) sig->keyid[0], (ulong) sig->keyid[1],
                   sig->version, (ulong) sig->timestamp, md5_len, sig->sig_class,
                   sig->digest_algo, sig->digest_start[0], sig->digest_start[1]);
-      if (is_v4or5)
+      if (sig->version == 6 && sig->salt)
+        {
+          es_fprintf (listfp, "\tsalt: ");
+          mpi_print (listfp, sig->salt, 1 /* Always print the salt.  */);
+          es_putc ('\n', listfp);
+        }
+
+      if (is_v4plus)
 	{
 	  parse_sig_subpkt (sig, 1, SIGSUBPKT_LIST_HASHED, NULL);
 	  parse_sig_subpkt (sig, 0, SIGSUBPKT_LIST_UNHASHED, NULL);
@@ -2548,13 +2583,24 @@ parse_signature (IOBUF inp, int pkttype, unsigned long pktlen,
     {
       for (i = 0; i < ndata; i++)
 	{
-	  n = pktlen;
-          if (sig->pubkey_algo == PUBKEY_ALGO_ECDSA
-              || sig->pubkey_algo == PUBKEY_ALGO_EDDSA)
-            sig->data[i] = sos_read (inp, &n, 0);
+          if (sig->pubkey_algo == PUBKEY_ALGO_ED25519 && RFC9980)
+            {
+              rc = read_octet_string (inp, &pktlen, 0, 64, 0, sig->data + i);
+              if (!rc)
+                gcry_mpi_clear_flag (sig->data[i], GCRYMPI_FLAG_USER2);
+              if (rc)
+                goto leave;
+            }
           else
-            sig->data[i] = mpi_read (inp, &n, 0);
-	  pktlen -= n;
+            {
+              n = pktlen;
+              if (sig->pubkey_algo == PUBKEY_ALGO_ECDSA
+                  || sig->pubkey_algo == PUBKEY_ALGO_EDDSA)
+                sig->data[i] = sos_read (inp, &n, 0);
+              else
+                sig->data[i] = mpi_read (inp, &n, 0);
+              pktlen -= n;
+            }
 	  if (list_mode)
 	    {
 	      es_fprintf (listfp, "\tdata: ");
@@ -2644,7 +2690,8 @@ parse_key (IOBUF inp, int pkttype, unsigned long pktlen,
   int npkey, nskey;
   u32 keyid[2];
   PKT_public_key *pk;
-  int is_v5;
+  int is_v5 = 0;
+  int is_v6 = 0;
   unsigned int pkbytes; /* For v5 keys: Number of bytes in the public
                          * key material.  For v4 keys: 0.  */
 
@@ -2678,9 +2725,11 @@ parse_key (IOBUF inp, int pkttype, unsigned long pktlen,
       return 0;
     }
   else if (version == 4)
-    is_v5 = 0;
+    ;
   else if (version == 5)
     is_v5 = 1;
+  else if (version == 6 && RFC9980)
+    is_v6 = 1;
   else if (version == 2 || version == 3)
     {
       /* Not anymore supported since 2.1.  Use an older gpg version
@@ -2725,7 +2774,7 @@ parse_key (IOBUF inp, int pkttype, unsigned long pktlen,
   max_expiredate = 0;
   algorithm = iobuf_get_noeof (inp);
   pktlen--;
-  if (is_v5)
+  if (is_v5 || is_v6)
     {
       pkbytes = read_32 (inp);
       pktlen -= 4;
@@ -2742,7 +2791,7 @@ parse_key (IOBUF inp, int pkttype, unsigned long pktlen,
                   pkttype == PKT_PUBLIC_SUBKEY ? "public sub" :
                   pkttype == PKT_SECRET_SUBKEY ? "secret sub" : "??",
                   version, algorithm, timestamp, expiredate);
-      if (is_v5)
+      if (is_v5 || is_v6)
         es_fprintf (listfp, ", pkbytes %u\n", pkbytes);
       else
         es_fprintf (listfp, "\n");
@@ -2791,6 +2840,30 @@ parse_key (IOBUF inp, int pkttype, unsigned long pktlen,
             {
               /* Read the four-octet count prefixed Kyber public key.  */
 	      err = read_octet_string (inp, &pktlen, 4, 0, 0, pk->pkey+i);
+            }
+          else if (algorithm == PUBKEY_ALGO_MLK768_25519 && RFC9980)
+            {
+              /* We need to clear the SOS flag set by read_octet_string.  */
+	      err = read_octet_string (inp, &pktlen, 0, i==0? 32 : 1184,
+                                       0, pk->pkey+i);
+              if (!err)
+                gcry_mpi_clear_flag (pk->pkey[i], GCRYMPI_FLAG_USER2);
+            }
+          else if (algorithm == PUBKEY_ALGO_MLK1024_448 && RFC9980)
+            {
+              if (is_v6)
+                err = read_octet_string (inp, &pktlen, 0, i==0? 56 : 1568,
+                                         0, pk->pkey+i);
+              else
+                err = gpg_error (GPG_ERR_INV_PACKET);
+              if (!err)
+                gcry_mpi_clear_flag (pk->pkey[i], GCRYMPI_FLAG_USER2);
+            }
+          else if (algorithm == PUBKEY_ALGO_ED25519 && RFC9980)
+            {
+	      err = read_octet_string (inp, &pktlen, 0, 32, 0, pk->pkey+i);
+              if (!err)
+                gcry_mpi_clear_flag (pk->pkey[i], GCRYMPI_FLAG_USER2);
             }
           else
             {
@@ -2865,7 +2938,7 @@ parse_key (IOBUF inp, int pkttype, unsigned long pktlen,
       ski->algo = iobuf_get_noeof (inp);
       pktlen--;
 
-      if (is_v5)
+      if (is_v5 || is_v6)
         {
           unsigned int protcount = 0;
 
@@ -3079,7 +3152,7 @@ parse_key (IOBUF inp, int pkttype, unsigned long pktlen,
 	}
 
       /* Skip count of secret key material.  */
-      if (is_v5)
+      if (is_v5 || is_v6)
         {
           if (pktlen < 4)
             {
@@ -3166,7 +3239,6 @@ parse_key (IOBUF inp, int pkttype, unsigned long pktlen,
           /* Not encrypted.  */
 	  for (i = npkey; i < nskey; i++)
 	    {
-
               if (pktlen < 2) /* At least two bytes for the length.  */
                 {
                   err = gpg_error (GPG_ERR_INV_PACKET);
@@ -3177,6 +3249,25 @@ parse_key (IOBUF inp, int pkttype, unsigned long pktlen,
                   err = read_octet_string (inp, &pktlen, 4, 0, 1, pk->pkey+i);
                   if (err)
                     goto leave;
+                }
+              else if (algorithm == PUBKEY_ALGO_MLK768_25519 && RFC9980)
+                {
+                  err = read_octet_string (inp, &pktlen, 0,
+                                           i == npkey? 32 : 64,
+                                           0, pk->pkey+i);
+                }
+              else if (algorithm == PUBKEY_ALGO_MLK1024_448 && RFC9980)
+                {
+                  if (is_v6)
+                    err = read_octet_string (inp, &pktlen, 0,
+                                             i == npkey? 56 : 64,
+                                             0, pk->pkey+i);
+                  else
+                    err = gpg_error (GPG_ERR_INV_PACKET);
+                }
+              else if (algorithm == PUBKEY_ALGO_ED25519 && RFC9980)
+                {
+                  err = read_octet_string (inp, &pktlen, 0, 32, 0, pk->pkey+i);
                 }
               else
                 {

@@ -509,7 +509,7 @@ char *pubkey_string (PKT_public_key *pk, char *buffer, size_t bufsize);
 int compare_pubkey_string (const char *astr, const char *bstr);
 #define PUBKEY_STRING_SIZE 32
 u32 v3_keyid (gcry_mpi_t a, u32 *ki);
-void hash_public_key( gcry_md_hd_t md, PKT_public_key *pk );
+void hash_public_key( gcry_md_hd_t md, PKT_public_key *pk, PKT_signature *sig);
 char *format_keyid (u32 *keyid, int format, char *buffer, int len);
 
 /* Return PK's keyid.  The memory is owned by PK.  */

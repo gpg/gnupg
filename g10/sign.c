@@ -1897,13 +1897,13 @@ make_keysig_packet (ctrl_t ctrl,
     BUG ();
 
   /* Hash the public key certificate. */
-  hash_public_key (md, pk);
+  hash_public_key (md, pk, NULL);
 
   if (sigclass == SIGCLASS_SUBKEY || sigclass == SIGCLASS_BACKSIG
       || sigclass == SIGCLASS_SUBREV)
     {
       /* Hash the subkey binding/backsig/revocation.  */
-      hash_public_key (md, subpk);
+      hash_public_key (md, subpk, NULL);
       if ((subpk->pubkey_usage & PUBKEY_USAGE_RENC))
         signhints |= SIGNHINT_ADSK;
     }
@@ -2032,10 +2032,10 @@ update_keysig_packet (ctrl_t ctrl,
     BUG ();
 
   /* Hash the public key certificate and the user id. */
-  hash_public_key (md, pk);
+  hash_public_key (md, pk, NULL);
 
   if (orig_sig->sig_class == 0x18)
-    hash_public_key (md, subpk);
+    hash_public_key (md, subpk, orig_sig);
   else
     hash_uid (md, orig_sig->version, uid);
 

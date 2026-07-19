@@ -752,6 +752,11 @@ openpgp_pk_test_algo2 (pubkey_algo_t algo, unsigned int use)
 
     case PUBKEY_ALGO_KYBER:     ga = GCRY_PK_KEM; break;
 
+    case PUBKEY_ALGO_ED25519:
+      if (RFC9980)
+        ga = GCRY_PK_EDDSA;
+      break;
+
     default:
       break;
     }
@@ -802,14 +807,19 @@ openpgp_pk_algo_usage ( int algo )
       case PUBKEY_ALGO_EDDSA:
           use = PUBKEY_USAGE_CERT | PUBKEY_USAGE_SIG | PUBKEY_USAGE_AUTH;
           break;
+      case PUBKEY_ALGO_ED25519:
+        if (RFC9980)
+          use= PUBKEY_USAGE_CERT | PUBKEY_USAGE_SIG | PUBKEY_USAGE_AUTH;
+        break;
 
       case PUBKEY_ALGO_KYBER:
+      case PUBKEY_ALGO_MLK768_25519:
+      case PUBKEY_ALGO_MLK1024_448:
           use = PUBKEY_USAGE_ENC | PUBKEY_USAGE_RENC;
           break;
 
-      case PUBKEY_ALGO_DIL3_25519:
-      case PUBKEY_ALGO_DIL5_448:
-      case PUBKEY_ALGO_SPHINX_SHA2:
+      case PUBKEY_ALGO_MLD65_25519:
+      case PUBKEY_ALGO_MLD87_448:
           use = PUBKEY_USAGE_CERT | PUBKEY_USAGE_SIG;
           break;
 
@@ -1742,6 +1752,9 @@ pubkey_get_npkey (pubkey_algo_t algo)
     case PUBKEY_ALGO_ELGAMAL:   return 3;
     case PUBKEY_ALGO_EDDSA:     return 2;
     case PUBKEY_ALGO_KYBER:     return 3;
+    case PUBKEY_ALGO_ED25519:      return 1;
+    case PUBKEY_ALGO_MLK768_25519: return 2;
+    case PUBKEY_ALGO_MLK1024_448:  return 2;
     default: return 0;
     }
 }
@@ -1763,6 +1776,9 @@ pubkey_get_nskey (pubkey_algo_t algo)
     case PUBKEY_ALGO_ELGAMAL:   return 4;
     case PUBKEY_ALGO_EDDSA:     return 3;
     case PUBKEY_ALGO_KYBER:     return 5;
+    case PUBKEY_ALGO_ED25519:      return 2;
+    case PUBKEY_ALGO_MLK768_25519: return 4;
+    case PUBKEY_ALGO_MLK1024_448:  return 4;
     default: return 0;
     }
 }
@@ -1782,6 +1798,7 @@ pubkey_get_nsig (pubkey_algo_t algo)
     case PUBKEY_ALGO_ECDSA:     return 2;
     case PUBKEY_ALGO_ELGAMAL:   return 2;
     case PUBKEY_ALGO_EDDSA:     return 2;
+    case PUBKEY_ALGO_ED25519:   return 1;
     default: return 0;
     }
 }

@@ -103,6 +103,7 @@ char *
 pubkey_string (PKT_public_key *pk, char *buffer, size_t bufsize)
 {
   const char *prefix = NULL;
+  const char *fixed = NULL;
   int dual = 0;
   char *curve;
   const char *name;
@@ -119,16 +120,18 @@ pubkey_string (PKT_public_key *pk, char *buffer, size_t bufsize)
     case PUBKEY_ALGO_RSA:
     case PUBKEY_ALGO_RSA_E:
     case PUBKEY_ALGO_RSA_S:	prefix = "rsa"; break;
+    case PUBKEY_ALGO_KYBER:     prefix = "ky"; dual = 1;  break;
     case PUBKEY_ALGO_ELGAMAL_E: prefix = "elg"; break;
     case PUBKEY_ALGO_DSA:	prefix = "dsa"; break;
     case PUBKEY_ALGO_ELGAMAL:   prefix = "xxx"; break;
     case PUBKEY_ALGO_ECDH:
     case PUBKEY_ALGO_ECDSA:
     case PUBKEY_ALGO_EDDSA:     prefix = "";    break;
-    case PUBKEY_ALGO_KYBER:     prefix = "ky"; dual = 1;  break;
-    case PUBKEY_ALGO_DIL3_25519:  prefix = "dil3";        break;
-    case PUBKEY_ALGO_DIL5_448:    prefix = "dil5";        break;
-    case PUBKEY_ALGO_SPHINX_SHA2: prefix = "sphinx_sha2"; break;
+    case PUBKEY_ALGO_ED25519:      fixed = "ietf27";     break;
+    case PUBKEY_ALGO_MLD65_25519:  fixed = "mld65";      break;
+    case PUBKEY_ALGO_MLD87_448:    fixed = "mld87";      break;
+    case PUBKEY_ALGO_MLK768_25519: fixed = "mlk768";     break;
+    case PUBKEY_ALGO_MLK1024_448:  fixed = "mlk1024";    break;
     }
 
 
@@ -162,6 +165,8 @@ pubkey_string (PKT_public_key *pk, char *buffer, size_t bufsize)
         snprintf (buffer, bufsize, "E_error");
       xfree (curve);
     }
+  else if (fixed)
+    snprintf (buffer, bufsize, "%s", fixed);
   else
     snprintf (buffer, bufsize, "unknown_%u", (unsigned int)pk->pubkey_algo);
 
@@ -312,11 +317,13 @@ compare_pubkey_string (const char *astr, const char *bstr)
 
 
 
-/* Hash a public key and allow to specify the to be used format.
- * Note that if the v5 format is requested for a v4 key, a 0x04 as
- * version is hashed instead of the 0x05. */
+/* Hash a public key and allow to specify the to be used format.  Note
+ * that if the v5 format is requested for a v4 key, a 0x04 as version
+ * is hashed instead of the 0x05.  If SIG is not NULL it is tested for
+ * a version 6 signature and used appropiate.  */
 static void
-do_hash_public_key (gcry_md_hd_t md, PKT_public_key *pk, int use_v5)
+do_hash_public_key (gcry_md_hd_t md, PKT_public_key *pk, int force_v5,
+                    PKT_signature *sig)
 {
   unsigned int n;
   unsigned int nn[PUBKEY_MAX_NPKEY];
@@ -326,7 +333,7 @@ do_hash_public_key (gcry_md_hd_t md, PKT_public_key *pk, int use_v5)
   size_t nbytes;
   int npkey = pubkey_get_npkey (pk->pubkey_algo);
 
-  n = use_v5? 10 : 6;
+  n = (force_v5 || pk->version >= 5)? 10 : 6;
   /* FIXME: We can avoid the extra malloc by calling only the first
      mpi_print here which computes the required length and calling the
      real mpi_print only at the end.  The speed advantage would only be
@@ -427,9 +434,21 @@ do_hash_public_key (gcry_md_hd_t md, PKT_public_key *pk, int use_v5)
         }
     }
 
-  if (use_v5)
+  if (force_v5 || pk->version == 5)
     {
       gcry_md_putc ( md, 0x9a );     /* ctb */
+      gcry_md_putc ( md, n >> 24 );  /* 4 byte length header (upper bits) */
+      gcry_md_putc ( md, n >> 16 );
+    }
+  else if (pk->version == 6)
+    {
+      const void *salt;
+
+      if (sig && sig->version == 6 && sig->salt
+          && gcry_mpi_get_flag (sig->salt, GCRYMPI_FLAG_OPAQUE)
+          && (salt = gcry_mpi_get_opaque (sig->salt, &nbits)) && nbits)
+        gcry_md_write (md, salt, (nbits+7)/8);
+      gcry_md_putc ( md, 0x9b );     /* ctb */
       gcry_md_putc ( md, n >> 24 );  /* 4 byte length header (upper bits) */
       gcry_md_putc ( md, n >> 16 );
     }
@@ -447,7 +466,7 @@ do_hash_public_key (gcry_md_hd_t md, PKT_public_key *pk, int use_v5)
 
   gcry_md_putc ( md, pk->pubkey_algo );
 
-  if (use_v5) /* Hash the 32 bit length */
+  if (force_v5 || pk->version >= 5) /* Hash the 32 bit length */
     {
       n -= 10;
       gcry_md_putc ( md, n >> 24 );
@@ -475,11 +494,12 @@ do_hash_public_key (gcry_md_hd_t md, PKT_public_key *pk, int use_v5)
 
 
 /* Hash a public key.  This function is useful for v4 and v5
- * fingerprints and for v3 or v4 key signing. */
+ * fingerprints and for v3 or v4 key signing.  To partly support v6
+ * signatures SIG must be given.  */
 void
-hash_public_key (gcry_md_hd_t md, PKT_public_key *pk)
+hash_public_key (gcry_md_hd_t md, PKT_public_key *pk, PKT_signature *sig)
 {
-  do_hash_public_key (md, pk, (pk->version == 5));
+  do_hash_public_key (md, pk, 0, sig);
 }
 
 
@@ -743,16 +763,16 @@ compute_fingerprint (PKT_public_key *pk)
   gcry_md_hd_t md;
   size_t len;
 
-  if (gcry_md_open (&md, pk->version == 5 ? GCRY_MD_SHA256 : GCRY_MD_SHA1, 0))
+  if (gcry_md_open (&md, pk->version >= 5 ? GCRY_MD_SHA256 : GCRY_MD_SHA1, 0))
     BUG ();
-  hash_public_key (md, pk);
+  hash_public_key (md, pk, NULL);
   gcry_md_final (md);
   dp = gcry_md_read (md, 0);
   len = gcry_md_get_algo_dlen (gcry_md_get_algo (md));
   log_assert (len <= MAX_FINGERPRINT_LEN);
   memcpy (pk->fpr, dp, len);
   pk->fprlen = len;
-  if (pk->version == 5)
+  if (pk->version >= 5)
     {
       pk->keyid[0] = buf32_to_u32 (dp);
       pk->keyid[1] = buf32_to_u32 (dp+4);
@@ -1120,12 +1140,12 @@ v5_fingerprint_from_pk (PKT_public_key *pk, byte *array, size_t *ret_len)
   const byte *dp;
   gcry_md_hd_t md;
 
-  if (pk->version == 5)
+  if (pk->version >= 5)
     return fingerprint_from_pk (pk, array, ret_len);
 
   if (gcry_md_open (&md, GCRY_MD_SHA256, 0))
     BUG ();
-  do_hash_public_key (md, pk, 1);
+  do_hash_public_key (md, pk, 5, NULL);
   gcry_md_final (md);
   dp = gcry_md_read (md, 0);
   if (!array)
@@ -1333,7 +1353,9 @@ keygrip_from_pk (PKT_public_key *pk, unsigned char *array, int get_second)
   if (DBG_PACKET)
     log_debug ("get_keygrip for public key%s\n", get_second?" (second)":"");
 
-  if (get_second && pk->pubkey_algo != PUBKEY_ALGO_KYBER)
+  if (get_second && !(pk->pubkey_algo == PUBKEY_ALGO_KYBER
+                      || pk->pubkey_algo == PUBKEY_ALGO_MLK768_25519
+                      || pk->pubkey_algo == PUBKEY_ALGO_MLK1024_448))
     return gpg_error (GPG_ERR_FALSE);
 
   switch (pk->pubkey_algo)
@@ -1382,6 +1404,12 @@ keygrip_from_pk (PKT_public_key *pk, unsigned char *array, int get_second)
       }
       break;
 
+    case PUBKEY_ALGO_ED25519:
+      err = gcry_sexp_build (&s_pkey, NULL,
+                             "(public-key(ecc(curve Ed25519)"
+                             "(flags eddsa)(q%m)))", pk->pkey[0]);
+      break;
+
     case PUBKEY_ALGO_KYBER:
       if (get_second)
         {
@@ -1407,6 +1435,28 @@ keygrip_from_pk (PKT_public_key *pk, unsigned char *array, int get_second)
               xfree (curve);
             }
         }
+      break;
+
+    case PUBKEY_ALGO_MLK768_25519:
+      if (get_second)
+        err = gcry_sexp_build (&s_pkey, NULL,
+                               "(public-key(kyber768(p%m)))",
+                               pk->pkey[1]);
+      else
+        err = gcry_sexp_build (&s_pkey, NULL,
+                               "(public-key(ecc(curve Ed25519)"
+                               "(flags eddsa)(q%m)))", pk->pkey[0]);
+      break;
+
+    case PUBKEY_ALGO_MLK1024_448:
+      if (get_second)
+        err = gcry_sexp_build (&s_pkey, NULL,
+                               "(public-key(kyber1024(p%m)))",
+                               pk->pkey[1]);
+      else
+        err = gcry_sexp_build (&s_pkey, NULL,
+                               "(public-key(ecc(curve Ed448)"
+                               "(flags eddsa)(q%m)))", pk->pkey[0]);
       break;
 
     default:
@@ -1455,7 +1505,9 @@ hexkeygrip_from_pk (PKT_public_key *pk, char **r_grip)
   err = keygrip_from_pk (pk, grip, 0);
   if (!err)
     {
-      if (pk->pubkey_algo == PUBKEY_ALGO_KYBER)
+      if (pk->pubkey_algo == PUBKEY_ALGO_KYBER
+          || pk->pubkey_algo == PUBKEY_ALGO_MLK768_25519
+          || pk->pubkey_algo == PUBKEY_ALGO_MLK1024_448)
         {
           err = keygrip_from_pk (pk, grip2, 1);
           if (err)
@@ -1472,7 +1524,9 @@ hexkeygrip_from_pk (PKT_public_key *pk, char **r_grip)
         }
 
       bin2hex (grip, KEYGRIP_LEN, buf);
-      if (pk->pubkey_algo == PUBKEY_ALGO_KYBER)
+      if (pk->pubkey_algo == PUBKEY_ALGO_KYBER
+          || pk->pubkey_algo == PUBKEY_ALGO_MLK768_25519
+          || pk->pubkey_algo == PUBKEY_ALGO_MLK1024_448)
         {
           buf[2*KEYGRIP_LEN] = ',';
           bin2hex (grip2, KEYGRIP_LEN, buf+2*KEYGRIP_LEN+1);

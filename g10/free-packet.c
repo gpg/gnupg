@@ -113,6 +113,7 @@ free_seckey_enc( PKT_signature *sig )
   xfree(sig->revkey);
   xfree(sig->hashed);
   xfree(sig->unhashed);
+  mpi_release (sig->salt);
 
   /* Do not forget to update copy_signature() too. */
   xfree(sig->rev_subject_info);
@@ -326,6 +327,7 @@ copy_signature( PKT_signature *d, PKT_signature *s )
     }
     d->hashed = cp_subpktarea (s->hashed);
     d->unhashed = cp_subpktarea (s->unhashed);
+    d->salt = s->salt? my_mpi_copy (s->salt) : NULL;
     if (s->signers_uid)
       d->signers_uid = xstrdup (s->signers_uid);
     else
