@@ -2938,7 +2938,7 @@ parse_key (IOBUF inp, int pkttype, unsigned long pktlen,
       ski->algo = iobuf_get_noeof (inp);
       pktlen--;
 
-      if (is_v5 || is_v6)
+      if (is_v5 || (is_v6 && ski->algo))
         {
           unsigned int protcount = 0;
 
@@ -3152,7 +3152,7 @@ parse_key (IOBUF inp, int pkttype, unsigned long pktlen,
 	}
 
       /* Skip count of secret key material.  */
-      if (is_v5 || is_v6)
+      if (is_v5)
         {
           if (pktlen < 4)
             {
@@ -3296,18 +3296,21 @@ parse_key (IOBUF inp, int pkttype, unsigned long pktlen,
 	  if (err)
 	    goto leave;
 
-	  if (pktlen < 2)
-	    {
-              if (opt.verbose)
-                log_info ("checksum is missing (remaining bytes: %lu)\n",
-                          pktlen);
-              err = gpg_error (GPG_ERR_INV_PACKET);
-	      goto leave;
-	    }
-	  ski->csum = read_16 (inp);
-	  pktlen -= 2;
-	  if (list_mode)
-            es_fprintf (listfp, "\tchecksum: %04hx\n", ski->csum);
+          if (!is_v6)
+            {
+              if (pktlen < 2)
+                {
+                  if (opt.verbose)
+                    log_info ("checksum is missing (remaining bytes: %lu)\n",
+                              pktlen);
+                  err = gpg_error (GPG_ERR_INV_PACKET);
+                  goto leave;
+                }
+              ski->csum = read_16 (inp);
+              pktlen -= 2;
+              if (list_mode)
+                es_fprintf (listfp, "\tchecksum: %04hx\n", ski->csum);
+            }
 	}
     }
 

@@ -1444,8 +1444,8 @@ keygrip_from_pk (PKT_public_key *pk, unsigned char *array, int get_second)
                                pk->pkey[1]);
       else
         err = gcry_sexp_build (&s_pkey, NULL,
-                               "(public-key(ecc(curve Ed25519)"
-                               "(flags eddsa)(q%m)))", pk->pkey[0]);
+                               "(public-key(ecc(curve Curve25519)(q%m)))",
+                               pk->pkey[0]);
       break;
 
     case PUBKEY_ALGO_MLK1024_448:
@@ -1455,8 +1455,8 @@ keygrip_from_pk (PKT_public_key *pk, unsigned char *array, int get_second)
                                pk->pkey[1]);
       else
         err = gcry_sexp_build (&s_pkey, NULL,
-                               "(public-key(ecc(curve Ed448)"
-                               "(flags eddsa)(q%m)))", pk->pkey[0]);
+                               "(public-key(ecc(curve X448)(q%m)",
+                               pk->pkey[0]);
       break;
 
     default:
