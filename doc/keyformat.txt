@@ -384,7 +384,17 @@ More items may be added to the list.
 
 ** OpenPGP Private Key Transfer Format
 
-This format is used to transfer keys between gpg and gpg-agent.
+This format is used to transfer keys between gpg and gpg-agent.  It is
+required so that gpg does not need to decrypt the secret key parms.
+Instead gpg-agent decrypts and re-encrypts them.  This is not ideal
+becuase it moves protocol knowledge into gpg-agent (cvt-openpgp.c).  A
+better solution is to have a a separate helper tool to do the
+conversion and re-encryption which can then be called by gpg-agent.
+The use of s-expression here is also too complicated.
+
+With version 2.5.2x we dropped the need for this format iff no
+protection was used.
+
 
 (openpgp-private-key
   (version V)

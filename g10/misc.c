@@ -847,13 +847,14 @@ openpgp_pk_algo_name (pubkey_algo_t algo)
     case PUBKEY_ALGO_ECDSA:     return "ECDSA";
     case PUBKEY_ALGO_EDDSA:     return "EDDSA";
     case PUBKEY_ALGO_KYBER:     return "Kyber";
+    case PUBKEY_ALGO_ED25519:   return "ietf27";
     default: return "?";
     }
 }
 
 
 /* Explicit mapping of OpenPGP digest algos to Libgcrypt.  */
-/* FIXME: We do not yes use it everywhere.  */
+/* FIXME: We do not yet use it everywhere.  */
 enum gcry_md_algos
 map_md_openpgp_to_gcry (digest_algo_t algo)
 {

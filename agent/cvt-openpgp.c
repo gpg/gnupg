@@ -44,6 +44,7 @@ struct try_do_unprotect_arg_s
   byte *s2k_salt;
   u32  s2k_count;
   u16 desired_csum;
+  int no_sos;  /* Hack for 9980 keys.  */
   gcry_mpi_t *skey;
   size_t skeysize;
   int skeyidx;
@@ -313,6 +314,7 @@ get_npkey_nskey (int pubkey_algo, size_t *npkey, size_t *nskey)
     case GCRY_PK_ELG_E: *npkey = 3; *nskey = 4; break;
     case GCRY_PK_DSA:   *npkey = 4; *nskey = 5; break;
     case GCRY_PK_ECC:   *npkey = 1; *nskey = 2; break;
+    case GCRY_PK_KEM:   *npkey = 1; *nskey = 2; break;
     default:            *npkey = 0; *nskey = 0; break;
     }
 }
@@ -423,7 +425,7 @@ do_unprotect (const char *passphrase,
               const char *curve, gcry_mpi_t *skey, size_t skeysize,
               int protect_algo, void *protect_iv, size_t protect_ivlen,
               int s2k_mode, int s2k_algo, byte *s2k_salt, u32 s2k_count,
-              u16 desired_csum, gcry_sexp_t *r_key)
+              u16 desired_csum, int no_sos, gcry_sexp_t *r_key)
 {
   gpg_error_t err;
   unsigned int npkey, nskey, skeylen;
@@ -459,19 +461,22 @@ do_unprotect (const char *passphrase,
               nbytes = (nbits+7)/8;
 
               nbits = nbytes * 8;
-              if (*buffer)
-                if (nbits >= 8 && !(*buffer & 0x80))
-                  if (--nbits >= 7 && !(*buffer & 0x40))
-                    if (--nbits >= 6 && !(*buffer & 0x20))
-                      if (--nbits >= 5 && !(*buffer & 0x10))
-                        if (--nbits >= 4 && !(*buffer & 0x08))
-                          if (--nbits >= 3 && !(*buffer & 0x04))
-                            if (--nbits >= 2 && !(*buffer & 0x02))
-                              if (--nbits >= 1 && !(*buffer & 0x01))
-                                --nbits;
+              if (!no_sos)
+                {
+                  if (*buffer)
+                    if (nbits >= 8 && !(*buffer & 0x80))
+                      if (--nbits >= 7 && !(*buffer & 0x40))
+                        if (--nbits >= 6 && !(*buffer & 0x20))
+                          if (--nbits >= 5 && !(*buffer & 0x10))
+                            if (--nbits >= 4 && !(*buffer & 0x08))
+                              if (--nbits >= 3 && !(*buffer & 0x04))
+                                if (--nbits >= 2 && !(*buffer & 0x02))
+                                  if (--nbits >= 1 && !(*buffer & 0x01))
+                                    --nbits;
 
-              actual_csum += (nbits >> 8);
-              actual_csum += (nbits & 0xff);
+                  actual_csum += (nbits >> 8);
+                  actual_csum += (nbits & 0xff);
+                }
               actual_csum += checksum (buffer, nbytes);
             }
           else
@@ -752,7 +757,7 @@ try_do_unprotect_cb (struct pin_entry_info_s *pi)
                       arg->protect_algo, arg->iv, arg->ivlen,
                       arg->s2k_mode, arg->s2k_algo,
                       arg->s2k_salt, arg->s2k_count,
-                      arg->desired_csum, arg->r_key);
+                      arg->desired_csum, arg->no_sos, arg->r_key);
   /* SKEY may be modified now, thus we need to re-compute SKEYIDX.  */
   for (arg->skeyidx = 0; (arg->skeyidx < arg->skeysize
                           && arg->skey[arg->skeyidx]); arg->skeyidx++)
@@ -781,6 +786,7 @@ convert_from_openpgp_main (ctrl_t ctrl, gcry_sexp_t s_pgp, int dontcare_exist,
   char *string;
   int  idx;
   int  is_v4, is_protected;
+  int  no_sos = 0;
   int  pubkey_algo;
   int  protect_algo = 0;
   char iv[16];
@@ -876,14 +882,25 @@ convert_from_openpgp_main (ctrl_t ctrl, gcry_sexp_t s_pgp, int dontcare_exist,
   string = gcry_sexp_nth_string (list, 1);
   if (!string)
     goto bad_seckey;
-  pubkey_algo = gcry_pk_map_name (string);
+  if (string && !strcmp (string, "ietf27"))
+    {
+      pubkey_algo = GCRY_PK_ECC;
+      no_sos = 1;
+    }
+  else if (string && !strcmp (string, "mlk768"))
+    {
+      pubkey_algo = GCRY_PK_KEM;
+      no_sos = 1;
+    }
+  else
+    pubkey_algo = gcry_pk_map_name (string);
   xfree (string);
 
   get_npkey_nskey (pubkey_algo, &npkey, &nskey);
   if (!npkey || !nskey || npkey >= nskey)
     goto bad_seckey;
 
-  if (npkey == 1) /* This is ECC */
+  if (npkey == 1 && pubkey_algo != GCRY_PK_KEM) /* This is ECC */
     {
       gcry_sexp_release (list);
       list = gcry_sexp_find_token (top_list, "curve", 0);
@@ -1023,6 +1040,7 @@ convert_from_openpgp_main (ctrl_t ctrl, gcry_sexp_t s_pgp, int dontcare_exist,
       pi_arg.s2k_salt = s2k_salt;
       pi_arg.s2k_count = s2k_count;
       pi_arg.desired_csum = desired_csum;
+      pi_arg.no_sos = no_sos;
       pi_arg.skey = skey;
       pi_arg.skeysize = DIM (skey);
       pi_arg.skeyidx = skeyidx;

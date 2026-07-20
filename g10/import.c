@@ -2582,6 +2582,167 @@ import_one (ctrl_t ctrl,
 }
 
 
+/* This function builds a gpg-agent private key format (aka mode1003)
+ * s-expression from the secret key packet in PK.  It currently
+ * fails for a protected key.  The final plan is to use a separate
+ * helper for re-encrypting a protected key.  */
+static gpg_error_t
+build_mode1003_sexp (PKT_public_key *pk, gcry_sexp_t *result)
+{
+  gpg_error_t err;
+  int nskey;
+  gcry_sexp_t skey = NULL;
+  char *curvename = NULL;
+
+  *result = NULL;
+
+  nskey = pubkey_get_nskey (pk->pubkey_algo);
+  if (!nskey || nskey > PUBKEY_MAX_NSKEY || !pk->seckey_info)
+    {
+      err = gpg_error (GPG_ERR_BAD_SECKEY);
+      log_error ("%s: internal error: %s\n", __func__, gpg_strerror (err));
+      goto leave;
+    }
+
+  if (pk->seckey_info->is_protected)
+    {
+      err = gpg_error (GPG_ERR_INTERNAL);
+      log_error ("%s: protected seckeys are not yet supported\n", __func__);
+      goto leave;
+    }
+
+  switch (pk->pubkey_algo)
+    {
+    case GCRY_PK_RSA:
+    case GCRY_PK_RSA_E:
+    case GCRY_PK_RSA_S:
+      /* Check the condition P < Q, since libgcrypt requires that.
+       * LibrePGP/OpenPGP also requires this condition.  */
+      if (gcry_mpi_cmp (pk->pkey[3], pk->pkey[4]) >= 0)
+        err = gpg_error (GPG_ERR_BAD_SECKEY);
+      else
+        err = gcry_sexp_build
+          (&skey, NULL, "(private-key(rsa(n%m)(e%m)(d%m)(p%m)(q%m)(u%m)))",
+           pk->pkey[0], pk->pkey[1],
+           pk->pkey[2], pk->pkey[3], pk->pkey[4], pk->pkey[5]);
+      break;
+
+    case PUBKEY_ALGO_DSA:
+      err = gcry_sexp_build (&skey, NULL,
+                             "(private-key(dsa(p%m)(q%m)(g%m)(y%m)(x%m)))",
+                             pk->pkey[0], pk->pkey[1], pk->pkey[2],
+                             pk->pkey[3], pk->pkey[4]);
+      break;
+
+    case PUBKEY_ALGO_ELGAMAL:
+    case PUBKEY_ALGO_ELGAMAL_E:
+      err = gcry_sexp_build (&skey, NULL,
+                           "(private-key(elg(p%m)(g%m)(y%m)(x%m)))",
+                             pk->pkey[0], pk->pkey[1], pk->pkey[2],
+                             pk->pkey[3]);
+      break;
+
+    case PUBKEY_ALGO_ECDH:
+      /* Note that pkey[2] conveys the KDF parameters.  */
+      curvename = openpgp_oid_to_str (pk->pkey[0]);
+      if (!curvename)
+        err = gpg_error_from_syserror ();
+      else if (openpgp_oid_is_cv25519 (pk->pkey[0]))
+        err = gcry_sexp_build
+          (&skey,NULL,"(private-key(ecc(curve %s)(flags djb-tweak)(q%m)(d%m)))",
+           curvename, pk->pkey[2], pk->pkey[3]);
+      else
+        err = gcry_sexp_build
+          (&skey,NULL,"(private-key(ecc(curve %s)(q%m)(d%m)))",
+           curvename, pk->pkey[2], pk->pkey[3]);
+      break;
+
+    case PUBKEY_ALGO_ECDSA:
+      curvename = openpgp_oid_to_str (pk->pkey[0]);
+      if (!curvename)
+        err = gpg_error_from_syserror ();
+      else
+        err = gcry_sexp_build
+          (&skey, NULL, "(private-key(ecc(curve %s)(q%m)(d%m)))",
+           curvename, pk->pkey[1], pk->pkey[2]);
+      break;
+
+    case PUBKEY_ALGO_EDDSA:
+      curvename = openpgp_oid_to_str (pk->pkey[0]);
+      if (!curvename)
+        err = gpg_error_from_syserror ();
+      else
+        err = gcry_sexp_build
+          (&skey, NULL, "(private-key(ecc(curve %s)(flags eddsa)(q%m)(d%m)))",
+           curvename, pk->pkey[1], pk->pkey[2]);
+      break;
+
+    case PUBKEY_ALGO_ED25519:
+      err = gcry_sexp_build
+        (&skey, NULL,"(private-key(ecc(curve Ed25519)(flags eddsa)(q%m)(d%m)))",
+         pk->pkey[0], pk->pkey[1]);
+      break;
+
+    case PUBKEY_ALGO_MLK768_25519:
+      {
+        uint8_t pubkey[GCRY_KEM_MLKEM768_PUBKEY_LEN];
+        uint8_t seckey[GCRY_KEM_MLKEM768_SECKEY_LEN];
+        const unsigned char *seed;
+        unsigned int seedlen;
+
+        if (!gcry_mpi_get_flag (pk->pkey[3], GCRYMPI_FLAG_OPAQUE)
+            || !(seed = gcry_mpi_get_opaque (pk->pkey[3], &seedlen)))
+          err = gpg_error (GPG_ERR_BAD_MPI);
+        else
+          {
+            seedlen = (seedlen +7)/8;
+            err = gcry_kem_genkey (GCRY_KEM_MLKEM768,
+                                   pubkey, GCRY_KEM_MLKEM768_PUBKEY_LEN,
+                                   seckey, GCRY_KEM_MLKEM768_SECKEY_LEN,
+                                   seed, seedlen);
+            if (!err)
+              err = gcry_sexp_build
+                (&skey, NULL,"(composite-key"
+                 "(private-key(ecc(curve Curve25519)(q%m)(d%m)))"
+                 "(private-key(kyber768(p%b)(s%b)))"
+                 ")",
+                 pk->pkey[0], pk->pkey[2],
+                 (int)GCRY_KEM_MLKEM768_PUBKEY_LEN, pubkey,
+                 (int)GCRY_KEM_MLKEM768_SECKEY_LEN, seckey);
+          /* FIXME: Instead of using the newly generated pubkey we
+           * should check that it matches. */
+          }
+      }
+      break;
+
+    case PUBKEY_ALGO_MLK1024_448:
+      /* FIXME: See above.  */
+      err = gcry_sexp_build
+        (&skey, NULL,"(composite-key"
+         "(private-key(ecc(curve X448)(q%m)(d%m)))"
+         "(private-key(kyber1024(p%m)(s%m)))"
+         ")",
+         pk->pkey[0], pk->pkey[2],
+         pk->pkey[1], pk->pkey[3]);
+      break;
+
+    default:
+      err = gpg_error (GPG_ERR_PUBKEY_ALGO);
+      break;
+    }
+
+  if (!err)
+    {
+      *result = skey;
+      skey = NULL;
+    }
+
+ leave:
+  gcry_sexp_release (skey);
+  xfree (curvename);
+  return err;
+}
+
 
 /* Convert our internal secret key object into an S-expression.  PK is
  * the public key.  R_CURVE received an sexp with the name of the
@@ -2662,6 +2823,25 @@ internal_skey_object_to_sexp (PKT_public_key *pk, gcry_sexp_t *r_curve,
             log_info ("warning: lower 3 bits of the secret key"
                       " are not cleared\n");
         }
+    }
+  else if (RFC9980 && pk->pubkey_algo == PUBKEY_ALGO_ED25519)
+    {
+      gcry_sexp_release (*r_curve);
+      err = gcry_sexp_build (r_curve, NULL, "(curve Ed25519)");
+      if (err)
+        goto leave;
+
+      j = 0;
+      /* Append the public key element Q.  */
+      put_membuf_str (&mbuf, " _ %m");
+      format_args[j++] = pk->pkey + 0;
+
+      /* Append the secret key element D.  */
+      if (gcry_mpi_get_flag (pk->pkey[1], GCRYMPI_FLAG_USER1))
+        put_membuf_str (&mbuf, " e %m");
+      else
+        put_membuf_str (&mbuf, " _ %m");
+      format_args[j++] = pk->pkey + 1;
     }
   else /* Standard case for the old (non-ECC) algorithms.  */
     {
@@ -2788,6 +2968,7 @@ transfer_secret_keys (ctrl_t ctrl, struct import_stats_s *stats,
   size_t wrappedkeylen;
   char *cache_nonce = NULL;
   int stub_key_skipped = 0;
+  int use_mode1003 = 0;
 
   /* Get the current KEK.  */
   err = agent_keywrap_key (ctrl, 0, &kek, &keklen);
@@ -2881,6 +3062,13 @@ transfer_secret_keys (ctrl_t ctrl, struct import_stats_s *stats,
               tmpbuflen = (tmpbuflen +7)/8;  /* Fixup bits to bytes */
               err = gcry_sexp_new (&tmpsexp, tmpbuf, tmpbuflen, 0);
             }
+          use_mode1003 = 1;
+        }
+      else if (!ski->is_protected)
+        {
+          /* The key is not protected.  Build a mode1003 format here.  */
+          err = build_mode1003_sexp (pk, &tmpsexp);
+          use_mode1003 = 1;
         }
       else
         err = build_classic_transfer_sexp (pk, &tmpsexp);
@@ -2914,7 +3102,7 @@ transfer_secret_keys (ctrl_t ctrl, struct import_stats_s *stats,
       /* Send the wrapped key to the agent.  */
       {
         char *desc = gpg_format_keydesc (ctrl, pk, FORMAT_KEYDESC_IMPORT, 1);
-        err = agent_import_key (ctrl, desc, ski->s2k.mode == 1003,
+        err = agent_import_key (ctrl, desc, use_mode1003,
                                 &cache_nonce,
                                 wrappedkey, wrappedkeylen, batch, force,
 				pk->keyid, pk->main_keyid, pk->pubkey_algo,
@@ -4455,7 +4643,7 @@ collapse_subkeys (kbnode_t *keyblock)
                 break;
             }
 
-          /* Snip out subkye-2 */
+          /* Snip out subkey-2 */
           find_prev_kbnode (*keyblock, kb2, 0)->next = last->next;
 
 	  /* Put subkey-2 in place as part of subkey-1 */
