@@ -2959,8 +2959,11 @@ cmd_import_key (assuan_context_t ctx, char *line)
     }
 
   if (opt_unattended && keydata_type != KEYDATA_PGP_TRANSFER
-                     && keydata_type != KEYDATA_COMPOSITE)
+                     && keydata_type != KEYDATA_COMPOSITE
+                     && !mode1003)
     {
+      /* Note that in mode1003 no passphrase is requested at all and thus we
+         implictly are in unattended mode.  */
       err = set_error (GPG_ERR_ASS_PARAMETER,
                        "\"--unattended\" may only be used with OpenPGP keys");
       goto leave;

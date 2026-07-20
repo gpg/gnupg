@@ -201,9 +201,9 @@ mpi_read (iobuf_t inp, unsigned int *ret_nread, int secure)
  * memory (allocated using gcry_xmalloc_secure).
  */
 static gpg_error_t
-read_octet_string (iobuf_t inp, unsigned long *pktlen,
-                   unsigned int nlength, unsigned int nbytes,
-                   int secure, gcry_mpi_t *r_data)
+read_raw_octet_string (iobuf_t inp, unsigned long *pktlen,
+                       unsigned int nlength, unsigned int nbytes,
+                       int secure, gcry_mpi_t *r_data)
 {
   gpg_error_t err;
   int c, i;
@@ -282,11 +282,26 @@ read_octet_string (iobuf_t inp, unsigned long *pktlen,
     }
 
   *r_data = gcry_mpi_set_opaque (NULL, buf, nbytes*8);
-  gcry_mpi_set_flag (*r_data, GCRYMPI_FLAG_USER2);
   return 0;
 
  leave:
   gcry_free (buf);
+  return err;
+}
+
+
+/* Read a simple octet string (SOS) and mark the result as such a
+ * value.  For details see read_raw_octet_string.  */
+static gpg_error_t
+read_sos_octet_string (iobuf_t inp, unsigned long *pktlen,
+                       unsigned int nlength, unsigned int nbytes,
+                       int secure, gcry_mpi_t *r_data)
+{
+  gpg_error_t err;
+
+  err = read_raw_octet_string (inp, pktlen, nlength, nbytes, secure, r_data);
+  if (!err)
+    gcry_mpi_set_flag (*r_data, GCRYMPI_FLAG_USER2);
   return err;
 }
 
@@ -1531,7 +1546,7 @@ parse_pubkeyenc (IOBUF inp, int pkttype, unsigned long pktlen,
           goto leave;
         }
       /* Get the Kyber ciphertext.  */
-      rc = read_octet_string (inp, &pktlen, 4, 0, 0, k->data + 1);
+      rc = read_sos_octet_string (inp, &pktlen, 4, 0, 0, k->data + 1);
       if (rc)
         goto leave;
       /* Get the algorithm id for the session key.  */
@@ -1543,7 +1558,7 @@ parse_pubkeyenc (IOBUF inp, int pkttype, unsigned long pktlen,
       k->seskey_algo = iobuf_get_noeof (inp);
       pktlen--;
       /* Get the encrypted symmetric key.  */
-      rc = read_octet_string (inp, &pktlen, 1, 0, 0, k->data + 2);
+      rc = read_sos_octet_string (inp, &pktlen, 1, 0, 0, k->data + 2);
       if (rc)
         goto leave;
     }
@@ -2388,7 +2403,7 @@ parse_signature (IOBUF inp, int pkttype, unsigned long pktlen,
 
   if (sig->version == 6)
     {
-      rc = read_octet_string (inp, &pktlen, 1, 0, 0, &sig->salt);
+      rc = read_raw_octet_string (inp, &pktlen, 1, 0, 0, &sig->salt);
       if (rc)
         goto leave;
     }
@@ -2585,9 +2600,7 @@ parse_signature (IOBUF inp, int pkttype, unsigned long pktlen,
 	{
           if (sig->pubkey_algo == PUBKEY_ALGO_ED25519 && RFC9980)
             {
-              rc = read_octet_string (inp, &pktlen, 0, 64, 0, sig->data + i);
-              if (!rc)
-                gcry_mpi_clear_flag (sig->data[i], GCRYMPI_FLAG_USER2);
+              rc = read_raw_octet_string (inp, &pktlen, 0, 64, 0, sig->data+i);
               if (rc)
                 goto leave;
             }
@@ -2839,31 +2852,24 @@ parse_key (IOBUF inp, int pkttype, unsigned long pktlen,
           else if (algorithm == PUBKEY_ALGO_KYBER && i == 2)
             {
               /* Read the four-octet count prefixed Kyber public key.  */
-	      err = read_octet_string (inp, &pktlen, 4, 0, 0, pk->pkey+i);
+	      err = read_sos_octet_string (inp, &pktlen, 4, 0, 0, pk->pkey+i);
             }
           else if (algorithm == PUBKEY_ALGO_MLK768_25519 && RFC9980)
             {
-              /* We need to clear the SOS flag set by read_octet_string.  */
-	      err = read_octet_string (inp, &pktlen, 0, i==0? 32 : 1184,
-                                       0, pk->pkey+i);
-              if (!err)
-                gcry_mpi_clear_flag (pk->pkey[i], GCRYMPI_FLAG_USER2);
+	      err = read_raw_octet_string (inp, &pktlen, 0, i==0? 32 : 1184,
+                                           0, pk->pkey+i);
             }
           else if (algorithm == PUBKEY_ALGO_MLK1024_448 && RFC9980)
             {
               if (is_v6)
-                err = read_octet_string (inp, &pktlen, 0, i==0? 56 : 1568,
-                                         0, pk->pkey+i);
+                err = read_raw_octet_string (inp, &pktlen, 0, i==0? 56 : 1568,
+                                             0, pk->pkey+i);
               else
                 err = gpg_error (GPG_ERR_INV_PACKET);
-              if (!err)
-                gcry_mpi_clear_flag (pk->pkey[i], GCRYMPI_FLAG_USER2);
             }
           else if (algorithm == PUBKEY_ALGO_ED25519 && RFC9980)
             {
-	      err = read_octet_string (inp, &pktlen, 0, 32, 0, pk->pkey+i);
-              if (!err)
-                gcry_mpi_clear_flag (pk->pkey[i], GCRYMPI_FLAG_USER2);
+	      err = read_raw_octet_string (inp, &pktlen, 0, 32, 0, pk->pkey+i);
             }
           else
             {
@@ -3246,28 +3252,30 @@ parse_key (IOBUF inp, int pkttype, unsigned long pktlen,
                 }
               if (algorithm == PUBKEY_ALGO_KYBER && i == npkey+1)
                 {
-                  err = read_octet_string (inp, &pktlen, 4, 0, 1, pk->pkey+i);
+                  err = read_sos_octet_string (inp, &pktlen, 4, 0,
+                                               1, pk->pkey+i);
                   if (err)
                     goto leave;
                 }
               else if (algorithm == PUBKEY_ALGO_MLK768_25519 && RFC9980)
                 {
-                  err = read_octet_string (inp, &pktlen, 0,
-                                           i == npkey? 32 : 64,
-                                           0, pk->pkey+i);
+                  err = read_raw_octet_string (inp, &pktlen, 0,
+                                               i == npkey? 32 : 64,
+                                               0, pk->pkey+i);
                 }
               else if (algorithm == PUBKEY_ALGO_MLK1024_448 && RFC9980)
                 {
                   if (is_v6)
-                    err = read_octet_string (inp, &pktlen, 0,
-                                             i == npkey? 56 : 64,
-                                             0, pk->pkey+i);
+                    err = read_raw_octet_string (inp, &pktlen, 0,
+                                                 i == npkey? 56 : 64,
+                                                 0, pk->pkey+i);
                   else
                     err = gpg_error (GPG_ERR_INV_PACKET);
                 }
               else if (algorithm == PUBKEY_ALGO_ED25519 && RFC9980)
                 {
-                  err = read_octet_string (inp, &pktlen, 0, 32, 0, pk->pkey+i);
+                  err = read_raw_octet_string (inp, &pktlen, 0, 32,
+                                               0, pk->pkey+i);
                 }
               else
                 {
