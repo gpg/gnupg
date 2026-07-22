@@ -81,9 +81,9 @@ static int parse_compressed (IOBUF inp, int pkttype, unsigned long pktlen,
 			     PACKET * packet, int new_ctb);
 static int parse_encrypted (IOBUF inp, int pkttype, unsigned long pktlen,
 			    PACKET * packet, int new_ctb, int partial);
-static gpg_error_t parse_encrypted_aead (IOBUF inp, int pkttype,
-                                         unsigned long pktlen, PACKET *packet,
-                                         int partial);
+static gpg_error_t parse_encrypted_ocb (iobuf_t inp, int pkttype,
+                                        unsigned long pktlen, PACKET *packet,
+                                        int partial);
 static int parse_mdc (IOBUF inp, int pkttype, unsigned long pktlen,
 		      PACKET * packet, int new_ctb);
 static int parse_gpg_control (IOBUF inp, int pkttype, unsigned long pktlen,
@@ -865,7 +865,7 @@ parse (parse_packet_ctx_t ctx, PACKET *pkt, int onlykeypkts, off_t * retpos,
             case PKT_PLAINTEXT:
             case PKT_ENCRYPTED:
             case PKT_ENCRYPTED_MDC:
-            case PKT_ENCRYPTED_AEAD:
+            case PKT_ENCRYPTED_OCB:
             case PKT_COMPRESSED:
               iobuf_set_partial_body_length_mode (inp, c & 0xff);
               pktlen = 0;	/* To indicate partial length.  */
@@ -1049,8 +1049,8 @@ parse (parse_packet_ctx_t ctx, PACKET *pkt, int onlykeypkts, off_t * retpos,
     case PKT_MDC:
       rc = parse_mdc (inp, pkttype, pktlen, pkt, new_ctb);
       break;
-    case PKT_ENCRYPTED_AEAD:
-      rc = parse_encrypted_aead (inp, pkttype, pktlen, pkt, partial);
+    case PKT_ENCRYPTED_OCB:
+      rc = parse_encrypted_ocb (inp, pkttype, pktlen, pkt, partial);
       break;
     case PKT_GPG_CONTROL:
       rc = parse_gpg_control (inp, pkttype, pktlen, pkt, partial);
@@ -4063,8 +4063,8 @@ parse_mdc (IOBUF inp, int pkttype, unsigned long pktlen,
 
 /* Note that PKTLEN  may be 0 to indicate partial length encoding.  */
 static gpg_error_t
-parse_encrypted_aead (iobuf_t inp, int pkttype, unsigned long pktlen,
-                      PACKET *pkt, int partial)
+parse_encrypted_ocb (iobuf_t inp, int pkttype, unsigned long pktlen,
+                     PACKET *pkt, int partial)
 {
   int rc = 0;
   PKT_encrypted *ed;
@@ -4086,7 +4086,7 @@ parse_encrypted_aead (iobuf_t inp, int pkttype, unsigned long pktlen,
     {
       log_error ("packet(%d) too short\n", pkttype);
       if (list_mode)
-        es_fputs (":aead encrypted packet: [too short]\n", listfp);
+        es_fputs (":ocb encrypted packet: [too short]\n", listfp);
       rc = gpg_error (GPG_ERR_INV_PACKET);
       iobuf_skip_rest (inp, pktlen, partial);
       goto leave;
@@ -4097,10 +4097,10 @@ parse_encrypted_aead (iobuf_t inp, int pkttype, unsigned long pktlen,
     pktlen--;
   if (ed->version != 1)
     {
-      log_error ("aead encrypted packet with unknown version %d\n",
+      log_error ("ocb encrypted packet with unknown version %d\n",
                  ed->version);
       if (list_mode)
-        es_fputs (":aead encrypted packet: [unknown version]\n", listfp);
+        es_fputs (":ocb encrypted packet: [unknown version]\n", listfp);
       /*skip_rest(inp, pktlen); should we really do this? */
       rc = gpg_error (GPG_ERR_INV_PACKET);
       goto leave;
@@ -4122,7 +4122,7 @@ parse_encrypted_aead (iobuf_t inp, int pkttype, unsigned long pktlen,
 
   if (list_mode)
     {
-      es_fprintf (listfp, ":aead encrypted packet: cipher=%u aead=%u cb=%u\n",
+      es_fprintf (listfp, ":ocb encrypted packet: cipher=%u aead=%u cb=%u\n",
                   ed->cipher_algo, ed->aead_algo, ed->chunkbyte);
       if (orig_pktlen)
 	es_fprintf (listfp, "\tlength: %lu\n", orig_pktlen);

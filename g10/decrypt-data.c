@@ -164,7 +164,7 @@ aead_set_nonce_and_ad (decode_filter_ctx_t dfx, int final)
   if (err)
     return err;
 
-  ad[0] = (0xc0 | PKT_ENCRYPTED_AEAD);
+  ad[0] = (0xc0 | PKT_ENCRYPTED_OCB);
   ad[1] = 1;
   ad[2] = dfx->cipher_algo;
   ad[3] = dfx->aead_algo;

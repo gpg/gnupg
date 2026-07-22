@@ -255,7 +255,7 @@ is_armored (const byte *buf)
       case PKT_COMPRESSED:
       case PKT_ENCRYPTED:
       case PKT_ENCRYPTED_MDC:
-      case PKT_ENCRYPTED_AEAD:
+      case PKT_ENCRYPTED_OCB:
       case PKT_PLAINTEXT:
       case PKT_OLD_COMMENT:
       case PKT_COMMENT:

@@ -584,7 +584,7 @@ proc_encrypted (CTX c, PACKET *pkt)
 
   if (pkt)
     {
-      if (pkt->pkttype == PKT_ENCRYPTED_AEAD)
+      if (pkt->pkttype == PKT_ENCRYPTED_OCB)
         c->seen_pkt_encrypted_aead = 1;
       if (pkt->pkttype == PKT_ENCRYPTED_MDC)
         c->seen_pkt_encrypted_mdc = 1;
@@ -1735,7 +1735,7 @@ do_proc_packets (CTX c, iobuf_t a, int keep_dek_and_list)
             case PKT_SYMKEY_ENC:    proc_symkey_enc (c, pkt); break;
             case PKT_ENCRYPTED:
             case PKT_ENCRYPTED_MDC:
-            case PKT_ENCRYPTED_AEAD:proc_encrypted (c, pkt); break;
+            case PKT_ENCRYPTED_OCB: proc_encrypted (c, pkt); break;
             case PKT_COMPRESSED:    rc = proc_compressed (c, pkt); break;
             default: newpkt = 0; break;
 	    }
@@ -1751,7 +1751,7 @@ do_proc_packets (CTX c, iobuf_t a, int keep_dek_and_list)
             case PKT_PUBKEY_ENC:
             case PKT_ENCRYPTED:
             case PKT_ENCRYPTED_MDC:
-            case PKT_ENCRYPTED_AEAD:
+            case PKT_ENCRYPTED_OCB:
               write_status_text( STATUS_UNEXPECTED, "0" );
               rc = GPG_ERR_UNEXPECTED;
               goto leave;
@@ -1791,7 +1791,7 @@ do_proc_packets (CTX c, iobuf_t a, int keep_dek_and_list)
 
             case PKT_ENCRYPTED:
             case PKT_ENCRYPTED_MDC:
-            case PKT_ENCRYPTED_AEAD: proc_encrypted (c, pkt); break;
+            case PKT_ENCRYPTED_OCB: proc_encrypted (c, pkt); break;
             case PKT_PLAINTEXT:   proc_plaintext (c, pkt); break;
             case PKT_COMPRESSED:  rc = proc_compressed (c, pkt); break;
             case PKT_ONEPASS_SIG: newpkt = add_onepass_sig (c, pkt); break;
@@ -1819,7 +1819,7 @@ do_proc_packets (CTX c, iobuf_t a, int keep_dek_and_list)
             case PKT_SYMKEY_ENC:  proc_symkey_enc (c, pkt); break;
             case PKT_ENCRYPTED:
             case PKT_ENCRYPTED_MDC:
-            case PKT_ENCRYPTED_AEAD: proc_encrypted (c, pkt); break;
+            case PKT_ENCRYPTED_OCB: proc_encrypted (c, pkt); break;
             case PKT_PLAINTEXT:   proc_plaintext (c, pkt); break;
             case PKT_COMPRESSED:  rc = proc_compressed (c, pkt); break;
             case PKT_ONEPASS_SIG: newpkt = add_onepass_sig (c, pkt); break;

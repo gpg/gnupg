@@ -98,7 +98,7 @@ set_nonce_and_ad (cipher_filter_context_t *cfx, int final)
   if (err)
     return err;
 
-  ad[0] = (0xc0 | PKT_ENCRYPTED_AEAD);
+  ad[0] = (0xc0 | PKT_ENCRYPTED_OCB);
   ad[1] = 1;
   ad[2] = cfx->dek->algo;
   ad[3] = cfx->dek->use_aead;
@@ -167,7 +167,7 @@ write_header (cipher_filter_context_t *cfx, iobuf_t a)
   ed.chunkbyte   = cfx->chunkbyte;
 
   init_packet (&pkt);
-  pkt.pkttype = PKT_ENCRYPTED_AEAD;
+  pkt.pkttype = PKT_ENCRYPTED_OCB;
   pkt.pkt.encrypted = &ed;
 
   if (DBG_FILTER)

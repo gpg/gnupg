@@ -41,8 +41,8 @@ static int do_pubkey_enc( IOBUF out, int ctb, PKT_pubkey_enc *enc );
 static u32 calc_plaintext( PKT_plaintext *pt );
 static int do_plaintext( IOBUF out, int ctb, PKT_plaintext *pt );
 static int do_encrypted( IOBUF out, int ctb, PKT_encrypted *ed );
-static int do_encrypted_mdc( IOBUF out, int ctb, PKT_encrypted *ed );
-static int do_encrypted_aead (iobuf_t out, int ctb, PKT_encrypted *ed);
+static int do_encrypted_mdc (iobuf_t out, int ctb, PKT_encrypted *ed );
+static int do_encrypted_ocb (iobuf_t out, int ctb, PKT_encrypted *ed);
 static int do_compressed( IOBUF out, int ctb, PKT_compressed *cd );
 static int do_signature( IOBUF out, int ctb, PKT_signature *sig );
 static int do_onepass_sig( IOBUF out, int ctb, PKT_onepass_sig *ops );
@@ -150,7 +150,7 @@ build_packet (IOBUF out, PACKET *pkt)
       break;
     case PKT_ENCRYPTED:
     case PKT_ENCRYPTED_MDC:
-    case PKT_ENCRYPTED_AEAD:
+    case PKT_ENCRYPTED_OCB:
       new_ctb = pkt->pkt.encrypted->new_ctb;
       break;
     case PKT_COMPRESSED:
@@ -203,8 +203,8 @@ build_packet (IOBUF out, PACKET *pkt)
     case PKT_ENCRYPTED_MDC:
       rc = do_encrypted_mdc (out, ctb, pkt->pkt.encrypted);
       break;
-    case PKT_ENCRYPTED_AEAD:
-      rc = do_encrypted_aead (out, ctb, pkt->pkt.encrypted);
+    case PKT_ENCRYPTED_OCB:
+      rc = do_encrypted_ocb (out, ctb, pkt->pkt.encrypted);
       break;
     case PKT_COMPRESSED:
       rc = do_compressed (out, ctb, pkt->pkt.compressed);
@@ -1207,11 +1207,11 @@ do_encrypted_mdc( IOBUF out, int ctb, PKT_encrypted *ed )
  * follow up and write the actual encrypted data.  This should be done
  * by pushing the the cipher_filter_aead.  */
 static int
-do_encrypted_aead (iobuf_t out, int ctb, PKT_encrypted *ed)
+do_encrypted_ocb (iobuf_t out, int ctb, PKT_encrypted *ed)
 {
   u32 n;
 
-  log_assert (ctb_pkttype (ctb) == PKT_ENCRYPTED_AEAD);
+  log_assert (ctb_pkttype (ctb) == PKT_ENCRYPTED_OCB);
 
   n = ed->len ? (ed->len + ed->extralen + 4) : 0;
   write_header (out, ctb, n );
