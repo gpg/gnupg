@@ -555,6 +555,8 @@ typedef struct {
      was encoded using partial body length headers (new format).
      Note: this is ignored when encrypting.  */
   byte is_partial;
+  /* The version of the packet.  */
+  byte version;
   /* If 0, MDC is disabled.  Otherwise, the MDC method that was used
      (only DIGEST_ALGO_SHA1 has ever been defined).  */
   byte mdc_method;

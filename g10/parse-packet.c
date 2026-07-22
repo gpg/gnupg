@@ -1472,6 +1472,7 @@ parse_pubkeyenc (IOBUF inp, int pkttype, unsigned long pktlen,
 		 PACKET * packet)
 {
   int rc = 0;
+  int is_v6 = 0;
   int i, ndata;
   unsigned int n;
   PKT_pubkey_enc *k;
@@ -1487,7 +1488,11 @@ parse_pubkeyenc (IOBUF inp, int pkttype, unsigned long pktlen,
     }
   k->version = iobuf_get_noeof (inp);
   pktlen--;
-  if (k->version != 2 && k->version != 3)
+  if (k->version == 2 || k->version == 3)
+    ;
+  else if (RFC9980 && k->version == 6)
+    is_v6 = 1;
+  else
     {
       log_error ("packet(%d) with unknown version %d\n", pkttype, k->version);
       if (list_mode)
@@ -1495,10 +1500,67 @@ parse_pubkeyenc (IOBUF inp, int pkttype, unsigned long pktlen,
       rc = gpg_error (GPG_ERR_INV_PACKET);
       goto leave;
     }
-  k->keyid[0] = read_32 (inp);
-  pktlen -= 4;
-  k->keyid[1] = read_32 (inp);
-  pktlen -= 4;
+
+  if (is_v6)
+    {
+      char recpfpr[MAX_FINGERPRINT_LEN];
+      int fprlen;
+      int keyver;
+
+      fprlen = iobuf_get_noeof (inp);
+      pktlen--;
+      if (fprlen)
+        {
+          keyver = iobuf_get_noeof (inp);
+          pktlen--; fprlen--;
+          if (pktlen < fprlen || fprlen > MAX_FINGERPRINT_LEN)
+            {
+              log_error ("packet(%d) too short for fingerprint (%d)\n",
+                         pkttype, fprlen);
+              rc = gpg_error (GPG_ERR_INV_PACKET);
+              goto leave;
+            }
+	  if (iobuf_read (inp, recpfpr, fprlen) != fprlen)
+	    {
+	      log_error ("premature eof while reading "
+			 "fingerprint from packet(%d)\n", pkttype);
+              rc = gpg_error (GPG_ERR_INV_PACKET);
+	      goto leave;
+            }
+          pktlen -= fprlen;
+          if (fprlen == 20 && keyver == 4)
+            {
+              k->keyid[0] = buf32_to_u32 (recpfpr+12);
+              k->keyid[1] = buf32_to_u32 (recpfpr+16);
+            }
+          else if (fprlen == 32 && keyver >= 5)
+            {
+              k->keyid[0] = buf32_to_u32 (recpfpr);
+              k->keyid[1] = buf32_to_u32 (recpfpr+4);
+            }
+          else
+            {
+	      log_error ("packet(%d) inconsistent fingerprint (v=%d,n=%d)\n",
+                         pkttype, keyver, fprlen);
+              rc = gpg_error (GPG_ERR_INV_PACKET);
+	      goto leave;
+            }
+        }
+    }
+  else
+    {
+      k->keyid[0] = read_32 (inp);
+      pktlen -= 4;
+      k->keyid[1] = read_32 (inp);
+      pktlen -= 4;
+    }
+
+  if (!pktlen)
+    {
+      log_error ("packet(%d) too short for pub keyalgo\n", pkttype);
+      rc = gpg_error (GPG_ERR_INV_PACKET);
+      goto leave;
+    }
   k->pubkey_algo = iobuf_get_noeof (inp);
   pktlen--;
   k->throw_keyid = 0;  /* Only used as flag for build_packet.  */
@@ -1559,6 +1621,38 @@ parse_pubkeyenc (IOBUF inp, int pkttype, unsigned long pktlen,
       pktlen--;
       /* Get the encrypted symmetric key.  */
       rc = read_sos_octet_string (inp, &pktlen, 1, 0, 0, k->data + 2);
+      if (rc)
+        goto leave;
+    }
+  else if (k->pubkey_algo == PUBKEY_ALGO_MLK768_25519)
+    {
+      log_assert (ndata == 3);
+      /* Get the ephemeral public key.  */
+      rc = read_raw_octet_string (inp, &pktlen, 0, 32, 0, k->data + 0);
+      if (rc)
+        goto leave;
+
+      /* Get the Kyber ciphertext.  */
+      rc = read_raw_octet_string (inp, &pktlen, 0, 1088, 0, k->data + 1);
+      if (rc)
+        goto leave;
+      /* Get the algorithm id for the session key.  */
+      if (pktlen < 2)
+        {
+          rc = gpg_error (GPG_ERR_INV_PACKET);
+          goto leave;
+        }
+      n = iobuf_get_noeof (inp);
+      pktlen--;
+      if (!is_v6)
+        {
+          k->seskey_algo = iobuf_get_noeof (inp);
+          pktlen--;
+        }
+      if (list_mode)
+        es_fprintf (listfp, "\tlength octet: %u\n", n);
+      /* Get the encrypted symmetric key (32+8 due to AESWRAP).  */
+      rc = read_raw_octet_string (inp, &pktlen, 0, 40, 0, k->data + 2);
       if (rc)
         goto leave;
     }
@@ -3858,28 +3952,39 @@ parse_encrypted (IOBUF inp, int pkttype, unsigned long pktlen,
   ed->buf = NULL;
   ed->new_ctb = new_ctb;
   ed->is_partial = partial;
+  ed->version = 0;
   ed->aead_algo = 0;
   ed->cipher_algo = 0; /* Only used with AEAD.  */
   ed->chunkbyte = 0;   /* Only used with AEAD.  */
   if (pkttype == PKT_ENCRYPTED_MDC)
     {
-      /* Fixme: add some pktlen sanity checks.  */
-      int version;
-
-      version = iobuf_get_noeof (inp);
+      ed->version = iobuf_get_noeof (inp);
       if (orig_pktlen)
 	pktlen--;
-      if (version != 1)
+      if (ed->version == 1)
+        ed->mdc_method = DIGEST_ALGO_SHA1;
+      else if (ed->version == 2 && RFC9980)
+        {
+          ed->cipher_algo = iobuf_get_noeof (inp);
+          if (orig_pktlen)
+            pktlen--;
+          ed->aead_algo = iobuf_get_noeof (inp);
+          if (orig_pktlen)
+            pktlen--;
+          ed->chunkbyte = iobuf_get_noeof (inp);
+          if (orig_pktlen)
+            pktlen--;
+        }
+      else
 	{
 	  log_error ("encrypted_mdc packet with unknown version %d\n",
-		     version);
+		     ed->version);
           if (list_mode)
             es_fputs (":encrypted data packet: [unknown version]\n", listfp);
 	  /*skip_rest(inp, pktlen); should we really do this? */
 	  rc = gpg_error (GPG_ERR_INV_PACKET);
 	  goto leave;
 	}
-      ed->mdc_method = DIGEST_ALGO_SHA1;
     }
   else
     ed->mdc_method = 0;
@@ -3905,13 +4010,17 @@ parse_encrypted (IOBUF inp, int pkttype, unsigned long pktlen,
 
   if (list_mode)
     {
-      if (orig_pktlen)
-	es_fprintf (listfp, ":encrypted data packet:\n\tlength: %lu\n",
-                    orig_pktlen);
-      else
-	es_fprintf (listfp, ":encrypted data packet:\n\tlength: unknown\n");
+      es_fprintf (listfp, ":encrypted data packet:\n\tversion: %d\n",
+                  ed->version);
       if (ed->mdc_method)
-	es_fprintf (listfp, "\tmdc_method: %d\n", ed->mdc_method);
+	es_fprintf (listfp, "\t    mdc: %d\n", ed->mdc_method);
+      if (ed->version == 2)
+        es_fprintf (listfp, "\t cipher: %u\n\t   aead: %u\n\t  cbyte: %u\n",
+                    ed->cipher_algo, ed->aead_algo, ed->chunkbyte);
+      if (orig_pktlen)
+        es_fprintf (listfp, "\t length: %lu\n", orig_pktlen);
+      else
+	es_fprintf (listfp, "\t length: unknown\n");
     }
 
   ed->buf = inp;
@@ -3952,6 +4061,7 @@ parse_mdc (IOBUF inp, int pkttype, unsigned long pktlen,
 }
 
 
+/* Note that PKTLEN  may be 0 to indicate partial length encoding.  */
 static gpg_error_t
 parse_encrypted_aead (iobuf_t inp, int pkttype, unsigned long pktlen,
                       PACKET *pkt, int partial)
@@ -3959,7 +4069,6 @@ parse_encrypted_aead (iobuf_t inp, int pkttype, unsigned long pktlen,
   int rc = 0;
   PKT_encrypted *ed;
   unsigned long orig_pktlen = pktlen;
-  int version;
 
   ed = pkt->pkt.encrypted = xtrymalloc (sizeof *pkt->pkt.encrypted);
   if (!ed)
@@ -3969,6 +4078,7 @@ parse_encrypted_aead (iobuf_t inp, int pkttype, unsigned long pktlen,
   ed->buf = NULL;
   ed->new_ctb = 1;   /* (packet number requires a new CTB anyway.)  */
   ed->is_partial = partial;
+  ed->version = 0;
   ed->mdc_method = 0;
   /* A basic sanity check.  We need one version byte, one algo byte,
    * one aead algo byte, one chunkbyte, at least 15 byte IV.  */
@@ -3982,13 +4092,13 @@ parse_encrypted_aead (iobuf_t inp, int pkttype, unsigned long pktlen,
       goto leave;
     }
 
-  version = iobuf_get_noeof (inp);
+  ed->version = iobuf_get_noeof (inp);
   if (orig_pktlen)
     pktlen--;
-  if (version != 1)
+  if (ed->version != 1)
     {
       log_error ("aead encrypted packet with unknown version %d\n",
-                 version);
+                 ed->version);
       if (list_mode)
         es_fputs (":aead encrypted packet: [unknown version]\n", listfp);
       /*skip_rest(inp, pktlen); should we really do this? */

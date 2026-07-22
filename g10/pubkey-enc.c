@@ -122,7 +122,9 @@ get_session_key (ctrl_t ctrl, struct seskey_enc_list *list, DEK *dek)
                 || k->u.pub.pubkey_algo == PUBKEY_ALGO_KYBER
                 || k->u.pub.pubkey_algo == PUBKEY_ALGO_RSA
                 || k->u.pub.pubkey_algo == PUBKEY_ALGO_RSA_E
-                || k->u.pub.pubkey_algo == PUBKEY_ALGO_ELGAMAL))
+                || k->u.pub.pubkey_algo == PUBKEY_ALGO_ELGAMAL
+                || k->u.pub.pubkey_algo == PUBKEY_ALGO_MLK768_25519
+                || k->u.pub.pubkey_algo == PUBKEY_ALGO_MLK1024_448))
             continue;
 
           if (openpgp_pk_test_algo2 (k->u.pub.pubkey_algo, PUBKEY_USAGE_ENC))
@@ -303,6 +305,26 @@ get_it (ctrl_t ctrl,
                                enc->u.pub.data[2],
                                enc->u.pub.seskey_algo, fixedlen, fixedinfo);
     }
+  else if (sk->pubkey_algo == PUBKEY_ALGO_MLK768_25519
+           || sk->pubkey_algo == PUBKEY_ALGO_MLK1024_448)
+    {
+      char fixedinfo[1+22]; /* algid || domSep || len(domSep) */
+
+      fixedinfo[0] = sk->pubkey_algo;
+      memcpy (fixedinfo+1, "OpenPGPCompositeKDFv1\x15", 22);
+
+      if (!enc->u.pub.data[0] || !enc->u.pub.data[1] || !enc->u.pub.data[2])
+        err = gpg_error (GPG_ERR_BAD_MPI);
+      else
+        err = gcry_sexp_build (&s_data, NULL,
+                      "(enc-val(pqc(t%d)(e%m)(k%m)(s%m)(c%d)(fixed-info%b)))",
+                               2,  /* Use key combiner sha3-256 */
+                               enc->u.pub.data[0],
+                               enc->u.pub.data[1],
+                               enc->u.pub.data[2],
+                               enc->u.pub.seskey_algo,
+                               (int)sizeof fixedinfo, fixedinfo);
+    }
   else
     err = gpg_error (GPG_ERR_BUG);
 
@@ -341,7 +363,9 @@ get_it (ctrl_t ctrl,
     log_printhex (frame, nframe, "DEK frame:");
   frameidx = 0;
 
-  if (sk->pubkey_algo == PUBKEY_ALGO_KYBER)
+  if (sk->pubkey_algo == PUBKEY_ALGO_KYBER
+      || sk->pubkey_algo == PUBKEY_ALGO_MLK768_25519
+      || sk->pubkey_algo == PUBKEY_ALGO_MLK1024_448)
     {
       if (nframe != 32 && opt.flags.require_pqc_encryption)
         {
@@ -349,6 +373,11 @@ get_it (ctrl_t ctrl,
         }
       dek->keylen = nframe;
       dek->algo = enc->u.pub.seskey_algo;
+      if (!dek->algo && nframe == 32 && RFC9980)
+        {
+          log_info ("Warning: No symmetric algo yet known - assuming AES256\n");
+          dek->algo = CIPHER_ALGO_AES256;
+        }
     }
   else if (sk->pubkey_algo == PUBKEY_ALGO_ECDH)
     {

@@ -757,6 +757,12 @@ openpgp_pk_test_algo2 (pubkey_algo_t algo, unsigned int use)
         ga = GCRY_PK_EDDSA;
       break;
 
+    case PUBKEY_ALGO_MLK768_25519:
+    case PUBKEY_ALGO_MLK1024_448:
+      if (RFC9980)
+        ga = GCRY_PK_KEM;
+      break;
+
     default:
       break;
     }
@@ -1821,6 +1827,8 @@ pubkey_get_nenc (pubkey_algo_t algo)
     case PUBKEY_ALGO_ELGAMAL:   return 2;
     case PUBKEY_ALGO_EDDSA:     return 0;
     case PUBKEY_ALGO_KYBER:     return 3;
+    case PUBKEY_ALGO_MLK768_25519: return 3;
+    case PUBKEY_ALGO_MLK1024_448:  return 3;
     default: return 0;
     }
 }
