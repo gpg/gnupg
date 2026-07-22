@@ -555,6 +555,10 @@ typedef struct {
      was encoded using partial body length headers (new format).
      Note: this is ignored when encrypting.  */
   byte is_partial;
+  /* This flag is only set if this is a SEIPD packet (tag 18).  It is
+   * neither set for a SED packet (tag 9) or a OCB Encrypted Data
+   * packet (tag 20).  */
+  byte seipd;
   /* The version of the packet.  */
   byte version;
   /* If 0, MDC is disabled.  Otherwise, the MDC method that was used

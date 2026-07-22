@@ -54,7 +54,7 @@ struct decode_filter_context_s
   /* The hash handle for use in MDC mode.  */
   gcry_md_hd_t mdc_hash;
 
-  /* The start IV for AEAD encryption.   */
+  /* The start IV for AEAD encryption.  For OCB this is the nonce.  */
   byte startiv[16];
 
   /* The holdback buffer and its used length.  For AEAD we need 32+1
@@ -74,6 +74,9 @@ struct decode_filter_context_s
 
   /* Flag to convey an error from aead_checktag.  */
   unsigned int checktag_failed : 1;
+
+  /* Set if the RFC-9850 SEIPD version 2 packet is used.  */
+  unsigned int seipdv2 : 1;
 
   /* The actually used cipher algo for AEAD.  */
   byte cipher_algo;
@@ -132,6 +135,7 @@ aead_set_nonce_and_ad (decode_filter_ctx_t dfx, int final)
   gpg_error_t err;
   unsigned char ad[21];
   unsigned char nonce[16];
+  unsigned int adlen;
   int i;
 
   switch (dfx->aead_algo)
@@ -164,8 +168,8 @@ aead_set_nonce_and_ad (decode_filter_ctx_t dfx, int final)
   if (err)
     return err;
 
-  ad[0] = (0xc0 | PKT_ENCRYPTED_OCB);
-  ad[1] = 1;
+  ad[0] = (0xc0 | (dfx->seipdv2? PKT_ENCRYPTED_MDC:PKT_ENCRYPTED_OCB));
+  ad[1] = dfx->seipdv2? 2:1;
   ad[2] = dfx->cipher_algo;
   ad[3] = dfx->aead_algo;
   ad[4] = dfx->chunkbyte;
@@ -188,9 +192,22 @@ aead_set_nonce_and_ad (decode_filter_ctx_t dfx, int final)
       ad[19] = dfx->total >>  8;
       ad[20] = dfx->total;
     }
+
+  if (dfx->seipdv2)
+    {
+      adlen = 5;
+      if (final)
+        {
+          adlen += 8;
+          memmove (ad+5, ad+13, 8);
+        }
+    }
+  else
+    adlen = final? 21 : 13;
+
   if (DBG_CRYPTO)
-    log_printhex (ad, final? 21 : 13, "authdata:");
-  return gcry_cipher_authenticate (dfx->cipher_hd, ad, final? 21 : 13);
+    log_printhex (ad, adlen, "authdata:");
+  return gcry_cipher_authenticate (dfx->cipher_hd, ad, adlen);
 }
 
 
@@ -201,19 +218,19 @@ aead_checktag (decode_filter_ctx_t dfx, int final, const void *tagbuf)
 {
   gpg_error_t err;
 
-  if (DBG_FILTER)
-    log_printhex (tagbuf, 16, "tag:");
   err = gcry_cipher_checktag (dfx->cipher_hd, tagbuf, 16);
   if (err)
     {
+      if (DBG_CRYPTO)
+        log_printhex (tagbuf, 16, "invalid %stag:", final?"final ":"");
       log_error ("gcry_cipher_checktag%s failed: %s\n",
                  final? " (final)":"", gpg_strerror (err));
       write_status_error ("aead_checktag", err);
       dfx->checktag_failed = 1;
       return err;
     }
-  if (DBG_FILTER)
-    log_debug ("%stag is valid\n", final?"final ":"");
+  if (DBG_CRYPTO)
+    log_printhex (tagbuf, 16, "valid %stag:", final?"final ":"");
   return 0;
 }
 
@@ -236,6 +253,11 @@ decrypt_data (ctrl_t ctrl, void *procctx, PKT_encrypted *ed, DEK *dek,
   byte temp[32];
   unsigned int blocksize;
   unsigned int nprefix;
+  unsigned char *thekeybuffer = NULL; /* Used by seipdv2  */
+  size_t thekeybufferlen;             /* Malloced length of thekeybuffer.  */
+  const void *thekey;  /* Points either to thekeybuffer or dek->key.  */
+  size_t thekeylen;    /* Same as dek->keylen */
+
 
   *compliance_error = 0;
 
@@ -243,9 +265,12 @@ decrypt_data (ctrl_t ctrl, void *procctx, PKT_encrypted *ed, DEK *dek,
   if (!dfx)
     return gpg_error_from_syserror ();
   dfx->refcount = 1;
+  dfx->seipdv2 = (ed->seipd && ed->version == 2);
 
   if ( opt.verbose && !dek->algo_info_printed )
     {
+      if (dfx->seipdv2)
+        log_info (_("Note: Using the %s encryption packet\n"), "RFC-9580");
       if (!openpgp_cipher_test_algo (dek->algo))
         log_info (_("%s encrypted data\n"),
                   openpgp_cipher_algo_mode_name (dek->algo, ed->aead_algo));
@@ -345,32 +370,6 @@ decrypt_data (ctrl_t ctrl, void *procctx, PKT_encrypted *ed, DEK *dek,
           goto leave;
         }
 
-      /* Read the Start-IV. */
-      if (ed->len)
-        {
-          for (i=0; i < startivlen && ed->len; i++, ed->len--)
-            {
-              if ((c=iobuf_get (ed->buf)) == -1)
-                break;
-              dfx->startiv[i] = c;
-            }
-        }
-      else
-        {
-          for (i=0; i < startivlen; i++ )
-            if ( (c=iobuf_get (ed->buf)) == -1 )
-              break;
-            else
-              dfx->startiv[i] = c;
-        }
-      if (i != startivlen)
-        {
-          log_error ("Start-IV in AEAD packet too short (%d/%u)\n",
-                     i, startivlen);
-          rc = gpg_error (GPG_ERR_TOO_SHORT);
-          goto leave;
-        }
-
       dfx->cipher_algo = ed->cipher_algo;
       dfx->aead_algo = ed->aead_algo;
       dfx->chunkbyte = ed->chunkbyte;
@@ -381,6 +380,115 @@ decrypt_data (ctrl_t ctrl, void *procctx, PKT_encrypted *ed, DEK *dek,
                   openpgp_cipher_algo_name (dek->algo),
                   openpgp_cipher_algo_name (dfx->cipher_algo));
 
+      if (dfx->seipdv2) /* RFC-9580 mode */
+        {
+          gcry_kdf_hd_t kdfhd;
+          unsigned long kdfparam[1];
+          unsigned char kdfinfo[5];
+          unsigned char salt[32];
+
+          /* Read the salt. */
+          if (ed->len)
+            {
+              for (i=0; i < sizeof salt && ed->len; i++, ed->len--)
+                {
+                  if ((c=iobuf_get (ed->buf)) == -1)
+                    break;
+                  salt[i] = c;
+                }
+            }
+          else
+            {
+              for (i=0; i < sizeof salt; i++ )
+                if ( (c=iobuf_get (ed->buf)) == -1 )
+                  break;
+                else
+                  salt[i] = c;
+            }
+          if (i != sizeof salt)
+            {
+              log_error ("SALT in SEIPDv2 packet too short (%d/%u)\n", i, 32);
+              rc = gpg_error (GPG_ERR_TOO_SHORT);
+              goto leave;
+            }
+
+          /* Expand key to M + N - 8.  */
+          kdfparam[0] = dek->keylen + startivlen - 8;
+
+          kdfinfo[0] = 0xd2;
+          kdfinfo[1] = 2;
+          kdfinfo[2] = dek->algo;
+          kdfinfo[3] = ed->aead_algo;
+          kdfinfo[4] = ed->chunkbyte;
+
+          if (DBG_CRYPTO)
+            {
+              log_printhex (salt, sizeof salt, "salt:");
+              log_printhex (kdfinfo, sizeof kdfinfo, "info:");
+            }
+          rc = gcry_kdf_open (&kdfhd, GCRY_KDF_HKDF, GCRY_MAC_HMAC_SHA256,
+                              kdfparam, 1,
+                              dek->key, dek->keylen,
+                              NULL, 0,
+                              salt, sizeof salt,
+                              kdfinfo, sizeof kdfinfo);
+          if (!rc)
+            {
+              rc = gcry_kdf_compute (kdfhd, NULL);
+              if (!rc)
+                {
+                  /* Allocate M + N */
+                  thekeybufferlen = dek->keylen + startivlen;
+                  thekeybuffer = xtrymalloc_secure (thekeybufferlen);
+                  if (!thekeybuffer)
+                    rc = gpg_error_from_syserror ();
+                  else /* Get M + N - 8 */
+                    rc = gcry_kdf_final (kdfhd, kdfparam[0], thekeybuffer);
+                }
+              gcry_kdf_close (kdfhd);
+            }
+          if (rc)
+            {
+              log_error ("HKDF for session key failed: %s\n", gpg_strerror(rc));
+              goto leave;
+            }
+          log_assert (sizeof dfx->startiv >= startivlen);
+          memcpy (dfx->startiv, thekeybuffer + dek->keylen, startivlen - 8);
+          memset (dfx->startiv + dek->keylen + startivlen - 8, 0, 8);
+          thekey = thekeybuffer;
+          thekeylen = dek->keylen;
+        }
+      else /* Standard RFC-4880bis (aka LibrePGP) mode.  */
+        {
+          /* Read the Start-IV (aka nonce). */
+          if (ed->len)
+            {
+              for (i=0; i < startivlen && ed->len; i++, ed->len--)
+                {
+                  if ((c=iobuf_get (ed->buf)) == -1)
+                    break;
+                  dfx->startiv[i] = c;
+                }
+            }
+          else
+            {
+              for (i=0; i < startivlen; i++ )
+                if ( (c=iobuf_get (ed->buf)) == -1 )
+                  break;
+                else
+                  dfx->startiv[i] = c;
+            }
+          if (i != startivlen)
+            {
+              log_error ("Start-IV in OCB packet too short (%d/%u)\n",
+                         i, startivlen);
+              rc = gpg_error (GPG_ERR_TOO_SHORT);
+              goto leave;
+            }
+          thekey = dek->key;
+          thekeylen = dek->keylen;
+        }
+
       rc = openpgp_cipher_open (&dfx->cipher_hd,
                                 dfx->cipher_algo,
                                 ciphermode,
@@ -389,8 +497,8 @@ decrypt_data (ctrl_t ctrl, void *procctx, PKT_encrypted *ed, DEK *dek,
         goto leave; /* Should never happen.  */
 
       if (DBG_CRYPTO)
-        log_printhex (dek->key, dek->keylen, "thekey:");
-      rc = gcry_cipher_setkey (dfx->cipher_hd, dek->key, dek->keylen);
+        log_printhex (thekey, thekeylen, "thekey:");
+      rc = gcry_cipher_setkey (dfx->cipher_hd, thekey, thekeylen);
       if (gpg_err_code (rc) == GPG_ERR_WEAK_KEY)
         {
           log_info (_("WARNING: message was encrypted with"
@@ -408,7 +516,6 @@ decrypt_data (ctrl_t ctrl, void *procctx, PKT_encrypted *ed, DEK *dek,
           log_error(_("problem handling encrypted packet\n"));
           goto leave;
         }
-
     }
   else /* CFB encryption.  */
     {
@@ -441,8 +548,8 @@ decrypt_data (ctrl_t ctrl, void *procctx, PKT_encrypted *ed, DEK *dek,
           BUG();
         }
 
-
-      /* log_hexdump( "thekey", dek->key, dek->keylen );*/
+      if (DBG_CRYPTO)
+        log_printhex (dek->key, dek->keylen, "thekey:");
       rc = gcry_cipher_setkey (dfx->cipher_hd, dek->key, dek->keylen);
       if ( gpg_err_code (rc) == GPG_ERR_WEAK_KEY )
         {
@@ -588,6 +695,11 @@ decrypt_data (ctrl_t ctrl, void *procctx, PKT_encrypted *ed, DEK *dek,
     }
 
  leave:
+  if (thekeybuffer)
+    {
+      wipememory (thekeybuffer, thekeybufferlen);
+      xfree (thekeybuffer);
+    }
   release_dfx_context (dfx);
   return rc;
 }

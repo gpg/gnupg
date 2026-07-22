@@ -3952,12 +3952,15 @@ parse_encrypted (IOBUF inp, int pkttype, unsigned long pktlen,
   ed->buf = NULL;
   ed->new_ctb = new_ctb;
   ed->is_partial = partial;
+  ed->seipd = 0;
   ed->version = 0;
   ed->aead_algo = 0;
+  ed->mdc_method = 0;
   ed->cipher_algo = 0; /* Only used with AEAD.  */
   ed->chunkbyte = 0;   /* Only used with AEAD.  */
   if (pkttype == PKT_ENCRYPTED_MDC)
     {
+      ed->seipd = 1;
       ed->version = iobuf_get_noeof (inp);
       if (orig_pktlen)
 	pktlen--;
@@ -3986,8 +3989,6 @@ parse_encrypted (IOBUF inp, int pkttype, unsigned long pktlen,
 	  goto leave;
 	}
     }
-  else
-    ed->mdc_method = 0;
 
   /* A basic sanity check.  We need at least an 8 byte IV plus the 2
      detection bytes.  Note that we don't known the algorithm and thus
@@ -4078,6 +4079,7 @@ parse_encrypted_ocb (iobuf_t inp, int pkttype, unsigned long pktlen,
   ed->buf = NULL;
   ed->new_ctb = 1;   /* (packet number requires a new CTB anyway.)  */
   ed->is_partial = partial;
+  ed->seipd = 0;
   ed->version = 0;
   ed->mdc_method = 0;
   /* A basic sanity check.  We need one version byte, one algo byte,
