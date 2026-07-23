@@ -200,20 +200,22 @@ struct pubkey_enc_info_item
 /* A one-pass signature packet as defined in RFC 4880, Section
    5.4.  All fields are serialized.  */
 typedef struct {
-    u32     keyid[2];	    /* The 64-bit keyid */
-    /* The signature's classification (RFC 4880, Section 5.2.1).  */
-    byte    sig_class;
-    byte    digest_algo;    /* algorithm used for digest */
-    byte    pubkey_algo;    /* algorithm used for public key scheme */
-    /* A message can be signed by multiple keys.  In this case, there
-       are n one-pass signature packets before the message to sign and
-       n signatures packets after the message.  It is conceivable that
-       someone wants to not only sign the message, but all of the
-       signatures.  Now we need to distinguish between signing the
-       message and signing the message plus the surrounding
-       signatures.  This is the point of this flag.  If set, it means:
-       I sign all of the data starting at the next packet.  */
-    byte    last;
+  u32     keyid[2];	    /* The 64-bit keyid */
+  /* The signature's classification (RFC 4880, Section 5.2.1).  */
+  byte    sig_class;
+  byte    digest_algo;    /* algorithm used for digest */
+  byte    pubkey_algo;    /* algorithm used for public key scheme */
+  /* A message can be signed by multiple keys.  In this case, there
+   * are n one-pass signature packets before the message to sign and n
+   * signatures packets after the message.  It is conceivable that
+   * someone wants to not only sign the message, but all of the
+   * signatures.  Now we need to distinguish between signing the
+   * message and signing the message plus the surrounding signatures.
+   * This is the point of this flag.  If set, it means: I sign all of
+   * the data starting at the next packet.  */
+  byte    last;
+  byte    version;            /* The version of the packet.  */
+  gcry_mpi_t salt;            /* The v6 sigature salt.    */
 } PKT_onepass_sig;
 
 

@@ -1006,14 +1006,25 @@ proc_plaintext( CTX c, PACKET *pkt )
     {
       if (n->pkt->pkttype == PKT_ONEPASS_SIG)
         {
+          PKT_onepass_sig *ops = n->pkt->pkt.onepass_sig;
+          const void *salt;
+          unsigned int saltlen;
+
           /* The onepass signature case. */
-          if (n->pkt->pkt.onepass_sig->digest_algo)
+          if (ops->digest_algo)
             {
               if (!opt.skip_verify)
-                gcry_md_enable (c->mfx.md,
-                                n->pkt->pkt.onepass_sig->digest_algo);
+                gcry_md_enable (c->mfx.md, ops->digest_algo);
 
               any = 1;
+
+              /* Double-Urgs: To properly support that salt thingy we
+               * would have to have a hash context for each signature.  */
+              if (ops->version == 6 && ops->salt
+                  && gcry_mpi_get_flag (ops->salt, GCRYMPI_FLAG_OPAQUE)
+                  && (salt = gcry_mpi_get_opaque (ops->salt, &saltlen))
+                  && saltlen)
+                gcry_md_write (c->mfx.md, salt, (saltlen+7)/8);
             }
         }
       else if (n->pkt->pkttype == PKT_GPG_CONTROL
@@ -2721,7 +2732,10 @@ proc_tree (CTX c, kbnode_t node)
       /* Check all signatures.  */
       if (!c->any.data)
         {
+          PKT_onepass_sig *ops = node->pkt->pkt.onepass_sig;
           int use_textmode = 0;
+          const void *salt;
+          unsigned int saltlen;
 
           free_md_filter_context (&c->mfx);
           /* Prepare to create all requested message digests.  */
@@ -2736,6 +2750,13 @@ proc_tree (CTX c, kbnode_t node)
 
           if (n1 && n1->pkt->pkt.onepass_sig->sig_class == 0x01)
             use_textmode = 1;
+
+          /* Double-Urgs: To properly support that salt thingy we
+           * would have to have a hash context for each signature.  */
+          if (ops->version == 6 && ops->salt
+              && gcry_mpi_get_flag (ops->salt, GCRYMPI_FLAG_OPAQUE)
+              && (salt = gcry_mpi_get_opaque (ops->salt, &saltlen)) && saltlen)
+            gcry_md_write (c->mfx.md, salt, (saltlen+7)/8);
 
           /* Ask for file and hash it. */
           if (c->sigs_only)

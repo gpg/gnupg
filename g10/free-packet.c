@@ -99,6 +99,17 @@ copy_pubkey_enc_parts (PKT_pubkey_enc *dst, PKT_pubkey_enc *src)
 }
 
 
+static void
+free_onepass_sig (PKT_onepass_sig *ops)
+{
+  if (ops)
+    {
+      mpi_release (ops->salt);
+      xfree (ops);
+    }
+}
+
+
 void
 free_seckey_enc( PKT_signature *sig )
 {
@@ -521,6 +532,9 @@ free_packet (PACKET *pkt, parse_packet_ctx_t parsectx)
     {
     case PKT_SIGNATURE:
       free_seckey_enc (pkt->pkt.signature);
+      break;
+    case PKT_ONEPASS_SIG:
+      free_onepass_sig (pkt->pkt.onepass_sig);
       break;
     case PKT_PUBKEY_ENC:
       free_pubkey_enc (pkt->pkt.pubkey_enc);

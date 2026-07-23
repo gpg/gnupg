@@ -2738,7 +2738,6 @@ static int
 parse_onepass_sig (IOBUF inp, int pkttype, unsigned long pktlen,
 		   PKT_onepass_sig * ops)
 {
-  int version;
   int rc = 0;
 
   if (pktlen < 13)
@@ -2749,11 +2748,11 @@ parse_onepass_sig (IOBUF inp, int pkttype, unsigned long pktlen,
       rc = gpg_error (GPG_ERR_INV_PACKET);
       goto leave;
     }
-  version = iobuf_get_noeof (inp);
+  ops->version = iobuf_get_noeof (inp);
   pktlen--;
-  if (version != 3)
+  if (!(ops->version == 3 || (RFC9980 && ops->version == 6)))
     {
-      log_error ("onepass_sig with unknown version %d\n", version);
+      log_error ("onepass_sig with unknown version %d\n", ops->version);
       if (list_mode)
         es_fputs (":onepass_sig packet: [unknown version]\n", listfp);
       rc = gpg_error (GPG_ERR_INV_PACKET);
@@ -2765,21 +2764,63 @@ parse_onepass_sig (IOBUF inp, int pkttype, unsigned long pktlen,
   pktlen--;
   ops->pubkey_algo = iobuf_get_noeof (inp);
   pktlen--;
-  ops->keyid[0] = read_32 (inp);
-  pktlen -= 4;
-  ops->keyid[1] = read_32 (inp);
-  pktlen -= 4;
+
+  if (ops->version == 6)
+    {
+      /* FIXME: We should save the fingerprint and check it against
+       * the regular packet.  Howeever, we have not done that for
+       * keyid either.  */
+      unsigned char fpr[32];
+
+      rc = read_raw_octet_string (inp, &pktlen, 1, 0, 0, &ops->salt);
+      if (rc)
+        goto leave;
+
+      if (pktlen < sizeof fpr)
+        {
+          log_error ("packet(%d) too short for fingerprint (%lu/%zu)\n",
+                     pkttype, pktlen, sizeof fpr);
+          rc = gpg_error (GPG_ERR_INV_PACKET);
+          goto leave;
+        }
+      if (iobuf_read (inp, fpr, sizeof fpr) != sizeof fpr)
+        {
+          log_error ("premature eof while reading "
+                     "fingerprint from packet(%d)\n", pkttype);
+          rc = gpg_error (GPG_ERR_INV_PACKET);
+          goto leave;
+        }
+      pktlen -= sizeof fpr;
+
+      ops->keyid[0] = buf32_to_u32 (fpr);
+      ops->keyid[1] = buf32_to_u32 (fpr+4);
+    }
+  else
+    {
+      ops->keyid[0] = read_32 (inp);
+      pktlen -= 4;
+      ops->keyid[1] = read_32 (inp);
+      pktlen -= 4;
+    }
+
   ops->last = iobuf_get_noeof (inp);
   pktlen--;
   if (list_mode)
-    es_fprintf (listfp,
-                ":onepass_sig packet: keyid %08lX%08lX\n"
-                "\tversion %d, sigclass 0x%02x, digest %d, pubkey %d, "
-                "last=%d\n",
-                (ulong) ops->keyid[0], (ulong) ops->keyid[1],
-                version, ops->sig_class,
-                ops->digest_algo, ops->pubkey_algo, ops->last);
-
+    {
+      es_fprintf (listfp,
+                  ":onepass_sig packet: keyid %08lX%08lX\n"
+                  "\tversion %d, sigclass 0x%02x, digest %d, pubkey %d, "
+                  "last=%d\n",
+                  (ulong) ops->keyid[0], (ulong) ops->keyid[1],
+                  ops->version, ops->sig_class,
+                  ops->digest_algo, ops->pubkey_algo, ops->last);
+      if (ops->version == 6 && ops->salt)
+        {
+          es_fprintf (listfp, "\tsalt: ");
+          mpi_print (listfp, ops->salt, 1);
+          es_putc ('\n', listfp);
+        }
+    }
 
  leave:
   iobuf_skip_rest (inp, pktlen, 0);
