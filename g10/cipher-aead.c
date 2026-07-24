@@ -65,6 +65,7 @@ set_nonce_and_ad (cipher_filter_context_t *cfx, int final)
   gpg_error_t err;
   unsigned char nonce[16];
   unsigned char ad[21];
+  int adlen;
   int i;
 
   switch (cfx->dek->use_aead)
@@ -93,13 +94,13 @@ set_nonce_and_ad (cipher_filter_context_t *cfx, int final)
   nonce[i++] ^= cfx->chunkindex;
 
   if (DBG_CRYPTO)
-    log_printhex (nonce, 15, "nonce:");
+    log_printhex (nonce, i, "nonce:");
   err = gcry_cipher_setiv (cfx->cipher_hd, nonce, i);
   if (err)
     return err;
 
-  ad[0] = (0xc0 | PKT_ENCRYPTED_OCB);
-  ad[1] = 1;
+  ad[0] = (0xc0 | (cfx->seipdv2? PKT_ENCRYPTED_MDC : PKT_ENCRYPTED_OCB));
+  ad[1] = cfx->seipdv2? 2 : 1;
   ad[2] = cfx->dek->algo;
   ad[3] = cfx->dek->use_aead;
   ad[4] = cfx->chunkbyte;
@@ -122,9 +123,22 @@ set_nonce_and_ad (cipher_filter_context_t *cfx, int final)
       ad[19] = cfx->total >>  8;
       ad[20] = cfx->total;
     }
+
+  if (cfx->seipdv2)
+    {
+      adlen = 5;
+      if (final)
+        {
+          adlen += 8;
+          memmove (ad+5, ad+13, 8);
+        }
+    }
+  else
+    adlen = final? 21 : 13;
+
   if (DBG_CRYPTO)
-    log_printhex (ad, final? 21 : 13, "authdata:");
-  return gcry_cipher_authenticate (cfx->cipher_hd, ad, final? 21 : 13);
+    log_printhex (ad, adlen, "authdata:");
+  return gcry_cipher_authenticate (cfx->cipher_hd, ad, adlen);
 }
 
 
@@ -137,6 +151,8 @@ write_header (cipher_filter_context_t *cfx, iobuf_t a)
   unsigned int blocksize;
   unsigned int startivlen;
   enum gcry_cipher_modes ciphermode;
+  unsigned char *thekeybuffer = NULL; /* Used by seipdv2  */
+  size_t thekeybufferlen;             /* Malloced length of thekeybuffer.  */
 
   log_assert (cfx->dek->use_aead);
 
@@ -158,49 +174,132 @@ write_header (cipher_filter_context_t *cfx, iobuf_t a)
   if (!cfx->buffer)
     return gpg_error_from_syserror ();
 
+  init_packet (&pkt);
   memset (&ed, 0, sizeof ed);
   ed.new_ctb = 1;  /* (Is anyway required for the packet type).  */
   ed.len = 0; /* fixme: cfx->datalen */
-  ed.extralen    = startivlen + 16; /* (16 is the taglen) */
   ed.cipher_algo = cfx->dek->algo;
   ed.aead_algo   = cfx->dek->use_aead;
   ed.chunkbyte   = cfx->chunkbyte;
-
-  init_packet (&pkt);
-  pkt.pkttype = PKT_ENCRYPTED_OCB;
+  ed.extralen    = startivlen + 16; /* (16 is the taglen) */
+  if (cfx->seipdv2)
+    {
+      pkt.pkttype = PKT_ENCRYPTED_MDC;
+      ed.version = 2;
+    }
+  else
+    {
+      pkt.pkttype = PKT_ENCRYPTED_OCB;
+      ed.version = 1;
+    }
   pkt.pkt.encrypted = &ed;
 
   if (DBG_FILTER)
-    log_debug ("aead packet: len=%lu extralen=%d\n",
-               (unsigned long)ed.len, ed.extralen);
+    log_debug ("aead packet: len=%lu extralen=%d version=%d\n",
+               (unsigned long)ed.len, ed.extralen, ed.version);
 
   print_cipher_algo_note (cfx->dek->algo);
 
   if (build_packet( a, &pkt))
-    log_bug ("build_packet(ENCRYPTED_AEAD) failed\n");
+    log_bug ("build_packet(%s) failed\n",
+             cfx->seipdv2? "ENCRYPTED_MDCv2":"ENCRYPTED_OCB");
 
-  log_assert (sizeof cfx->startiv >= startivlen);
-  gcry_randomize (cfx->startiv, startivlen, GCRY_STRONG_RANDOM);
-  err = my_iobuf_write (a, cfx->startiv, startivlen);
+  log_assert (startivlen <= sizeof cfx->startiv && startivlen >= 8);
+  if (cfx->seipdv2)
+    {
+      gcry_kdf_hd_t kdfhd;
+      unsigned long kdfparam[1];
+      unsigned char kdfinfo[5];
+      unsigned char salt[32];
+
+      /* Expand key to M + N - 8.  */
+      log_assert (cfx->dek->keylen >= 16);
+      kdfparam[0] = cfx->dek->keylen + startivlen - 8;
+
+      kdfinfo[0] = 0xd2;
+      kdfinfo[1] = 2;
+      kdfinfo[2] = ed.cipher_algo;
+      kdfinfo[3] = ed.aead_algo;
+      kdfinfo[4] = ed.chunkbyte;
+
+      gcry_randomize (salt, sizeof salt, GCRY_STRONG_RANDOM);
+      err = my_iobuf_write (a, salt, sizeof salt);
+      if (err)
+        goto leave;
+
+      if (DBG_CRYPTO)
+        {
+          log_printhex (salt, sizeof salt, "salt:");
+          log_printhex (kdfinfo, sizeof kdfinfo, "info:");
+        }
+      err = gcry_kdf_open (&kdfhd, GCRY_KDF_HKDF, GCRY_MAC_HMAC_SHA256,
+                           kdfparam, 1,
+                           cfx->dek->key, cfx->dek->keylen,
+                           NULL, 0,
+                           salt, sizeof salt,
+                           kdfinfo, sizeof kdfinfo);
+      if (!err)
+        {
+          err = gcry_kdf_compute (kdfhd, NULL);
+          if (!err)
+            {
+              /* Allocate M + N */
+              thekeybufferlen = cfx->dek->keylen + startivlen;
+              thekeybuffer = xtrymalloc_secure (thekeybufferlen);
+              if (!thekeybuffer)
+                err = gpg_error_from_syserror ();
+              else /* Get M + N - 8 */
+                err = gcry_kdf_final (kdfhd, kdfparam[0], thekeybuffer);
+            }
+          gcry_kdf_close (kdfhd);
+        }
+      if (err)
+        {
+          log_error ("HKDF for session key failed: %s\n", gpg_strerror (err));
+          goto leave;
+        }
+      memcpy (cfx->startiv, thekeybuffer + cfx->dek->keylen, startivlen - 8);
+      memset (cfx->startiv + cfx->dek->keylen + startivlen - 8, 0, 8);
+
+      err = openpgp_cipher_open (&cfx->cipher_hd, cfx->dek->algo,
+                                 ciphermode, GCRY_CIPHER_SECURE);
+      if (err)
+        goto leave;
+
+      if (DBG_CRYPTO)
+        log_printhex (thekeybuffer, cfx->dek->keylen, "thekey:");
+      err = gcry_cipher_setkey (cfx->cipher_hd,
+                                thekeybuffer, cfx->dek->keylen);
+    }
+  else
+    {
+      log_assert (sizeof cfx->startiv >= startivlen);
+      gcry_randomize (cfx->startiv, startivlen, GCRY_STRONG_RANDOM);
+      err = my_iobuf_write (a, cfx->startiv, startivlen);
+      if (err)
+        goto leave;
+
+      err = openpgp_cipher_open (&cfx->cipher_hd, cfx->dek->algo,
+                                 ciphermode, GCRY_CIPHER_SECURE);
+      if (err)
+        goto leave;
+
+      if (DBG_CRYPTO)
+        log_printhex (cfx->dek->key, cfx->dek->keylen, "thekey:");
+      err = gcry_cipher_setkey (cfx->cipher_hd,
+                                cfx->dek->key, cfx->dek->keylen);
+    }
   if (err)
     goto leave;
-
-  err = openpgp_cipher_open (&cfx->cipher_hd,
-                             cfx->dek->algo,
-                             ciphermode,
-                             GCRY_CIPHER_SECURE);
-  if (err)
-    goto leave;
-
-  if (DBG_CRYPTO)
-    log_printhex (cfx->dek->key, cfx->dek->keylen, "thekey:");
-  err = gcry_cipher_setkey (cfx->cipher_hd, cfx->dek->key, cfx->dek->keylen);
-  if (err)
-    return err;
 
   cfx->wrote_header = 1;
 
  leave:
+  if (thekeybuffer)
+    {
+      wipememory (thekeybuffer, thekeybufferlen);
+      xfree (thekeybuffer);
+    }
   return err;
 }
 

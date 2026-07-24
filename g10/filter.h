@@ -100,6 +100,9 @@ typedef struct
    * requires partial encoding for a larger data size.  */
   u32 datalen;
 
+  /* Set if the RFC-9850 SEIPD version 2 packet is to be used.  */
+  unsigned int seipdv2 : 1;
+
   /* The current cipher handle.  */
   gcry_cipher_hd_t cipher_hd;
 

@@ -86,7 +86,9 @@ encode_session_key (int openpgp_pk_algo, DEK *dek, unsigned int nbits)
   if (DBG_CRYPTO)
     log_debug ("encode_session_key: encoding %d byte DEK", dek->keylen);
 
-  if (openpgp_pk_algo == PUBKEY_ALGO_KYBER)
+  if (openpgp_pk_algo == PUBKEY_ALGO_KYBER
+      || openpgp_pk_algo == PUBKEY_ALGO_MLK768_25519
+      || openpgp_pk_algo == PUBKEY_ALGO_MLK1024_448)
     {
       /* Straightforward encoding w/o extra checksum as used by ECDH.  */
       nframe = dek->keylen;

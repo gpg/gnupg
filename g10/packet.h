@@ -157,7 +157,7 @@ typedef struct {
 typedef struct {
   /* The 64-bit keyid.  */
   u32     keyid[2];
-  /* The packet's version.  Currently, only version 3 is defined.  */
+  /* The packet's version.  This may be 3 or 6.  */
   byte    version;
   /* The algorithm used for the public key encryption scheme.  */
   byte    pubkey_algo;
@@ -166,6 +166,10 @@ typedef struct {
   /* Whether to hide the key id.  This value is not directly
      serialized.  */
   byte    throw_keyid;
+  /* Fingerprint of the key and the used length (i.e. the extended
+   * keyid).  Note that this is only used for version 6 packets.  */
+  byte fprlen;
+  byte fpr[MAX_FINGERPRINT_LEN];
   /* The encrypted session key.  */
   gcry_mpi_t     data[PUBKEY_MAX_NENC];
 } PKT_pubkey_enc;

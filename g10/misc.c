@@ -854,6 +854,8 @@ openpgp_pk_algo_name (pubkey_algo_t algo)
     case PUBKEY_ALGO_EDDSA:     return "EDDSA";
     case PUBKEY_ALGO_KYBER:     return "Kyber";
     case PUBKEY_ALGO_ED25519:   return "ietf27";
+    case PUBKEY_ALGO_MLK768_25519: return "mlk768";
+    case PUBKEY_ALGO_MLK1024_448:  return "mlk1024";
     default: return "?";
     }
 }

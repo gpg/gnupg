@@ -1503,45 +1503,44 @@ parse_pubkeyenc (IOBUF inp, int pkttype, unsigned long pktlen,
 
   if (is_v6)
     {
-      char recpfpr[MAX_FINGERPRINT_LEN];
-      int fprlen;
       int keyver;
 
-      fprlen = iobuf_get_noeof (inp);
+      k->fprlen = iobuf_get_noeof (inp);  /* Actually the 1 + fprlen.  */
       pktlen--;
-      if (fprlen)
+      if (k->fprlen)
         {
           keyver = iobuf_get_noeof (inp);
-          pktlen--; fprlen--;
-          if (pktlen < fprlen || fprlen > MAX_FINGERPRINT_LEN)
+          pktlen--; k->fprlen--;
+          /* fprlen has now the correct value.  */
+          if (pktlen < k->fprlen || k->fprlen > MAX_FINGERPRINT_LEN)
             {
               log_error ("packet(%d) too short for fingerprint (%d)\n",
-                         pkttype, fprlen);
+                         pkttype, k->fprlen);
               rc = gpg_error (GPG_ERR_INV_PACKET);
               goto leave;
             }
-	  if (iobuf_read (inp, recpfpr, fprlen) != fprlen)
+	  if (iobuf_read (inp, k->fpr, k->fprlen) != k->fprlen)
 	    {
 	      log_error ("premature eof while reading "
 			 "fingerprint from packet(%d)\n", pkttype);
               rc = gpg_error (GPG_ERR_INV_PACKET);
 	      goto leave;
             }
-          pktlen -= fprlen;
-          if (fprlen == 20 && keyver == 4)
+          pktlen -= k->fprlen;
+          if (k->fprlen == 20 && keyver == 4)
             {
-              k->keyid[0] = buf32_to_u32 (recpfpr+12);
-              k->keyid[1] = buf32_to_u32 (recpfpr+16);
+              k->keyid[0] = buf32_to_u32 (k->fpr+12);
+              k->keyid[1] = buf32_to_u32 (k->fpr+16);
             }
-          else if (fprlen == 32 && keyver >= 5)
+          else if (k->fprlen == 32 && keyver >= 5)
             {
-              k->keyid[0] = buf32_to_u32 (recpfpr);
-              k->keyid[1] = buf32_to_u32 (recpfpr+4);
+              k->keyid[0] = buf32_to_u32 (k->fpr);
+              k->keyid[1] = buf32_to_u32 (k->fpr+4);
             }
           else
             {
 	      log_error ("packet(%d) inconsistent fingerprint (v=%d,n=%d)\n",
-                         pkttype, keyver, fprlen);
+                         pkttype, keyver, k->fprlen);
               rc = gpg_error (GPG_ERR_INV_PACKET);
 	      goto leave;
             }
@@ -1557,7 +1556,7 @@ parse_pubkeyenc (IOBUF inp, int pkttype, unsigned long pktlen,
 
   if (!pktlen)
     {
-      log_error ("packet(%d) too short for pub keyalgo\n", pkttype);
+      log_error ("packet(%d) too short for public-key algo\n", pkttype);
       rc = gpg_error (GPG_ERR_INV_PACKET);
       goto leave;
     }
@@ -1636,7 +1635,7 @@ parse_pubkeyenc (IOBUF inp, int pkttype, unsigned long pktlen,
       rc = read_raw_octet_string (inp, &pktlen, 0, 1088, 0, k->data + 1);
       if (rc)
         goto leave;
-      /* Get the algorithm id for the session key.  */
+      /* Get the size octet and algo id for the session key.  */
       if (pktlen < 2)
         {
           rc = gpg_error (GPG_ERR_INV_PACKET);

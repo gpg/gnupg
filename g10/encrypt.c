@@ -154,7 +154,10 @@ create_dek_with_warnings (pk_list_t pk_list)
         {
           int non_kyber_pk = 0;
           for ( ; pk_list; pk_list = pk_list->next)
-            if (pk_list->pk->pubkey_algo != PUBKEY_ALGO_KYBER)
+            if (!(pk_list->pk->pubkey_algo == PUBKEY_ALGO_KYBER
+                || (RFC9980
+                   && (pk_list->pk->pubkey_algo == PUBKEY_ALGO_MLK768_25519
+                      || pk_list->pk->pubkey_algo == PUBKEY_ALGO_MLK1024_448))))
               non_kyber_pk += 1;
           if (!non_kyber_pk)
             dek->algo = CIPHER_ALGO_AES256;
@@ -433,6 +436,26 @@ use_mdc (pk_list_t pk_list,int algo)
     return 0;
 
   return 1; /* In all other cases we use the MDC */
+}
+
+
+/* We use the SEIPDv2 packet only if all keys are from RFC9980.  */
+int
+use_rfc9980_seipdv2 (pk_list_t pk_list)
+{
+  PKT_public_key *pk;
+
+  if (!RFC9980 || !pk_list)
+    return 0;  /* No.  */
+
+  for ( ; pk_list; pk_list = pk_list->next )
+    {
+      pk = pk_list->pk;
+      if (!(pk->pubkey_algo == PUBKEY_ALGO_MLK768_25519
+            || pk->pubkey_algo == PUBKEY_ALGO_MLK1024_448))
+        return 0;  /* No.  */
+    }
+  return 1; /* Yes.  */
 }
 
 
@@ -941,6 +964,8 @@ encrypt_crypt (ctrl_t ctrl, gnupg_fd_t filefd, const char *filename,
   cfx.dek->use_aead = use_aead (pk_list, cfx.dek->algo);
   if (!cfx.dek->use_aead)
     cfx.dek->use_mdc = !!use_mdc (pk_list, cfx.dek->algo);
+  else if (use_rfc9980_seipdv2 (pk_list))
+    cfx.seipdv2 = 1; /* Use SEIPDV2 and not the OCB.*/
 
   make_session_key (cfx.dek);
   if (DBG_CRYPTO)
@@ -1286,13 +1311,28 @@ write_pubkey_enc (ctrl_t ctrl,
   PKT_pubkey_enc *enc;
   int rc;
   gcry_mpi_t frame;
+  int is_rfc9980;
+  size_t fprlen;
+
+  if (pk->pubkey_algo == PUBKEY_ALGO_MLK768_25519
+      || pk->pubkey_algo == PUBKEY_ALGO_MLK1024_448)
+    is_rfc9980 = 1;
+  else
+    is_rfc9980 = 0;
 
   print_pubkey_algo_note ( pk->pubkey_algo );
   enc = xmalloc_clear ( sizeof *enc );
   enc->pubkey_algo = pk->pubkey_algo;
-  keyid_from_pk( pk, enc->keyid );
+  keyid_from_pk (pk, enc->keyid);
   enc->throw_keyid = throw_keyid;
   enc->seskey_algo = dek->algo;  /* (Used only by PUBKEY_ALGO_KYBER.) */
+  if (is_rfc9980)
+    {
+      enc->version = 6;
+      fingerprint_from_pk (pk, enc->fpr, &fprlen);
+      log_assert (fprlen == 20 || fprlen == 32);
+      enc->fprlen = fprlen;
+    }
 
   /* Okay, what's going on: We have the session key somewhere in
    * the structure DEK and want to encode this session key in an

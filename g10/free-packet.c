@@ -89,6 +89,8 @@ copy_pubkey_enc_parts (PKT_pubkey_enc *dst, PKT_pubkey_enc *src)
   dst->pubkey_algo = src->pubkey_algo;
   dst->seskey_algo = src->seskey_algo;
   dst->throw_keyid = src->throw_keyid;
+  dst->fprlen      = src->fprlen;
+  memcpy (dst->fpr, src->fpr, sizeof src->fpr);
 
   if (!(n = pubkey_get_nenc (dst->pubkey_algo)))
     n = 1;  /* All data is in the first item as an opaque MPI. */

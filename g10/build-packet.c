@@ -38,6 +38,7 @@ static int do_user_id( IOBUF out, int ctb, PKT_user_id *uid );
 static int do_key (iobuf_t out, int ctb, PKT_public_key *pk);
 static int do_symkey_enc( IOBUF out, int ctb, PKT_symkey_enc *enc );
 static int do_pubkey_enc( IOBUF out, int ctb, PKT_pubkey_enc *enc );
+static int do_pubkey_enc_v6 (iobuf_t out, int ctb, PKT_pubkey_enc *enc);
 static u32 calc_plaintext( PKT_plaintext *pt );
 static int do_plaintext( IOBUF out, int ctb, PKT_plaintext *pt );
 static int do_encrypted( IOBUF out, int ctb, PKT_encrypted *ed );
@@ -1011,13 +1012,17 @@ do_symkey_enc( IOBUF out, int ctb, PKT_symkey_enc *enc )
    CTB is the serialization's CTB.  It specifies the header format and
    the packet's type.  The header length must not be set.  */
 static int
-do_pubkey_enc( IOBUF out, int ctb, PKT_pubkey_enc *enc )
+do_pubkey_enc (iobuf_t out, int ctb, PKT_pubkey_enc *enc)
 {
   int rc = 0;
   int n, i;
-  IOBUF a = iobuf_temp();
+  iobuf_t a;
 
   log_assert (ctb_pkttype (ctb) == PKT_PUBKEY_ENC);
+  if (enc->version == 6)
+    return do_pubkey_enc_v6 (out, ctb, enc);
+
+  a = iobuf_temp();
 
   iobuf_put (a, 3); /* Version.  */
 
@@ -1062,6 +1067,56 @@ do_pubkey_enc( IOBUF out, int ctb, PKT_pubkey_enc *enc )
       rc = iobuf_write_temp (out, a);
     }
   iobuf_close(a);
+  return rc;
+}
+
+
+static int
+do_pubkey_enc_v6 (iobuf_t out, int ctb, PKT_pubkey_enc *enc)
+{
+  int rc = 0;
+  iobuf_t a;
+
+  a = iobuf_temp();
+  iobuf_put (a, 6); /* The version of this packet.  */
+
+  if (enc->throw_keyid)
+    iobuf_put (a, 0); /* No fingerprint given.  */
+  else
+    {
+      /* Note that we do not support the regular v5 keys here.  v5
+       * keys shall keep using the version 3 pubkey_enc packets
+       * because the v6 format is missing the session key algo and
+       * conveys the full fingerprint.  */
+      iobuf_put (a, (enc->fprlen == 32? 32 : 20) + 1);
+      iobuf_put (a, enc->fprlen == 32? 6 : 4);  /* The _key_ version.  */
+      iobuf_write (a, enc->fpr, sizeof enc->fpr);
+    }
+
+  iobuf_put (a, enc->pubkey_algo );
+
+  if (enc->pubkey_algo == PUBKEY_ALGO_MLK768_25519
+      || enc->pubkey_algo == PUBKEY_ALGO_MLK1024_448)
+    {
+      rc = gpg_mpi_write_opaque_nohdr (a, enc->data[0]);
+      if (!rc)
+        rc = gpg_mpi_write_opaque_nohdr (a, enc->data[1]);
+      if (!rc)
+        {
+          iobuf_put (a, 40); /* size octet.  */
+          rc = gpg_mpi_write_opaque_nohdr (a, enc->data[2]);
+        }
+    }
+  else
+    rc = gpg_error (GPG_ERR_INV_PACKET); /* for this algo.  */
+
+  if (!rc)
+    {
+      write_new_header (out, (0xc0|(ctb_pkttype(ctb)&0x3f)),
+                        iobuf_get_temp_length(a), 0);
+      rc = iobuf_write_temp (out, a);
+    }
+  iobuf_close (a);
   return rc;
 }
 
@@ -1181,22 +1236,33 @@ do_encrypted( IOBUF out, int ctb, PKT_encrypted *ed )
    packet to OUT.  (If you use the encryption iobuf filter
    (cipher_filter), then this is done automatically.)  */
 static int
-do_encrypted_mdc( IOBUF out, int ctb, PKT_encrypted *ed )
+do_encrypted_mdc (iobuf_t out, int ctb, PKT_encrypted *ed)
 {
-    int rc = 0;
-    u32 n;
+  u32 n;
 
-    log_assert (ed->mdc_method);
-    log_assert (ctb_pkttype (ctb) == PKT_ENCRYPTED_MDC);
+  log_assert (ctb_pkttype (ctb) == PKT_ENCRYPTED_MDC);
 
-    /* Take version number and the following MDC packet in account. */
-    n = ed->len ? (ed->len + ed->extralen + 1 + 22) : 0;
-    write_header(out, ctb, n );
-    iobuf_put(out, 1 );  /* version */
+  if (ed->version == 2)
+    {
+      /* Take this header (4) in account.  */
+      n = ed->len ? (ed->len + ed->extralen + 4) : 0;
+      write_new_header (out, (0xc0|(ctb_pkttype(ctb)&0x3f)), n, 0);
+      iobuf_writebyte (out, 2);
+      iobuf_writebyte (out, ed->cipher_algo);
+      iobuf_writebyte (out, ed->aead_algo);
+      iobuf_writebyte (out, ed->chunkbyte);
+    }
+  else
+    {
+      log_assert (ed->mdc_method);
+      /* Take version number and the final MDC packet in account. */
+      n = ed->len ? (ed->len + ed->extralen + 1 + 22) : 0;
+      write_header (out, ctb, n);
+      iobuf_put (out, 1);  /* version */
+    }
 
-    /* This is all. The caller has to write the real data */
-
-    return rc;
+  /* This is all. The caller has to write the real data */
+  return 0;
 }
 
 
