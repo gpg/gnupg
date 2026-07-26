@@ -2628,6 +2628,63 @@ parse_key_usage (PKT_signature * sig)
 }
 
 
+/* Return an array of preferences.  That array is terminated by a
+ * PREFTYPE_NONE entry.  NULL is returned if the signature has no
+ * suitable preferences.  */
+static prefitem_t *
+parse_prefs (PKT_signature *sig)
+{
+  prefitem_t *prefs;
+  const byte *p, *sym, *aead, *hash, *zip;
+  size_t n, nsym, naead, nhash, nzip;
+
+  /* The preferences must come from the hashed section so nobody can
+   * modify the ciphers a key is willing to accept.  */
+  p = parse_sig_subpkt (sig, 1, SIGSUBPKT_PREF_SYM, &n);
+  sym = p;
+  nsym = p ? n : 0;
+  p = parse_sig_subpkt (sig, 1, SIGSUBPKT_PREF_AEAD, &n);
+  aead = p;
+  naead = p ? n : 0;
+  p = parse_sig_subpkt (sig, 1, SIGSUBPKT_PREF_HASH, &n);
+  hash = p;
+  nhash = p ? n : 0;
+  p = parse_sig_subpkt (sig, 1, SIGSUBPKT_PREF_COMPR, &n);
+  zip = p;
+  nzip = p ? n : 0;
+  n = nsym + naead + nhash + nzip;
+  if (!n)
+    return NULL;
+
+  prefs = xmalloc (sizeof (*prefs) * (n + 1));
+  n = 0;
+  for (; nsym; nsym--, n++)
+    {
+      prefs[n].type = PREFTYPE_SYM;
+      prefs[n].value = *sym++;
+    }
+  for (; naead; naead--, n++)
+    {
+      prefs[n].type = PREFTYPE_AEAD;
+      prefs[n].value = *aead++;
+    }
+  for (; nhash; nhash--, n++)
+    {
+      prefs[n].type = PREFTYPE_HASH;
+      prefs[n].value = *hash++;
+    }
+  for (; nzip; nzip--, n++)
+    {
+      prefs[n].type = PREFTYPE_ZIP;
+      prefs[n].value = *zip++;
+    }
+  prefs[n].type = PREFTYPE_NONE; /* End of list marker  */
+  prefs[n].value = 0;
+
+  return prefs;
+}
+
+
 /* Apply information from SIGNODE (which is the valid self-signature
  * associated with that UID) to the UIDNODE:
  * - whether the UID has been revoked
@@ -2642,8 +2699,8 @@ fixup_uidnode (KBNODE uidnode, KBNODE signode, u32 keycreated)
 {
   PKT_user_id *uid = uidnode->pkt->pkt.user_id;
   PKT_signature *sig = signode->pkt->pkt.signature;
-  const byte *p, *sym, *aead, *hash, *zip;
-  size_t n, nsym, naead, nhash, nzip;
+  const byte *p;
+  size_t n;
 
   sig->flags.chosen_selfsig = 1;/* We chose this one. */
   uid->created = 0;		/* Not created == invalid. */
@@ -2687,58 +2744,9 @@ fixup_uidnode (KBNODE uidnode, KBNODE signode, u32 keycreated)
   if (p && *p)
     uid->flags.primary = 2;
 
-  /* We could also query this from the unhashed area if it is not in
-   * the hased area and then later try to decide which is the better
-   * there should be no security problem with this.
-   * For now we only look at the hashed one.  */
-
-  /* Now build the preferences list.  These must come from the
-     hashed section so nobody can modify the ciphers a key is
-     willing to accept.  */
-  p = parse_sig_subpkt (sig, 1, SIGSUBPKT_PREF_SYM, &n);
-  sym = p;
-  nsym = p ? n : 0;
-  p = parse_sig_subpkt (sig, 1, SIGSUBPKT_PREF_AEAD, &n);
-  aead = p;
-  naead = p ? n : 0;
-  p = parse_sig_subpkt (sig, 1, SIGSUBPKT_PREF_HASH, &n);
-  hash = p;
-  nhash = p ? n : 0;
-  p = parse_sig_subpkt (sig, 1, SIGSUBPKT_PREF_COMPR, &n);
-  zip = p;
-  nzip = p ? n : 0;
-  if (uid->prefs)
-    xfree (uid->prefs);
-  n = nsym + naead + nhash + nzip;
-  if (!n)
-    uid->prefs = NULL;
-  else
-    {
-      uid->prefs = xmalloc (sizeof (*uid->prefs) * (n + 1));
-      n = 0;
-      for (; nsym; nsym--, n++)
-	{
-	  uid->prefs[n].type = PREFTYPE_SYM;
-	  uid->prefs[n].value = *sym++;
-	}
-      for (; naead; naead--, n++)
-	{
-	  uid->prefs[n].type = PREFTYPE_AEAD;
-	  uid->prefs[n].value = *aead++;
-	}
-      for (; nhash; nhash--, n++)
-	{
-	  uid->prefs[n].type = PREFTYPE_HASH;
-	  uid->prefs[n].value = *hash++;
-	}
-      for (; nzip; nzip--, n++)
-	{
-	  uid->prefs[n].type = PREFTYPE_ZIP;
-	  uid->prefs[n].value = *zip++;
-	}
-      uid->prefs[n].type = PREFTYPE_NONE; /* End of list marker  */
-      uid->prefs[n].value = 0;
-    }
+  /* Get the preferences.  */
+  xfree (uid->prefs);
+  uid->prefs = parse_prefs (sig);
 
   /* See whether we have the MDC feature.  */
   uid->flags.mdc = 0;
@@ -3027,6 +3035,8 @@ merge_selfsigs_main (ctrl_t ctrl, kbnode_t keyblock, int *r_revoked,
 	  key_expire = keytimestamp + buf32_to_u32 (p);
 	  key_expire_seen = 1;
 	}
+
+      pk->dks_prefs = parse_prefs (sig);
 
       /* Mark that key as valid: One direct key signature should
        * render a key as valid.  */
@@ -3712,6 +3722,14 @@ merge_selfsigs (ctrl_t ctrl, kbnode_t keyblock)
 	  break;
 	}
     }
+
+  /* In rfc-9980 mode fallback to prefs from direct key signatures.  */
+  if (!prefs && RFC9980)
+    {
+      if (keyblock->pkt->pkttype == PKT_PUBLIC_KEY)
+        prefs = keyblock->pkt->pkt.public_key->dks_prefs;
+    }
+
   for (k = keyblock; k; k = k->next)
     {
       if (k->pkt->pkttype == PKT_PUBLIC_KEY

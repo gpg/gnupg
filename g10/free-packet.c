@@ -162,6 +162,11 @@ release_public_key_parts (PKT_public_key *pk)
       xfree (pk->prefs);
       pk->prefs = NULL;
     }
+  if (pk->dks_prefs)
+    {
+      xfree (pk->dks_prefs);
+      pk->dks_prefs = NULL;
+    }
   free_user_id (pk->user_id);
   pk->user_id = NULL;
   if (pk->revkey)
@@ -255,6 +260,7 @@ copy_public_key_basics (PKT_public_key *d, PKT_public_key *s)
   d->seckey_info = NULL;
   d->user_id = NULL;
   d->prefs = NULL;
+  d->dks_prefs = NULL;
   d->revoked.got_reason = 0;
   d->revoked.reason_code = 0;
   d->revoked.reason_comment = NULL;
@@ -289,6 +295,7 @@ copy_public_key (PKT_public_key *d, PKT_public_key *s)
   d = copy_public_key_basics (d, s);
   d->user_id = scopy_user_id (s->user_id);
   d->prefs = copy_prefs (s->prefs);
+  d->dks_prefs = copy_prefs (s->dks_prefs);
 
   if (!s->revkey && s->numrevkeys)
     BUG();

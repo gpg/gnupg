@@ -472,6 +472,7 @@ typedef struct
   /* Fingerprint of the key.  Only valid if FPRLEN is not 0.  */
   byte    fpr[MAX_FINGERPRINT_LEN];
   prefitem_t *prefs;      /* list of preferences (may be NULL) */
+  prefitem_t *dks_prefs;  /* direct key signature prefs (may be NULL) */
   struct
   {
     unsigned int mdc:1;           /* MDC feature set.  */

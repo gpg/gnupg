@@ -48,21 +48,31 @@ static int
 is_algo_in_prefs (kbnode_t keyblock, preftype_t type, int algo)
 {
   kbnode_t k;
+  prefitem_t *prefs;
 
   for (k = keyblock; k; k = k->next)
     {
       if (k->pkt->pkttype == PKT_USER_ID)
         {
           PKT_user_id *uid = k->pkt->pkt.user_id;
-          prefitem_t *prefs = uid->prefs;
 
-          if (uid->created && prefs && !uid->flags.revoked && !uid->flags.expired)
+          prefs = uid->prefs;
+          if (uid->created && prefs
+              && !uid->flags.revoked && !uid->flags.expired)
             {
               for (; prefs->type; prefs++)
                 if (prefs->type == type && prefs->value == algo)
                   return 1;
             }
         }
+    }
+  /* In rfc-9980 mode also check direct key signature prefs.  */
+  if (RFC9980 && (k = keyblock) && k->pkt->pkttype == PKT_PUBLIC_KEY
+      && (prefs = k->pkt->pkt.public_key->dks_prefs))
+    {
+      for (; prefs->type; prefs++)
+        if (prefs->type == type && prefs->value == algo)
+          return 1;
     }
   return 0;
 }
