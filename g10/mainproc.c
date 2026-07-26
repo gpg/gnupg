@@ -2537,6 +2537,20 @@ check_sig_and_print (CTX c, kbnode_t node)
           print_matching_notations (sig);
         }
 
+      /* Print a note if a signature salt was used despite of a
+       * non-vulnerable hash algo.  */
+      if (sig && sig->salt && !(sig->digest_algo == DIGEST_ALGO_SHA1
+                                || sig->digest_algo == DIGEST_ALGO_RMD160
+                                || sig->digest_algo == DIGEST_ALGO_MD5))
+        {
+          unsigned int saltlen;
+
+          if (opt.verbose
+              && gcry_mpi_get_flag (sig->salt, GCRYMPI_FLAG_OPAQUE)
+              && gcry_mpi_get_opaque (sig->salt, &saltlen) && saltlen)
+            log_info ("Note: signature has a deliberate covert channel\n");
+        }
+
       /* Fill PKSTRBUF with the algostring in case we later need it.  */
       if (pk)
         pubkey_string (pk, pkstrbuf, sizeof pkstrbuf);
