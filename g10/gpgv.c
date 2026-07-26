@@ -578,11 +578,13 @@ import_included_key_block (ctrl_t ctrl, kbnode_t keyblock)
  * No encryption here but mainproc links to these functions.
  */
 gpg_error_t
-get_session_key (ctrl_t ctrl, struct seskey_enc_list *k, DEK *dek)
+get_session_key (ctrl_t ctrl, struct seskey_enc_list *k, DEK *dek,
+                 int seipdv2_cipher_algo)
 {
   (void)ctrl;
   (void)k;
   (void)dek;
+  (void)seipdv2_cipher_algo;
   return GPG_ERR_GENERAL;
 }
 

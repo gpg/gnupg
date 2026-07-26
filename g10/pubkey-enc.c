@@ -39,7 +39,8 @@
 
 
 static gpg_error_t get_it (ctrl_t ctrl, struct seskey_enc_list *k,
-                           DEK *dek, PKT_public_key *sk, u32 *keyid);
+                           DEK *dek, PKT_public_key *sk, u32 *keyid,
+                           int seipdv2_cipher_algo);
 
 
 /* Check that the given algo is mentioned in one of the valid user-ids. */
@@ -70,9 +71,12 @@ is_algo_in_prefs (kbnode_t keyblock, preftype_t type, int algo)
 /*
  * Get the session key from a pubkey enc packet and return it in DEK,
  * which should have been allocated in secure memory by the caller.
+ * SEIPDV2_CIPHER_ALGO may be passed from the encrypted packet in case
+ * of a SEIPDv2 packet.
  */
 gpg_error_t
-get_session_key (ctrl_t ctrl, struct seskey_enc_list *list, DEK *dek)
+get_session_key (ctrl_t ctrl, struct seskey_enc_list *list, DEK *dek,
+                 int seipdv2_cipher_algo)
 {
   PKT_public_key *sk = NULL;
   gpg_error_t err;
@@ -154,7 +158,7 @@ get_session_key (ctrl_t ctrl, struct seskey_enc_list *list, DEK *dek)
           else
             continue;
 
-          err = get_it (ctrl, k, dek, sk, keyid);
+          err = get_it (ctrl, k, dek, sk, keyid, seipdv2_cipher_algo);
           k->result = err;
           if (!err)
             {
@@ -233,8 +237,8 @@ ecdh_sexp_build (gcry_sexp_t *r_s_data, struct seskey_enc_list *enc,
 
 
 static gpg_error_t
-get_it (ctrl_t ctrl,
-        struct seskey_enc_list *enc, DEK *dek, PKT_public_key *sk, u32 *keyid)
+get_it (ctrl_t ctrl, struct seskey_enc_list *enc, DEK *dek,
+        PKT_public_key *sk, u32 *keyid, int seipdv2_cipher_algo)
 {
   gpg_error_t err;
   byte *frame = NULL;
@@ -375,8 +379,14 @@ get_it (ctrl_t ctrl,
       dek->algo = enc->u.pub.seskey_algo;
       if (!dek->algo && nframe == 32 && RFC9980)
         {
-          log_info ("Warning: No symmetric algo yet known - assuming AES256\n");
-          dek->algo = CIPHER_ALGO_AES256;
+          if (seipdv2_cipher_algo)
+            dek->algo = seipdv2_cipher_algo;
+          else
+            {
+              log_info ("Warning: No symmetric algo yet known"
+                        " - assuming AES256\n");
+              dek->algo = CIPHER_ALGO_AES256;
+            }
         }
     }
   else if (sk->pubkey_algo == PUBKEY_ALGO_ECDH)

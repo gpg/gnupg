@@ -1007,7 +1007,8 @@ gpg_error_t check_signature (ctrl_t ctrl,
 
 
 /*-- pubkey-enc.c --*/
-gpg_error_t get_session_key (ctrl_t ctrl, struct seskey_enc_list *k, DEK *dek);
+gpg_error_t get_session_key (ctrl_t ctrl, struct seskey_enc_list *k, DEK *dek,
+                             int seipdv2_cipher_algo);
 gpg_error_t get_override_session_key (DEK *dek, const char *string);
 
 /*-- compress.c --*/

@@ -581,13 +581,17 @@ proc_encrypted (CTX c, PACKET *pkt)
   unsigned int compliance_de_vs = 0;
   enum gcry_cipher_modes ciphermode;
   int unknown_ciphermode;
+  int seipdv2_cipher_algo = 0;
 
   if (pkt)
     {
       if (pkt->pkttype == PKT_ENCRYPTED_OCB)
         c->seen_pkt_encrypted_aead = 1;
       if (pkt->pkttype == PKT_ENCRYPTED_MDC)
-        c->seen_pkt_encrypted_mdc = 1;
+        {
+          c->seen_pkt_encrypted_mdc = 1;
+          seipdv2_cipher_algo = pkt->pkt.encrypted->cipher_algo;
+        }
     }
   else /* No PKT indicates the add-recipients mode.  */
     log_assert (c->ctrl->modify_recipients);
@@ -627,7 +631,8 @@ proc_encrypted (CTX c, PACKET *pkt)
   else if (c->sesenc_list)
     {
       c->dek = xmalloc_secure_clear (sizeof *c->dek);
-      result = get_session_key (c->ctrl, c->sesenc_list, c->dek);
+      result = get_session_key (c->ctrl, c->sesenc_list, c->dek,
+                                seipdv2_cipher_algo);
       if (is_status_enabled ())
         {
           struct seskey_enc_list *list;
