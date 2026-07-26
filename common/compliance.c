@@ -204,6 +204,7 @@ gnupg_pk_is_compliant (enum gnupg_compliance_mode compliance, int algo,
     case PUBKEY_ALGO_ECDH:
     case PUBKEY_ALGO_ECDSA:
     case PUBKEY_ALGO_EDDSA:
+    case PUBKEY_ALGO_ED25519:
     case GCRY_PK_ECDSA:
     case GCRY_PK_ECDH:
     case GCRY_PK_EDDSA:
@@ -214,6 +215,8 @@ gnupg_pk_is_compliant (enum gnupg_compliance_mode compliance, int algo,
       return 0; /* Signing with Elgamal is not at all supported.  */
 
     case PUBKEY_ALGO_KYBER:
+    case PUBKEY_ALGO_MLK768_25519:
+    case PUBKEY_ALGO_MLK1024_448:
       algotype = is_kem;
       break;
 
@@ -449,6 +452,12 @@ gnupg_pk_is_allowed (enum gnupg_compliance_mode compliance,
 
               xfree (curve);
             }
+          break;
+
+	case PUBKEY_ALGO_MLK768_25519:
+	case PUBKEY_ALGO_MLK1024_448:
+	  if (use == PK_USE_DECRYPTION)
+            result = 1; /* Only decryption is allowed.  */
           break;
 
 	default:
