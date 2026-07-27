@@ -50,6 +50,44 @@ get_mpi_from_sexp (gcry_sexp_t sexp, const char *item, int mpifmt)
 }
 
 
+/* Return an opaque MPI with the concatenated values of the "r" and
+ * "s" parameters from SEXP.  Return NULL on error*/
+gcry_mpi_t
+get_r_s_mpi_from_sexp (gcry_sexp_t sexp)
+{
+  gcry_sexp_t rlist, slist;
+  size_t rlen, slen;
+  const char *r, *s;
+  char *buffer;
+  gcry_mpi_t result = NULL;
+
+  rlist = gcry_sexp_find_token (sexp, "r", 0);
+  if (!rlist)
+    return NULL;
+  slist = gcry_sexp_find_token (sexp, "s", 0);
+  if (!slist)
+    goto leave;
+
+  r = gcry_sexp_nth_data (rlist, 1, &rlen);
+  s = gcry_sexp_nth_data (slist, 1, &slen);
+  if (!r || !s || !rlen || !slen || rlen != slen)
+    goto leave;
+
+  buffer = xtrymalloc (rlen+slen);
+  if (!buffer)
+    goto leave;
+  memcpy (buffer, r, rlen);
+  memcpy (buffer+rlen, s, slen);
+  result = gcry_mpi_set_opaque (NULL, buffer, (rlen+slen)*8);
+  buffer = NULL;
+
+ leave:
+  gcry_sexp_release (rlist);
+  gcry_sexp_release (slist);
+  return result;
+}
+
+
 /*
  * SOS (Simply, Octet String) is an attempt to handle opaque octet
  * string in OpenPGP, where well-formed MPI cannot represent octet

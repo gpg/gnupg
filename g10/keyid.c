@@ -1351,7 +1351,8 @@ keygrip_from_pk (PKT_public_key *pk, unsigned char *array, int get_second)
   gcry_sexp_t s_pkey;
 
   if (DBG_PACKET)
-    log_debug ("get_keygrip for public key%s\n", get_second?" (second)":"");
+    log_debug ("get_keygrip for public key%s (v%d,a=%d)\n",
+               get_second?" (second)":"", pk->version, pk->pubkey_algo);
 
   if (get_second && !(pk->pubkey_algo == PUBKEY_ALGO_KYBER
                       || pk->pubkey_algo == PUBKEY_ALGO_MLK768_25519

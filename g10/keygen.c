@@ -57,6 +57,10 @@
 #define PQC_STD_KEY_PARAM_PRI  "bp384/cert,sign"
 #define PQC_STD_KEY_PARAM_SUB  "kyber768_bp256/encr"
 #define PQC_STD_KEY_PARAM      PQC_STD_KEY_PARAM_PRI "+" PQC_STD_KEY_PARAM_SUB
+#define PQC9980_STD_KEY_PARAM_PRI  "ietf27/cert,sign"
+#define PQC9980_STD_KEY_PARAM_SUB  "mlk768/encr"
+#define PQC9980_STD_KEY_PARAM      PQC9980_STD_KEY_PARAM_PRI \
+                                   "+" PQC9980_STD_KEY_PARAM_SUB
 
 /* When generating keys using the streamlined key generation dialog,
    use this as a default expiration interval.  */
@@ -66,6 +70,7 @@ const char *default_expiration_interval = "3y";
 #define KEYGEN_FLAG_NO_PROTECTION 1
 #define KEYGEN_FLAG_TRANSIENT_KEY 2
 #define KEYGEN_FLAG_CREATE_V5_KEY 4
+#define KEYGEN_FLAG_CREATE_V6_KEY 8
 
 /* Maximum number of supported algorithm preferences.  */
 #define MAX_PREFS 30
@@ -1580,13 +1585,26 @@ ecckey_from_sexp (gcry_mpi_t *array, gcry_sexp_t sexp,
       goto leave;
     }
 
-  err = openpgp_oid_from_str (oidstr, &array[0]);
-  if (err)
-    goto leave;
+  if (algo == PUBKEY_ALGO_ED25519)
+    {
+      err = 0;
+      array[0] = get_mpi_from_sexp (list, "q", GCRYMPI_FMT_OPAQUE);
+      if (!array[0])
+        {
+          err = gpg_error (GPG_ERR_NO_OBJ);
+          goto leave;
+        }
+    }
+  else
+    {
+      err = openpgp_oid_from_str (oidstr, &array[0]);
+      if (err)
+        goto leave;
 
-  err = sexp_extract_param_sos (list, "q", &array[1]);
-  if (err)
-    goto leave;
+      err = sexp_extract_param_sos (list, "q", &array[1]);
+      if (err)
+        goto leave;
+    }
 
   gcry_sexp_release (list);
   list = NULL;
@@ -1802,7 +1820,9 @@ do_create_from_keygrip (ctrl_t ctrl, int algo,
     }
 
   /* For X448 and Kyber we force the use of v5 packets.  */
-  if (curve_is_448 (s_key) || algo == PUBKEY_ALGO_KYBER)
+  if (algo == PUBKEY_ALGO_ED25519)
+    *keygen_flags |= KEYGEN_FLAG_CREATE_V6_KEY;
+  else if (curve_is_448 (s_key) || algo == PUBKEY_ALGO_KYBER)
     *keygen_flags |= KEYGEN_FLAG_CREATE_V5_KEY;
 
   /* Build a public key packet.  */
@@ -1817,7 +1837,8 @@ do_create_from_keygrip (ctrl_t ctrl, int algo,
     }
 
   pk->timestamp = timestamp;
-  pk->version = (*keygen_flags & KEYGEN_FLAG_CREATE_V5_KEY)? 5 : 4;
+  pk->version = (*keygen_flags & KEYGEN_FLAG_CREATE_V6_KEY)? 6 :
+                (*keygen_flags & KEYGEN_FLAG_CREATE_V5_KEY)? 5 : 4;
   if (expireval)
     pk->expiredate = pk->timestamp + expireval;
   pk->pubkey_algo = algo;
@@ -1957,7 +1978,8 @@ common_gen (const char *keyparms, const char *keyparms2,
     }
 
   pk->timestamp = timestamp;
-  pk->version = (keygen_flags & KEYGEN_FLAG_CREATE_V5_KEY)? 5 : 4;
+  pk->version = (keygen_flags & KEYGEN_FLAG_CREATE_V6_KEY)? 6 :
+                (keygen_flags & KEYGEN_FLAG_CREATE_V5_KEY)? 5 : 4;
   if (expireval)
     pk->expiredate = pk->timestamp + expireval;
   pk->pubkey_algo = algo;
@@ -1966,7 +1988,8 @@ common_gen (const char *keyparms, const char *keyparms2,
     err = ecckey_from_sexp (pk->pkey, s_key, s_key2, algo, pk->version);
   else if (algo == PUBKEY_ALGO_ECDSA
            || algo == PUBKEY_ALGO_EDDSA
-           || algo == PUBKEY_ALGO_ECDH )
+           || algo == PUBKEY_ALGO_ECDH
+           || algo == PUBKEY_ALGO_ED25519)
     err = ecckey_from_sexp (pk->pkey, s_key, NULL, algo, pk->version);
   else
     err = key_from_sexp (pk->pkey, s_key, "public-key", algoelem);
@@ -2167,7 +2190,8 @@ gen_ecc (int algo, const char *curve, kbnode_t pub_root,
 
   log_assert (algo == PUBKEY_ALGO_ECDSA
               || algo == PUBKEY_ALGO_EDDSA
-              || algo == PUBKEY_ALGO_ECDH);
+              || algo == PUBKEY_ALGO_ECDH
+              || algo == PUBKEY_ALGO_ED25519);
 
   if (!curve || !*curve)
     return gpg_error (GPG_ERR_UNKNOWN_CURVE);
@@ -2190,6 +2214,15 @@ gen_ecc (int algo, const char *curve, kbnode_t pub_root,
       keyparms = xtryasprintf
         ("(genkey(ecc(curve %zu:%s)(flags eddsa comp%s)))",
          strlen (curve), curve,
+         (((*keygen_flags & KEYGEN_FLAG_TRANSIENT_KEY)
+           && (*keygen_flags & KEYGEN_FLAG_NO_PROTECTION))?
+          " transient-key" : ""));
+    }
+  else if (algo == PUBKEY_ALGO_ED25519)
+    {
+      *keygen_flags |= KEYGEN_FLAG_CREATE_V6_KEY;
+      keyparms = xtryasprintf
+        ("(genkey(ecc(curve Ed25519)(flags eddsa%s)))",
          (((*keygen_flags & KEYGEN_FLAG_TRANSIENT_KEY)
            && (*keygen_flags & KEYGEN_FLAG_NO_PROTECTION))?
           " transient-key" : ""));
@@ -3039,12 +3072,15 @@ get_keysize_range (int algo, unsigned int *min, unsigned int *max)
       break;
 
     case PUBKEY_ALGO_EDDSA:
+    case PUBKEY_ALGO_ED25519:
       *min=255;
-      *max=441;
+      *max=441; /* FIXME: Really?  What about X448? */
       def=255;
       break;
 
     case PUBKEY_ALGO_KYBER:
+    case PUBKEY_ALGO_MLK768_25519:
+    case PUBKEY_ALGO_MLK1024_448:
       *min = 768;
       *max = 1024;
       def = 768;
@@ -3071,7 +3107,7 @@ fixup_keysize (unsigned int nbits, int algo, int silent)
     {
       nbits = ((nbits + 63) / 64) * 64;
     }
-  else if (algo == PUBKEY_ALGO_EDDSA)
+  else if (algo == PUBKEY_ALGO_EDDSA || algo == PUBKEY_ALGO_ED25519)
     {
       if (nbits < 256)
         nbits = 255;
@@ -3087,7 +3123,9 @@ fixup_keysize (unsigned int nbits, int algo, int silent)
       else
         nbits = 521;
     }
-  else if (algo == PUBKEY_ALGO_KYBER)
+  else if (algo == PUBKEY_ALGO_KYBER
+           || algo == PUBKEY_ALGO_MLK768_25519
+           || algo == PUBKEY_ALGO_MLK1024_448)
     {
       /* (in reality the numbers are not bits) */
       if (nbits < 768)
@@ -3901,7 +3939,8 @@ do_create (int algo, unsigned int nbits, const char *curve, kbnode_t pub_root,
                    common_gen_cb, common_gen_cb_parm);
   else if (algo == PUBKEY_ALGO_ECDSA
            || algo == PUBKEY_ALGO_EDDSA
-           || algo == PUBKEY_ALGO_ECDH)
+           || algo == PUBKEY_ALGO_ECDH
+           || algo == PUBKEY_ALGO_ED25519)
     err = gen_ecc (algo, curve, pub_root, timestamp, expiredate, is_subkey,
                    keygen_flags, passphrase,
                    cache_nonce_addr, passwd_nonce_addr,
@@ -4067,12 +4106,35 @@ parse_key_parameter_part (ctrl_t ctrl,
       size = strstr (string, "768_")? 768 : 1024;
       is_pqc = 1;
     }
-  else if (!ascii_strcasecmp (string, "mld65"))
+  else if (!ascii_strcasecmp (string, "mlk768") && RFC9980)
+    {
+      curve = "Curve25519";
+      algo = PUBKEY_ALGO_MLK768_25519;
+      size = 768;
+      is_pqc = 1;
+      keyversion = 6;
+    }
+  else if (!ascii_strcasecmp (string, "mlk1024") && RFC9980)
+    {
+      curve = "X448";
+      algo = PUBKEY_ALGO_MLK1024_448;
+      size = 1024;
+      is_pqc = 1;
+      keyversion = 6;
+    }
+  else if (!ascii_strcasecmp (string, "ietf27") && RFC9980)
+    {
+      curve = "Ed25519";
+      algo = PUBKEY_ALGO_ED25519;
+      size = 255;
+      keyversion = 6;
+    }
+  else if (!ascii_strcasecmp (string, "mld65") && RFC9980)
     {
       algo = PUBKEY_ALGO_MLD65_25519;
       is_pqc = 1;
     }
-  else if (!ascii_strcasecmp (string, "mld87"))
+  else if (!ascii_strcasecmp (string, "mld87") && RFC9980)
     {
       algo = PUBKEY_ALGO_MLD87_448;
       is_pqc = 1;
@@ -4289,7 +4351,7 @@ parse_key_parameter_part (ctrl_t ctrl,
   if (!keyuse)
     {
       if (algo == PUBKEY_ALGO_ECDSA || algo == PUBKEY_ALGO_EDDSA
-          || algo == PUBKEY_ALGO_DSA)
+          || algo == PUBKEY_ALGO_DSA || algo == PUBKEY_ALGO_ED25519)
         keyuse = PUBKEY_USAGE_SIG;
       else if (algo == PUBKEY_ALGO_RSA)
         keyuse = for_subkey? PUBKEY_USAGE_ENC : PUBKEY_USAGE_SIG;
@@ -4297,7 +4359,7 @@ parse_key_parameter_part (ctrl_t ctrl,
         keyuse = PUBKEY_USAGE_ENC;
     }
   else if (algo == PUBKEY_ALGO_ECDSA || algo == PUBKEY_ALGO_EDDSA
-           || algo == PUBKEY_ALGO_DSA)
+           || algo == PUBKEY_ALGO_DSA || algo == PUBKEY_ALGO_ED25519)
     {
       keyuse &= ~PUBKEY_USAGE_ENC; /* Forbid encryption.  */
     }
@@ -4326,7 +4388,9 @@ parse_key_parameter_part (ctrl_t ctrl,
     }
 
   /* Ed448, X448 and the PQC algos must only be used as v5 keys.  */
-  if (is_448 || is_pqc)
+  if (keyversion == 6)
+    ;
+  else if (is_448 || is_pqc)
     {
       if (keyversion == 4)
         log_info (_("WARNING: v4 is specified, but overridden by v5.\n"));
@@ -4478,6 +4542,8 @@ parse_key_parameter_string (ctrl_t ctrl,
     string = FUTURE_STD_KEY_PARAM;
   else if (!ascii_strcasecmp (string, "pqc"))
     string = PQC_STD_KEY_PARAM;
+  else if (!ascii_strcasecmp (string, "pqc9980") && RFC9980)
+    string = PQC9980_STD_KEY_PARAM;
   else if (!ascii_strcasecmp (string, "card"))
     string = "card/cert,sign+card/encr";
 
@@ -5592,6 +5658,7 @@ quick_generate_keypair (ctrl_t ctrl, const char *uid, const char *algostr,
        || !ascii_strcasecmp (algostr, "future-default")
        || !ascii_strcasecmp (algostr, "futuredefault")
        || !ascii_strcasecmp (algostr, "pqc")
+       || (!ascii_strcasecmp (algostr, "pqc9980") && RFC9980)
        || !ascii_strcasecmp (algostr, "card"))
       && (!*usagestr || !ascii_strcasecmp (usagestr, "default")
           || !strcmp (usagestr, "-")))

@@ -2496,7 +2496,16 @@ parse_signature (IOBUF inp, int pkttype, unsigned long pktlen,
 
   if (sig->version == 6)
     {
-      rc = read_raw_octet_string (inp, &pktlen, 1, 0, 0, &sig->salt);
+      int saltlen;
+
+      /* Note that we allow for a zero length salt.  */
+      saltlen = iobuf_get (inp);
+      if (saltlen < 0 || !pktlen)
+        rc = gpg_error (GPG_ERR_INV_PACKET);
+      else if (saltlen)
+        rc = read_raw_octet_string (inp, &pktlen, 0, saltlen, 0, &sig->salt);
+      pktlen--; /* Adjust for saltlen octet read above.  */
+
       if (rc)
         goto leave;
     }

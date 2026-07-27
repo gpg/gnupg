@@ -24,6 +24,7 @@
 
 /*-- pkglue.c --*/
 gcry_mpi_t get_mpi_from_sexp (gcry_sexp_t sexp, const char *item, int mpifmt);
+gcry_mpi_t get_r_s_mpi_from_sexp (gcry_sexp_t sexp);
 gpg_error_t sexp_extract_param_sos (gcry_sexp_t sexp, const char *param,
                                     gcry_mpi_t *r_sos);
 gpg_error_t sexp_extract_param_sos_nlz (gcry_sexp_t sexp, const char *param,
