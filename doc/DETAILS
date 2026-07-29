@@ -509,6 +509,14 @@ pkd:0:1024:B665B1435F4C2 .... FF26ABB:
     available.  This is the case with CMS and might eventually also be
     available for OpenPGP.
 
+*** SIGINFO <time>
+    This status line may be emitted directly after GOODSIG, EXPSIG,
+    EXPKEYSIG, REVKEYSIG, or BADSIG and can be used to convey further
+    information on the signature.  As of now only the signature
+    creation time <time> is specified.  This status line will
+    eventually be extended.  Consumers should consider a time value of
+    "-" or "0" to be no time information available.
+
 *** ERRSIG  <keyid>  <pkalgo> <hashalgo> <sig_class> <time> <rc> <fpr>
     It was not possible to check the signature.  This may be caused by
     a missing public key or an unsupported algorithm.  A RC of 4

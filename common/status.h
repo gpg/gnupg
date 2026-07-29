@@ -165,7 +165,8 @@ enum
     STATUS_SUCCESS,
     STATUS_FAILURE,
 
-    STATUS_INQUIRE_MAXLEN
+    STATUS_INQUIRE_MAXLEN,
+    STATUS_SIGINFO              /* Used after STATUS_BADSIG. */
   };
 
 

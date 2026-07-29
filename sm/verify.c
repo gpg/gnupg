@@ -552,6 +552,7 @@ gpgsm_verify (ctrl_t ctrl, estream_t in_fp, estream_t data_fp,
                 }
               fpr = gpgsm_fpr_and_name_for_status (cert);
               gpgsm_status (ctrl, STATUS_BADSIG, fpr);
+              gpgsm_status (ctrl, STATUS_SIGINFO, *sigtime? sigtime : "-");
               xfree (fpr);
               audit_log_s (ctrl->audit, AUDIT_SIG_STATUS, "bad");
               goto next_signer;
@@ -595,6 +596,7 @@ gpgsm_verify (ctrl_t ctrl, estream_t in_fp, estream_t data_fp,
           log_error ("invalid signature: %s\n", gpg_strerror (rc));
           fpr = gpgsm_fpr_and_name_for_status (cert);
           gpgsm_status (ctrl, STATUS_BADSIG, fpr);
+          gpgsm_status (ctrl, STATUS_SIGINFO, *sigtime? sigtime : "-");
           xfree (fpr);
           audit_log_s (ctrl->audit, AUDIT_SIG_STATUS, "bad");
           goto next_signer;
