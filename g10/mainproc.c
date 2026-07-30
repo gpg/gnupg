@@ -1934,6 +1934,14 @@ print_good_bad_signature (int statno, const char *keyid_str, kbnode_t un,
                                 un? un->pkt->pkt.user_id->name:"[?]",
                                 un? un->pkt->pkt.user_id->len:3,
                                 -1);
+  if (statno == STATUS_BADSIG)
+    {
+      gnupg_isotime_t timestr;
+
+      epoch2isotime (timestr, sig->timestamp);
+      write_status_text_and_buffer (STATUS_SIGINFO, timestr,
+                                    NULL, 0, -1);
+    }
 
   if (un)
     p = utf8_to_native (un->pkt->pkt.user_id->name,
