@@ -439,10 +439,16 @@ gpgsm_verify (ctrl_t ctrl, estream_t in_fp, estream_t data_fp,
                        gpg_strerror(rc));
           {
             char numbuf[50];
-            sprintf (numbuf, "%d", rc);
+            char *tmpstr, *tmpstr2;
 
+            sprintf (numbuf, "%d", rc);
+            tmpstr = gpgsm_format_sn_issuer (serial, issuer);
+            tmpstr2 = percent_plus_escape (tmpstr);
+            gpgsm_status (ctrl, STATUS_NO_PUBKEY, tmpstr2);
             gpgsm_status2 (ctrl, STATUS_ERROR, "verify.findkey",
                            numbuf, NULL);
+            xfree (tmpstr);
+            xfree (tmpstr2);
           }
           audit_log_s (ctrl->audit, AUDIT_SIG_STATUS, "no-cert");
           goto next_signer;

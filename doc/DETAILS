@@ -825,10 +825,12 @@ pkd:0:1024:B665B1435F4C2 .... FF26ABB:
 *** KEYREVOKED
     The used key has been revoked by its owner.  No arguments yet.
 
-*** NO_PUBKEY  <long keyid>
+*** NO_PUBKEY  <long_keyid_or_sn_issuer>
     The public key is not available.  Note the arg should in general
     not be used because it is better to take it from the ERRSIG
-    status line which is printed right before this one.
+    status line which is printed right before this one.  There is no
+    keyid for X.509 and thus gpgsm uses the "#serialno/issuer" with
+    spaces and control characters percent-plus escaped.
 
 *** NO_SECKEY  <long keyid>
     The secret key is not available
