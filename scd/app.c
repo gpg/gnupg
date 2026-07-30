@@ -1792,12 +1792,14 @@ maybe_switch_app (ctrl_t ctrl, card_t card, const char *keyref)
   if (!card->app)
     return gpg_error (GPG_ERR_CARD_NOT_INITIALIZED);
 
-  if (card->maybe_check_aid && card->app->fnc.reselect
+  if ((card->maybe_check_aid || opt.pcsc_shared)
+      && card->app->fnc.reselect
       && check_external_interference (card->app, ctrl))
     {
       if (DBG_APP)
-        log_debug ("slot %d, app %s: forced re-select due to direct APDU use\n",
-                   card->slot, xstrapptype (card->app));
+        log_debug ("slot %d, app %s: forced re-select due to %s\n",
+                   card->slot, xstrapptype (card->app),
+                   card->maybe_check_aid? "direct APDU use" : "pcsc-shared");
       err = card->app->fnc.reselect (card->app, ctrl);
       if (err)
         log_error ("slot %d, app %s: forced re-select failed: %s - ignored\n",
