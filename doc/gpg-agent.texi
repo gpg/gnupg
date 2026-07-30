@@ -290,6 +290,12 @@ This option enables extra debug information pertaining to the
 Pinentry.  As of now it is only useful when used along with
 @code{--debug 1024}.
 
+@item --debug-no-libgcrypt
+@opindex debug-no-libgcrypt
+Do no use the debug flags "crypto" and "mpi" to enable similar debug
+features in Libgcrypt.  Note well: This is a maintainer only option
+and may thus be changed or removed at any time without notice.
+
 @item --no-detach
 @opindex no-detach
 Don't detach the process from the console.  This is mainly useful for

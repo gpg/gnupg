@@ -893,6 +893,12 @@ This is actually not a debugging option but only useful as such.  It
 lets @command{gpgsm} ignore all notAfter dates, this is used by the regression
 tests.
 
+@item --debug-no-libgcrypt
+@opindex debug-no-libgcrypt
+Do no use the debug flags "crypto" and "mpi" to enable similar debug
+features in Libgcrypt.  Note well: This is a maintainer only option
+and may thus be changed or removed at any time without notice.
+
 @item --passphrase-fd @code{n}
 @opindex passphrase-fd
 Read the passphrase from file descriptor @code{n}. Only the first line

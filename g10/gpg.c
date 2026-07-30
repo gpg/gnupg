@@ -242,6 +242,7 @@ enum cmd_and_opt_values
     oDebugSetIobufSize,
     oDebugAllowLargeChunks,
     oDebugIgnoreExpiration,
+    oDebugNoLibgcrypt,
     oStatusFD,
     oStatusFile,
     oAttributeFD,
@@ -625,6 +626,7 @@ static gpgrt_opt_t opts[] = {
   ARGPARSE_s_n (oDebugIOLBF, "debug-iolbf", "@"),
   ARGPARSE_s_u (oDebugSetIobufSize, "debug-set-iobuf-size", "@"),
   ARGPARSE_s_u (oDebugAllowLargeChunks, "debug-allow-large-chunks", "@"),
+  ARGPARSE_s_n (oDebugNoLibgcrypt, "debug-no-libgcrypt", "@"),
   ARGPARSE_s_s (oDisplayCharset, "display-charset", "@"),
   ARGPARSE_s_s (oDisplayCharset, "charset", "@"),
   ARGPARSE_conffile (oOptions, "options", N_("|FILE|read options from FILE")),
@@ -1113,6 +1115,7 @@ static int opt_log_time;
 /* Collection of options used only in this module.  */
 static struct {
   unsigned int forbid_gen_key;
+  unsigned int no_libgcrypt_debug;
 } mopt;
 
 
@@ -1415,9 +1418,9 @@ set_debug (const char *level)
     memory_debug_mode = 1;
   if ((opt.debug & DBG_MEMSTAT_VALUE))
     memory_stat_debug_mode = 1;
-  if (DBG_MPI)
+  if (DBG_MPI && !mopt.no_libgcrypt_debug)
     gcry_control (GCRYCTL_SET_DEBUG_FLAGS, 2);
-  if (DBG_CRYPTO)
+  if (DBG_CRYPTO && !mopt.no_libgcrypt_debug)
     gcry_control (GCRYCTL_SET_DEBUG_FLAGS, 1);
   if ((opt.debug & DBG_IOBUF_VALUE))
     iobuf_debug_mode = 1;
@@ -2914,6 +2917,8 @@ main (int argc, char **argv)
 
 	  case oDebugAll: opt.debug = ~0; break;
           case oDebugLevel: debug_level = pargs.r.ret_str; break;
+
+          case oDebugNoLibgcrypt: mopt.no_libgcrypt_debug = 1; break;
 
           case oDebugIOLBF: break; /* Already set in pre-parse step.  */
 

@@ -81,6 +81,7 @@ enum cmd_and_opt_values
   oDebugWait,
   oDebugQuickRandom,
   oDebugPinentry,
+  oDebugNoLibgcrypt,
   oNoOptions,
   oHomedir,
   oNoDetach,
@@ -197,6 +198,7 @@ static gpgrt_opt_t opts[] = {
   ARGPARSE_s_i (oDebugWait,  "debug-wait",  "@"),
   ARGPARSE_s_n (oDebugQuickRandom, "debug-quick-random", "@"),
   ARGPARSE_s_n (oDebugPinentry, "debug-pinentry", "@"),
+  ARGPARSE_s_n (oDebugNoLibgcrypt, "debug-no-libgcrypt", "@"),
   ARGPARSE_s_s (oLogFile,   "log-file",
                 /* */       N_("|FILE|write server mode logs to FILE")),
 
@@ -349,6 +351,15 @@ static struct debug_flags_s debug_flags [] =
 /* CHECK_PROBLEMS_INTERVAL defines how often we check the existence of
  * parent process and homedir.  Value is in seconds.  */
 #define CHECK_PROBLEMS_INTERVAL     (4)
+
+
+/* Collection of options used only in this module.  */
+/* These shall be used for new local options instead of all the
+ * separate file local variables.  */
+static struct {
+  unsigned int no_libgcrypt_debug;
+} mopt;
+
 
 /* Flag indicating that the ssh-agent subsystem has been enabled.  */
 static int ssh_support;
@@ -647,9 +658,9 @@ set_debug (void)
   if (opt.debug && opt.quiet)
     opt.quiet = 0;
 
-  if (opt.debug & DBG_MPI_VALUE)
+  if ((opt.debug & DBG_MPI_VALUE)  && !mopt.no_libgcrypt_debug)
     gcry_control (GCRYCTL_SET_DEBUG_FLAGS, 2);
-  if (opt.debug & DBG_CRYPTO_VALUE )
+  if ((opt.debug & DBG_CRYPTO_VALUE) && !mopt.no_libgcrypt_debug)
     gcry_control (GCRYCTL_SET_DEBUG_FLAGS, 1);
   gcry_control (GCRYCTL_SET_VERBOSITY, (int)opt.verbose);
 
@@ -880,6 +891,7 @@ parse_rereadable_options (gpgrt_argparse_t *pargs, int reread)
       opt.debug = 0;
       opt.no_grab = 1;
       opt.debug_pinentry = 0;
+      mopt.no_libgcrypt_debug = 0;
       xfree (opt.pinentry_program);
       opt.pinentry_program = NULL;
       opt.pinentry_touch_file = NULL;
@@ -925,6 +937,7 @@ parse_rereadable_options (gpgrt_argparse_t *pargs, int reread)
     case oDebugAll: opt.debug = ~0; break;
     case oDebugLevel: debug_level = pargs->r.ret_str; break;
     case oDebugPinentry: opt.debug_pinentry = 1; break;
+    case oDebugNoLibgcrypt: mopt.no_libgcrypt_debug = 1; break;
 
     case oLogFile:
       if (!reread)

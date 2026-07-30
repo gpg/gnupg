@@ -3352,6 +3352,12 @@ Change the buffer size of the IOBUFs to @var{n} kilobyte.  Using 0
 prints the current size.  Note well: This is a maintainer only option
 and may thus be changed or removed at any time without notice.
 
+@item --debug-no-libgcrypt
+@opindex debug-no-libgcrypt
+Do no use the debug flags "crypto" and "mpi" to enable similar debug
+features in Libgcrypt.  Note well: This is a maintainer only option
+and may thus be changed or removed at any time without notice.
+
 @item --debug-allow-large-chunks
 @opindex debug-allow-large-chunks
 To facilitate software tests and experiments this option allows one to

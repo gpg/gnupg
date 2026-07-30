@@ -110,6 +110,7 @@ enum cmd_and_opt_values {
   oDebugNoChainValidation,
   oDebugIgnoreExpiration,
   oDebugForceECDHSHA1KDF,
+  oDebugNoLibgcrypt,
   oLogFile,
   oNoLogFile,
   oAuditLog,
@@ -297,6 +298,7 @@ static gpgrt_opt_t opts[] = {
   ARGPARSE_s_n (oDebugNoChainValidation, "debug-no-chain-validation", "@"),
   ARGPARSE_s_n (oDebugIgnoreExpiration,  "debug-ignore-expiration", "@"),
   ARGPARSE_s_n (oDebugForceECDHSHA1KDF,  "debug-force-ecdh-sha1kdf", "@"),
+  ARGPARSE_s_n (oDebugNoLibgcrypt,       "debug-no-libgcrypt", "@"),
   ARGPARSE_s_s (oLogFile, "log-file",
                 N_("|FILE|write server mode logs to FILE")),
   ARGPARSE_s_n (oNoLogFile, "no-log-file", "@"),
@@ -562,8 +564,16 @@ static unsigned int parent_cache_stats;
 #define DEFAULT_CIPHER_ALGO       "AES256-CBC"
 #define DEFAULT_CIPHER_ALGO_DE_VS "AES256-GCM"
 
-/* A flag to track whether --cipher-algo was used.  */
-static int cipher_algo_option_seen;
+/*
+ * Collection of options used only in this module.
+ */
+static struct {
+  /* A flag to track whether --cipher-algo was used.  */
+  unsigned int cipher_algo_option_seen;
+  /* Do not enable Libgcrypt debugging.  */
+  unsigned int no_libgcrypt_debug;
+} mopt;
+
 
 static char *build_list (const char *text,
 			 const char *(*mapf)(int), int (*chkf)(int));
@@ -824,9 +834,9 @@ set_debug (void)
   if (opt.debug)
     opt.quiet = 0;
 
-  if (opt.debug & DBG_MPI_VALUE)
+  if ((opt.debug & DBG_MPI_VALUE) && !mopt.no_libgcrypt_debug)
     gcry_control (GCRYCTL_SET_DEBUG_FLAGS, 2);
-  if (opt.debug & DBG_CRYPTO_VALUE )
+  if ((opt.debug & DBG_CRYPTO_VALUE) && !mopt.no_libgcrypt_debug)
     gcry_control (GCRYCTL_SET_DEBUG_FLAGS, 1);
   gcry_control (GCRYCTL_SET_VERBOSITY, (int)opt.verbose);
 
@@ -1330,6 +1340,7 @@ main ( int argc, char **argv)
         case oDebugNoChainValidation: opt.no_chain_validation = 1; break;
         case oDebugIgnoreExpiration: opt.ignore_expiration = 1; break;
         case oDebugForceECDHSHA1KDF: opt.force_ecdh_sha1kdf = 1; break;
+        case oDebugNoLibgcrypt: mopt.no_libgcrypt_debug = 1; break;
 
         case oCompatibilityFlags:
           if (parse_compatibility_flags (pargs.r.ret_str, &opt.compat_flags,
@@ -1468,7 +1479,7 @@ main ( int argc, char **argv)
 
         case oCipherAlgo:
           opt.def_cipher_algoid = pargs.r.ret_str;
-          cipher_algo_option_seen = 1;
+          mopt.cipher_algo_option_seen = 1;
           break;
 
         case oDisableCipherAlgo:
@@ -1732,7 +1743,7 @@ main ( int argc, char **argv)
 
 
   /* In de-vs mode switch the default cipher.  */
-  if (!cipher_algo_option_seen && opt.compliance == CO_DE_VS)
+  if (!mopt.cipher_algo_option_seen && opt.compliance == CO_DE_VS)
     opt.def_cipher_algoid = DEFAULT_CIPHER_ALGO_DE_VS;
 
   /* Must do this after dropping setuid, because the mapping functions
