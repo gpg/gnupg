@@ -2657,6 +2657,12 @@ build_mode1003_sexp (PKT_public_key *pk, gcry_sexp_t *result)
            curvename, pk->pkey[2], pk->pkey[3]);
       break;
 
+    case PUBKEY_ALGO_X25519:
+      err = gcry_sexp_build
+        (&skey,NULL,"(private-key(ecc(curve Curve25519)(q%m)(d%m)))",
+         pk->pkey[0], pk->pkey[1]);
+      break;
+
     case PUBKEY_ALGO_ECDSA:
       curvename = openpgp_oid_to_str (pk->pkey[0]);
       if (!curvename)
@@ -2828,6 +2834,25 @@ internal_skey_object_to_sexp (PKT_public_key *pk, gcry_sexp_t *r_curve,
     {
       gcry_sexp_release (*r_curve);
       err = gcry_sexp_build (r_curve, NULL, "(curve Ed25519)");
+      if (err)
+        goto leave;
+
+      j = 0;
+      /* Append the public key element Q.  */
+      put_membuf_str (&mbuf, " _ %m");
+      format_args[j++] = pk->pkey + 0;
+
+      /* Append the secret key element D.  */
+      if (gcry_mpi_get_flag (pk->pkey[1], GCRYMPI_FLAG_USER1))
+        put_membuf_str (&mbuf, " e %m");
+      else
+        put_membuf_str (&mbuf, " _ %m");
+      format_args[j++] = pk->pkey + 1;
+    }
+  else if (RFC9980 && pk->pubkey_algo == PUBKEY_ALGO_X25519)
+    {
+      gcry_sexp_release (*r_curve);
+      err = gcry_sexp_build (r_curve, NULL, "(curve Curve25519)");
       if (err)
         goto leave;
 

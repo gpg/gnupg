@@ -127,6 +127,7 @@ pubkey_string (PKT_public_key *pk, char *buffer, size_t bufsize)
     case PUBKEY_ALGO_ECDH:
     case PUBKEY_ALGO_ECDSA:
     case PUBKEY_ALGO_EDDSA:     prefix = "";    break;
+    case PUBKEY_ALGO_X25519:       fixed = "ietf25";     break;
     case PUBKEY_ALGO_ED25519:      fixed = "ietf27";     break;
     case PUBKEY_ALGO_MLD65_25519:  fixed = "mld65";      break;
     case PUBKEY_ALGO_MLD87_448:    fixed = "mld87";      break;
@@ -1403,6 +1404,12 @@ keygrip_from_pk (PKT_public_key *pk, unsigned char *array, int get_second)
             xfree (curve);
           }
       }
+      break;
+
+    case PUBKEY_ALGO_X25519:
+      err = gcry_sexp_build (&s_pkey, NULL,
+                             "(public-key(ecc(curve Curve25519)(q%m)))",
+                             pk->pkey[0]);
       break;
 
     case PUBKEY_ALGO_ED25519:

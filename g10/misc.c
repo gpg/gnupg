@@ -757,6 +757,11 @@ openpgp_pk_test_algo2 (pubkey_algo_t algo, unsigned int use)
         ga = GCRY_PK_EDDSA;
       break;
 
+    case PUBKEY_ALGO_X25519:
+      if (RFC9980)
+        ga = GCRY_PK_KEM;
+      break;
+
     case PUBKEY_ALGO_MLK768_25519:
     case PUBKEY_ALGO_MLK1024_448:
       if (RFC9980)
@@ -817,6 +822,10 @@ openpgp_pk_algo_usage ( int algo )
         if (RFC9980)
           use= PUBKEY_USAGE_CERT | PUBKEY_USAGE_SIG | PUBKEY_USAGE_AUTH;
         break;
+      case PUBKEY_ALGO_X25519:
+        if (RFC9980)
+          use= PUBKEY_USAGE_ENC | PUBKEY_USAGE_RENC;
+        break;
 
       case PUBKEY_ALGO_KYBER:
       case PUBKEY_ALGO_MLK768_25519:
@@ -853,6 +862,7 @@ openpgp_pk_algo_name (pubkey_algo_t algo)
     case PUBKEY_ALGO_ECDSA:     return "ECDSA";
     case PUBKEY_ALGO_EDDSA:     return "EDDSA";
     case PUBKEY_ALGO_KYBER:     return "Kyber";
+    case PUBKEY_ALGO_X25519:    return "ietf25";
     case PUBKEY_ALGO_ED25519:   return "ietf27";
     case PUBKEY_ALGO_MLK768_25519: return "mlk768";
     case PUBKEY_ALGO_MLK1024_448:  return "mlk1024";
@@ -1761,6 +1771,7 @@ pubkey_get_npkey (pubkey_algo_t algo)
     case PUBKEY_ALGO_ELGAMAL:   return 3;
     case PUBKEY_ALGO_EDDSA:     return 2;
     case PUBKEY_ALGO_KYBER:     return 3;
+    case PUBKEY_ALGO_X25519:       return 1;
     case PUBKEY_ALGO_ED25519:      return 1;
     case PUBKEY_ALGO_MLK768_25519: return 2;
     case PUBKEY_ALGO_MLK1024_448:  return 2;
@@ -1785,6 +1796,7 @@ pubkey_get_nskey (pubkey_algo_t algo)
     case PUBKEY_ALGO_ELGAMAL:   return 4;
     case PUBKEY_ALGO_EDDSA:     return 3;
     case PUBKEY_ALGO_KYBER:     return 5;
+    case PUBKEY_ALGO_X25519:       return 2;
     case PUBKEY_ALGO_ED25519:      return 2;
     case PUBKEY_ALGO_MLK768_25519: return 4;
     case PUBKEY_ALGO_MLK1024_448:  return 4;
@@ -1829,6 +1841,7 @@ pubkey_get_nenc (pubkey_algo_t algo)
     case PUBKEY_ALGO_ELGAMAL:   return 2;
     case PUBKEY_ALGO_EDDSA:     return 0;
     case PUBKEY_ALGO_KYBER:     return 3;
+    case PUBKEY_ALGO_X25519:    return 2;
     case PUBKEY_ALGO_MLK768_25519: return 3;
     case PUBKEY_ALGO_MLK1024_448:  return 3;
     default: return 0;

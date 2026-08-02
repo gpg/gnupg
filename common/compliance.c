@@ -205,6 +205,7 @@ gnupg_pk_is_compliant (enum gnupg_compliance_mode compliance, int algo,
     case PUBKEY_ALGO_ECDSA:
     case PUBKEY_ALGO_EDDSA:
     case PUBKEY_ALGO_ED25519:
+    case PUBKEY_ALGO_X25519:
     case GCRY_PK_ECDSA:
     case GCRY_PK_ECDH:
     case GCRY_PK_EDDSA:
@@ -454,6 +455,7 @@ gnupg_pk_is_allowed (enum gnupg_compliance_mode compliance,
             }
           break;
 
+	case PUBKEY_ALGO_X25519:
 	case PUBKEY_ALGO_MLK768_25519:
 	case PUBKEY_ALGO_MLK1024_448:
 	  if (use == PK_USE_DECRYPTION)

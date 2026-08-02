@@ -109,7 +109,7 @@ ecc_build_kdf_params (unsigned char **r_kdf_params, size_t *r_len,
      (namely, hash algo for KDF and symmetric algo for wrapping key).
      Using this specifier (together with curve OID of the public key
      and the fingerprint), we build _the_ KDF parameters.  */
-  if (!gcry_mpi_get_flag (pkey[2], GCRYMPI_FLAG_OPAQUE))
+  if (!pkey[2] || !gcry_mpi_get_flag (pkey[2], GCRYMPI_FLAG_OPAQUE))
     return gpg_error (GPG_ERR_BAD_PUBKEY);
 
   kdf_params_spec = gcry_mpi_get_opaque (pkey[2], &nbits);

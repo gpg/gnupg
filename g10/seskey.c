@@ -87,6 +87,7 @@ encode_session_key (int openpgp_pk_algo, DEK *dek, unsigned int nbits)
     log_debug ("encode_session_key: encoding %d byte DEK", dek->keylen);
 
   if (openpgp_pk_algo == PUBKEY_ALGO_KYBER
+      || openpgp_pk_algo == PUBKEY_ALGO_X25519
       || openpgp_pk_algo == PUBKEY_ALGO_MLK768_25519
       || openpgp_pk_algo == PUBKEY_ALGO_MLK1024_448)
     {

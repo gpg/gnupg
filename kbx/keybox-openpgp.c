@@ -260,6 +260,12 @@ keygrip_from_keyparm (int algo, struct keyparm_s *kp, unsigned char *grip)
       }
       break;
 
+    case PUBKEY_ALGO_X25519:
+      err = gcry_sexp_build (&s_pkey, NULL,
+                             "(public-key(ecc(curve Curve25519)"
+                             "(q%b)))", kp[0].len, kp[0].mpi);
+      break;
+
     case PUBKEY_ALGO_MLK768_25519:
       /* There is no space in the BLOB for a second grip, thus for now
        * we store only the ECC keygrip.  */
@@ -376,6 +382,10 @@ parse_key (const unsigned char *data, size_t datalen,
       npkey = 2;
       is_ecc = 1;
       break;
+    case PUBKEY_ALGO_X25519:
+      npkey = 1;
+      is_9980 = 1;
+      break;
     case PUBKEY_ALGO_ED25519:
       npkey = 1;
       is_9980 = 1;
@@ -433,6 +443,8 @@ parse_key (const unsigned char *data, size_t datalen,
       else if (is_9980)
         {
           if (algorithm == PUBKEY_ALGO_ED25519)
+            nbytes = 32;
+          else if (algorithm == PUBKEY_ALGO_X25519)
             nbytes = 32;
           else if (algorithm == PUBKEY_ALGO_MLK768_25519)
             nbytes = !i? 32 : 1184;

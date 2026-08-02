@@ -736,7 +736,8 @@ do_key (iobuf_t out, int ctb, PKT_public_key *pk)
         }
       else if (RFC9980 && (pk->pubkey_algo == PUBKEY_ALGO_MLK768_25519
                            || pk->pubkey_algo == PUBKEY_ALGO_MLK1024_448
-                           || pk->pubkey_algo == PUBKEY_ALGO_ED25519))
+                           || pk->pubkey_algo == PUBKEY_ALGO_ED25519
+                           || pk->pubkey_algo == PUBKEY_ALGO_X25519))
         {
           err = gpg_mpi_write_opaque_nohdr (a, pk->pkey[i]);
         }
@@ -1106,6 +1107,12 @@ do_pubkey_enc_v6 (iobuf_t out, int ctb, PKT_pubkey_enc *enc)
           iobuf_put (a, 40); /* size octet.  */
           rc = gpg_mpi_write_opaque_nohdr (a, enc->data[2]);
         }
+    }
+  else if (enc->pubkey_algo == PUBKEY_ALGO_X25519)
+    {
+      rc = gpg_mpi_write_opaque_nohdr (a, enc->data[0]);
+      if (!rc)
+        rc = gpg_mpi_write_opaque_8 (a, enc->data[1], NULL);
     }
   else
     rc = gpg_error (GPG_ERR_INV_PACKET); /* for this algo.  */

@@ -451,7 +451,8 @@ use_rfc9980_seipdv2 (pk_list_t pk_list)
   for ( ; pk_list; pk_list = pk_list->next )
     {
       pk = pk_list->pk;
-      if (!(pk->pubkey_algo == PUBKEY_ALGO_MLK768_25519
+      if (!(pk->pubkey_algo == PUBKEY_ALGO_X25519
+            || pk->pubkey_algo == PUBKEY_ALGO_MLK768_25519
             || pk->pubkey_algo == PUBKEY_ALGO_MLK1024_448))
         return 0;  /* No.  */
     }
@@ -1314,7 +1315,8 @@ write_pubkey_enc (ctrl_t ctrl,
   int is_rfc9980;
   size_t fprlen;
 
-  if (pk->pubkey_algo == PUBKEY_ALGO_MLK768_25519
+  if (pk->pubkey_algo == PUBKEY_ALGO_X25519
+      || pk->pubkey_algo == PUBKEY_ALGO_MLK768_25519
       || pk->pubkey_algo == PUBKEY_ALGO_MLK1024_448)
     is_rfc9980 = 1;
   else

@@ -174,6 +174,7 @@ typedef enum
     PUBKEY_ALGO_ELGAMAL     = 20, /* Elgamal encrypt+sign (legacy).  */
     /*                        21     reserved by OpenPGP.            */
     PUBKEY_ALGO_EDDSA       = 22, /* EdDSA.                          */
+    PUBKEY_ALGO_X25519      = 25, /* X25519 (RFC9580).               */
     PUBKEY_ALGO_ED25519     = 27, /* ED25519 (RFC9580).              */
     /*                        29     (was fips203.ipd.2023-08-24 in 1.5.0)   */
     PUBKEY_ALGO_MLD65_25519 = 30, /* ML-DSA-65+Ed25519 (RFC9980)     */

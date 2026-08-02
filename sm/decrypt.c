@@ -559,7 +559,7 @@ ecdh_derive_kek (unsigned char *kek_key, unsigned int kek_len,
   if (err)
     return err;
 
-  err = gnupg_ecc_kem_kdf (kek_key, kek_len, 0, hash_algo,
+  err = gnupg_ecc_kem_kdf (kek_key, kek_len, GCRY_KDF_X963_KDF, hash_algo,
                            secret, secretlen,
                            (char *)kdf_params, kdf_params_len);
   return err;

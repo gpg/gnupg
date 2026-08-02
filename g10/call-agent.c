@@ -2936,7 +2936,8 @@ agent_pkdecrypt (ctrl_t ctrl, const char *keygrip, const char *desc,
 
   if (*keygrip2)
     cmdline = "PKDECRYPT --kem=PQC-PGP";
-  else if (pubkey_algo  == PUBKEY_ALGO_ECDH)
+  else if (pubkey_algo  == PUBKEY_ALGO_ECDH
+           || pubkey_algo  == PUBKEY_ALGO_X25519)
     cmdline = "PKDECRYPT --kem=PGP";
   else
     cmdline = "PKDECRYPT";

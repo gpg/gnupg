@@ -1585,10 +1585,22 @@ ecckey_from_sexp (gcry_mpi_t *array, gcry_sexp_t sexp,
       goto leave;
     }
 
-  if (algo == PUBKEY_ALGO_ED25519)
+  if (algo == PUBKEY_ALGO_ED25519
+      || algo == PUBKEY_ALGO_X25519)
     {
       err = 0;
       array[0] = get_mpi_from_sexp (list, "q", GCRYMPI_FMT_OPAQUE);
+      if (!array[0])
+        {
+          err = gpg_error (GPG_ERR_NO_OBJ);
+          goto leave;
+        }
+    }
+  else if (algo == PUBKEY_ALGO_MLK768_25519
+           || algo == PUBKEY_ALGO_MLK1024_448)
+    {
+      err = 0;
+      array[0] = get_mpi_from_sexp_strip_0x40 (list, "q");
       if (!array[0])
         {
           err = gpg_error (GPG_ERR_NO_OBJ);
@@ -1609,8 +1621,12 @@ ecckey_from_sexp (gcry_mpi_t *array, gcry_sexp_t sexp,
   gcry_sexp_release (list);
   list = NULL;
 
-  if (algo == PUBKEY_ALGO_KYBER)
+  if (algo == PUBKEY_ALGO_KYBER
+      || algo == PUBKEY_ALGO_MLK768_25519
+      || algo == PUBKEY_ALGO_MLK1024_448)
     {
+      int arrayidx = algo == PUBKEY_ALGO_KYBER? 2 : 1;
+
       if (!sexp2)
         {
           err = gpg_error (GPG_ERR_MISSING_VALUE);
@@ -1638,9 +1654,9 @@ ecckey_from_sexp (gcry_mpi_t *array, gcry_sexp_t sexp,
           err = gpg_error (GPG_ERR_NO_OBJ); /* required parameter not found */
           goto leave;
         }
-      array[2] = gcry_sexp_nth_mpi (l2, 1, GCRYMPI_FMT_OPAQUE);
+      array[arrayidx] = gcry_sexp_nth_mpi (l2, 1, GCRYMPI_FMT_OPAQUE);
       gcry_sexp_release (l2);
-      if (!array[2])
+      if (!array[arrayidx])
         {
           err = gpg_error (GPG_ERR_INV_OBJ); /* required parameter invalid */
           goto leave;
@@ -1819,8 +1835,10 @@ do_create_from_keygrip (ctrl_t ctrl, int algo,
         }
     }
 
-  /* For X448 and Kyber we force the use of v5 packets.  */
-  if (algo == PUBKEY_ALGO_ED25519)
+  /* For X448 and Kyber we force the use of v5 packets.  For the 9980
+   * algos we use v6 keys.  */
+  if (algo == PUBKEY_ALGO_ED25519
+      || algo == PUBKEY_ALGO_X25519)
     *keygen_flags |= KEYGEN_FLAG_CREATE_V6_KEY;
   else if (curve_is_448 (s_key) || algo == PUBKEY_ALGO_KYBER)
     *keygen_flags |= KEYGEN_FLAG_CREATE_V5_KEY;
@@ -1984,11 +2002,14 @@ common_gen (const char *keyparms, const char *keyparms2,
     pk->expiredate = pk->timestamp + expireval;
   pk->pubkey_algo = algo;
 
-  if (algo == PUBKEY_ALGO_KYBER)
+  if (algo == PUBKEY_ALGO_KYBER
+      || algo == PUBKEY_ALGO_MLK768_25519
+      || algo == PUBKEY_ALGO_MLK1024_448)
     err = ecckey_from_sexp (pk->pkey, s_key, s_key2, algo, pk->version);
   else if (algo == PUBKEY_ALGO_ECDSA
            || algo == PUBKEY_ALGO_EDDSA
            || algo == PUBKEY_ALGO_ECDH
+           || algo == PUBKEY_ALGO_X25519
            || algo == PUBKEY_ALGO_ED25519)
     err = ecckey_from_sexp (pk->pkey, s_key, NULL, algo, pk->version);
   else
@@ -2191,6 +2212,7 @@ gen_ecc (int algo, const char *curve, kbnode_t pub_root,
   log_assert (algo == PUBKEY_ALGO_ECDSA
               || algo == PUBKEY_ALGO_EDDSA
               || algo == PUBKEY_ALGO_ECDH
+              || algo == PUBKEY_ALGO_X25519
               || algo == PUBKEY_ALGO_ED25519);
 
   if (!curve || !*curve)
@@ -2214,6 +2236,15 @@ gen_ecc (int algo, const char *curve, kbnode_t pub_root,
       keyparms = xtryasprintf
         ("(genkey(ecc(curve %zu:%s)(flags eddsa comp%s)))",
          strlen (curve), curve,
+         (((*keygen_flags & KEYGEN_FLAG_TRANSIENT_KEY)
+           && (*keygen_flags & KEYGEN_FLAG_NO_PROTECTION))?
+          " transient-key" : ""));
+    }
+  else if (algo == PUBKEY_ALGO_X25519)
+    {
+      *keygen_flags |= KEYGEN_FLAG_CREATE_V6_KEY;
+      keyparms = xtryasprintf
+        ("(genkey(ecc(curve Curve25519)(flags raw%s)))",
          (((*keygen_flags & KEYGEN_FLAG_TRANSIENT_KEY)
            && (*keygen_flags & KEYGEN_FLAG_NO_PROTECTION))?
           " transient-key" : ""));
@@ -2297,7 +2328,9 @@ gen_kyber (int algo, unsigned int nbits, const char *curve, kbnode_t pub_root,
   char *keyparms1;
   const char *keyparms2;
 
-  log_assert (algo == PUBKEY_ALGO_KYBER);
+  log_assert (algo == PUBKEY_ALGO_KYBER
+              || algo == PUBKEY_ALGO_MLK768_25519
+              || algo == PUBKEY_ALGO_MLK1024_448);
 
   if (nbits == 768)
     keyparms2 = "(genkey(kyber768))";
@@ -2311,7 +2344,23 @@ gen_kyber (int algo, unsigned int nbits, const char *curve, kbnode_t pub_root,
 
   *keygen_flags |= KEYGEN_FLAG_CREATE_V5_KEY;
 
-  if (!strcmp (curve, "Curve25519") || !ascii_strcasecmp (curve, "cv25519"))
+  if (algo == PUBKEY_ALGO_MLK768_25519)
+    {
+      keyparms1 = xtryasprintf
+        ("(genkey(ecc(curve Curve25519)(flags raw%s)))",
+         (((*keygen_flags & KEYGEN_FLAG_TRANSIENT_KEY)
+           && (*keygen_flags & KEYGEN_FLAG_NO_PROTECTION))?
+          " transient-key" : ""));
+    }
+  else if (algo == PUBKEY_ALGO_MLK1024_448)
+    {
+      keyparms1 = xtryasprintf
+        ("(genkey(ecc(curve X448)(flags%s)))",
+         (((*keygen_flags & KEYGEN_FLAG_TRANSIENT_KEY)
+           && (*keygen_flags & KEYGEN_FLAG_NO_PROTECTION))?
+          " transient-key" : ""));
+    }
+  else if (!strcmp (curve, "Curve25519")||!ascii_strcasecmp (curve, "cv25519"))
     {
       curve = "Curve25519";
       keyparms1 = xtryasprintf
@@ -3940,12 +3989,15 @@ do_create (int algo, unsigned int nbits, const char *curve, kbnode_t pub_root,
   else if (algo == PUBKEY_ALGO_ECDSA
            || algo == PUBKEY_ALGO_EDDSA
            || algo == PUBKEY_ALGO_ECDH
+           || algo == PUBKEY_ALGO_X25519
            || algo == PUBKEY_ALGO_ED25519)
     err = gen_ecc (algo, curve, pub_root, timestamp, expiredate, is_subkey,
                    keygen_flags, passphrase,
                    cache_nonce_addr, passwd_nonce_addr,
                    common_gen_cb, common_gen_cb_parm);
-  else if (algo == PUBKEY_ALGO_KYBER)
+  else if (algo == PUBKEY_ALGO_KYBER
+           || algo == PUBKEY_ALGO_MLK768_25519
+           || algo == PUBKEY_ALGO_MLK1024_448)
     err = gen_kyber (algo, nbits, curve,
                    pub_root, timestamp, expiredate, is_subkey,
                    keygen_flags, passphrase,
@@ -4120,6 +4172,13 @@ parse_key_parameter_part (ctrl_t ctrl,
       algo = PUBKEY_ALGO_MLK1024_448;
       size = 1024;
       is_pqc = 1;
+      keyversion = 6;
+    }
+  else if (!ascii_strcasecmp (string, "ietf25") && RFC9980)
+    {
+      curve = "Ed25519";
+      algo = PUBKEY_ALGO_X25519;
+      size = 255;
       keyversion = 6;
     }
   else if (!ascii_strcasecmp (string, "ietf27") && RFC9980)

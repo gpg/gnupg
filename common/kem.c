@@ -144,12 +144,13 @@ compute_kmac256 (void *digest, size_t digestlen,
 }
 
 
-/* Compute KEK for ECC with HASHALGO, ECDH result, and KDF_PARAMS.
+/* Compute KEK for ECC with KDF_ALGO, HASHALGO, ECDH result, and
+ * KDF_PARAMS.
  *
  * KDF_PARAMS is specified by upper layer.
  */
 gpg_error_t
-gnupg_ecc_kem_kdf (void *kek, size_t kek_len, int is_pgp,
+gnupg_ecc_kem_kdf (void *kek, size_t kek_len, int kdf_algo,
                    int hashalgo, const void *ecdh, size_t ecdh_len,
                    const unsigned char *kdf_params, size_t kdf_params_len)
 {
@@ -157,12 +158,6 @@ gnupg_ecc_kem_kdf (void *kek, size_t kek_len, int is_pgp,
   gpg_error_t err;
   gcry_kdf_hd_t hd;
   unsigned long param[1];
-  int kdf_algo;
-
-  if (is_pgp)
-    kdf_algo = GCRY_KDF_ONESTEP_KDF;
-  else
-    kdf_algo = GCRY_KDF_X963_KDF;
 
   param[0] = kek_len;
   err = gcry_kdf_open (&hd, kdf_algo, hashalgo, param, 1,
