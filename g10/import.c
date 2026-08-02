@@ -223,6 +223,9 @@ parse_import_options(char *str,unsigned int *options,int noisy)
       {"collapse-uids", IMPORT_COLLAPSE_UIDS, NULL, NULL},
       {"collapse-subkeys", IMPORT_COLLAPSE_SUBKEYS, NULL, NULL},
 
+      /* Debug only options used for regression testings.  */
+      {"debug-accept-no-uid", IMPORT_DEBUG_ACCEPT_NO_UID, NULL, NULL },
+
       /* Aliases for backward compatibility */
       {"allow-local-sigs",IMPORT_LOCAL_SIGS,NULL,NULL},
       {"repair-hkp-subkey-bug",IMPORT_REPAIR_PKS_SUBKEY_BUG,NULL,NULL},
@@ -2048,7 +2051,8 @@ import_one_real (ctrl_t ctrl,
     {
       if (!silent)
         log_error( _("key %s: no user ID\n"), keystr_from_pk(pk));
-      return 0;
+      if (!(options & IMPORT_DEBUG_ACCEPT_NO_UID))
+        return 0;
     }
 
   if (screener && screener (keyblock, screener_arg))
@@ -2154,7 +2158,8 @@ import_one_real (ctrl_t ctrl,
             log_info(_("this may be caused by a missing self-signature\n"));
         }
       stats->no_user_id++;
-      return 0;
+      if (!(options & IMPORT_DEBUG_ACCEPT_NO_UID))
+        return 0;
     }
 
   /* Get rid of deleted nodes.  */
@@ -2182,7 +2187,8 @@ import_one_real (ctrl_t ctrl,
       if (!opt.quiet )
         log_info ( _("key %s: no valid user IDs\n"), keystr_from_pk (pk));
       stats->no_user_id++;
-      return 0;
+      if (!(options & IMPORT_DEBUG_ACCEPT_NO_UID))
+        return 0;
     }
 
   /* The keyblock is valid and ready for real import.  */
@@ -3508,8 +3514,11 @@ import_secret_one (ctrl_t ctrl, kbnode_t keyblock,
     {
       if (!for_migration)
         log_error( _("key %s: no user ID\n"), keystr_from_pk (pk));
-      release_kbnode (keyblock);
-      return 0;
+      if (!(options & IMPORT_DEBUG_ACCEPT_NO_UID))
+        {
+          release_kbnode (keyblock);
+          return 0;
+        }
     }
 
   ski = pk->seckey_info;

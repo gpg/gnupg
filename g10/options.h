@@ -447,6 +447,7 @@ EXTERN_UNLESS_MAIN_MODULE int memory_stat_debug_mode;
 #define IMPORT_BULK                      (1<<17)
 #define IMPORT_IGNORE_ATTRIBUTES         (1<<18)
 #define IMPORT_FORCE_UPDATE              (1<<19)
+#define IMPORT_DEBUG_ACCEPT_NO_UID       (1<<20)
 
 #define EXPORT_LOCAL_SIGS                (1<<0)
 #define EXPORT_ATTRIBUTES                (1<<1)
