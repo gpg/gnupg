@@ -1370,7 +1370,8 @@ keygrip_from_pk (PKT_public_key *pk, unsigned char *array, int get_second)
         else
           {
             err = gcry_sexp_build (&s_pkey, NULL,
-                                   pk->pubkey_algo == PUBKEY_ALGO_EDDSA?
+                                   (pk->pubkey_algo == PUBKEY_ALGO_EDDSA
+                                    && openpgp_oid_is_ed25519 (pk->pkey[0]))?
                                    "(public-key(ecc(curve%s)(flags eddsa)(q%m)))":
                                    (pk->pubkey_algo == PUBKEY_ALGO_ECDH
                                     && openpgp_oid_is_cv25519 (pk->pkey[0]))?

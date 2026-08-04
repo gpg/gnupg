@@ -2586,7 +2586,14 @@ import_one (ctrl_t ctrl,
 /* Convert our internal secret key object into an S-expression.  PK is
  * the public key.  R_CURVE received an sexp with the name of the
  * curve; caller must free this.  R_SKEY will receive the result;
- * caller must of course also free this.  */
+ * caller must of course also free this.
+ *
+ * Note that this SEXP is only intended to be transferred to
+ * gpg-agent, which is not in actual use by any public key computation
+ * with libgcrypt.  For transfer, it omits (flags ...) part in the
+ * expression.  It is the gpg-agent which will composes the SEXP in
+ * use, adding required (flags ...) part.
+ */
 static gpg_error_t
 internal_skey_object_to_sexp (PKT_public_key *pk, gcry_sexp_t *r_curve,
                               gcry_sexp_t *r_skey)
