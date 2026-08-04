@@ -60,3 +60,14 @@
     (tr:gpg "" '(--yes --decrypt))
     (tr:assert-identity "data-9000")))
  '("pqc-sample-1" "pqc-sample-2" "pqc-sample-3" "pqc-sample-4" "pqc-sample-5"))
+
+
+(for-each-p
+ "Checking encryption using Kyber keys with AES128, AES192, and AES256"
+ (lambda (algo)
+   (tr:do
+    (tr:open "data-9000")
+    (tr:gpg "" `(--yes --encrypt --cipher-algo ,algo -r "pqc-sample-1"))
+    (tr:gpg "" '(--yes --decrypt))
+    (tr:assert-identity "data-9000")))
+ '("aes128" "aes192" "aes256"))

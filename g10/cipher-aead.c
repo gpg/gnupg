@@ -259,7 +259,7 @@ write_header (cipher_filter_context_t *cfx, iobuf_t a)
           goto leave;
         }
       memcpy (cfx->startiv, thekeybuffer + cfx->dek->keylen, startivlen - 8);
-      memset (cfx->startiv + cfx->dek->keylen + startivlen - 8, 0, 8);
+      memset (cfx->startiv + startivlen - 8, 0, 8);
 
       err = openpgp_cipher_open (&cfx->cipher_hd, cfx->dek->algo,
                                  ciphermode, GCRY_CIPHER_SECURE);
