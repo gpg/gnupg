@@ -1473,6 +1473,9 @@ write_keybinding (ctrl_t ctrl, kbnode_t keyblock,
       /* The required libgcrypt 1.11 won't yet claim a compliant RNG.  */
       && gnupg_rng_is_compliant (CO_DE_VS))
     oduap.cpl_notation = "de-vs";
+  else if ((use & PUBKEY_USAGE_ENC)
+           && opt.compliance == CO_FIPS)
+    oduap.cpl_notation = "fips";
   else
     oduap.cpl_notation = NULL;
   oduap.pk = sub_pk;

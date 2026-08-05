@@ -215,6 +215,7 @@ check_encryption_compliance (DEK *dek, pk_list_t pk_list)
   /* From here on we only test for CO_DE_VS - if we ever want to
    * return other compliance mode values we need to change this to
    * loop over all those values.  */
+  /* FIXME:CO_FIPS */
   compliant = gnupg_gcrypt_is_compliant (CO_DE_VS);
 
   if (!gnupg_cipher_is_compliant (CO_DE_VS, dek->algo, GCRY_CIPHER_MODE_CFB))
@@ -397,7 +398,8 @@ use_aead (pk_list_t pk_list, int algo)
   can_use = openpgp_cipher_get_algo_blklen (algo) == 16;
 
   /* With --force-aead we want OCB. We also use OCB in symmetric mode
-   * with --use-ocb-sym which is detected by an empty PK_LIST. */
+   * with --use-ocb-sym which is detected by an empty PK_LIST.  In
+   * FIPS mode we silently replace OCB by GCM.  */
   if (opt.force_ocb || (!pk_list && opt.use_ocb_sym))
     {
       if (!can_use)
@@ -406,7 +408,7 @@ use_aead (pk_list_t pk_list, int algo)
                     openpgp_cipher_algo_name (algo));
           return 0;
         }
-      return AEAD_ALGO_OCB;
+      return opt.compliance == CO_FIPS? AEAD_ALGO_GCM : AEAD_ALGO_OCB;
     }
 
   /* AEAD does only work with 128 bit cipher blocklength.  */

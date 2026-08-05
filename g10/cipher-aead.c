@@ -80,6 +80,11 @@ set_nonce_and_ad (cipher_filter_context_t *cfx, int final)
       i = 8;
       break;
 
+    case AEAD_ALGO_GCM:
+      memcpy (nonce, cfx->startiv, 12);
+      i = 4;
+      break;
+
     default:
       BUG ();
     }

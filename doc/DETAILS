@@ -261,8 +261,9 @@ described here.
 
     Valid values are:
 
-    - 8  :: The key is compliant with RFC4880bis
-    - 23 :: The key is compliant with compliance mode "de-vs".
+    - 8    :: The key is compliant with RFC4880bis
+    - 23   :: The key is compliant with compliance mode "de-vs".
+    - 140  :: The key is compliant with compliance mode "fips".
     - 2023 :: The key is compliant with a compliance mode "de-vs" but
               the software has not yet been approved.
     - 6001 :: Screening hit on the ROCA vulnerability.
@@ -1812,13 +1813,13 @@ Description of some debug flags:
             a key or signature.  This is a list of comma delimited
             values with these defined fields:
 
-            | field | name             | defined values         |
-            |-------+------------------+------------------------|
-            |     1 | software product | see: prod-id           |
-            |     2 | software version | e.g. "2.2", "2.5+1.12" |
-            |     3 | architecture     | see: arch-id           |
-            |     4 | operating system | see: os-id             |
-            |     5 | compliance class | e.g. "23", "2023"      |
+            | field | name             | defined values           |
+            |-------+------------------+--------------------------|
+            |     1 | software product | see: prod-id             |
+            |     2 | software version | e.g. "2.2", "2.5+1.12"   |
+            |     3 | architecture     | see: arch-id             |
+            |     4 | operating system | see: os-id               |
+            |     5 | compliance class | e.g. "23", "2023", "140" |
 
             | prod-id | name        |
             |---------+-------------|
@@ -1843,7 +1844,8 @@ Description of some debug flags:
             If a value for a field is not known, the empty string
             may be used.  The values are also used for the X.509/CMS
             extension 1.3.6.1.4.1.11591.2.1.2.  The compliance class
-            values are 23 for "de-vs" and 2023 for non-approved "de-vs".
+            values are 23 for "de-vs" and 2023 for non-approved
+            "de-vs" or 140 for FIPS compliance.
 
             This notation shall be human readable.  It is defined in
             away to minimize its size but to be easily viewable by

@@ -1546,7 +1546,7 @@ select_algo_from_prefs(PK_LIST pk_list, int preftype,
              Instead it is better to use SHA-256 as implicit algorithm
              (which will be the case for rfc4880bis anyway).  */
 
-          if (opt.compliance == CO_DE_VS)
+          if (opt.compliance == CO_DE_VS || opt.compliance == CO_FIPS)
             implicit = DIGEST_ALGO_SHA256;
           else
             implicit = DIGEST_ALGO_SHA1;

@@ -101,7 +101,8 @@ mk_notation_policy_etc (ctrl_t ctrl, PKT_signature *sig,
     {
       ndmanu = name_value_to_notation
         ("manu",
-         gnupg_manu_notation_value (with_manu == 23? CO_DE_VS : CO_GNUPG));
+         gnupg_manu_notation_value (with_manu == 23? CO_DE_VS :
+                                    with_manu == 140? CO_FIPS : CO_GNUPG));
       ndmanu->next = nd;
       nd = ndmanu;
     }
@@ -1009,6 +1010,9 @@ write_signature_packets (ctrl_t ctrl,
       if (opt.compliance == CO_DE_VS
           && gnupg_rng_is_compliant (CO_DE_VS))
         with_manu = 23;  /* FIXME: Also check that the algos are compliant?*/
+      else if (opt.compliance == CO_FIPS
+          && gnupg_rng_is_compliant (CO_FIPS))
+        with_manu = 140;
       else if (!(opt.compat_flags & COMPAT_NO_MANU))
         with_manu = 1;
       else
@@ -1973,6 +1977,9 @@ make_keysig_packet (ctrl_t ctrl,
       if (opt.compliance == CO_DE_VS
           && gnupg_rng_is_compliant (CO_DE_VS))
         with_manu = 23;  /* Always in de-vs mode.  */
+      else if (opt.compliance == CO_FIPS
+               && gnupg_rng_is_compliant (CO_FIPS))
+        with_manu = 140;
       else if (!(opt.compat_flags & COMPAT_NO_MANU))
         with_manu = 1;
     }

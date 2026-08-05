@@ -641,6 +641,11 @@ openpgp_aead_test_algo (aead_algo_t algo)
     case AEAD_ALGO_NONE:
       break;
 
+    case AEAD_ALGO_GCM:
+      if (RFC9980)
+        return 0;
+      break;
+
     case AEAD_ALGO_EAX:
     case AEAD_ALGO_OCB:
       return 0;
@@ -661,6 +666,7 @@ openpgp_aead_algo_name (aead_algo_t algo)
     case AEAD_ALGO_NONE:  break;
     case AEAD_ALGO_EAX:   return gnupg_cipher_mode_name (GCRY_CIPHER_MODE_EAX);
     case AEAD_ALGO_OCB:   return gnupg_cipher_mode_name (GCRY_CIPHER_MODE_OCB);
+    case AEAD_ALGO_GCM:   return gnupg_cipher_mode_name (GCRY_CIPHER_MODE_GCM);
     }
 
   return "?";
@@ -686,6 +692,15 @@ openpgp_aead_algo_info (aead_algo_t algo, enum gcry_cipher_modes *r_mode,
       *r_mode = MY_GCRY_CIPHER_MODE_EAX;
       *r_noncelen = 16;
       break;
+
+    case AEAD_ALGO_GCM:
+      if (RFC9980)
+        {
+          *r_mode = GCRY_CIPHER_MODE_GCM;
+          *r_noncelen = 12;
+          break;
+        }
+      /* FALLTHRU */
 
     default:
       log_error ("unsupported AEAD algo %d\n", algo);
@@ -1478,6 +1493,10 @@ compliance_failure(void)
 
     case CO_DE_VS:
       ver="DE-VS applications";
+      break;
+
+    case CO_FIPS:
+      ver="FIPS applications";
       break;
     }
 

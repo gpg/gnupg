@@ -2007,6 +2007,7 @@ print_compliance_flags (PKT_public_key *pk,
   if (!keylength)
     keylength = nbits_from_pk (pk);
 
+  /* FIXME:CO_FIPS */
   if (pk->version == 5)
     {
       es_fputs (gnupg_status_compliance_flag (CO_GNUPG), es_stdout);

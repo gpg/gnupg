@@ -261,6 +261,7 @@ enum cmd_and_opt_values
     oPGP7,
     oPGP8,
     oDE_VS,
+    oFIPS,
     oMinRSALength,
     oRFC2440Text,
     oNoRFC2440Text,
@@ -2047,6 +2048,9 @@ gpgconf_list (void)
              (opt.compliance==CO_DE_VS
               && gnupg_rng_is_compliant (CO_DE_VS))?
              atoi (gnupg_status_compliance_flag (CO_DE_VS)) : 0);
+  es_printf ("compliance_fips:%lu:%d:\n", GC_OPT_FLAG_DEFAULT,
+             (opt.compliance==CO_FIPS)?
+             atoi (gnupg_status_compliance_flag (CO_FIPS)) : 0);
 
   es_printf ("use_keyboxd:%lu:%d:\n", GC_OPT_FLAG_DEFAULT, opt.use_keyboxd);
 
@@ -2299,7 +2303,8 @@ static struct gnupg_compliance_option compliance_options[] =
     { "pgp6",       oPGP7 },
     { "pgp7",       oPGP7 },
     { "pgp8",       oPGP8 },
-    { "de-vs",      oDE_VS }
+    { "de-vs",      oDE_VS },
+    { "fips",       oFIPS }
   };
 
 
@@ -2329,6 +2334,7 @@ set_compliance_option (enum cmd_and_opt_values option)
       opt.s2k_digest_algo = 0;
       opt.s2k_cipher_algo = DEFAULT_CIPHER_ALGO;
       opt.flags.allow_old_cipher_algos = 0;
+      opt.flags.allow_9980 = 0;
       break;
 
     case oOpenPGP:
@@ -2374,6 +2380,15 @@ set_compliance_option (enum cmd_and_opt_values option)
       /* We divert here from the backward compatible rfc4880 algos.  */
       opt.s2k_digest_algo = DIGEST_ALGO_SHA256;
       opt.s2k_cipher_algo = CIPHER_ALGO_AES256;
+      break;
+
+    case oFIPS:
+      set_compliance_option (oGnuPG);
+      opt.compliance = CO_FIPS;
+      /* We divert here from the backward compatible rfc4880 algos.  */
+      opt.s2k_digest_algo = DIGEST_ALGO_SHA256;
+      opt.s2k_cipher_algo = CIPHER_ALGO_AES256;
+      opt.flags.allow_9980 = 1;  /* Required to have GCM.  */
       break;
 
     default:

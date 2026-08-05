@@ -90,6 +90,7 @@ get_compliance_cache (enum gnupg_compliance_mode compliance, int for_rng)
   static int r_pgp7    = -1, s_pgp7    = -1;
   static int r_pgp8    = -1, s_pgp8    = -1;
   static int r_de_vs   = -1, s_de_vs   = -1;
+  static int r_fips    = -1, s_fips    = -1;
 
   int *ptr = NULL;
 
@@ -101,6 +102,7 @@ get_compliance_cache (enum gnupg_compliance_mode compliance, int for_rng)
     case CO_PGP7:    ptr = for_rng? &r_pgp7    : &s_pgp7   ; break;
     case CO_PGP8:    ptr = for_rng? &r_pgp8    : &s_pgp8   ; break;
     case CO_DE_VS:   ptr = for_rng? &r_de_vs   : &s_de_vs  ; break;
+    case CO_FIPS:    ptr = for_rng? &r_fips    : &s_fips   ; break;
     }
 
   if (ptr && compliance == CO_DE_VS)
@@ -297,9 +299,366 @@ gnupg_pk_is_compliant (enum gnupg_compliance_mode compliance, int algo,
         }
       xfree (curve);
     }
+  else if (compliance == CO_FIPS)
+    {
+      char *curve = NULL;
+
+      switch (algotype)
+        {
+        case is_elg:
+          result = 0;
+          break;
+
+        case is_rsa:
+          result = ((keylength == 3072
+                     || keylength == 4096)
+                    && keylength >= min_compliant_rsa_length);
+          (void)algo_flags;
+          break;
+
+        case is_ecc:
+          if (!curvename && key)
+            {
+              curve = openpgp_oid_to_str (key[0]);
+              curvename = openpgp_oid_to_curve (curve, 0);
+              if (!curvename)
+                curvename = curve;
+            }
+
+          result = (curvename
+                    && (algo == PUBKEY_ALGO_ECDH
+                        || algo == PUBKEY_ALGO_ECDSA
+                        || algo == GCRY_PK_ECDH
+                        || algo == GCRY_PK_ECDSA)
+                    && (!strcmp (curvename, "brainpoolP256r1")
+                        || !strcmp (curvename, "brainpoolP384r1")
+                        || !strcmp (curvename, "brainpoolP512r1")
+                        || !strcmp (curvename, "NIST P-256")
+                        || !strcmp (curvename, "NIST P-384")
+                        || !strcmp (curvename, "NIST P-521")));
+          break;
+
+        case is_kem:
+          if (!curvename && key)
+            {
+              curve = openpgp_oid_to_str (key[0]);
+              curvename = openpgp_oid_to_curve (curve, 0);
+              if (!curvename)
+                curvename = curve;
+            }
+
+          result = (curvename
+                    && (keylength == 768 || keylength == 1024)
+                    && (algo == PUBKEY_ALGO_KYBER)
+                    && (!strcmp (curvename, "brainpoolP256r1")
+                        || !strcmp (curvename, "brainpoolP384r1")
+                        || !strcmp (curvename, "brainpoolP512r1")
+                        || !strcmp (curvename, "NIST P-256")
+                        || !strcmp (curvename, "NIST P-384")
+                        || !strcmp (curvename, "NIST P-521")));
+          break;
+
+        default:
+          result = 0;
+        }
+      xfree (curve);
+    }
   else
     {
       result = 1; /* Assume compliance.  */
+    }
+
+  return result;
+}
+
+
+/* This is the CO_DE_VS helper for gnupg_pk_is_allowed.  */
+static int
+gnupg_pk_is_allowed_de_vs (enum pk_use_case use, int algo,
+                           unsigned int algo_flags, gcry_mpi_t key[],
+                           unsigned int keylength, const char *curvename)
+{
+  int result = 0;
+
+  (void)algo_flags;
+
+  switch (algo)
+    {
+    case PUBKEY_ALGO_RSA:
+    case PUBKEY_ALGO_RSA_E:
+    case PUBKEY_ALGO_RSA_S:
+      switch (use)
+        {
+        case PK_USE_DECRYPTION:
+        case PK_USE_VERIFICATION:
+          result = 1;
+          break;
+        case PK_USE_ENCRYPTION:
+        case PK_USE_SIGNING:
+          result = ((keylength == 2048
+                     || keylength == 3072
+                     || keylength == 4096)
+                    && keylength >= min_compliant_rsa_length);
+          break;
+        default:
+          log_assert (!"reached");
+        }
+      break;
+
+    case PUBKEY_ALGO_DSA:
+      if (use == PK_USE_VERIFICATION)
+        result = 1;
+      else if (use == PK_USE_SIGNING && key)
+        {
+          size_t P = gcry_mpi_get_nbits (key[0]);
+          size_t Q = gcry_mpi_get_nbits (key[1]);
+          result = (Q == 256
+                    && (P == 2048 || P == 3072)
+                    && keylength >= min_compliant_rsa_length);
+        }
+      break;
+
+    case PUBKEY_ALGO_ELGAMAL:
+    case PUBKEY_ALGO_ELGAMAL_E:
+      result = (use == PK_USE_DECRYPTION);
+      break;
+
+    case PUBKEY_ALGO_ECDH:  /* Same value as GCRY_PK_ECC, i.e. 18  */
+    case GCRY_PK_ECDH:
+      if (use == PK_USE_DECRYPTION)
+        result = 1;
+      else if (use == PK_USE_ENCRYPTION)
+        {
+          char *curve = NULL;
+
+          if (!curvename && key)
+            {
+              curve = openpgp_oid_to_str (key[0]);
+              curvename = openpgp_oid_to_curve (curve, 0);
+              if (!curvename)
+                curvename = curve;
+            }
+
+          result = (curvename
+                    && (!strcmp (curvename, "brainpoolP256r1")
+                        || !strcmp (curvename, "brainpoolP384r1")
+                        || !strcmp (curvename, "brainpoolP512r1")));
+
+          xfree (curve);
+        }
+      break;
+
+    case PUBKEY_ALGO_ECDSA:
+    case GCRY_PK_ECDSA:
+      if (use == PK_USE_VERIFICATION)
+        result = 1;
+      else
+        {
+          char *curve = NULL;
+
+          if (! curvename && key)
+            {
+              curve = openpgp_oid_to_str (key[0]);
+              curvename = openpgp_oid_to_curve (curve, 0);
+              if (!curvename)
+                curvename = curve;
+            }
+
+          result = (use == PK_USE_SIGNING
+                    && curvename
+                    && (!strcmp (curvename, "brainpoolP256r1")
+                        || !strcmp (curvename, "brainpoolP384r1")
+                        || !strcmp (curvename, "brainpoolP512r1")));
+          xfree (curve);
+        }
+      break;
+
+    case PUBKEY_ALGO_EDDSA:
+      if (use == PK_USE_VERIFICATION)
+        result = 1;
+      else /* We may not create such signatures in de-vs mode.  */
+        result = 0;
+      break;
+
+    case PUBKEY_ALGO_KYBER:
+      if (use == PK_USE_DECRYPTION)
+        result = 1;
+      else if (use == PK_USE_ENCRYPTION)
+        {
+          char *curve = NULL;
+
+          if (!curvename && key)
+            {
+              curve = openpgp_oid_to_str (key[0]);
+              curvename = openpgp_oid_to_curve (curve, 0);
+              if (!curvename)
+                curvename = curve;
+            }
+
+          result = (curvename
+                    && (keylength == 768 || keylength == 1024)
+                    && (!strcmp (curvename, "brainpoolP256r1")
+                        || !strcmp (curvename, "brainpoolP384r1")
+                        || !strcmp (curvename, "brainpoolP512r1")));
+
+          xfree (curve);
+        }
+      break;
+
+    case PUBKEY_ALGO_X25519:
+    case PUBKEY_ALGO_MLK768_25519:
+    case PUBKEY_ALGO_MLK1024_448:
+      if (use == PK_USE_DECRYPTION)
+        result = 1; /* Only decryption is allowed.  */
+      break;
+
+    default:
+      break;
+    }
+
+  return result;
+}
+
+
+/* This is the CO_FIPS helper for gnupg_pk_is_allowed.  */
+static int
+gnupg_pk_is_allowed_fips (enum pk_use_case use, int algo,
+                          unsigned int algo_flags, gcry_mpi_t key[],
+                          unsigned int keylength, const char *curvename)
+{
+  int result = 0;
+
+  (void)algo_flags;
+
+  switch (algo)
+    {
+    case PUBKEY_ALGO_RSA:
+    case PUBKEY_ALGO_RSA_E:
+    case PUBKEY_ALGO_RSA_S:
+      switch (use)
+        {
+        case PK_USE_DECRYPTION:
+        case PK_USE_VERIFICATION:
+          result = 1;
+          break;
+        case PK_USE_ENCRYPTION:
+        case PK_USE_SIGNING:
+          result = ((keylength == 3072 || keylength == 4096)
+                    && keylength >= min_compliant_rsa_length);
+          break;
+        default:
+          log_assert (!"reached");
+        }
+      break;
+
+    case PUBKEY_ALGO_DSA:
+      if (use == PK_USE_VERIFICATION)
+        result = 1;
+      break;
+
+    case PUBKEY_ALGO_ELGAMAL:
+    case PUBKEY_ALGO_ELGAMAL_E:
+      result = (use == PK_USE_DECRYPTION);
+      break;
+
+    case PUBKEY_ALGO_ECDH:  /* Same value as GCRY_PK_ECC, i.e. 18  */
+    case GCRY_PK_ECDH:
+      if (use == PK_USE_DECRYPTION)
+        result = 1;
+      else if (use == PK_USE_ENCRYPTION)
+        {
+          char *curve = NULL;
+
+          if (!curvename && key)
+            {
+              curve = openpgp_oid_to_str (key[0]);
+              curvename = openpgp_oid_to_curve (curve, 0);
+              if (!curvename)
+                curvename = curve;
+            }
+
+          result = (curvename
+                    && (!strcmp (curvename, "brainpoolP256r1")
+                        || !strcmp (curvename, "brainpoolP384r1")
+                        || !strcmp (curvename, "brainpoolP512r1")
+                        || !strcmp (curvename, "NIST P-256")
+                        || !strcmp (curvename, "NIST P-384")
+                        || !strcmp (curvename, "NIST P-521")));
+          xfree (curve);
+        }
+      break;
+
+    case PUBKEY_ALGO_ECDSA:
+    case GCRY_PK_ECDSA:
+      if (use == PK_USE_VERIFICATION)
+        result = 1;
+      else
+        {
+          char *curve = NULL;
+
+          if (! curvename && key)
+            {
+              curve = openpgp_oid_to_str (key[0]);
+              curvename = openpgp_oid_to_curve (curve, 0);
+              if (!curvename)
+                curvename = curve;
+            }
+
+          result = (use == PK_USE_SIGNING
+                    && curvename
+                    && (!strcmp (curvename, "brainpoolP256r1")
+                        || !strcmp (curvename, "brainpoolP384r1")
+                        || !strcmp (curvename, "brainpoolP512r1")
+                        || !strcmp (curvename, "NIST P-256")
+                        || !strcmp (curvename, "NIST P-384")
+                        || !strcmp (curvename, "NIST P-521")));
+          xfree (curve);
+        }
+      break;
+
+    case PUBKEY_ALGO_EDDSA:
+      if (use == PK_USE_VERIFICATION)
+        result = 1;
+      else /* Are we allowed tocreate such signatures - needs to be checked.  */
+        result = 0;
+      break;
+
+    case PUBKEY_ALGO_KYBER:
+      if (use == PK_USE_DECRYPTION)
+        result = 1;
+      else if (use == PK_USE_ENCRYPTION)
+        {
+          char *curve = NULL;
+
+          if (!curvename && key)
+            {
+              curve = openpgp_oid_to_str (key[0]);
+              curvename = openpgp_oid_to_curve (curve, 0);
+              if (!curvename)
+                curvename = curve;
+            }
+
+          result = (curvename
+                    && (keylength == 768 || keylength == 1024)
+                    && (!strcmp (curvename, "brainpoolP256r1")
+                        || !strcmp (curvename, "brainpoolP384r1")
+                        || !strcmp (curvename, "brainpoolP512r1")
+                        || !strcmp (curvename, "NIST P-256")
+                        || !strcmp (curvename, "NIST P-384")
+                        || !strcmp (curvename, "NIST P-521")));
+          xfree (curve);
+        }
+      break;
+
+    case PUBKEY_ALGO_X25519:
+    case PUBKEY_ALGO_MLK768_25519:
+    case PUBKEY_ALGO_MLK1024_448:
+      if (use == PK_USE_DECRYPTION)
+        result = 1; /* Only decryption is allowed.  FIXME: Why */
+      break;
+
+    default:
+      break;
     }
 
   return result;
@@ -331,140 +690,13 @@ gnupg_pk_is_allowed (enum gnupg_compliance_mode compliance,
   switch (compliance)
     {
     case CO_DE_VS:
-      switch (algo)
-	{
-	case PUBKEY_ALGO_RSA:
-	case PUBKEY_ALGO_RSA_E:
-	case PUBKEY_ALGO_RSA_S:
-	  switch (use)
-	    {
-	    case PK_USE_DECRYPTION:
-	    case PK_USE_VERIFICATION:
-	      result = 1;
-              break;
-	    case PK_USE_ENCRYPTION:
-	    case PK_USE_SIGNING:
-	      result = ((keylength == 2048
-                         || keylength == 3072
-                         || keylength == 4096)
-                        && keylength >= min_compliant_rsa_length);
-              break;
-	    default:
-	      log_assert (!"reached");
-	    }
-	  break;
+      result = gnupg_pk_is_allowed_de_vs (use, algo, algo_flags, key,
+                                          keylength, curvename);
+      break;
 
-	case PUBKEY_ALGO_DSA:
-          if (use == PK_USE_VERIFICATION)
-            result = 1;
-	  else if (use == PK_USE_SIGNING && key)
-	    {
-	      size_t P = gcry_mpi_get_nbits (key[0]);
-	      size_t Q = gcry_mpi_get_nbits (key[1]);
-	      result = (Q == 256
-                        && (P == 2048 || P == 3072)
-                        && keylength >= min_compliant_rsa_length);
-            }
-          break;
-
-	case PUBKEY_ALGO_ELGAMAL:
-	case PUBKEY_ALGO_ELGAMAL_E:
-	  result = (use == PK_USE_DECRYPTION);
-          break;
-
-	case PUBKEY_ALGO_ECDH:  /* Same value as GCRY_PK_ECC, i.e. 18  */
-	case GCRY_PK_ECDH:
-	  if (use == PK_USE_DECRYPTION)
-            result = 1;
-          else if (use == PK_USE_ENCRYPTION)
-            {
-              char *curve = NULL;
-
-              if (!curvename && key)
-                {
-                  curve = openpgp_oid_to_str (key[0]);
-                  curvename = openpgp_oid_to_curve (curve, 0);
-                  if (!curvename)
-                    curvename = curve;
-                }
-
-              result = (curvename
-                        && (!strcmp (curvename, "brainpoolP256r1")
-                            || !strcmp (curvename, "brainpoolP384r1")
-                            || !strcmp (curvename, "brainpoolP512r1")));
-
-              xfree (curve);
-            }
-          break;
-
-	case PUBKEY_ALGO_ECDSA:
-	case GCRY_PK_ECDSA:
-          if (use == PK_USE_VERIFICATION)
-            result = 1;
-          else
-            {
-              char *curve = NULL;
-
-              if (! curvename && key)
-	      {
-		curve = openpgp_oid_to_str (key[0]);
-		curvename = openpgp_oid_to_curve (curve, 0);
-		if (!curvename)
-		  curvename = curve;
-	      }
-
-              result = (use == PK_USE_SIGNING
-                         && curvename
-                         && (!strcmp (curvename, "brainpoolP256r1")
-                             || !strcmp (curvename, "brainpoolP384r1")
-                             || !strcmp (curvename, "brainpoolP512r1")));
-              xfree (curve);
-            }
-          break;
-
-
-	case PUBKEY_ALGO_EDDSA:
-          if (use == PK_USE_VERIFICATION)
-            result = 1;
-          else /* We may not create such signatures in de-vs mode.  */
-            result = 0;
-	  break;
-
-	case PUBKEY_ALGO_KYBER:
-	  if (use == PK_USE_DECRYPTION)
-            result = 1;
-          else if (use == PK_USE_ENCRYPTION)
-            {
-              char *curve = NULL;
-
-              if (!curvename && key)
-                {
-                  curve = openpgp_oid_to_str (key[0]);
-                  curvename = openpgp_oid_to_curve (curve, 0);
-                  if (!curvename)
-                    curvename = curve;
-                }
-
-              result = (curvename
-                        && (keylength == 768 || keylength == 1024)
-                        && (!strcmp (curvename, "brainpoolP256r1")
-                            || !strcmp (curvename, "brainpoolP384r1")
-                            || !strcmp (curvename, "brainpoolP512r1")));
-
-              xfree (curve);
-            }
-          break;
-
-	case PUBKEY_ALGO_X25519:
-	case PUBKEY_ALGO_MLK768_25519:
-	case PUBKEY_ALGO_MLK1024_448:
-	  if (use == PK_USE_DECRYPTION)
-            result = 1; /* Only decryption is allowed.  */
-          break;
-
-	default:
-	  break;
-	}
+    case CO_FIPS:
+      result = gnupg_pk_is_allowed_fips (use, algo, algo_flags, key,
+                                         keylength, curvename);
       break;
 
     default:
@@ -505,7 +737,29 @@ gnupg_cipher_is_compliant (enum gnupg_compliance_mode compliance,
 	    }
 	  log_assert (!"reached");
 
-	default:
+	default: /* for CO_DE_VS */
+	  return 0;
+	}
+      log_assert (!"reached");
+
+    case CO_FIPS:
+      switch (cipher)
+	{
+	case CIPHER_ALGO_AES:
+	case CIPHER_ALGO_AES192:
+	case CIPHER_ALGO_AES256:
+	  switch (module)
+	    {
+	    case GNUPG_MODULE_NAME_GPG:
+	      return (mode == GCRY_CIPHER_MODE_CFB
+                      || mode == GCRY_CIPHER_MODE_GCM);
+	    case GNUPG_MODULE_NAME_GPGSM:
+	      return (mode == GCRY_CIPHER_MODE_CBC
+                      || mode == GCRY_CIPHER_MODE_GCM);
+	    }
+	  log_assert (!"reached");
+
+	default: /* for CO_FIPS */
 	  return 0;
 	}
       log_assert (!"reached");
@@ -564,12 +818,36 @@ gnupg_cipher_is_allowed (enum gnupg_compliance_mode compliance, int producer,
                       || mode == GCRY_CIPHER_MODE_CFB
                       || mode == GCRY_CIPHER_MODE_OCB)
 		  && ! producer);
-	default:
+	default: /* for CO_DE_VS */
 	  return 0;
 	}
       log_assert (!"reached");
 
-    default:
+    case CO_FIPS:
+      switch (cipher)
+	{
+	case CIPHER_ALGO_AES:
+	case CIPHER_ALGO_AES192:
+	case CIPHER_ALGO_AES256:
+	  switch (module)
+	    {
+	    case GNUPG_MODULE_NAME_GPG:
+	      return (mode == GCRY_CIPHER_MODE_NONE
+                      || mode == GCRY_CIPHER_MODE_CFB
+                      || mode == GCRY_CIPHER_MODE_GCM);
+	    case GNUPG_MODULE_NAME_GPGSM:
+	      return (mode == GCRY_CIPHER_MODE_NONE
+                      || mode == GCRY_CIPHER_MODE_CBC
+                      || mode == GCRY_CIPHER_MODE_GCM);
+	    }
+	  log_assert (!"reached");
+
+	default: /* for CO_FIPS */
+	  return 0;
+	}
+      log_assert (!"reached");
+
+    default: /* for other compliance modes. */
       /* The default policy is to allow all algorithms.  */
       return 1;
     }
@@ -589,6 +867,7 @@ gnupg_digest_is_compliant (enum gnupg_compliance_mode compliance,
   switch (compliance)
     {
     case CO_DE_VS:
+    case CO_FIPS:
       switch (digest)
 	{
 	case DIGEST_ALGO_SHA256:
@@ -639,7 +918,19 @@ gnupg_digest_is_allowed (enum gnupg_compliance_mode compliance, int producer,
 	}
       log_assert (!"reached");
 
-    default:
+    case CO_FIPS:
+      switch (digest)
+	{
+	case DIGEST_ALGO_SHA256:
+	case DIGEST_ALGO_SHA384:
+	case DIGEST_ALGO_SHA512:
+	  return 1;
+	default:
+	  return 0;
+	}
+      log_assert (!"reached");
+
+    default: /* for other compliance modes.  */
       /* The default policy is to allow all algorithms.  */
       return 1;
     }
@@ -663,7 +954,7 @@ gnupg_rng_is_compliant (enum gnupg_compliance_mode compliance)
 
   if (result && *result != -1)
     res = *result; /* Use cached result.  */
-  else if (compliance == CO_DE_VS)
+  else if (compliance == CO_DE_VS || compliance == CO_FIPS)
     {
       /* We also check whether the library is at all compliant.  */
       res = gnupg_gcrypt_is_compliant (compliance);
@@ -737,6 +1028,13 @@ gnupg_gcrypt_is_compliant (enum gnupg_compliance_mode compliance)
       else
         res = 0;  /* Non-compliant version of Libgcrypt.  */
     }
+  else if (compliance == CO_FIPS)
+    {
+      if (gcry_check_version ("1.12.0"))
+        res = 1; /* Compliant.  */
+      else
+        res = 0;  /* Non-compliant version of Libgcrypt.  */
+    }
   else
     res = 1;
 
@@ -761,6 +1059,8 @@ gnupg_status_compliance_flag (enum gnupg_compliance_mode compliance)
       log_assert (!"no status code assigned for this compliance mode");
     case CO_DE_VS:
       return get_assumed_de_vs_compliance ()? "2023" : "23";
+    case CO_FIPS:
+      return "140";
     }
   log_assert (!"invalid compliance mode");
 }
@@ -827,10 +1127,11 @@ gnupg_manu_notation_value (enum gnupg_compliance_mode compliance)
       snprintf (buffer2, sizeof buffer2, "2,%.*s+%.*s,%d,%d",
                 vers1len, vers1, vers2len, vers2, arch_id, os_id);
       snprintf (buffer, sizeof buffer, "%s,%d",
-                buffer2, get_assumed_de_vs_compliance ()? 2023 : 23);
+                buffer2, (compliance == CO_FIPS? 140 :
+                          get_assumed_de_vs_compliance ()? 2023 : 23));
     }
 
-  if (compliance == CO_DE_VS)
+  if (compliance == CO_DE_VS || compliance == CO_FIPS)
     return buffer;
   else
     return buffer2;
@@ -881,6 +1182,7 @@ gnupg_compliance_option_string (enum gnupg_compliance_mode compliance)
     case CO_PGP7:    return "--compliance=pgp7";
     case CO_PGP8:    return "--compliance=pgp8";
     case CO_DE_VS:   return "--compliance=de-vs";
+    case CO_FIPS:    return "--compliance=fips";
     }
 
   log_assert (!"invalid compliance mode");

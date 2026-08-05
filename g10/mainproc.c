@@ -944,6 +944,7 @@ proc_encrypted (CTX c, PACKET *pkt)
 
   /* The --require-compliance option allows one to simplify decryption in
    * de-vs compliance mode by just looking at the exit status.  */
+  /* FIXME:CO_FIPS */
   if (opt.flags.require_compliance
       && opt.compliance == CO_DE_VS
       && compliance_de_vs != (4|2|1)
@@ -2671,7 +2672,7 @@ check_sig_and_print (CTX c, kbnode_t node)
                               gnupg_status_compliance_flag (CO_DE_VS),
                               NULL);
       else if (opt.flags.require_compliance
-               && opt.compliance == CO_DE_VS)
+               && (opt.compliance == CO_DE_VS||opt.compliance == CO_FIPS))
         {
           log_error (_("operation forced to fail due to"
                        " unfulfilled compliance rules\n"));
