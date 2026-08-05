@@ -79,6 +79,25 @@
 #endif
 
 
+/* Check that STRING is a valid ALGOSTR.  That string is passed to
+ * dmsetup as part of the table arg and thus we need to some take.  */
+static int
+is_valid_algostr (const char *string, size_t len)
+{
+  const char *s = string;
+
+  if (!string || !len || len > 100)
+    return 0; /* bad */
+
+  for (s = string ; len; len--, s++ )
+    {
+      if (!*s || (*s & 0x80) || *s <= ' ')
+        return 0; /* Ooops - only ascii allowed.  */
+    }
+  return 1; /* Okay.  */
+}
+
+
 /*
  * Check whether the block device DEVNAME is used by device mapper.
  * If EXPECT_BUSY is set no error message is printed if the device is
@@ -645,9 +664,9 @@ sh_dmcrypt_mount_container (ctrl_t ctrl, const char *devname,
 
   /* Get the algorithm string.  */
   algostr = find_tuple (keyblob, KEYBLOB_TAG_ALGOSTR, &algostrlen);
-  if (!algostr || algostrlen > 100)
+  if (!is_valid_algostr (algostr, algostrlen))
     {
-      log_error ("algo string not found in keyblob or too long\n");
+      log_error ("algo string not found in keyblob, too long, or invalid\n");
       err = gpg_error (GPG_ERR_INV_DATA);
       goto leave;
     }
@@ -979,9 +998,9 @@ sh_dmcrypt_resume_container (ctrl_t ctrl, const char *devname,
 
   /* Get the algorithm string.  */
   algostr = find_tuple (keyblob, KEYBLOB_TAG_ALGOSTR, &algostrlen);
-  if (!algostr || algostrlen > 100)
+  if (!is_valid_algostr (algostr, algostrlen))
     {
-      log_error ("algo string not found in keyblob or too long\n");
+      log_error ("algo string not found in keyblob, too long, or invalid\n");
       err = gpg_error (GPG_ERR_INV_DATA);
       goto leave;
     }
