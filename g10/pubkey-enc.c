@@ -271,8 +271,7 @@ get_it (ctrl_t ctrl, struct seskey_enc_list *enc, DEK *dek,
   if (err)
     goto leave;
 
-
-  if (!enc->u.pub.seskey_algo && RFC9980
+  if (enc->u.pub.version == 6 && !enc->u.pub.seskey_algo && RFC9980
       && (sk->pubkey_algo == PUBKEY_ALGO_X25519
           || sk->pubkey_algo == PUBKEY_ALGO_MLK768_25519
           || sk->pubkey_algo == PUBKEY_ALGO_MLK1024_448))

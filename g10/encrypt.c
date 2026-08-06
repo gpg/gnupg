@@ -1010,6 +1010,9 @@ encrypt_crypt (ctrl_t ctrl, gnupg_fd_t filefd, const char *filename,
   else
     filesize = opt.set_filesize ? opt.set_filesize : 0; /* stdin */
 
+  if (cfx.seipdv2)
+    log_info (_("Note: Using the %s encryption packet\n"), "RFC-9580");
+
   /* Register the cipher filter. */
   iobuf_push_filter (out,
                      cfx.dek->use_aead? cipher_filter_aead
@@ -1254,6 +1257,8 @@ encrypt_filter (void *opaque, int control,
         {
           efx->header_okay = 1;
 
+          /* Fixme: The core functionality is duplicated from
+           * encrypt_crypt.  We should use common functions.  */
           efx->cfx.dek = create_dek_with_warnings (efx->pk_list);
 
           rc = check_encryption_compliance (efx->cfx.dek, efx->pk_list);
@@ -1263,6 +1268,8 @@ encrypt_filter (void *opaque, int control,
           efx->cfx.dek->use_aead = use_aead (efx->pk_list, efx->cfx.dek->algo);
           if (!efx->cfx.dek->use_aead)
             efx->cfx.dek->use_mdc = !!use_mdc (efx->pk_list,efx->cfx.dek->algo);
+          else if (use_rfc9980_seipdv2 (efx->pk_list))
+            efx->cfx.seipdv2 = 1; /* Use SEIPDV2 and not the OCB.*/
 
           make_session_key ( efx->cfx.dek );
           if (DBG_CRYPTO)
@@ -1280,6 +1287,9 @@ encrypt_filter (void *opaque, int control,
               if (rc)
                 return rc;
             }
+
+          if (efx->cfx.seipdv2)
+            log_info (_("Note: Using the %s encryption packet\n"), "RFC-9580");
 
           iobuf_push_filter (a,
                              efx->cfx.dek->use_aead? cipher_filter_aead
