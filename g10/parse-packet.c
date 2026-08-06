@@ -1608,13 +1608,19 @@ parse_pubkeyenc (IOBUF inp, int pkttype, unsigned long pktlen,
         }
       n = iobuf_get_noeof (inp);
       pktlen--;
+      if (list_mode)
+        es_fprintf (listfp, "\tlength octet: %u\n", n);
       if (!is_v6)
         {
           k->seskey_algo = iobuf_get_noeof (inp);
+          if (!n || !pktlen)
+            {
+              rc = gpg_error (GPG_ERR_INV_PACKET);
+              goto leave;
+            }
           pktlen--;
+          n--;
         }
-      if (list_mode)
-        es_fprintf (listfp, "\tlength octet: %u\n", n);
       /* Get the encrypted symmetric key (keylen+8 due to AESWRAP).  */
       rc = read_raw_octet_string (inp, &pktlen, 0, n, 0, k->data + 1);
       if (rc)
@@ -1649,16 +1655,23 @@ parse_pubkeyenc (IOBUF inp, int pkttype, unsigned long pktlen,
       if (rc)
         goto leave;
     }
-  else if (k->pubkey_algo == PUBKEY_ALGO_MLK768_25519)
+  else if (k->pubkey_algo == PUBKEY_ALGO_MLK768_25519
+           || k->pubkey_algo == PUBKEY_ALGO_MLK1024_448)
     {
       log_assert (ndata == 3);
       /* Get the ephemeral public key.  */
-      rc = read_raw_octet_string (inp, &pktlen, 0, 32, 0, k->data + 0);
+      rc = read_raw_octet_string (inp, &pktlen, 0,
+                                  (k->pubkey_algo == PUBKEY_ALGO_MLK768_25519 ?
+                                   32 :56),
+                                  0, k->data + 0);
       if (rc)
         goto leave;
 
       /* Get the Kyber ciphertext.  */
-      rc = read_raw_octet_string (inp, &pktlen, 0, 1088, 0, k->data + 1);
+      rc = read_raw_octet_string (inp, &pktlen, 0,
+                                  (k->pubkey_algo == PUBKEY_ALGO_MLK768_25519 ?
+                                   1088 : 1568),
+                                  0, k->data + 1);
       if (rc)
         goto leave;
       /* Get the size octet and algo id for the session key.  */
@@ -1669,13 +1682,19 @@ parse_pubkeyenc (IOBUF inp, int pkttype, unsigned long pktlen,
         }
       n = iobuf_get_noeof (inp);
       pktlen--;
+      if (list_mode)
+        es_fprintf (listfp, "\tlength octet: %u\n", n);
       if (!is_v6)
         {
           k->seskey_algo = iobuf_get_noeof (inp);
+          if (!n || !pktlen)
+            {
+              rc = gpg_error (GPG_ERR_INV_PACKET);
+              goto leave;
+            }
           pktlen--;
+          n--;
         }
-      if (list_mode)
-        es_fprintf (listfp, "\tlength octet: %u\n", n);
       /* Get the encrypted symmetric key (keylen+8 due to AESWRAP).  */
       rc = read_raw_octet_string (inp, &pktlen, 0, n, 0, k->data + 2);
       if (rc)
