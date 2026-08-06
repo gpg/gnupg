@@ -307,6 +307,12 @@ static const struct gnupg_ecc_params ecc_table[] =
       1, 1, 0
     },
     {
+      "ietf25",
+      32, 32, 32,
+      GCRY_MD_SHA3_256, GCRY_KEM_RAW_X25519,
+      0, 0, 0
+    },
+    {
       "X448",
       56, 56, 56,
       GCRY_MD_SHA3_512, GCRY_KEM_RAW_X448,

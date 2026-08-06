@@ -1408,7 +1408,7 @@ keygrip_from_pk (PKT_public_key *pk, unsigned char *array, int get_second)
 
     case PUBKEY_ALGO_X25519:
       err = gcry_sexp_build (&s_pkey, NULL,
-                             "(public-key(ecc(curve Curve25519)(q%m)))",
+                             "(public-key(ecc(curve ietf25)(q%m)))",
                              pk->pkey[0]);
       break;
 
@@ -1452,7 +1452,7 @@ keygrip_from_pk (PKT_public_key *pk, unsigned char *array, int get_second)
                                pk->pkey[1]);
       else
         err = gcry_sexp_build (&s_pkey, NULL,
-                               "(public-key(ecc(curve Curve25519)(q%m)))",
+                               "(public-key(ecc(curve ietf25)(q%m)))",
                                pk->pkey[0]);
       break;
 

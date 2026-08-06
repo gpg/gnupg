@@ -53,6 +53,8 @@ static struct {
     PUBKEY_ALGO_EDDSA },
   { "Curve25519", "1.3.101.110",            255, "cv25519", NULL,
     PUBKEY_ALGO_ECDH },
+  { "ietf25",     "1.3.6.1.4.1.11591.15.25",255, NULL,      NULL,
+    PUBKEY_ALGO_X25519 },
   { "Ed25519",    "1.3.101.112",            255, "ed25519", NULL,
     PUBKEY_ALGO_EDDSA },
   { "X448",       "1.3.101.111",            448, "cv448",   NULL,

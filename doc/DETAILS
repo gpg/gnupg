@@ -1682,7 +1682,9 @@ Status codes are:
 
 * Object identifiers
 
-  OIDs below the GnuPG arc:
+The OID 1.3.6.1.4.1.11591 has been assigned to the GNU project. The
+list below shows only the OIDs relevant for GnuPG. You find the
+definitive list in the [[http://www.gnu.org/prep/standards/html_node/OID-Allocations.html][GNU Standards document]].
 
 #+begin_example
   1.3.6.1.4.1.11591.2          GnuPG
@@ -1709,7 +1711,32 @@ Status codes are:
   1.3.6.1.4.1.11591.2.6.3          use for encryption key
   1.3.6.1.4.1.11591.2.6.4          use for authentication key
   1.3.6.1.4.1.11591.2.12242973   invalid encoded OID
+  1.3.6.1.4.1.11591.12           DigestAlgorithms
+  1.3.6.1.4.1.11591.12.2           TIGER/192
+  1.3.6.1.4.1.11591.13           EncryptionAlgorithms
+  1.3.6.1.4.1.11591.13.2           Serpent
+  1.3.6.1.4.1.11591.13.2.1           Serpent-128-ECB
+  1.3.6.1.4.1.11591.13.2.2           Serpent-128-CBC
+  1.3.6.1.4.1.11591.13.2.3           Serpent-128-OFB
+  1.3.6.1.4.1.11591.13.2.4           Serpent-128-CFB
+  1.3.6.1.4.1.11591.13.2.21          Serpent-192-ECB
+  1.3.6.1.4.1.11591.13.2.22          Serpent-192-CBC
+  1.3.6.1.4.1.11591.13.2.23          Serpent-192-OFB
+  1.3.6.1.4.1.11591.13.2.24          Serpent-192-CFB
+  1.3.6.1.4.1.11591.13.2.41          Serpent-256-ECB
+  1.3.6.1.4.1.11591.13.2.42          Serpent-256-CBC
+  1.3.6.1.4.1.11591.13.2.43          Serpent-256-OFB
+  1.3.6.1.4.1.11591.13.2.44          Serpent-256-CFB
+  1.3.6.1.4.1.11591.14           CRC Algorithms
+  1.3.6.1.4.1.11591.14.1           CRC 32
+  1.3.6.1.4.1.11591.15           EllipticCurves
+  1.3.6.1.4.1.11591.15.1           Ed25519
+  1.3.6.1.4.1.11591.15.25          ietf25
 #+end_example
+
+The curve ietf25 is actually X25519 as specified by RFC-7748.  We used
+the name X25519 already as an alias for Curve25519 in Libgcrypt but
+with slighly different semantics.
 
 The OpenPGP KDF/KEK parameter extension is used to convey additional
 info for OpenPGP keys as an X.509 extensions.

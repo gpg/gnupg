@@ -2665,7 +2665,7 @@ build_mode1003_sexp (PKT_public_key *pk, gcry_sexp_t *result)
 
     case PUBKEY_ALGO_X25519:
       err = gcry_sexp_build
-        (&skey,NULL,"(private-key(ecc(curve Curve25519)(q%m)(d%m)))",
+        (&skey,NULL,"(private-key(ecc(curve ietf25)(q%m)(d%m)))",
          pk->pkey[0], pk->pkey[1]);
       break;
 
@@ -2715,27 +2715,44 @@ build_mode1003_sexp (PKT_public_key *pk, gcry_sexp_t *result)
             if (!err)
               err = gcry_sexp_build
                 (&skey, NULL,"(composite-key"
-                 "(private-key(ecc(curve Curve25519)(q%m)(d%m)))"
+                 "(private-key(ecc(curve ietf25)(q%m)(d%m)))"
                  "(private-key(kyber768(p%b)(s%b)))"
                  ")",
                  pk->pkey[0], pk->pkey[2],
                  (int)GCRY_KEM_MLKEM768_PUBKEY_LEN, pubkey,
                  (int)GCRY_KEM_MLKEM768_SECKEY_LEN, seckey);
-          /* FIXME: Instead of using the newly generated pubkey we
-           * should check that it matches. */
           }
       }
       break;
 
     case PUBKEY_ALGO_MLK1024_448:
-      /* FIXME: See above.  */
-      err = gcry_sexp_build
-        (&skey, NULL,"(composite-key"
-         "(private-key(ecc(curve X448)(q%m)(d%m)))"
-         "(private-key(kyber1024(p%m)(s%m)))"
-         ")",
-         pk->pkey[0], pk->pkey[2],
-         pk->pkey[1], pk->pkey[3]);
+      {
+        uint8_t pubkey[GCRY_KEM_MLKEM1024_PUBKEY_LEN];
+        uint8_t seckey[GCRY_KEM_MLKEM1024_SECKEY_LEN];
+        const unsigned char *seed;
+        unsigned int seedlen;
+
+        if (!gcry_mpi_get_flag (pk->pkey[3], GCRYMPI_FLAG_OPAQUE)
+            || !(seed = gcry_mpi_get_opaque (pk->pkey[3], &seedlen)))
+          err = gpg_error (GPG_ERR_BAD_MPI);
+        else
+          {
+            seedlen = (seedlen +7)/8;
+            err = gcry_kem_genkey (GCRY_KEM_MLKEM1024,
+                                   pubkey, GCRY_KEM_MLKEM1024_PUBKEY_LEN,
+                                   seckey, GCRY_KEM_MLKEM1024_SECKEY_LEN,
+                                   seed, seedlen);
+            if (!err)
+              err = gcry_sexp_build
+                (&skey, NULL,"(composite-key"
+                 "(private-key(ecc(curve X448)(q%m)(d%m)))"
+                 "(private-key(kyber1024(p%b)(s%b)))"
+                 ")",
+                 pk->pkey[0], pk->pkey[2],
+                 (int)GCRY_KEM_MLKEM1024_PUBKEY_LEN, pubkey,
+                 (int)GCRY_KEM_MLKEM1024_SECKEY_LEN, seckey);
+          }
+      }
       break;
 
     default:
@@ -2858,7 +2875,7 @@ internal_skey_object_to_sexp (PKT_public_key *pk, gcry_sexp_t *r_curve,
   else if (RFC9980 && pk->pubkey_algo == PUBKEY_ALGO_X25519)
     {
       gcry_sexp_release (*r_curve);
-      err = gcry_sexp_build (r_curve, NULL, "(curve Curve25519)");
+      err = gcry_sexp_build (r_curve, NULL, "(curve ietf25)");
       if (err)
         goto leave;
 

@@ -584,7 +584,7 @@ do_encrypt_kem (PKT_public_key *pk, gcry_mpi_t data, int seskey_algo,
   if (is_rfc9980)
     curve = (pk->pubkey_algo == PUBKEY_ALGO_X25519
              || pk->pubkey_algo == PUBKEY_ALGO_MLK768_25519)?
-      "Curve25519" : "X448";
+      "ietf25" : "X448";
   else
     {
       ecc_oid = openpgp_oid_to_str (pk->pkey[0]);
@@ -649,6 +649,7 @@ do_encrypt_kem (PKT_public_key *pk, gcry_mpi_t data, int seskey_algo,
 
   if (DBG_CRYPTO)
     {
+      log_debug ("KEM     algo: %d\n", ecc->kem_algo);
       log_debug ("ECC    curve: %s\n", ecc_oid? ecc_oid:curve);
       log_printhex (ecc_pubkey, ecc_pubkey_len, "ECC   pubkey:");
     }
@@ -710,7 +711,6 @@ do_encrypt_kem (PKT_public_key *pk, gcry_mpi_t data, int seskey_algo,
                                inputbuf, sizeof inputbuf,
                                NULL, 0, NULL, 0,
                                kdfinfo, strlen (kdfinfo));
-          wipememory (inputbuf, sizeof inputbuf);
           if (!err)
             {
               err = gcry_kdf_compute (kdfhd, NULL);
@@ -718,6 +718,7 @@ do_encrypt_kem (PKT_public_key *pk, gcry_mpi_t data, int seskey_algo,
                 err = gcry_kdf_final (kdfhd, kek_len, kek);
               gcry_kdf_close (kdfhd);
             }
+          wipememory (inputbuf, sizeof inputbuf);
         }
     }
   else /* !only_ecc */

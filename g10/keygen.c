@@ -2247,7 +2247,7 @@ gen_ecc (int algo, const char *curve, kbnode_t pub_root,
     {
       *keygen_flags |= KEYGEN_FLAG_CREATE_V6_KEY;
       keyparms = xtryasprintf
-        ("(genkey(ecc(curve Curve25519)(flags raw%s)))",
+        ("(genkey(ecc(curve ietf25)(flags%s)))",
          (((*keygen_flags & KEYGEN_FLAG_TRANSIENT_KEY)
            && (*keygen_flags & KEYGEN_FLAG_NO_PROTECTION))?
           " transient-key" : ""));
@@ -2350,7 +2350,7 @@ gen_kyber (int algo, unsigned int nbits, const char *curve, kbnode_t pub_root,
   if (algo == PUBKEY_ALGO_MLK768_25519)
     {
       keyparms1 = xtryasprintf
-        ("(genkey(ecc(curve Curve25519)(flags raw%s)))",
+        ("(genkey(ecc(curve ietf25)(flags%s)))",
          (((*keygen_flags & KEYGEN_FLAG_TRANSIENT_KEY)
            && (*keygen_flags & KEYGEN_FLAG_NO_PROTECTION))?
           " transient-key" : ""));
