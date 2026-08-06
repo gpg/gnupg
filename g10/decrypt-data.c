@@ -150,6 +150,11 @@ aead_set_nonce_and_ad (decode_filter_ctx_t dfx, int final)
       i = 8;
       break;
 
+    case AEAD_ALGO_GCM:
+      memcpy (nonce, dfx->startiv, 12);
+      i = 4;
+      break;
+
     default:
       BUG ();
     }
