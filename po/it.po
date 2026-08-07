@@ -5,7 +5,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: GNU gnupg 2.3.0\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"PO-Revision-Date: 2021-04-15 10:09+0900\n"
+"PO-Revision-Date: 2026-08-07 23:13+0200\n"
 "Last-Translator: Denis <student@alice.it>\n"
 "Language-Team: \n"
 "Language: it_IT\n"
@@ -13,7 +13,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
-"X-Generator: Poedit 2.4.2\n"
+"X-Generator: po.vim\n"
 
 #, c-format
 msgid "failed to acquire the pinentry lock: %s\n"
@@ -4275,7 +4275,7 @@ msgstr " *predefinito*"
 
 #, c-format
 msgid "  (%d) ECC (sign only)\n"
-msgstr "  (%d) DSA (firma solo)\n"
+msgstr "  (%d) ECC (solo firma)\n"
 
 #, c-format
 msgid "  (%d) ECC (set your own capabilities)%s\n"
@@ -4293,15 +4293,13 @@ msgstr "  (%d) Chiave esistente%s\n"
 msgid "  (%d) Existing key from card%s\n"
 msgstr "  (%d) Chiave esistente dalla carta%s\n"
 
-#, fuzzy, c-format
-#| msgid "   (%d) ECC and ECC\n"
+#, c-format
 msgid "  (%d) ECC and Kyber%s\n"
-msgstr "   (%d) ECC ed ECC\n"
+msgstr "  (%d) ECC e Kyber%s\n"
 
-#, fuzzy, c-format
-#| msgid "  (%d) ECC (encrypt only)%s\n"
+#, c-format
 msgid "  (%d) Kyber (encrypt only)%s\n"
-msgstr "  (%d) ECC (solo crittografia)%s\n"
+msgstr "  (%d) Kyber (solo crittografia)%s\n"
 
 msgid "Enter the keygrip: "
 msgstr "Immettere il keygrip: "
