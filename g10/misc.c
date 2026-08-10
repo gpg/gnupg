@@ -2008,11 +2008,12 @@ gnupg_register_partial_file (const char *fname_part, const char *fname)
   return 0;
 }
 
-/* If RC is non-zero, remove the partial files.
- * If RC is zero, rename those.  */
-void
-gnupg_process_partial_file (int rc)
+
+/* Remove the partial files. */
+gpg_error_t
+gnupg_rollback_partial_file (void)
 {
+  gpg_error_t err = 0;
   struct partial_file_item *pfi = registered_file_list;
   struct partial_file_item *next;
 
@@ -2022,14 +2023,9 @@ gnupg_process_partial_file (int rc)
     {
       next = pfi->next;
 
-      if (rc)
-        {
-          gnupg_remove (pfi->fname_part);
-          if (opt.verbose)
-            log_info (_("Note: partial file '%s' removed\n"), pfi->fname_part);
-        }
-      else
-        gnupg_rename_file (pfi->fname_part, pfi->fname, NULL);
+      err = gnupg_remove (pfi->fname_part);
+      if (opt.verbose)
+        log_info (_("Note: partial file '%s' removed\n"), pfi->fname_part);
 
       xfree (pfi->fname_part);
       xfree (pfi->fname);
@@ -2037,4 +2033,33 @@ gnupg_process_partial_file (int rc)
 
       pfi = next;
     }
+
+  return err;
+}
+
+
+/* Rename the partial files. */
+gpg_error_t
+gnupg_commit_partial_file (void)
+{
+  gpg_error_t err = 0;
+  struct partial_file_item *pfi = registered_file_list;
+  struct partial_file_item *next;
+
+  registered_file_list = NULL;
+
+  while (pfi)
+    {
+      next = pfi->next;
+
+      err = gnupg_rename_file (pfi->fname_part, pfi->fname, NULL);
+
+      xfree (pfi->fname_part);
+      xfree (pfi->fname);
+      xfree (pfi);
+
+      pfi = next;
+    }
+
+  return err;
 }
