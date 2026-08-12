@@ -726,6 +726,20 @@ compare_filenames (const char *a, const char *b)
 }
 
 
+/* Check if the FNAME has SUFFIX */
+int
+has_suffix (const char *fname, const char *suffix)
+{
+  size_t len = strlen (fname);
+  size_t suffix_len = strlen (suffix);
+
+  if (len > suffix_len
+      && !memcmp (fname + len - suffix_len, suffix, suffix_len))
+    return 1;
+  else
+    return 0;
+}
+
 /* Convert a base-10 number in STRING into a 64 bit unsigned int
  * value.  Leading white spaces are skipped but no error checking is
  * done.  Thus it is similar to atoi().  See also scan_secondsstr.  */

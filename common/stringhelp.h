@@ -61,6 +61,7 @@ char *make_absfilename (const char *first_part, ...) GPGRT_ATTR_SENTINEL(0);
 char *make_absfilename_try (const char *first_part,
                             ...) GPGRT_ATTR_SENTINEL(0);
 int compare_filenames( const char *a, const char *b );
+int has_suffix (const char *fname, const char *suffix);
 
 uint64_t string_to_u64 (const char *string);
 int hextobyte (const char *s);

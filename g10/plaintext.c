@@ -160,11 +160,13 @@ get_output_file (const byte *embedded_name, int embedded_namelen,
     {
       char *filename;
 
-      if ((opt.compat_flags & COMPAT_NO_PARTIALFILEGUARD))
+      if ((opt.compat_flags & COMPAT_NO_PARTIALFILEGUARD)
+          /* Don't enable the partial file guard if it's already prepared.  */
+          || has_suffix (fname, EXTSEP_S "part"))
         filename = fname;
       else
         {
-          filename = xstrconcat (fname, ".part", NULL);
+          filename = xstrconcat (fname, EXTSEP_S "part", NULL);
           if (!filename)
             {
               err = gpg_error_from_syserror ();
