@@ -409,6 +409,7 @@ handle_plaintext (PKT_plaintext * pt, md_filter_context_t * mfx,
 		  else if (es_fwrite (buffer, 1, len, fp) != len)
 		    {
 		      err = gpg_error_from_syserror ();
+                      write_status_failure ("handle_plaintext.write", err);
 		      log_error ("error writing to '%s': %s\n",
 				 fname, gpg_strerror (err));
 		      xfree (buffer);
@@ -442,7 +443,7 @@ handle_plaintext (PKT_plaintext * pt, md_filter_context_t * mfx,
 		{
 		  if (opt.max_output && (++count) > opt.max_output)
 		    {
-		      log_error ("Error writing to '%s': %s\n",
+		      log_error ("error writing to '%s': %s\n",
 				 fname, "exceeded --max-output limit\n");
 		      err = gpg_error (GPG_ERR_TOO_LARGE);
 		      goto leave;
@@ -510,6 +511,7 @@ handle_plaintext (PKT_plaintext * pt, md_filter_context_t * mfx,
 		  else if (es_fwrite (buffer, 1, len, fp) != len)
 		    {
 		      err = gpg_error_from_syserror ();
+                      write_status_failure ("handle_plaintext.write", err);
 		      log_error ("error writing to '%s': %s\n",
 				 fname, gpg_strerror (err));
 		      xfree (buffer);
