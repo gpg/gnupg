@@ -159,6 +159,23 @@
 
 * RECOMMENDATIONS
 
+** Securing the global config files on Windows
+
+   The Windows version of GnuPG expects optional global config files
+   in the directory "%ALLUSERSPROFILE%\GNU\etc\gnupg".  However,
+   current Windows versions allow by default all users to write to
+   this directory.  Thus on machine shared with several users it is
+   highly suggested to secure the entire "etc" directory tree by
+   disallowing regular users to create files or diretories.
+   Installers for GnuPG on Windows might have done that already but it
+   is suggested to check that this has been done.  The command
+   "gpgconf -X" will check for proper permissions and emit a warning
+   if this has not been done.  Fixing the permissions is easy from
+   an Administrators terminal:
+
+      icacls "%ALLUSERSPROFILE%\GNU\etc" /setintegritylevel h
+
+
 ** Key database daemon
 
   Since version 2.3.0 it is possible to store the keys in an SQLite
@@ -313,20 +330,12 @@
   fixes.  The mailing lists are watched by the authors and we try to
   answer questions as time allows us.
 
-  Commercial grade support for GnuPG is available; for a listing of
-  offers see https://gnupg.org/service.html .  Maintaining and
-  improving GnuPG requires a lot of time.  Since 2001, g10 Code GmbH,
-  a German company owned and headed by GnuPG's principal author Werner
-  Koch, is bearing the majority of these costs.
+  Since 2001 maintenance and development of GnuPG is done by g10 Code
+  GmbH, a German company majoritarian owned and headed by GnuPG's
+  principal author Werner Koch.  Revenues from support contracts
+  allows them to work full-time on GnuPG and related software like
+  Libgcrypt, GPGME, Kleopatra, Okular, and Gpg4win.
 
-# This file is Free Software; as a special exception the authors gives
-# unlimited permission to copy and/or distribute it, with or without
-# modifications, as long as this notice is preserved. For conditions
-# of the whole package, please see the file COPYING.  This file is
-# distributed in the hope that it will be useful, but WITHOUT ANY
-# WARRANTY, to the extent permitted by law; without even the implied
-# warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
-#
 # Local Variables:
 # mode:org
 # End:

@@ -28,6 +28,7 @@ struct
 {
   int verbose;		/* Verbosity level.  */
   int quiet;		/* Be extra quiet.  */
+  unsigned int debug;   /* Our debug flags.  */
   int dry_run;		/* Don't change any persistent data.  */
   int runtime;		/* Make changes active at runtime.  */
   int null;             /* Option -0 active.  */
@@ -35,6 +36,9 @@ struct
 
   int component;	/* The active component.  */
 } opt;
+
+
+#define DBG_W32_API  1  /* Debug Windows API calls.  */
 
 
 /*-- gpgconf.c --*/

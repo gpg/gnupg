@@ -37,6 +37,7 @@
 
 #ifdef HAVE_W32_SYSTEM
 #include <windows.h>
+#include <aclapi.h>
 #endif
 
 /* Constants to identify the commands and options. */
@@ -62,6 +63,7 @@ enum cmd_and_opt_values
     oStatusFD,
     oShowSocket,
     oChUid,
+    oDebug,
 
     aListComponents,
     aCheckPrograms,
@@ -134,6 +136,7 @@ static gpgrt_opt_t opts[] =
     ARGPARSE_s_n (oNoVerbose, "no-verbose", "@"),
     ARGPARSE_s_n (oShowSocket, "show-socket", "@"),
     ARGPARSE_s_s (oChUid, "chuid", "@"),
+    ARGPARSE_s_s (oDebug, "debug", "@"),
 
     ARGPARSE_end ()
   };
@@ -151,6 +154,13 @@ static estream_t statusfp;
 static void show_versions (estream_t fp);
 static void show_configs (estream_t fp);
 
+
+/* The list of supported debug flags.  */
+static struct debug_flags_s debug_flags [] =
+  {
+    { DBG_W32_API      , "w32-api" },
+    { 0, NULL }
+  };
 
 
 /* Print usage information and provide strings for help. */
@@ -724,6 +734,13 @@ main (int argc, char **argv)
           break;
         case oShowSocket: show_socket = 1; break;
         case oChUid:      changeuser = pargs.r.ret_str; break;
+        case oDebug:
+          if (parse_debug_flag (pargs.r.ret_str, &opt.debug, debug_flags))
+            {
+              pargs.r_opt = ARGPARSE_INVALID_ARG;
+              pargs.err = ARGPARSE_PRINT_ERROR;
+            }
+          break;
 
 	case aListDirs:
         case aListComponents:
@@ -749,9 +766,12 @@ main (int argc, char **argv)
 	  cmd = pargs.r_opt;
 	  break;
 
-        default: pargs.err = 2; break;
+        default: pargs.err = ARGPARSE_PRINT_ERROR; break;
 	}
     }
+
+  if (opt.debug && !opt.verbose)
+    opt.verbose = 1;
 
   gpgrt_argparse (NULL, &pargs, NULL);  /* Release internal state.  */
 
@@ -1241,6 +1261,125 @@ w32_get_integrity_level (void)
     return "Low";
   else
     return "Below low";
+}
+
+
+/* Return a string describing the integrity level of a file object.  */
+static const char *
+w32_get_file_integrity_level (const char *path)
+{
+  const char *result = NULL;
+  int wrc;
+  DWORD integrity_level;
+  PACL sacl = NULL;
+  PSECURITY_DESCRIPTOR psd = NULL;
+  ACL_SIZE_INFORMATION asi;
+  int aceidx;
+  union {
+    void *data;
+    PSYSTEM_MANDATORY_LABEL_ACE label;
+    PACE_HEADER header;
+  } ace;
+  PSID sid;
+  unsigned char *psubauthcount;
+  unsigned long *psubauth;
+  static SID_IDENTIFIER_AUTHORITY seclabelauth
+    = SECURITY_MANDATORY_LABEL_AUTHORITY;
+
+  /* Set the default value - used if result is still NULL. */
+  integrity_level = SECURITY_MANDATORY_MEDIUM_RID;
+
+  {
+    wchar_t *wpath = gpgrt_fname_to_wchar (path);
+    if (!wpath)
+      {
+        log_error ("error re-encoding '%s': %s\n", path,
+                   gpg_strerror (gpg_error_from_syserror ()));
+        result = "[error getting security info]";
+        goto leave;
+      }
+    wrc = GetNamedSecurityInfoW (wpath,
+                                 SE_FILE_OBJECT, LABEL_SECURITY_INFORMATION,
+                                 NULL, NULL, NULL, &sacl, &psd);
+    xfree (wpath);
+  }
+  if (wrc)
+    {
+      gnupg_w32_set_errno (wrc);
+      if ((opt.debug & DBG_W32_API))
+        log_debug ("error getting security info for '%s': %s (%d)\n",
+                   path, gpg_strerror (gpg_error_from_syserror ()), wrc);
+      result = "[error getting security info]";
+      goto leave;
+    }
+  if (!sacl)
+    {
+      if ((opt.debug & DBG_W32_API))
+        log_debug ("no SACL for '%s'\n", path);
+      goto leave;
+    }
+
+  if (!GetAclInformation (sacl, &asi, sizeof(asi), AclSizeInformation))
+    {
+      gnupg_w32_set_errno (-1);
+      if ((opt.debug & DBG_W32_API))
+        log_debug ("error getting ACL information for '%s': %s\n", path,
+                   gpg_strerror (gpg_error_from_syserror ()));
+      goto leave;
+    }
+
+  for (aceidx = 0; aceidx < asi.AceCount; aceidx++)
+    {
+      if ((opt.debug & DBG_W32_API))
+        log_debug ("checking ACE no %d\n", aceidx);
+      if (!GetAce (sacl, 0, &ace.data))
+        {
+          gnupg_w32_set_errno (-1);
+          if ((opt.debug & DBG_W32_API))
+            log_debug ("error getting ACE no %d for '%s': %s\n", aceidx, path,
+                      gpg_strerror (gpg_error_from_syserror ()));
+          continue;
+        }
+
+      if (ace.header->AceType != SYSTEM_MANDATORY_LABEL_ACE_TYPE)
+        continue;
+
+      sid = &ace.label->SidStart;
+
+      psubauthcount = GetSidSubAuthorityCount (sid);
+      if (!psubauthcount || *psubauthcount != 1)
+        continue;
+      if (memcmp (&seclabelauth,
+                  GetSidIdentifierAuthority (sid),
+                  sizeof(SID_IDENTIFIER_AUTHORITY)))
+        continue;
+
+      psubauth = GetSidSubAuthority (sid, 0);
+      if (psubauth)
+        {
+          integrity_level = *psubauth;
+          break; /* We return the first valid one.  */
+        }
+    }
+
+ leave:
+  if (result)
+    ;
+  else if (integrity_level >= SECURITY_MANDATORY_SYSTEM_RID)
+    result = "System";
+  else if (integrity_level >= SECURITY_MANDATORY_HIGH_RID)
+    result = "High";
+  else if (integrity_level >= SECURITY_MANDATORY_MEDIUM_RID)
+    result = "Medium";
+  else if (integrity_level >= SECURITY_MANDATORY_LOW_RID)
+    result = "Low";
+  else
+    result = "Below low";
+
+  if (psd)
+    LocalFree (psd);
+
+  return result;
 }
 #endif /*HAVE_W32_SYSTEM*/
 
@@ -1980,5 +2119,38 @@ show_configs (estream_t outfp)
         }
     }
   gnupg_closedir (dir);
+
+#ifdef HAVE_W32_SYSTEM
+  {
+    char *topsysconf, *p;
+    const char *sysconf_ilvl;
+
+    /* The sysconf directory should end in "\\etc\\gnupg".  We check
+     * that there is the "etc" part and then strip the gnupg directory
+     * part.  This way we can check that the entire etc directory is
+     * not user writable.  */
+    topsysconf = xstrdup (gnupg_sysconfdir ());
+    p = strrchr (topsysconf, '\\');
+    if (p && p - topsysconf >= 4  && !strncmp (p-4, "\\etc\\", 5))
+      *p = 0;
+
+    sysconf_ilvl = w32_get_file_integrity_level (topsysconf);
+    if (opt.verbose)
+      log_info ("integrity level of '%s' is: %s\n", topsysconf, sysconf_ilvl);
+    if (strcmp (sysconf_ilvl, "High"))
+      {
+        if (!anywarn)
+          {
+            anywarn = 1;
+            es_fprintf (outfp, "* Warnings\n");
+          }
+        es_fprintf (outfp,
+                    "- sysconfdir is not secured - please run:\n"
+                    "    icacls \"%s\" /setintegritylevel h\n", topsysconf );
+      }
+    xfree (topsysconf);
+  }
+#endif /*HAVE_W32_SYSTEM*/
+
   es_fprintf (outfp, "# eof #\n");
 }
