@@ -1076,7 +1076,7 @@ keydb_get_flags (KEYDB_HANDLE hd, int which, int idx, unsigned int *value)
   if (DBG_CLOCK)
     log_clock ("%s: enter (hd=%p)\n", __func__, hd);
 
-  if ( hd->found < 0 || hd->found >= hd->used)
+  if (!hd->use_keyboxd && (hd->found < 0 || hd->found >= hd->used))
     {
       err = gpg_error (GPG_ERR_NOTHING_FOUND);
       goto leave;
