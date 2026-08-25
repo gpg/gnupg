@@ -2588,6 +2588,82 @@ import_one (ctrl_t ctrl,
 }
 
 
+
+/* Helper to build an s-expression with a composite key RFC-9980
+ * ML-KEM key from the data in PK and the additional information
+ * MLKNAME and ECCNAME.  Returns 0 on success and store the
+ * s-expression at R_SKEY. */
+static gpg_error_t
+build_sexp_from_mlk (gcry_sexp_t *r_skey, PKT_public_key *pk,
+                     const char *mlkname, const char *eccname)
+{
+  gpg_error_t err;
+  gcry_sexp_t s_kyberparm = NULL;
+  gcry_sexp_t s_kyberfull = NULL;
+  gcry_sexp_t s_kyberpriv = NULL;
+  gcry_mpi_t mpi_p = NULL;
+
+  *r_skey = NULL;
+
+  /* A quick first check.  */
+  if (!gcry_mpi_get_flag (pk->pkey[3], GCRYMPI_FLAG_OPAQUE)
+      || !gcry_mpi_get_opaque (pk->pkey[3], NULL))
+    {
+      err = gpg_error (GPG_ERR_BAD_MPI);
+      goto leave;
+    }
+
+  /* Create the full Kyber key from the supplied seed.  */
+  err = gcry_sexp_build (&s_kyberparm, NULL,
+                         "(genkey(%s(derive-parms(seed%m))))",
+                         mlkname, pk->pkey[3]);
+  if (!err)
+    err = gcry_pk_genkey (&s_kyberfull, s_kyberparm);
+  if (err)
+    goto leave;
+  gcry_sexp_release (s_kyberparm); s_kyberparm = NULL;
+
+  /* Extract the private kyber part.  */
+  s_kyberpriv = gcry_sexp_find_token (s_kyberfull, "private-key", 0);
+  if (!s_kyberpriv)
+    {
+      log_error ("key conversion failed: no private key part\n");
+      err = gpg_error (GPG_ERR_INV_DATA);
+      goto leave;
+    }
+
+  /* Check that the generated public part as returned by genkey
+   * matches the supplied public key.  */
+  err = gcry_sexp_extract_param (s_kyberfull, "public-key", "/p", &mpi_p, NULL);
+  if (err)
+    goto leave;
+  if (gcry_mpi_cmp (pk->pkey[1], mpi_p))
+    {
+      err = gpg_error (GPG_ERR_BAD_PUBKEY);
+      log_error ("key import failed: public key does not match private key\n");
+      goto leave;
+    }
+
+  gcry_sexp_release (s_kyberfull); s_kyberfull = NULL;
+
+  /* Build the composite s-expression.  */
+  err = gcry_sexp_build (r_skey, NULL,
+                         "(composite-key"
+                         "(private-key(ecc(curve %s)(q%m)(d%m)))"
+                         "%S"
+                         ")",
+                         eccname, pk->pkey[0], pk->pkey[2], s_kyberpriv);
+
+
+ leave:
+  gcry_sexp_release (s_kyberpriv);
+  gcry_sexp_release (s_kyberfull);
+  gcry_sexp_release (s_kyberparm);
+  gcry_mpi_release (mpi_p);
+  return err;
+}
+
+
 /* This function builds a gpg-agent private key format (aka mode1003)
  * s-expression from the secret key packet in PK.  It currently
  * fails for a protected key.  The final plan is to use a separate
@@ -2696,63 +2772,11 @@ build_mode1003_sexp (PKT_public_key *pk, gcry_sexp_t *result)
       break;
 
     case PUBKEY_ALGO_MLK768_25519:
-      {
-        uint8_t pubkey[GCRY_KEM_MLKEM768_PUBKEY_LEN];
-        uint8_t seckey[GCRY_KEM_MLKEM768_SECKEY_LEN];
-        const unsigned char *seed;
-        unsigned int seedlen;
-
-        if (!gcry_mpi_get_flag (pk->pkey[3], GCRYMPI_FLAG_OPAQUE)
-            || !(seed = gcry_mpi_get_opaque (pk->pkey[3], &seedlen)))
-          err = gpg_error (GPG_ERR_BAD_MPI);
-        else
-          {
-            seedlen = (seedlen +7)/8;
-            err = gcry_kem_genkey (GCRY_KEM_MLKEM768,
-                                   pubkey, GCRY_KEM_MLKEM768_PUBKEY_LEN,
-                                   seckey, GCRY_KEM_MLKEM768_SECKEY_LEN,
-                                   seed, seedlen);
-            if (!err)
-              err = gcry_sexp_build
-                (&skey, NULL,"(composite-key"
-                 "(private-key(ecc(curve ietf25)(q%m)(d%m)))"
-                 "(private-key(kyber768(p%b)(s%b)))"
-                 ")",
-                 pk->pkey[0], pk->pkey[2],
-                 (int)GCRY_KEM_MLKEM768_PUBKEY_LEN, pubkey,
-                 (int)GCRY_KEM_MLKEM768_SECKEY_LEN, seckey);
-          }
-      }
+      err = build_sexp_from_mlk (&skey, pk, "kyber768", "ietf25");
       break;
 
     case PUBKEY_ALGO_MLK1024_448:
-      {
-        uint8_t pubkey[GCRY_KEM_MLKEM1024_PUBKEY_LEN];
-        uint8_t seckey[GCRY_KEM_MLKEM1024_SECKEY_LEN];
-        const unsigned char *seed;
-        unsigned int seedlen;
-
-        if (!gcry_mpi_get_flag (pk->pkey[3], GCRYMPI_FLAG_OPAQUE)
-            || !(seed = gcry_mpi_get_opaque (pk->pkey[3], &seedlen)))
-          err = gpg_error (GPG_ERR_BAD_MPI);
-        else
-          {
-            seedlen = (seedlen +7)/8;
-            err = gcry_kem_genkey (GCRY_KEM_MLKEM1024,
-                                   pubkey, GCRY_KEM_MLKEM1024_PUBKEY_LEN,
-                                   seckey, GCRY_KEM_MLKEM1024_SECKEY_LEN,
-                                   seed, seedlen);
-            if (!err)
-              err = gcry_sexp_build
-                (&skey, NULL,"(composite-key"
-                 "(private-key(ecc(curve X448)(q%m)(d%m)))"
-                 "(private-key(kyber1024(p%b)(s%b)))"
-                 ")",
-                 pk->pkey[0], pk->pkey[2],
-                 (int)GCRY_KEM_MLKEM1024_PUBKEY_LEN, pubkey,
-                 (int)GCRY_KEM_MLKEM1024_SECKEY_LEN, seckey);
-          }
-      }
+      err = build_sexp_from_mlk (&skey, pk, "kyber1024", "X448");
       break;
 
     default:
