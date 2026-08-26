@@ -1336,7 +1336,7 @@ gpgsm_decrypt (ctrl_t ctrl, estream_t in_fp, estream_t out_fp)
                               /* Last condition for de-vs compliance is met
                                * (cert has de-vs flag). So we can print the
                                * status line for de-vs compliance.*/
-                              if (buf[0])
+                              if (dfparm.is_de_vs && buf[0])
                                 gpgsm_status (ctrl, STATUS_DECRYPTION_COMPLIANCE_MODE,
                                               gnupg_status_compliance_flag (CO_DE_VS));
                               else
