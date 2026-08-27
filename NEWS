@@ -8,7 +8,7 @@ Noteworthy changes in version 2.2.56 (unreleased)
 Noteworthy changes in version 2.2.55 (2026-08-27)
 -------------------------------------------------
 
-   * gpg: New options --show-session-hash and --show-only-session-hash.
+  * gpg: New options --show-session-hash and --show-only-session-hash.
     [rGfaa571fbff]
 
   * gpg: Remove local secret key file after bkuptocard.  [T8312]
@@ -43,7 +43,7 @@ Noteworthy changes in version 2.2.54 (2026-04-20)
 
   * agent: Accept a trustlist with a missing LF at the end.  [T8078]
 
-u  Release-info: https://dev.gnupg.org/T8170
+  Release-info: https://dev.gnupg.org/T8170
 
 
 Noteworthy changes in version 2.2.53 (2026-03-12)
