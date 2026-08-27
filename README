@@ -4,7 +4,7 @@
 
           Copyright 1997-2019 Werner Koch
           Copyright 1998-2021 Free Software Foundation, Inc.
-          Copyright 2003-2025 g10 Code GmbH
+          Copyright 2003-2026 g10 Code GmbH
 
 
 * INTRODUCTION
@@ -148,6 +148,20 @@
   series of releases.  See the respective entries in the file NEWS.
 
 * RECOMMENDATIONS
+
+** Securing the global config files on Windows
+
+  The Windows version of GnuPG expects optional global config files in
+  the directory "%ALLUSERSPROFILE%\GNU\etc\gnupg".  However, current
+  Windows versions allow by default all users to write to this
+  directory.  Thus on machine shared with several users it is highly
+  suggested to secure the entire "etc" directory tree by disallowing
+  regular users to create files or diretories.  Installers for GnuPG
+  on Windows might have done that already but it is suggested to check
+  that this has been done.  Fixing the permissions is easy from an
+  Administrators terminal:
+
+    icacls "%ALLUSERSPROFILE%\GNU\etc" /setintegritylevel h
 
 ** Socket directory
 

@@ -1,13 +1,32 @@
-Noteworthy changes in version 2.2.55 (unreleased)
+Noteworthy changes in version 2.2.55 (2026-08-27)
 -------------------------------------------------
 
-  Release-info: https://dev.gnupg.org/T????
+  * gpg: New options --show-session-hash and --show-only-session-hash.
+    [rGfaa571fbff]
+
+  * gpg: Remove local secret key file after bkuptocard.  [T8312]
+
+  * gpg: Fix TOFU trust models to actually check UTK signatures.
+    [T8404]
+
+  * gpgsm: Fix possible double free in the CMS parser.  [T8240]
+
+  * gpgsm: Fix regression in gpgsm_verify with expired certificates.
+    [T8188]
+
+  * gpgsm: Only display de-vs compliance status in de-vs compliance
+    mode.  [T8333]
+
+  * gpgsm: Require a minimum tag length for GCM decryption.
+    [rGab2395daeb]
+
+  Release-info: https://dev.gnupg.org/T8419
 
 
 Noteworthy changes in version 2.2.54 (2026-04-20)
 -------------------------------------------------
 
-* gpg: Fix an edge case in --refresh-keys.  [T8197]
+  * gpg: Fix an edge case in --refresh-keys.  [T8197]
 
   * gpgsm: Add a certificate chain check for de-vs compliance.
     [T8188]
@@ -17,7 +36,7 @@ Noteworthy changes in version 2.2.54 (2026-04-20)
 
   * agent: Accept a trustlist with a missing LF at the end.  [T8078]
 
-  Release-info: https://dev.gnupg.org/T8170
+u  Release-info: https://dev.gnupg.org/T8170
 
 
 Noteworthy changes in version 2.2.53 (2026-03-12)
