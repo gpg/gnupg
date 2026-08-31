@@ -1617,6 +1617,14 @@ SectionEnd
 Section
   WriteUninstaller "$INSTDIR\gnupg-uninstall.exe"
 
+  # Make sure the etc direcory tree exists and is only writable with
+  # aministrator rights.
+  Push $0
+  ReadEnvStr $0 ALLUSERSPROFILE
+  CreateDirectory "$0\GNU\etc"
+  ExecShell "$SYSDIR\icacls" '"$0\GNU\etc" /setintegritylevel h /c /q' SW_HIDE
+  Pop $0
+
   # Windows Add/Remove Programs support
   StrCpy $MYTMP "Software\Microsoft\Windows\CurrentVersion\Uninstall\GnuPG"
   WriteRegExpandStr SHCTX $MYTMP "UninstallString" '"$INSTDIR\gnupg-uninstall.exe"'
