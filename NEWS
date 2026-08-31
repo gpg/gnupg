@@ -1,11 +1,66 @@
-Noteworthy changes in version 2.5.22 (unreleased)
+Noteworthy changes in version 2.5.22 (2026-08-31)
 -------------------------------------------------
 
  * New and extended features:
 
+   - gpg: New option "primary" for the --card-edit "generate" command.
+     This option is useful create only the primary key on the first
+     slot of an OpenPGP card.  [T8344]
+
+   - Make detection of the installation directory work for macOS.
+     [rG0be940905d]
+
+   - gpgsm: Emit issuer and serial no. when the certificate is not
+     found.  [T8363]
 
  * Bug fixes:
 
+   - gpg: Fix trustdb recursive lock problem.  [T8317]
+
+   - gpg: Fix using wrong fingerprint length for the intended
+     recipient fingerprint.  [T8330]
+
+   - gpg: Fix wrong assertion edge case in building packets.
+     [rGe319d82d7e]
+
+   - gpg: Fix possible double free in import_revoke_cert.  [T8328]
+
+   - gpg: Fix long standing regression of "bkuptocard".
+     [T8344,rGf103eaee63]
+
+   - gpg: Fix TOFU trust models to actually check UTK signatures.
+     [T8404]
+
+   - gpg: Don't enable the partial file guard if already done.  Fix
+     regression introduced by partial file guards.  [T8399]
+
+   - gpgsm: Only display de-vs compliance status in de-vs compliance
+     mode.  [T8333]
+
+   - gpgsm: Return 0 if decryption of multi recipient file succeeds.
+     [T8340]
+
+   - gpgsm: Check args for special file names and dashes.  [T8347]
+
+   - gpgsm: Fix keydb_get_flags with keyboxd.  [T8048]
+
+   - g13: Add sanity check on the syntax of the dmsetup algo string.
+     [rG386c3e63b1]
+
+ * Other changes:
+
+   - gpg,gpgsm: Emit signing time as status output also for bad
+     signatures.  [T8364]
+
+   - gpg: Emit status line for failed write.  [T8398]
+
+   - scd: Put a workaround for buggy CCID device.  [T8331]
+
+   - scd: Allow switching APP when --pcsc-shared is enabled.
+     [rGf783c02525]
+
+   - gpgconf: Print a warning on Windows on insufficent global config
+     directory permissions.  [rG56eb3148c7]
 
  Release-info: https://dev.gnupg.org/T8320
 
