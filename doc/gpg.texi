@@ -3987,6 +3987,16 @@ This is an obsolete option and is not used anywhere.
 @item --no-allow-multiple-messages
 These are obsolete options; they have no more effect since GnuPG 2.2.8.
 
+
+@item --allow-9980
+@opindex allow-9980
+Enabling this option allows the processing of some data formats
+specified by RFC-9980 (PQC for OpenPGP) and its dependencies.  Due to
+this bloated specifications the use of this option is not suggested.
+The standard GnuPG mode is more oriented at the classic PGP and
+LibrePGP specification which also provide PQC support but in a more
+lean and PGP-style way.
+
 @item --enable-special-filenames
 @opindex enable-special-filenames
 This option enables a mode in which filenames of the form
