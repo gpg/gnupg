@@ -1384,7 +1384,7 @@ enum cmdids
   cmdREVSIG, cmdREVKEY, cmdREVUID, cmdDELSIG, cmdPRIMARY, cmdDEBUG,
   cmdSAVE, cmdADDUID, cmdADDPHOTO, cmdDELUID, cmdADDKEY, cmdDELKEY,
   cmdADDREVOKER, cmdTOGGLE, cmdSELKEY, cmdPASSWD, cmdTRUST, cmdPREF,
-  cmdEXPIRE, cmdCHANGEUSAGE, cmdBACKSIGN, cmdADDADSK,
+  cmdEXPIRE, cmdCHANGEUSAGE, cmdBACKSIGN, cmdADDADSK, cmdADDPUBKEY,
 #ifndef NO_TRUST_MODELS
   cmdENABLEKEY, cmdDISABLEKEY,
 #endif /*!NO_TRUST_MODELS*/
@@ -1436,6 +1436,7 @@ static struct
     /* delphoto is really deluid in disguise */
   { "delphoto", cmdDELUID, 0, NULL},
   { "addkey", cmdADDKEY,  KEYEDIT_NEED_SK, N_("add a subkey")},
+  { "addpubkey", cmdADDPUBKEY,  KEYEDIT_NEED_SK, NULL },
 #ifdef ENABLE_CARD_SUPPORT
   { "addcardkey", cmdADDCARDKEY,  KEYEDIT_NEED_SK,
     N_("add a key to a smartcard")},
@@ -1952,6 +1953,86 @@ keyedit_menu (ctrl_t ctrl, const char *username, strlist_t locusr,
               upload = 1;
 	      merge_keys_and_selfsig (ctrl, keyblock);
 	    }
+	  break;
+
+	case cmdADDPUBKEY:
+	  {
+	    /* Ask for a filename, check whether this is really a
+	     * subkey key, parse that key, and add it as subkey to the
+	     * current keyblock. */
+	    kbnode_t node;
+	    char *fname;
+	    PACKET *pkt;
+	    iobuf_t a;
+            struct parse_packet_ctx_s parsectx;
+
+            if (!*arg_string)
+	      {
+		tty_printf (_("Command expects a filename argument\n"));
+		break;
+	      }
+
+            if (*arg_string == DIRSEP_C)
+              fname = xstrdup (arg_string);
+            else if (*arg_string == '~')
+              fname = make_filename (arg_string, NULL);
+            else
+              fname = make_filename (gnupg_homedir (), arg_string, NULL);
+
+	    /* Open that file.  */
+	    a = iobuf_open (fname);
+	    if (a && is_secured_file (iobuf_get_fd (a)))
+	      {
+		iobuf_close (a);
+		a = NULL;
+		gpg_err_set_errno (EPERM);
+	      }
+            if (!a)
+              {
+                tty_printf (_("Can't open '%s': %s\n"),
+                            fname, strerror (errno));
+                xfree (fname);
+                break;
+              }
+
+	    /* Parse and check that file.  */
+	    pkt = xmalloc (sizeof *pkt);
+	    init_packet (pkt);
+            init_parse_packet (&parsectx, a);
+	    err = parse_packet (&parsectx, pkt);
+	    deinit_parse_packet (&parsectx);
+            iobuf_close (a);
+	    iobuf_ioctl (NULL, IOBUF_IOCTL_INVALIDATE_CACHE, 0, (char *) fname);
+	    if (!err && pkt->pkttype != PKT_PUBLIC_KEY
+		&& pkt->pkttype != PKT_PUBLIC_SUBKEY)
+	      err = GPG_ERR_NO_PUBKEY;
+            if (err)
+              {
+                tty_printf (_("Error reading key from '%s': %s\n"),
+                            fname, gpg_strerror (err));
+                xfree (fname);
+                free_packet (pkt, NULL);
+                xfree (pkt);
+                break;
+              }
+
+	    xfree (fname);
+	    node = new_kbnode (pkt);
+
+            /* Always treat the packet as a public subkey and append.  */
+            pkt->pkttype = PKT_PUBLIC_SUBKEY;
+            err = append_subkey_to_keyblock
+              (ctrl, keyblock, pkt->pkt.public_key,
+               ask_key_flags (pkt->pkt.public_key->pubkey_algo, 1, 0));
+            if (!err || gpg_err_code (err) == GPG_ERR_EEXIST)
+              {
+                err = 0;
+                merge_keys_and_selfsig (ctrl, keyblock);
+                modified = 1;
+                redisplay = 1;
+              }
+            release_kbnode (node);
+          }
 	  break;
 
 #ifdef ENABLE_CARD_SUPPORT
