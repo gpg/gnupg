@@ -4163,10 +4163,10 @@ revocation_present (ctrl_t ctrl, kbnode_t keyblock)
 			      log_info(_("WARNING: key %s may be revoked:"
 					 " fetching revocation key %s\n"),
 				       tempkeystr,keystr(keyid));
-			      keyserver_import_fprint (ctrl,
-                                                       sig->revkey[idx].fpr,
-                                                       MAX_FINGERPRINT_LEN,
-                                                       opt.keyserver, 0);
+			      keyserver_import_fpr (ctrl,
+                                                    sig->revkey[idx].fpr,
+                                                    MAX_FINGERPRINT_LEN,
+                                                    opt.keyserver, 0);
 
 			      /* Do we have it now? */
 			      err = get_pubkey_byfprint_fast (NULL,

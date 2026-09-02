@@ -1003,17 +1003,18 @@ keyserver_any_configured (ctrl_t ctrl)
 
 
 /* Import all keys that exactly match MBOX */
-int
+gpg_error_t
 keyserver_import_mbox (ctrl_t ctrl, const char *mbox,
                        unsigned char **fpr, size_t *fprlen,
-                       struct keyserver_spec *keyserver)
+                       struct keyserver_spec *keyserver,
+                       unsigned int flags)
 {
   KEYDB_SEARCH_DESC desc = { 0 };
 
   desc.mode = KEYDB_SEARCH_MODE_MAIL;
   desc.u.name = mbox;
 
-  return keyserver_get (ctrl, &desc, 1, keyserver, 0, fpr, fprlen);
+  return keyserver_get (ctrl, &desc, 1, keyserver, flags, fpr, fprlen);
 }
 
 
@@ -1033,18 +1034,18 @@ keyserver_import_ntds (ctrl_t ctrl, const char *mbox,
 
 
 int
-keyserver_import_fprint (ctrl_t ctrl, const byte *fprint, size_t fprint_len,
-			 struct keyserver_spec *keyserver,
-                         unsigned int flags)
+keyserver_import_fpr (ctrl_t ctrl, const byte *fprint, size_t fprint_len,
+                      struct keyserver_spec *keyserver,
+                      unsigned int flags)
 {
   KEYDB_SEARCH_DESC desc;
 
   memset (&desc, 0, sizeof(desc));
 
-  if(fprint_len==16)
-    desc.mode=KEYDB_SEARCH_MODE_FPR16;
-  else if(fprint_len==20)
-    desc.mode=KEYDB_SEARCH_MODE_FPR20;
+  if (fprint_len == 16)
+    desc.mode = KEYDB_SEARCH_MODE_FPR16;
+  else if (fprint_len == 20)
+    desc.mode = KEYDB_SEARCH_MODE_FPR20;
   else
     return gpg_error (GPG_ERR_INV_ARG);
 
@@ -1055,13 +1056,13 @@ keyserver_import_fprint (ctrl_t ctrl, const byte *fprint, size_t fprint_len,
 
 
 int
-keyserver_import_fprint_ntds (ctrl_t ctrl,
+keyserver_import_fpr_ntds (ctrl_t ctrl,
                               const byte *fprint, size_t fprint_len)
 {
   struct keyserver_spec keyserver = { NULL, "ldap:///" };
 
-  return keyserver_import_fprint (ctrl, fprint, fprint_len,
-                                  &keyserver, KEYSERVER_IMPORT_FLAG_LDAP);
+  return keyserver_import_fpr (ctrl, fprint, fprint_len,
+                               &keyserver, KEYSERVER_IMPORT_FLAG_LDAP);
 }
 
 
@@ -1901,7 +1902,7 @@ keyserver_import_cert (ctrl_t ctrl, const char *name, int dane_mode,
 	  spec = parse_keyserver_uri (url, 1);
 	  if(spec)
 	    {
-	      err = keyserver_import_fprint (ctrl, *fpr, *fpr_len, spec, 0);
+	      err = keyserver_import_fpr (ctrl, *fpr, *fpr_len, spec, 0);
 	      free_keyserver_spec(spec);
 	    }
 	}
@@ -1910,8 +1911,7 @@ keyserver_import_cert (ctrl_t ctrl, const char *name, int dane_mode,
 	  /* If only a fingerprint is provided, try and fetch it from
 	     the configured keyserver. */
 
-	  err = keyserver_import_fprint (ctrl,
-                                         *fpr, *fpr_len, opt.keyserver, 0);
+	  err = keyserver_import_fpr (ctrl, *fpr, *fpr_len, opt.keyserver, 0);
 	}
       else
 	log_info(_("no keyserver known\n"));
@@ -1945,7 +1945,7 @@ keyserver_import_pka (ctrl_t ctrl, const char *name,
       spec = parse_keyserver_uri (url, 1);
       if (spec)
 	{
-	  err = keyserver_import_fprint (ctrl, *fpr, *fpr_len, spec, 0);
+	  err = keyserver_import_fpr (ctrl, *fpr, *fpr_len, spec, 0);
 	  free_keyserver_spec (spec);
 	}
     }
@@ -2021,86 +2021,4 @@ keyserver_import_wkd (ctrl_t ctrl, const char *name, unsigned int flags,
   xfree (url);
   xfree (mbox);
   return err;
-}
-
-
-/* Import a key by name using LDAP */
-int
-keyserver_import_ldap (ctrl_t ctrl,
-                       const char *name, unsigned char **fpr, size_t *fprlen)
-{
-  (void)ctrl;
-  (void)name;
-  (void)fpr;
-  (void)fprlen;
-  return gpg_error (GPG_ERR_NOT_IMPLEMENTED); /*FIXME*/
-#if 0
-  char *domain;
-  struct keyserver_spec *keyserver;
-  strlist_t list=NULL;
-  int rc,hostlen=1;
-  struct srventry *srvlist=NULL;
-  int srvcount,i;
-  char srvname[MAXDNAME];
-
-  /* Parse out the domain */
-  domain=strrchr(name,'@');
-  if(!domain)
-    return GPG_ERR_GENERAL;
-
-  domain++;
-
-  keyserver=xmalloc_clear(sizeof(struct keyserver_spec));
-  keyserver->scheme=xstrdup("ldap");
-  keyserver->host=xmalloc(1);
-  keyserver->host[0]='\0';
-
-  snprintf(srvname,MAXDNAME,"_pgpkey-ldap._tcp.%s",domain);
-
-  FIXME("network related - move to dirmngr or drop the code");
-  srvcount=getsrv(srvname,&srvlist);
-
-  for(i=0;i<srvcount;i++)
-    {
-      hostlen+=strlen(srvlist[i].target)+1;
-      keyserver->host=xrealloc(keyserver->host,hostlen);
-
-      strcat(keyserver->host,srvlist[i].target);
-
-      if(srvlist[i].port!=389)
-	{
-	  char port[7];
-
-	  hostlen+=6; /* a colon, plus 5 digits (unsigned 16-bit value) */
-	  keyserver->host=xrealloc(keyserver->host,hostlen);
-
-	  snprintf(port,7,":%u",srvlist[i].port);
-	  strcat(keyserver->host,port);
-	}
-
-      strcat(keyserver->host," ");
-    }
-
-  free(srvlist);
-
-  /* If all else fails, do the PGP Universal trick of
-     ldap://keys.(domain) */
-
-  hostlen+=5+strlen(domain);
-  keyserver->host=xrealloc(keyserver->host,hostlen);
-  strcat(keyserver->host,"keys.");
-  strcat(keyserver->host,domain);
-
-  append_to_strlist(&list,name);
-
-  rc = gpg_error (GPG_ERR_NOT_IMPLEMENTED); /*FIXME*/
-       /* keyserver_work (ctrl, KS_GETNAME, list, NULL, */
-       /*                 0, fpr, fpr_len, keyserver); */
-
-  free_strlist(list);
-
-  free_keyserver_spec(keyserver);
-
-  return rc;
-#endif
 }

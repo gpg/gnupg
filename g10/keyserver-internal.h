@@ -44,11 +44,11 @@ gpg_error_t keyserver_export_pubkey (ctrl_t ctrl, PKT_public_key *pk,
                                      int assume_new_key);
 
 gpg_error_t keyserver_import (ctrl_t ctrl, strlist_t users, unsigned int flags);
-int keyserver_import_fprint (ctrl_t ctrl, const byte *fprint,size_t fprint_len,
-                             struct keyserver_spec *keyserver,
-                             unsigned int flags);
-int keyserver_import_fprint_ntds (ctrl_t ctrl,
-                                  const byte *fprint, size_t fprint_len);
+int keyserver_import_fpr (ctrl_t ctrl, const byte *fprint,size_t fprint_len,
+                          struct keyserver_spec *keyserver,
+                          unsigned int flags);
+int keyserver_import_fpr_ntds (ctrl_t ctrl,
+                               const byte *fprint, size_t fprint_len);
 int keyserver_import_keyid (ctrl_t ctrl, u32 *keyid,
                             struct keyserver_spec *keyserver,
                             unsigned int flags);
@@ -64,10 +64,9 @@ gpg_error_t keyserver_import_wkd (ctrl_t ctrl, const char *name,
                                   unsigned char **fpr, size_t *fpr_len);
 int keyserver_import_ntds (ctrl_t ctrl, const char *name,
                            unsigned char **fpr,size_t *fpr_len);
-int keyserver_import_mbox (ctrl_t ctrl, const char *mbox,
-                           unsigned char **fpr,size_t *fpr_len,
-                           struct keyserver_spec *keyserver);
-int keyserver_import_ldap (ctrl_t ctrl, const char *name,
-                           unsigned char **fpr,size_t *fpr_len);
+gpg_error_t keyserver_import_mbox (ctrl_t ctrl, const char *mbox,
+                                   unsigned char **fpr,size_t *fpr_len,
+                                   struct keyserver_spec *keyserver,
+                                   unsigned int flags);
 
 #endif /* !_KEYSERVER_INTERNAL_H_ */

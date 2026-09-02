@@ -571,8 +571,8 @@ enum_secret_keys (ctrl_t ctrl, void **context, PKT_public_key *sk)
                       if (opt.debug)
                         log_debug ("using LDAP to find public key"
                                    " for current card\n");
-                      if (!keyserver_import_fprint
-                          (ctrl, c->info.fpr2, sizeof c->info.fpr2,
+                      if (!keyserver_import_fpr (ctrl,
+                           c->info.fpr2, sizeof c->info.fpr2,
                            opt.keyserver, KEYSERVER_IMPORT_FLAG_LDAP))
                         {
                           char fpr_string[MAX_FINGERPRINT_LEN * 2 + 1];
