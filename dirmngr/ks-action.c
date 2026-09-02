@@ -289,11 +289,28 @@ ks_action_search (ctrl_t ctrl, uri_item_t keyservers,
       int is_http = uri->parsed_uri->is_http;
       int is_ldap = 0;
       unsigned int http_status = 0;
+
 #if USE_LDAP
       is_ldap = (!strcmp (uri->parsed_uri->scheme, "ldap")
 		 || !strcmp (uri->parsed_uri->scheme, "ldaps")
 		 || !strcmp (uri->parsed_uri->scheme, "ldapi")
                  || uri->parsed_uri->opaque);
+      if (is_ldap && uri->parsed_uri->opaque)
+        {
+          ldap_server_t server;
+
+          server = ldapserver_parse_one (uri->parsed_uri->path, NULL, 0);
+          if (server && server->upload)
+            {
+              if (DBG_LDAP)
+                log_debug ("skipping upload-only server '%s'\n",
+                           uri->parsed_uri->path);
+              is_ldap = 0;
+            }
+          ldapserver_list_free (server);
+          if (!is_ldap )
+            continue;
+        }
 #endif
       if (is_http || is_ldap)
         {
