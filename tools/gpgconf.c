@@ -1561,17 +1561,17 @@ show_other_registry_entries (estream_t outfp)
     { 3, "encryptSubject" },
     { 3, "noSaveBeforeDecrypt" },
     { 3, "closeOnUnknownWriteEvent" },
+    { 3, "disableTitusHandling" },
+    { 3, "disableAutoPreview" },
+    { 3, "attachHTMLonlyOnReadAsPlain" },
+    { 3, "smimeNoCertSigErr" },
+    { 3, "smimeHtmlWarnShown" },
+    { 3, "alwaysShowApproval" },
+    { 3, "syncDec" },
+    { 3, "syncEnc" },
+    { 3, "draftEnc" },
+    { 3, "draftKey" },
     { 0, NULL }
-    /*  We should add the following key but also hide unset ones.:
-     *   "smimeNoCertSigErr"
-     *   "smimeHtmlWarnShown"
-     *   "alwaysShowApproval"
-     *   "syncDec"
-     *   "syncEnc"
-     *   "draftEnc"
-     *   "draftKey"
-     * Or we just interate over the GpgOL keys.
-     */
   };
   int idx;
   int group = 0;
