@@ -126,6 +126,7 @@ strcardtype (cardtype_t t)
     case CARDTYPE_YUBIKEY:     return "yubikey";
     case CARDTYPE_ZEITCONTROL: return "zeitcontrol";
     case CARDTYPE_SCE7:        return "smartcafe";
+    case CARDTYPE_NITROKEY:    return "nitrokey";
     }
   return "?";
 }
@@ -597,7 +598,8 @@ check_application_conflict (card_t card, const char *name,
   if (card->app->apptype == APPTYPE_UNDEFINED)
     return 0;
 
-  if (card->cardtype == CARDTYPE_YUBIKEY)
+  if (card->cardtype == CARDTYPE_YUBIKEY
+      || card->cardtype == CARDTYPE_NITROKEY)
     {
       if (card->app->apptype == APPTYPE_OPENPGP)
         {
@@ -803,7 +805,7 @@ app_new_register (int slot, ctrl_t ctrl, const char *name,
           else
             card->cardtype = atr_to_cardtype (slot, NULL, 0);
         }
-      else  /* Got 3F00 */
+      else if (!err)  /* 3F00 selected successfully */
         {
           unsigned char *atr;
           size_t atrlen;
@@ -822,12 +824,36 @@ app_new_register (int slot, ctrl_t ctrl, const char *name,
               xfree (atr);
             }
         }
+      else  /* 3F00 not available */
+        {
+          unsigned char *buffer;
+          size_t buflen;
 
-      if (!err && card->cardtype != CARDTYPE_YUBIKEY)
+          /* Try to get the historical bytes by 0x5f52 (select
+             application is not required).  This is heuristics to
+             identify Nitrokey.  Note that its ATR and historical
+             bytes are unrelated.  */
+          err = iso7816_get_data (slot, 0, 0x5f52, &buffer, &buflen);
+          if (err || buflen != 10)
+            err = GPG_ERR_CARD;
+          else if (!memcmp (buffer,
+                            "\x00\x31\xF5\x73\xC0\x01\x60\x05\x90\x00", 10))
+            card->cardtype = CARDTYPE_NITROKEY;
+          else
+            err = GPG_ERR_CARD;
+          xfree (buffer);
+          if (err)
+            return err;
+        }
+
+      if (!err && card->cardtype != CARDTYPE_YUBIKEY
+          && card->cardtype != CARDTYPE_NITROKEY)
         err = iso7816_select_file (slot, 0x2F02, 0);
-      if (!err && card->cardtype != CARDTYPE_YUBIKEY)
+      if (!err && card->cardtype != CARDTYPE_YUBIKEY
+          && card->cardtype != CARDTYPE_NITROKEY)
         err = iso7816_read_binary (slot, 0, 0, &result, &resultlen);
-      if (!err && card->cardtype != CARDTYPE_YUBIKEY)
+      if (!err && card->cardtype != CARDTYPE_YUBIKEY
+          && card->cardtype != CARDTYPE_NITROKEY)
         {
           size_t n;
           const unsigned char *p;
@@ -1172,7 +1198,8 @@ select_all_additional_applications_internal (ctrl_t ctrl, card_t card)
   int i, j;
   int any_new = 0;
 
-  if (card->cardtype == CARDTYPE_YUBIKEY)
+  if (card->cardtype == CARDTYPE_YUBIKEY
+      || card->cardtype == CARDTYPE_NITROKEY)
     {
       candidates[0] = APPTYPE_OPENPGP;
       candidates[1] = APPTYPE_PIV;
@@ -1745,15 +1772,17 @@ static int
 check_external_interference (app_t app, ctrl_t ctrl)
 {
   /*
-   * Only when a user is using Yubikey with pcsc-shared configuration,
-   * we need this detection.  Otherwise, the card/token is under full
-   * control of scdaemon, there's no problem at all.  However, if the
-   * APDU command has been used we better also check whether the AID
-   * is still valid.
+   * Only when a user is using Yubikey/Nitrokey with pcsc-shared
+   * configuration, we need this detection.  Otherwise, the card/token
+   * is under full control of scdaemon, there's no problem at all.
+   * However, if the APDU command has been used we better also check
+   * whether the AID is still valid.
    */
   if (app && app->card && app->card->maybe_check_aid)
     app->card->maybe_check_aid = 0;
-  else if (!opt.pcsc_shared || app->card->cardtype != CARDTYPE_YUBIKEY)
+  else if (!opt.pcsc_shared
+           || (app->card->cardtype != CARDTYPE_YUBIKEY
+               && app->card->cardtype != CARDTYPE_NITROKEY))
     return 0;
 
   if (app->fnc.check_aid)

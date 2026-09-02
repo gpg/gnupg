@@ -213,6 +213,7 @@ struct app_local_s {
   struct
   {
     unsigned int yubikey:1;  /* This is on a Yubikey.  */
+    unsigned int nitrokey:1;  /* This is on a nitrokey.  */
   } flags;
 
   /* Keep track on whether we cache a certain PIN so that we get it
@@ -3644,7 +3645,7 @@ do_reselect (app_t app, ctrl_t ctrl)
   /* An extra check which should not be necessary because the caller
    * should have made sure that a re-select is only called for
    * appropriate cards.  */
-  if (!app->app_local->flags.yubikey)
+  if (!app->app_local->flags.yubikey && !app->app_local->flags.nitrokey)
     return gpg_error (GPG_ERR_NOT_SUPPORTED);
 
   err = iso7816_select_application (app_get_slot (app),
@@ -3764,6 +3765,8 @@ app_select_piv (app_t app)
 
   if (app->card->cardtype == CARDTYPE_YUBIKEY)
     app->app_local->flags.yubikey = 1;
+  else if (app->card->cardtype == CARDTYPE_NITROKEY)
+    app->app_local->flags.nitrokey = 1;
 
   /* If we don't have a s/n construct it from the CHUID.  */
   if (!APP_CARD(app)->serialno)

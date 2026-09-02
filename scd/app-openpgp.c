@@ -6560,7 +6560,8 @@ do_reselect (app_t app, ctrl_t ctrl)
   /* An extra check which should not be necessary because the caller
    * should have made sure that a re-select is only called for
    * appropriate cards.  */
-  if (APP_CARD(app)->cardtype != CARDTYPE_YUBIKEY)
+  if (APP_CARD(app)->cardtype != CARDTYPE_YUBIKEY
+      && APP_CARD(app)->cardtype != CARDTYPE_NITROKEY)
     return gpg_error (GPG_ERR_NOT_SUPPORTED);
 
   /* Note that the card can't cope with P2=0xCO, thus we need to pass

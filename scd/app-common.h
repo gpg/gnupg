@@ -57,7 +57,8 @@ typedef enum
    CARDTYPE_GNUK,
    CARDTYPE_YUBIKEY,
    CARDTYPE_ZEITCONTROL,
-   CARDTYPE_SCE7          /* G+D SmartCafe Expert 7.0  */
+   CARDTYPE_SCE7,         /* G+D SmartCafe Expert 7.0  */
+   CARDTYPE_NITROKEY
   } cardtype_t;
 
 /* List of supported card applications.  The source code for each
