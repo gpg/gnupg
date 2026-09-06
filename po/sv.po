@@ -2751,7 +2751,7 @@ msgid "repair keys on import"
 msgstr "reparera nycklar vid import"
 
 msgid "update even unchanged keys"
-msgstr ""
+msgstr "uppdatera även oförändrade nycklar"
 
 msgid "do not import secret keys"
 msgstr "importera inte hemliga nycklar"
@@ -3025,15 +3025,15 @@ msgstr "Användaridentiteten är inte längre giltig"
 msgid "reason for revocation: "
 msgstr "anledning för återkallning: "
 
-#, fuzzy, c-format
+#, c-format
 #| msgid "key %s: can't locate original keyblock: %s\n"
 msgid "key %s: can't locate keyblock: %s\n"
-msgstr "nyckel %s: kan inte hitta det ursprungliga nyckelblocket: %s\n"
+msgstr "nyckel %s: kan inte hitta nyckelblocket: %s\n"
 
-#, fuzzy, c-format
+#, c-format
 #| msgid "key %s: can't read original keyblock: %s\n"
 msgid "key %s: can't read keyblock: %s\n"
-msgstr "nyckel %s: kan inte läsa det ursprungliga nyckelblocket %s\n"
+msgstr "nyckel %s: kan inte läsa nyckelblocket: %s\n"
 
 #, c-format
 msgid "key %s: no public key - can't apply revocation certificate\n"
@@ -5157,10 +5157,10 @@ msgstr ""
 msgid "unknown weak digest '%s'\n"
 msgstr "okänt svagt sammandrag '%s'\n"
 
-#, fuzzy, c-format
+#, c-format
 #| msgid "NOTE: old default options file `%s' ignored\n"
 msgid "Note: partial file '%s' removed\n"
-msgstr "OBS: den gamla inställningsfilen \"%s\" används inte\n"
+msgstr "Observera: den ofullständiga filen '%s' har tagits bort\n"
 
 #, c-format
 msgid "File '%s' exists. "
@@ -5906,12 +5906,10 @@ msgid "assuming bad signature from key %s due to an unknown critical bit\n"
 msgstr ""
 "antar felaktig signatur från nyckeln %s på grund av en okänd kritisk bit\n"
 
-#, fuzzy, c-format
+#, c-format
 #| msgid "key %s: no public key - can't apply revocation certificate\n"
 msgid "key %s: no public key - can't check revocation signature.\n"
-msgstr ""
-"nyckel %s: ingen publik nyckel - kan inte verkställa "
-"återkallningscertifikat\n"
+msgstr "nyckel %s: ingen publik nyckel – kan inte kontrollera återkallelsesignaturen.\n"
 
 #, c-format
 msgid "key %s: no subkey for subkey revocation signature\n"
@@ -7615,10 +7613,10 @@ msgstr "Observera: kommer inte kunna kryptera till '%s': %s\n"
 msgid "unknown validation model '%s'\n"
 msgstr "okänd valideringsmodell '%s'\n"
 
-#, fuzzy, c-format
+#, c-format
 #| msgid "cipher algorithm %d%s is unknown or disabled\n"
 msgid "given cipher algorithm '%s' is unknown - using '%s'\n"
-msgstr "chifferalgoritmen %d%s är okänd eller inaktiverad\n"
+msgstr "den angivna chifferalgoritmen '%s' är okänd – använder '%s'\n"
 
 #, c-format
 msgid "importing common certificates '%s'\n"
@@ -7628,10 +7626,10 @@ msgstr "importerar vanliga certifikat '%s'\n"
 msgid "can't sign using '%s': %s\n"
 msgstr "kan inte signera med '%s': %s\n"
 
-#, fuzzy, c-format
+#, c-format
 #| msgid "can't open fd %d: %s\n"
 msgid "can't open outputfile: %s\n"
-msgstr "kan inte öppna fd %d: %s\n"
+msgstr "kan inte öppna utdatafilen: %s\n"
 
 #, c-format
 msgid "invalid command (there is no implicit command)\n"
