@@ -5160,7 +5160,7 @@ msgstr "okänt svagt sammandrag '%s'\n"
 #, c-format
 #| msgid "NOTE: old default options file `%s' ignored\n"
 msgid "Note: partial file '%s' removed\n"
-msgstr "Obs: den partiella filen '%s' togs bort\n"
+msgstr "Observera: den ofullständiga filen '%s' har tagits bort\n"
 
 #, c-format
 msgid "File '%s' exists. "
@@ -5909,9 +5909,7 @@ msgstr ""
 #, c-format
 #| msgid "key %s: no public key - can't apply revocation certificate\n"
 msgid "key %s: no public key - can't check revocation signature.\n"
-msgstr ""
-"nyckel %s: ingen publik nyckel - kan inte kontrollera "
-"återkallelsesignaturen.\n"
+msgstr "nyckel %s: ingen publik nyckel – kan inte kontrollera återkallelsesignaturen.\n"
 
 #, c-format
 msgid "key %s: no subkey for subkey revocation signature\n"
@@ -7618,7 +7616,7 @@ msgstr "okänd valideringsmodell '%s'\n"
 #, c-format
 #| msgid "cipher algorithm %d%s is unknown or disabled\n"
 msgid "given cipher algorithm '%s' is unknown - using '%s'\n"
-msgstr "den angivna chifferalgoritmen '%s' är okänd - använder '%s'\n"
+msgstr "den angivna chifferalgoritmen '%s' är okänd – använder '%s'\n"
 
 #, c-format
 msgid "importing common certificates '%s'\n"
