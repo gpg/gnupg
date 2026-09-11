@@ -295,8 +295,8 @@ verify_pin (app_t app, ctrl_t ctrl)
   if (!opt.disable_pinpad
       && !iso7816_check_pinpad (app_get_slot (app), ISO7816_VERIFY, &pininfo) )
     {
-      rc = askpin (ctrl, _("||Please enter your PIN at the reader's pinpad"),
-                   NULL);
+      rc = pinpad_prompt (ctrl,
+                          _("||Please enter your PIN at the reader's pinpad"));
       if (rc)
         {
           log_info (_("PIN callback returned error: %s\n"),
@@ -305,13 +305,13 @@ verify_pin (app_t app, ctrl_t ctrl)
         }
       rc = iso7816_verify_kp (app_get_slot (app), 0x81, &pininfo);
       /* Dismiss the prompt. */
-      askpin (ctrl, NULL, NULL);
+      pinpad_prompt (ctrl, NULL);
     }
   else  /* No Pinpad.  */
     {
       char *pinvalue;
 
-      rc = askpin (ctrl, "PIN", &pinvalue);
+      rc = askpin (ctrl, "PIN", NULL, &pinvalue);
       if (rc)
         {
           log_info ("PIN callback returned error: %s\n", gpg_strerror (rc));
@@ -521,7 +521,7 @@ do_change_pin (app_t app, ctrl_t ctrl,  const char *chvnostr,
   /* TRANSLATORS: Do not translate the "|*|" prefixes but
      keep it at the start of the string.  We need this elsewhere
      to get some infos on the string. */
-  err = askpin (ctrl, _("|N|Initial New PIN"), &pinvalue);
+  err = askpin (ctrl, _("|N|Initial New PIN"), NULL, &pinvalue);
   if (err)
     {
       log_error (_("error getting new PIN: %s\n"), gpg_strerror (err));

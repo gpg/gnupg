@@ -2821,7 +2821,7 @@ verify_a_chv (app_t app, ctrl_t ctrl,
        * a pinpad the PIN can't have been cached.
        * Note that the askpin appends a text to the prompt telling the
        * user to use the pinpad. */
-      rc = askpin (ctrl, prompt, NULL);
+      rc = pinpad_prompt (ctrl, prompt);
       xfree (prompt);
       prompt = NULL;
       if (rc)
@@ -2832,7 +2832,7 @@ verify_a_chv (app_t app, ctrl_t ctrl,
         }
       rc = iso7816_verify_kp (app_get_slot (app), 0x80+chvno, &pininfo);
       /* Dismiss the prompt. */
-      askpin (ctrl, NULL, NULL);
+      pinpad_prompt (ctrl, NULL);
     }
   else
     {
@@ -2844,7 +2844,7 @@ verify_a_chv (app_t app, ctrl_t ctrl,
       if (remaining >= 3 && pin_from_cache (app, ctrl, chvno, &pin))
         rc = 0;
       else
-        rc = askpin (ctrl, prompt, &pin);
+        rc = askpin (ctrl, prompt, NULL, &pin);
       xfree (prompt);
       prompt = NULL;
       if (rc)
@@ -2988,7 +2988,7 @@ verify_chv3 (app_t app, ctrl_t ctrl)
           && !check_pinpad_request (app, &pininfo, 1))
         {
           /* The reader supports the verify command through the pinpad. */
-          rc = askpin (ctrl, prompt, NULL);
+          rc = pinpad_prompt (ctrl, prompt);
           xfree (prompt);
           prompt = NULL;
           if (rc)
@@ -2999,7 +2999,7 @@ verify_chv3 (app_t app, ctrl_t ctrl)
             }
           rc = iso7816_verify_kp (app_get_slot (app), 0x83, &pininfo);
           /* Dismiss the prompt. */
-          askpin (ctrl, NULL, NULL);
+          pinpad_prompt (ctrl, NULL);
         }
       else
         {
@@ -3010,7 +3010,7 @@ verify_chv3 (app_t app, ctrl_t ctrl)
           if (remaining >= 3 && pin_from_cache (app, ctrl, 3, &pin))
             rc = 0;
           else
-            rc = askpin (ctrl, prompt, &pin);
+            rc = askpin (ctrl, prompt, NULL, &pin);
           xfree (prompt);
           prompt = NULL;
           if (rc)
@@ -3190,7 +3190,7 @@ do_setattr (app_t app, ctrl_t ctrl, const char *name,
               if (rc)
                 return rc;
 
-              rc = askpin (ctrl, prompt, &oldpinvalue);
+              rc = askpin (ctrl, prompt, NULL, &oldpinvalue);
               if (rc)
                 {
                   log_info (_("PIN callback returned error: %s\n"),
@@ -3499,7 +3499,7 @@ do_change_pin (app_t app, ctrl_t ctrl,  const char *chvnostr,
                   if (rc)
                     goto leave;
                 }
-              rc = askpin (ctrl, prompt, &oldpinvalue);
+              rc = askpin (ctrl, prompt, NULL, &oldpinvalue);
               xfree (prompt);
               prompt = NULL;
               if (rc)
@@ -3539,7 +3539,7 @@ do_change_pin (app_t app, ctrl_t ctrl,  const char *chvnostr,
           else if (rc)
             goto leave;
 
-          rc = askpin (ctrl, prompt, &resetcode);
+          rc = askpin (ctrl, prompt, NULL, &resetcode);
           xfree (prompt);
           prompt = NULL;
           if (rc)
@@ -3576,7 +3576,7 @@ do_change_pin (app_t app, ctrl_t ctrl,  const char *chvnostr,
          to get some infos on the string. */
       rc = askpin (ctrl, set_resetcode? _("|RN|New Reset Code") :
                    chvno == 3? _("|AN|New Admin PIN") : _("|N|New PIN"),
-                   &pinvalue);
+                   NULL, &pinvalue);
       if (rc || pinvalue == NULL)
         {
           log_error (_("error getting new PIN: %s\n"), gpg_strerror (rc));
@@ -3719,7 +3719,7 @@ do_change_pin (app_t app, ctrl_t ctrl,  const char *chvnostr,
           if (rc)
             goto leave;
 
-          rc = askpin (ctrl, prompt, NULL);
+          rc = pinpad_prompt (ctrl, prompt);
           xfree (prompt);
           prompt = NULL;
           if (rc)
@@ -3731,7 +3731,7 @@ do_change_pin (app_t app, ctrl_t ctrl,  const char *chvnostr,
           rc = iso7816_change_reference_data_kp (app_get_slot (app),
                                                  0x80 + chvno, 0,
                                                  &pininfo);
-          askpin (ctrl, NULL, NULL); /* Dismiss the prompt. */
+          pinpad_prompt (ctrl, NULL); /* Dismiss the prompt. */
         }
       else
         {
