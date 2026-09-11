@@ -1725,7 +1725,7 @@ verify_pin (app_t app, ctrl_t ctrl)
   if (!opt.disable_pinpad
       && !iso7816_check_pinpad (app_get_slot (app), ISO7816_VERIFY, &pininfo) )
     {
-      err = askpin (ctrl, prompt, NULL);
+      err = pinpad_prompt (ctrl, prompt);
       if (err)
         {
           log_info ("PIN callback returned error: %s\n", gpg_strerror (err));
@@ -1733,11 +1733,11 @@ verify_pin (app_t app, ctrl_t ctrl)
         }
 
       err = iso7816_verify_kp (app_get_slot (app), 0x81, &pininfo);
-      askpin (ctrl, NULL, NULL);  /* Dismiss the prompt. */
+      pinpad_prompt (ctrl, NULL);  /* Dismiss the prompt. */
     }
   else
     {
-      err = askpin (ctrl, prompt, &pinvalue);
+      err = askpin (ctrl, prompt, NULL, &pinvalue);
       if (err)
         {
           log_info ("PIN callback returned error: %s\n", gpg_strerror (err));

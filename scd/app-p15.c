@@ -5427,7 +5427,7 @@ verify_pin (app_t app, ctrl_t ctrl, prkdf_object_t prkdf, aodf_object_t aodf)
     if (!prompt)
       err = gpg_error_from_syserror ();
     else
-      err = askpin (ctrl, prompt, &pinvalue);
+      err = askpin (ctrl, prompt, NULL, &pinvalue);
     xfree (prompt);
   }
   if (err)

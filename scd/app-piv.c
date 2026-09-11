@@ -1926,7 +1926,7 @@ ask_and_prepare_chv (app_t app, ctrl_t ctrl,
   else
     {
       prompt = make_prompt (app, remaining, label);
-      err = askpin (ctrl, prompt, &pinvalue);
+      err = askpin (ctrl, prompt, NULL, &pinvalue);
       xfree (prompt);
       prompt = NULL;
     }
