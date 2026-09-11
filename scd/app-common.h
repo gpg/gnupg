@@ -152,48 +152,30 @@ struct app_ctx_s {
                             unsigned char **pk, size_t *pklen);
     gpg_error_t (*getattr) (app_t app, ctrl_t ctrl, const char *name);
     gpg_error_t (*setattr) (app_t app, ctrl_t ctrl, const char *name,
-                    gpg_error_t (*pincb)(void*, const char *, char **),
-                    void *pincb_arg,
                     const unsigned char *value, size_t valuelen);
     gpg_error_t (*sign) (app_t app, ctrl_t ctrl,
                  const char *keyidstr, int hashalgo,
-                 gpg_error_t (*pincb)(void*, const char *, char **),
-                 void *pincb_arg,
                  const void *indata, size_t indatalen,
                  unsigned char **outdata, size_t *outdatalen );
     gpg_error_t (*auth) (app_t app, ctrl_t ctrl, const char *keyidstr,
-                 gpg_error_t (*pincb)(void*, const char *, char **),
-                 void *pincb_arg,
                  const void *indata, size_t indatalen,
                  unsigned char **outdata, size_t *outdatalen);
     gpg_error_t (*decipher) (app_t app, ctrl_t ctrl, const char *keyidstr,
-                             gpg_error_t (*pincb)(void*, const char *, char **),
-                             void *pincb_arg,
                              const void *indata, size_t indatalen,
                              unsigned char **outdata, size_t *outdatalen,
                              unsigned int *r_info);
     gpg_error_t (*writecert) (app_t app, ctrl_t ctrl,
                               const char *certid,
-                              gpg_error_t (*pincb)(void*,const char *,char **),
-                              void *pincb_arg,
                               const unsigned char *data, size_t datalen);
     gpg_error_t (*writekey) (app_t app, ctrl_t ctrl,
                              const char *keyid, unsigned int flags,
-                             gpg_error_t (*pincb)(void*,const char *,char **),
-                             void *pincb_arg,
                              const unsigned char *pk, size_t pklen);
     gpg_error_t (*genkey) (app_t app, ctrl_t ctrl,
                            const char *keyref, const char *keytype,
-                           unsigned int flags, time_t createtime,
-                           gpg_error_t (*pincb)(void*, const char *, char **),
-                           void *pincb_arg);
+                           unsigned int flags, time_t createtime);
     gpg_error_t (*change_pin) (app_t app, ctrl_t ctrl,
-                       const char *chvnostr, unsigned int flags,
-                       gpg_error_t (*pincb)(void*, const char *, char **),
-                       void *pincb_arg);
-    gpg_error_t (*check_pin) (app_t app, ctrl_t ctrl, const char *keyidstr,
-                      gpg_error_t (*pincb)(void*, const char *, char **),
-                      void *pincb_arg);
+                       const char *chvnostr, unsigned int flags);
+    gpg_error_t (*check_pin) (app_t app, ctrl_t ctrl, const char *keyidstr);
     gpg_error_t (*with_keygrip) (app_t app, ctrl_t ctrl, int action,
                                  const char *keygrip_str, int capability);
     gpg_error_t (*check_aid) (app_t app, ctrl_t ctrl,
@@ -286,50 +268,32 @@ gpg_error_t app_readkey (card_t card, ctrl_t ctrl,
                          unsigned char **pk, size_t *pklen);
 gpg_error_t app_getattr (card_t card, ctrl_t ctrl, const char *name);
 gpg_error_t app_setattr (card_t card, ctrl_t ctrl, const char *name,
-                         gpg_error_t (*pincb)(void*, const char *, char **),
-                         void *pincb_arg,
                          const unsigned char *value, size_t valuelen);
 gpg_error_t app_sign (card_t card, ctrl_t ctrl,
                       const char *keyidstr, int hashalgo,
-                      gpg_error_t (*pincb)(void*, const char *, char **),
-                      void *pincb_arg,
                       const void *indata, size_t indatalen,
                       unsigned char **outdata, size_t *outdatalen);
 gpg_error_t app_auth (card_t card, ctrl_t ctrl, const char *keyidstr,
-                      gpg_error_t (*pincb)(void*, const char *, char **),
-                      void *pincb_arg,
                       const void *indata, size_t indatalen,
                       unsigned char **outdata, size_t *outdatalen);
 gpg_error_t app_decipher (card_t card, ctrl_t ctrl, const char *keyidstr,
-                          gpg_error_t (*pincb)(void*, const char *, char **),
-                          void *pincb_arg,
                           const void *indata, size_t indatalen,
                           unsigned char **outdata, size_t *outdatalen,
                           unsigned int *r_info);
 gpg_error_t app_writecert (card_t card, ctrl_t ctrl,
                            const char *certidstr,
-                           gpg_error_t (*pincb)(void*, const char *, char **),
-                           void *pincb_arg,
                            const unsigned char *keydata, size_t keydatalen);
 gpg_error_t app_writekey (card_t card, ctrl_t ctrl,
                           const char *keyidstr, unsigned int flags,
-                          gpg_error_t (*pincb)(void*, const char *, char **),
-                          void *pincb_arg,
                           const unsigned char *keydata, size_t keydatalen);
 gpg_error_t app_genkey (card_t card, ctrl_t ctrl,
                         const char *keynostr, const char *keytype,
-                        unsigned int flags, time_t createtime,
-                        gpg_error_t (*pincb)(void*, const char *, char **),
-                        void *pincb_arg);
+                        unsigned int flags, time_t createtime);
 gpg_error_t app_get_challenge (card_t card, ctrl_t ctrl, size_t nbytes,
                                unsigned char *buffer);
 gpg_error_t app_change_pin (card_t card, ctrl_t ctrl,
-                            const char *chvnostr, unsigned int flags,
-                            gpg_error_t (*pincb)(void*, const char *, char **),
-                            void *pincb_arg);
-gpg_error_t app_check_pin (card_t card, ctrl_t ctrl, const char *keyidstr,
-                           gpg_error_t (*pincb)(void*, const char *, char **),
-                           void *pincb_arg);
+                            const char *chvnostr, unsigned int flags);
+gpg_error_t app_check_pin (card_t card, ctrl_t ctrl, const char *keyidstr);
 card_t app_do_with_keygrip (ctrl_t ctrl, int action, const char *keygrip_str,
                             int capability);
 

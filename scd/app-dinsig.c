@@ -278,9 +278,7 @@ do_readcert (app_t app, const char *certid,
 
 /* Verify the PIN if required.  */
 static gpg_error_t
-verify_pin (app_t app,
-            gpg_error_t (*pincb)(void*, const char *, char **),
-            void *pincb_arg)
+verify_pin (app_t app, ctrl_t ctrl)
 {
   const char *s;
   int rc;
@@ -297,9 +295,8 @@ verify_pin (app_t app,
   if (!opt.disable_pinpad
       && !iso7816_check_pinpad (app_get_slot (app), ISO7816_VERIFY, &pininfo) )
     {
-      rc = pincb (pincb_arg,
-                  _("||Please enter your PIN at the reader's pinpad"),
-                  NULL);
+      rc = askpin (ctrl, _("||Please enter your PIN at the reader's pinpad"),
+                   NULL);
       if (rc)
         {
           log_info (_("PIN callback returned error: %s\n"),
@@ -308,13 +305,13 @@ verify_pin (app_t app,
         }
       rc = iso7816_verify_kp (app_get_slot (app), 0x81, &pininfo);
       /* Dismiss the prompt. */
-      pincb (pincb_arg, NULL, NULL);
+      askpin (ctrl, NULL, NULL);
     }
   else  /* No Pinpad.  */
     {
       char *pinvalue;
 
-      rc = pincb (pincb_arg, "PIN", &pinvalue);
+      rc = askpin (ctrl, "PIN", &pinvalue);
       if (rc)
         {
           log_info ("PIN callback returned error: %s\n", gpg_strerror (rc));
@@ -386,14 +383,9 @@ verify_pin (app_t app,
 
 
 
-/* Create the signature and return the allocated result in OUTDATA.
-   If a PIN is required the PINCB will be used to ask for the PIN;
-   that callback should return the PIN in an allocated buffer and
-   store that in the 3rd argument.  */
+/* Create the signature and return the allocated result in OUTDATA.  */
 static gpg_error_t
 do_sign (app_t app, ctrl_t ctrl, const char *keyidstr, int hashalgo,
-         gpg_error_t (*pincb)(void*, const char *, char **),
-         void *pincb_arg,
          const void *indata, size_t indatalen,
          unsigned char **outdata, size_t *outdatalen )
 {
@@ -486,7 +478,7 @@ do_sign (app_t app, ctrl_t ctrl, const char *keyidstr, int hashalgo,
       memcpy (data+len, indata, indatalen);
     }
 
-  rc = verify_pin (app, pincb, pincb_arg);
+  rc = verify_pin (app, ctrl);
   if (!rc)
     rc = iso7816_compute_ds (app_get_slot (app), 0, data, datalen, 0,
                              outdata, outdatalen);
@@ -500,9 +492,7 @@ do_sign (app_t app, ctrl_t ctrl, const char *keyidstr, int hashalgo,
    always use VHV0.  RESET_MODE is not yet implemented.  */
 static gpg_error_t
 do_change_pin (app_t app, ctrl_t ctrl,  const char *chvnostr,
-               unsigned int flags,
-               gpg_error_t (*pincb)(void*, const char *, char **),
-               void *pincb_arg)
+               unsigned int flags)
 {
   gpg_error_t err;
   char *pinvalue;
@@ -521,7 +511,7 @@ do_change_pin (app_t app, ctrl_t ctrl,  const char *chvnostr,
     }
   else
     {
-      err = verify_pin (app, pincb, pincb_arg);
+      err = verify_pin (app, ctrl);
       if (err)
         return err;
       oldpin = NULL;
@@ -531,7 +521,7 @@ do_change_pin (app_t app, ctrl_t ctrl,  const char *chvnostr,
   /* TRANSLATORS: Do not translate the "|*|" prefixes but
      keep it at the start of the string.  We need this elsewhere
      to get some infos on the string. */
-  err = pincb (pincb_arg, _("|N|Initial New PIN"), &pinvalue);
+  err = askpin (ctrl, _("|N|Initial New PIN"), &pinvalue);
   if (err)
     {
       log_error (_("error getting new PIN: %s\n"), gpg_strerror (err));
