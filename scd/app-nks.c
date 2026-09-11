@@ -208,10 +208,8 @@ static gpg_error_t readcert_from_ef (app_t app, int fid,
 static gpg_error_t switch_application (app_t app, int nks_app_id);
 static const char *parse_pwidstr (app_t app, const char *pwidstr, int new_mode,
                                   int *r_nks_app_id, int *r_pwid);
-static gpg_error_t verify_pin (app_t app, int pwid, const char *desc,
-                               gpg_error_t (*pincb)(void*, const char *,
-                                                    char **),
-                               void *pincb_arg);
+static gpg_error_t verify_pin (app_t app, ctrl_t ctrl,
+                               int pwid, const char *desc);
 static gpg_error_t parse_keyref (app_t app, const char *keyref,
                                  int want_keypair, int *r_fididx);
 
@@ -1351,8 +1349,6 @@ do_readkey (app_t app, ctrl_t ctrl, const char *keyid, unsigned int flags,
 static gpg_error_t
 do_writecert (app_t app, ctrl_t ctrl,
               const char *certid,
-              gpg_error_t (*pincb)(void*, const char *, char **),
-              void *pincb_arg,
               const unsigned char *cert, size_t certlen)
 {
   gpg_error_t err;
@@ -1410,7 +1406,7 @@ do_writecert (app_t app, ctrl_t ctrl,
   desc = parse_pwidstr (app, "PW1.CH", 0, &tmp_app_id, &pwid);
   if (!desc || tmp_app_id != nks_app_id)
     return gpg_error (GPG_ERR_INV_ID);
-  err = verify_pin (app, pwid, desc, pincb, pincb_arg);
+  err = verify_pin (app, ctrl, pwid, desc);
   if (err)
     return err;
 
@@ -1439,14 +1435,10 @@ do_writecert (app_t app, ctrl_t ctrl,
    canonical encoded S-expression with the public key in KEYDATA and
    its length in KEYDATALEN.  The only supported KEYID is
    "$IFDAUTHKEY" to store the terminal key on the card.  Bit 0 of
-   FLAGS indicates whether an existing key shall get overwritten.
-   PINCB and PINCB_ARG are the usual arguments for the pinentry
-   callback.  */
+   FLAGS indicates whether an existing key shall get overwritten.  */
 static gpg_error_t
 do_writekey (app_t app, ctrl_t ctrl,
              const char *keyid, unsigned int flags,
-             gpg_error_t (*pincb)(void*, const char *, char **),
-             void *pincb_arg,
              const unsigned char *keydata, size_t keydatalen)
 {
   gpg_error_t err;
@@ -1457,8 +1449,6 @@ do_writekey (app_t app, ctrl_t ctrl,
   unsigned int nbits;
 
   (void)ctrl;
-  (void)pincb;
-  (void)pincb_arg;
 
   if (!strcmp (keyid, "$IFDAUTHKEY") && app->appversion >= 3)
     ;
@@ -1493,7 +1483,7 @@ do_writekey (app_t app, ctrl_t ctrl,
     }
 
 /*   /\* Store them.  *\/ */
-/*   err = verify_pin (app, 0, NULL, pincb, pincb_arg); */
+/*   err = verify_pin (app, ctrl, 0, NULL); */
 /*   if (err) */
 /*     goto leave; */
 
@@ -1603,9 +1593,7 @@ basic_pin_checks (const char *pinvalue, int minlen, int maxlen)
 
 /* Verify the PIN if required.  */
 static gpg_error_t
-verify_pin (app_t app, int pwid, const char *desc,
-            gpg_error_t (*pincb)(void*, const char *, char **),
-            void *pincb_arg)
+verify_pin (app_t app, ctrl_t ctrl, int pwid, const char *desc)
 {
   int rc;
   pininfo_t pininfo;
@@ -1666,7 +1654,7 @@ verify_pin (app_t app, int pwid, const char *desc,
       && !iso7816_check_pinpad (app_get_slot (app), ISO7816_VERIFY, &pininfo) )
     {
       prompt = make_prompt (app, remaining, desc, extrapromptline);
-      rc = pincb (pincb_arg, prompt, NULL);
+      rc = askpin (ctrl, prompt, NULL);
       xfree (prompt);
       if (rc)
         {
@@ -1676,14 +1664,14 @@ verify_pin (app_t app, int pwid, const char *desc,
         }
 
       rc = iso7816_verify_kp (app_get_slot (app), pwid, &pininfo);
-      pincb (pincb_arg, NULL, NULL);  /* Dismiss the prompt. */
+      askpin (ctrl, NULL, NULL);  /* Dismiss the prompt. */
     }
   else
     {
       char *pinvalue;
 
       prompt = make_prompt (app, remaining, desc, extrapromptline);
-      rc = pincb (pincb_arg, prompt, &pinvalue);
+      rc = askpin (ctrl, prompt, &pinvalue);
       xfree (prompt);
       if (rc)
         {
@@ -1716,14 +1704,9 @@ verify_pin (app_t app, int pwid, const char *desc,
 }
 
 
-/* Create the signature and return the allocated result in OUTDATA.
-   If a PIN is required the PINCB will be used to ask for the PIN;
-   that callback should return the PIN in an allocated buffer and
-   store that in the 3rd argument.  */
+/* Create the signature and return the allocated result in OUTDATA.  */
 static gpg_error_t
 do_sign (app_t app, ctrl_t ctrl, const char *keyidstr, int hashalgo,
-         gpg_error_t (*pincb)(void*, const char *, char **),
-         void *pincb_arg,
          const void *indata, size_t indatalen,
          unsigned char **outdata, size_t *outdatalen )
 {
@@ -1941,7 +1924,7 @@ do_sign (app_t app, ctrl_t ctrl, const char *keyidstr, int hashalgo,
     pwid = 0x00;
 
   if (!err)
-    err = verify_pin (app, pwid, NULL, pincb, pincb_arg);
+    err = verify_pin (app, ctrl, pwid, NULL);
   /* Compute the signature.  */
   if (!err)
     err = iso7816_compute_ds (app_get_slot (app), 0, data, datalen, 0,
@@ -1951,13 +1934,9 @@ do_sign (app_t app, ctrl_t ctrl, const char *keyidstr, int hashalgo,
 
 
 
-/* Decrypt the data in INDATA and return the allocated result in OUTDATA.
-   If a PIN is required the PINCB will be used to ask for the PIN; it
-   should return the PIN in an allocated buffer and put it into PIN.  */
+/* Decrypt the data in INDATA and return the allocated result in OUTDATA.  */
 static gpg_error_t
 do_decipher (app_t app, ctrl_t ctrl, const char *keyidstr,
-             gpg_error_t (*pincb)(void*, const char *, char **),
-             void *pincb_arg,
              const void *indata, size_t indatalen,
              unsigned char **outdata, size_t *outdatalen,
              unsigned int *r_info)
@@ -2034,7 +2013,7 @@ do_decipher (app_t app, ctrl_t ctrl, const char *keyidstr,
   else
     pwid = 0x00;
 
-  err = verify_pin (app, pwid, NULL, pincb, pincb_arg);
+  err = verify_pin (app, ctrl, pwid, NULL);
   if (err)
     goto leave;
 
@@ -2178,9 +2157,7 @@ parse_pwidstr (app_t app, const char *pwidstr, int new_mode,
    for CHVNOSTR.  */
 static gpg_error_t
 do_change_pin (app_t app, ctrl_t ctrl,  const char *pwidstr,
-               unsigned int flags,
-               gpg_error_t (*pincb)(void*, const char *, char **),
-               void *pincb_arg)
+               unsigned int flags)
 {
   gpg_error_t err;
   char *newpin = NULL;
@@ -2275,7 +2252,7 @@ do_change_pin (app_t app, ctrl_t ctrl,  const char *pwidstr,
         }
 
       prompt = make_prompt (app, remaining, desc, NULL);
-      err = pincb (pincb_arg, prompt, &oldpin);
+      err = askpin (ctrl, prompt, &oldpin);
       xfree (prompt);
       if (err)
         {
@@ -2290,7 +2267,7 @@ do_change_pin (app_t app, ctrl_t ctrl,  const char *pwidstr,
 
 
   prompt = make_prompt (app, -1, newdesc, NULL);
-  err = pincb (pincb_arg, prompt, &newpin);
+  err = askpin (ctrl, prompt, &newpin);
   xfree (prompt);
   if (err)
     {
@@ -2334,9 +2311,7 @@ do_change_pin (app_t app, ctrl_t ctrl,  const char *pwidstr,
 
 /* Perform a simple verify operation.  KEYIDSTR should be NULL or empty.  */
 static gpg_error_t
-do_check_pin (app_t app, ctrl_t ctrl, const char *pwidstr,
-              gpg_error_t (*pincb)(void*, const char *, char **),
-              void *pincb_arg)
+do_check_pin (app_t app, ctrl_t ctrl, const char *pwidstr)
 {
   gpg_error_t err;
   int pwid;
@@ -2353,7 +2328,7 @@ do_check_pin (app_t app, ctrl_t ctrl, const char *pwidstr,
   if (err)
     return err;
 
-  return verify_pin (app, pwid, desc, pincb, pincb_arg);
+  return verify_pin (app, ctrl, pwid, desc);
 }
 
 

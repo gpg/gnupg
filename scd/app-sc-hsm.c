@@ -1688,8 +1688,7 @@ hash_from_digestinfo (const unsigned char *di, size_t dilen,
 /* Perform PIN verification
  */
 static gpg_error_t
-verify_pin (app_t app, gpg_error_t (*pincb)(void*, const char *, char **),
-            void *pincb_arg)
+verify_pin (app_t app, ctrl_t ctrl)
 {
   gpg_error_t err;
   pininfo_t pininfo;
@@ -1726,7 +1725,7 @@ verify_pin (app_t app, gpg_error_t (*pincb)(void*, const char *, char **),
   if (!opt.disable_pinpad
       && !iso7816_check_pinpad (app_get_slot (app), ISO7816_VERIFY, &pininfo) )
     {
-      err = pincb (pincb_arg, prompt, NULL);
+      err = askpin (ctrl, prompt, NULL);
       if (err)
         {
           log_info ("PIN callback returned error: %s\n", gpg_strerror (err));
@@ -1734,11 +1733,11 @@ verify_pin (app_t app, gpg_error_t (*pincb)(void*, const char *, char **),
         }
 
       err = iso7816_verify_kp (app_get_slot (app), 0x81, &pininfo);
-      pincb (pincb_arg, NULL, NULL);  /* Dismiss the prompt. */
+      askpin (ctrl, NULL, NULL);  /* Dismiss the prompt. */
     }
   else
     {
-      err = pincb (pincb_arg, prompt, &pinvalue);
+      err = askpin (ctrl, prompt, &pinvalue);
       if (err)
         {
           log_info ("PIN callback returned error: %s\n", gpg_strerror (err));
@@ -1763,9 +1762,6 @@ verify_pin (app_t app, gpg_error_t (*pincb)(void*, const char *, char **),
 /* Handler for the PKSIGN command.
 
    Create the signature and return the allocated result in OUTDATA.
-   If a PIN is required, the PINCB will be used to ask for the PIN;
-   that callback should return the PIN in an allocated buffer and
-   store that as the 3rd argument.
 
    The API is somewhat inconsistent: The caller can either supply
    a plain hash and the algorithm in hashalgo or a complete
@@ -1777,8 +1773,6 @@ verify_pin (app_t app, gpg_error_t (*pincb)(void*, const char *, char **),
 */
 static gpg_error_t
 do_sign (app_t app, ctrl_t ctrl, const char *keyidstr, int hashalgo,
-         gpg_error_t (*pincb)(void*, const char *, char **),
-         void *pincb_arg,
          const void *indata, size_t indatalen,
          unsigned char **outdata, size_t *outdatalen )
 {
@@ -1892,7 +1886,7 @@ do_sign (app_t app, ctrl_t ctrl, const char *keyidstr, int hashalgo,
         }
     }
 
-  err = verify_pin (app, pincb, pincb_arg);
+  err = verify_pin (app, ctrl);
   if (err)
     return err;
 
@@ -1912,8 +1906,6 @@ do_sign (app_t app, ctrl_t ctrl, const char *keyidstr, int hashalgo,
    do_sign for calling conventions; there is no HASHALGO, though. */
 static gpg_error_t
 do_auth (app_t app, ctrl_t ctrl, const char *keyidstr,
-         gpg_error_t (*pincb)(void*, const char *, char **),
-         void *pincb_arg,
          const void *indata, size_t indatalen,
          unsigned char **outdata, size_t *outdatalen )
 {
@@ -1935,7 +1927,7 @@ do_auth (app_t app, ctrl_t ctrl, const char *keyidstr,
     }
 
   algo = indatalen == 36? MD_USER_TLS_MD5SHA1 : GCRY_MD_SHA1;
-  return do_sign (app, ctrl, keyidstr, algo, pincb, pincb_arg,
+  return do_sign (app, ctrl, keyidstr, algo,
                   indata, indatalen, outdata, outdatalen);
 }
 
@@ -1986,8 +1978,6 @@ strip_PKCS15_padding(unsigned char *src, int srclen, unsigned char **dst,
  * limits the key size at rsa2048. */
 static gpg_error_t
 do_decipher (app_t app, ctrl_t ctrl, const char *keyidstr,
-             gpg_error_t (*pincb)(void*, const char *, char **),
-             void *pincb_arg,
              const void *indata, size_t indatalen,
              unsigned char **outdata, size_t *outdatalen,
              unsigned int *r_info)
@@ -2034,7 +2024,7 @@ do_decipher (app_t app, ctrl_t ctrl, const char *keyidstr,
     memcpy (p1blk + (p1blklen - indatalen), indata, indatalen);
 
 
-  err = verify_pin(app, pincb, pincb_arg);
+  err = verify_pin(app, ctrl);
   if (err)
     return err;
 

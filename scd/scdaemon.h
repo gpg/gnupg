@@ -163,6 +163,8 @@ gpg_error_t pincache_get (ctrl_t ctrl, int slot, const char *appname,
 
 void popup_prompt (void *opaque, int on);
 
+gpg_error_t askpin (ctrl_t ctrl, const char *info, char **retstr);
+
 /* Take care: this function assumes that CARD is locked.  */
 void send_client_notifications (card_t card, int removal);
 

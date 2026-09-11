@@ -1030,8 +1030,6 @@ set_adm_key (app_t app, const unsigned char *value, size_t valuelen)
  * checked. */
 static gpg_error_t
 do_setattr (app_t app, ctrl_t ctrl, const char *name,
-            gpg_error_t (*pincb)(void*, const char *, char **),
-            void *pincb_arg,
             const unsigned char *value, size_t valuelen)
 {
   gpg_error_t err;
@@ -1051,8 +1049,6 @@ do_setattr (app_t app, ctrl_t ctrl, const char *name,
   int idx;
 
   (void)ctrl;
-  (void)pincb;
-  (void)pincb_arg;
 
   for (idx=0; (idx < DIM (table)
                && ascii_strcasecmp (table[idx].name, name)); idx++)
@@ -1819,8 +1815,7 @@ make_prompt (app_t app, int remaining, const char *firstline)
 static gpg_error_t
 ask_and_prepare_chv (app_t app, ctrl_t ctrl,
                      int keyref, int ask_new, int remaining, int no_cache,
-                     gpg_error_t (*pincb)(void*,const char *,char **),
-                     void *pincb_arg, char **r_pin, unsigned int *r_pinlen,
+                     char **r_pin, unsigned int *r_pinlen,
                      unsigned int *r_unpaddedpinlen)
 {
   gpg_error_t err;
@@ -1886,7 +1881,7 @@ ask_and_prepare_chv (app_t app, ctrl_t ctrl,
   else
     {
       prompt = make_prompt (app, remaining, label);
-      err = pincb (pincb_arg, prompt, &pinvalue);
+      err = askpin (ctrl, prompt, &pinvalue);
       xfree (prompt);
       prompt = NULL;
     }
@@ -1953,8 +1948,7 @@ ask_and_prepare_chv (app_t app, ctrl_t ctrl,
  * either the Application PIN or the Global PIN.  If FORCE is true a
  * verification is always done.  */
 static gpg_error_t
-verify_chv (app_t app, ctrl_t ctrl, int keyref, int force,
-            gpg_error_t (*pincb)(void*,const char *,char **), void *pincb_arg)
+verify_chv (app_t app, ctrl_t ctrl, int keyref, int force)
 {
   gpg_error_t err;
   int remaining;
@@ -1974,7 +1968,6 @@ verify_chv (app_t app, ctrl_t ctrl, int keyref, int force,
 
 
   err = ask_and_prepare_chv (app, ctrl, keyref, 0, remaining, force,
-                             pincb, pincb_arg,
                              &pin, &pinlen, &unpaddedpinlen);
   if (err)
     return err;
@@ -2008,9 +2001,7 @@ verify_chv (app_t app, ctrl_t ctrl, int keyref, int force,
  */
 static gpg_error_t
 do_change_chv (app_t app, ctrl_t ctrl, const char *pwidstr,
-               unsigned int flags,
-               gpg_error_t (*pincb)(void*, const char *, char **),
-               void *pincb_arg)
+               unsigned int flags)
 {
   gpg_error_t err;
   int keyref, targetkeyref;
@@ -2080,7 +2071,6 @@ do_change_chv (app_t app, ctrl_t ctrl, const char *pwidstr,
 
   /* Ask for the old pin or puk.  */
   err = ask_and_prepare_chv (app, ctrl, keyref, 0, remaining, 0,
-                             pincb, pincb_arg,
                              &oldpin, &oldpinlen, NULL);
   if (err)
     return err;
@@ -2100,7 +2090,6 @@ do_change_chv (app_t app, ctrl_t ctrl, const char *pwidstr,
 
   /* Ask for the new pin.  */
   err = ask_and_prepare_chv (app, ctrl, targetkeyref, 1, -1, 0,
-                             pincb, pincb_arg,
                              &newpin, &newpinlen, NULL);
   if (err)
     return err;
@@ -2143,9 +2132,7 @@ do_change_chv (app_t app, ctrl_t ctrl, const char *pwidstr,
 /* Perform a simple verify operation for the PIN specified by PWIDSTR.
  * For valid values see do_change_chv.  */
 static gpg_error_t
-do_check_chv (app_t app, ctrl_t ctrl, const char *pwidstr,
-              gpg_error_t (*pincb)(void*, const char *, char **),
-              void *pincb_arg)
+do_check_chv (app_t app, ctrl_t ctrl, const char *pwidstr)
 {
   int keyref;
 
@@ -2155,7 +2142,7 @@ do_check_chv (app_t app, ctrl_t ctrl, const char *pwidstr,
   if (keyref == -1)
     return gpg_error (GPG_ERR_INV_ID);
 
-  return verify_chv (app, ctrl, keyref, 0, pincb, pincb_arg);
+  return verify_chv (app, ctrl, keyref, 0);
 }
 
 
@@ -2171,8 +2158,6 @@ do_check_chv (app_t app, ctrl_t ctrl, const char *pwidstr,
  */
 static gpg_error_t
 do_sign (app_t app, ctrl_t ctrl, const char *keyidstr, int hashalgo,
-         gpg_error_t (*pincb)(void*, const char *, char **),
-         void *pincb_arg,
          const void *indata_arg, size_t indatalen,
          unsigned char **r_outdata, size_t *r_outdatalen)
 {
@@ -2380,7 +2365,7 @@ do_sign (app_t app, ctrl_t ctrl, const char *keyidstr, int hashalgo,
     }
 
   /* Now verify the Application PIN.  */
-  err = verify_chv (app, ctrl, 0x80, force_verify, pincb, pincb_arg);
+  err = verify_chv (app, ctrl, 0x80, force_verify);
   if (err)
     goto leave;
 
@@ -2489,12 +2474,10 @@ do_sign (app_t app, ctrl_t ctrl, const char *keyidstr, int hashalgo,
  * both it is also acceptable to receive fully prepared PSS data.  */
 static gpg_error_t
 do_auth (app_t app, ctrl_t ctrl, const char *keyidstr,
-         gpg_error_t (*pincb)(void*, const char *, char **),
-         void *pincb_arg,
          const void *indata, size_t indatalen,
          unsigned char **r_outdata, size_t *r_outdatalen)
 {
-  return do_sign (app, ctrl, keyidstr, 0, pincb, pincb_arg, indata, indatalen,
+  return do_sign (app, ctrl, keyidstr, 0, indata, indatalen,
                   r_outdata, r_outdatalen);
 }
 
@@ -2503,8 +2486,6 @@ do_auth (app_t app, ctrl_t ctrl, const char *keyidstr,
  * mallocated result at (R_OUTDATA,R_OUTDATALEN).  */
 static gpg_error_t
 do_decipher (app_t app, ctrl_t ctrl, const char *keyidstr,
-             gpg_error_t (*pincb)(void*, const char *, char **),
-             void *pincb_arg,
              const void *indata_arg, size_t indatalen,
              unsigned char **r_outdata, size_t *r_outdatalen,
              unsigned int *r_info)
@@ -2614,7 +2595,7 @@ do_decipher (app_t app, ctrl_t ctrl, const char *keyidstr,
     }
 
   /* Now verify the Application PIN.  */
-  err = verify_chv (app, ctrl, 0x80, 0, pincb, pincb_arg);
+  err = verify_chv (app, ctrl, 0x80, 0);
   if (err)
     return err;
 
@@ -3027,8 +3008,7 @@ writekey_ecc (app_t app, data_object_t dobj, int keyref,
  * supported card types.  The input is a canonical encoded
  * S-expression with the secret key in KEYDATA and its length (for
  * assertion) in KEYDATALEN.  KEYREFSTR needs to be the usual 2
- * hexdigit slot number prefixed with "PIV."  PINCB and PINCB_ARG are
- * not used for PIV cards.
+ * hexdigit slot number prefixed with "PIV."
  *
  * Supported FLAGS are:
  *   APP_WRITEKEY_FLAG_FORCE   Overwrite existing key.
@@ -3036,8 +3016,6 @@ writekey_ecc (app_t app, data_object_t dobj, int keyref,
 static gpg_error_t
 do_writekey (app_t app, ctrl_t ctrl,
              const char *keyrefstr, unsigned int flags,
-             gpg_error_t (*pincb)(void*, const char *, char **),
-             void *pincb_arg,
              const unsigned char *keydata, size_t keydatalen)
 {
   gpg_error_t err;
@@ -3049,8 +3027,6 @@ do_writekey (app_t app, ctrl_t ctrl,
   int depth;
 
   (void)ctrl;
-  (void)pincb;
-  (void)pincb_arg;
 
   if (!app->app_local->flags.yubikey)
     {
@@ -3264,9 +3240,7 @@ genkey_parse_ecc (const unsigned char *data, size_t datalen, int mechanism,
  */
 static gpg_error_t
 do_genkey (app_t app, ctrl_t ctrl, const char *keyrefstr, const char *keytype,
-           unsigned int flags, time_t createtime,
-           gpg_error_t (*pincb)(void*, const char *, char **),
-           void *pincb_arg)
+           unsigned int flags, time_t createtime)
 {
   gpg_error_t err;
   data_object_t dobj;
@@ -3283,8 +3257,6 @@ do_genkey (app_t app, ctrl_t ctrl, const char *keyrefstr, const char *keytype,
 
   (void)ctrl;
   (void)createtime;
-  (void)pincb;
-  (void)pincb_arg;
 
   if (!keytype)
     keytype = "rsa2048";
@@ -3439,8 +3411,6 @@ my_cmp_public_key (void *opaque, int depth,
 static gpg_error_t
 do_writecert (app_t app, ctrl_t ctrl,
               const char *certrefstr,
-              gpg_error_t (*pincb)(void*, const char *, char **),
-              void *pincb_arg,
               const unsigned char *cert, size_t certlen)
 {
   gpg_error_t err;
@@ -3451,8 +3421,6 @@ do_writecert (app_t app, ctrl_t ctrl,
   struct my_cmp_public_key_parm_s cmp_parm = { 0 };
 
   (void)ctrl;
-  (void)pincb;     /* Not used; instead authentication is needed.  */
-  (void)pincb_arg;
 
   if (!certlen)
     return gpg_error (GPG_ERR_INV_CERT_OBJ);
