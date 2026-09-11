@@ -973,10 +973,8 @@ cmd_setdata (assuan_context_t ctx, char *line)
   return 0;
 }
 
-
-
 gpg_error_t
-askpin (ctrl_t ctrl, const char *info, char **retstr)
+pinpad_prompt (ctrl_t ctrl, const char *info)
 {
   assuan_context_t ctx = ctrl->server_local->assuan_ctx;
   char *command;
@@ -984,32 +982,43 @@ askpin (ctrl_t ctrl, const char *info, char **retstr)
   unsigned char *value;
   size_t valuelen;
 
-  if (!retstr)
+  /* We prompt for pinpad entry.  To make sure that the popup has
+     been show we use an inquire and not just a status message.
+     We ignore any value returned.  */
+  if (info)
     {
-      /* We prompt for pinpad entry.  To make sure that the popup has
-         been show we use an inquire and not just a status message.
-         We ignore any value returned.  */
-      if (info)
-        {
-          if (DBG_IPC)
-            log_debug ("prompting for pinpad entry '%s'\n", info);
-          rc = gpgrt_asprintf (&command, "POPUPPINPADPROMPT %s", info);
-          if (rc < 0)
-            return gpg_error (gpg_err_code_from_errno (errno));
-          rc = assuan_inquire (ctx, command, &value, &valuelen, MAXLEN_PIN);
-          xfree (command);
-        }
-      else
-        {
-          if (DBG_IPC)
-            log_debug ("dismiss pinpad entry prompt\n");
-          rc = assuan_inquire (ctx, "DISMISSPINPADPROMPT",
-                               &value, &valuelen, MAXLEN_PIN);
-        }
-      if (!rc)
-        xfree (value);
-      return rc;
+      if (DBG_IPC)
+        log_debug ("prompting for pinpad entry '%s'\n", info);
+      rc = gpgrt_asprintf (&command, "POPUPPINPADPROMPT %s", info);
+      if (rc < 0)
+        return gpg_error (gpg_err_code_from_errno (errno));
+      rc = assuan_inquire (ctx, command, &value, &valuelen, MAXLEN_PIN);
+      xfree (command);
     }
+  else
+    {
+      if (DBG_IPC)
+        log_debug ("dismiss pinpad entry prompt\n");
+      rc = assuan_inquire (ctx, "DISMISSPINPADPROMPT",
+                           &value, &valuelen, MAXLEN_PIN);
+    }
+  if (!rc)
+    xfree (value);
+  return rc;
+}
+
+gpg_error_t
+askpin (ctrl_t ctrl, const char *info,
+        gpg_error_t (*check_cb) (void *arg), void *check_cb_arg)
+{
+  assuan_context_t ctx = ctrl->server_local->assuan_ctx;
+  char *command;
+  int rc;
+  unsigned char *value;
+  size_t valuelen;
+  char **retstr = (char **)check_cb_arg;
+
+  (void)check_cb;
 
   *retstr = NULL;
   if (DBG_IPC)

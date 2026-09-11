@@ -1654,7 +1654,7 @@ verify_pin (app_t app, ctrl_t ctrl, int pwid, const char *desc)
       && !iso7816_check_pinpad (app_get_slot (app), ISO7816_VERIFY, &pininfo) )
     {
       prompt = make_prompt (app, remaining, desc, extrapromptline);
-      rc = askpin (ctrl, prompt, NULL);
+      rc = pinpad_prompt (ctrl, prompt);
       xfree (prompt);
       if (rc)
         {
@@ -1664,14 +1664,14 @@ verify_pin (app_t app, ctrl_t ctrl, int pwid, const char *desc)
         }
 
       rc = iso7816_verify_kp (app_get_slot (app), pwid, &pininfo);
-      askpin (ctrl, NULL, NULL);  /* Dismiss the prompt. */
+      pinpad_prompt (ctrl, NULL);  /* Dismiss the prompt. */
     }
   else
     {
       char *pinvalue;
 
       prompt = make_prompt (app, remaining, desc, extrapromptline);
-      rc = askpin (ctrl, prompt, &pinvalue);
+      rc = askpin (ctrl, prompt, NULL, &pinvalue);
       xfree (prompt);
       if (rc)
         {
@@ -2252,7 +2252,7 @@ do_change_pin (app_t app, ctrl_t ctrl,  const char *pwidstr,
         }
 
       prompt = make_prompt (app, remaining, desc, NULL);
-      err = askpin (ctrl, prompt, &oldpin);
+      err = askpin (ctrl, prompt, NULL, &oldpin);
       xfree (prompt);
       if (err)
         {
@@ -2267,7 +2267,7 @@ do_change_pin (app_t app, ctrl_t ctrl,  const char *pwidstr,
 
 
   prompt = make_prompt (app, -1, newdesc, NULL);
-  err = askpin (ctrl, prompt, &newpin);
+  err = askpin (ctrl, prompt, NULL, &newpin);
   xfree (prompt);
   if (err)
     {
