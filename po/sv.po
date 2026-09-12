@@ -2663,7 +2663,7 @@ msgstr "Skriv ditt meddelande här ...\n"
 
 #, c-format
 msgid "the given certification policy URL is invalid\n"
-msgstr "den angivna URL som beskriver certifieringsspolicy är ogiltig\n"
+msgstr "den angivna URL som beskriver certifieringspolicy är ogiltig\n"
 
 #, c-format
 msgid "the given signature policy URL is invalid\n"
@@ -2885,7 +2885,7 @@ msgstr "nyckeln %s: PKS-skadad undernyckel reparerades\n"
 
 #, c-format
 msgid "key %s: accepted non self-signed user ID \"%s\"\n"
-msgstr "nyckel %s: accepterade icke-självsignerad användaridentitet \"%s\"\n"
+msgstr "nyckel %s: accepterade en icke-självsignerad användaridentitet \"%s\"\n"
 
 #, c-format
 msgid "key %s: no valid user IDs\n"
