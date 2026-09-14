@@ -66,6 +66,41 @@ static enum { NORMAL = 0, FROZEN, FUTURE, PAST } timemode;
 #define JD_DIFF 1721060L
 
 
+/* Fill BUFFER with the date and time given by TP in the locale
+ * specific standard format.  BUFSIZE gives the allocated length of
+ * the buffer to be passed to strftime.
+ *
+ * Note: gcc -Wformat-noliteral would complain here.  Thus we disable
+ * it for this function.  */
+#if defined(HAVE_STRFTIME) && defined(HAVE_NL_LANGINFO)
+# if GPGRT_HAVE_PRAGMA_GCC_PUSH
+#  pragma GCC diagnostic push
+#  pragma GCC diagnostic ignored "-Wformat-nonliteral"
+# endif
+static void
+format_time_nl_langinfo (char *buffer, size_t bufsize, struct tm *tp)
+{
+  static char fmtinit;
+  static char fmt[80];
+
+  if (!fmtinit)
+    {
+      mem2str (fmt, nl_langinfo(D_T_FMT), DIM(fmt)-3);
+      if (!strstr (fmt, "%Z"))
+        strcat (fmt, " %Z");
+      fmtinit = 1;
+    }
+
+  if (!bufsize)
+    *buffer = 0;
+  else
+    strftime (buffer, bufsize-1, fmt, tp);
+}
+# if GPGRT_HAVE_PRAGMA_GCC_PUSH
+#  pragma GCC diagnostic pop
+# endif
+#endif /* HAVE_STRFTIME && HAVE_NL_LANGINFO */
+
 
 /*
   timegm() is a GNU function that might not be available everywhere.
@@ -177,6 +212,7 @@ time_t
 gnupg_get_time (void)
 {
   time_t current = time (NULL);
+
   if (current == (time_t)(-1))
     log_fatal ("time() failed\n");
 
@@ -809,9 +845,6 @@ const char *
 asctimestamp (u32 stamp)
 {
   static char buffer[80];
-#if defined (HAVE_STRFTIME) && defined (HAVE_NL_LANGINFO)
-  static char fmt[80];
-#endif
   struct tm *tp;
   time_t atime = stamp;
 
@@ -824,13 +857,8 @@ asctimestamp (u32 stamp)
   tp = localtime( &atime );
 #ifdef HAVE_STRFTIME
 # if defined(HAVE_NL_LANGINFO)
-  mem2str( fmt, nl_langinfo(D_T_FMT), DIM(fmt)-3 );
-  if (!strstr( fmt, "%Z" ))
-    strcat( fmt, " %Z");
-  /* NOTE: gcc -Wformat-noliteral will complain here.  I have found no
-     way to suppress this warning.  */
-  strftime (buffer, DIM(buffer)-1, fmt, tp);
-# else
+  format_time_nl_langinfo (buffer, DIM (buffer), tp);
+# else /* !HAVE_NL_LANGINFO */
 #  if HAVE_W32_SYSTEM
   {
     static int done;
@@ -856,14 +884,14 @@ asctimestamp (u32 stamp)
         /* log_debug ("LC_TIME now '%s'\n", setlocale (LC_TIME, NULL)); */
       }
   }
-#  endif
+#  endif /* W32 */
    /* FIXME: we should check whether the locale appends a " %Z" These
     * locales from glibc don't put the " %Z": fi_FI hr_HR ja_JP lt_LT
     * lv_LV POSIX ru_RU ru_SU sv_FI sv_SE zh_CN.  */
   strftime (buffer, DIM(buffer)-1, "%c %Z", tp);
-# endif
+# endif /* !HAVE_NL_LANGINFO */
   buffer[DIM(buffer)-1] = 0;
-#else
+#else /* !HAVE_STRFTIME */
   mem2str( buffer, asctime(tp), DIM(buffer) );
 #endif
   return buffer;
