@@ -631,7 +631,7 @@ gpgsm_check_cert_sig (ksba_cert_t issuer_cert, ksba_cert_t cert)
           else
             {
               if (DBG_X509)
-                log_debug(skider, skiderlen, "ski is:");
+                log_printhex (skider, skiderlen, "ski is:");
             }
           ksba_free (ski);
         }
