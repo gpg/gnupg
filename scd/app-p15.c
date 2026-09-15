@@ -5038,7 +5038,7 @@ micardo_mse (app_t app, unsigned short fid)
         }
       if (opt.verbose)
         {
-          log_info (buffer, buflen, "p15: keyD record: ");
+          log_info ("p15: keyD record: ");
           log_printhex (buffer, buflen, "");
         }
       p = find_tlv (buffer, buflen, 0x83, &n);
