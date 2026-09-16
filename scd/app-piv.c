@@ -18,7 +18,7 @@
  */
 
 /* Some notes:
- * - Specs for PIV are at http://dx.doi.org/10.6028/NIST.SP.800-73-4
+ * - Specs for PIV are at https://doi.org/10.6028/NIST.SP.800-73pt1-5
  * - https://developers.yubico.com/PIV/Introduction/PIV_attestation.html
  *
  * - Access control matrix:
@@ -310,7 +310,7 @@ get_cached_data (app_t app, int tag,
 
   /* Unless the Discovery Object or the BIT Group Template is
    * requested, remove the outer container.
-   * (SP800-73.4 Part 2, section 3.1.2)   */
+   * (SP 800-73-5 Part 2, section 3.1.2)   */
   if (tag == 0x7E || tag == 0x7F61)
     ;
   else if (len && *p == 0x53 && (s = find_tlv (p, len, 0x53, &n)))
@@ -2206,8 +2206,12 @@ do_sign (app_t app, ctrl_t ctrl, const char *keyidstr, int hashalgo,
       goto leave;
     }
 
-  /* According to table 4b of SP800-73-4 the signing key always
-   * requires a verify.  */
+  /* According to table 5 of SP 800-73-5 Part 1 the signing key always
+   * requires a verify. */
+  /* On the other hand, Yubikey has an extensions of PIN/touch policy
+   * for each key.  It's user's control.
+   * https://developers.yubico.com/PIV/Introduction/Yubico_extensions.html
+   */
   switch (keyref)
     {
     case 0x9c: force_verify = 1; break;
