@@ -2756,6 +2756,51 @@ build_enter_pin_prompt (app_t app, int chvno, const char *firstline,
 }
 
 
+struct verify_info {
+  app_t app;
+  ctrl_t ctrl;
+  int chvno;
+  char **r_pin;
+  char **r_pinvalue;
+  size_t *r_pinlen;
+  int minlen;
+};
+
+static gpg_error_t
+pincheck_cb (void *arg, unsigned char *value, size_t valuelen)
+{
+  struct verify_info *v = arg;
+  char *pin;
+  int rc;
+
+  if (!value)
+    pin = *v->r_pin;
+  else
+    *v->r_pin = pin = (char *)value;
+
+  if (valuelen < v->minlen)
+    {
+      log_error (_("PIN for CHV%d is too short;"
+                   " minimum length is %d\n"), v->chvno, v->minlen);
+      return gpg_error (GPG_ERR_BAD_PIN);
+    }
+
+  rc = pin2hash_if_kdf (v->app, v->chvno, pin, v->r_pinvalue, v->r_pinlen);
+  if (!rc)
+    rc = iso7816_verify (app_get_slot (v->app),
+                         0x80 + v->chvno, *v->r_pinvalue, *v->r_pinlen);
+  if (!rc)
+    cache_pin (v->app, v->ctrl, v->chvno, pin);
+  else
+    {
+      log_error (_("verify CHV%d failed: %s\n"), v->chvno, gpg_strerror (rc));
+      flush_cache_after_error (v->app);
+    }
+  return rc;
+}
+
+
+
 /* Verify a CHV either using the pinentry or if possible by using a
    pinpad.  CHVNO must be either 1 or 2. SIGCOUNT is only used with
    CHV1.  PINVALUE is the address of a pointer which will receive a
@@ -2780,6 +2825,7 @@ verify_a_chv (app_t app, ctrl_t ctrl,
   char *pinvalue = NULL;
   size_t pinlen = 0;
   char *pin = NULL;
+  struct verify_info v;
 
   log_assert (chvno == 1 || chvno == 2);
 
@@ -2843,37 +2889,26 @@ verify_a_chv (app_t app, ctrl_t ctrl,
    * get the PIN from the cache.  With less remaining tries it is
    * better to let the user know about failed attempts (which
    * might be due to a bug in the PIN cache handling). */
+  v.app = app;
+  v.ctrl = ctrl;
+  v.chvno = chvno;
+  v.r_pin = &pin;
+  v.r_pinvalue = &pinvalue;
+  v.r_pinlen = &pinlen;
+  v.minlen = minlen;
+
   if (remaining >= 3 && pin_from_cache (app, ctrl, chvno, &pin))
-    rc = 0;
+    rc = pincheck_cb (&v, NULL, 0);
   else
-    rc = askpin (ctrl, prompt, NULL, &pin);
+    rc = askpin (ctrl, prompt, pincheck_cb, &v);
   xfree (prompt);
   prompt = NULL;
   if (rc)
     {
       log_info (_("askpin returned error: %s\n"), gpg_strerror (rc));
-      return rc;
-    }
-
-  if (strlen (pin) < minlen)
-    {
-      log_error (_("PIN for CHV%d is too short;"
-                   " minimum length is %d\n"), chvno, minlen);
       wipe_and_free_string (pin);
-      return gpg_error (GPG_ERR_BAD_PIN);
-    }
-
-  rc = pin2hash_if_kdf (app, chvno, pin, &pinvalue, &pinlen);
-  if (!rc)
-    rc = iso7816_verify (app_get_slot (app),
-                         0x80 + chvno, pinvalue, pinlen);
-  if (!rc)
-    cache_pin (app, ctrl, chvno, pin);
-
-  if (rc)
-    {
-      log_error (_("verify CHV%d failed: %s\n"), chvno, gpg_strerror (rc));
-      flush_cache_after_error (app);
+      wipe_and_free (pinvalue, pinlen);
+      return rc;
     }
   else if (sync_chv)
     {
