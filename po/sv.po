@@ -8263,7 +8263,7 @@ msgstr "crl_cache_insert via utfärdare misslyckades: %s\n"
 
 #, c-format
 msgid "reader to file mapping table full - waiting\n"
-msgstr "läsare till filmappningstabell är full - väntar\n"
+msgstr "mappningstabellen från läsare till fil är full – väntar\n"
 
 msgid "CRL access not possible due to Tor mode"
 msgstr "CRL-åtkomst inte möjlig på grund av Tor-läge"
