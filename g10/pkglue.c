@@ -730,6 +730,9 @@ do_encrypt_kem (PKT_public_key *pk, gcry_mpi_t data, int seskey_algo,
             }
           wipememory (inputbuf, sizeof inputbuf);
         }
+      kyber_ct_len = 0; /* Avoid false compiler warning.  Its use is
+                         * actually controlled by the only_ecc
+                         * condition. */
     }
   else /* !only_ecc */
     {
