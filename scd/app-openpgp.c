@@ -2763,25 +2763,25 @@ build_enter_pin_prompt (app_t app, int chvno, const char *firstline,
    that PIN shall be used for another verify operation).  The caller
    needs to free this value.  If the function returns with success and
    NULL is stored at PINVALUE, the caller should take this as an
-   indication that the pinpad has been used.
+   indication that the pinpad has been used.  If SYNC_CHV is set, care
+   about other CHV.
    */
 static gpg_error_t
 verify_a_chv (app_t app, ctrl_t ctrl,
               int chvno, unsigned long sigcount,
-              char **r_pinvalue, size_t *r_pinlen)
+              int sync_chv)
 {
   int rc = 0;
   char *prompt;
   pininfo_t pininfo;
   int minlen = 6;
   int remaining;
-  char *pin = NULL;
   const char *firstline = _("||Please unlock the card");
+  char *pinvalue = NULL;
+  size_t pinlen = 0;
+  char *pin = NULL;
 
   log_assert (chvno == 1 || chvno == 2);
-
-  *r_pinvalue = NULL;
-  *r_pinlen = 0;
 
   rc = build_enter_pin_prompt (app,
                                1, /* Use 1, even if CHVNO==2.  */
@@ -2806,6 +2806,7 @@ verify_a_chv (app_t app, ctrl_t ctrl,
           app->app_local->flags.def_chv2 = 0;
         }
       return rc;
+      /* Note: ignore SYNC_CHV for this case.  */
     }
 
   memset (&pininfo, 0, sizeof pininfo);
@@ -2818,9 +2819,9 @@ verify_a_chv (app_t app, ctrl_t ctrl,
     {
       /* The reader supports the verify command through the pinpad.
        * In this case we do not utilize the PIN cache because by using
-       * a pinpad the PIN can't have been cached.
-       * Note that the askpin appends a text to the prompt telling the
-       * user to use the pinpad. */
+       * a pinpad the PIN can't have been cached.  Note that the
+       * pinpad_prompt appends a text to the prompt telling the user
+       * to use the pinpad. */
       rc = pinpad_prompt (ctrl, prompt);
       xfree (prompt);
       prompt = NULL;
@@ -2833,52 +2834,101 @@ verify_a_chv (app_t app, ctrl_t ctrl,
       rc = iso7816_verify_kp (app_get_slot (app), 0x80+chvno, &pininfo);
       /* Dismiss the prompt. */
       pinpad_prompt (ctrl, NULL);
+      return rc;
+      /* Note: SYNC_CHV can't be done because we don't have PINVALUE.  */
     }
+
+  /* The reader has no pinpad or we don't want to use it.  If we
+   * have at least the standard 3 remaining tries we first try to
+   * get the PIN from the cache.  With less remaining tries it is
+   * better to let the user know about failed attempts (which
+   * might be due to a bug in the PIN cache handling). */
+  if (remaining >= 3 && pin_from_cache (app, ctrl, chvno, &pin))
+    rc = 0;
   else
+    rc = askpin (ctrl, prompt, NULL, &pin);
+  xfree (prompt);
+  prompt = NULL;
+  if (rc)
     {
-      /* The reader has no pinpad or we don't want to use it.  If we
-       * have at least the standard 3 remaining tries we first try to
-       * get the PIN from the cache.  With less remaining tries it is
-       * better to let the user know about failed attempts (which
-       * might be due to a bug in the PIN cache handling). */
-      if (remaining >= 3 && pin_from_cache (app, ctrl, chvno, &pin))
-        rc = 0;
-      else
-        rc = askpin (ctrl, prompt, NULL, &pin);
-      xfree (prompt);
-      prompt = NULL;
-      if (rc)
-        {
-          log_info (_("PIN callback returned error: %s\n"),
-                    gpg_strerror (rc));
-          return rc;
-        }
-
-      if (strlen (pin) < minlen)
-        {
-          log_error (_("PIN for CHV%d is too short;"
-                       " minimum length is %d\n"), chvno, minlen);
-          wipe_and_free_string (pin);
-          return gpg_error (GPG_ERR_BAD_PIN);
-        }
-
-      rc = pin2hash_if_kdf (app, chvno, pin, r_pinvalue, r_pinlen);
-      if (!rc)
-        rc = iso7816_verify (app_get_slot (app),
-                             0x80 + chvno, *r_pinvalue, *r_pinlen);
-      if (!rc)
-        cache_pin (app, ctrl, chvno, pin);
+      log_info (_("askpin returned error: %s\n"), gpg_strerror (rc));
+      return rc;
     }
 
-  wipe_and_free_string (pin);
+  if (strlen (pin) < minlen)
+    {
+      log_error (_("PIN for CHV%d is too short;"
+                   " minimum length is %d\n"), chvno, minlen);
+      wipe_and_free_string (pin);
+      return gpg_error (GPG_ERR_BAD_PIN);
+    }
+
+  rc = pin2hash_if_kdf (app, chvno, pin, &pinvalue, &pinlen);
+  if (!rc)
+    rc = iso7816_verify (app_get_slot (app),
+                         0x80 + chvno, pinvalue, pinlen);
+  if (!rc)
+    cache_pin (app, ctrl, chvno, pin);
+
   if (rc)
     {
       log_error (_("verify CHV%d failed: %s\n"), chvno, gpg_strerror (rc));
-      xfree (*r_pinvalue);
-      *r_pinvalue = NULL;
-      *r_pinlen = 0;
       flush_cache_after_error (app);
     }
+  else if (sync_chv)
+    {
+      if (chvno == 1)
+        {
+          app->did_chv1 = 1;
+          /* For cards with versions < 2 we want to keep CHV1 and CHV2 in
+             sync, thus we verify CHV2 here using the given PIN.  Cards
+             with version2 to not have the need for a separate CHV2 and
+             internally use just one.  Obviously we can't do that if the
+             pinpad has been used. */
+          if (!app->did_chv2 && pinvalue && !app->app_local->extcap.is_v2)
+            {
+              rc = iso7816_verify (app_get_slot (app), 0x82, pinvalue, pinlen);
+              if (gpg_err_code (rc) == GPG_ERR_BAD_PIN)
+                rc = gpg_error (GPG_ERR_PIN_NOT_SYNCED);
+              if (rc)
+                {
+                  log_error (_("verify CHV%d failed: %s\n"), 2, gpg_strerror (rc));
+                  flush_cache_after_error (app);
+                }
+              else
+                {
+                  app->did_chv2 = 1;
+                  cache_pin (app, ctrl, 2, pin);
+                }
+            }
+        }
+      else if (chvno == 2)
+        {
+          app->did_chv2 = 1;
+          if (!app->did_chv1 && !app->force_chv1 && pinvalue && !opt.pcsc_shared)
+            {
+              /* For convenience we verify CHV1 here too.  We do this only if
+                 the card is not configured to require a verification before
+                 each CHV1 controlled operation (force_chv1) and if we are not
+                 using the pinpad (PINVALUE == NULL). */
+              rc = iso7816_verify (app_get_slot (app), 0x81, pinvalue, pinlen);
+              if (gpg_err_code (rc) == GPG_ERR_BAD_PIN)
+                rc = gpg_error (GPG_ERR_PIN_NOT_SYNCED);
+              if (rc)
+                {
+                  log_error (_("verify CHV%d failed: %s\n"), 1, gpg_strerror (rc));
+                  flush_cache_after_error (app);
+                }
+              else
+                {
+                  app->did_chv1 = 1;
+                  cache_pin (app, ctrl, 1, pin);
+                }
+            }
+        }
+    }
+  wipe_and_free_string (pin);
+  wipe_and_free (pinvalue, pinlen);
 
   return rc;
 }
@@ -2890,50 +2940,22 @@ static gpg_error_t
 verify_chv2 (app_t app, ctrl_t ctrl)
 {
   int rc;
-  char *pinvalue;
-  size_t pinlen;
 
   if (app->did_chv2)
     return 0;  /* We already verified CHV2.  */
 
   if (app->app_local->pk[1].key || app->app_local->pk[2].key)
     {
-      rc = verify_a_chv (app, ctrl, 2, 0, &pinvalue, &pinlen);
+      rc = verify_a_chv (app, ctrl, 2, 0, 1);
       if (rc)
         return rc;
-      app->did_chv2 = 1;
-
-      if (!app->did_chv1 && !app->force_chv1 && pinvalue && !opt.pcsc_shared)
-        {
-          /* For convenience we verify CHV1 here too.  We do this only if
-             the card is not configured to require a verification before
-             each CHV1 controlled operation (force_chv1) and if we are not
-             using the pinpad (PINVALUE == NULL). */
-          rc = iso7816_verify (app_get_slot (app), 0x81, pinvalue, pinlen);
-          if (gpg_err_code (rc) == GPG_ERR_BAD_PIN)
-            rc = gpg_error (GPG_ERR_PIN_NOT_SYNCED);
-          if (rc)
-            {
-              log_error (_("verify CHV%d failed: %s\n"), 1, gpg_strerror (rc));
-              flush_cache_after_error (app);
-            }
-          else
-            {
-              app->did_chv1 = 1;
-              /* Note that we are not able to cache the CHV 1 here because
-               * it is possible that due to the use of a KDF-DO PINVALUE
-               * has the hashed binary PIN of length PINLEN.  */
-            }
-        }
     }
   else
     {
-      rc = verify_a_chv (app, ctrl, 1, 0, &pinvalue, &pinlen);
+      rc = verify_a_chv (app, ctrl, 1, 0, 0);
       if (rc)
         return rc;
     }
-
-  wipe_and_free (pinvalue, pinlen);
 
   return rc;
 }
@@ -5503,38 +5525,10 @@ do_sign (app_t app, ctrl_t ctrl, const char *keyidstr, int hashalgo,
   /* Check CHV if needed.  */
   if (!app->did_chv1 || app->force_chv1)
     {
-      char *pinvalue;
-      size_t pinlen;
-
-      rc = verify_a_chv (app, ctrl, 1, sigcount, &pinvalue, &pinlen);
+      rc = verify_a_chv (app, ctrl, 1, sigcount, 1);
       if (rc)
         return rc;
-
-      app->did_chv1 = 1;
-
-      /* For cards with versions < 2 we want to keep CHV1 and CHV2 in
-         sync, thus we verify CHV2 here using the given PIN.  Cards
-         with version2 to not have the need for a separate CHV2 and
-         internally use just one.  Obviously we can't do that if the
-         pinpad has been used. */
-      if (!app->did_chv2 && pinvalue && !app->app_local->extcap.is_v2)
-        {
-          rc = iso7816_verify (app_get_slot (app), 0x82, pinvalue, pinlen);
-          if (gpg_err_code (rc) == GPG_ERR_BAD_PIN)
-            rc = gpg_error (GPG_ERR_PIN_NOT_SYNCED);
-          if (rc)
-            {
-              log_error (_("verify CHV%d failed: %s\n"), 2, gpg_strerror (rc));
-              wipe_and_free (pinvalue, pinlen);
-              flush_cache_after_error (app);
-              return rc;
-            }
-          app->did_chv2 = 1;
-          cache_pin (app, ctrl, 2, pinvalue);
-        }
-      wipe_and_free (pinvalue, pinlen);
     }
-
 
   if (app->app_local->cardcap.ext_lc_le
       && app->app_local->keyattr[0].key_type == KEY_TYPE_RSA
