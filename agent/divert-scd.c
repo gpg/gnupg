@@ -109,13 +109,12 @@ has_percent0A_suffix (const char *string)
    The text "Please ..." will get displayed and the flags 'A' and 'N'
    are considered.
  */
-static int
-getpin_cb (void *opaque, const char *desc_text, const char *info,
-           char *buf, size_t maxbuf)
+int
+scd_getpin (ctrl_t ctrl, const char *desc_text, const char *info,
+            char *buf, size_t maxbuf)
 {
   struct pin_entry_info_s *pi;
   int rc;
-  ctrl_t ctrl = opaque;
   const char *ends, *s;
   int any_flags = 0;
   int newpin = 0;
@@ -342,14 +341,14 @@ divert_pksign (ctrl_t ctrl, const unsigned char *grip,
     {
       /* This is the PureEdDSA case.  (DIGEST,DIGESTLEN) this the
        * entire data which will be signed.  */
-      rc = agent_card_pksign (ctrl, hexgrip, getpin_cb, ctrl, NULL,
+      rc = agent_card_pksign (ctrl, hexgrip, NULL,
                               0, digest, digestlen, &sigval, &siglen);
     }
   else if (algo == MD_USER_TLS_MD5SHA1)
     {
       int save = ctrl->use_auth_call;
       ctrl->use_auth_call = 1;
-      rc = agent_card_pksign (ctrl, hexgrip, getpin_cb, ctrl, NULL,
+      rc = agent_card_pksign (ctrl, hexgrip, NULL,
                               algo, digest, digestlen, &sigval, &siglen);
       ctrl->use_auth_call = save;
     }
@@ -361,7 +360,7 @@ divert_pksign (ctrl_t ctrl, const unsigned char *grip,
       rc = encode_md_for_card (digest, digestlen, algo, &data, &ndata);
       if (!rc)
         {
-          rc = agent_card_pksign (ctrl, hexgrip, getpin_cb, ctrl, NULL,
+          rc = agent_card_pksign (ctrl, hexgrip, NULL,
                                   algo, data, ndata, &sigval, &siglen);
           xfree (data);
         }
@@ -488,7 +487,7 @@ divert_pkdecrypt (ctrl_t ctrl,
   ciphertext = s;
   ciphertextlen = n;
 
-  rc = agent_card_pkdecrypt (ctrl, hexgrip, getpin_cb, ctrl, NULL,
+  rc = agent_card_pkdecrypt (ctrl, hexgrip, NULL,
                              ciphertext, ciphertextlen,
                              &plaintext, &plaintextlen, r_padding);
   if (!rc)
@@ -510,7 +509,7 @@ agent_card_ecc_kem (ctrl_t ctrl, const unsigned char *ecc_ct,
   char hexgrip[KEYGRIP_LEN*2+1];
 
   bin2hex (ctrl->keygrip, KEYGRIP_LEN, hexgrip);
-  rc = agent_card_pkdecrypt (ctrl, hexgrip, getpin_cb, ctrl, NULL,
+  rc = agent_card_pkdecrypt (ctrl, hexgrip, NULL,
                              ecc_ct, ecc_point_len, &ecdh, &len, NULL);
   if (rc)
     return rc;
@@ -544,11 +543,11 @@ divert_writekey (ctrl_t ctrl, int force, const char *serialno,
                  const char *keyref, const char *keydata, size_t keydatalen)
 {
   return agent_card_writekey (ctrl, force, serialno, keyref,
-                              keydata, keydatalen, getpin_cb, ctrl);
+                              keydata, keydatalen);
 }
 
 int
 divert_generic_cmd (ctrl_t ctrl, const char *cmdline, void *assuan_context)
 {
-  return agent_card_scd (ctrl, cmdline, getpin_cb, ctrl, assuan_context);
+  return agent_card_scd (ctrl, cmdline, assuan_context);
 }
