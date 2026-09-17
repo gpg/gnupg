@@ -2827,7 +2827,7 @@ verify_a_chv (app_t app, ctrl_t ctrl,
       prompt = NULL;
       if (rc)
         {
-          log_info (_("PIN callback returned error: %s\n"),
+          log_info (_("pinpad_prompt returned error: %s\n"),
                     gpg_strerror (rc));
           return rc;
         }
@@ -3015,7 +3015,7 @@ verify_chv3 (app_t app, ctrl_t ctrl)
           prompt = NULL;
           if (rc)
             {
-              log_info (_("PIN callback returned error: %s\n"),
+              log_info (_("pinpad_prompt returned error: %s\n"),
                         gpg_strerror (rc));
               return rc;
             }
@@ -3037,7 +3037,7 @@ verify_chv3 (app_t app, ctrl_t ctrl)
           prompt = NULL;
           if (rc)
             {
-              log_info (_("PIN callback returned error: %s\n"),
+              log_info (_("askpin returned error: %s\n"),
                         gpg_strerror (rc));
               return rc;
             }
@@ -3215,7 +3215,7 @@ do_setattr (app_t app, ctrl_t ctrl, const char *name,
               rc = askpin (ctrl, prompt, NULL, &oldpinvalue);
               if (rc)
                 {
-                  log_info (_("PIN callback returned error: %s\n"),
+                  log_info (_("askpin returned error: %s\n"),
                             gpg_strerror (rc));
                   return rc;
                 }
@@ -3526,7 +3526,7 @@ do_change_pin (app_t app, ctrl_t ctrl,  const char *chvnostr,
               prompt = NULL;
               if (rc)
                 {
-                  log_info (_("PIN callback returned error: %s\n"),
+                  log_info (_("askpin returned error: %s\n"),
                             gpg_strerror (rc));
                   goto leave;
                 }
@@ -3566,7 +3566,7 @@ do_change_pin (app_t app, ctrl_t ctrl,  const char *chvnostr,
           prompt = NULL;
           if (rc)
             {
-              log_info (_("PIN callback returned error: %s\n"),
+              log_info (_("askpin returned error: %s\n"),
                         gpg_strerror (rc));
               goto leave;
             }
@@ -3746,7 +3746,7 @@ do_change_pin (app_t app, ctrl_t ctrl,  const char *chvnostr,
           prompt = NULL;
           if (rc)
             {
-              log_info (_("PIN callback returned error: %s\n"),
+              log_info (_("pinpad_prompt returned error: %s\n"),
                         gpg_strerror (rc));
               goto leave;
             }
