@@ -30,6 +30,7 @@
         map_assuan_err_with_source (GPG_ERR_SOURCE_DEFAULT, (a))
 #include <errno.h>
 #include <assuan.h>
+#include <npth.h>
 
 #include <gcrypt.h>
 #include "../common/util.h"
@@ -309,6 +310,13 @@ struct server_control_s
   /* If pinentry is active for this thread.  It can be more than 1,
      when pinentry is called recursively.  */
   int pinentry_active;
+
+  /* Thread for askpin inquiry by scdaemon.  */
+  npth_t inq_askpin_tid;
+  npth_mutex_t askpin_lock;
+  npth_cond_t askpin_cond;
+  const char *askpin_request;
+  const char *askpin_result;
 };
 
 
