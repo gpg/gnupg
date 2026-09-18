@@ -99,6 +99,8 @@ mk_notation_policy_etc (ctrl_t ctrl, PKT_signature *sig,
 
   if (with_manu)
     {
+      /* Modifiying ND (i.e. opt.cert_notations) to temporary store
+       * the manu is obviously not thread-save.  */
       ndmanu = name_value_to_notation
         ("manu",
          gnupg_manu_notation_value (with_manu == 23? CO_DE_VS :
@@ -129,9 +131,10 @@ mk_notation_policy_etc (ctrl_t ctrl, PKT_signature *sig,
       if (with_manu)
         {
           /* Restore the original nd and release ndmanu.  */
-          nd = ndmanu;
+          nd = ndmanu->next;
           ndmanu->next = NULL;
           free_notation (ndmanu);
+          /* ND is now again opt.sig_notations or opt.cert_notations. */
         }
     }
 
