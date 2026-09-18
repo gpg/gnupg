@@ -316,6 +316,96 @@ scd_getpin (ctrl_t ctrl, const char *desc_text, const char *info,
 }
 
 
+static void *
+askpin_thread (void *arg)
+{
+  ctrl_t ctrl = arg;
+  int done = 0;
+
+  do
+    {
+      npth_mutex_lock (&ctrl->askpin_lock);
+      while (!ctrl->askpin_request)
+        npth_cond_wait (&ctrl->askpin_cond, &ctrl->askpin_lock);
+      /*
+       * READ: askpin_request
+       * WRITE: askpin_result
+       */
+      if (!strcmp (ctrl->askpin_request, "END"))
+        {
+          done = 1;
+          ctrl->askpin_result = "OK";
+        }
+      npth_cond_signal (&ctrl->askpin_cond);
+      npth_mutex_unlock (&ctrl->askpin_lock);
+    }
+  while (!done);
+
+  return NULL;
+}
+
+static int
+start_askpin_thread (ctrl_t ctrl)
+{
+  npth_attr_t tattr;
+  npth_t tid;
+  int rc;
+
+  ctrl->askpin_request = NULL;
+  ctrl->askpin_result = NULL;
+
+  rc = npth_mutex_init (&ctrl->askpin_lock, NULL);
+  if (rc)
+    return gpg_error_from_errno (rc);
+
+  rc = npth_cond_init (&ctrl->askpin_cond, NULL);
+  if (rc)
+    {
+      npth_mutex_destroy (&ctrl->askpin_lock);
+      return gpg_error_from_errno (rc);
+    }
+
+  rc = npth_attr_init (&tattr);
+  if (rc)
+    {
+      npth_mutex_destroy (&ctrl->askpin_lock);
+      npth_cond_destroy (&ctrl->askpin_cond);
+      return gpg_error_from_syserror ();
+    }
+  npth_attr_setdetachstate (&tattr, NPTH_CREATE_JOINABLE);
+
+  rc = npth_create (&tid, &tattr, askpin_thread, ctrl);
+  npth_attr_destroy (&tattr);
+  if (rc)
+    {
+      npth_mutex_destroy (&ctrl->askpin_lock);
+      npth_cond_destroy (&ctrl->askpin_cond);
+      return gpg_error_from_errno (rc);
+    }
+
+  ctrl->inq_askpin_tid = tid;
+  return 0;
+}
+
+static int
+finish_askpin_thread (ctrl_t ctrl)
+{
+  int rc;
+
+  npth_mutex_lock (&ctrl->askpin_lock);
+  ctrl->askpin_request = "END";
+  npth_cond_signal (&ctrl->askpin_cond);
+  npth_mutex_unlock (&ctrl->askpin_lock);
+
+  rc = npth_join (ctrl->inq_askpin_tid, NULL);
+
+  ctrl->inq_askpin_tid = 0;
+  ctrl->askpin_request = NULL;
+  ctrl->askpin_result = NULL;
+  npth_mutex_destroy (&ctrl->askpin_lock);
+  npth_cond_destroy (&ctrl->askpin_cond);
+  return rc;
+}
 
 /* This function is used when a sign operation has been diverted to a
  * smartcard.
@@ -336,6 +426,10 @@ divert_pksign (ctrl_t ctrl, const unsigned char *grip,
   unsigned char *sigval = NULL;
 
   bin2hex (grip, 20, hexgrip);
+
+  rc = start_askpin_thread (ctrl);
+  if (rc)
+    return rc;
 
   if (!algo)
     {
@@ -371,6 +465,8 @@ divert_pksign (ctrl_t ctrl, const unsigned char *grip,
       *r_sig = sigval;
       *r_siglen = siglen;
     }
+
+  rc = finish_askpin_thread (ctrl);
 
   return rc;
 }
