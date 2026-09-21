@@ -932,7 +932,7 @@ proc_wkd_get (ctrl_t ctrl, assuan_context_t ctx, char *line)
   int is_wkd_query;   /* True if this is a real WKD query.  */
   int no_log = 0;
   char portstr[20] = { 0 };
-  int subdomain_mode = 0;
+  int subdomain_mode, try_without_subdomain;
 
   opt_submission_addr = has_option (line, "--submission-address");
   opt_policy_flags = has_option (line, "--policy-flags");
@@ -950,7 +950,6 @@ proc_wkd_get (ctrl_t ctrl, assuan_context_t ctx, char *line)
   *domain++ = 0;
   domain_orig = domain;
 
-
   /* Let's check whether we already know that the domain does not
    * support WKD.  */
   if (is_wkd_query)
@@ -964,13 +963,18 @@ proc_wkd_get (ctrl_t ctrl, assuan_context_t ctx, char *line)
     }
 
 
+  try_without_subdomain = 0;
+ again:
+  subdomain_mode = 0;
+
   /* First try the new "openpgp" subdomain.  We check that the domain
    * is valid because it is later used as an unescaped filename part
    * of the URI.  */
-  if (is_valid_domain_name (domain_orig))
+  if (!try_without_subdomain && is_valid_domain_name (domain_orig))
     {
       dns_addrinfo_t aibuf;
 
+      xfree (domainbuf);
       domainbuf = strconcat ( "openpgpkey.", domain_orig, NULL);
       if (!domainbuf)
         {
@@ -997,7 +1001,7 @@ proc_wkd_get (ctrl_t ctrl, assuan_context_t ctx, char *line)
     }
 
   /* Check for SRV records unless we have a subdomain. */
-  if (!subdomain_mode)
+  if (!subdomain_mode && !try_without_subdomain)
     {
       struct srventry *srvs;
       unsigned int srvscount;
@@ -1043,6 +1047,7 @@ proc_wkd_get (ctrl_t ctrl, assuan_context_t ctx, char *line)
                   && !ascii_strcasecmp (srvs[i].target, domain)))
             {
               /* found.  */
+              xfree (domainbuf);
               domainbuf = xtrystrdup (srvs[i].target);
               if (!domainbuf)
                 {
@@ -1061,6 +1066,7 @@ proc_wkd_get (ctrl_t ctrl, assuan_context_t ctx, char *line)
 
   /* Prepare the hash of the local part.  */
   gcry_md_hash_buffer (GCRY_MD_SHA1, sha1buf, mbox, strlen (mbox));
+  xfree (encodedhash);
   encodedhash = zb32_encode (sha1buf, 8*20);
   if (!encodedhash)
     {
@@ -1068,6 +1074,7 @@ proc_wkd_get (ctrl_t ctrl, assuan_context_t ctx, char *line)
       goto leave;
     }
 
+  xfree (uri);
   if (opt_submission_addr)
     {
       uri = strconcat ("https://",
@@ -1171,6 +1178,24 @@ proc_wkd_get (ctrl_t ctrl, assuan_context_t ctx, char *line)
               domaininfo_set_wkd_not_supported (domain_orig);
             break;
 
+          case GPG_ERR_WRONG_NAME:
+            if (is_wkd_query && subdomain_mode)
+              {
+                /* Some sites accidently use the "openpgpkey."
+                 * subdomain but do not have it in their certificate.
+                 * In this case we try again without subdomain but
+                 * keep the original error code.  */
+                subdomain_mode = 0;
+                try_without_subdomain = 1;
+                xfree (domainbuf);
+                domainbuf = NULL;
+                domain = domain_orig;
+                if (opt.verbose)
+                  log_info ("retrying without \"openpgpkey\" sub-domain\n");
+                goto again;
+              }
+            break;
+
           default:
             /* Don't register other errors.  */
             break;
@@ -1179,6 +1204,8 @@ proc_wkd_get (ctrl_t ctrl, assuan_context_t ctx, char *line)
   }
 
  leave:
+  if (try_without_subdomain && err)
+    err = gpg_error (GPG_ERR_WRONG_NAME);
   xfree (uri);
   xfree (encodedhash);
   xfree (mbox);
