@@ -188,12 +188,13 @@ online: gnupg.html gnupg.pdf gnupg-module-overview.png \
 	cp $(srcdir)/gnupg-logo-tr.png gnupg.html/; \
 	cp gnupg-module-overview.png gnupg.html/; \
 	cp gnupg-card-architecture.png gnupg.html/; \
-        user=werner ; webhost="ftp.gnupg.org" ; dashdevel="" ; \
+        webhost="www.gnupg.org"; webdir="webspace/documentation/manuals" ; \
+        dashdevel="" ; \
         if echo "@PACKAGE_VERSION@" | grep -- "-beta" >/dev/null; then \
 	  dashdevel="-devel" ; \
 	else \
-          rsync -v gnupg.pdf $${user}@$${webhost}:webspace/manuals/ ; \
+          rsync -v gnupg.pdf $${USER}@$${webhost}:$${webdir}/ ; \
         fi ; \
 	cd gnupg.html ; \
         rsync -vr --exclude='.git' .  \
-	  $${user}@$${webhost}:webspace/manuals/gnupg$${dashdevel}/
+	  $${USER}@$${webhost}:$${webdir}/gnupg$${dashdevel}/
