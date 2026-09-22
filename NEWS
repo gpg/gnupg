@@ -1,4 +1,4 @@
-Noteworthy changes in version 2.5.23 (unreleased)
+Noteworthy changes in version 2.5.23 (2026-09-22)
 -------------------------------------------------
 
  * New and extended features:
@@ -10,12 +10,12 @@ Noteworthy changes in version 2.5.23 (unreleased)
      some PQC resistance should keep on using the standard LibrePGP
      Kyber algorithm introduced 2 years ago.  [rG6803ce215c]
 
-   - gpg: In allow-9980 mode support PQC encryption using ML-KEM (aka
-     Kyber) with X448, X25519, Brainpool or NIST curves as specified
-     by RFC-9980 et al.
+   - gpg: In 9980 mode support PQC encryption using ML-KEM (aka Kyber)
+     with X448, X25519, Brainpool, or NIST curves as specified by
+     RFC-9980 et al.
 
-   - gpg: In allow-9980 mode support ED25519 and X25519 as specified
-     by RFC-9580 under the names "ietf27" and "ietf27".
+   - gpg: In 9980 mode support ED25519 and X25519 as specified by
+     RFC-9580 under the names "ietf27" and "ietf27".
 
    - gpg: Add experimental support for a --compliance=fips mode to use
      GCM for bulk encryption.  [rG05c271f45a]
@@ -31,8 +31,14 @@ Noteworthy changes in version 2.5.23 (unreleased)
    - dirmngr: Make the LDAP upload flags also work for KS_SEARCH.
      [T7866]
 
+   - dirmngr: Fix OOB read in DNS CERT record parser.  [T8464]
+
+   - scd: Fix OOB access in DO parsing of faulty cards.  [T8465]
 
  * Other changes:
+
+   - dirmngr: Add a mitigation for badly configured web key
+     directories.  [rFbc7686ad7c]
 
    - New option --debug-no-libgcrypt for gpg, gpgsm, and agent.  This
      debug option is useful to avoid cluttering other debug output
