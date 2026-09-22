@@ -99,8 +99,13 @@ do_find_tlv (const unsigned char *buffer, size_t length,
              nesting. */
           const unsigned char *tmp_s;
           size_t tmp_len;
+          size_t len_composite = len; /* Length for this composite DO.  */
 
-          tmp_s = do_find_tlv (s, len, tag, &tmp_len, nestlevel+1);
+          /* It should have upper bound to N.  */
+          if (len > n)
+            len_composite = n;
+
+          tmp_s = do_find_tlv (s, len_composite, tag, &tmp_len, nestlevel+1);
           if (tmp_s)
             {
               *nbytes = tmp_len;
