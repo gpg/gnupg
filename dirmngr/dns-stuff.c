@@ -1694,7 +1694,7 @@ get_dns_cert_standard (const char *name, int want_certtype,
               /* We did not found the requested RR.  */
               pt += dlen;
             }
-          else if (type == T_CERT)
+          else if (type == T_CERT && dlen > 5)
             {
               /* We got a CERT type.   */
               ctype = buf16_to_u16 (pt);
