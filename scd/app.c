@@ -805,45 +805,49 @@ app_new_register (int slot, ctrl_t ctrl, const char *name,
           else
             card->cardtype = atr_to_cardtype (slot, NULL, 0);
         }
-      else if (!err)  /* 3F00 selected successfully */
+      else /* Either we got a 3F00 or some other error. */
         {
           unsigned char *atr;
           size_t atrlen;
+          int gottype = 0;
 
-          /* This is heuristics to identify different implementations.  */
-          /* FIXME: The first two checks are pretty OpenPGP card specific. */
-          atr = apdu_get_atr (slot, &atrlen);
-          if (atr)
-            {
-              if (atrlen == 21 && atr[2] == 0x11)
-                card->cardtype = CARDTYPE_GNUK;
-              else if (atrlen == 21 && atr[7] == 0x75)
-                card->cardtype = CARDTYPE_ZEITCONTROL;
-              else
-                card->cardtype = atr_to_cardtype (slot, atr, atrlen);
-              xfree (atr);
-            }
-        }
-      else  /* 3F00 not available */
-        {
-          unsigned char *buffer;
-          size_t buflen;
-
-          /* Try to get the historical bytes by 0x5f52 (select
-             application is not required).  This is heuristics to
-             identify Nitrokey.  Note that its ATR and historical
-             bytes are unrelated.  */
-          err = iso7816_get_data (slot, 0, 0x5f52, &buffer, &buflen);
-          if (err || buflen != 10)
-            err = GPG_ERR_CARD;
-          else if (!memcmp (buffer,
-                            "\x00\x31\xF5\x73\xC0\x01\x60\x05\x90\x00", 10))
-            card->cardtype = CARDTYPE_NITROKEY;
-          else
-            err = GPG_ERR_CARD;
-          xfree (buffer);
           if (err)
-            return err;
+            {
+              /* We got an error readin 3F00.  Try to get the historical
+               * bytes by 0x5f52 (select application is not required).
+               * This is heuristics to identify Nitrokey.  Note that
+               * its ATR and historical bytes are unrelated.  */
+              unsigned char *buffer;
+              size_t buflen;
+
+              if (!iso7816_get_data (slot, 0, 0x5f52, &buffer, &buflen)
+                  && buflen == 10
+                  && !memcmp (buffer,
+                              "\x00\x31\xF5\x73\xC0\x01\x60\x05\x90\x00", 10))
+                {
+                  card->cardtype = CARDTYPE_NITROKEY;
+                  gottype = 1;
+                }
+              xfree (buffer);
+            }
+
+          if (!gottype)
+            {
+              /* This is heuristics to identify different implementations.  */
+              /* FIXME: The first two checks are pretty OpenPGP card
+               * specific. */
+              atr = apdu_get_atr (slot, &atrlen);
+              if (atr)
+                {
+                  if (atrlen == 21 && atr[2] == 0x11)
+                    card->cardtype = CARDTYPE_GNUK;
+                  else if (atrlen == 21 && atr[7] == 0x75)
+                    card->cardtype = CARDTYPE_ZEITCONTROL;
+                  else
+                    card->cardtype = atr_to_cardtype (slot, atr, atrlen);
+                  xfree (atr);
+                }
+            }
         }
 
       if (!err && card->cardtype != CARDTYPE_YUBIKEY
