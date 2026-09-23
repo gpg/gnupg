@@ -1,5 +1,14 @@
-Noteworthy changes in version 2.5.24 (unreleased)
+Noteworthy changes in version 2.5.24 (2026-09-23)
 -------------------------------------------------
+
+ * Bug fixes:
+
+   - scd: Fix for regression in 2.5.23 related to the new Nitrokey
+     detection.  [T8331]
+
+
+ Release-info: https://dev.gnupg.org/T8425
+
 
 Noteworthy changes in version 2.5.23 (2026-09-22)
 -------------------------------------------------
@@ -41,7 +50,7 @@ Noteworthy changes in version 2.5.23 (2026-09-22)
  * Other changes:
 
    - dirmngr: Add a mitigation for badly configured web key
-     directories.  [rFbc7686ad7c]
+     directories.  [rGbc7686ad7c]
 
    - New option --debug-no-libgcrypt for gpg, gpgsm, and agent.  This
      debug option is useful to avoid cluttering other debug output
