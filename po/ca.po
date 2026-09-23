@@ -1968,6 +1968,11 @@ msgid "reading from '%s'\n"
 msgstr "s'està llegint des de «%s»\n"
 
 #, fuzzy, c-format
+#| msgid "problem handling encrypted packet\n"
+msgid "Note: Using the %s encryption packet\n"
+msgstr "problema en tractar amb un paquet xifrat\n"
+
+#, fuzzy, c-format
 msgid ""
 "WARNING: forcing compression algorithm %s (%d) violates recipient "
 "preferences\n"
@@ -3907,6 +3912,17 @@ msgstr "Realment voleu eliminar tots els ID d'usuari seleccionats? "
 msgid "Really remove this user ID? (y/N) "
 msgstr "Realment voleu eliminar aquest ID d'usuari? "
 
+msgid "Command expects a filename argument\n"
+msgstr ""
+
+#, fuzzy, c-format
+msgid "Can't open '%s': %s\n"
+msgstr "no s'ha pogut obrir «%s»: %s\n"
+
+#, fuzzy, c-format
+msgid "Error reading key from '%s': %s\n"
+msgstr "error en crear l'anell «%s»: %s\n"
+
 #. TRANSLATORS: Please take care: This is about
 #. moving the key and not about removing it.
 #, fuzzy
@@ -3916,13 +3932,6 @@ msgstr "Realment voleu esborrar aquesta autosignatura? (s/N)"
 #, fuzzy
 msgid "You must select exactly one key.\n"
 msgstr "Heu de seleccionar, si més no, una clau.\n"
-
-msgid "Command expects a filename argument\n"
-msgstr ""
-
-#, fuzzy, c-format
-msgid "Can't open '%s': %s\n"
-msgstr "no s'ha pogut obrir «%s»: %s\n"
 
 #, fuzzy, c-format
 msgid "Error reading backup key from '%s': %s\n"

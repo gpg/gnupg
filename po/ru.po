@@ -1857,6 +1857,11 @@ msgstr "хеш-функцию '%s' нельзя использовать в ре
 msgid "reading from '%s'\n"
 msgstr "чтение из '%s'\n"
 
+#, fuzzy, c-format
+#| msgid "problem handling encrypted packet\n"
+msgid "Note: Using the %s encryption packet\n"
+msgstr "проблема обработки зашифрованного пакета\n"
+
 #, c-format
 msgid ""
 "WARNING: forcing compression algorithm %s (%d) violates recipient "
@@ -3684,6 +3689,18 @@ msgstr ""
 msgid "Really remove this user ID? (y/N) "
 msgstr "Действительно удалить этот идентификатор пользователя? (y/N) "
 
+msgid "Command expects a filename argument\n"
+msgstr "Команде нужен аргумент-имя файла\n"
+
+#, c-format
+msgid "Can't open '%s': %s\n"
+msgstr "Не могу открыть '%s': %s\n"
+
+#, fuzzy, c-format
+#| msgid "Error reading backup key from '%s': %s\n"
+msgid "Error reading key from '%s': %s\n"
+msgstr "Ошибка чтения архивного ключа из '%s': %s\n"
+
 #. TRANSLATORS: Please take care: This is about
 #. moving the key and not about removing it.
 msgid "Really move the primary key? (y/N) "
@@ -3691,13 +3708,6 @@ msgstr "Действительно переместить первичный к�
 
 msgid "You must select exactly one key.\n"
 msgstr "Вы должны выбрать хотя бы один ключ.\n"
-
-msgid "Command expects a filename argument\n"
-msgstr "Команде нужен аргумент-имя файла\n"
-
-#, c-format
-msgid "Can't open '%s': %s\n"
-msgstr "Не могу открыть '%s': %s\n"
 
 #, c-format
 msgid "Error reading backup key from '%s': %s\n"

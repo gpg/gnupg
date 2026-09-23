@@ -1802,6 +1802,11 @@ msgstr "algorytm skrótu „%s” nie może być używany w trybie %s\n"
 msgid "reading from '%s'\n"
 msgstr "odczyt z „%s”\n"
 
+#, fuzzy, c-format
+#| msgid "problem handling encrypted packet\n"
+msgid "Note: Using the %s encryption packet\n"
+msgstr "problem podczas obróbki pakietu szyfrowego\n"
+
 #, c-format
 msgid ""
 "WARNING: forcing compression algorithm %s (%d) violates recipient "
@@ -3615,6 +3620,18 @@ msgstr ""
 msgid "Really remove this user ID? (y/N) "
 msgstr "Czy na pewno usunąć ten identyfikator użytkownika? (t/N) "
 
+msgid "Command expects a filename argument\n"
+msgstr "Polecenie oczekuje argumentu będącego nazwą pliku\n"
+
+#, c-format
+msgid "Can't open '%s': %s\n"
+msgstr "Nie można otworzyć „%s”: %s\n"
+
+#, fuzzy, c-format
+#| msgid "Error reading backup key from '%s': %s\n"
+msgid "Error reading key from '%s': %s\n"
+msgstr "Błąd podczas odczytu klucza zapasowego z „%s”: %s\n"
+
 #. TRANSLATORS: Please take care: This is about
 #. moving the key and not about removing it.
 msgid "Really move the primary key? (y/N) "
@@ -3622,13 +3639,6 @@ msgstr "Czy na pewno przenieść główny klucz (t/N) "
 
 msgid "You must select exactly one key.\n"
 msgstr "Musisz wybrać dokładnie jeden klucz.\n"
-
-msgid "Command expects a filename argument\n"
-msgstr "Polecenie oczekuje argumentu będącego nazwą pliku\n"
-
-#, c-format
-msgid "Can't open '%s': %s\n"
-msgstr "Nie można otworzyć „%s”: %s\n"
 
 #, c-format
 msgid "Error reading backup key from '%s': %s\n"

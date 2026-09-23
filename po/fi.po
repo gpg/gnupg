@@ -1912,6 +1912,11 @@ msgid "reading from '%s'\n"
 msgstr "luetaan kohteesta \"%s\"\n"
 
 #, fuzzy, c-format
+#| msgid "problem handling encrypted packet\n"
+msgid "Note: Using the %s encryption packet\n"
+msgstr "ongelma käsiteltäessä salattua pakettia\n"
+
+#, fuzzy, c-format
 msgid ""
 "WARNING: forcing compression algorithm %s (%d) violates recipient "
 "preferences\n"
@@ -3806,6 +3811,17 @@ msgstr "Varmastiko poista kaikki valitut käyttäjätunnukset? "
 msgid "Really remove this user ID? (y/N) "
 msgstr "Varmastiko poista tämä käyttäjätunnus? "
 
+msgid "Command expects a filename argument\n"
+msgstr ""
+
+#, fuzzy, c-format
+msgid "Can't open '%s': %s\n"
+msgstr "tiedostoa \"%s\" ei voi avata: %s\n"
+
+#, fuzzy, c-format
+msgid "Error reading key from '%s': %s\n"
+msgstr "virhe luotaessa avainrengasta \"%s\": %s\n"
+
 #. TRANSLATORS: Please take care: This is about
 #. moving the key and not about removing it.
 #, fuzzy
@@ -3815,13 +3831,6 @@ msgstr "Varmastiko poista tämä käyttäjätunnus? "
 #, fuzzy
 msgid "You must select exactly one key.\n"
 msgstr "Sinun täytyy valita ainakin yksi avain.\n"
-
-msgid "Command expects a filename argument\n"
-msgstr ""
-
-#, fuzzy, c-format
-msgid "Can't open '%s': %s\n"
-msgstr "tiedostoa \"%s\" ei voi avata: %s\n"
 
 #, fuzzy, c-format
 msgid "Error reading backup key from '%s': %s\n"

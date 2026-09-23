@@ -1902,6 +1902,11 @@ msgid "reading from '%s'\n"
 msgstr "Membaca dari `%s'\n"
 
 #, fuzzy, c-format
+#| msgid "problem handling encrypted packet\n"
+msgid "Note: Using the %s encryption packet\n"
+msgstr "masalah menangani paket terenkripsi\n"
+
+#, fuzzy, c-format
 msgid ""
 "WARNING: forcing compression algorithm %s (%d) violates recipient "
 "preferences\n"
@@ -3789,6 +3794,17 @@ msgstr "Hapus seluruh ID user terpilih? "
 msgid "Really remove this user ID? (y/N) "
 msgstr "Hapus ID user ini? "
 
+msgid "Command expects a filename argument\n"
+msgstr ""
+
+#, fuzzy, c-format
+msgid "Can't open '%s': %s\n"
+msgstr "tidak dapat membuka `%s': %s\n"
+
+#, fuzzy, c-format
+msgid "Error reading key from '%s': %s\n"
+msgstr "kesalahan menulis keyring `%s': %s\n"
+
 #. TRANSLATORS: Please take care: This is about
 #. moving the key and not about removing it.
 #, fuzzy
@@ -3798,13 +3814,6 @@ msgstr "Hapus ID user ini? "
 #, fuzzy
 msgid "You must select exactly one key.\n"
 msgstr "Anda harus memilih minimum satu kunci.\n"
-
-msgid "Command expects a filename argument\n"
-msgstr ""
-
-#, fuzzy, c-format
-msgid "Can't open '%s': %s\n"
-msgstr "tidak dapat membuka `%s': %s\n"
 
 #, fuzzy, c-format
 msgid "Error reading backup key from '%s': %s\n"

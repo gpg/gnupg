@@ -1809,6 +1809,11 @@ msgstr "özet algoritması '%s', %s kipinde kullanılamayabilir\n"
 msgid "reading from '%s'\n"
 msgstr "'%s konumundan okunuyor\n"
 
+#, fuzzy, c-format
+#| msgid "problem handling encrypted packet\n"
+msgid "Note: Using the %s encryption packet\n"
+msgstr "şifreli paketin elde edilmesinde sorun var\n"
+
 #, c-format
 msgid ""
 "WARNING: forcing compression algorithm %s (%d) violates recipient "
@@ -3591,6 +3596,18 @@ msgstr "Seçilen tüm kullanıcı kimlikleri gerçekten silinsin mi? (e/H) "
 msgid "Really remove this user ID? (y/N) "
 msgstr "Bu kullanıcı kimliği gerçekten silinsin mi? (e/H) "
 
+msgid "Command expects a filename argument\n"
+msgstr "Komut, argüman olarak bir dosya adı bekliyor\n"
+
+#, c-format
+msgid "Can't open '%s': %s\n"
+msgstr "'%s' açılamıyor: %s\n"
+
+#, fuzzy, c-format
+#| msgid "Error reading backup key from '%s': %s\n"
+msgid "Error reading key from '%s': %s\n"
+msgstr "Yedekleme anahtarı '%s' konumundan okunurken hata: %s\n"
+
 #. TRANSLATORS: Please take care: This is about
 #. moving the key and not about removing it.
 msgid "Really move the primary key? (y/N) "
@@ -3598,13 +3615,6 @@ msgstr "Bu asıl imza gerçekten taşınsın mı? (e/H) "
 
 msgid "You must select exactly one key.\n"
 msgstr "Yalnızca ve yalnızca bir anahtar seçmelisiniz.\n"
-
-msgid "Command expects a filename argument\n"
-msgstr "Komut, argüman olarak bir dosya adı bekliyor\n"
-
-#, c-format
-msgid "Can't open '%s': %s\n"
-msgstr "'%s' açılamıyor: %s\n"
 
 #, c-format
 msgid "Error reading backup key from '%s': %s\n"

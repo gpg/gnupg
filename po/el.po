@@ -1901,6 +1901,11 @@ msgid "reading from '%s'\n"
 msgstr "ανάγνωση από `%s'\n"
 
 #, fuzzy, c-format
+#| msgid "problem handling encrypted packet\n"
+msgid "Note: Using the %s encryption packet\n"
+msgstr "πρόβλημα στο χειρισμό κρυπτογραφημένου πακέτου\n"
+
+#, fuzzy, c-format
 msgid ""
 "WARNING: forcing compression algorithm %s (%d) violates recipient "
 "preferences\n"
@@ -3809,6 +3814,17 @@ msgstr "Σίγουρα θέλετε να διαγραφούν όλα τα επι
 msgid "Really remove this user ID? (y/N) "
 msgstr "Σίγουρα θέλετε να διαγραφεί αυτό το user ID; "
 
+msgid "Command expects a filename argument\n"
+msgstr ""
+
+#, fuzzy, c-format
+msgid "Can't open '%s': %s\n"
+msgstr "αδυναμία πρόσβασης στο `%s': %s\n"
+
+#, fuzzy, c-format
+msgid "Error reading key from '%s': %s\n"
+msgstr "αδυναμία δημιουργίας της κλειδοθήκης `%s': %s\n"
+
 #. TRANSLATORS: Please take care: This is about
 #. moving the key and not about removing it.
 #, fuzzy
@@ -3818,13 +3834,6 @@ msgstr "Σίγουρα θέλετε να διαγραφεί αυτό το user I
 #, fuzzy
 msgid "You must select exactly one key.\n"
 msgstr "Πρέπει να επιλέξετε τουλάχιστον ένα κλειδί.\n"
-
-msgid "Command expects a filename argument\n"
-msgstr ""
-
-#, fuzzy, c-format
-msgid "Can't open '%s': %s\n"
-msgstr "αδυναμία πρόσβασης στο `%s': %s\n"
 
 #, fuzzy, c-format
 msgid "Error reading backup key from '%s': %s\n"

@@ -1796,6 +1796,11 @@ msgstr "ダイジェスト・アルゴリズム'%s'を%sモードで使うこと
 msgid "reading from '%s'\n"
 msgstr "'%s'から読み込み\n"
 
+#, fuzzy, c-format
+#| msgid "problem handling encrypted packet\n"
+msgid "Note: Using the %s encryption packet\n"
+msgstr "暗号化パケットの取扱いで障害\n"
+
 #, c-format
 msgid ""
 "WARNING: forcing compression algorithm %s (%d) violates recipient "
@@ -3522,6 +3527,18 @@ msgstr "選択した全ユーザIDを本当に削除しますか? (y/N) "
 msgid "Really remove this user ID? (y/N) "
 msgstr "このユーザIDを本当に削除しますか? (y/N) "
 
+msgid "Command expects a filename argument\n"
+msgstr "コマンドはファイル名の引数を期待します\n"
+
+#, c-format
+msgid "Can't open '%s': %s\n"
+msgstr "'%s'が開けません: %s\n"
+
+#, fuzzy, c-format
+#| msgid "Error reading backup key from '%s': %s\n"
+msgid "Error reading key from '%s': %s\n"
+msgstr "バックアップ鍵を'%s'から読み込みする際のエラー: %s\n"
+
 #. TRANSLATORS: Please take care: This is about
 #. moving the key and not about removing it.
 msgid "Really move the primary key? (y/N) "
@@ -3529,13 +3546,6 @@ msgstr "この主鍵を本当に移動しますか? (y/N) "
 
 msgid "You must select exactly one key.\n"
 msgstr "鍵をきっかり1つ選択してください。\n"
-
-msgid "Command expects a filename argument\n"
-msgstr "コマンドはファイル名の引数を期待します\n"
-
-#, c-format
-msgid "Can't open '%s': %s\n"
-msgstr "'%s'が開けません: %s\n"
 
 #, c-format
 msgid "Error reading backup key from '%s': %s\n"

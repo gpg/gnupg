@@ -1904,6 +1904,11 @@ msgid "reading from '%s'\n"
 msgstr "lendo de `%s'\n"
 
 #, fuzzy, c-format
+#| msgid "problem handling encrypted packet\n"
+msgid "Note: Using the %s encryption packet\n"
+msgstr "problema ao manexa-lo paquete cifrado\n"
+
+#, fuzzy, c-format
 msgid ""
 "WARNING: forcing compression algorithm %s (%d) violates recipient "
 "preferences\n"
@@ -3808,6 +3813,17 @@ msgstr "¿Seguro de que quere borrar tódolos IDs de usuario seleccionados? "
 msgid "Really remove this user ID? (y/N) "
 msgstr "¿Seguro de que quere borrar este ID de usuario? "
 
+msgid "Command expects a filename argument\n"
+msgstr ""
+
+#, fuzzy, c-format
+msgid "Can't open '%s': %s\n"
+msgstr "non se puido abrir `%s': %s\n"
+
+#, fuzzy, c-format
+msgid "Error reading key from '%s': %s\n"
+msgstr "erro ao crea-lo chaveiro `%s': %s\n"
+
 #. TRANSLATORS: Please take care: This is about
 #. moving the key and not about removing it.
 #, fuzzy
@@ -3817,13 +3833,6 @@ msgstr "¿Seguro de que quere borrar este ID de usuario? "
 #, fuzzy
 msgid "You must select exactly one key.\n"
 msgstr "Debe seleccionar alomenos unha chave.\n"
-
-msgid "Command expects a filename argument\n"
-msgstr ""
-
-#, fuzzy, c-format
-msgid "Can't open '%s': %s\n"
-msgstr "non se puido abrir `%s': %s\n"
 
 #, fuzzy, c-format
 msgid "Error reading backup key from '%s': %s\n"

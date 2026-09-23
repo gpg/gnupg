@@ -1768,6 +1768,11 @@ msgstr "摘要演算法 '%s' 不能在 %s 模式中使用\n"
 msgid "reading from '%s'\n"
 msgstr "正在從 '%s' 讀取\n"
 
+#, fuzzy, c-format
+#| msgid "problem handling encrypted packet\n"
+msgid "Note: Using the %s encryption packet\n"
+msgstr "處理已加密封包有問題\n"
+
 #, c-format
 msgid ""
 "WARNING: forcing compression algorithm %s (%d) violates recipient "
@@ -3495,6 +3500,18 @@ msgstr "真的要移除所有被選擇的使用者 ID 嗎? (y/N) "
 msgid "Really remove this user ID? (y/N) "
 msgstr "真的要移除這個使用者 ID 嗎? (y/N) "
 
+msgid "Command expects a filename argument\n"
+msgstr "這項指令要拿一個檔名來當作引數\n"
+
+#, c-format
+msgid "Can't open '%s': %s\n"
+msgstr "無法開啟 '%s': %s\n"
+
+#, fuzzy, c-format
+#| msgid "Error reading backup key from '%s': %s\n"
+msgid "Error reading key from '%s': %s\n"
+msgstr "從 '%s' 讀取備份金鑰時出錯: %s\n"
+
 #. TRANSLATORS: Please take care: This is about
 #. moving the key and not about removing it.
 msgid "Really move the primary key? (y/N) "
@@ -3502,13 +3519,6 @@ msgstr "真的要移動主鑰嗎? (y/N) "
 
 msgid "You must select exactly one key.\n"
 msgstr "你一定只得選擇一把金鑰.\n"
-
-msgid "Command expects a filename argument\n"
-msgstr "這項指令要拿一個檔名來當作引數\n"
-
-#, c-format
-msgid "Can't open '%s': %s\n"
-msgstr "無法開啟 '%s': %s\n"
 
 #, c-format
 msgid "Error reading backup key from '%s': %s\n"

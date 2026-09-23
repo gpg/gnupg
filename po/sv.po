@@ -1837,6 +1837,11 @@ msgstr "digest-algoritmen '%s' får inte användas i %s-läge\n"
 msgid "reading from '%s'\n"
 msgstr "läser från '%s'\n"
 
+#, fuzzy, c-format
+#| msgid "problem handling encrypted packet\n"
+msgid "Note: Using the %s encryption packet\n"
+msgstr "problem vid hanteringen av krypterat paket\n"
+
 #, c-format
 msgid ""
 "WARNING: forcing compression algorithm %s (%d) violates recipient "
@@ -3630,6 +3635,18 @@ msgstr "Verkligen ta bort alla valda användaridentiteter? (j/N) "
 msgid "Really remove this user ID? (y/N) "
 msgstr "Verkligen ta bort denna användaridentitet? (j/N) "
 
+msgid "Command expects a filename argument\n"
+msgstr "Kommandot förväntar ett filnamnsargument\n"
+
+#, c-format
+msgid "Can't open '%s': %s\n"
+msgstr "Kan inte öppna '%s': %s\n"
+
+#, fuzzy, c-format
+#| msgid "Error reading backup key from '%s': %s\n"
+msgid "Error reading key from '%s': %s\n"
+msgstr "Fel vid läsning av säkerhetkopierad nyckel från '%s': %s\n"
+
 #. TRANSLATORS: Please take care: This is about
 #. moving the key and not about removing it.
 msgid "Really move the primary key? (y/N) "
@@ -3637,13 +3654,6 @@ msgstr "Verkligen flytta den primära nyckeln? (j/N) "
 
 msgid "You must select exactly one key.\n"
 msgstr "Du måste välja exakt en nyckel.\n"
-
-msgid "Command expects a filename argument\n"
-msgstr "Kommandot förväntar ett filnamnsargument\n"
-
-#, c-format
-msgid "Can't open '%s': %s\n"
-msgstr "Kan inte öppna '%s': %s\n"
 
 #, c-format
 msgid "Error reading backup key from '%s': %s\n"

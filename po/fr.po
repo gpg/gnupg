@@ -1853,6 +1853,11 @@ msgstr "l'algorithme de hachage « %s » ne doit pas être utilisé en mode %s
 msgid "reading from '%s'\n"
 msgstr "lecture de « %s »\n"
 
+#, fuzzy, c-format
+#| msgid "problem handling encrypted packet\n"
+msgid "Note: Using the %s encryption packet\n"
+msgstr "problème de gestion des paquets chiffrés\n"
+
 #, c-format
 msgid ""
 "WARNING: forcing compression algorithm %s (%d) violates recipient "
@@ -3666,6 +3671,18 @@ msgstr "Faut-il vraiment supprimer toutes les identités sélectionnées ? (o/N
 msgid "Really remove this user ID? (y/N) "
 msgstr "Faut-il vraiment supprimer cette identité ? (o/N) "
 
+msgid "Command expects a filename argument\n"
+msgstr "La commande attend un nom de fichier comme argument\n"
+
+#, c-format
+msgid "Can't open '%s': %s\n"
+msgstr "Impossible d'ouvrir « %s » : %s\n"
+
+#, fuzzy, c-format
+#| msgid "Error reading backup key from '%s': %s\n"
+msgid "Error reading key from '%s': %s\n"
+msgstr "Erreur de lecture de la clef de sauvegarde sur « %s » : %s\n"
+
 #. TRANSLATORS: Please take care: This is about
 #. moving the key and not about removing it.
 msgid "Really move the primary key? (y/N) "
@@ -3673,13 +3690,6 @@ msgstr "Faut-il vraiment déplacer la clef principale ? (o/N) "
 
 msgid "You must select exactly one key.\n"
 msgstr "Vous devez sélectionner exactement une clef.\n"
-
-msgid "Command expects a filename argument\n"
-msgstr "La commande attend un nom de fichier comme argument\n"
-
-#, c-format
-msgid "Can't open '%s': %s\n"
-msgstr "Impossible d'ouvrir « %s » : %s\n"
 
 #, c-format
 msgid "Error reading backup key from '%s': %s\n"
