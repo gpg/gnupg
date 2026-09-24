@@ -78,7 +78,6 @@ struct inq_needpin_parm_s
 {
   assuan_context_t ctx;
   ctrl_t ctrl;
-  const char *getpin_cb_desc;
   assuan_context_t passthru;  /* If not NULL, pass unknown inquiries
                                  up to the caller.  */
 
@@ -397,8 +396,7 @@ inq_needpin (void *opaque, const char *line)
       if (!pin)
         return out_of_core ();
 
-      rc = scd_getpin (parm->ctrl, parm->getpin_cb_desc,
-                       line, pin, pinlen);
+      rc = scd_getpin (parm->ctrl, line, pin, pinlen);
       if (!rc)
         {
           assuan_begin_confidential (parm->ctx);
@@ -410,13 +408,11 @@ inq_needpin (void *opaque, const char *line)
     }
   else if ((s = has_leading_keyword (line, "POPUPPINPADPROMPT")))
     {
-      rc = scd_getpin (parm->ctrl, parm->getpin_cb_desc,
-                       s, NULL, 1);
+      rc = scd_getpin (parm->ctrl, s, NULL, 1);
     }
   else if ((s = has_leading_keyword (line, "DISMISSPINPADPROMPT")))
     {
-      rc = scd_getpin (parm->ctrl, parm->getpin_cb_desc,
-                      "", NULL, 0);
+      rc = scd_getpin (parm->ctrl, "", NULL, 0);
     }
   else if ((s = has_leading_keyword (line, "PINCACHE_GET")))
     {
@@ -514,7 +510,6 @@ prepare_setdata (ctrl_t ctrl, const unsigned char *indata, size_t indatalen)
 int
 agent_card_pksign (ctrl_t ctrl,
                    const char *keyid,
-                   const char *desc_text,
                    int mdalgo,
                    const unsigned char *indata, size_t indatalen,
                    unsigned char **r_buf, size_t *r_buflen)
@@ -541,7 +536,6 @@ agent_card_pksign (ctrl_t ctrl,
   init_membuf (&data, 1024);
   inqparm.ctx = daemon_ctx (ctrl);
   inqparm.ctrl = ctrl;
-  inqparm.getpin_cb_desc = desc_text;
   inqparm.passthru = 0;
   inqparm.keydata = NULL;
   inqparm.keydatalen = 0;
@@ -599,7 +593,6 @@ padding_info_cb (void *opaque, const char *line)
 int
 agent_card_pkdecrypt (ctrl_t ctrl,
                       const char *keyid,
-                      const char *desc_text,
                       const unsigned char *indata, size_t indatalen,
                       unsigned char **r_buf, size_t *r_buflen, int *r_padding)
 {
@@ -625,7 +618,6 @@ agent_card_pkdecrypt (ctrl_t ctrl,
   init_membuf (&data, 1024);
   inqparm.ctx = daemon_ctx (ctrl);
   inqparm.ctrl = ctrl;
-  inqparm.getpin_cb_desc = desc_text;
   inqparm.passthru = 0;
   inqparm.keydata = NULL;
   inqparm.keydatalen = 0;
@@ -824,7 +816,6 @@ agent_card_writekey (ctrl_t ctrl,  int force, const char *serialno,
   snprintf (line, DIM(line), "WRITEKEY %s%s", force ? "--force " : "", keyref);
   parms.ctx = daemon_ctx (ctrl);
   parms.ctrl = ctrl;
-  parms.getpin_cb_desc= NULL;
   parms.passthru = 0;
   parms.keydata = keydata;
   parms.keydatalen = keydatalen;
@@ -1279,7 +1270,6 @@ agent_card_scd (ctrl_t ctrl, const char *cmdline, void *assuan_context)
 
   inqparm.ctx = daemon_ctx (ctrl);
   inqparm.ctrl = ctrl;
-  inqparm.getpin_cb_desc = NULL;
   inqparm.passthru = assuan_context;
   inqparm.keydata = NULL;
   inqparm.keydatalen = 0;

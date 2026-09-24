@@ -67,26 +67,11 @@ encode_md_for_card (const unsigned char *digest, size_t digestlen, int algo,
 }
 
 
-/* Return true if STRING ends in "%0A". */
-static int
-has_percent0A_suffix (const char *string)
-{
-  size_t n;
-
-  return (string
-          && (n = strlen (string)) >= 3
-          && !strcmp (string + n - 3, "%0A"));
-}
-
-
 /* Callback used to ask for the PIN which should be set into BUF.  The
    buf has been allocated by the caller and is of size MAXBUF which
    includes the terminating null.  The function should return an UTF-8
    string with the passphrase, the buffer may optionally be padded
    with arbitrary characters.
-
-   If DESC_TEXT is not NULL it can be used as further information shown
-   atop of the INFO message.
 
    INFO gets displayed as part of a generic string.  However if the
    first character of INFO is a vertical bar all up to the next
@@ -110,8 +95,7 @@ has_percent0A_suffix (const char *string)
    are considered.
  */
 int
-scd_getpin (ctrl_t ctrl, const char *desc_text, const char *info,
-            char *buf, size_t maxbuf)
+scd_getpin (ctrl_t ctrl, const char *info, char *buf, size_t maxbuf)
 {
   struct pin_entry_info_s *pi;
   int rc;
@@ -173,33 +157,14 @@ scd_getpin (ctrl_t ctrl, const char *desc_text, const char *info,
               if (!strcmp (info, "--ack"))
                 {
                   desc2 = L_("Push ACK button on card/token.");
-
-                  if (desc_text)
-                    {
-                      desc = strconcat (desc_text,
-                                        has_percent0A_suffix (desc_text)
-                                        ? "%0A" : "%0A%0A",
-                                        desc2, NULL);
-                      desc2 = NULL;
-                    }
-                  else
-                    desc = NULL;
+                  desc = NULL;
                 }
               else
                 {
                   desc2 = NULL;
-
-                  if (desc_text)
-                    desc = strconcat (desc_text,
-                                      has_percent0A_suffix (desc_text)
-                                      ? "%0A" : "%0A%0A",
-                                      info, "%0A%0A",
-                                      L_("Use the reader's pinpad for input."),
-                                      NULL);
-                  else
-                    desc = strconcat (info, "%0A%0A",
-                                      L_("Use the reader's pinpad for input."),
-                                      NULL);
+                  desc = strconcat (info, "%0A%0A",
+                                    L_("Use the reader's pinpad for input."),
+                                    NULL);
                 }
 
               if (!desc2 && !desc)
@@ -212,7 +177,7 @@ scd_getpin (ctrl_t ctrl, const char *desc_text, const char *info,
                 }
             }
           else
-            rc = agent_popup_message_start (ctrl, desc_text, NULL);
+            rc = agent_popup_message_start (ctrl, NULL, NULL);
         }
       else
         rc = gpg_error (GPG_ERR_INV_VALUE);
@@ -233,20 +198,7 @@ scd_getpin (ctrl_t ctrl, const char *desc_text, const char *info,
 
   if (any_flags)
     {
-      {
-        char *desc2;
-
-        if (desc_text)
-          desc2 = strconcat (desc_text,
-                             has_percent0A_suffix (desc_text)
-                             ? "%0A" : "%0A%0A",
-                             info, NULL);
-        else
-          desc2 = NULL;
-        rc = agent_askpin (ctrl, desc2? desc2 : info,
-                           prompt, again_text, pi, NULL, 0);
-        xfree (desc2);
-      }
+      rc = agent_askpin (ctrl, info, prompt, again_text, pi, NULL, 0);
       again_text = NULL;
       if (!rc && newpin)
         {
@@ -285,7 +237,7 @@ scd_getpin (ctrl_t ctrl, const char *desc_text, const char *info,
     }
   else
     {
-      char *desc, *desc2;
+      char *desc;
 
       if ( asprintf (&desc,
                      L_("Please enter the PIN%s%s%s to unlock the card"),
@@ -293,16 +245,7 @@ scd_getpin (ctrl_t ctrl, const char *desc_text, const char *info,
                      info? info:"",
                      info? ")":"") < 0)
         desc = NULL;
-      if (desc_text)
-        desc2 = strconcat (desc_text,
-                           has_percent0A_suffix (desc_text)
-                           ? "%0A" : "%0A%0A",
-                           desc, NULL);
-      else
-        desc2 = NULL;
-      rc = agent_askpin (ctrl, desc2? desc2 : desc? desc : info,
-                         prompt, NULL, pi, NULL, 0);
-      xfree (desc2);
+      rc = agent_askpin (ctrl, desc? desc : info, prompt, NULL, pi, NULL, 0);
       xfree (desc);
     }
 
@@ -435,14 +378,14 @@ divert_pksign (ctrl_t ctrl, const unsigned char *grip,
     {
       /* This is the PureEdDSA case.  (DIGEST,DIGESTLEN) this the
        * entire data which will be signed.  */
-      rc = agent_card_pksign (ctrl, hexgrip, NULL,
+      rc = agent_card_pksign (ctrl, hexgrip,
                               0, digest, digestlen, &sigval, &siglen);
     }
   else if (algo == MD_USER_TLS_MD5SHA1)
     {
       int save = ctrl->use_auth_call;
       ctrl->use_auth_call = 1;
-      rc = agent_card_pksign (ctrl, hexgrip, NULL,
+      rc = agent_card_pksign (ctrl, hexgrip,
                               algo, digest, digestlen, &sigval, &siglen);
       ctrl->use_auth_call = save;
     }
@@ -454,7 +397,7 @@ divert_pksign (ctrl_t ctrl, const unsigned char *grip,
       rc = encode_md_for_card (digest, digestlen, algo, &data, &ndata);
       if (!rc)
         {
-          rc = agent_card_pksign (ctrl, hexgrip, NULL,
+          rc = agent_card_pksign (ctrl, hexgrip,
                                   algo, data, ndata, &sigval, &siglen);
           xfree (data);
         }
@@ -583,7 +526,7 @@ divert_pkdecrypt (ctrl_t ctrl,
   ciphertext = s;
   ciphertextlen = n;
 
-  rc = agent_card_pkdecrypt (ctrl, hexgrip, NULL,
+  rc = agent_card_pkdecrypt (ctrl, hexgrip,
                              ciphertext, ciphertextlen,
                              &plaintext, &plaintextlen, r_padding);
   if (!rc)
@@ -605,7 +548,7 @@ agent_card_ecc_kem (ctrl_t ctrl, const unsigned char *ecc_ct,
   char hexgrip[KEYGRIP_LEN*2+1];
 
   bin2hex (ctrl->keygrip, KEYGRIP_LEN, hexgrip);
-  rc = agent_card_pkdecrypt (ctrl, hexgrip, NULL,
+  rc = agent_card_pkdecrypt (ctrl, hexgrip,
                              ecc_ct, ecc_point_len, &ecdh, &len, NULL);
   if (rc)
     return rc;
