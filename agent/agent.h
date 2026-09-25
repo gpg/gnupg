@@ -729,7 +729,6 @@ gpg_error_t divert_writekey (ctrl_t ctrl, int force, const char *serialno,
 
 gpg_error_t agent_card_ecc_kem (ctrl_t ctrl, const unsigned char *ecc_ct,
                                 size_t ecc_point_len, unsigned char *ecc_ecdh);
-int scd_getpin (ctrl_t ctrl, const char *info, char *buf, size_t maxbuf);
 
 /*-- call-daemon.c --*/
 gpg_error_t daemon_start (enum daemon_type type, ctrl_t ctrl, int req_sock);
