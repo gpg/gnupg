@@ -163,10 +163,11 @@ gpg_error_t pincache_get (ctrl_t ctrl, int slot, const char *appname,
 
 void popup_prompt (void *opaque, int on);
 
-gpg_error_t askpin (ctrl_t ctrl, const char *info,
-                    gpg_error_t (*check_cb) (void *arg,
-                                 unsigned char *value, size_t valuelen),
-                    void *check_cb_arg);
+gpg_error_t askpin (ctrl_t ctrl, const char *info, char **r_pin);
+gpg_error_t askpin_inquiry (ctrl_t ctrl, const char *info,
+                            gpg_error_t (*check_cb) (void *arg,
+                                        unsigned char *value, size_t valuelen),
+                            void *check_cb_arg);
 
 gpg_error_t pinpad_prompt (ctrl_t ctrl, const char *info);
 

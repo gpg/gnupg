@@ -1671,7 +1671,7 @@ verify_pin (app_t app, ctrl_t ctrl, int pwid, const char *desc)
       char *pinvalue;
 
       prompt = make_prompt (app, remaining, desc, extrapromptline);
-      rc = askpin (ctrl, prompt, NULL, &pinvalue);
+      rc = askpin (ctrl, prompt, &pinvalue);
       xfree (prompt);
       if (rc)
         {
@@ -2252,7 +2252,7 @@ do_change_pin (app_t app, ctrl_t ctrl,  const char *pwidstr,
         }
 
       prompt = make_prompt (app, remaining, desc, NULL);
-      err = askpin (ctrl, prompt, NULL, &oldpin);
+      err = askpin (ctrl, prompt, &oldpin);
       xfree (prompt);
       if (err)
         {
@@ -2267,7 +2267,7 @@ do_change_pin (app_t app, ctrl_t ctrl,  const char *pwidstr,
 
 
   prompt = make_prompt (app, -1, newdesc, NULL);
-  err = askpin (ctrl, prompt, NULL, &newpin);
+  err = askpin (ctrl, prompt, &newpin);
   xfree (prompt);
   if (err)
     {
