@@ -1182,6 +1182,12 @@ pcsc_init (void)
       pcsc_end_transaction   = dlsym (handle, "SCardEndTransaction");
       pcsc_transmit          = dlsym (handle, "SCardTransmit");
       pcsc_set_timeout       = dlsym (handle, "SCardSetTimeout");
+#ifdef __APPLE__
+      /* Apple keeps old name, gives a different name for new API.  */
+      pcsc_control           = dlsym (handle, "SCardControl132");
+      /* If it's not available, try "SCardControl" */
+      if (!pcsc_control)
+#endif
       pcsc_control           = dlsym (handle, "SCardControl");
 
       if (!pcsc_establish_context
