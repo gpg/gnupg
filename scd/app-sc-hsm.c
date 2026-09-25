@@ -1737,7 +1737,7 @@ verify_pin (app_t app, ctrl_t ctrl)
     }
   else
     {
-      err = askpin (ctrl, prompt, NULL, &pinvalue);
+      err = askpin (ctrl, prompt, &pinvalue);
       if (err)
         {
           log_info ("PIN callback returned error: %s\n", gpg_strerror (err));

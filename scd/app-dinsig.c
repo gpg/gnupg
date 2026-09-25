@@ -311,7 +311,7 @@ verify_pin (app_t app, ctrl_t ctrl)
     {
       char *pinvalue;
 
-      rc = askpin (ctrl, "PIN", NULL, &pinvalue);
+      rc = askpin (ctrl, "PIN", &pinvalue);
       if (rc)
         {
           log_info ("PIN callback returned error: %s\n", gpg_strerror (rc));
@@ -521,7 +521,7 @@ do_change_pin (app_t app, ctrl_t ctrl,  const char *chvnostr,
   /* TRANSLATORS: Do not translate the "|*|" prefixes but
      keep it at the start of the string.  We need this elsewhere
      to get some infos on the string. */
-  err = askpin (ctrl, _("|N|Initial New PIN"), NULL, &pinvalue);
+  err = askpin (ctrl, _("|N|Initial New PIN"), &pinvalue);
   if (err)
     {
       log_error (_("error getting new PIN: %s\n"), gpg_strerror (err));

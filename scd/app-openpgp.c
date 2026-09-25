@@ -2900,12 +2900,12 @@ verify_a_chv (app_t app, ctrl_t ctrl,
   if (remaining >= 3 && pin_from_cache (app, ctrl, chvno, &pin))
     rc = pincheck_cb (&v, NULL, 0);
   else
-    rc = askpin (ctrl, prompt, pincheck_cb, &v);
+    rc = askpin_inquiry (ctrl, prompt, pincheck_cb, &v);
   xfree (prompt);
   prompt = NULL;
   if (rc)
     {
-      log_info (_("askpin returned error: %s\n"), gpg_strerror (rc));
+      log_info ("askpin_inquiry returned error: %s\n", gpg_strerror (rc));
       wipe_and_free_string (pin);
       wipe_and_free (pinvalue, pinlen);
       return rc;
@@ -3067,7 +3067,7 @@ verify_chv3 (app_t app, ctrl_t ctrl)
           if (remaining >= 3 && pin_from_cache (app, ctrl, 3, &pin))
             rc = 0;
           else
-            rc = askpin (ctrl, prompt, NULL, &pin);
+            rc = askpin (ctrl, prompt, &pin);
           xfree (prompt);
           prompt = NULL;
           if (rc)
@@ -3247,7 +3247,7 @@ do_setattr (app_t app, ctrl_t ctrl, const char *name,
               if (rc)
                 return rc;
 
-              rc = askpin (ctrl, prompt, NULL, &oldpinvalue);
+              rc = askpin (ctrl, prompt, &oldpinvalue);
               if (rc)
                 {
                   log_info (_("askpin returned error: %s\n"),
@@ -3556,7 +3556,7 @@ do_change_pin (app_t app, ctrl_t ctrl,  const char *chvnostr,
                   if (rc)
                     goto leave;
                 }
-              rc = askpin (ctrl, prompt, NULL, &oldpinvalue);
+              rc = askpin (ctrl, prompt, &oldpinvalue);
               xfree (prompt);
               prompt = NULL;
               if (rc)
@@ -3596,7 +3596,7 @@ do_change_pin (app_t app, ctrl_t ctrl,  const char *chvnostr,
           else if (rc)
             goto leave;
 
-          rc = askpin (ctrl, prompt, NULL, &resetcode);
+          rc = askpin (ctrl, prompt, &resetcode);
           xfree (prompt);
           prompt = NULL;
           if (rc)
@@ -3633,7 +3633,7 @@ do_change_pin (app_t app, ctrl_t ctrl,  const char *chvnostr,
          to get some infos on the string. */
       rc = askpin (ctrl, set_resetcode? _("|RN|New Reset Code") :
                    chvno == 3? _("|AN|New Admin PIN") : _("|N|New PIN"),
-                   NULL, &pinvalue);
+                   &pinvalue);
       if (rc || pinvalue == NULL)
         {
           log_error (_("error getting new PIN: %s\n"), gpg_strerror (rc));

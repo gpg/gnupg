@@ -1008,17 +1008,13 @@ pinpad_prompt (ctrl_t ctrl, const char *info)
 }
 
 gpg_error_t
-askpin (ctrl_t ctrl, const char *info,
-        gpg_error_t (*check_cb) (void *arg,
-                                 unsigned char *value, size_t valuelen),
-        void *check_cb_arg)
+askpin (ctrl_t ctrl, const char *info, char **r_pin)
 {
   assuan_context_t ctx = ctrl->server_local->assuan_ctx;
   char *command;
   int rc;
   unsigned char *value;
   size_t valuelen;
-  char **retstr = (char **)check_cb_arg;
 
   if (DBG_IPC)
     log_debug ("asking for PIN '%s'\n", info);
@@ -1043,12 +1039,61 @@ askpin (ctrl_t ctrl, const char *info,
       return gpg_error (GPG_ERR_INV_RESPONSE);
     }
 
-  if (check_cb == NULL)
-    *retstr = (char*)value;
-  else
-    rc = (*check_cb) (check_cb_arg, value, valuelen);
+  *r_pin = (char*)value;
 
   return rc;
+}
+
+
+gpg_error_t
+askpin_inquiry (ctrl_t ctrl, const char *info,
+                gpg_error_t (*check_cb) (void *arg,
+                                         unsigned char *value, size_t valuelen),
+                void *check_cb_arg)
+{
+  gpg_error_t err;
+  assuan_context_t ctx = ctrl->server_local->assuan_ctx;
+  char *command;
+  int rc;
+  unsigned char *value;
+  size_t valuelen;
+
+  if (DBG_IPC)
+    log_debug ("asking for PIN '%s'\n", info);
+
+  rc = gpgrt_asprintf (&command, "ASKPIN %s", info);
+  if (rc < 0)
+    return gpg_error (gpg_err_code_from_errno (errno));
+
+  /* Fixme: Write an inquire function which returns the result in
+     secure memory and check all further handling of the PIN. */
+  assuan_begin_confidential (ctx);
+  err = assuan_inquire (ctx, command, &value, &valuelen, MAXLEN_PIN);
+  assuan_end_confidential (ctx);
+  xfree (command);
+  if (err)
+    return err;
+
+  /* FIXME: valuelen == 0? or not nul terminated.  */
+
+  while (1)
+    {
+      err = (*check_cb) (check_cb_arg, value, valuelen);
+      xfree (value);
+      if (!err)
+        {
+          err = assuan_inquire (ctx, "FINISHPIN", NULL, NULL, 0);
+          break;
+        }
+
+      assuan_begin_confidential (ctx);
+      err = assuan_inquire (ctx, "NEXTPIN", &value, &valuelen, MAXLEN_PIN);
+      assuan_end_confidential (ctx);
+      if (err)
+        return err;
+    }
+
+  return err;
 }
 
 
