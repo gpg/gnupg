@@ -311,12 +311,13 @@ struct server_control_s
      when pinentry is called recursively.  */
   int pinentry_active;
 
-  /* Thread for askpin inquiry by scdaemon.  */
-  npth_t inq_askpin_tid;
+  /* Fields for askpin inquiry handling.  */
+  npth_t inq_askpin_tid;    /* Fields for askpin inquiry handling.  */
   npth_mutex_t askpin_lock;
   npth_cond_t askpin_cond;
-  const char *askpin_request;
-  const char *askpin_result;
+  int askpin_req;
+  const char *askpin_arg;
+  gpg_error_t askpin_err;
 };
 
 
