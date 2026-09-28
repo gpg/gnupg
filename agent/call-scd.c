@@ -378,7 +378,6 @@ scd_check_cb (struct pin_entry_info_s *pi)
   gpg_error_t err;
   ctrl_t ctrl = pi->check_cb_arg;
   assuan_context_t scd_ctx;
-  int done = 0;
 
   scd_ctx = daemon_ctx (ctrl);
 
@@ -386,6 +385,7 @@ scd_check_cb (struct pin_entry_info_s *pi)
   err = assuan_send_data (scd_ctx, pi->pin, strlen (pi->pin));
   assuan_end_confidential (scd_ctx);
 
+  npth_mutex_lock (&ctrl->askpin_lock);
   ctrl->askpin_err = 0;
   ctrl->askpin_arg = NULL;
   npth_cond_signal (&ctrl->askpin_cond);
@@ -399,8 +399,7 @@ scd_check_cb (struct pin_entry_info_s *pi)
     {
       ctrl->askpin_req = ASKPIN_NONE;
       ctrl->askpin_err = 0;
-      err = 0;
-      done = 1;
+      return 0;
     }
   else if (ctrl->askpin_req == ASKPIN_NEXT)
     {
@@ -411,12 +410,10 @@ scd_check_cb (struct pin_entry_info_s *pi)
   else
     log_debug ("askpin: invalid request\n");
 
-  if (!done)
-    {
-      ctrl->askpin_arg = NULL;
-      npth_cond_signal (&ctrl->askpin_cond);
-      npth_mutex_unlock (&ctrl->askpin_lock);
-    }
+  ctrl->askpin_arg = NULL;
+  npth_cond_signal (&ctrl->askpin_cond);
+  npth_mutex_unlock (&ctrl->askpin_lock);
+
   return err;
 }
 
@@ -519,7 +516,9 @@ askpin_thread (void *arg)
             {
               npth_mutex_unlock (&ctrl->askpin_lock);
               err = agent_askpin (ctrl, desc, prompt, NULL, pi, NULL, 0);
-              npth_mutex_lock (&ctrl->askpin_lock);
+              if (err)
+                npth_mutex_lock (&ctrl->askpin_lock);
+              /* Note: It returns with the lock hold, when no error.  */
             }
           else
             err = gpg_error_from_syserror ();
@@ -531,7 +530,7 @@ askpin_thread (void *arg)
     }
   else
     {
-      /* NOTE: ASKPIN_NEXT is handled in the callback.  */
+      /* Note: ASKPIN_NEXT is handled in the callback.  */
       log_debug ("askpin: unknown request\n");
       ctrl->askpin_err = GPG_ERR_UNSUPPORTED_PROTOCOL;
     }
@@ -583,7 +582,7 @@ start_askpin_thread (ctrl_t ctrl)
 }
 
 static gpg_error_t
-finish_askpin_thread (ctrl_t ctrl)
+finish_askpin_thread (ctrl_t ctrl, const char *info)
 {
   int rc;
 
@@ -592,11 +591,14 @@ finish_askpin_thread (ctrl_t ctrl)
 
   npth_mutex_lock (&ctrl->askpin_lock);
   ctrl->askpin_req = ASKPIN_END;
+  ctrl->askpin_arg = info;
+  ctrl->askpin_err = 0;
   npth_cond_signal (&ctrl->askpin_cond);
   npth_mutex_unlock (&ctrl->askpin_lock);
 
   rc = npth_join (ctrl->inq_askpin_tid, NULL);
 
+  ctrl->askpin_arg = NULL;
   ctrl->inq_askpin_tid = 0;
   npth_mutex_destroy (&ctrl->askpin_lock);
   npth_cond_destroy (&ctrl->askpin_cond);
@@ -623,7 +625,7 @@ scd_pin_request_start (ctrl_t ctrl, const char *info)
   npth_mutex_unlock (&ctrl->askpin_lock);
 
   if (err)
-    finish_askpin_thread (ctrl);
+    finish_askpin_thread (ctrl, NULL);
 
   return err;
 }
@@ -644,7 +646,7 @@ scd_pin_request_next (ctrl_t ctrl, const char *info)
   npth_mutex_unlock (&ctrl->askpin_lock);
 
   if (err)
-    finish_askpin_thread (ctrl);
+    finish_askpin_thread (ctrl, NULL);
 
   return err;
 }
@@ -652,20 +654,7 @@ scd_pin_request_next (ctrl_t ctrl, const char *info)
 static gpg_error_t
 scd_pin_request_finish (ctrl_t ctrl, const char *info)
 {
-  gpg_error_t err;
-
-  npth_mutex_lock (&ctrl->askpin_lock);
-  ctrl->askpin_req = ASKPIN_END;
-  ctrl->askpin_arg = info;
-  ctrl->askpin_err = 0;
-  npth_cond_signal (&ctrl->askpin_cond);
-  while (ctrl->askpin_arg)
-    npth_cond_wait (&ctrl->askpin_cond, &ctrl->askpin_lock);
-  err = ctrl->askpin_err;
-  npth_mutex_unlock (&ctrl->askpin_lock);
-
-  err = finish_askpin_thread (ctrl);
-  return err;
+  return finish_askpin_thread (ctrl, info);
 }
 
 
