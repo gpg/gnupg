@@ -1,0 +1,27 @@
+From: test_suite@notmuchmail.org
+To: test_suite@notmuchmail.org
+Subject: Here is the password
+Date: Sat, 01 Jan 2000 12:00:00 +0000
+Message-ID: <basic-encrypted@crypto.notmuchmail.org>
+MIME-Version: 1.0
+Content-Type: multipart/encrypted; boundary="=-=-=";
+	protocol="application/pgp-encrypted"
+
+--=-=-=
+Content-Type: application/pgp-encrypted
+
+Version: 1
+
+--=-=-=
+Content-Type: application/octet-stream
+
+-----BEGIN PGP MESSAGE-----
+
+hF4DHXHP849rSK8SAQdAYbv9NFaU2Fbd6JbfE87h/yZNyWLJYZ2EseU0WyOz7Agw
+/+KTbbIqRcEYhnpQhQXBQ2wqIN5gmdRhaqrj5q0VLV2BOKNJKqXGs/W4DghXwfAu
+0oMBqjTd/mMbF0nJLw3bPX+LW47RHQdZ8vUVPlPr0ALg8kqgcfy95Qqy5h796Uyq
+xs+I/UUOt7fzTDAw0B4qkRbdSangwYy80N4X43KrAfKSstBH3/7O4285XZr86YhF
+rEtsBuwhoXI+DaG3uYZBBMTkzfButmBKHwB2CmWutmVpQL087A==
+=lhSz
+-----END PGP MESSAGE-----
+--=-=-=--

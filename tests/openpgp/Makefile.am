@@ -108,7 +108,8 @@ XTESTS = \
 	issue2419.scm \
 	issue2929.scm \
 	issue2941.scm \
-	issue8049.scm
+	issue8049.scm \
+	issue8469.scm
 
 
 # XXX: Currently, one cannot override automake's 'check' target.  As a
@@ -319,7 +320,8 @@ sample_msgs = samplemsgs/clearsig-1-key-1.asc \
               samplemsgs/pqc-mlk1024_np521.enc.asc \
               samplemsgs/pqc-mlk768_np384.enc.asc \
               samplemsgs/pqc-mlk1024_bp512.enc.asc \
-              samplemsgs/pqc-mlk768_bp384.enc.asc
+              samplemsgs/pqc-mlk768_bp384.enc.asc \
+              samplemsgs/basic-encrypted.eml
 
 EXTRA_DIST = defs.scm trust-pgp/common.scm $(XTESTS) $(TEST_FILES) \
 	     mkdemodirs signdemokey $(priv_keys) $(sample_keys)   \
