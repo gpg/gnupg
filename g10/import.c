@@ -2664,6 +2664,28 @@ build_sexp_from_mlk (gcry_sexp_t *r_skey, PKT_public_key *pk,
 }
 
 
+/* Return a malloced string with the canonical name of the curve
+ * represented by MPI A.  If no canonical name is known the OID in
+ * dotted-decimal form is returned.  On error NULL is returned. */
+static char *
+oid_to_canon_curve (gcry_mpi_t a)
+{
+  char *curvestr;
+
+  curvestr = openpgp_oid_to_str (a);
+  if (curvestr)
+    {
+      const char *curvename = openpgp_oid_to_curve (curvestr, 1);
+      if (curvename)
+        {
+          xfree (curvestr);
+          curvestr = xtrystrdup (curvename);
+        }
+    }
+  return curvestr;
+}
+
+
 /* This function builds a gpg-agent private key format (aka mode1003)
  * s-expression from the secret key packet in PK.  It currently
  * fails for a protected key.  The final plan is to use a separate
@@ -2726,7 +2748,7 @@ build_mode1003_sexp (PKT_public_key *pk, gcry_sexp_t *result)
 
     case PUBKEY_ALGO_ECDH:
       /* Note that pkey[2] conveys the KDF parameters.  */
-      curvename = openpgp_oid_to_str (pk->pkey[0]);
+      curvename = oid_to_canon_curve (pk->pkey[0]);
       if (!curvename)
         err = gpg_error_from_syserror ();
       else if (openpgp_oid_is_cv25519 (pk->pkey[0]))
@@ -2746,7 +2768,7 @@ build_mode1003_sexp (PKT_public_key *pk, gcry_sexp_t *result)
       break;
 
     case PUBKEY_ALGO_ECDSA:
-      curvename = openpgp_oid_to_str (pk->pkey[0]);
+      curvename = oid_to_canon_curve (pk->pkey[0]);
       if (!curvename)
         err = gpg_error_from_syserror ();
       else
@@ -2756,7 +2778,7 @@ build_mode1003_sexp (PKT_public_key *pk, gcry_sexp_t *result)
       break;
 
     case PUBKEY_ALGO_EDDSA:
-      curvename = openpgp_oid_to_str (pk->pkey[0]);
+      curvename = oid_to_canon_curve (pk->pkey[0]);
       if (!curvename)
         err = gpg_error_from_syserror ();
       else
