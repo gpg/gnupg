@@ -1079,13 +1079,13 @@ askpin_inquiry (ctrl_t ctrl, const char *info,
   while (1)
     {
       err = (*check_cb) (check_cb_arg, value, valuelen);
-      xfree (value);
       if (!err)
         {
           err = assuan_inquire (ctx, "FINISHPIN", NULL, NULL, 0);
           break;
         }
 
+      xfree (value);
       assuan_begin_confidential (ctx);
       err = assuan_inquire (ctx, "NEXTPIN", &value, &valuelen, MAXLEN_PIN);
       assuan_end_confidential (ctx);
