@@ -2732,11 +2732,11 @@ build_mode1003_sexp (PKT_public_key *pk, gcry_sexp_t *result)
       else if (openpgp_oid_is_cv25519 (pk->pkey[0]))
         err = gcry_sexp_build
           (&skey,NULL,"(private-key(ecc(curve %s)(flags djb-tweak)(q%m)(d%m)))",
-           curvename, pk->pkey[2], pk->pkey[3]);
+           curvename, pk->pkey[1], pk->pkey[3]);
       else
         err = gcry_sexp_build
           (&skey,NULL,"(private-key(ecc(curve %s)(q%m)(d%m)))",
-           curvename, pk->pkey[2], pk->pkey[3]);
+           curvename, pk->pkey[1], pk->pkey[3]);
       break;
 
     case PUBKEY_ALGO_X25519:
