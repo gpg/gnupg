@@ -457,7 +457,7 @@ cmd_signer (assuan_context_t ctx, char *line)
 
 
 static const char hlp_encrypt[] =
-  "ENCRYPT \n"
+  "ENCRYPT\n"
   "\n"
   "Do the actual encryption process. Takes the plaintext from the INPUT\n"
   "command, writes to the ciphertext to the file descriptor set with\n"
@@ -789,7 +789,7 @@ static const char hlp_export[] =
   "\n"
   "Export the certificates selected by PATTERN.  With --data the output\n"
   "is returned using Assuan D lines; the default is to use the sink given\n"
-  "by the last \"OUTPUT\" command.  The options --armor or --base64 encode \n"
+  "by the last \"OUTPUT\" command.  The options --armor or --base64 encode\n"
   "the output using the PEM respective a plain base-64 format; the default\n"
   "is a binary format which is only suitable for a single certificate.\n"
   "With --secret the secret key is exported using the PKCS#8 format,\n"

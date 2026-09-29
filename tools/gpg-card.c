@@ -3658,7 +3658,7 @@ cmd_yubikey (card_info_t info, char *argstr)
       ("YUBIKEY <cmd> args\n\n"
        "Various commands pertaining to Yubikey tokens with <cmd> being:\n"
        "\n"
-       "  LIST \n"
+       "  LIST\n"
        "\n"
        "List supported and enabled applications.\n"
        "\n"

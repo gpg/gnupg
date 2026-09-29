@@ -138,7 +138,7 @@ my_strusage( int level )
       break;
     case 41:
       p = ("Syntax: gpg-auth"
-           " [options] \n\n"
+           " [options]\n\n"
            "Tool to authenticate a user using a smartcard.\n"
            "Use option \"--help\" to list all options.");
       break;

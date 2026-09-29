@@ -625,7 +625,7 @@ cmd_store (assuan_context_t ctx, char *line)
 
 
 static const char hlp_delete[] =
-  "DELETE <ubid> \n"
+  "DELETE <ubid>\n"
   "\n"
   "Delete a key into the database.  The UBID identifies the key.\n";
 static gpg_error_t
@@ -810,7 +810,7 @@ cmd_transaction (assuan_context_t ctx, char *line)
 static const char hlp_getinfo[] =
   "GETINFO <what>\n"
   "\n"
-  "Multi purpose command to return certain information.  \n"
+  "Multi purpose command to return certain information.\n"
   "Supported values of WHAT are:\n"
   "\n"
   "version     - Return the version of the program.\n"

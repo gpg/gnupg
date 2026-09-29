@@ -539,7 +539,7 @@ static const char hlp_learn[] =
   "  S PUBKEY-URL <url>\n"
   "\n"
   "The URL to be used for locating the entire public key.\n"
-  "  \n"
+  "\n"
   "If KEYGRIP is given the card holding a key with that keygrip is used.\n"
   "If --demand is used the card with the specified S/N is used.\n"
   "Note, that this function may even be used on a locked card.";
@@ -1261,7 +1261,7 @@ static const char hlp_getattr[] =
   "returned through status message, see the LEARN command for details.\n"
   "\n"
   "However, the current implementation assumes that Name is not escaped;\n"
-  "this works as long as no one uses arbitrary escaping. \n"
+  "this works as long as no one uses arbitrary escaping.\n"
   "\n"
   "Note, that this function may even be used on a locked card.\n"
   "When KEYGRIP is specified, it accesses directly with the KEYGRIP.";
@@ -1302,7 +1302,7 @@ cmd_getattr (assuan_context_t ctx, char *line)
 
 
 static const char hlp_setattr[] =
-  "SETATTR [--inquire] <name> <value> \n"
+  "SETATTR [--inquire] <name> <value>\n"
   "\n"
   "This command is used to store data on a smartcard.  The allowed\n"
   "names and values are depend on the currently selected smartcard\n"
@@ -1451,7 +1451,7 @@ cmd_writecert (assuan_context_t ctx, char *line)
 
 
 static const char hlp_writekey[] =
-  "WRITEKEY [--force] <keyid> \n"
+  "WRITEKEY [--force] <keyid>\n"
   "\n"
   "This command is used to store a secret key on a smartcard.  The\n"
   "allowed keyids depend on the currently selected smartcard\n"
@@ -1884,7 +1884,7 @@ cmd_unlock (assuan_context_t ctx, char *line)
 static const char hlp_getinfo[] =
   "GETINFO <what>\n"
   "\n"
-  "Multi purpose command to return certain information.  \n"
+  "Multi purpose command to return certain information.\n"
   "Supported values of WHAT are:\n"
   "\n"
   "  version     - Return the version of the program.\n"
@@ -2067,7 +2067,7 @@ static const char hlp_restart[] =
   "\n"
   "Restart the current connection; this is a kind of warm reset.  It\n"
   "deletes the context used by this connection but does not send a\n"
-  "RESET to the card.  Thus the card itself won't get reset. \n"
+  "RESET to the card.  Thus the card itself won't get reset.\n"
   "\n"
   "This is used by gpg-agent to reuse a primary pipe connection and\n"
   "may be used by clients to backup from a conflict in the serial\n"
@@ -2128,7 +2128,7 @@ static const char hlp_apdu[] =
   "level functions and sends the data directly to the card.  HEXSTRING\n"
   "is expected to be a proper APDU.  If HEXSTRING is not given no\n"
   "commands are set to the card but the command will implicitly check\n"
-  "whether the card is ready for use. \n"
+  "whether the card is ready for use.\n"
   "\n"
   "Using the option \"--atr\" returns the ATR of the card as a status\n"
   "message before any data like this:\n"
@@ -2304,7 +2304,7 @@ static const char hlp_keyinfo[] =
   "IDSTR is a string used to distinguish keys on a smartcard.  If it\n"
   "      is not known a dash is used instead.\n"
   "\n"
-  "USAGE is a string of capabilities of the key, 's' for sign, \n"
+  "USAGE is a string of capabilities of the key, 's' for sign,\n"
   "'e' for encryption, 'a' for auth, and 'c' for cert.  If it is not\n"
   "known a dash is used instead.\n"
   "\n"

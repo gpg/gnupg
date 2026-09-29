@@ -2007,7 +2007,7 @@ static const char hlp_get_passphrase[] =
   "\n"
   "If the option \"--no-ask\" is used and the passphrase is not in the\n"
   "cache the user will not be asked to enter a passphrase but the error\n"
-  "code GPG_ERR_NO_DATA is returned.  \n"
+  "code GPG_ERR_NO_DATA is returned.\n"
   "\n"
   "If the option\"--newsymkey\" is used the agent asks for a new passphrase\n"
   "to be used in symmetric-only encryption.  This must not be empty.\n"
@@ -2709,7 +2709,7 @@ leave:
 
 static const char hlp_scd[] =
   "SCD <commands to pass to the scdaemon>\n"
-  " \n"
+  "\n"
   "This is a general quote command to redirect everything to the\n"
   "SCdaemon.";
 static gpg_error_t
@@ -3814,7 +3814,7 @@ static const char hlp_putval[] =
   "daemon's service may now first try connect to get the information\n"
   "for that service from gpg-agent through the GETVAL command and then\n"
   "try to connect to that daemon.  Only if that fails they may start\n"
-  "an own instance of the service daemon. \n"
+  "an own instance of the service daemon.\n"
   "\n"
   "KEY is an arbitrary symbol with the same syntax rules as keys\n"
   "for shell environment variables.  PERCENT_ESCAPED_VALUE is the\n"

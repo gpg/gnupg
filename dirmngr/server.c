@@ -1532,7 +1532,7 @@ static const char hlp_checkcrl[] =
   "Check whether the certificate with FINGERPRINT (SHA-1 hash of the\n"
   "entire X.509 certificate blob) is valid or not by consulting the\n"
   "CRL responsible for this certificate.  If the fingerprint has not\n"
-  "been given or the certificate is not known, the function \n"
+  "been given or the certificate is not known, the function\n"
   "inquires the certificate using an\n"
   "\n"
   "  INQUIRE TARGETCERT\n"
@@ -2843,7 +2843,7 @@ cmd_ks_del (assuan_context_t ctx, char *line)
 
 
 static const char hlp_ad_query[] =
-  "AD_QUERY [--first|--next] [--] <filter> \n"
+  "AD_QUERY [--first|--next] [--] <filter>\n"
   "\n"
   "Query properties from a Windows Active Directory.\n"
   "Options:\n"
@@ -3076,7 +3076,7 @@ cmd_loadswdb (assuan_context_t ctx, char *line)
 static const char hlp_getinfo[] =
   "GETINFO <what>\n"
   "\n"
-  "Multi purpose command to return certain information.  \n"
+  "Multi purpose command to return certain information.\n"
   "Supported values of WHAT are:\n"
   "\n"
   "version     - Return the version of the program\n"

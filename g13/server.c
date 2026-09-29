@@ -421,7 +421,7 @@ cmd_signer (assuan_context_t ctx, char *line)
 static const char hlp_create[] =
   "CREATE [options] <filename>\n"
   "\n"
-  "Create a new container.  On success the OPEN command is \n"
+  "Create a new container.  On success the OPEN command is\n"
   "implicitly done for the new container.";
 static gpg_error_t
 cmd_create (assuan_context_t ctx, char *line)
