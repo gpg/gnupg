@@ -399,7 +399,7 @@ scd_check_cb (struct pin_entry_info_s *pi)
     {
       ctrl->askpin_req = ASKPIN_NONE;
       ctrl->askpin_err = 0;
-      return 0;
+      err = 0;
     }
   else if (ctrl->askpin_req == ASKPIN_NEXT)
     {
@@ -408,12 +408,13 @@ scd_check_cb (struct pin_entry_info_s *pi)
       ctrl->askpin_err = 0;
     }
   else
-    log_debug ("askpin: invalid request\n");
+    {
+      log_debug ("askpin: invalid request\n");
+      err = GPG_ERR_UNSUPPORTED_PROTOCOL;
+    }
 
-  ctrl->askpin_arg = NULL;
-  npth_cond_signal (&ctrl->askpin_cond);
-  npth_mutex_unlock (&ctrl->askpin_lock);
-
+  if (err)
+    npth_mutex_unlock (&ctrl->askpin_lock);
   return err;
 }
 
