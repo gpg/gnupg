@@ -486,9 +486,9 @@ askpin_thread (void *arg)
           char *desc = NULL;
 
           pi->max_length = MAXPIN - 1;
-          pi->min_digits = 0; // ??? 1 ???
+          pi->min_digits = 0;   /* 1 means it should include a digit. */
           pi->max_digits = 16;
-          pi->max_tries = 1;
+          pi->max_tries = 3;
           pi->check_cb = scd_check_cb;
           pi->check_cb_arg = ctrl;
 
