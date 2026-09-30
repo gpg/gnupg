@@ -892,15 +892,15 @@ inq_needpin (void *opaque, const char *line)
     }
   else if ((s = has_leading_keyword (line, "ASKPIN")))
     {
-      rc = scd_pin_request_start (parm->ctrl, line);
+      rc = scd_pin_request_start (parm->ctrl, s);
     }
   else if ((s = has_leading_keyword (line, "NEXTPIN")))
     {
-      rc = scd_pin_request_next (parm->ctrl, line);
+      rc = scd_pin_request_next (parm->ctrl, s);
     }
   else if ((s = has_leading_keyword (line, "FINISHPIN")))
     {
-      rc = scd_pin_request_finish (parm->ctrl, line);
+      rc = scd_pin_request_finish (parm->ctrl, s);
     }
   else if (parm->passthru)
     {
