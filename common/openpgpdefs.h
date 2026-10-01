@@ -157,7 +157,7 @@ typedef enum
     AEAD_ALGO_NONE	    =  0,
     AEAD_ALGO_EAX	    =  1,
     AEAD_ALGO_OCB	    =  2,
-    AEAD_ALGO_GCM	    =  3 /* Urgs - the NSA wants this for FIPS.  */
+    AEAD_ALGO_GCM	    =  3 /* Urgs - NIST wants this for FIPS.  */
   }
 aead_algo_t;
 

@@ -2382,7 +2382,7 @@ set_compliance_option (enum cmd_and_opt_values option)
       /* We divert here from the backward compatible rfc4880 algos.  */
       opt.s2k_digest_algo = DIGEST_ALGO_SHA256;
       opt.s2k_cipher_algo = CIPHER_ALGO_AES256;
-      opt.flags.allow_9980 = 1;  /* Germany likes the NSA.  */
+      opt.flags.allow_9980 = 1;  /* Germany prefers IETF specs.  */
       break;
 
     case oFIPS:

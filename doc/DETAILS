@@ -1894,6 +1894,9 @@ Description of some debug flags:
                      searching and grouping.
   - cpl@gnupg.org :: Used by GnuPG to mark the compliance of
                      encryption subkeys.
+  - members@gnupg.org :: This is a binary notation with a fingerprint
+                         array of members for a member key.
+
 
 ** Simplified revocation certificates
   Revocation certificates consist only of the signature packet;
