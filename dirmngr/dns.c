@@ -7747,8 +7747,10 @@ retry:
 
 		so->state++;	/* FALL THROUGH */
 	case DNS_SO_UDP_CONN:
+#if __linux
 	udp_connect_retry:
-		error = dns_connect(so->udp, (struct sockaddr *)&so->remote, dns_sa_len(&so->remote));
+#endif
+          error = dns_connect(so->udp, (struct sockaddr *)&so->remote, dns_sa_len(&so->remote));
 		dns_trace_sys_connect(so->trace, so->udp, SOCK_DGRAM, (struct sockaddr *)&so->remote, error);
 
 #if __linux

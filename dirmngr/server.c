@@ -932,7 +932,8 @@ proc_wkd_get (ctrl_t ctrl, assuan_context_t ctx, char *line)
   int is_wkd_query;   /* True if this is a real WKD query.  */
   int no_log = 0;
   char portstr[20] = { 0 };
-  int subdomain_mode, try_without_subdomain;
+  int subdomain_mode;
+  int try_without_subdomain = 0;
 
   opt_submission_addr = has_option (line, "--submission-address");
   opt_policy_flags = has_option (line, "--policy-flags");
@@ -963,7 +964,6 @@ proc_wkd_get (ctrl_t ctrl, assuan_context_t ctx, char *line)
     }
 
 
-  try_without_subdomain = 0;
  again:
   subdomain_mode = 0;
 

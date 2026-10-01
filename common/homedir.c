@@ -797,7 +797,6 @@ check_portable_app (const char *dir)
 static char *
 w32_myproc_self (void)
 {
-  char *p;
   int rc;
   wchar_t wdir [MAX_PATH+5];
   char *dir;
