@@ -2094,11 +2094,18 @@ main ( int argc, char **argv)
         estream_t fp = NULL;
         int errcount = log_get_errorcount (0);
 
-        if (!(opt.compat_flags & COMPAT_NO_PARTIALFILEGUARD)
-            && opt.outfile && strcmp (opt.outfile, "-") != 0)
+        if (opt.outfile && strcmp (opt.outfile, "-"))
           {
-            output_filename = xstrconcat (opt.outfile, ".part", NULL);
-            fp = open_es_fwrite (output_filename);
+            /* Don't do the part thing for "/dev/null" et al or if the
+             * compat flag is enabled.  */
+            if ((opt.compat_flags & COMPAT_NO_PARTIALFILEGUARD)
+                || !strncmp (opt.outfile, "/dev/", 5))
+              fp = open_es_fwrite (opt.outfile);
+            else
+              {
+                output_filename = xstrconcat (opt.outfile, ".part", NULL);
+                fp = open_es_fwrite (output_filename);
+              }
           }
         else
           fp = open_es_fwrite ("-");

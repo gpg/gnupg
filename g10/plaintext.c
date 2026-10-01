@@ -162,7 +162,9 @@ get_output_file (const byte *embedded_name, int embedded_namelen,
 
       if ((opt.compat_flags & COMPAT_NO_PARTIALFILEGUARD)
           /* Don't enable the partial file guard if it's already prepared.  */
-          || has_suffix (fname, EXTSEP_S "part"))
+          || has_suffix (fname, EXTSEP_S "part")
+          /* or if it is device file like /dev/null  */
+          || !strncmp (fname, "/dev/", 5))
         filename = fname;
       else
         {
