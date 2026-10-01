@@ -327,7 +327,11 @@ list_dirs (estream_t fp, char **names, int show_config_mode)
               }
         }
 
-      /* In show config mode check that the socket files are accessible.  */
+      /* In show config mode check that the socket files are
+       * accessible.  We do this only on Windows where our sockets are
+       * regualr files.  On Unix is is not specified whether socket
+       * files are open- and readable.  */
+#ifdef HAVE_W32_SYSTEM
       if (list[idx].extra && show_config_mode)
         {
           estream_t tmpfp;
@@ -343,6 +347,7 @@ list_dirs (estream_t fp, char **names, int show_config_mode)
                         "# Warning: error reading existing file '%s': %s\n",
                         s, gpg_strerror (err));
         }
+#endif /*HAVE_W32_SYSTEM*/
 
       xfree (tmp);
     }
