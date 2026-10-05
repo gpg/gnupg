@@ -353,6 +353,54 @@ cmd_pkdecrypt (assuan_context_t ctx, char *line)
   return rc;
 }
 
+static const char hlp_getinfo[] =
+  "GETINFO <what>\n"
+  "\n"
+  "Multi purpose command to return certain information.\n"
+  "Supported values of WHAT are:\n"
+  "\n"
+  "  version     - Return the version of the program.\n"
+  "  pid         - Return the process id of the server.\n"
+  "  socket_name - Return the name of the socket.\n"
+  "  connections - Return number of active connections.\n";
+static gpg_error_t
+cmd_getinfo (assuan_context_t ctx, char *line)
+{
+  int rc = 0;
+  const char *s;
+
+  if (!strcmp (line, "version"))
+    {
+      s = VERSION;
+      rc = assuan_send_data (ctx, s, strlen (s));
+    }
+  else if (!strcmp (line, "pid"))
+    {
+      char numbuf[50];
+
+      snprintf (numbuf, sizeof numbuf, "%lu", (unsigned long)getpid ());
+      rc = assuan_send_data (ctx, numbuf, strlen (numbuf));
+    }
+  else if (!strcmp (line, "socket_name"))
+    {
+      s = tpm2d_get_socket_name ();
+      if (s)
+        rc = assuan_send_data (ctx, s, strlen (s));
+      else
+        rc = gpg_error (GPG_ERR_NO_DATA);
+    }
+  else if (!strcmp (line, "connections"))
+    {
+      char numbuf[20];
+
+      snprintf (numbuf, sizeof numbuf, "%d", get_active_connection_count ());
+      rc = assuan_send_data (ctx, numbuf, strlen (numbuf));
+    }
+  else
+    rc = set_error (GPG_ERR_ASS_PARAMETER, "unknown value for WHAT");
+  return rc;
+}
+
 static const char hlp_killtpm2d[] =
   "KILLTPM2D\n"
   "\n"
@@ -383,6 +431,7 @@ register_commands (assuan_context_t ctx)
     { "IMPORT",       cmd_import,     hlp_import },
     { "PKSIGN",       cmd_pksign,     hlp_pksign },
     { "PKDECRYPT",    cmd_pkdecrypt,  hlp_pkdecrypt },
+    { "GETINFO",      cmd_getinfo,    hlp_getinfo },
     { "KILLTPM2D",    cmd_killtpm2d,  hlp_killtpm2d },
     { NULL }
   };

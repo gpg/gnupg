@@ -193,6 +193,7 @@ static void *start_connection_thread (void *arg);
 static void handle_connections (gnupg_fd_t listen_fd);
 
 static int active_connections;
+static void tpm2d_kick_the_loop (void);
 
 
 static char *
@@ -819,17 +820,6 @@ tpm2d_deinit_default_ctrl (ctrl_t ctrl)
 }
 
 
-/* Return the name of the socket to be used to connect to this
-   process.  If no socket is available, return NULL. */
-const char *
-tpm2d_get_socket_name (void)
-{
-  if (socket_name && *socket_name)
-    return socket_name;
-  return NULL;
-}
-
-
 #ifndef HAVE_W32_SYSTEM
 static void
 handle_signal (int signo)
@@ -1046,7 +1036,7 @@ start_connection_thread (void *arg)
 }
 
 
-void
+static void
 tpm2d_kick_the_loop (void)
 {
 #ifdef HAVE_W32_SYSTEM
@@ -1284,6 +1274,18 @@ handle_connections (gnupg_fd_t listen_fd)
   log_info (_("%s %s stopped\n"), gpgrt_strusage (11), gpgrt_strusage (13));
   npth_attr_destroy (&tattr);
 }
+
+
+/* Return the name of the socket to be used to connect to this
+   process.  If no socket is available, return NULL. */
+const char *
+tpm2d_get_socket_name (void)
+{
+  if (socket_name && *socket_name)
+    return socket_name;
+  return NULL;
+}
+
 
 /* Return the number of active connections. */
 int

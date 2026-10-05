@@ -89,12 +89,12 @@ typedef struct app_ctx_s *app_t;
 
 /*-- tpm2daemon.c --*/
 void tpm2d_exit (int rc);
+const char *tpm2d_get_socket_name (void);
+int get_active_connection_count (void);
 
 /*-- command.c --*/
 gpg_error_t initialize_module_command (void);
 int  tpm2d_command_handler (ctrl_t, gnupg_fd_t);
 void send_client_notifications (app_t app, int removal);
-void tpm2d_kick_the_loop (void);
-int get_active_connection_count (void);
 
 #endif /*TPM2DAEMON_H*/
