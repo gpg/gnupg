@@ -246,6 +246,10 @@ intel_auth_helper(TSS_CONTEXT *tssContext, TPM_HANDLE auth, const char *authVal)
 static inline void
 intel_sess_helper(TSS_CONTEXT *tssContext, TPM_HANDLE auth, TPMA_SESSION flags)
 {
+  /* Calling Esys_TRSess_SetAttributes only makes sence with a handle
+     created by Esys_StartAuthSession.  */
+  if (auth == ESYS_TR_NONE || auth == ESYS_TR_PASSWORD)
+    return;
   Esys_TRSess_SetAttributes(tssContext, auth, flags,
 			    TPMA_SESSION_CONTINUESESSION | flags);
 }
