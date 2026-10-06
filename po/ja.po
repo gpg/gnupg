@@ -9,9 +9,9 @@
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: gnupg 2.5.21\n"
+"Project-Id-Version: gnupg 2.5.24\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"PO-Revision-Date: 2026-07-03 09:11+0900\n"
+"PO-Revision-Date: 2026-10-06 13:25+0900\n"
 "Last-Translator: NIIBE Yutaka <gniibe@fsij.org>\n"
 "Language-Team: none\n"
 "Language: ja\n"
@@ -1796,10 +1796,9 @@ msgstr "ダイジェスト・アルゴリズム'%s'を%sモードで使うこと
 msgid "reading from '%s'\n"
 msgstr "'%s'から読み込み\n"
 
-#, fuzzy, c-format
-#| msgid "problem handling encrypted packet\n"
+#, c-format
 msgid "Note: Using the %s encryption packet\n"
-msgstr "暗号化パケットの取扱いで障害\n"
+msgstr "注意: %s の暗号化パケットを使います\n"
 
 #, c-format
 msgid ""
@@ -3534,10 +3533,9 @@ msgstr "コマンドはファイル名の引数を期待します\n"
 msgid "Can't open '%s': %s\n"
 msgstr "'%s'が開けません: %s\n"
 
-#, fuzzy, c-format
-#| msgid "Error reading backup key from '%s': %s\n"
+#, c-format
 msgid "Error reading key from '%s': %s\n"
-msgstr "バックアップ鍵を'%s'から読み込みする際のエラー: %s\n"
+msgstr "鍵を'%s'から読み込みする際のエラー: %s\n"
 
 #. TRANSLATORS: Please take care: This is about
 #. moving the key and not about removing it.
