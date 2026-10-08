@@ -1834,7 +1834,9 @@ do_sign (app_t app, ctrl_t ctrl, const char *keyidstr, int hashalgo,
 
       cdsblklen = prkdf->keysize >> 3;
       if (!cdsblklen)
-        cdsblklen = 256;
+        cdsblklen = sizeof cdsblk;
+      else if (cdsblklen > sizeof cdsblk)
+        return gpg_error (GPG_ERR_BUFFER_TOO_SHORT);
 
       if (hashalgo == GCRY_MD_SHA1 && indatalen == 20)
         apply_PKCS_padding (indata, indatalen,
@@ -1877,6 +1879,8 @@ do_sign (app_t app, ctrl_t ctrl, const char *keyidstr, int hashalgo,
               return err;
             }
         }
+      else if (indatalen > sizeof cdsblk)
+        return gpg_error (GPG_ERR_BUFFER_TOO_SHORT);
       else
         {
           memcpy (cdsblk, indata, indatalen);
@@ -1973,7 +1977,8 @@ strip_PKCS15_padding(unsigned char *src, int srclen, unsigned char **dst,
 
 
 /* Decrypt a PKCS#1 V1.5 formatted cryptogram using the referenced
-   key.  */
+ * key.  Note that a static buffer is used; at its current size this
+ * limits the key size at rsa2048. */
 static gpg_error_t
 do_decipher (app_t app, ctrl_t ctrl, const char *keyidstr,
              gpg_error_t (*pincb)(void*, const char *, char **),
@@ -2009,7 +2014,9 @@ do_decipher (app_t app, ctrl_t ctrl, const char *keyidstr,
 
   p1blklen = prkdf->keysize >> 3;
   if (!p1blklen)
-    p1blklen = 256;
+    p1blklen = sizeof p1blk;
+  else if (p1blklen > sizeof p1blk)
+    return gpg_error (GPG_ERR_BUFFER_TOO_SHORT);
 
   /* The input may be shorter (due to MPIs not storing leading zeroes)
      or longer than the block size.  We put INDATA right aligned into
