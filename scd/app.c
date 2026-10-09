@@ -2166,8 +2166,6 @@ app_getattr (card_t card, ctrl_t ctrl, const char *name)
 /* Perform a SETATTR operation.  */
 gpg_error_t
 app_setattr (card_t card, ctrl_t ctrl, const char *name,
-             gpg_error_t (*pincb)(void*, const char *, char **),
-             void *pincb_arg,
              const unsigned char *value, size_t valuelen)
 {
   gpg_error_t err;
@@ -2187,27 +2185,22 @@ app_setattr (card_t card, ctrl_t ctrl, const char *name,
       if (card->app->need_reset)
         err = gpg_error (GPG_ERR_CARD_RESET);
       else
-        err = card->app->fnc.setattr (card->app, ctrl, name, pincb, pincb_arg,
-                                      value, valuelen);
+        err = card->app->fnc.setattr (card->app, ctrl, name, value, valuelen);
     }
 
   return err;
 }
 
 
-/* Create the signature and return the allocated result in OUTDATA.
-   If a PIN is required the PINCB will be used to ask for the PIN; it
-   should return the PIN in an allocated buffer and put it into PIN.  */
+/* Create the signature and return the allocated result in OUTDATA.  */
 gpg_error_t
 app_sign (card_t card, ctrl_t ctrl, const char *keyidstr, int hashalgo,
-          gpg_error_t (*pincb)(void*, const char *, char **),
-          void *pincb_arg,
           const void *indata, size_t indatalen,
           unsigned char **outdata, size_t *outdatalen )
 {
   gpg_error_t err;
 
-  if (!indata || !indatalen || !outdata || !outdatalen || !pincb)
+  if (!indata || !indatalen || !outdata || !outdatalen)
     return gpg_error (GPG_ERR_INV_VALUE);
 
   if ((err = maybe_switch_app (ctrl, card, keyidstr)))
@@ -2223,7 +2216,6 @@ app_sign (card_t card, ctrl_t ctrl, const char *keyidstr, int hashalgo,
         err = gpg_error (GPG_ERR_CARD_RESET);
       else
         err = card->app->fnc.sign (card->app, ctrl, keyidstr, hashalgo,
-                                   pincb, pincb_arg,
                                    indata, indatalen,
                                    outdata, outdatalen);
     }
@@ -2235,19 +2227,15 @@ app_sign (card_t card, ctrl_t ctrl, const char *keyidstr, int hashalgo,
 
 
 /* Create the signature using the INTERNAL AUTHENTICATE command and
-   return the allocated result in OUTDATA.  If a PIN is required the
-   PINCB will be used to ask for the PIN; it should return the PIN in
-   an allocated buffer and put it into PIN.  */
+   return the allocated result in OUTDATA.  */
 gpg_error_t
 app_auth (card_t card, ctrl_t ctrl, const char *keyidstr,
-          gpg_error_t (*pincb)(void*, const char *, char **),
-          void *pincb_arg,
           const void *indata, size_t indatalen,
           unsigned char **outdata, size_t *outdatalen )
 {
   gpg_error_t err;
 
-  if (!outdata || !outdatalen || !pincb)
+  if (!outdata || !outdatalen)
     return gpg_error (GPG_ERR_INV_VALUE);
 
   if ((err = maybe_switch_app (ctrl, card, keyidstr)))
@@ -2267,7 +2255,6 @@ app_auth (card_t card, ctrl_t ctrl, const char *keyidstr,
         err = gpg_error (GPG_ERR_CARD_RESET);
       else
         err = card->app->fnc.auth (card->app, ctrl, keyidstr,
-                                   pincb, pincb_arg,
                                    indata, indatalen,
                                    outdata, outdatalen);
     }
@@ -2278,13 +2265,9 @@ app_auth (card_t card, ctrl_t ctrl, const char *keyidstr,
 }
 
 
-/* Decrypt the data in INDATA and return the allocated result in OUTDATA.
-   If a PIN is required the PINCB will be used to ask for the PIN; it
-   should return the PIN in an allocated buffer and put it into PIN.  */
+/* Decrypt the data in INDATA and return the allocated result in OUTDATA.  */
 gpg_error_t
 app_decipher (card_t card, ctrl_t ctrl, const char *keyidstr,
-              gpg_error_t (*pincb)(void*, const char *, char **),
-              void *pincb_arg,
               const void *indata, size_t indatalen,
               unsigned char **outdata, size_t *outdatalen,
               unsigned int *r_info)
@@ -2293,7 +2276,7 @@ app_decipher (card_t card, ctrl_t ctrl, const char *keyidstr,
 
   *r_info = 0;
 
-  if (!indata || !indatalen || !outdata || !outdatalen || !pincb)
+  if (!indata || !indatalen || !outdata || !outdatalen)
     return gpg_error (GPG_ERR_INV_VALUE);
 
   if ((err = maybe_switch_app (ctrl, card, keyidstr)))
@@ -2309,7 +2292,6 @@ app_decipher (card_t card, ctrl_t ctrl, const char *keyidstr,
         err = gpg_error (GPG_ERR_CARD_RESET);
       else
         err = card->app->fnc.decipher (card->app, ctrl, keyidstr,
-                                       pincb, pincb_arg,
                                        indata, indatalen,
                                        outdata, outdatalen,
                                        r_info);
@@ -2325,13 +2307,11 @@ app_decipher (card_t card, ctrl_t ctrl, const char *keyidstr,
 gpg_error_t
 app_writecert (card_t card, ctrl_t ctrl,
                const char *certidstr,
-               gpg_error_t (*pincb)(void*, const char *, char **),
-               void *pincb_arg,
                const unsigned char *data, size_t datalen)
 {
   gpg_error_t err;
 
-  if (!certidstr || !*certidstr || !pincb)
+  if (!certidstr || !*certidstr)
     return gpg_error (GPG_ERR_INV_VALUE);
 
   if ((err = maybe_switch_app (ctrl, card, certidstr)))
@@ -2347,7 +2327,7 @@ app_writecert (card_t card, ctrl_t ctrl,
         err = gpg_error (GPG_ERR_CARD_RESET);
       else
         err = card->app->fnc.writecert (card->app, ctrl, certidstr,
-                                        pincb, pincb_arg, data, datalen);
+                                        data, datalen);
     }
 
   if (opt.verbose)
@@ -2360,13 +2340,11 @@ app_writecert (card_t card, ctrl_t ctrl,
 gpg_error_t
 app_writekey (card_t card, ctrl_t ctrl,
               const char *keyidstr, unsigned int flags,
-              gpg_error_t (*pincb)(void*, const char *, char **),
-              void *pincb_arg,
               const unsigned char *keydata, size_t keydatalen)
 {
   gpg_error_t err;
 
-  if (!keyidstr || !*keyidstr || !pincb)
+  if (!keyidstr || !*keyidstr)
     return gpg_error (GPG_ERR_INV_VALUE);
 
   if ((err = maybe_switch_app (ctrl, card, keyidstr)))
@@ -2382,7 +2360,7 @@ app_writekey (card_t card, ctrl_t ctrl,
         err = gpg_error (GPG_ERR_CARD_RESET);
       else
         err = card->app->fnc.writekey (card->app, ctrl, keyidstr, flags,
-                                       pincb, pincb_arg, keydata, keydatalen);
+                                       keydata, keydatalen);
     }
 
   if (opt.verbose)
@@ -2394,13 +2372,11 @@ app_writekey (card_t card, ctrl_t ctrl,
 /* Perform a GENKEY operation.  */
 gpg_error_t
 app_genkey (card_t card, ctrl_t ctrl, const char *keynostr,
-            const char *keytype, unsigned int flags, time_t createtime,
-            gpg_error_t (*pincb)(void*, const char *, char **),
-            void *pincb_arg)
+            const char *keytype, unsigned int flags, time_t createtime)
 {
   gpg_error_t err;
 
-  if (!keynostr || !*keynostr || !pincb)
+  if (!keynostr || !*keynostr)
     return gpg_error (GPG_ERR_INV_VALUE);
 
   if ((err = maybe_switch_app (ctrl, card, keynostr)))
@@ -2415,8 +2391,8 @@ app_genkey (card_t card, ctrl_t ctrl, const char *keynostr,
       if (card->app->need_reset)
         err = gpg_error (GPG_ERR_CARD_RESET);
       else
-        err = card->app->fnc.genkey (card->app, ctrl, keynostr, keytype, flags,
-                                     createtime, pincb, pincb_arg);
+        err = card->app->fnc.genkey (card->app, ctrl, keynostr, keytype,
+                                     flags, createtime);
     }
 
   if (opt.verbose)
@@ -2443,13 +2419,11 @@ app_get_challenge (card_t card, ctrl_t ctrl,
 /* Perform a CHANGE REFERENCE DATA or RESET RETRY COUNTER operation.  */
 gpg_error_t
 app_change_pin (card_t card, ctrl_t ctrl, const char *chvnostr,
-                unsigned int flags,
-                gpg_error_t (*pincb)(void*, const char *, char **),
-                void *pincb_arg)
+                unsigned int flags)
 {
   gpg_error_t err;
 
-  if (!chvnostr || !*chvnostr || !pincb)
+  if (!chvnostr || !*chvnostr)
     return gpg_error (GPG_ERR_INV_VALUE);
 
   if ((err = maybe_switch_app (ctrl, card, NULL)))
@@ -2464,8 +2438,7 @@ app_change_pin (card_t card, ctrl_t ctrl, const char *chvnostr,
       if (card->app->need_reset)
         err = gpg_error (GPG_ERR_CARD_RESET);
       else
-        err = card->app->fnc.change_pin (card->app, ctrl,
-                                         chvnostr, flags, pincb, pincb_arg);
+        err = card->app->fnc.change_pin (card->app, ctrl, chvnostr, flags);
     }
 
   if (opt.verbose)
@@ -2478,13 +2451,11 @@ app_change_pin (card_t card, ctrl_t ctrl, const char *chvnostr,
    be used to initialize a the PIN cache for long lasting other
    operations.  Its use is highly application dependent. */
 gpg_error_t
-app_check_pin (card_t card, ctrl_t ctrl, const char *keyidstr,
-               gpg_error_t (*pincb)(void*, const char *, char **),
-               void *pincb_arg)
+app_check_pin (card_t card, ctrl_t ctrl, const char *keyidstr)
 {
   gpg_error_t err;
 
-  if (!keyidstr || !*keyidstr || !pincb)
+  if (!keyidstr || !*keyidstr)
     return gpg_error (GPG_ERR_INV_VALUE);
 
   if ((err = maybe_switch_app (ctrl, card, NULL)))
@@ -2499,8 +2470,7 @@ app_check_pin (card_t card, ctrl_t ctrl, const char *keyidstr,
       if (card->app->need_reset)
         err = gpg_error (GPG_ERR_CARD_RESET);
       else
-        err = card->app->fnc.check_pin (card->app, ctrl, keyidstr,
-                                        pincb, pincb_arg);
+        err = card->app->fnc.check_pin (card->app, ctrl, keyidstr);
     }
 
   if (opt.verbose)

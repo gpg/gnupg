@@ -5360,9 +5360,7 @@ make_pin_prompt (app_t app, int remaining, const char *firstline,
  * AODF ask for the PIN and verify that PIN.  If AODF is NULL, no
  * authentication is done.  */
 static gpg_error_t
-verify_pin (app_t app,
-            gpg_error_t (*pincb)(void*, const char *, char **), void *pincb_arg,
-            prkdf_object_t prkdf, aodf_object_t aodf)
+verify_pin (app_t app, ctrl_t ctrl, prkdf_object_t prkdf, aodf_object_t aodf)
 {
   gpg_error_t err;
   char *pinvalue;
@@ -5429,7 +5427,7 @@ verify_pin (app_t app,
     if (!prompt)
       err = gpg_error_from_syserror ();
     else
-      err = pincb (pincb_arg, prompt, &pinvalue);
+      err = askpin (ctrl, prompt, &pinvalue);
     xfree (prompt);
   }
   if (err)
@@ -5594,14 +5592,9 @@ verify_pin (app_t app,
 
 /* Handler for the PKSIGN command.
 
-   Create the signature and return the allocated result in OUTDATA.
-   If a PIN is required, the PINCB will be used to ask for the PIN;
-   that callback should return the PIN in an allocated buffer and
-   store that as the 3rd argument.  */
+   Create the signature and return the allocated result in OUTDATA.  */
 static gpg_error_t
 do_sign (app_t app, ctrl_t ctrl, const char *keyidstr, int hashalgo,
-         gpg_error_t (*pincb)(void*, const char *, char **),
-         void *pincb_arg,
          const void *indata, size_t indatalen,
          unsigned char **outdata, size_t *outdatalen )
 {
@@ -5864,7 +5857,7 @@ do_sign (app_t app, ctrl_t ctrl, const char *keyidstr, int hashalgo,
 
   /* Now that we have all the information available run the actual PIN
    * verification.*/
-  err = verify_pin (app, pincb, pincb_arg, prkdf, aodf);
+  err = verify_pin (app, ctrl, prkdf, aodf);
   if (err)
     return err;
 
@@ -6058,8 +6051,6 @@ do_sign (app_t app, ctrl_t ctrl, const char *keyidstr, int hashalgo,
    do_sign for calling conventions; there is no HASHALGO, though. */
 static gpg_error_t
 do_auth (app_t app, ctrl_t ctrl, const char *keyidstr,
-         gpg_error_t (*pincb)(void*, const char *, char **),
-         void *pincb_arg,
          const void *indata, size_t indatalen,
          unsigned char **outdata, size_t *outdatalen )
 {
@@ -6081,19 +6072,15 @@ do_auth (app_t app, ctrl_t ctrl, const char *keyidstr,
     }
 
   algo = indatalen == 36? MD_USER_TLS_MD5SHA1 : GCRY_MD_SHA1;
-  return do_sign (app, ctrl, keyidstr, algo, pincb, pincb_arg,
+  return do_sign (app, ctrl, keyidstr, algo,
                   indata, indatalen, outdata, outdatalen);
 }
 
 
 /* Handler for the PKDECRYPT command.  Decrypt the data in INDATA and
- * return the allocated result in OUTDATA.  If a PIN is required the
- * PINCB will be used to ask for the PIN; it should return the PIN in
- * an allocated buffer and put it into PIN.  */
+ * return the allocated result in OUTDATA.  */
 static gpg_error_t
 do_decipher (app_t app, ctrl_t ctrl, const char *keyidstr,
-             gpg_error_t (*pincb)(void*, const char *, char **),
-             void *pincb_arg,
              const void *indata, size_t indatalen,
              unsigned char **outdata, size_t *outdatalen,
              unsigned int *r_info)
@@ -6152,7 +6139,7 @@ do_decipher (app_t app, ctrl_t ctrl, const char *keyidstr,
   /* Verify the PIN.  */
   err = prepare_verify_pin (app, keyidstr, prkdf, aodf);
   if (!err)
-    err = verify_pin (app, pincb, pincb_arg, prkdf, aodf);
+    err = verify_pin (app, ctrl, prkdf, aodf);
   if (err)
     return err;
 
@@ -6302,9 +6289,7 @@ do_decipher (app_t app, ctrl_t ctrl, const char *keyidstr,
  * to select the authentication object.  Return GPG_ERR_NO_PIN if a
  * PIN is not required for using the private key KEYIDSTR.  */
 static gpg_error_t
-do_check_pin (app_t app, ctrl_t ctrl, const char *keyidstr,
-              gpg_error_t (*pincb)(void*, const char *, char **),
-              void *pincb_arg)
+do_check_pin (app_t app, ctrl_t ctrl, const char *keyidstr)
 {
   gpg_error_t err;
   prkdf_object_t prkdf;    /* The private key object. */
@@ -6348,7 +6333,7 @@ do_check_pin (app_t app, ctrl_t ctrl, const char *keyidstr,
 
   err = prepare_verify_pin (app, keyidstr, prkdf, aodf);
   if (!err)
-    err = verify_pin (app, pincb, pincb_arg, prkdf, aodf);
+    err = verify_pin (app, ctrl, prkdf, aodf);
 
   return err;
 }

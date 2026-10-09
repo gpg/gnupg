@@ -975,10 +975,10 @@ cmd_setdata (assuan_context_t ctx, char *line)
 
 
 
-static gpg_error_t
-pin_cb (void *opaque, const char *info, char **retstr)
+gpg_error_t
+askpin (ctrl_t ctrl, const char *info, char **retstr)
 {
-  assuan_context_t ctx = opaque;
+  assuan_context_t ctx = ctrl->server_local->assuan_ctx;
   char *command;
   int rc;
   unsigned char *value;
@@ -1082,7 +1082,7 @@ cmd_pksign (assuan_context_t ctx, char *line)
     return rc;
 
   /* We have to use a copy of the key ID because the function may use
-     the pin_cb which in turn uses the assuan line buffer and thus
+     the askpin which in turn uses the assuan line buffer and thus
      overwriting the original line with the keyid */
   keyidstr = xtrystrdup (line);
   if (!keyidstr)
@@ -1098,7 +1098,6 @@ cmd_pksign (assuan_context_t ctx, char *line)
     {
       rc = app_sign (card, ctrl,
                      keyidstr, hash_algo,
-                     pin_cb, ctx,
                      ctrl->in_data.value, ctrl->in_data.valuelen,
                      &outdata, &outdatalen);
       card_put (card);
@@ -1146,7 +1145,7 @@ cmd_pkauth (assuan_context_t ctx, char *line)
   line = skip_options (line);
 
   /* We have to use a copy of the key ID because the function may use
-     the pin_cb which in turn uses the assuan line buffer and thus
+     the askpin which in turn uses the assuan line buffer and thus
      overwriting the original line with the keyid */
   keyidstr = xtrystrdup (line);
   if (!keyidstr)
@@ -1167,7 +1166,7 @@ cmd_pkauth (assuan_context_t ctx, char *line)
   card = card_get (ctrl, keygrip);
   if (card)
     {
-      rc = app_auth (card, ctrl, keyidstr, pin_cb, ctx,
+      rc = app_auth (card, ctrl, keyidstr,
                      ctrl->in_data.value, ctrl->in_data.valuelen,
                      &outdata, &outdatalen);
       card_put (card);
@@ -1220,7 +1219,7 @@ cmd_pkdecrypt (assuan_context_t ctx, char *line)
   card = card_get (ctrl, keygrip);
   if (card)
     {
-      rc = app_decipher (card, ctrl, keyidstr, pin_cb, ctx,
+      rc = app_decipher (card, ctrl, keyidstr,
                          ctrl->in_data.value, ctrl->in_data.valuelen,
                          &outdata, &outdatalen, &infoflags);
       card_put (card);
@@ -1336,7 +1335,7 @@ cmd_setattr (assuan_context_t ctx, char *orig_line)
   if ((err = open_card (ctrl)))
     return err;
 
-  /* We need to use a copy of LINE, because PIN_CB uses the same
+  /* We need to use a copy of LINE, because askpin uses the same
      context and thus reuses the Assuan provided LINE. */
   line = linebuf = xtrystrdup (orig_line);
   if (!line)
@@ -1365,8 +1364,7 @@ cmd_setattr (assuan_context_t ctx, char *orig_line)
       assuan_end_confidential (ctx);
       if (!err)
         {
-          err = app_setattr (card, ctrl, keyword, pin_cb, ctx,
-                             value, nbytes);
+          err = app_setattr (card, ctrl, keyword, value, nbytes);
           wipememory (value, nbytes);
           xfree (value);
         }
@@ -1375,7 +1373,7 @@ cmd_setattr (assuan_context_t ctx, char *orig_line)
   else
     {
       nbytes = percent_plus_unescape_inplace (line, 0);
-      err = app_setattr (card, ctrl, keyword, pin_cb, ctx,
+      err = app_setattr (card, ctrl, keyword,
                          (const unsigned char*)line, nbytes);
     }
 
@@ -1440,8 +1438,7 @@ cmd_writecert (assuan_context_t ctx, char *line)
     }
 
   /* Write the certificate to the card. */
-  rc = app_writecert (card, ctrl, certid,
-                      pin_cb, ctx, certdata, certdatalen);
+  rc = app_writecert (card, ctrl, certid, certdata, certdatalen);
   card_put (card);
   xfree (certid);
   xfree (certdata);
@@ -1509,8 +1506,7 @@ cmd_writekey (assuan_context_t ctx, char *line)
     }
 
   /* Write the key to the card. */
-  rc = app_writekey (card, ctrl, keyid, force? 1:0,
-                     pin_cb, ctx, keydata, keydatalen);
+  rc = app_writekey (card, ctrl, keyid, force? 1:0, keydata, keydatalen);
   card_put (card);
   xfree (keyid);
   xfree (keydata);
@@ -1607,7 +1603,7 @@ cmd_genkey (assuan_context_t ctx, char *line)
     }
   err = app_genkey (card, ctrl, keyref, opt_algo,
                     force? APP_GENKEY_FLAG_FORCE : 0,
-                    timestamp, pin_cb, ctx);
+                    timestamp);
   card_put (card);
 
  leave:
@@ -1727,7 +1723,7 @@ cmd_passwd (assuan_context_t ctx, char *line)
       card_put (card);
       return out_of_core ();
     }
-  rc = app_change_pin (card, ctrl, chvnostr, flags, pin_cb, ctx);
+  rc = app_change_pin (card, ctrl, chvnostr, flags);
   card_put (card);
   if (rc)
     log_error ("command passwd failed: %s\n", gpg_strerror (rc));
@@ -1789,7 +1785,7 @@ cmd_checkpin (assuan_context_t ctx, char *line)
     return gpg_error (GPG_ERR_UNSUPPORTED_OPERATION);
 
   /* We have to use a copy of the key ID because the function may use
-     the pin_cb which in turn uses the assuan line buffer and thus
+     the askpin which in turn uses the assuan line buffer and thus
      overwriting the original line with the keyid. */
   idstr = xtrystrdup (line);
   if (!idstr)
@@ -1798,7 +1794,7 @@ cmd_checkpin (assuan_context_t ctx, char *line)
       return out_of_core ();
     }
 
-  err = app_check_pin (card, ctrl, idstr, pin_cb, ctx);
+  err = app_check_pin (card, ctrl, idstr);
   card_put (card);
   xfree (idstr);
   if (err)
