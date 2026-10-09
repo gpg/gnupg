@@ -77,8 +77,7 @@ struct learn_parm_s
 struct inq_needpin_parm_s
 {
   assuan_context_t ctx;
-  int (*getpin_cb)(void *, const char *, const char *, char*, size_t);
-  void *getpin_cb_arg;
+  ctrl_t ctrl;
   const char *getpin_cb_desc;
   assuan_context_t passthru;  /* If not NULL, pass unknown inquiries
                                  up to the caller.  */
@@ -398,8 +397,8 @@ inq_needpin (void *opaque, const char *line)
       if (!pin)
         return out_of_core ();
 
-      rc = parm->getpin_cb (parm->getpin_cb_arg, parm->getpin_cb_desc,
-                            line, pin, pinlen);
+      rc = scd_getpin (parm->ctrl, parm->getpin_cb_desc,
+                       line, pin, pinlen);
       if (!rc)
         {
           assuan_begin_confidential (parm->ctx);
@@ -411,13 +410,13 @@ inq_needpin (void *opaque, const char *line)
     }
   else if ((s = has_leading_keyword (line, "POPUPPINPADPROMPT")))
     {
-      rc = parm->getpin_cb (parm->getpin_cb_arg, parm->getpin_cb_desc,
-                            s, NULL, 1);
+      rc = scd_getpin (parm->ctrl, parm->getpin_cb_desc,
+                       s, NULL, 1);
     }
   else if ((s = has_leading_keyword (line, "DISMISSPINPADPROMPT")))
     {
-      rc = parm->getpin_cb (parm->getpin_cb_arg, parm->getpin_cb_desc,
-                            "", NULL, 0);
+      rc = scd_getpin (parm->ctrl, parm->getpin_cb_desc,
+                      "", NULL, 0);
     }
   else if ((s = has_leading_keyword (line, "PINCACHE_GET")))
     {
@@ -515,9 +514,6 @@ prepare_setdata (ctrl_t ctrl, const unsigned char *indata, size_t indatalen)
 int
 agent_card_pksign (ctrl_t ctrl,
                    const char *keyid,
-                   int (*getpin_cb)(void *, const char *,
-                                    const char *, char*, size_t),
-                   void *getpin_cb_arg,
                    const char *desc_text,
                    int mdalgo,
                    const unsigned char *indata, size_t indatalen,
@@ -544,8 +540,7 @@ agent_card_pksign (ctrl_t ctrl,
 
   init_membuf (&data, 1024);
   inqparm.ctx = daemon_ctx (ctrl);
-  inqparm.getpin_cb = getpin_cb;
-  inqparm.getpin_cb_arg = getpin_cb_arg;
+  inqparm.ctrl = ctrl;
   inqparm.getpin_cb_desc = desc_text;
   inqparm.passthru = 0;
   inqparm.keydata = NULL;
@@ -604,9 +599,6 @@ padding_info_cb (void *opaque, const char *line)
 int
 agent_card_pkdecrypt (ctrl_t ctrl,
                       const char *keyid,
-                      int (*getpin_cb)(void *, const char *,
-                                       const char *, char*, size_t),
-                      void *getpin_cb_arg,
                       const char *desc_text,
                       const unsigned char *indata, size_t indatalen,
                       unsigned char **r_buf, size_t *r_buflen, int *r_padding)
@@ -632,8 +624,7 @@ agent_card_pkdecrypt (ctrl_t ctrl,
 
   init_membuf (&data, 1024);
   inqparm.ctx = daemon_ctx (ctrl);
-  inqparm.getpin_cb = getpin_cb;
-  inqparm.getpin_cb_arg = getpin_cb_arg;
+  inqparm.ctrl = ctrl;
   inqparm.getpin_cb_desc = desc_text;
   inqparm.passthru = 0;
   inqparm.keydata = NULL;
@@ -817,10 +808,7 @@ inq_writekey_parms (void *opaque, const char *line)
 gpg_error_t
 agent_card_writekey (ctrl_t ctrl,  int force, const char *serialno,
                      const char *keyref,
-                     const char *keydata, size_t keydatalen,
-                     int (*getpin_cb)(void *, const char *,
-                                      const char *, char*, size_t),
-                     void *getpin_cb_arg)
+                     const char *keydata, size_t keydatalen)
 {
   gpg_error_t err;
   char line[ASSUAN_LINELENGTH];
@@ -835,8 +823,7 @@ agent_card_writekey (ctrl_t ctrl,  int force, const char *serialno,
 
   snprintf (line, DIM(line), "WRITEKEY %s%s", force ? "--force " : "", keyref);
   parms.ctx = daemon_ctx (ctrl);
-  parms.getpin_cb = getpin_cb;
-  parms.getpin_cb_arg = getpin_cb_arg;
+  parms.ctrl = ctrl;
   parms.getpin_cb_desc= NULL;
   parms.passthru = 0;
   parms.keydata = keydata;
@@ -1275,10 +1262,7 @@ agent_card_devinfo (ctrl_t ctrl, void *assuan_context)
    mechanism to pass everything verbatim to SCDAEMON.  The PIN
    inquiry is handled inside gpg-agent.  */
 int
-agent_card_scd (ctrl_t ctrl, const char *cmdline,
-                int (*getpin_cb)(void *, const char *,
-                                 const char *, char*, size_t),
-                void *getpin_cb_arg, void *assuan_context)
+agent_card_scd (ctrl_t ctrl, const char *cmdline, void *assuan_context)
 {
   int rc;
   struct inq_needpin_parm_s inqparm;
@@ -1294,8 +1278,7 @@ agent_card_scd (ctrl_t ctrl, const char *cmdline,
     return rc;
 
   inqparm.ctx = daemon_ctx (ctrl);
-  inqparm.getpin_cb = getpin_cb;
-  inqparm.getpin_cb_arg = getpin_cb_arg;
+  inqparm.ctrl = ctrl;
   inqparm.getpin_cb_desc = NULL;
   inqparm.passthru = assuan_context;
   inqparm.keydata = NULL;

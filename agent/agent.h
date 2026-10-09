@@ -720,6 +720,7 @@ gpg_error_t divert_writekey (ctrl_t ctrl, int force, const char *serialno,
 
 gpg_error_t agent_card_ecc_kem (ctrl_t ctrl, const unsigned char *ecc_ct,
                                 size_t ecc_point_len, unsigned char *ecc_ecdh);
+int scd_getpin (ctrl_t ctrl, const char *, const char *, char*, size_t);
 
 /*-- call-daemon.c --*/
 gpg_error_t daemon_start (enum daemon_type type, ctrl_t ctrl, int req_sock);
@@ -754,18 +755,12 @@ int agent_card_learn (ctrl_t ctrl, const char *demand_sn,
 int agent_card_serialno (ctrl_t ctrl, char **r_serialno, const char *demand);
 int agent_card_pksign (ctrl_t ctrl,
                        const char *keyid,
-                       int (*getpin_cb)(void *, const char *,
-                                        const char *, char*, size_t),
-                       void *getpin_cb_arg,
                        const char *desc_text,
                        int mdalgo,
                        const unsigned char *indata, size_t indatalen,
                        unsigned char **r_buf, size_t *r_buflen);
 int agent_card_pkdecrypt (ctrl_t ctrl,
                           const char *keyid,
-                          int (*getpin_cb)(void *, const char *,
-                                           const char *, char*,size_t),
-                          void *getpin_cb_arg,
                           const char *desc_text,
                           const unsigned char *indata, size_t indatalen,
                           unsigned char **r_buf, size_t *r_buflen,
@@ -777,16 +772,11 @@ int agent_card_readkey (ctrl_t ctrl, const char *id,
                         unsigned char **r_buf, char **r_keyref);
 gpg_error_t agent_card_writekey (ctrl_t ctrl, int force, const char *serialno,
                                  const char *keyref,
-                                 const char *keydata, size_t keydatalen,
-                                 int (*getpin_cb)(void *, const char *,
-                                                  const char *, char*, size_t),
-                                 void *getpin_cb_arg);
+                                 const char *keydata, size_t keydatalen);
 gpg_error_t agent_card_getattr (ctrl_t ctrl, const char *name, char **result,
                                 const char *keygrip);
 int agent_card_scd (ctrl_t ctrl, const char *cmdline,
-                    int (*getpin_cb)(void *, const char *,
-                                     const char *, char*, size_t),
-                    void *getpin_cb_arg, void *assuan_context);
+                    void *assuan_context);
 
 void agent_card_free_keyinfo (struct card_key_info_s *l);
 gpg_error_t agent_card_keyinfo (ctrl_t ctrl, const char *keygrip,
