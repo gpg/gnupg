@@ -266,9 +266,15 @@ do_deinit (app_t app)
 }
 
 
+#define YKPIV_METADATA_POLICY_TAG 0x02
+
 /* Wrapper around iso7816_get_data which first tries to get the data
  * from the cache.  With GET_IMMEDIATE passed as true, the cache is
- * bypassed.  The tag-53 container is also removed.  */
+ * bypassed.  The tag-53 container is also removed.
+ *
+ * A special tag F7xx is also supported to get PIN Policy and Touch
+ * Policy.
+ */
 static gpg_error_t
 get_cached_data (app_t app, int tag,
                  unsigned char **result, size_t *resultlen,
@@ -276,13 +282,14 @@ get_cached_data (app_t app, int tag,
 {
   gpg_error_t err;
   int i;
-  unsigned char *p;
+  unsigned char *p = NULL;
   const unsigned char *s;
   size_t len, n;
   struct cache_s *c;
 
   *result = NULL;
   *resultlen = 0;
+  len = 0;
 
   if (!get_immediate)
     {
@@ -304,7 +311,43 @@ get_cached_data (app_t app, int tag,
           }
     }
 
-  err = iso7816_get_data_odd (app_get_slot (app), 0, tag, &p, &len);
+  if (app->app_local->flags.yubikey && (tag >> 8) == 0xF7)
+    /* Get policies from metadata for a key slot.  */
+    {
+      unsigned char apdu[4];
+
+      /* We use a proprietary Yubikey command to get metadata for KEYREF.  */
+      apdu[0] = 0;
+      apdu[1] = 0xf7;  /* Yubikey: Get metadata.  */
+      apdu[2] = 0;
+      apdu[3] = (tag & 0xff);
+      err = iso7816_apdu_direct (app_get_slot (app), apdu, 4, 1,
+                                 NULL, &p, &len);
+      if (!err)
+        {
+          unsigned char *policies = NULL;
+
+          s = find_tlv (p, len, YKPIV_METADATA_POLICY_TAG, &len);
+          if (s && len == 2)
+            {
+              policies = xtrymalloc (len);
+              if (!policies)
+                err = gpg_error_from_syserror ();
+              else
+                memcpy (policies, s, len);
+            }
+          xfree (p);
+          if (policies)
+            p = policies;
+          else
+            {
+              p = NULL;
+              len = 0;
+            }
+        }
+    }
+  else
+    err = iso7816_get_data_odd (app_get_slot (app), 0, tag, &p, &len);
   if (err)
     return err;
 
@@ -312,6 +355,8 @@ get_cached_data (app_t app, int tag,
    * requested, remove the outer container.
    * (SP 800-73-5 Part 2, section 3.1.2)   */
   if (tag == 0x7E || tag == 0x7F61)
+    ;
+  else if (app->app_local->flags.yubikey && (tag >> 8) == 0xF7)
     ;
   else if (len && *p == 0x53 && (s = find_tlv (p, len, 0x53, &n)))
     {
@@ -2159,6 +2204,48 @@ do_check_chv (app_t app, ctrl_t ctrl, const char *pwidstr,
 }
 
 
+/* Examining the per slot PIN policy for KEYREF, return 1 if the
+ * verification of PIN is always required.  Return 0, otherwise.  */
+static int
+check_pin_policy (app_t app, int keyref)
+{
+  unsigned char *buffer;
+  size_t buflen;
+  gpg_error_t err;
+  int value;
+  int force;
+
+  if (!app->app_local->flags.yubikey)
+    {
+    no_f7xx:
+      switch (keyref)
+        {
+        case 0x9c: force = 1; break;
+        default: force = 0; break;
+        }
+      return force;
+    }
+
+  /* Use special tag F7xx to get PIN Policy and Touch Policy.  */
+  err = get_cached_data (app, ((0xf7 << 8) | keyref), &buffer, &buflen, 0);
+  if (err)
+    goto no_f7xx;
+
+  if (buflen == 2)
+    value = buffer[0];            /* 0: Default, 1: Never, 2: Once, 3: Always */
+  else
+    goto no_f7xx;
+
+  switch (keyref)
+    {
+    case 0x9c: force = (value == 0 || value == 3); break;
+    default: force = (value == 3); break;
+    }
+
+  xfree (buffer);
+  return force;
+}
+
 /* Compute a digital signature using the GENERAL AUTHENTICATE command
  * on INDATA which is expected to be the raw message digest.  The
  * KEYIDSTR has the key reference or its OID (e.g. "PIV.9A").  The
@@ -2212,12 +2299,7 @@ do_sign (app_t app, ctrl_t ctrl, const char *keyidstr, int hashalgo,
    * for each key.  It's user's control.
    * https://developers.yubico.com/PIV/Introduction/Yubico_extensions.html
    */
-  switch (keyref)
-    {
-    case 0x9c: force_verify = 1; break;
-    default: force_verify = 0; break;
-    }
-
+  force_verify = check_pin_policy (app, keyref);
 
   err = get_key_algorithm_by_dobj (app, dobj, &mechanism);
   if (err)
