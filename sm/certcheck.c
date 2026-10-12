@@ -414,6 +414,7 @@ gpgsm_check_cert_sig (ksba_cert_t issuer_cert, ksba_cert_t cert)
   gcry_sexp_t s_sig, s_data, s_pkey;
   int use_pss = 0;
   int use_eddsa = 0;
+  int use_mldsa = 0;
   unsigned int saltlen;
 
   /* Note that we map the 4 algos which current Libgcrypt versions are
@@ -425,6 +426,10 @@ gpgsm_check_cert_sig (ksba_cert_t issuer_cert, ksba_cert_t cert)
     use_eddsa = 1;
   else if (algoid && !strcmp (algoid, "1.3.101.113"))
     use_eddsa = 2;
+  else if (algoid && !strcmp (algoid, "2.16.840.1.101.3.4.3.18"))
+    use_mldsa = 3;
+  else if (algoid && !strcmp (algoid, "2.16.840.1.101.3.4.3.19"))
+    use_mldsa = 5;
   else if (!algo && algoid && !strcmp (algoid, "1.2.840.10045.4.3.1"))
     algo = GCRY_MD_SHA224; /* ecdsa-with-sha224 */
   else if (!algo && algoid && !strcmp (algoid, "1.2.840.10045.4.3.2"))
@@ -464,7 +469,7 @@ gpgsm_check_cert_sig (ksba_cert_t issuer_cert, ksba_cert_t cert)
 
   /* Hash the to-be-signed parts of the certificate or but them into a
    * buffer for the EdDSA algorithms.  */
-  if (use_eddsa)
+  if (use_eddsa || use_mldsa)
     {
       membuf_t mb;
 
@@ -556,6 +561,20 @@ gpgsm_check_cert_sig (ksba_cert_t issuer_cert, ksba_cert_t cert)
       if (rc)
         {
           log_error ("building data for eddsa failed: %s\n", gpg_strerror (rc));
+          gcry_sexp_release (s_sig);
+          return rc;
+        }
+    }
+  else if (use_mldsa)
+    {
+      rc = gcry_sexp_build (&s_data, NULL,
+                            "(data(raw)(value %b)(label %s))",
+                            (int)certderlen, certder, "");
+      xfree (certder);
+      certder = NULL;
+      if (rc)
+        {
+          log_error ("building data for mldsa failed: %s\n", gpg_strerror (rc));
           gcry_sexp_release (s_sig);
           return rc;
         }

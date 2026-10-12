@@ -1113,6 +1113,19 @@ pubkey_algo_string (gcry_sexp_t s_pkey, enum gcry_pk_algos *r_algoid)
       else
         result = xtrystrdup ("E_unknown");
     }
+  else if (algo == GCRY_PK_MLDSA)
+    {
+      unsigned int n = gcry_pk_get_nbits (s_pkey);
+
+      if (n == 1312*8)
+        result = xtrystrdup ("dilithium2");
+      else if (n == 1952*8)
+        result = xtrystrdup ("dilithium3");
+      else if (n == 2592*8)
+        result = xtrystrdup ("dilithium5");
+      else
+        result = xtryasprintf ("X_mldsa_%u", n/8);
+    }
   else
     result = xtryasprintf ("X_algo_%d", algo);
 

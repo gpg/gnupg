@@ -88,6 +88,8 @@ static struct
   { "1.3.14.3.2.29",  "sha-1WithRSAEncryption" },
   { "1.3.36.3.3.1.2", "rsaSignatureWithripemd160" },
 
+  { "2.16.840.1.101.3.4.3.18", "ml-dsa-65" },
+  { "2.16.840.1.101.3.4.3.19", "ml-dsa-87" },
 
   /* Telesec extensions. */
   { "0.2.262.1.10.12.0", "certExtensionLiabilityLimitationExt" },
