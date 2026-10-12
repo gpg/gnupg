@@ -16,3 +16,9 @@ steed-self-signing-nonthority.pem
                    The STEED Self-Signing Nonthority.
 68A638998DFABAC510EA645CE34F9686B2EDF7EA.key
                    The private Key of The STEED Self-Signing Nonthority.
+
+mldsa65-rfc9882.pem  ML-DSA certificate from RFC9882.  Imported
+                     and reexported with gpgsm
+57F3E27B6747BF128CFC03B39474F61519F367E6.key
+                     The corresponsing private key.  Manually
+                     converted from RFC9882.
