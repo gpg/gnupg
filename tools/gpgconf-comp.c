@@ -428,6 +428,7 @@ static known_option_t known_options_gpg[] =
    { "max-cert-depth",       GC_OPT_FLAG_NONE, GC_LEVEL_INVISIBLE },
    { "completes-needed",     GC_OPT_FLAG_NONE, GC_LEVEL_INVISIBLE },
    { "marginals-needed",     GC_OPT_FLAG_NONE, GC_LEVEL_INVISIBLE },
+   { "throw-keyids",         GC_OPT_FLAG_NONE, GC_LEVEL_EXPERT },
 
    /* The next items are pseudo options which we read via --gpgconf-list.
     * The meta information is taken from the table below.  */
