@@ -217,6 +217,8 @@ pk_algo_from_sexp (gcry_sexp_t pkey)
     algo = GCRY_PK_ECC;
   else if (n==13 && !memcmp (name, "ambiguous-rsa", 13))
     algo = GCRY_PK_RSA;
+  else if (n==10 && !memcmp (name, "dilithium", 9)) /* "dilithium<N>" */
+    algo = GCRY_PK_MLDSA;
   else
     algo = 0;
   gcry_sexp_release (l2);
@@ -672,10 +674,11 @@ gpgsm_check_cms_signature (ksba_cert_t cert, gcry_sexp_t s_sig,
 {
   int rc;
   ksba_sexp_t p;
-  gcry_sexp_t s_hash, s_pkey;
+  gcry_sexp_t s_hash = NULL;
+  gcry_sexp_t s_pkey = NULL;
   size_t n;
   int pkalgo;
-  int use_pss;
+  int use_pss = 0;
   unsigned int saltlen = 0;
 
   if (r_pkalgo)
@@ -735,7 +738,24 @@ gpgsm_check_cms_signature (ksba_cert_t cert, gcry_sexp_t s_sig,
                             gcry_md_read (md, mdalgo),
                             saltlen);
       if (rc)
-        BUG ();
+        {
+          log_error ("building data for RSA-PSS failed: %s\n",
+                     gpg_strerror (rc));
+          goto leave;
+        }
+    }
+  else if (pkalgo == GCRY_PK_MLDSA)
+    {
+      rc = gcry_sexp_build (&s_hash, NULL,
+                            "(data(raw)(value %b)(label %s))",
+                            (int)gcry_md_get_algo_dlen (mdalgo),
+                            gcry_md_read (md, mdalgo),
+                            "");
+      if (rc)
+        {
+          log_error ("building data for mldsa failed: %s\n", gpg_strerror (rc));
+          goto leave;
+        }
     }
   else
     {
@@ -746,18 +766,22 @@ gpgsm_check_cms_signature (ksba_cert_t cert, gcry_sexp_t s_sig,
                          gcry_pk_get_nbits (s_pkey), s_pkey, &frame);
       if (rc)
         {
-          gcry_sexp_release (s_pkey);
-          return rc;
+          log_error ("building data for RSA or DSA failed: %s\n",
+                     gpg_strerror (rc));
+          goto leave;
         }
-      /* put hash into the S-Exp s_hash */
+      /* Put hash into the S-Exp s_hash */
       if ( gcry_sexp_build (&s_hash, NULL, "%m", frame) )
         BUG ();
       gcry_mpi_release (frame);
     }
 
   rc = gcry_pk_verify (s_sig, s_hash, s_pkey);
+
   if (DBG_X509)
     log_debug ("gcry_pk_verify: %s\n", gpg_strerror (rc));
+
+ leave:
   gcry_sexp_release (s_hash);
   gcry_sexp_release (s_pkey);
   return rc;

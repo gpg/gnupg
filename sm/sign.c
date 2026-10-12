@@ -866,6 +866,12 @@ gpgsm_sign (ctrl_t ctrl, certlist_t signerlist,
               else
                 oid = "2.16.840.1.101.3.4.2.3"; /* sha512 */
             }
+          else if (pk_algo == GCRY_PK_MLDSA)
+            {
+              /* RFC9882 section 3.3 and table 1 suggest the use of
+               * SHA512 for best interoperability.  */
+              oid = "2.16.840.1.101.3.4.2.3"; /* sha512 */
+            }
           else
             {
               /* For RSA we reuse the hash algo used by the certificate.  */

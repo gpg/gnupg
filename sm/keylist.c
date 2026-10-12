@@ -279,6 +279,14 @@ print_key_data (ksba_cert_t cert, estream_t fp)
       putchar('\n');
     }
 #else
+  /* unsigned char *p; */
+  /* size_t n; */
+
+  /* p = ksba_cert_get_public_key (cert); */
+  /* n = gcry_sexp_canon_len (p, 0, NULL, NULL); */
+  /* log_printhex (p, n, "public key"); */
+
+
   (void)cert;
   (void)fp;
 #endif

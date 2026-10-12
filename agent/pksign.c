@@ -219,6 +219,22 @@ do_encode_dsa (const byte *md, size_t mdlen, int pkalgo, gcry_sexp_t pkey,
 }
 
 
+/* Encode a message digest for use with the ML-DSA algorithm.  */
+static gpg_error_t
+do_encode_mldsa (const byte *md, size_t mdlen, gcry_sexp_t *r_hash)
+{
+  gpg_error_t err;
+  gcry_sexp_t hash;
+
+  *r_hash = NULL;
+  err = gcry_sexp_build (&hash, NULL, "(data(raw)(value %b)(label %s))",
+                         (int)mdlen, md, "");
+  if (!err)
+    *r_hash = hash;
+  return err;
+}
+
+
 /* Special version of do_encode_md to take care of pkcs#1 padding.
    For TLS-MD5SHA1 we need to do the padding ourself as Libgrypt does
    not know about this special scheme.  Fixme: We should have a
@@ -507,6 +523,8 @@ agent_pksign_do (ctrl_t ctrl, const char *cache_nonce,
         err = do_encode_dsa (data, datalen,
                              algo, s_skey,
                              &s_hash);
+      else if (algo == GCRY_PK_MLDSA)
+        err = do_encode_mldsa (data, datalen, &s_hash);
       else if (ctrl->digest.is_pss)
         {
           log_info ("signing with rsaPSS is currently only supported"

@@ -422,7 +422,8 @@ gpgsm_verify (ctrl_t ctrl, estream_t in_fp, estream_t data_fp,
                      signer, sigval_hash_algo, pkalgoflags);
         }
       if (!sigval_hash_algo)
-        sigval_hash_algo = algo; /* Fallback used e.g. with old libksba. */
+        sigval_hash_algo = algo; /* Fallback when the hash algo is not
+                                  * part of the pubkey algo oid. */
 
       /* Find the certificate of the signer */
       keydb_search_reset (kh);

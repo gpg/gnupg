@@ -992,7 +992,7 @@ get_pk_algo_from_key (gcry_sexp_t key)
   gcry_sexp_t list;
   const char *s;
   size_t n;
-  char algoname[10];
+  char algoname[16];
   int algo = 0;
 
   list = gcry_sexp_nth (key, 1);
