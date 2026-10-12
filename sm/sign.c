@@ -889,9 +889,9 @@ gpgsm_sign (ctrl_t ctrl, certlist_t signerlist,
           log_info (_("hash algorithm %d (%s) for signer %d not supported;"
                       " using %s\n"),
                     cl->hash_algo, oid? oid: "?", i,
-                    gcry_md_algo_name (GCRY_MD_SHA1));
-          cl->hash_algo = GCRY_MD_SHA1;
-          oid = "1.3.14.3.2.26";
+                    gcry_md_algo_name (GCRY_MD_SHA256));
+          cl->hash_algo = GCRY_MD_SHA256;
+          oid = "2.16.840.1.101.3.4.2.1"; /* sha256 */
           break;
         }
       cl->hash_algo_oid = oid;
