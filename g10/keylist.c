@@ -2140,12 +2140,18 @@ list_keyblock_colon (ctrl_t ctrl, kbnode_t keyblock,
         curvename = curve;
       es_fputs (curvename, es_stdout);
     }
-  else if (pk->pubkey_algo == PUBKEY_ALGO_KYBER)
+  else if (pk->pubkey_algo == PUBKEY_ALGO_KYBER
+           || pk->pubkey_algo == PUBKEY_ALGO_MLD65_25519
+           || pk->pubkey_algo == PUBKEY_ALGO_MLD87_448
+           || pk->pubkey_algo == PUBKEY_ALGO_MLK768_25519
+           || pk->pubkey_algo == PUBKEY_ALGO_MLK1024_448
+           || pk->pubkey_algo == PUBKEY_ALGO_MLK768_NP384
+           || pk->pubkey_algo == PUBKEY_ALGO_MLK1024_NP521
+           || pk->pubkey_algo == PUBKEY_ALGO_MLK768_BP384
+           || pk->pubkey_algo == PUBKEY_ALGO_MLK1024_BP512)
     {
-      /* Note that Kyber should actually not appear here because it is
-       * the primary key and Kyber is not able to certify.  But we
-       * prepare it here for future composite algorithms and in case
-       * of faulty packets. */
+      /* The Kyber and MLK algorithms should not show up here but just
+         in case we include them anyway.  */
       es_fputs (pubkey_string (pk, pkstrbuf, sizeof pkstrbuf), es_stdout);
     }
   es_putc (':', es_stdout);		/* End of field 17. */
@@ -2321,7 +2327,15 @@ list_keyblock_colon (ctrl_t ctrl, kbnode_t keyblock,
                 curvename = curve;
               es_fputs (curvename, es_stdout);
             }
-          else if (pk2->pubkey_algo == PUBKEY_ALGO_KYBER)
+          else if (pk2->pubkey_algo == PUBKEY_ALGO_KYBER
+                   || pk2->pubkey_algo == PUBKEY_ALGO_MLD65_25519
+                   || pk2->pubkey_algo == PUBKEY_ALGO_MLD87_448
+                   || pk2->pubkey_algo == PUBKEY_ALGO_MLK768_25519
+                   || pk2->pubkey_algo == PUBKEY_ALGO_MLK1024_448
+                   || pk2->pubkey_algo == PUBKEY_ALGO_MLK768_NP384
+                   || pk2->pubkey_algo == PUBKEY_ALGO_MLK1024_NP521
+                   || pk2->pubkey_algo == PUBKEY_ALGO_MLK768_BP384
+                   || pk2->pubkey_algo == PUBKEY_ALGO_MLK1024_BP512)
             {
               es_fputs (pubkey_string (pk2, pkstrbuf, sizeof pkstrbuf),
                         es_stdout);
