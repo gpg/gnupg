@@ -295,7 +295,6 @@ list_dirs (estream_t fp, char **names, int show_config_mode)
   int idx, j;
   char *tmp;
   const char *s;
-  gpg_error_t err;
 
   if (show_config_mode)
     es_fprintf (fp, "#+begin_example\n");
@@ -334,6 +333,7 @@ list_dirs (estream_t fp, char **names, int show_config_mode)
 #ifdef HAVE_W32_SYSTEM
       if (list[idx].extra && show_config_mode)
         {
+          gpg_error_t err;
           estream_t tmpfp;
 
           tmpfp = es_fopen (s, "rb");
