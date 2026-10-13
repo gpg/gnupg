@@ -374,7 +374,10 @@ put_record_into_cache (ulong recno, const char *data)
 
               rc = write_cache_item (r);
               if (rc)
-                return rc;
+                {
+                  release_write_lock ();
+                  return rc;
+                }
               if (!unused)
                 unused = r;
               r->flags.used = 0;
@@ -419,23 +422,29 @@ tdbio_sync (void)
     CACHE_CTRL r;
 
     if( db_fd == -1 )
-	open_db();
+      open_db();
+
 #if 0 /* Transactions are not yet used.  */
     if( in_transaction )
-	log_bug("tdbio: syncing while in transaction\n");
+      log_bug("tdbio: syncing while in transaction\n");
 #endif
 
     if( !cache_is_dirty )
-	return 0;
+      return 0;
 
     take_write_lock ();
-    for( r = cache_list; r; r = r->next ) {
-	if( r->flags.used && r->flags.dirty ) {
+    for( r = cache_list; r; r = r->next )
+      {
+	if( r->flags.used && r->flags.dirty )
+          {
 	    int rc = write_cache_item( r );
 	    if( rc )
+              {
+                release_write_lock ();
 		return rc;
-	}
-    }
+              }
+          }
+      }
     cache_is_dirty = 0;
     release_write_lock ();
 
