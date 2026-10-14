@@ -40,26 +40,13 @@
 #include "agent.h"
 #include <assuan.h>
 #include "../common/strlist.h"
+#include "../common/i18n.h"
 
 #ifdef _POSIX_OPEN_MAX
 #define MAX_OPEN_FDS _POSIX_OPEN_MAX
 #else
 #define MAX_OPEN_FDS 20
 #endif
-
-/* Definition of module local data of the CTRL structure.  */
-struct scd_local_s
-{
-  /* We keep a list of all allocated context with an anchor at
-     SCD_LOCAL_LIST (see below). */
-  struct scd_local_s *next_local;
-
-  assuan_context_t ctx;   /* NULL or session context for the SCdaemon
-                             used with this connection. */
-  unsigned int in_use: 1; /* CTX is in use.  */
-  unsigned int invalid:1; /* CTX is invalid, should be released.  */
-};
-
 
 /* Callback parameter for learn card */
 struct learn_parm_s
@@ -378,6 +365,491 @@ agent_card_serialno (ctrl_t ctrl, char **r_serialno, const char *demand)
 
 
 
+#define MAXPIN 90
+
+#define ASKPIN_NONE  0
+#define ASKPIN_END   1
+#define ASKPIN_START 2
+#define ASKPIN_NEXT  3
+
+static gpg_error_t
+scd_check_cb (struct pin_entry_info_s *pi)
+{
+  gpg_error_t err;
+  ctrl_t ctrl = pi->check_cb_arg;
+  assuan_context_t scd_ctx;
+
+  scd_ctx = daemon_ctx (ctrl);
+
+  assuan_begin_confidential (scd_ctx);
+  err = assuan_send_data (scd_ctx, pi->pin, strlen (pi->pin));
+  assuan_end_confidential (scd_ctx);
+
+  npth_mutex_lock (&ctrl->askpin_lock);
+  ctrl->askpin_err = 0;
+  ctrl->askpin_arg = NULL;
+  npth_cond_signal (&ctrl->askpin_cond);
+  npth_mutex_unlock (&ctrl->askpin_lock);
+
+  npth_mutex_lock (&ctrl->askpin_lock);
+  while (ctrl->askpin_req == ASKPIN_NONE)
+    npth_cond_wait (&ctrl->askpin_cond, &ctrl->askpin_lock);
+
+  if (ctrl->askpin_req == ASKPIN_END)
+    {
+      ctrl->askpin_req = ASKPIN_NONE;
+      ctrl->askpin_err = 0;
+      err = 0;
+    }
+  else if (ctrl->askpin_req == ASKPIN_NEXT)
+    {
+      ctrl->askpin_req = ASKPIN_NONE;
+      err = ctrl->askpin_err;
+      ctrl->askpin_err = 0;
+    }
+  else
+    {
+      log_debug ("askpin: invalid request\n");
+      err = GPG_ERR_UNSUPPORTED_PROTOCOL;
+    }
+
+  if (err)
+    npth_mutex_unlock (&ctrl->askpin_lock);
+  return err;
+}
+
+static void
+select_prompt (ctrl_t ctrl, const char **r_prompt, int *r_newpin,
+               int *r_any_flags)
+{
+  const char *info = ctrl->askpin_arg;
+  const char *ends;
+  const char *prompt = "PIN";
+
+  /* Parse the flags. */
+  if (info && *info =='|' && (ends=strchr (info+1, '|')))
+    {
+      const char *s;
+
+      for (s=info+1; s < ends; s++)
+        {
+          if (*s == 'A')
+            prompt = L_("Admin PIN");
+          else if (*s == 'P')
+            /* TRANSLATORS: A PUK is the Personal Unblocking Code
+               used to unblock a PIN. */
+            prompt = L_("PUK");
+          else if (*s == 'N')
+            *r_newpin = 1;
+          else if (*s == 'R')
+            prompt = L_("Reset Code");
+        }
+      ctrl->askpin_arg = ends+1;
+      *r_any_flags = 1;
+    }
+  else if (info && *info == '|')
+    log_debug ("pin_cb called without proper PIN info hack\n");
+
+  *r_prompt = prompt;
+}
+
+
+static void *
+askpin_thread (void *arg)
+{
+  ctrl_t ctrl = arg;
+
+  npth_mutex_lock (&ctrl->askpin_lock);
+  while (ctrl->askpin_req == ASKPIN_NONE)
+    npth_cond_wait (&ctrl->askpin_cond, &ctrl->askpin_lock);
+
+  if (ctrl->askpin_req == ASKPIN_END)
+    {
+      ctrl->askpin_req = ASKPIN_NONE;
+      ctrl->askpin_err = 0;
+      ctrl->askpin_arg = NULL;
+    }
+  else if (ctrl->askpin_req == ASKPIN_START)
+    {
+      gpg_error_t err;
+      struct pin_entry_info_s *pi;
+
+      ctrl->askpin_req = ASKPIN_NONE;
+      pi = gcry_calloc_secure (1, sizeof (*pi) + MAXPIN);
+      if (!pi)
+        err = gpg_error_from_syserror ();
+      else
+        {
+          const char *prompt;
+          int newpin = 0;
+          int any_flags = 0;
+          char *desc = NULL;
+
+          pi->max_length = MAXPIN - 1;
+          pi->min_digits = 0;   /* 1 means it should include a digit. */
+          pi->max_digits = 16;
+          pi->max_tries = 3;
+          pi->check_cb = scd_check_cb;
+          pi->check_cb_arg = ctrl;
+
+          select_prompt (ctrl, &prompt, &newpin, &any_flags);
+          if (*ctrl->askpin_arg)
+            {
+              const char *info = ctrl->askpin_arg;
+              if (!any_flags)
+                asprintf (&desc,
+                          L_("Please enter the PIN%s%s%s to unlock the card"),
+                          " (",
+                          info,
+                          ")");
+              else
+                asprintf (&desc, "%s", info);
+            }
+          else
+            {
+              asprintf (&desc,
+                        L_("Please enter the PIN%s%s%s to unlock the card"),
+                        "", "", "");
+            }
+          if (newpin)
+            pi->with_repeat = 1;
+          if (desc)
+            {
+              npth_mutex_unlock (&ctrl->askpin_lock);
+              err = agent_askpin (ctrl, desc, prompt, NULL, pi, NULL, 0);
+              if (err)
+                npth_mutex_lock (&ctrl->askpin_lock);
+              /* Note: It returns with the lock hold, when no error.  */
+            }
+          else
+            err = gpg_error_from_syserror ();
+          xfree (desc);
+        }
+
+      ctrl->askpin_err = err;
+      xfree (pi);
+    }
+  else
+    {
+      /* Note: ASKPIN_NEXT is handled in the callback.  */
+      log_debug ("askpin: unknown request\n");
+      ctrl->askpin_err = GPG_ERR_UNSUPPORTED_PROTOCOL;
+    }
+
+  ctrl->askpin_arg = NULL;
+  npth_cond_signal (&ctrl->askpin_cond);
+  npth_mutex_unlock (&ctrl->askpin_lock);
+  return NULL;
+}
+
+static gpg_error_t
+start_askpin_thread (ctrl_t ctrl)
+{
+  npth_attr_t tattr;
+  npth_t tid;
+  int rc;
+
+  rc = npth_mutex_init (&ctrl->askpin_lock, NULL);
+  if (rc)
+    return gpg_error_from_errno (rc);
+
+  rc = npth_cond_init (&ctrl->askpin_cond, NULL);
+  if (rc)
+    {
+      npth_mutex_destroy (&ctrl->askpin_lock);
+      return gpg_error_from_errno (rc);
+    }
+
+  rc = npth_attr_init (&tattr);
+  if (rc)
+    {
+      npth_mutex_destroy (&ctrl->askpin_lock);
+      npth_cond_destroy (&ctrl->askpin_cond);
+      return gpg_error_from_errno (rc);
+    }
+  npth_attr_setdetachstate (&tattr, NPTH_CREATE_JOINABLE);
+
+  rc = npth_create (&tid, &tattr, askpin_thread, ctrl);
+  npth_attr_destroy (&tattr);
+  if (rc)
+    {
+      npth_mutex_destroy (&ctrl->askpin_lock);
+      npth_cond_destroy (&ctrl->askpin_cond);
+      return gpg_error_from_errno (rc);
+    }
+
+  ctrl->inq_askpin_tid = tid;
+  return 0;
+}
+
+static gpg_error_t
+finish_askpin_thread (ctrl_t ctrl, const char *info)
+{
+  int rc;
+
+  if (!ctrl->inq_askpin_tid)
+    return 0;
+
+  npth_mutex_lock (&ctrl->askpin_lock);
+  ctrl->askpin_req = ASKPIN_END;
+  ctrl->askpin_arg = info;
+  ctrl->askpin_err = 0;
+  npth_cond_signal (&ctrl->askpin_cond);
+  npth_mutex_unlock (&ctrl->askpin_lock);
+
+  rc = npth_join (ctrl->inq_askpin_tid, NULL);
+
+  ctrl->askpin_arg = NULL;
+  ctrl->inq_askpin_tid = 0;
+  npth_mutex_destroy (&ctrl->askpin_lock);
+  npth_cond_destroy (&ctrl->askpin_cond);
+  return gpg_error_from_errno (rc);
+}
+
+static gpg_error_t
+scd_pin_request_start (ctrl_t ctrl, const char *info)
+{
+  gpg_error_t err;
+
+  err = start_askpin_thread (ctrl);
+  if (err)
+    return err;
+
+  npth_mutex_lock (&ctrl->askpin_lock);
+  ctrl->askpin_req = ASKPIN_START;
+  ctrl->askpin_arg = info;
+  ctrl->askpin_err = 0;
+  npth_cond_signal (&ctrl->askpin_cond);
+  while (ctrl->askpin_arg)
+    npth_cond_wait (&ctrl->askpin_cond, &ctrl->askpin_lock);
+  err = ctrl->askpin_err;
+  npth_mutex_unlock (&ctrl->askpin_lock);
+
+  if (err)
+    finish_askpin_thread (ctrl, NULL);
+
+  return err;
+}
+
+static gpg_error_t
+scd_pin_request_next (ctrl_t ctrl, const char *info)
+{
+  gpg_error_t err;
+
+  npth_mutex_lock (&ctrl->askpin_lock);
+  ctrl->askpin_req = ASKPIN_NEXT;
+  ctrl->askpin_arg = info;
+  ctrl->askpin_err = GPG_ERR_BAD_PIN;
+  npth_cond_signal (&ctrl->askpin_cond);
+  while (ctrl->askpin_arg)
+    npth_cond_wait (&ctrl->askpin_cond, &ctrl->askpin_lock);
+  err = ctrl->askpin_err;
+  npth_mutex_unlock (&ctrl->askpin_lock);
+
+  if (err)
+    finish_askpin_thread (ctrl, NULL);
+
+  return err;
+}
+
+static gpg_error_t
+scd_pin_request_finish (ctrl_t ctrl, const char *info)
+{
+  return finish_askpin_thread (ctrl, info);
+}
+
+
+/* Callback used to ask for the PIN which should be set into BUF.  The
+   buf has been allocated by the caller and is of size MAXBUF which
+   includes the terminating null.  The function should return an UTF-8
+   string with the passphrase, the buffer may optionally be padded
+   with arbitrary characters.
+
+   INFO gets displayed as part of a generic string.  However if the
+   first character of INFO is a vertical bar all up to the next
+   vertical bar are considered flags and only everything after the
+   second vertical bar gets displayed as the full prompt.
+
+   Flags:
+
+      'N' = New PIN, this requests a second prompt to repeat the
+            PIN.  If the PIN is not correctly repeated it starts from
+            all over.
+      'A' = The PIN is an Admin PIN, SO-PIN or alike.
+      'P' = The PIN is a PUK (Personal Unblocking Key).
+      'R' = The PIN is a Reset Code.
+
+   Example:
+
+     "|AN|Please enter the new security officer's PIN"
+
+   The text "Please ..." will get displayed and the flags 'A' and 'N'
+   are considered.
+ */
+static int
+scd_getpin (ctrl_t ctrl, const char *info, char *buf, size_t maxbuf)
+{
+  struct pin_entry_info_s *pi;
+  int rc;
+  const char *ends, *s;
+  int any_flags = 0;
+  int newpin = 0;
+  int resetcode = 0;
+  int is_puk = 0;
+  const char *again_text = NULL;
+  const char *prompt = "PIN";
+
+  if (buf && maxbuf < 2)
+    return gpg_error (GPG_ERR_INV_VALUE);
+
+  /* Parse the flags. */
+  if (info && *info =='|' && (ends=strchr (info+1, '|')))
+    {
+      for (s=info+1; s < ends; s++)
+        {
+          if (*s == 'A')
+            prompt = L_("Admin PIN");
+          else if (*s == 'P')
+            {
+              /* TRANSLATORS: A PUK is the Personal Unblocking Code
+                 used to unblock a PIN. */
+              prompt = L_("PUK");
+              is_puk = 1;
+            }
+          else if (*s == 'N')
+            newpin = 1;
+          else if (*s == 'R')
+            {
+              prompt = L_("Reset Code");
+              resetcode = 1;
+            }
+        }
+      info = ends+1;
+      any_flags = 1;
+    }
+  else if (info && *info == '|')
+    log_debug ("pin_cb called without proper PIN info hack\n");
+
+  /* If BUF has been passed as NULL, we are in pinpad mode: The
+     callback opens the popup and immediately returns. */
+  if (!buf)
+    {
+      if (maxbuf == 0) /* Close the pinentry. */
+        {
+          agent_popup_message_stop (ctrl);
+          rc = 0;
+        }
+      else if (maxbuf == 1)  /* Open the pinentry. */
+        {
+          if (info)
+            {
+              char *desc;
+              const char *desc2;
+
+              if (!strcmp (info, "--ack"))
+                {
+                  desc2 = L_("Push ACK button on card/token.");
+                  desc = NULL;
+                }
+              else
+                {
+                  desc2 = NULL;
+                  desc = strconcat (info, "%0A%0A",
+                                    L_("Use the reader's pinpad for input."),
+                                    NULL);
+                }
+
+              if (!desc2 && !desc)
+                rc = gpg_error_from_syserror ();
+              else
+                {
+                  rc = agent_popup_message_start (ctrl,
+                                                  desc2? desc2:desc, NULL);
+                  xfree (desc);
+                }
+            }
+          else
+            rc = agent_popup_message_start (ctrl, NULL, NULL);
+        }
+      else
+        rc = gpg_error (GPG_ERR_INV_VALUE);
+      return rc;
+    }
+
+  /* FIXME: keep PI and TRIES in OPAQUE.  Frankly this is a whole
+     mess because we should call the card's verify function from the
+     pinentry check pin CB. */
+ again:
+  pi = gcry_calloc_secure (1, sizeof (*pi) + maxbuf + 10);
+  if (!pi)
+    return gpg_error_from_syserror ();
+  pi->max_length = maxbuf-1;
+  pi->min_digits = 0;  /* we want a real passphrase */
+  pi->max_digits = 16;
+  pi->max_tries = 3;
+
+  if (any_flags)
+    {
+      rc = agent_askpin (ctrl, info, prompt, again_text, pi, NULL, 0);
+      again_text = NULL;
+      if (!rc && newpin)
+        {
+          struct pin_entry_info_s *pi2;
+          pi2 = gcry_calloc_secure (1, sizeof (*pi) + maxbuf + 10);
+          if (!pi2)
+            {
+              rc = gpg_error_from_syserror ();
+              xfree (pi);
+              return rc;
+            }
+          pi2->max_length = maxbuf-1;
+          pi2->min_digits = 0;
+          pi2->max_digits = 16;
+          pi2->max_tries = 1;
+          rc = agent_askpin (ctrl,
+                             (resetcode?
+                              L_("Repeat this Reset Code"):
+                              is_puk?
+                              L_("Repeat this PUK"):
+                              L_("Repeat this PIN")),
+                             prompt, NULL, pi2, NULL, 0);
+          if (!rc && strcmp (pi->pin, pi2->pin))
+            {
+              again_text = (resetcode?
+                            L_("Reset Code not correctly repeated; try again"):
+                            is_puk?
+                            L_("PUK not correctly repeated; try again"):
+                            L_("PIN not correctly repeated; try again"));
+              xfree (pi2);
+              xfree (pi);
+              goto again;
+            }
+          xfree (pi2);
+        }
+    }
+  else
+    {
+      char *desc;
+
+      if ( asprintf (&desc,
+                     L_("Please enter the PIN%s%s%s to unlock the card"),
+                     info? " (":"",
+                     info? info:"",
+                     info? ")":"") < 0)
+        desc = NULL;
+      rc = agent_askpin (ctrl, desc? desc : info, prompt, NULL, pi, NULL, 0);
+      xfree (desc);
+    }
+
+  if (!rc)
+    {
+      strncpy (buf, pi->pin, maxbuf-1);
+      buf[maxbuf-1] = 0;
+    }
+  xfree (pi);
+  return rc;
+}
+
 /* Handle the NEEDPIN inquiry. */
 static gpg_error_t
 inq_needpin (void *opaque, const char *line)
@@ -417,6 +889,18 @@ inq_needpin (void *opaque, const char *line)
   else if ((s = has_leading_keyword (line, "PINCACHE_GET")))
     {
       rc = handle_pincache_get (s, parm->ctx);
+    }
+  else if ((s = has_leading_keyword (line, "ASKPIN")))
+    {
+      rc = scd_pin_request_start (parm->ctrl, s);
+    }
+  else if ((s = has_leading_keyword (line, "NEXTPIN")))
+    {
+      rc = scd_pin_request_next (parm->ctrl, s);
+    }
+  else if ((s = has_leading_keyword (line, "FINISHPIN")))
+    {
+      rc = scd_pin_request_finish (parm->ctrl, s);
     }
   else if (parm->passthru)
     {
