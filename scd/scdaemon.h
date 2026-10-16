@@ -165,6 +165,8 @@ void popup_prompt (void *opaque, int on);
 
 gpg_error_t askpin (ctrl_t ctrl, const char *info, char **retstr);
 
+gpg_error_t pinpad_prompt (ctrl_t ctrl, const char *info);
+
 /* Take care: this function assumes that CARD is locked.  */
 void send_client_notifications (card_t card, int removal);
 

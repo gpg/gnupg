@@ -295,8 +295,8 @@ verify_pin (app_t app, ctrl_t ctrl)
   if (!opt.disable_pinpad
       && !iso7816_check_pinpad (app_get_slot (app), ISO7816_VERIFY, &pininfo) )
     {
-      rc = askpin (ctrl, _("||Please enter your PIN at the reader's pinpad"),
-                   NULL);
+      rc = pinpad_prompt (ctrl,
+                          _("||Please enter your PIN at the reader's pinpad"));
       if (rc)
         {
           log_info (_("PIN callback returned error: %s\n"),
@@ -305,7 +305,7 @@ verify_pin (app_t app, ctrl_t ctrl)
         }
       rc = iso7816_verify_kp (app_get_slot (app), 0x81, &pininfo);
       /* Dismiss the prompt. */
-      askpin (ctrl, NULL, NULL);
+      pinpad_prompt (ctrl, NULL);
     }
   else  /* No Pinpad.  */
     {
