@@ -1044,6 +1044,63 @@ askpin (ctrl_t ctrl, const char *info, char **retstr)
 }
 
 
+gpg_error_t
+askpin_inquiry (ctrl_t ctrl, const char *info,
+                gpg_error_t (*check_cb) (void *arg, char *value),
+                void *check_cb_arg)
+{
+  gpg_error_t err;
+  assuan_context_t ctx = ctrl->server_local->assuan_ctx;
+  char *command;
+  int rc;
+  unsigned char *value = NULL;
+  size_t valuelen = 0;
+
+  if (DBG_IPC)
+    log_debug ("asking for PIN '%s'\n", info);
+
+  rc = gpgrt_asprintf (&command, "ASKPIN %s", info);
+  if (rc < 0)
+    return gpg_error (gpg_err_code_from_errno (errno));
+
+  /* See the comment in askpin for use of secure memory.  */
+  assuan_begin_confidential (ctx);
+  err = assuan_inquire (ctx, command, &value, &valuelen, MAXLEN_PIN);
+  assuan_end_confidential (ctx);
+  xfree (command);
+  if (err)
+    return err;
+
+  while (1)
+    {
+      /* We require that the returned value is an UTF-8 string */
+      if (!value || !valuelen || value[valuelen-1])
+        {
+          xfree (value);
+          assuan_inquire (ctx, "FINISHPIN", NULL, NULL, 0);
+          return gpg_error (GPG_ERR_INV_RESPONSE);
+        }
+
+      err = (*check_cb) (check_cb_arg, (char *)value);
+      if (!err)
+        {
+          err = assuan_inquire (ctx, "FINISHPIN", NULL, NULL, 0);
+          break;
+        }
+
+      /* FIXME: cleanup memory which is referenced in CHECK_CB_ARG... */
+      xfree (value);
+      assuan_begin_confidential (ctx);
+      err = assuan_inquire (ctx, "NEXTPIN", &value, &valuelen, MAXLEN_PIN);
+      assuan_end_confidential (ctx);
+      if (err)
+        return err;
+    }
+
+  return err;
+}
+
+
 static const char hlp_pksign[] =
   "PKSIGN [--hash=[rmd160|sha{1,224,256,384,512}|md5|none]] <hexified_id>\n"
   "\n"
