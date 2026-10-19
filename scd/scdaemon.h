@@ -165,7 +165,7 @@ void popup_prompt (void *opaque, int on);
 
 gpg_error_t askpin (ctrl_t ctrl, const char *info, char **retstr);
 gpg_error_t askpin_inquiry (ctrl_t ctrl, const char *info,
-                            gpg_error_t (*check_cb) (void *arg, char *value),
+                            gpg_error_t (*check_cb) (void *arg, const char *pin),
                             void *check_cb_arg);
 
 gpg_error_t pinpad_prompt (ctrl_t ctrl, const char *info);

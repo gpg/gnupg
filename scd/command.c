@@ -1046,7 +1046,7 @@ askpin (ctrl_t ctrl, const char *info, char **retstr)
 
 gpg_error_t
 askpin_inquiry (ctrl_t ctrl, const char *info,
-                gpg_error_t (*check_cb) (void *arg, char *value),
+                gpg_error_t (*check_cb) (void *arg, const char *pin),
                 void *check_cb_arg)
 {
   gpg_error_t err;
@@ -1081,14 +1081,14 @@ askpin_inquiry (ctrl_t ctrl, const char *info,
           return gpg_error (GPG_ERR_INV_RESPONSE);
         }
 
-      err = (*check_cb) (check_cb_arg, (char *)value);
-      if (!err)
+      err = (*check_cb) (check_cb_arg, (const char *)value);
+      if (!err || gpg_err_code (err) != GPG_ERR_BAD_PIN)
         {
           err = assuan_inquire (ctx, "FINISHPIN", NULL, NULL, 0);
           break;
         }
 
-      /* FIXME: cleanup memory which is referenced in CHECK_CB_ARG... */
+      /* Here, it means it returned GPG_ERR_BAD_PIN */
       xfree (value);
       assuan_begin_confidential (ctx);
       err = assuan_inquire (ctx, "NEXTPIN", &value, &valuelen, MAXLEN_PIN);
