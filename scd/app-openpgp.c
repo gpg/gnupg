@@ -2782,8 +2782,8 @@ pincheck_cb (void *arg, const char *pin)
 
   err = pin2hash_if_kdf (v->app, v->chvno, pin, &pinvalue, &pinvaluelen);
   if (!err)
-    err = iso7816_verify (app_get_slot (v->app),
-                          0x80 + v->chvno, pinvalue, pinvaluelen);
+    err = iso7816_verify (app_get_slot (v->app), 0x80 + v->chvno,
+                          pinvalue, pinvaluelen);
   if (!err)
     cache_pin (v->app, v->ctrl, v->chvno, pin);
   else
@@ -2808,12 +2808,14 @@ pincheck_cb (void *arg, const char *pin)
              pinpad has been used. */
           if (!app->did_chv2 && pinvalue && !app->app_local->extcap.is_v2)
             {
-              err = iso7816_verify (app_get_slot (app), 0x82, pinvalue, pinvaluelen);
+              err = iso7816_verify (app_get_slot (app), 0x82,
+                                    pinvalue, pinvaluelen);
               if (gpg_err_code (err) == GPG_ERR_BAD_PIN)
                 err = gpg_error (GPG_ERR_PIN_NOT_SYNCED);
               if (err)
                 {
-                  log_error (_("verify CHV%d failed: %s\n"), 2, gpg_strerror (err));
+                  log_error (_("verify CHV%d failed: %s\n"), 2,
+                             gpg_strerror (err));
                   flush_cache_after_error (app);
                 }
               else
@@ -2826,18 +2828,21 @@ pincheck_cb (void *arg, const char *pin)
       else if (v->chvno == 2)
         {
           app->did_chv2 = 1;
-          if (!app->did_chv1 && !app->force_chv1 && pinvalue && !opt.pcsc_shared)
+          if (!app->did_chv1 && !app->force_chv1
+              && pinvalue && !opt.pcsc_shared)
             {
               /* For convenience we verify CHV1 here too.  We do this only if
                  the card is not configured to require a verification before
                  each CHV1 controlled operation (force_chv1) and if we are not
                  using the pinpad (PINVALUE == NULL). */
-              err = iso7816_verify (app_get_slot (app), 0x81, pinvalue, pinvaluelen);
+              err = iso7816_verify (app_get_slot (app), 0x81,
+                                    pinvalue, pinvaluelen);
               if (gpg_err_code (err) == GPG_ERR_BAD_PIN)
                 err = gpg_error (GPG_ERR_PIN_NOT_SYNCED);
               if (err)
                 {
-                  log_error (_("verify CHV%d failed: %s\n"), 1, gpg_strerror (err));
+                  log_error (_("verify CHV%d failed: %s\n"), 1,
+                             gpg_strerror (err));
                   flush_cache_after_error (app);
                 }
               else

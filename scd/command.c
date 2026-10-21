@@ -1078,18 +1078,30 @@ askpin_inquiry (ctrl_t ctrl, const char *info,
         {
           xfree (value);
           assuan_inquire (ctx, "FINISHPIN", NULL, NULL, 0);
+          /* The error from assuan_inquire swallowed if any.*/
           return gpg_error (GPG_ERR_INV_RESPONSE);
         }
 
       err = (*check_cb) (check_cb_arg, (const char *)value);
-      if (!err || gpg_err_code (err) != GPG_ERR_BAD_PIN)
+      wipememory (value, valuelen);
+      xfree (value);
+      value = NULL;
+      valuelen = 0;
+      if (!err)
         {
+          /* Authentication succeed.  */
           err = assuan_inquire (ctx, "FINISHPIN", NULL, NULL, 0);
           break;
         }
+      else if (gpg_err_code (err) != GPG_ERR_BAD_PIN)
+        {
+          /* Something goes wrong.  */
+          assuan_inquire (ctx, "FINISHPIN", NULL, NULL, 0);
+          /* The error from assuan_inquire swallowed if any.*/
+          return err;
+        }
 
-      /* Here, it means it returned GPG_ERR_BAD_PIN */
-      xfree (value);
+      /* Here, it means check_cb returned GPG_ERR_BAD_PIN.  */
       assuan_begin_confidential (ctx);
       err = assuan_inquire (ctx, "NEXTPIN", &value, &valuelen, MAXLEN_PIN);
       assuan_end_confidential (ctx);
