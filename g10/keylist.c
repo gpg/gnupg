@@ -2140,6 +2140,10 @@ list_keyblock_colon (ctrl_t ctrl, kbnode_t keyblock,
         curvename = curve;
       es_fputs (curvename, es_stdout);
     }
+  else if (pk->pubkey_algo == PUBKEY_ALGO_X25519)
+    es_fputs ("ietf25", es_stdout);
+  else if (pk->pubkey_algo == PUBKEY_ALGO_ED25519)
+    es_fputs ("ietf27", es_stdout);
   else if (pk->pubkey_algo == PUBKEY_ALGO_KYBER
            || pk->pubkey_algo == PUBKEY_ALGO_MLD65_25519
            || pk->pubkey_algo == PUBKEY_ALGO_MLD87_448
@@ -2327,6 +2331,10 @@ list_keyblock_colon (ctrl_t ctrl, kbnode_t keyblock,
                 curvename = curve;
               es_fputs (curvename, es_stdout);
             }
+          else if (pk2->pubkey_algo == PUBKEY_ALGO_X25519)
+            es_fputs ("ietf25", es_stdout);
+          else if (pk2->pubkey_algo == PUBKEY_ALGO_ED25519)
+            es_fputs ("ietf27", es_stdout);
           else if (pk2->pubkey_algo == PUBKEY_ALGO_KYBER
                    || pk2->pubkey_algo == PUBKEY_ALGO_MLD65_25519
                    || pk2->pubkey_algo == PUBKEY_ALGO_MLD87_448
