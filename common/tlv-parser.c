@@ -28,9 +28,245 @@
 #include "util.h"
 #include "tlv.h"
 
+/* For older KSBA versions we keep our own code.  That code has been
+ * slighly modified migrated to KSBA 1.9.0 so that we only need
+ * wrappers in that case.  */
+#if KSBA_VERSION_NUMBER >= 0x010900  /* 1.9.0 */
+
+void
+_tlv_parser_dump_tag (const char *text, int lno, tlv_parser_t tlv)
+{
+  (void)text;
+  (void)lno;
+  ksba_parser_setflag (tlv, KSBA_PARSER_DUMPTAG);
+}
+
+
+void
+_tlv_parser_dump_state (const char *text, const char *text2,
+                        int lno, tlv_parser_t tlv)
+{
+  (void)text;
+  (void)text2;
+  (void)lno;
+  ksba_parser_setflag (tlv, KSBA_PARSER_DUMPSTATE);
+}
+
+
+/* Public version of parse_tag.  */
+gpg_error_t
+tlv_parse_tag (unsigned char const **buffer, size_t *size, struct tag_info *ti)
+{
+  struct ksba_tlv_s tlv;
+  gpg_error_t err;
+
+  err = ksba_parse_tag (buffer, size, &tlv, NULL);
+  ti->class = tlv.cls;
+  ti->is_constructed = tlv.cons;
+  ti->tag = tlv.tag;
+  ti->length = tlv.length;
+  ti->nhdr = tlv.nhdr;
+  ti->ndef = tlv.ndef;
+
+  return err;
+}
+
+
+/* Create a new TLV object.  */
+tlv_parser_t
+_tlv_parser_new (const unsigned char *buffer, size_t bufsize,
+                int verbosity, tlv_parser_t lasttlv, int lno)
+{
+  return _ksba_parser_new (buffer, bufsize, verbosity, lasttlv, lno);
+}
+
+
+/* Free the TLV object and returns the last TLV object stored in this
+ * TLV.  */
+tlv_parser_t
+_tlv_parser_release (tlv_parser_t tlv, int lno)
+{
+  return _ksba_parser_release (tlv, lno);
+}
+
+/* Parse the next tag and value.  Also detect the end of a
+ * container.  The caller should use the tlv_next macro. */
+gpg_error_t
+_tlv_parser_next (tlv_parser_t tlv, unsigned int flag, int lno)
+{
+  if (tlv && (flag & TLV_PARSER_FLAG_T5793))
+    ksba_parser_setflag (tlv, KSBA_PARSER_T5793);
+  return _ksba_parser_next (tlv, lno);
+}
+
+
+/* Return the current nesting level of the TLV object.  */
+unsigned int
+tlv_parser_level (tlv_parser_t tlv)
+{
+  return ksba_parser_getnumber (tlv, KSBA_PARSER_LEVEL);
+}
+
+/* Returns the current offset of the parser.  */
+size_t
+tlv_parser_offset (tlv_parser_t tlv)
+{
+  return ksba_parser_getnumber (tlv, KSBA_PARSER_OFFSET);
+}
+
+/* Return a string with the last function used.  If TLV is NULL an
+ * empty string is returned.  */
+const char *
+tlv_parser_lastfunc (tlv_parser_t tlv)
+{
+  return ksba_parser_getstring (tlv, KSBA_PARSER_LASTFUNC);
+}
+
+
+const char *
+tlv_parser_lasterrstr (tlv_parser_t tlv)
+{
+  return ksba_parser_getstring (tlv, KSBA_PARSER_LASTERR);
+}
+
+/* Set a flag to indicate that the last tlv_next has not yet been
+ * consumed.  */
+void
+tlv_parser_set_pending (tlv_parser_t tlv)
+{
+  ksba_parser_setflag (tlv, KSBA_PARSER_PENDING);
+}
+
+
+/* Return the length of the last read tag.  If with_header is 1 the
+ * lengtb of the header is added to the returned length.  */
+size_t
+tlv_parser_tag_length (tlv_parser_t tlv, int with_header)
+{
+  if (with_header)
+    return ksba_parser_getnumber (tlv, KSBA_PARSER_TAGLENHDR);
+  else
+    return ksba_parser_getnumber (tlv, KSBA_PARSER_TAGLEN);
+}
+
+
+/* Skip over the value of the current tag.  Does not yet work for ndef
+ * containers.  */
+void
+tlv_parser_skip (tlv_parser_t tlv)
+{
+  ksba_parser_skip (tlv);
+}
+
+
+/* Expect that the current tag is a sequence and setup the context for
+ * processing.  */
+gpg_error_t
+tlv_expect_sequence (tlv_parser_t tlv)
+{
+  return ksba_expect_sequence (tlv);
+}
+
+
+/* Expect that the current tag is a context tag and setup the context
+ * for processing.  The tag of the context is returned at R_TAG.  */
+gpg_error_t
+tlv_expect_context_tag (tlv_parser_t tlv, int *r_tag)
+{
+  return ksba_expect_context_tag (tlv, r_tag);
+}
+
+
+/* Expect that the current tag is a SET and setup the context for
+ * processing.  */
+gpg_error_t
+tlv_expect_set (tlv_parser_t tlv)
+{
+  return ksba_expect_set (tlv);
+}
+
+
+/* Expect an object of CLASS with TAG and store its value at
+ * (R_DATA,R_DATALEN).  Then skip over its value to the next tag.
+ * Note that the stored value is not allocated but points into
+ * TLV.  */
+gpg_error_t
+tlv_expect_object (tlv_parser_t tlv, int class, int tag,
+                   unsigned char const **r_data, size_t *r_datalen)
+{
+  return ksba_expect_object (tlv, class, tag, r_data, r_datalen);
+}
+
+
+/* Expect that the current tag is an object string and store its value
+ * at (R_DATA,R_DATALEN).  Then skip over its value to the next tag.
+ * Note that the stored value are not allocated but point into TLV. */
+gpg_error_t
+tlv_expect_octet_string (tlv_parser_t tlv,
+                         unsigned char const **r_data, size_t *r_datalen)
+{
+  return ksba_expect_octet_string (tlv, r_data, r_datalen);
+}
+
+
+/* Expect that the current tag is an integer and return its value at
+ * R_VALUE.  Then skip over its value to the next tag. */
+gpg_error_t
+tlv_expect_integer (tlv_parser_t tlv, int *r_value)
+{
+  return ksba_expect_integer (tlv, r_value);
+}
+
+
+/* Variant of tlv_expect_integer which returns an MPI.  If IGNORE_ZERO
+ * is set a value of 0 is ignored and R_VALUE not changed and the
+ * function returns GPG_ERR_FALSE.  No check for negative encoded
+ * integers is done because the old code here worked the same and we
+ * can't foreclose invalid encoded PKCS#12 stuff - after all it is
+ * PKCS#12 see https://www.cs.auckland.ac.nz/~pgut001/pubs/pfx.html */
+#ifdef GCRYPT_VERSION
+gpg_error_t
+tlv_expect_mpinteger (tlv_parser_t tlv, int ignore_zero,
+                      gcry_mpi_t *r_value)
+{
+  gpg_error_t err;
+  const unsigned char *p;
+  size_t n;
+
+  err = ksba_expect_object (tlv, KSBA_CLASS_UNIVERSAL, KSBA_TYPE_INTEGER,
+                            &p, &n);
+  if (err)
+    return err;
+  if (ignore_zero && n == 1 && !*p)
+    return gpg_error (GPG_ERR_FALSE);
+
+  return gcry_mpi_scan (r_value, GCRYMPI_FMT_USG, p, n, NULL);
+}
+#endif /*GCRYPT_VERSION*/
+
+
+/* Expect that the current tag is an object id and store its value at
+ * (R_OID,R_OIDLEN).  Then skip over its value to the next tag.  Note
+ * that the stored value is not allocated but points into TLV. */
+gpg_error_t
+tlv_expect_object_id (tlv_parser_t tlv,
+                      unsigned char const **r_oid, size_t *r_oidlen)
+{
+  return ksba_expect_object_id (tlv, r_oid, r_oidlen);
+}
+
+
+/* Expect a NULL tag.  */
+gpg_error_t
+tlv_expect_null (tlv_parser_t tlv)
+{
+  return ksba_expect_null (tlv);
+}
+
+
+#else /* KSBA < 1.9.0 */
 
 #define TLV_MAX_DEPTH 25
-
 
 
 /* An object to control the ASN.1 parsing.  */
@@ -825,3 +1061,5 @@ cram_octet_string (tlv_parser_t tlv, int testmode)
     }
   return totallen;
 }
+
+#endif /* KSBA < 1.9.0 */

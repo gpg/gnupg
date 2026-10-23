@@ -84,8 +84,16 @@ struct tag_info
 struct tlv_builder_s;
 typedef struct tlv_builder_s *tlv_builder_t;
 
+
+/* If possible we use the parser functions from libksba along with the
+ * wrappers in tlv-paser.c . */
+#if KSBA_VERSION_NUMBER >= 0x010900  /* 1.9.0 */
+typedef ksba_parser_t tlv_parser_t;
+#else
 struct tlv_parser_s;
 typedef struct tlv_parser_s *tlv_parser_t;
+#endif
+
 
 /*-- tlv.c --*/
 
