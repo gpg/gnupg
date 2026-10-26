@@ -108,7 +108,7 @@ do_encode_md (gcry_md_hd_t md, int algo, int pkalgo, unsigned int nbits,
       /* Check if we're too short.  Too long is safe as we'll
 	 automatically left-truncate. */
       nframe = gcry_md_get_algo_dlen (algo);
-      if (nframe < qbits/8)
+      if (nframe < qbits/8 && !(qbits0 == 521 && algo == GCRY_MD_SHA384))
         {
 	  log_error (_("a %u bit hash is not valid for a %u bit %s key\n"),
                      (unsigned int)nframe*8,
