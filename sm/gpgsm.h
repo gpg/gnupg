@@ -519,11 +519,16 @@ int gpgsm_encrypt (ctrl_t ctrl, certlist_t recplist,
                    estream_t in_fp, estream_t out_fp);
 
 /*-- decrypt.c --*/
+int gpgsm_decrypt (ctrl_t ctrl, estream_t in_fp, estream_t out_fp);
+
+/*-- decrypt-kem.c --*/
 gpg_error_t ecdh_derive_kek (unsigned char *key, unsigned int keylen,
                              int hash_algo, const char *wrap_algo_str,
                              const void *secret, unsigned int secretlen,
                              const void *ukm, unsigned int ukmlen);
-int gpgsm_decrypt (ctrl_t ctrl, estream_t in_fp, estream_t out_fp);
+gpg_error_t ecc_kem_pkdecrypt (ctrl_t ctrl, const char *hexkeygrip,
+                               const char *desc, ksba_const_sexp_t enc_val,
+                               char **r_seskey, size_t *r_seskeylen);
 
 /*-- certreqgen.c --*/
 int gpgsm_genkey (ctrl_t ctrl, estream_t in_stream, estream_t out_stream);
@@ -594,6 +599,7 @@ int gpgsm_dirmngr_run_command (ctrl_t ctrl, const char *command,
 
 /*-- misc.c --*/
 void gpgsm_print_further_info (const char *format, ...) GPGRT_ATTR_PRINTF(1,2);
+char *string_from_gcry_buffer (gcry_buffer_t *buffer);
 gpg_error_t transform_sigval (const unsigned char *sigval, size_t sigvallen,
                               int mdalgo,
                               unsigned char **r_newsigval,

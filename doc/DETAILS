@@ -1829,6 +1829,7 @@ Description of some debug flags:
   - RFC-8551 :: S/MIME Version 4.0 Message Specification
   - RFC-8813 :: Clarifications for ECC Subject Public Key
   - RFC-8954 :: Online Certificate Status Protocol (OCSP) Nonce Extension
+  - RFC-9180 :: Hybrid Public Key Encryption
   - RFC-9987 :: Secure Shell (SSH) Agent Protocol
 
   - draft-koch-librepgp-05 :: Updates to RFC-4880

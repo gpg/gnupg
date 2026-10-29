@@ -57,6 +57,7 @@ gpgsm_SOURCES = \
 	sign.c \
 	encrypt.c \
 	decrypt.c \
+	decrypt-kem.c \
 	import.c \
 	export.c \
 	delete.c \

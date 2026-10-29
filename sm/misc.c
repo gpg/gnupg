@@ -56,6 +56,23 @@ gpgsm_print_further_info (const char *format, ...)
 }
 
 
+/* Return the hash algorithm's algo id from its name given in the
+ * non-null termnated string in (buffer,buflen).  Returns 0 on failure
+ * or if the algo is not known.  */
+char *
+string_from_gcry_buffer (gcry_buffer_t *buffer)
+{
+  char *string;
+
+  string = xtrymalloc (buffer->len + 1);
+  if (!string)
+    return NULL;
+  memcpy (string, buffer->data, buffer->len);
+  string[buffer->len] = 0;
+  return string;
+}
+
+
 /* Transform a sig-val style s-expression as returned by Libgcrypt to
    one which includes an algorithm identifier encoding the public key
    and the hash algorithm.  The public key algorithm is taken directly
