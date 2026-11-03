@@ -98,7 +98,7 @@ common_sources = \
 	comopt.c comopt.h \
 	compliance.c compliance.h \
 	pkscreening.c pkscreening.h \
-	kem.c
+	kem.c hemhelp.h
 
 if HAVE_W32_SYSTEM
 common_sources += w32-reg.c w32-cmdline.c
@@ -161,7 +161,8 @@ module_tests = t-stringhelp t-timestuff \
                t-convert t-percent t-gettime t-sysutils t-sexputil \
 	       t-session-env t-openpgp-oid t-ssh-utils \
 	       t-mapstrings t-zb32 t-mbox-util t-iobuf t-strlist \
-	       t-name-value t-ccparray t-recsel t-w32-cmdline t-exechelp
+	       t-name-value t-ccparray t-recsel t-w32-cmdline t-exechelp \
+	       t-kem
 
 if HAVE_W32_SYSTEM
 module_tests += t-w32-reg
@@ -216,6 +217,9 @@ t_recsel_LDADD = $(t_common_ldadd)
 
 t_w32_cmdline_SOURCES = t-w32-cmdline.c w32-cmdline.c $(t_extra_src)
 t_w32_cmdline_LDADD = $(t_common_ldadd)
+
+t_kem_LDADD = $(t_common_ldadd)
+
 
 # System specific test
 if HAVE_W32_SYSTEM

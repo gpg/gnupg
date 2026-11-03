@@ -30,6 +30,7 @@
 #include <gcrypt.h>
 #include <ksba.h>
 #include "../common/tlv.h"
+#include "../common/kemhelp.h"
 
 
 /* Maximum buffer length of encrypted session key in S-Expression for

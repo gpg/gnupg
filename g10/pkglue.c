@@ -28,6 +28,7 @@
 
 #include "gpg.h"
 #include "../common/util.h"
+#include "../common/kemhelp.h"
 #include "pkglue.h"
 #include "main.h"
 #include "options.h"

@@ -36,6 +36,7 @@
 #include "keydb.h"
 #include "../common/i18n.h"
 #include "../common/compliance.h"
+#include "../common/kemhelp.h"
 
 
 struct dek_s {

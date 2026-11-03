@@ -29,6 +29,7 @@
 #include "agent.h"
 #include "../common/openpgpdefs.h"
 #include "../common/util.h"
+#include "../common/kemhelp.h"
 
 
 /* DECRYPT the stuff in ciphertext which is expected to be a S-Exp.

@@ -69,6 +69,15 @@ void  gcry_free (void *a);
 # define DIMof(type,member)   DIM(((type *)0)->member)
 #endif
 
+#define digitp(p)     (*(p) >= '0' && *(p) <= '9')
+#define hexdigitp(a)  (digitp (a)                     \
+                       || (*(a) >= 'A' && *(a) <= 'F')  \
+                       || (*(a) >= 'a' && *(a) <= 'f'))
+#define xtoi_1(p)     (*(p) <= '9'? (*(p)- '0'): \
+                       *(p) <= 'F'? (*(p)-'A'+10):(*(p)-'a'+10))
+#define xtoi_2(p)     ((xtoi_1(p) * 16) + xtoi_1((p)+1))
+
+
 /* Macros to print the result of a test.  */
 #define pass()  do { ; } while(0)
 #define fail(a)  do { fprintf (stderr, "%s:%d: test %d failed\n",\

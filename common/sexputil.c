@@ -138,7 +138,7 @@ log_printsexp (const char *text, gcry_sexp_t sexp)
    and the malloced canonical S-expression is stored at R_BUFFER and
    the allocated length at R_BUFLEN.  On error an error code is
    returned and (NULL, 0) stored at R_BUFFER and R_BUFLEN.  If the
-   allocated buffer length is not required, NULL by be used for
+   allocated buffer length is not required, NULL may be used for
    R_BUFLEN.  */
 gpg_error_t
 make_canon_sexp (gcry_sexp_t sexp, unsigned char **r_buffer, size_t *r_buflen)

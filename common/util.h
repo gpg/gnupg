@@ -313,58 +313,6 @@ char *gnupg_get_help_string (const char *key, int only_current_locale);
 /*-- localename.c --*/
 const char *gnupg_messages_locale_name (void);
 
-/*-- kem.c --*/
-gpg_error_t
-gpgsm_ecc_kem_kdf (void *kek, size_t kek_len,
-                   int hashalgo, const void *ecdh, size_t ecdh_len,
-                   const unsigned char *wrap, size_t wrap_len,
-                   const unsigned char *ukm, size_t ukm_len);
-
-gpg_error_t gnupg_ecc_kem_kdf (void *kek, size_t kek_len, int kdf_algo,
-                               int hashalgo, const void *ecdh, size_t ecdh_len,
-                               const unsigned char *kdf_params,
-                               size_t kdf_params_len);
-
-gpg_error_t gnupg_ecc_kem_simple_kdf (void *kek, size_t kek_len, int hashalgo,
-                                      const void *ecdh, size_t ecdh_len,
-                                      const void *ecc_ct, size_t ecc_ct_len,
-                                      const void *ecc_pk, size_t ecc_pk_len);
-
-gpg_error_t gnupg_kem_combiner  (void *kek, size_t kek_len,
-                                 const void *ecc_ss, size_t ecc_ss_len,
-                                 const void *ecc_ct, size_t ecc_ct_len,
-                                 const void *mlkem_ss, size_t mlkem_ss_len,
-                                 const void *mlkem_ct, size_t mlkem_ct_len,
-                                 const void *fixedinfo, size_t fixedinfo_len);
-
-gpg_error_t gnupg_kem_combiner_sha3_256 (void *kek, size_t kek_len,
-                             const void *ecc_ss, size_t ecc_ss_len,
-                             const void *ecc_ct, size_t ecc_ct_len,
-                             const void *ecc_pk, size_t ecc_pk_len,
-                             const void *mlkem_ss, size_t mlkem_ss_len,
-                              const void *fixedinfo, size_t fixedinfo_len);
-
-/* ECC parameters for KEM encryption/decryption.  */
-struct gnupg_ecc_params
-{
-  const char *curve;      /* Canonical name of the curve.  */
-  size_t pubkey_len;      /* Pubkey length in the SEXP representation.  */
-  size_t scalar_len;
-  size_t point_len;
-  int hash_algo;          /* Hash algo when it's used for composite KEM.  */
-  int kem_algo;
-  int scalar_reverse;     /* Byte-oder is reverse.  */
-  int may_have_prefix;    /* Point representation may have prefix.  */
-  int is_weierstrauss;    /* True if it is Weierstrass curve.  */
-};
-
-const struct gnupg_ecc_params *gnupg_get_ecc_params (const char *curve);
-
-/* Maximum buffer sizes required for ECC KEM.  */
-#define ECC_SCALAR_LEN_MAX 66
-#define ECC_POINT_LEN_MAX (1+2*ECC_SCALAR_LEN_MAX)
-#define ECC_HASH_LEN_MAX 64
-
 
 /*-- miscellaneous.c --*/
 

@@ -34,8 +34,10 @@
 #include <string.h>
 #include <gpg-error.h>
 #include <gcrypt.h>
+
 #include "mischelp.h"
 #include "util.h"
+#include "kemhelp.h"
 
 /* domSeperation as per *PGP specs. */
 #define KMAC_KEY "OpenPGPCompositeKeyDerivationFunction"
