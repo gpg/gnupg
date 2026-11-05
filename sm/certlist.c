@@ -562,7 +562,16 @@ gpgsm_find_cert (ctrl_t ctrl,
   int allow_ambiguous = (flags & FIND_CERT_ALLOW_AMBIG);
 
   *r_cert = NULL;
-  rc = classify_user_id (name, &desc, 0);
+
+  if ((flags & FIND_CERT_FULL_SCAN))
+    {
+      /* WARNING: This code path has not yet been tested.  */
+      memset (&desc, 0, sizeof desc);
+      desc.mode = KEYDB_SEARCH_MODE_FIRST;
+      rc = 0;
+    }
+  else
+    rc = classify_user_id (name, &desc, 0);
   if (!rc)
     {
       kh = keydb_new (ctrl);

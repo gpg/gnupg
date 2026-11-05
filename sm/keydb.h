@@ -62,6 +62,8 @@ int keydb_search_fpr (ctrl_t ctrl, KEYDB_HANDLE hd, const byte *fpr);
 int keydb_search_issuer (ctrl_t ctrl, KEYDB_HANDLE hd, const char *issuer);
 int keydb_search_issuer_sn (ctrl_t ctrl, KEYDB_HANDLE hd,
                             const char *issuer, const unsigned char *serial);
+gpg_error_t keydb_search_ski (ctrl_t ctrl, KEYDB_HANDLE hd,
+                              ksba_sexp_t ski, int only_private);
 int keydb_search_subject (ctrl_t ctrl, KEYDB_HANDLE hd, const char *issuer);
 
 int keydb_store_cert (ctrl_t ctrl, ksba_cert_t cert, int ephemeral,

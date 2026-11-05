@@ -393,6 +393,7 @@ char *gpgsm_get_fingerprint_hexstring (ksba_cert_t cert, int algo);
 unsigned long gpgsm_get_short_fingerprint (ksba_cert_t cert,
                                            unsigned long *r_high);
 unsigned char *gpgsm_get_keygrip (ksba_cert_t cert, unsigned char *array);
+char *gpgsm_get_keygrip_hexstring_ext (ksba_cert_t cert, int only_first);
 char *gpgsm_get_keygrip_hexstring (ksba_cert_t cert);
 int  gpgsm_get_key_algo_info (ksba_cert_t cert, unsigned int *nbits,
                               char **r_curve);
@@ -483,6 +484,7 @@ void gpgsm_release_certlist (certlist_t list);
 
 #define FIND_CERT_ALLOW_AMBIG 1
 #define FIND_CERT_WITH_EPHEM  2
+#define FIND_CERT_FULL_SCAN   4
 int gpgsm_find_cert (ctrl_t ctrl, const char *name, ksba_sexp_t keyid,
                      ksba_cert_t *r_cert, unsigned int flags);
 
@@ -526,9 +528,9 @@ gpg_error_t ecdh_derive_kek (unsigned char *key, unsigned int keylen,
                              int hash_algo, const char *wrap_algo_str,
                              const void *secret, unsigned int secretlen,
                              const void *ukm, unsigned int ukmlen);
-gpg_error_t ecc_kem_pkdecrypt (ctrl_t ctrl, const char *hexkeygrip,
-                               const char *desc, ksba_const_sexp_t enc_val,
-                               char **r_seskey, size_t *r_seskeylen);
+gpg_error_t kem_pkdecrypt (ctrl_t ctrl, int pk_algo, const char *hexkeygrip,
+                           const char *desc, ksba_const_sexp_t enc_val,
+                           char **r_seskey, size_t *r_seskeylen);
 
 /*-- certreqgen.c --*/
 int gpgsm_genkey (ctrl_t ctrl, estream_t in_stream, estream_t out_stream);

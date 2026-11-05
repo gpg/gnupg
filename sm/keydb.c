@@ -1979,6 +1979,9 @@ keydb_search_issuer_sn (ctrl_t ctrl, KEYDB_HANDLE hd,
   int rc;
   const unsigned char *s;
 
+  if (!issuer || !serial)
+    return gpg_error (GPG_ERR_INV_ARG);
+
   memset (&desc, 0, sizeof desc);
   desc.mode = KEYDB_SEARCH_MODE_ISSUER_SN;
   s = serial;
@@ -1993,6 +1996,66 @@ keydb_search_issuer_sn (ctrl_t ctrl, KEYDB_HANDLE hd,
   desc.u.name = issuer;
   rc = keydb_search (ctrl, hd, &desc, 1);
   return rc;
+}
+
+
+/* Search the keyring for a certificate with Subject Key Identifier
+ * SKI and return the first one.  If ONLY_PRIVATE is true certificates
+ * w/o a private key are skipped.  On success the caller may retrieve
+ * the found certificate using keydb_get_cert as usual. */
+gpg_error_t
+keydb_search_ski (ctrl_t ctrl, KEYDB_HANDLE hd,
+                  ksba_sexp_t ski, int only_private)
+{
+  gpg_error_t err;
+  KEYDB_SEARCH_DESC desc;
+  ksba_cert_t cert = NULL;
+  ksba_sexp_t foundski = NULL;
+  char *hexgrip = NULL;
+
+  if (!ski)
+    return gpg_error (GPG_ERR_INV_ARG);
+
+  /* Unfortunately we do not have the SKI as meta data or even as an
+   * index and thus we need to do our own full table scan.  Another
+   * minor thing is that the caller needs to call keydb_get_cert again
+   * and that does currently not cache the last result and thus parses
+   * the cert data again. */
+  memset (&desc, 0, sizeof desc);
+  desc.mode = KEYDB_SEARCH_MODE_FIRST;
+
+  while (!(err = keydb_search (ctrl, hd, &desc, 1)))
+    {
+      desc.mode = KEYDB_SEARCH_MODE_NEXT;
+
+      ksba_cert_release (cert); cert = NULL;
+      err = keydb_get_cert (hd, &cert);
+      if (err)
+        {
+          log_info ("keydb_get_cert failed in %s: %s <%s> - skipped\n",
+                    __func__, gpg_strerror (err), gpg_strsource (err));
+          continue;
+        }
+
+      xfree (foundski);
+      err = ksba_cert_get_subj_key_id (cert, NULL, &foundski);
+      if (err)
+        continue;  /* Probably no SKI. */
+      if (cmp_simple_canon_sexp (foundski, ski))
+        continue;  /* Not the requested SKI.  */
+      if (!only_private)
+        break;  /* Return success for the first found SKI.  */
+
+      xfree (hexgrip);
+      hexgrip = gpgsm_get_keygrip_hexstring_ext (cert, 1);
+      if (hexgrip && !gpgsm_agent_havekey (ctrl, hexgrip))
+        break;  /* We also have a private key - success. */
+    }
+
+  xfree (hexgrip);
+  xfree (foundski);
+  ksba_cert_release (cert);
+  return err;
 }
 
 int

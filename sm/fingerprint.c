@@ -155,65 +155,147 @@ gpgsm_get_short_fingerprint (ksba_cert_t cert, unsigned long *r_high)
   return buf32_to_ulong (digest + 16);
 }
 
+
 
 /* Return the so called KEYGRIP which is the SHA-1 hash of the public
-   key parameters expressed as an canonical encoded S-Exp.  ARRAY must
-   be 20 bytes long.  Returns ARRAY or a newly allocated buffer if ARRAY was
-   given as NULL.  May return NULL on error.  */
-unsigned char *
-gpgsm_get_keygrip (ksba_cert_t cert, unsigned char *array)
+ * key parameters expressed as an canonical encoded S-Exp.  ARRAY and
+ * ARRAY2 must be 20 bytes long.  On return true is stored at
+ * R_COMPOSITE if ARRAY2 has also been filled.  Returns 0 on success
+ * or an error code.  */
+static gpg_error_t
+get_keygrip (ksba_cert_t cert, unsigned char *array, unsigned char *array2,
+             int *r_composite)
 {
   gcry_sexp_t s_pkey;
   int rc;
+  const char *tag;
+  size_t taglen;
   ksba_sexp_t p;
   size_t n;
 
+  *r_composite = 0;
+
   p = ksba_cert_get_public_key (cert);
   if (!p)
-    return NULL; /* oops */
+    return gpg_error (GPG_ERR_INV_ARG); /* oops */
 
-  if (DBG_X509)
-    log_debug ("get_keygrip for public key\n");
   n = gcry_sexp_canon_len (p, 0, NULL, NULL);
   if (!n)
     {
       log_error ("libksba did not return a proper S-Exp\n");
-      return NULL;
+      return gpg_error (GPG_ERR_INV_SEXP);;
     }
-  rc = gcry_sexp_sscan ( &s_pkey, NULL, (char*)p, n);
+  rc = gcry_sexp_sscan (&s_pkey, NULL, (char*)p, n);
   xfree (p);
   if (rc)
     {
       log_error ("gcry_sexp_scan failed: %s\n", gpg_strerror (rc));
-      return NULL;
+      return gpg_error (GPG_ERR_INV_SEXP);;
     }
-  array = gcry_pk_get_keygrip (s_pkey, array);
-  gcry_sexp_release (s_pkey);
-  if (!array)
-    {
-      log_error ("can't calculate keygrip\n");
-      return NULL;
-    }
-  if (DBG_X509)
-    log_printhex (array, 20, "keygrip:");
 
-  return array;
+  /* gcry_log_debugsxp ("keygrip for", s_pkey); */
+
+  tag = gcry_sexp_nth_data (s_pkey, 0, &taglen);
+  if (tag && taglen == 13 && !memcmp (tag, "composite-key", 13))
+    {
+      gcry_sexp_t skey1, skey2, curve;
+
+      skey1 = gcry_sexp_nth (s_pkey, 1);
+      skey2 = gcry_sexp_nth (s_pkey, 2);
+      if (!skey1 || !skey2)
+        {
+          log_error ("broken composite key detected\n");
+          gcry_sexp_release (skey1);
+          gcry_sexp_release (skey2);
+          gcry_sexp_release (s_pkey);
+          return gpg_error (GPG_ERR_BAD_SECKEY);
+        }
+
+      if ((curve = gcry_sexp_find_token (skey2, "curve", 0)))
+        {
+          /* The second part has the curve parameter and thus this is
+           * the ECC part.  Swap them so that the first array has the
+           * ECC keygrip.  */
+          gcry_sexp_release (curve);
+          curve = skey1;
+          skey1 = skey2;
+          skey2 = curve;
+        }
+
+      if (!gcry_pk_get_keygrip (skey1, array)
+          || !gcry_pk_get_keygrip (skey2, array2))
+        {
+          log_error ("keygrip computation failed for"
+                     " at least one part of the composite key\n");
+          gcry_sexp_release (skey1);
+          gcry_sexp_release (skey2);
+          gcry_sexp_release (s_pkey);
+          return gpg_error (GPG_ERR_BAD_PUBKEY);
+        }
+      gcry_sexp_release (skey1);
+      gcry_sexp_release (skey2);
+      *r_composite = 1;
+    }
+  else
+    {
+      array = gcry_pk_get_keygrip (s_pkey, array);
+      if (!array)
+        {
+          log_error ("can't compute keygrip\n");
+          gcry_sexp_release (s_pkey);
+          return gpg_error (GPG_ERR_UNKNOWN_SEXP);
+        }
+    }
+
+  gcry_sexp_release (s_pkey);
+  return 0;
 }
+
+/* Return an allocated buffer with the keygrip of CERT encoded as a
+   hexstring.  If ONLY_FIRST is set only the first keygrip of a
+   composite key is returned.  NULL is returned in case of error.  */
+char *
+gpgsm_get_keygrip_hexstring_ext (ksba_cert_t cert, int only_first)
+{
+  unsigned char grip[20];
+  unsigned char grip2[20];
+  int composite;
+  char *buf;
+
+  if (get_keygrip (cert, grip, grip2, &composite))
+    return NULL;
+  if (composite && !only_first)
+    {
+      buf = xtrymalloc (20*2+1+20*2+1);
+      if (buf)
+        {
+          bin2hex (grip, 20, buf);
+          buf[40] = ',';
+          bin2hex (grip2, 20, buf+41);
+        }
+    }
+  else
+    {
+      buf = xtrymalloc (20*2+1);
+      if (buf)
+        bin2hex (grip, 20, buf);
+    }
+
+
+  if (DBG_X509)
+    log_debug ("keygrip: %s%s\n",
+               buf, (composite && only_first)? " (only first part)":"");
+
+  return buf;
+}
+
 
 /* Return an allocated buffer with the keygrip of CERT encoded as a
    hexstring.  NULL is returned in case of error.  */
 char *
 gpgsm_get_keygrip_hexstring (ksba_cert_t cert)
 {
-  unsigned char grip[20];
-  char *buf;
-
-  if (!gpgsm_get_keygrip (cert, grip))
-    return NULL;
-  buf = xtrymalloc (20*2+1);
-  if (buf)
-    bin2hex (grip, 20, buf);
-  return buf;
+  return gpgsm_get_keygrip_hexstring_ext (cert, 0);
 }
 
 
