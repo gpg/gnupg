@@ -257,10 +257,10 @@ ecc_extract_sk_from_key (const struct gnupg_ecc_params *ecc, int no_reverse,
 }
 
 
-/* Note the NO_REVERSE is required because we cant change the info in
- * ECC easily.  */
+/* Note that the ECC_KEM_FLAG_NO_REVERSE bit in flags is required
+ * because we can't change the info in ECC easily.  */
 static gpg_error_t
-ecc_raw_kem (const struct gnupg_ecc_params *ecc, int no_reverse,
+ecc_raw_kem (const struct gnupg_ecc_params *ecc, unsigned int flags,
              gcry_sexp_t s_skey,
              const unsigned char *ecc_ct, unsigned char *ecc_ecdh)
 {
@@ -276,7 +276,8 @@ ecc_raw_kem (const struct gnupg_ecc_params *ecc, int no_reverse,
       goto leave;
     }
 
-  err = ecc_extract_sk_from_key  (ecc, no_reverse, s_skey, ecc_sk);
+  err = ecc_extract_sk_from_key  (ecc, !!(flags & ECC_KEM_FLAG_NO_REVERSE),
+                                  s_skey, ecc_sk);
   if (err)
     goto leave;
 
@@ -358,19 +359,24 @@ ecc_get_curve (ctrl_t ctrl, gcry_sexp_t s_skey, const char **r_curve)
  * Public key is extracted and put into ECC_PK.  The pointer to ECC
  * parameters is stored into R_ECC.  SHADOW_INFO0 is used to determine
  * if the private key is actually on smartcard.  CTRL is used to
- * access smartcard, internally.  With NO_REVERSE set the possible
- * reversing of the secret key is suppressed.  */
+ * access smartcard, internally.  With the ECC_KEM_FLAG_NO_REVERSE
+ * set in flags the possible reversing of the secret key is
+ * suppressed.  If R_ECC_SHARED_LEN is given the actual to be used
+ * length of ECC_SHARED is stored there on success. */
 static gpg_error_t
-ecc_kem_decap (ctrl_t ctrl, gcry_sexp_t s_skey0,
+ecc_kem_decap (ctrl_t ctrl, unsigned int flags,
+               gcry_sexp_t s_skey0,
                const unsigned char *shadow_info0,
                const unsigned char *ecc_ct, size_t ecc_point_len,
-               unsigned char ecc_ecdh[ECC_POINT_LEN_MAX],
+               unsigned char ecc_shared[ECC_POINT_LEN_MAX],
+               size_t *r_ecc_shared_len,
                unsigned char ecc_pk[ECC_POINT_LEN_MAX],
-               const struct gnupg_ecc_params **r_ecc, int no_reverse)
+               const struct gnupg_ecc_params **r_ecc)
 {
   gpg_error_t err;
   const char *curve;
   const struct gnupg_ecc_params *ecc = NULL;
+  size_t ecc_shared_len;
 
   if (ecc_point_len > ECC_POINT_LEN_MAX)
     return gpg_error (GPG_ERR_INV_DATA);
@@ -412,6 +418,8 @@ ecc_kem_decap (ctrl_t ctrl, gcry_sexp_t s_skey0,
                   __func__, ecc->point_len, ecc_point_len);
       return gpg_error (GPG_ERR_INV_DATA);
     }
+  ecc_shared_len = ecc->point_len;
+
 
   err = ecc_extract_pk_from_key  (ecc, s_skey0, ecc_pk);
   if (err)
@@ -425,7 +433,7 @@ ecc_kem_decap (ctrl_t ctrl, gcry_sexp_t s_skey0,
       if (s_skey0 && agent_is_tpm2_key (s_skey0))
         {
           err = agent_tpm2d_ecc_kem (ctrl, shadow_info0,
-                                     ecc_ct, ecc->point_len, ecc_ecdh);
+                                     ecc_ct, ecc->point_len, ecc_shared);
           if (err)
             {
               log_error ("TPM decryption failed: %s\n", gpg_strerror (err));
@@ -434,7 +442,7 @@ ecc_kem_decap (ctrl_t ctrl, gcry_sexp_t s_skey0,
         }
       else
         {
-          err = agent_card_ecc_kem (ctrl, ecc_ct, ecc->point_len, ecc_ecdh);
+          err = agent_card_ecc_kem (ctrl, ecc_ct, ecc->point_len, ecc_shared);
           if (err)
             {
               log_error ("smartcard decryption failed: %s\n",
@@ -444,14 +452,25 @@ ecc_kem_decap (ctrl_t ctrl, gcry_sexp_t s_skey0,
         }
     }
   else
-    err = ecc_raw_kem (ecc, no_reverse, s_skey0, ecc_ct, ecc_ecdh);
+    err = ecc_raw_kem (ecc, flags, s_skey0, ecc_ct, ecc_shared);
 
   if (err)
     return err;
 
-  if (DBG_CRYPTO)
-    log_printhex (ecc_ecdh, ecc_point_len, "ECC     ecdh:");
+  /* Return only the x-coordinate if requested.  */
+  if ((flags & ECC_KEM_FLAG_X_ONLY)
+      && ecc_shared_len > ecc->scalar_len
+      && ecc_shared[0] == 0x04)
+    {
+      ecc_shared_len = ecc->scalar_len;
+      memmove (ecc_shared, ecc_shared+1, ecc_shared_len);
+    }
 
+  if (DBG_CRYPTO)
+    log_printhex (ecc_shared, ecc_shared_len, "ECC   shared:");
+
+  if (r_ecc_shared_len)
+    *r_ecc_shared_len = ecc_shared_len;
   return 0;
 }
 
@@ -570,8 +589,10 @@ composite_pgp_kem_decrypt (ctrl_t ctrl, const char *desc_text,
   /* For the rfc-9980 combiner we assume that cv25519 keys are not to
    * be reversed.  */
   ecc_point_len = ecc_ct_len;
-  err = ecc_kem_decap (ctrl, s_skey0, shadow_info0, ecc_ct, ecc_point_len,
-                       ecc_ecdh, ecc_pk, &ecc, (combiner_type == 2));
+  err = ecc_kem_decap (ctrl, (combiner_type == 2)? ECC_KEM_FLAG_NO_REVERSE : 0,
+                       s_skey0, shadow_info0,
+                       ecc_ct, ecc_point_len,
+                       /*outputs:*/ ecc_ecdh, NULL, ecc_pk, &ecc);
   if (err)
     goto leave;
   if (combiner_type == 1) /* BSI specified method.  */
@@ -736,6 +757,364 @@ composite_pgp_kem_decrypt (ctrl_t ctrl, const char *desc_text,
   return err;
 }
 
+
+/* For composite CMS KEM (ECC+ML-KEM) decrypt CIPHERTEXT using KEM API.
+ * First keygrip is for ECC, second keygrip is for PQC.  S_CIPHER
+ * is expected to be in this format:
+ *
+ *  (enc-val
+ *    (kem
+ *      (pqc kyber768)     -- The PQC algo
+ *      (curve <xyz>)      -- The curve for a composite algo
+ *      (ct <ciphertext>)  -- ciphertext
+ *      (kdf <kdfname>)    -- e.g. hkdf-sha256
+ *      (kek-len 32)       -- length of the key encryption key
+ *      (wrap-algo <algo>) -- e.g. aes256-wrap
+ *      (encr-key <key>))) -- this is the encrypted session key
+ *
+ * Note that this format is different from the PQC-PGP format so that
+ * it is better aligned to the respective RFC.  This should make it
+ * easier for evaluators to check the comformance of the code.
+ */
+static gpg_error_t
+composite_cms_kem_decrypt (ctrl_t ctrl, const char *desc_text,
+                           gcry_sexp_t s_enc_val, membuf_t *outbuf)
+{
+  gpg_error_t err = 0;
+  char *pqcalgostr = NULL;
+  char *curvestr = NULL;
+  char *kdfalgostr = NULL;
+  char *wrapalgostr = NULL;
+  int keklen;
+  gcry_buffer_t ciphertext = { 0, 0, 0, NULL };
+  gcry_buffer_t encryptedkey = { 0, 0, 0, NULL };
+  const unsigned char *ecc_encaps;  /* Points into CIPHERTEXT.  */
+  size_t ecc_encaps_len;
+  const unsigned char *mlk_encaps;  /* Points into CIPHERTEXT.  */
+  size_t mlk_encaps_len;
+  enum gcry_kem_algos mlk_kem_algo;
+  gcry_sexp_t s_skey0 = NULL;
+  gcry_sexp_t s_skey1 = NULL;
+  unsigned char *shadow_info0 = NULL;
+  unsigned char *shadow_info1 = NULL;
+  unsigned char ecc_shared[ECC_POINT_LEN_MAX];
+  size_t ecc_shared_len = sizeof ecc_shared;
+  unsigned char ecc_pubkey[ECC_POINT_LEN_MAX];
+  const struct gnupg_ecc_params *ecc;
+  gcry_buffer_t mlk_secretkey = { 0, 0, 0, NULL };
+  const unsigned char *mlk_seckey; /* Points into MLK_SECRETKEY.   */
+  size_t mlk_seckey_len;           /* Actual secret key length.    */
+  size_t mlk_expect_seckey_len;    /* Expected secret key length.  */
+  unsigned char *mlk_shared = NULL;
+  size_t mlk_shared_len;
+  const char *label;
+  unsigned char *comb_shared = NULL;  /* Output of the combiner.  */
+  size_t comb_shared_len;
+  void  *session_key = NULL;
+  size_t session_key_len;
+  size_t n;
+
+  /* Parse the ciphertext expression.  */
+  err = gcry_sexp_extract_param (s_enc_val, "enc-val!kem",
+                                 "%s'pqc''curve'?'kdf''wrap-algo'"
+                                 "%d'kek-len'&'ct''encr-key'",
+                                 &pqcalgostr, &curvestr,
+                                 &kdfalgostr, &wrapalgostr,
+                                 &keklen, &ciphertext, &encryptedkey, NULL);
+  if (err)
+    {
+      if (opt.verbose)
+        log_info ("%s: parsing enc_val failed: %s\n",
+                  __func__, gpg_strerror (err));
+      goto leave;
+    }
+
+  if (DBG_CRYPTO)
+    log_debug ("%s: pqc=%s curve=%s kdf=%s wrap=%s keklen=%d ctlen=%zu\n",
+               __func__, pqcalgostr, curvestr, kdfalgostr, wrapalgostr,
+               keklen, ciphertext.len);
+
+  if (!curvestr)
+    {
+      err = gpg_error (GPG_ERR_PUBKEY_ALGO);
+      log_info ("%s: plain (single algo) PQC is not supported\n", __func__);
+      goto leave;
+    }
+
+  /* Deserialize the ciphertext. */
+  if (!strcmp (pqcalgostr, "kyber768"))
+    {
+      mlk_kem_algo = GCRY_KEM_MLKEM768;
+      mlk_encaps_len = GCRY_KEM_MLKEM768_ENCAPS_LEN;
+      mlk_shared_len = GCRY_KEM_MLKEM768_SHARED_LEN;
+      mlk_expect_seckey_len = GCRY_KEM_MLKEM768_SECKEY_LEN;
+    }
+  else if (!strcmp (pqcalgostr, "kyber1024"))
+    {
+      mlk_kem_algo = GCRY_KEM_MLKEM1024;
+      mlk_encaps_len = GCRY_KEM_MLKEM1024_ENCAPS_LEN;
+      mlk_shared_len = GCRY_KEM_MLKEM1024_SHARED_LEN;
+      mlk_expect_seckey_len = GCRY_KEM_MLKEM1024_SECKEY_LEN;
+    }
+  else
+    {
+      err = gpg_error (GPG_ERR_PUBKEY_ALGO);
+      log_info ("%s: PQC algo '%s' is not supported\n", __func__, pqcalgostr);
+      goto leave;
+    }
+  if (ciphertext.len < mlk_encaps_len)
+    {
+      err = gpg_error (GPG_ERR_INV_DATA);
+      log_info ("%s: ciphertext is too short for '%s' (%zu)\n",
+                __func__, pqcalgostr, ciphertext.len);
+      goto leave;
+    }
+  mlk_encaps = ciphertext.data;
+  ecc_encaps = (char*)ciphertext.data + mlk_encaps_len;
+  ecc_encaps_len = ciphertext.len - mlk_encaps_len;
+
+  label = NULL;
+  if (!strcmp (curvestr, "X25519"))
+    {
+      n = GCRY_KEM_ECC_X25519_ENCAPS_LEN;
+      if (mlk_kem_algo == GCRY_KEM_MLKEM768)
+        label = "\x5c\x2e\x2f\x2f\x5e\x5c";
+    }
+  else if (!strcmp (curvestr, "X448"))
+    {
+      n = GCRY_KEM_ECC_X448_ENCAPS_LEN;
+      if (mlk_kem_algo == GCRY_KEM_MLKEM1024)
+        label = "MLKEM1024-X448";
+    }
+  else if (!strcmp (curvestr, "bp256"))
+    {
+      n = 1 + 32 + 32;
+      if (mlk_kem_algo == GCRY_KEM_MLKEM768)
+        label = "MLKEM768-BP256";
+    }
+  else if (!strcmp (curvestr, "nistp256"))
+    {
+      n = 1 + 32 + 32;
+      if (mlk_kem_algo == GCRY_KEM_MLKEM768)
+        label = "MLKEM768-P256";
+    }
+  else if (!strcmp (curvestr, "bp384"))
+    {
+      n = 1 + 48 + 48;
+      if (mlk_kem_algo == GCRY_KEM_MLKEM1024)
+        label = "MLKEM1024-BP384";
+    }
+  else if (!strcmp (curvestr, "nistp384"))
+    n = 1 + 48 + 48;
+  else if (!strcmp (curvestr, "bp512"))
+    n = 1 + 64 + 64;
+  else if (!strcmp (curvestr, "nistp521"))
+    {
+      n = 1 + 66 + 66;
+      if (mlk_kem_algo == GCRY_KEM_MLKEM1024)
+        label = "MLKEM1024-P521";
+    }
+  else
+    {
+      err = gpg_error (GPG_ERR_UNKNOWN_CURVE);
+      log_info ("%s: curve '%s' is not supported\n", __func__, curvestr);
+      goto leave;
+    }
+  if (n != ecc_encaps_len)
+    {
+      err = gpg_error (GPG_ERR_INV_DATA);
+      log_info ("%s: ciphertext is too short for '%s' (%zu)\n",
+                __func__, curvestr, n);
+      goto leave;
+    }
+  if ((n & 1) && ecc_encaps[0] != 0x04)
+    {
+      /* This is a classic curve and thus the cipher text needs to be
+       * encoded in the same way as the public key; ie. uncompressed.  */
+      err = gpg_error (GPG_ERR_INV_DATA);
+      log_info ("%s: ECC part is not in uncompressed format\n", __func__);
+      goto leave;
+    }
+  if (!label)
+    {
+      err = gpg_error (GPG_ERR_PUBKEY_ALGO);
+      log_info ("%s: composite algo '%s' with '%s' is not specified\n",
+                __func__, pqcalgostr, curvestr);
+      goto leave;
+    }
+
+  /* Get the private key for the ECC part.  As per specs this may also
+   * be RSA but we don't support this for the traditional algo.  */
+  err = agent_key_from_file (ctrl, NULL, desc_text,
+                             NULL, &shadow_info0,
+                             CACHE_MODE_NORMAL, NULL, &s_skey0, NULL, NULL);
+  if (err && gpg_err_code (err) != GPG_ERR_NO_SECKEY)
+    {
+      log_error ("failed to read the first secret key\n");
+      goto leave;
+    }
+
+  /* Get the private key for the PQC algo part.  We support only
+   * ML-KEM 768 and 1024 here. */
+  /* FIXME: The called function should make sure that we get the
+   * expanded key back.  */
+  err = agent_key_from_file (ctrl, NULL, desc_text,
+                             ctrl->keygrip1, &shadow_info1,
+                             CACHE_MODE_NORMAL, NULL, &s_skey1, NULL, NULL);
+  if (err)
+    {
+      log_error ("failed to read the second secret key\n");
+      goto leave;
+    }
+
+  /* First get the shared secret from the ECC part.  */
+  err = ecc_kem_decap (ctrl, (ECC_KEM_FLAG_NO_REVERSE | ECC_KEM_FLAG_X_ONLY),
+                       s_skey0, shadow_info0, ecc_encaps, ecc_encaps_len,
+                       /* outputs: */ ecc_shared, &ecc_shared_len,
+                                      ecc_pubkey, &ecc);
+  if (err)
+    goto leave;
+
+  /* (Debug output already done by ecc_kem_decap).  */
+
+  /* Secondly get the shared secret from the PQC part.  We assume
+   * ML-KEM.  We also need to get the secret key from the s-exp.  */
+  err = gcry_sexp_extract_param (s_skey1, NULL, "&s", &mlk_secretkey, NULL);
+  if (gpg_err_code (err) == GPG_ERR_NO_OBJ)
+    {
+      /* S not available.  Try using the seed.  */
+      gpg_error_t err2;
+      gcry_mpi_t seed;
+      gcry_sexp_t s_genkey, s_fullkey;
+
+      if (!gcry_sexp_extract_param (s_skey1, NULL, "/'seed'", &seed, NULL))
+        {
+          err2 = gcry_sexp_build (&s_genkey, NULL,
+                                  "(genkey(%s(derive-parms(seed%m))))",
+                                  pqcalgostr, seed);
+          gcry_mpi_release (seed);
+          if (!err2)
+            err2 = gcry_pk_genkey (&s_fullkey, s_genkey);
+          gcry_sexp_release (s_genkey);
+          if (!err2)
+            err = gcry_sexp_extract_param (s_fullkey, NULL, "&s",
+                                           &mlk_secretkey, NULL);
+          gcry_sexp_release (s_fullkey);
+        }
+    }
+  if (err)
+    {
+      if (opt.verbose)
+        log_info ("%s: extracting S from ML_KEM key failed\n", __func__);
+      goto leave;
+    }
+  mlk_seckey     = mlk_secretkey.data;
+  mlk_seckey_len = mlk_secretkey.len;
+  if (mlk_seckey_len != mlk_expect_seckey_len)
+    {
+      if (opt.verbose)
+        log_info ("%s: ML-KEM secret key length invalid (%zu/%zu)\n",
+                  __func__, mlk_seckey_len, mlk_expect_seckey_len);
+      err = gpg_error (GPG_ERR_BROKEN_SECKEY);
+      goto leave;
+    }
+  mlk_shared = xtrymalloc_secure (mlk_shared_len);
+  if (!mlk_shared)
+    {
+      err = gpg_error_from_syserror ();
+      goto leave;
+    }
+  err = gcry_kem_decap (mlk_kem_algo, mlk_seckey, mlk_seckey_len,
+                        mlk_encaps, mlk_encaps_len, mlk_shared, mlk_shared_len,
+                        NULL, 0);
+  if (err)
+    {
+      if (opt.verbose)
+        log_info ("%s: gcry_kem_decap for PQC failed\n", __func__);
+      goto leave;
+    }
+  /* We do not need the secret key anymore.  */
+  wipememory (mlk_secretkey.data, mlk_secretkey.len);
+  gcry_free (mlk_secretkey.data);
+  mlk_secretkey.data = NULL;
+  if (DBG_CRYPTO)
+    log_printhex (mlk_shared, mlk_shared_len, "MLKEM shared:");
+
+  /* Combine the keys.  */
+  comb_shared_len = 32;
+  comb_shared = xtrymalloc_secure (comb_shared_len);
+  if (!comb_shared)
+    {
+      err = gpg_error_from_syserror ();
+      goto leave;
+    }
+  err = gnupg_kem_combiner_sha3_256 (comb_shared, comb_shared_len,
+                                     ecc_shared, ecc_shared_len,
+                                     ecc_encaps, ecc_encaps_len,
+                                     ecc_pubkey, ecc->point_len,
+                                     mlk_shared, mlk_shared_len,
+                                     label, strlen (label));
+  if (err)
+    {
+      if (opt.verbose)
+        log_info ("%s: PQC-CMS key combiner failed\n", __func__);
+      goto leave;
+    }
+
+  if (DBG_CRYPTO)
+    log_printhex (comb_shared, comb_shared_len, "Final shared:");
+
+  session_key_len = keklen;
+  err = gnupg_kem_derive_seskey (DBG_CRYPTO,
+                                 comb_shared, comb_shared_len,
+                                 encryptedkey.data, encryptedkey.len,
+                                 pqcalgostr, wrapalgostr, kdfalgostr,
+                                 session_key_len, &session_key);
+  if (err)
+    goto leave;
+
+  /* Finally store the result at the provided membuf.  */
+  put_membuf_printf (outbuf,
+                     "(5:value%u:", (unsigned int)session_key_len);
+  put_membuf (outbuf, session_key, session_key_len);
+  put_membuf (outbuf, ")", 2);
+
+ leave:
+  if (mlk_secretkey.data)
+    {
+      wipememory (mlk_secretkey.data, mlk_secretkey.len);
+      gcry_free (mlk_secretkey.data);
+    }
+  if (mlk_shared)
+    {
+      wipememory (mlk_shared, mlk_shared_len);
+      xfree (mlk_shared);  /* (this also does a wipe).  */
+    }
+  if (comb_shared)
+    {
+      wipememory (comb_shared, comb_shared_len);
+      xfree (comb_shared);  /* (this also does a wipe).  */
+    }
+  if (session_key)
+    {
+      wipememory (session_key, session_key_len);
+      xfree (session_key);  /* (this also does a wipe).  */
+    }
+
+  xfree (pqcalgostr);
+  xfree (curvestr);
+  xfree (kdfalgostr);
+  xfree (wrapalgostr);
+  gcry_free (ciphertext.data);
+  gcry_free (encryptedkey.data);
+  gcry_sexp_release (s_skey0);
+  gcry_sexp_release (s_skey1);
+  xfree (shadow_info0);
+  xfree (shadow_info1);
+  return err;
+}
+
+
 /* For ECC PGP/CMS KEM, decrypt CIPHERTEXT using KEM API.  CIPHERTEXT
    should follow the format of:
 
@@ -846,9 +1225,10 @@ ecc_kem_decrypt (int kemid, ctrl_t ctrl, const char *desc_text,
 
   /* For the rfc-9580 variant we assume that key is not reversed.  */
   ecc_point_len = ecc_ct_len;
-  err = ecc_kem_decap (ctrl, s_skey, shadow_info,
+  err = ecc_kem_decap (ctrl, (kdfvariant == 9580)? ECC_KEM_FLAG_NO_REVERSE : 0,
+                       s_skey, shadow_info,
                        ecc_ct, ecc_point_len,
-                       ecc_ecdh, ecc_pk, &ecc, (kdfvariant == 9580));
+                       /*outputs:*/ ecc_ecdh, NULL, ecc_pk, &ecc);
   if (err)
     goto leave;
   if (kdfvariant == 9580)
@@ -989,7 +1369,7 @@ agent_kem_decrypt (ctrl_t ctrl, const char *desc_text, int kemid,
 
   if (kemid == KEM_PGP || kemid == KEM_CMS)
     err = ecc_kem_decrypt (kemid, ctrl, desc_text, s_cipher, outbuf);
-  else if (kemid == KEM_PQC_PGP)
+  else if (kemid == KEM_PQC_PGP || kemid == KEM_PQC_CMS)
     {
       if (!ctrl->have_keygrip)
         {
@@ -1010,7 +1390,10 @@ agent_kem_decrypt (ctrl_t ctrl, const char *desc_text, int kemid,
           gcry_log_debugsxp ("cipher", s_cipher);
         }
 
-      err = composite_pgp_kem_decrypt (ctrl, desc_text, s_cipher, outbuf);
+      if (kemid == KEM_PQC_PGP)
+        err = composite_pgp_kem_decrypt (ctrl, desc_text, s_cipher, outbuf);
+      else
+        err = composite_cms_kem_decrypt (ctrl, desc_text, s_cipher, outbuf);
     }
   else
     err = gpg_error (GPG_ERR_INV_ARG);

@@ -1069,7 +1069,8 @@ static const char hlp_pkdecrypt[] =
   "sensitive to eavesdropping.\n"
   "If the --kem option is used, decryption is done with the KEM,\n"
   "inquiring upper-layer option, when needed.  KEMID can be\n"
-  "specified with --kem option;  Valid value is: PQC-PGP, PGP, or CMS.\n"
+  "specified with --kem option using one of these values:\n"
+  "   PQC-PGP, PGP, PQC-CMS, or CMS.\n"
   "Default is PQC-PGP.";
 static gpg_error_t
 cmd_pkdecrypt (assuan_context_t ctx, char *line)
@@ -1096,6 +1097,8 @@ cmd_pkdecrypt (assuan_context_t ctx, char *line)
             kemid = KEM_PGP;
           else if (!strcmp (p, "CMS"))
             kemid = KEM_CMS;
+          else if (!strcmp (p, "PQC-CMS"))
+            kemid = KEM_PQC_CMS;
           else
             return set_error (GPG_ERR_ASS_PARAMETER, "invalid KEM algorithm");
         }

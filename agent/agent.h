@@ -573,7 +573,8 @@ enum kemids
   {
     KEM_PQC_PGP,
     KEM_PGP,
-    KEM_CMS
+    KEM_PQC_CMS,
+    KEM_CMS,
   };
 
 gpg_error_t agent_kem_decrypt (ctrl_t ctrl, const char *desc_text, int kemid,

@@ -456,9 +456,9 @@ prepare_decryption (ctrl_t ctrl, const char *hexkeygrip,
     }
   else
     {
-      if (pk_algo == GCRY_PK_ECC)
-        rc = ecc_kem_pkdecrypt (ctrl, hexkeygrip, desc, enc_val,
-                                &seskey, &seskeylen);
+      if (pk_algo == GCRY_PK_ECC || pk_algo == GCRY_PK_KEM)
+        rc = kem_pkdecrypt (ctrl, pk_algo, hexkeygrip, desc, enc_val,
+                            &seskey, &seskeylen);
       else
         rc = gpgsm_agent_pkdecrypt (ctrl, hexkeygrip, desc, 0, enc_val,
                                     &seskey, &seskeylen);
@@ -846,6 +846,7 @@ gpgsm_decrypt (ctrl_t ctrl, estream_t in_fp, estream_t out_fp)
             {
               char *issuer = NULL;
               ksba_sexp_t serial = NULL;
+              ksba_sexp_t ski = NULL;
               ksba_sexp_t enc_val = NULL;
               char *hexkeygrip = NULL;
               char *pkalgostr = NULL;
@@ -860,7 +861,12 @@ gpgsm_decrypt (ctrl_t ctrl, estream_t in_fp, estream_t out_fp)
 
               *kidbuf = 0;
 
+#if KSBA_VERSION_NUMBER < 0x010900  /* 1.9.0 */
               tmp_rc = ksba_cms_get_issuer_serial (cms, recp, &issuer, &serial);
+#else
+              tmp_rc = ksba_cms_get_recp_ident (cms, recp,
+                                                &issuer, &serial, &ski);
+#endif
               if (tmp_rc == -1 && recp)
                 break; /* no more recipients */
               audit_log_i (ctrl->audit, AUDIT_NEW_RECP, recp);
@@ -877,22 +883,38 @@ gpgsm_decrypt (ctrl_t ctrl, estream_t in_fp, estream_t out_fp)
                 {
                   if (opt.verbose)
                     {
-                      log_info ("recp %d - issuer: '%s'\n",
-                                 recp, issuer? issuer:"[NONE]");
-                      log_info ("recp %d - serial: ", recp);
-                      gpgsm_dump_serial (serial);
+                      if (!issuer && ski)
+                        {
+                          log_info ("recp %d - ski: ", recp);
+                          gpgsm_dump_serial (ski);  /* Actual an SKI */
+                        }
+                      else
+                        {
+                          log_info ("recp %d - issuer: '%s'\n",
+                                    recp, issuer? issuer:"[NONE]");
+                          log_info ("recp %d - serial: ", recp);
+                          gpgsm_dump_serial (serial);
+                        }
                       log_printf ("\n");
                     }
 
                   if (ctrl->audit)
                     {
-                      char *tmpstr = gpgsm_format_sn_issuer (serial, issuer);
+                      char *tmpstr;
+
+                      if (!issuer && ski)
+                        tmpstr = gpgsm_format_serial (ski); /* This is an SKI */
+                      else
+                        tmpstr = gpgsm_format_sn_issuer (serial, issuer);
                       audit_log_s (ctrl->audit, AUDIT_RECP_NAME, tmpstr);
                       xfree (tmpstr);
                     }
 
                   keydb_search_reset (kh);
-                  rc = keydb_search_issuer_sn (ctrl, kh, issuer, serial);
+                  if (ski)
+                    rc = keydb_search_ski (ctrl, kh, ski, 1);
+                  else
+                    rc = keydb_search_issuer_sn (ctrl, kh, issuer, serial);
                   if (rc)
                     {
                       log_error ("failed to find the certificate: %s\n",

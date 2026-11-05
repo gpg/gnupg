@@ -98,7 +98,7 @@ common_sources = \
 	comopt.c comopt.h \
 	compliance.c compliance.h \
 	pkscreening.c pkscreening.h \
-	kem.c hemhelp.h
+	kem.c kemhelp.h
 
 if HAVE_W32_SYSTEM
 common_sources += w32-reg.c w32-cmdline.c

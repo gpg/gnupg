@@ -35,6 +35,9 @@
 #define ECC_POINT_LEN_MAX (1+2*ECC_SCALAR_LEN_MAX)
 #define ECC_HASH_LEN_MAX 64
 
+#define ECC_KEM_FLAG_NO_REVERSE 1  /* Ignore the scalar_reverse hint.  */
+#define ECC_KEM_FLAG_X_ONLY     2  /* Return only the x-coordinate.    */
+
 
 /* ECC parameters for KEM encryption/decryption.  */
 struct gnupg_ecc_params
@@ -83,6 +86,14 @@ gpg_error_t gnupg_kem_combiner_sha3_256 (void *kek, size_t kek_len,
 
 const struct gnupg_ecc_params *gnupg_get_ecc_params (const char *curve);
 
+gpg_error_t gnupg_kem_derive_seskey (int enable_debug,
+                                     const void *shared, size_t shared_len,
+                                     const void *encrkey, size_t encrkey_len,
+                                     const char *pqcalgostr,
+                                     const char *wrapalgostr,
+                                     const char *kdfalgostr,
+                                     size_t session_key_len,
+                                     void **r_session_key);
 
 
 #endif /*GNUPG_COMMON_KEMHELP_H*/

@@ -564,14 +564,30 @@ gpgsm_agent_pkdecrypt (ctrl_t ctrl, const char *keygrip, const char *desc,
   size_t n, len;
   char *p, *buf, *endp;
   size_t ciphertextlen;
+  const char *keygrip2 = NULL;
 
-  if (!keygrip || strlen(keygrip) != 40 || !ciphertext || !r_buf || !r_buflen)
+  if (!keygrip || !ciphertext || !r_buf || !r_buflen)
     return gpg_error (GPG_ERR_INV_VALUE);
   *r_buf = NULL;
 
   ciphertextlen = gcry_sexp_canon_len (ciphertext, 0, NULL, NULL);
   if (!ciphertextlen)
     return gpg_error (GPG_ERR_INV_VALUE);
+
+  /* Parse the keygrip in case of a dual algo.  */
+  keygrip2 = strchr (keygrip, ',');
+  if (!keygrip2)
+    keygrip2 = keygrip + strlen (keygrip);
+  if (keygrip2 - keygrip != 40)
+    return gpg_error (GPG_ERR_INV_VALUE);
+  if (*keygrip2)
+    {
+      keygrip2++;
+      if (strlen (keygrip2) != 40)
+        return gpg_error (GPG_ERR_INV_VALUE);
+      if (use_kem != 2)
+        return gpg_error (GPG_ERR_INV_ARG);
+    }
 
   rc = start_agent (ctrl);
   if (rc)
@@ -582,10 +598,18 @@ gpgsm_agent_pkdecrypt (ctrl_t ctrl, const char *keygrip, const char *desc,
     return rc;
 
   log_assert ( DIM(line) >= 50 );
-  snprintf (line, DIM(line), "SETKEY %s", keygrip);
+  snprintf (line, DIM(line), "SETKEY %.40s", keygrip);
   rc = assuan_transact (agent_ctx, line, NULL, NULL, NULL, NULL, NULL, NULL);
   if (rc)
     return rc;
+
+  if (*keygrip2)
+    {
+      snprintf (line, sizeof line, "SETKEY --another %.40s", keygrip2);
+      rc = assuan_transact (agent_ctx, line, NULL, NULL,NULL,NULL,NULL,NULL);
+      if (rc)
+        return rc;
+    }
 
   if (desc)
     {
@@ -596,12 +620,14 @@ gpgsm_agent_pkdecrypt (ctrl_t ctrl, const char *keygrip, const char *desc,
         return rc;
     }
 
-  init_membuf (&data, 1024);
+  init_membuf (&data, 2048);
   cipher_parm.ctrl = ctrl;
   cipher_parm.ctx = agent_ctx;
   cipher_parm.ciphertext = ciphertext;
   cipher_parm.ciphertextlen = ciphertextlen;
-  rc = assuan_transact (agent_ctx, use_kem? "PKDECRYPT --kem=CMS": "PKDECRYPT",
+  rc = assuan_transact (agent_ctx,
+                        use_kem == 2 ? "PKDECRYPT --kem=PQC-CMS" :
+                        use_kem == 1 ? "PKDECRYPT --kem=CMS" : "PKDECRYPT",
                         put_membuf_cb, &data,
                         inq_ciphertext_cb, &cipher_parm, NULL, NULL);
   if (rc)

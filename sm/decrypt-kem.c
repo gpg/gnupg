@@ -170,7 +170,7 @@ ecdh_derive_kek (unsigned char *kek_key, unsigned int kek_len,
 
 
 /* For ECC, get the session key by asking gpg-agent with KEM API.  */
-gpg_error_t
+static gpg_error_t
 ecc_kem_pkdecrypt (ctrl_t ctrl, const char *hexkeygrip,
                    const char *desc, ksba_const_sexp_t enc_val,
                    char **r_seskey, size_t *r_seskeylen)
@@ -290,5 +290,105 @@ ecc_kem_pkdecrypt (ctrl_t ctrl, const char *hexkeygrip,
   gcry_free (ukm.data);
   gcry_mpi_release (ecc_ct_mpi);
   gcry_mpi_release (encrypted_sessionkey_mpi);
+  return err;
+}
+
+
+
+/* Dispatcher for the KEM functions. */
+gpg_error_t
+kem_pkdecrypt (ctrl_t ctrl, int pk_algo, const char *hexkeygrip,
+               const char *desc, ksba_const_sexp_t enc_val,
+               char **r_seskey, size_t *r_seskeylen)
+{
+  gpg_error_t err;
+  gcry_sexp_t s_enc_val = NULL;
+  char *pqcalgostr = NULL;
+  char *curvestr = NULL;
+  char *kdfstr = NULL;
+  char *wrapalgostr = NULL;
+  int keklen;
+
+  if (pk_algo == GCRY_PK_ECC)
+    return ecc_kem_pkdecrypt (ctrl, hexkeygrip, desc, enc_val,
+                              r_seskey, r_seskeylen);
+  if (pk_algo != GCRY_PK_KEM)
+    return gpg_error (GPG_ERR_PUBKEY_ALGO);  /* Should not happen */
+
+  /* The supported KEM algos are all ML-KEM+ECC composites.  Do some
+   * basic checks here.  The expected format of ENC_VAL is:
+   *
+   *  (enc-val
+   *    (kem
+   *      (pqc kyber768)     -- The PQC algo
+   *      (curve <xyz>)      -- The curve for a composite algo
+   *      (ct <ciphertext>)  -- ciphertext
+   *      (kdf <kdfname>)    -- e.g. hkdf-sha256
+   *      (kek-len 32)       -- length of the key encryption key
+   *      (wrap-algo <algo>) -- e.g. aes256-wrap
+   *      (encr-key <key>))) -- this is the encrypted session key
+   *
+   * A composite algorithm can be detected by presence of the "pqc" and
+   * the "curve" parameters.
+   */
+
+  /* Convert from canonical format to an gcrypt s-expression.  */
+  err = gcry_sexp_sscan (&s_enc_val, NULL, enc_val,
+                         gcry_sexp_canon_len (enc_val, 0, NULL, NULL));
+  if (err)
+    return err;
+
+  err = gcry_sexp_extract_param (s_enc_val, "enc-val!kem",
+                                 "%s'pqc''curve'?'kdf''wrap-algo'%d'kek-len'",
+                                 &pqcalgostr, &curvestr, &kdfstr, &wrapalgostr,
+                                 &keklen, NULL);
+  if (err)
+    {
+      if (opt.verbose)
+        log_info ("%s: parsing enc_val failed: %s\n",
+                  __func__, gpg_strerror (err));
+      goto leave;
+    }
+
+  if (DBG_CRYPTO)
+    log_debug ("%s: pqc=%s curve=%s kdf=%s wrap=%s keklen=%d\n",
+               __func__, pqcalgostr, curvestr, kdfstr, wrapalgostr, keklen);
+
+  if (!curvestr)
+    {
+      err = gpg_error (GPG_ERR_PUBKEY_ALGO);
+      log_info ("%s: plain (single algo) PQC is not supported\n", __func__);
+      goto leave;
+    }
+
+  if (!strcmp (kdfstr, "hkdf-sha256"))
+    ;
+  else
+    {
+      err = gpg_error (GPG_ERR_DIGEST_ALGO);
+      goto leave;
+    }
+
+  if (!strcmp (wrapalgostr, "aes256-wrap")
+      || !strcmp (wrapalgostr, "aes192-wrap")
+      || !strcmp (wrapalgostr, "aes128-wrap"))
+    ;
+  else
+    {
+      err = gpg_error (GPG_ERR_CIPHER_ALGO);
+      goto leave;
+    }
+
+  /* Checks done.  Now ask gpg-agent to decrypt the wrapped session
+   * key in ENC_VAL.  (The '2' means PQC-CMS.)  */
+  err = gpgsm_agent_pkdecrypt (ctrl, hexkeygrip, desc, 2, enc_val,
+                               r_seskey, r_seskeylen);
+
+ leave:
+  xfree (pqcalgostr);
+  xfree (curvestr);
+  xfree (kdfstr);
+  xfree (wrapalgostr);
+  gcry_sexp_release (s_enc_val);
   return err;
 }

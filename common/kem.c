@@ -1,5 +1,5 @@
 /* kem.c -  KEM helper functions
- * Copyright (C) 2024  g10 Code GmbH.
+ * Copyright (C) 2024, 2026  g10 Code GmbH.
  *
  * This file is part of GnuPG.
  *
@@ -380,4 +380,149 @@ gnupg_get_ecc_params (const char *curve)
       return &ecc_table[i];
 
   return NULL;
+}
+
+
+
+/* Derive a session key for composite CMS algos.  (SHARED,SHARED_LEN)
+ * give the shared secret from which a KEK is derived.
+ * (ENCRKEY,ENCRYKEY_LEN) give the encrypted key to be decrypted and
+ * hashed into a session key.  PQCALGOSTR, WRAPALSOSTR, and KDFALGOSTR
+ * derscribe the used algorithms.  SESSION_KEY_LEN is the requested
+ * length for the output.  On success the allocated session key is
+ * stored at R_SESSION_KEY.  ENABLE_DEBUG enables debug output.  */
+gpg_error_t
+gnupg_kem_derive_seskey (int enable_debug,
+                         const void *shared, size_t shared_len,
+                         const void *encrkey, size_t encrkey_len,
+                         const char *pqcalgostr,
+                         const char *wrapalgostr,
+                         const char *kdfalgostr,
+                         size_t session_key_len,
+                         void **r_session_key)
+{
+  gpg_error_t err;
+  void *session_key;
+  gcry_cipher_hd_t hd;
+  gcry_kdf_hd_t kdfhd;
+  unsigned long kdfparam[1];
+  int wrapalgo, kdfalgo, kdfmacalgo;
+  /* Template for the RFC-9629 key derivation:
+   *  CMSORIforKEMOtherInfo ::= SEQUENCE {
+   *    wrap KeyEncryptionAlgorithmIdentifier,
+   *    kekLength INTEGER (1..65535),
+   *    ukm [0] EXPLICIT UserKeyingMaterial OPTIONAL } */
+  unsigned char cmsoriforkemotherinfo[18] =
+    { 0x30, 0x10, 0x30, 0x0b, 0x06,
+      0x09, 0x60, 0x86, 0x48, 0x01, 0x65, 0x03, 0x04, 0x01, 0x2d,
+      0x02, 0x01, 0x20 };
+#define CMSORIFORKEMOTHERINFO_OID 14    /* Offset to the last OID byte.  */
+#define CMSORIFORKEMOTHERINFO_KEKLEN 17 /* Offset to the KEK_LEN byte.   */
+
+
+  if (!strcmp (wrapalgostr, "aes256-wrap"))
+    {
+      wrapalgo = GCRY_CIPHER_AES256;
+      cmsoriforkemotherinfo[CMSORIFORKEMOTHERINFO_OID] = 45;
+    }
+  else if (!strcmp (wrapalgostr, "aes192-wrap"))
+    {
+      wrapalgo = GCRY_CIPHER_AES192;
+      cmsoriforkemotherinfo[CMSORIFORKEMOTHERINFO_OID] = 25;
+    }
+  else if (!strcmp (wrapalgostr, "aes128-wrap"))
+    {
+      wrapalgo = GCRY_CIPHER_AES128;
+      cmsoriforkemotherinfo[CMSORIFORKEMOTHERINFO_OID] = 5;
+    }
+  else
+    return gpg_error (GPG_ERR_CIPHER_ALGO);
+
+  if (!strcmp (kdfalgostr, "hkdf-sha256"))
+    {
+      kdfalgo = GCRY_KDF_HKDF;
+      kdfmacalgo = GCRY_MAC_HMAC_SHA256;
+    }
+  else
+    return gpg_error (GPG_ERR_DIGEST_ALGO);
+
+  /* Check the length of the requested session key.  This also makes
+   * sure that it fits the der encoding in the template. */
+  if (session_key_len < 16 || session_key_len > 127)
+    {
+      log_info ("%s: requested session key length is wrong (%zu)\n",
+                __func__, session_key_len);
+      return gpg_error (GPG_ERR_INV_LENGTH);
+    }
+  cmsoriforkemotherinfo[CMSORIFORKEMOTHERINFO_KEKLEN] = session_key_len;
+
+  /* Check that the requested length matches and then allocate.  */
+  if (encrkey_len != session_key_len + 8)
+    {
+      log_info ("%s: encrypted key size %zu does not fit for '%s'\n",
+                __func__, encrkey_len, pqcalgostr);
+      return gpg_error (GPG_ERR_INV_DATA);
+    }
+
+  session_key = xtrymalloc_secure (session_key_len);
+  if (!session_key)
+    return gpg_error_from_syserror ();
+
+  /* Note: From here on jump to the leave label on error.  */
+
+  err = gcry_cipher_open (&hd, wrapalgo, GCRY_CIPHER_MODE_AESWRAP, 0);
+  if (err)
+    {
+      log_error ("%s: failed to initialize '%s': %s\n",
+                 __func__, wrapalgostr, gpg_strerror (err));
+      goto leave;
+    }
+
+  kdfparam[0] = session_key_len;
+  err = gcry_kdf_open (&kdfhd, kdfalgo, kdfmacalgo,
+                       kdfparam, 1,
+                       shared, shared_len,
+                       NULL, 0, NULL, 0,
+                       cmsoriforkemotherinfo, sizeof cmsoriforkemotherinfo);
+  if (err)
+    {
+      log_error ("%s: failed to open the HKDF function: %s\n",
+                 __func__, gpg_strerror (err));
+      gcry_cipher_close (hd);
+      goto leave;
+    }
+
+  /* Note that we use the SESSION_KEY buffer for deriving the KEK and
+   * after it has been set we use that very buffer for its actual purpose. */
+  err = gcry_kdf_compute (kdfhd, NULL);
+  if (!err)
+    err = gcry_kdf_final (kdfhd, session_key_len, session_key);
+  gcry_kdf_close (kdfhd);
+
+  if (enable_debug)
+    log_printhex (session_key, session_key_len, "Derived KEK :");
+
+  err = gcry_cipher_setkey (hd, session_key, session_key_len);
+  if (!err)
+    err = gcry_cipher_decrypt (hd, session_key, session_key_len,
+                               encrkey, encrkey_len);
+  gcry_cipher_close (hd);
+  if (err)
+    {
+      log_error ("%s: error decrypting key using %s: %s\n",
+                 __func__, wrapalgostr, gpg_strerror (err));
+      goto leave;
+    }
+
+  /* Success:  Return the key.  */
+  *r_session_key = session_key;
+  session_key = NULL;
+
+ leave:
+  if (session_key)
+    {
+      wipememory (session_key, session_key_len);
+      xfree (session_key);
+    }
+  return err;
 }
