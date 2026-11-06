@@ -360,6 +360,20 @@ struct rootca_flags_s
 };
 
 
+/* The data encryption key object.  */
+struct dek_s {
+  const char *algoid;
+  int algo;
+  int mode;
+  gcry_cipher_hd_t chd;
+  char key[32];
+  int keylen;
+  char iv[32];
+  int ivlen;
+};
+typedef struct dek_s *DEK;
+
+
 
 /*-- gpgsm.c --*/
 extern int gpgsm_errors_seen;
@@ -519,6 +533,10 @@ int gpgsm_sign (ctrl_t ctrl, certlist_t signerlist,
 /*-- encrypt.c --*/
 int gpgsm_encrypt (ctrl_t ctrl, certlist_t recplist,
                    estream_t in_fp, estream_t out_fp);
+
+/*-- encrypt-kem.c --*/
+gpg_error_t kem_pkencrypt (ctrl_t ctrl, int pk_algo, const DEK dek,
+                           gcry_sexp_t s_pkey, gcry_sexp_t *r_encval);
 
 /*-- decrypt.c --*/
 int gpgsm_decrypt (ctrl_t ctrl, estream_t in_fp, estream_t out_fp);
