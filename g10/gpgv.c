@@ -322,6 +322,7 @@ g10_exit (int rc)
   else if (opt.assert_pubkey_algos && assert_pubkey_algo_false)
     rc = 1;
 
+  gnupg_commit_partial_file ();
   exit (rc);
 }
 
