@@ -81,6 +81,7 @@
 #define PIV_ALGORITHM_AES256_CBC 0x0D
 #define PIV_ALGORITHM_ECC_P256   0x11
 #define PIV_ALGORITHM_ECC_P384   0x14
+#define PIV_ALGORITHM_RSA_4096   0x16  /* Yubico extension (fw 5.7).  */
 
 
 /* The AID for PIV.  */
@@ -1332,7 +1333,9 @@ get_keygrip_by_tag (app_t app, unsigned int tag,
     goto leave;
   if (mechanism) /* Compute keygrip from public key.  */
     {
-      if (mechanism == PIV_ALGORITHM_RSA_2048)
+      if (mechanism == PIV_ALGORITHM_RSA_2048
+          || mechanism == PIV_ALGORITHM_RSA_3072
+          || mechanism == PIV_ALGORITHM_RSA_4096)
         err = genkey_parse_rsa (certbuf, certbuflen, &s_pkey);
       else if (mechanism == PIV_ALGORITHM_ECC_P256
                || mechanism == PIV_ALGORITHM_ECC_P384)
@@ -1547,7 +1550,9 @@ do_readkey (app_t app, ctrl_t ctrl, const char *keyrefstr, unsigned int flags,
   else
     {
       /* Convert the public key into the expected s-expression.  */
-      if (mechanism == PIV_ALGORITHM_RSA_2048)
+      if (mechanism == PIV_ALGORITHM_RSA_2048
+          || mechanism == PIV_ALGORITHM_RSA_3072
+          || mechanism == PIV_ALGORITHM_RSA_4096)
         err = genkey_parse_rsa (cert, certlen, &s_pkey);
       else if (mechanism == PIV_ALGORITHM_ECC_P256
                || mechanism == PIV_ALGORITHM_ECC_P384)
@@ -1636,6 +1641,7 @@ get_key_algorithm_by_dobj (app_t app, data_object_t dobj, int *r_mechanism)
         {
         case PIV_ALGORITHM_RSA_2048:
         case PIV_ALGORITHM_RSA_3072:
+        case PIV_ALGORITHM_RSA_4096:
         case PIV_ALGORITHM_ECC_P256:
         case PIV_ALGORITHM_ECC_P384:
           *r_mechanism = mechanism;
@@ -1698,7 +1704,9 @@ get_key_algorithm_by_dobj (app_t app, data_object_t dobj, int *r_mechanism)
   switch (algo)
     {
     case GCRY_PK_RSA:
-      if (gcry_pk_get_nbits (s_pkey) > 3000)
+      if (gcry_pk_get_nbits (s_pkey) > 3072)
+        algo = PIV_ALGORITHM_RSA_4096;
+      else if (gcry_pk_get_nbits (s_pkey) > 3000)
         algo = PIV_ALGORITHM_RSA_3072;
       else
         algo = PIV_ALGORITHM_RSA_2048;
@@ -2330,18 +2338,30 @@ do_sign (app_t app, ctrl_t ctrl, const char *keyidstr, int hashalgo,
        * this is PSS formatted data and we use it verbatim; PIV cards
        * accept PSS as well as PKCS#1.  */
     }
-  else if (mechanism == PIV_ALGORITHM_RSA_2048
-           || mechanism == PIV_ALGORITHM_RSA_3072)
+  else if (mechanism == PIV_ALGORITHM_RSA_4096
+           && indatalen == 4096/8 && indata[indatalen-1] == 0xBC)
     {
-      /* PIV requires 2048 bit or 3072 bit RSA.  */
+      /* If the provided data length matches the supported RSA
+       * framelen and the last octet of the data is 0xBC, we assume
+       * this is PSS formatted data and we use it verbatim; PIV cards
+       * accept PSS as well as PKCS#1.  */
+    }
+  else if (mechanism == PIV_ALGORITHM_RSA_2048
+           || mechanism == PIV_ALGORITHM_RSA_3072
+           || mechanism == PIV_ALGORITHM_RSA_4096)
+    {
+      /* PIV requires 2048 bit or 3072 bit RSA; Yubikeys with
+       * firmware 5.7 also support 4096 bit RSA.  */
       unsigned int framelen;
       unsigned char *frame;
       int i;
 
       if (mechanism == PIV_ALGORITHM_RSA_2048)
         framelen = 2048 / 8;
-      else
+      else if (mechanism == PIV_ALGORITHM_RSA_3072)
         framelen = 3072 / 8;
+      else
+        framelen = 4096 / 8;
 
       oidbuflen = sizeof oidbuf;
       if (!hashalgo)
@@ -2460,7 +2480,8 @@ do_sign (app_t app, ctrl_t ctrl, const char *keyidstr, int hashalgo,
           memmove (outdata, outdata + (s - outdata), n);
           outdatalen = n;
         }
-      else if (mechanism == PIV_ALGORITHM_RSA_3072)
+      else if (mechanism == PIV_ALGORITHM_RSA_3072
+               || mechanism == PIV_ALGORITHM_RSA_4096)
         {
           memmove (outdata, outdata + (s - outdata), n);
           outdatalen = n;
@@ -2608,6 +2629,9 @@ do_decipher (app_t app, ctrl_t ctrl, const char *keyidstr,
     case PIV_ALGORITHM_RSA_3072:
       framelen = 3072 / 8;
       break;
+    case PIV_ALGORITHM_RSA_4096:
+      framelen = 4096 / 8;
+      break;
     default:
       err = gpg_error (GPG_ERR_INTERNAL);
       log_debug ("piv: unknown PIV mechanism %d while decrypting\n", mechanism);
@@ -2625,7 +2649,8 @@ do_decipher (app_t app, ctrl_t ctrl, const char *keyidstr,
   if (indatalen > framelen)
     {
       if ((mechanism == PIV_ALGORITHM_RSA_2048
-          || mechanism == PIV_ALGORITHM_RSA_3072)
+          || mechanism == PIV_ALGORITHM_RSA_3072
+          || mechanism == PIV_ALGORITHM_RSA_4096)
           && indatalen == framelen + 1 && !*indata)
         {
           indata_buffer = xtrycalloc (1, framelen);
@@ -2669,7 +2694,8 @@ do_decipher (app_t app, ctrl_t ctrl, const char *keyidstr,
                          (int)0x7c, (size_t)0, NULL, /* Constructed. */
                          (int)0x82, (size_t)0, "",
                          (mechanism == PIV_ALGORITHM_RSA_2048
-                          || mechanism == PIV_ALGORITHM_RSA_3072)?
+                          || mechanism == PIV_ALGORITHM_RSA_3072
+                          || mechanism == PIV_ALGORITHM_RSA_4096)?
                          (int)0x81 : (int)0x85, (size_t)indatalen, indata,
                          (int)0, (size_t)0, NULL);
   if (err)
@@ -2878,7 +2904,9 @@ writekey_rsa (app_t app, data_object_t dobj, int keyref,
   if (err)
     goto leave;
 
-  if (rsa_n_len > 3000/8)
+  if (rsa_n_len > 3072/8)
+    mechanism = PIV_ALGORITHM_RSA_4096;
+  else if (rsa_n_len > 3000/8)
     mechanism = PIV_ALGORITHM_RSA_3072;
   else
     mechanism = PIV_ALGORITHM_RSA_2048;
@@ -3290,7 +3318,7 @@ genkey_parse_ecc (const unsigned char *data, size_t datalen, int mechanism,
 
 /* Create a new keypair for KEYREF.  If KEYTYPE is NULL a default
  * keytype is selected, else it may be one of the strings:
- *  "rsa2048", "rsa3072", "nistp256, or "nistp384".
+ *  "rsa2048", "rsa3072", "rsa4096", "nistp256, or "nistp384".
  *
  * Supported FLAGS are:
  *   APP_GENKEY_FLAG_FORCE   Overwrite existing key.
@@ -3330,6 +3358,8 @@ do_genkey (app_t app, ctrl_t ctrl, const char *keyrefstr, const char *keytype,
     mechanism = PIV_ALGORITHM_RSA_2048;
   else if (!strcmp (keytype, "rsa3072"))
     mechanism = PIV_ALGORITHM_RSA_3072;
+  else if (!strcmp (keytype, "rsa4096"))
+    mechanism = PIV_ALGORITHM_RSA_4096;
   else if (!strcmp (keytype, "nistp256"))
     mechanism = PIV_ALGORITHM_ECC_P256;
   else if (!strcmp (keytype, "nistp384"))
