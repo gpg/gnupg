@@ -875,70 +875,109 @@ do_getattr (app_t app, ctrl_t ctrl, const char *name)
 }
 
 
+/* The algorithms supported for the Card Application Administration
+ * Key.  AES-192 and 3DES both use 24 byte keys; we try AES-192 first
+ * because it is the default since Yubikey firmware 5.7 and fall back
+ * to 3DES if the card rejects it.  */
+static const struct adm_key_algo_s
+{
+  int algo;           /* The PIV algorithm identifier.  */
+  int cipher;         /* The Libgcrypt cipher.  */
+  size_t keylen;
+  size_t blklen;
+} adm_key_algos[] =
+  {
+    { PIV_ALGORITHM_AES128_ECB, GCRY_CIPHER_AES128,  16, 16 },
+    { PIV_ALGORITHM_AES192_ECB, GCRY_CIPHER_AES192,  24, 16 },
+    { PIV_ALGORITHM_3DES_ECB,   GCRY_CIPHER_3DES,    24,  8 },
+    { PIV_ALGORITHM_AES256_ECB, GCRY_CIPHER_AES256,  32, 16 }
+  };
+
+
 /* Authenticate the card using the Card Application Administration
- * Key.  (VALUE,VALUELEN) has that 24 byte key.  */
+ * Key.  (VALUE,VALUELEN) has that 3DES or AES key.  */
 static gpg_error_t
 auth_adm_key (app_t app, const unsigned char *value, size_t valuelen)
 {
-  gpg_error_t err;
-  unsigned char tmpl[4+24];
+  gpg_error_t err = gpg_error (GPG_ERR_INV_LENGTH);
+  const struct adm_key_algo_s *ka;
+  int i;
+  int p1 = 0;
+  size_t bl;
+  unsigned char tmpl[2+3*(2+16)];
   size_t tmpllen;
   unsigned char *outdata = NULL;
   size_t outdatalen;
   const unsigned char *s;
-  char witness[8];
+  unsigned char witness[16];
   size_t n;
   gcry_cipher_hd_t cipher = NULL;
 
-  /* Prepare decryption.  */
-  err = gcry_cipher_open (&cipher, GCRY_CIPHER_3DES, GCRY_CIPHER_MODE_ECB, 0);
-  if (err)
-    goto leave;
-  err = gcry_cipher_setkey (cipher, value, valuelen);
-  if (err)
-    goto leave;
-
-  /* Request a witness.  */
+  /* Request a witness.  The card refuses that for an algorithm
+   * other than the one of its key, so the first algorithm with a
+   * matching key length for which we get a witness is the one.  */
   tmpl[0] = 0x7c;
   tmpl[1] = 0x02;
   tmpl[2] = 0x80;
   tmpl[3] = 0;    /* (Empty witness requests a witness.)  */
   tmpllen = 4;
-  err = iso7816_general_authenticate (app_get_slot (app), 0,
-                                      PIV_ALGORITHM_3DES_ECB_0, 0x9B,
-                                      tmpl, tmpllen, 0,
-                                      &outdata, &outdatalen);
+  for (i=0; i < DIM (adm_key_algos); i++)
+    {
+      ka = adm_key_algos + i;
+      if (ka->keylen != valuelen)
+        continue;
+      /* For 3DES we keep on using the legacy identifier because that
+       * is what we always did and thus known to work with all
+       * cards.  */
+      p1 = (ka->algo == PIV_ALGORITHM_3DES_ECB
+            ? PIV_ALGORITHM_3DES_ECB_0 : ka->algo);
+      err = iso7816_general_authenticate (app_get_slot (app), 0,
+                                          p1, 0x9B,
+                                          tmpl, tmpllen, 0,
+                                          &outdata, &outdatalen);
+      if (!err)
+        break;
+    }
   if (gpg_err_code (err) == GPG_ERR_BAD_PIN)
     err = gpg_error (GPG_ERR_BAD_AUTH);
   if (err)
     goto leave;
+  bl = ka->blklen;
+
+  /* Prepare decryption.  */
+  err = gcry_cipher_open (&cipher, ka->cipher, GCRY_CIPHER_MODE_ECB, 0);
+  if (err)
+    goto leave;
+  err = gcry_cipher_setkey (cipher, value, valuelen);
+  if (err)
+    goto leave;
   if (!(outdatalen && *outdata == 0x7c
         && (s = find_tlv (outdata, outdatalen, 0x80, &n))
-        && n == 8))
+        && n == bl))
     {
       err = gpg_error (GPG_ERR_CARD);
       log_error ("piv: improper witness received\n");
       goto leave;
     }
-  err = gcry_cipher_decrypt (cipher, witness, 8, s, 8);
+  err = gcry_cipher_decrypt (cipher, witness, bl, s, bl);
   if (err)
     goto leave;
 
   /* Return decrypted witness and send our challenge.  */
   tmpl[0] = 0x7c;
-  tmpl[1] = 22;
+  tmpl[1] = 2 + bl + 2 + bl + 2;
   tmpl[2] = 0x80;
-  tmpl[3] = 8;
-  memcpy (tmpl+4, witness, 8);
-  tmpl[12] = 0x81;
-  tmpl[13] = 8;
-  gcry_create_nonce (tmpl+14, 8);
-  tmpl[22] = 0x82;
-  tmpl[23] = 0;
-  tmpllen = 24;
+  tmpl[3] = bl;
+  memcpy (tmpl+4, witness, bl);
+  tmpl[4+bl] = 0x81;
+  tmpl[5+bl] = bl;
+  gcry_create_nonce (tmpl+6+bl, bl);
+  tmpl[6+2*bl] = 0x82;
+  tmpl[7+2*bl] = 0;
+  tmpllen = 8 + 2*bl;
   xfree (outdata);
   err = iso7816_general_authenticate (app_get_slot (app), 0,
-                                      PIV_ALGORITHM_3DES_ECB_0, 0x9B,
+                                      p1, 0x9B,
                                       tmpl, tmpllen, 0,
                                       &outdata, &outdatalen);
   if (gpg_err_code (err) == GPG_ERR_BAD_PIN)
@@ -947,17 +986,17 @@ auth_adm_key (app_t app, const unsigned char *value, size_t valuelen)
     goto leave;
   if (!(outdatalen && *outdata == 0x7c
         && (s = find_tlv (outdata, outdatalen, 0x82, &n))
-        && n == 8))
+        && n == bl))
     {
       err = gpg_error (GPG_ERR_CARD);
       log_error ("piv: improper challenge received\n");
       goto leave;
     }
   /* (We reuse the witness buffer.) */
-  err = gcry_cipher_decrypt (cipher, witness, 8, s, 8);
+  err = gcry_cipher_decrypt (cipher, witness, bl, s, bl);
   if (err)
     goto leave;
-  if (memcmp (witness, tmpl+14, 8))
+  if (memcmp (witness, tmpl+6+bl, bl))
     {
       err = gpg_error (GPG_ERR_BAD_AUTH);
       goto leave;
@@ -970,19 +1009,23 @@ auth_adm_key (app_t app, const unsigned char *value, size_t valuelen)
 }
 
 
-/* Set a new admin key.  */
+/* Set a new admin key using the algorithm KA.  The status word of the
+ * command is stored at R_SW, or 0 if no command was sent.  */
 static gpg_error_t
-set_adm_key (app_t app, const unsigned char *value, size_t valuelen)
+set_adm_key_algo (app_t app, const struct adm_key_algo_s *ka,
+                  const unsigned char *value, size_t valuelen,
+                  unsigned int *r_sw)
 {
   gpg_error_t err;
-  unsigned char apdu[8+24];
-  unsigned int sw;
+  unsigned char apdu[8+32];
+
+  *r_sw = 0;
 
   /* Check whether it is a weak key and that it is of proper length.  */
   {
     gcry_cipher_hd_t cipher;
 
-    err = gcry_cipher_open (&cipher, GCRY_CIPHER_3DES, GCRY_CIPHER_MODE_ECB, 0);
+    err = gcry_cipher_open (&cipher, ka->cipher, GCRY_CIPHER_MODE_ECB, 0);
     if (!err)
       {
         err = gcry_cipher_setkey (cipher, value, valuelen);
@@ -995,27 +1038,19 @@ set_adm_key (app_t app, const unsigned char *value, size_t valuelen)
   if (app->app_local->flags.yubikey)
     {
       /* This is a Yubikey.  */
-      if (valuelen != 24)
-        {
-          err = gpg_error (GPG_ERR_INV_LENGTH);
-          goto leave;
-        }
-
       /* We use a proprietary Yubikey command.  */
       apdu[0] = 0;
       apdu[1] = 0xff;
       apdu[2] = 0xff;
       apdu[3] = 0xff;  /* touch policy: 0xff=never, 0xfe = always.  */
-      apdu[4] = 3 + 24;
-      apdu[5] = PIV_ALGORITHM_3DES_ECB;
+      apdu[4] = 3 + valuelen;
+      apdu[5] = ka->algo;
       apdu[6] = 0x9b;
-      apdu[7] = 24;
-      memcpy (apdu+8, value, 24);
-      err = iso7816_apdu_direct (app_get_slot (app), apdu, 8+24, 0,
-                                 &sw, NULL, NULL);
-      wipememory (apdu+8, 24);
-      if (err)
-        log_error ("piv: setting admin key failed; sw=%04x\n", sw);
+      apdu[7] = valuelen;
+      memcpy (apdu+8, value, valuelen);
+      err = iso7816_apdu_direct (app_get_slot (app), apdu, 8+valuelen, 0,
+                                 r_sw, NULL, NULL);
+      wipememory (apdu+8, valuelen);
       /* A PIN is not required, thus use a better error code.  */
       if (gpg_err_code (err) == GPG_ERR_BAD_PIN)
         err = gpg_error (GPG_ERR_NO_AUTH);
@@ -1026,6 +1061,31 @@ set_adm_key (app_t app, const unsigned char *value, size_t valuelen)
 
  leave:
    return err;
+}
+
+
+/* Set a new admin key.  The algorithm is taken from the length of the
+ * key; a 24 byte key is set as AES-192 key, or as 3DES key if the card
+ * does not support AES.  */
+static gpg_error_t
+set_adm_key (app_t app, const unsigned char *value, size_t valuelen)
+{
+  gpg_error_t err = gpg_error (GPG_ERR_INV_LENGTH);
+  unsigned int sw = 0;
+  int i;
+
+  for (i=0; i < DIM (adm_key_algos); i++)
+    if (adm_key_algos[i].keylen == valuelen)
+      {
+        err = set_adm_key_algo (app, adm_key_algos + i, value, valuelen, &sw);
+        if (!err)
+          break;
+      }
+  /* Only report the last failure; an earlier one is expected for an
+   * AES-192 key on a card without AES support.  */
+  if (err && sw)
+    log_error ("piv: setting admin key failed; sw=%04x\n", sw);
+  return err;
 }
 
 /* Handle the SETATTR operation. All arguments are already basically
