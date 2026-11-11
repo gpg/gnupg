@@ -290,6 +290,8 @@ encrypt_cb (void *cb_value, char *buffer, size_t count, size_t *nread)
     { /* no complete block but eof: add padding */
       /* fixme: we should try to do this also in the above code path */
       int i, npad = blklen - (parm->buflen % blklen);
+      if (parm->dek->mode == GCRY_CIPHER_MODE_GCM)
+        npad = 0;
       p = parm->buffer;
       for (n=parm->buflen, i=0; n < parm->bufsize && i < npad; n++, i++)
         p[n] = npad;
