@@ -1378,6 +1378,10 @@ parse_sign_type (const char *str, unsigned int *r_flags)
 #define KEYEDIT_NEED_SUBSK 2
 /* Match the tail of the string */
 #define KEYEDIT_TAIL_MATCH 8
+/* Must not be a party key. */
+#define KEYEDIT_NO_PARTY_KEY 16
+/* Must be a party key. */
+#define KEYEDIT_PARTY_KEY    32
 
 enum cmdids
 {
@@ -1387,6 +1391,7 @@ enum cmdids
   cmdSAVE, cmdADDUID, cmdADDPHOTO, cmdDELUID, cmdADDKEY, cmdDELKEY,
   cmdADDREVOKER, cmdTOGGLE, cmdSELKEY, cmdPASSWD, cmdTRUST, cmdPREF,
   cmdEXPIRE, cmdCHANGEUSAGE, cmdBACKSIGN, cmdADDADSK, cmdADDPUBKEY,
+  cmdADDMEMBERS, cmdCHANGEMEMBERS, cmdREMOVEMEMBERS,
 #ifndef NO_TRUST_MODELS
   cmdENABLEKEY, cmdDISABLEKEY,
 #endif /*!NO_TRUST_MODELS*/
@@ -1413,12 +1418,12 @@ static struct
   { "grip", cmdGRIP, 0, N_("show the keygrip")},
   { "list", cmdLIST, 0, N_("list key and user IDs")},
   { "l", cmdLIST, 0, NULL},
-  { "uid", cmdSELUID, 0, N_("select user ID N")},
-  { "key", cmdSELKEY, 0, N_("select subkey N")},
+  { "uid", cmdSELUID, KEYEDIT_NO_PARTY_KEY, N_("select user ID N")},
+  { "key", cmdSELKEY, KEYEDIT_NO_PARTY_KEY, N_("select subkey N")},
   { "check", cmdCHECK, 0, N_("check signatures")},
   { "c", cmdCHECK, 0, NULL},
-  { "change-usage", cmdCHANGEUSAGE, KEYEDIT_NEED_SK, NULL},
-  { "cross-certify", cmdBACKSIGN, KEYEDIT_NEED_SK, NULL},
+  { "change-usage", cmdCHANGEUSAGE, KEYEDIT_NEED_SK | KEYEDIT_NO_PARTY_KEY, NULL},
+  { "cross-certify", cmdBACKSIGN, KEYEDIT_NEED_SK | KEYEDIT_NO_PARTY_KEY, NULL},
   { "backsign", cmdBACKSIGN,  KEYEDIT_NEED_SK, NULL},
   { "sign", cmdSIGN,  KEYEDIT_TAIL_MATCH,
     N_("sign selected user IDs [* see below for related commands]")},
@@ -1431,16 +1436,16 @@ static struct
   { "nrsign", cmdNOP, 0,
     N_("sign selected user IDs with a non-revocable signature")},
   { "debug", cmdDEBUG, 0, NULL},
-  { "adduid", cmdADDUID,  KEYEDIT_NEED_SK, N_("add a user ID")},
-  { "addphoto", cmdADDPHOTO,  KEYEDIT_NEED_SK,
+  { "adduid", cmdADDUID,  KEYEDIT_NEED_SK | KEYEDIT_NO_PARTY_KEY, N_("add a user ID")},
+  { "addphoto", cmdADDPHOTO,  KEYEDIT_NEED_SK | KEYEDIT_NO_PARTY_KEY,
     N_("add a photo ID")},
-  { "deluid", cmdDELUID, 0, N_("delete selected user IDs")},
+  { "deluid", cmdDELUID, KEYEDIT_NO_PARTY_KEY, N_("delete selected user IDs")},
     /* delphoto is really deluid in disguise */
-  { "delphoto", cmdDELUID, 0, NULL},
-  { "addkey", cmdADDKEY,  KEYEDIT_NEED_SK, N_("add a subkey")},
-  { "addpubkey", cmdADDPUBKEY,  KEYEDIT_NEED_SK, NULL },
+  { "delphoto", cmdDELUID, KEYEDIT_NO_PARTY_KEY, NULL},
+  { "addkey", cmdADDKEY,  KEYEDIT_NEED_SK | KEYEDIT_NO_PARTY_KEY, N_("add a subkey")},
+  { "addpubkey", cmdADDPUBKEY, KEYEDIT_NEED_SK | KEYEDIT_NO_PARTY_KEY, NULL },
 #ifdef ENABLE_CARD_SUPPORT
-  { "addcardkey", cmdADDCARDKEY,  KEYEDIT_NEED_SK,
+  { "addcardkey", cmdADDCARDKEY,  KEYEDIT_NEED_SK | KEYEDIT_NO_PARTY_KEY,
     N_("add a key to a smartcard")},
   { "keytocard", cmdKEYTOCARD, KEYEDIT_NEED_SK | KEYEDIT_NEED_SUBSK,
     N_("move a key to a smartcard")},
@@ -1449,39 +1454,39 @@ static struct
   { "bkuptocard", cmdBKUPTOCARD, KEYEDIT_NEED_SK | KEYEDIT_NEED_SUBSK,
     N_("move a backup key to a smartcard")},
 #endif /*ENABLE_CARD_SUPPORT */
-  { "delkey", cmdDELKEY, 0, N_("delete selected subkeys")},
+  { "delkey", cmdDELKEY, KEYEDIT_NO_PARTY_KEY, N_("delete selected subkeys")},
   { "addrevoker", cmdADDREVOKER,  KEYEDIT_NEED_SK,
     N_("add a revocation key")},
-  { "addadsk", cmdADDADSK,  KEYEDIT_NEED_SK,
+  { "addadsk", cmdADDADSK,  KEYEDIT_NEED_SK | KEYEDIT_NO_PARTY_KEY,
     N_("add an additional decryption subkey")},
   { "delsig", cmdDELSIG, 0,
     N_("delete signatures from the selected user IDs")},
   { "expire", cmdEXPIRE,  KEYEDIT_NEED_SK | KEYEDIT_NEED_SUBSK,
     N_("change the expiration date for the key or selected subkeys")},
-  { "primary", cmdPRIMARY,  KEYEDIT_NEED_SK,
+  { "primary", cmdPRIMARY,  KEYEDIT_NEED_SK | KEYEDIT_NO_PARTY_KEY,
     N_("flag the selected user ID as primary")},
   { "toggle", cmdTOGGLE, KEYEDIT_NEED_SK, NULL},  /* Dummy command.  */
   { "t", cmdTOGGLE, KEYEDIT_NEED_SK, NULL},
   { "pref", cmdPREF, 0, N_("list preferences (expert)")},
   { "showpref", cmdSHOWPREF, 0, N_("list preferences (verbose)")},
-  { "setpref", cmdSETPREF,  KEYEDIT_NEED_SK,
+  { "setpref", cmdSETPREF,  KEYEDIT_NEED_SK | KEYEDIT_NO_PARTY_KEY,
     N_("set preference list for the selected user IDs")},
-  { "updpref", cmdSETPREF,  KEYEDIT_NEED_SK, NULL},
+  { "updpref", cmdSETPREF,  KEYEDIT_NEED_SK | KEYEDIT_NO_PARTY_KEY, NULL},
   { "keyserver", cmdPREFKS,  KEYEDIT_NEED_SK,
     N_("set the preferred keyserver URL for the selected user IDs")},
-  { "notation", cmdNOTATION,  KEYEDIT_NEED_SK,
+  { "notation", cmdNOTATION,  KEYEDIT_NEED_SK, // PL should we allow this for partyKs?
     N_("set a notation for the selected user IDs")},
   { "passwd", cmdPASSWD,  KEYEDIT_NEED_SK | KEYEDIT_NEED_SUBSK,
     N_("change the passphrase")},
   { "password", cmdPASSWD,  KEYEDIT_NEED_SK | KEYEDIT_NEED_SUBSK, NULL},
 #ifndef NO_TRUST_MODELS
-  { "trust", cmdTRUST, 0, N_("change the ownertrust")},
+  { "trust", cmdTRUST, KEYEDIT_NO_PARTY_KEY, N_("change the ownertrust")},
 #endif /*!NO_TRUST_MODELS*/
   { "revsig", cmdREVSIG, 0,
     N_("revoke signatures on the selected user IDs")},
-  { "revuid", cmdREVUID,  KEYEDIT_NEED_SK,
+  { "revuid", cmdREVUID,  KEYEDIT_NEED_SK | KEYEDIT_NO_PARTY_KEY,
     N_("revoke selected user IDs")},
-  { "revphoto", cmdREVUID,  KEYEDIT_NEED_SK, NULL},
+  { "revphoto", cmdREVUID,  KEYEDIT_NEED_SK | KEYEDIT_NO_PARTY_KEY, NULL},
   { "revkey", cmdREVKEY,  KEYEDIT_NEED_SK,
     N_("revoke key or selected subkeys")},
 #ifndef NO_TRUST_MODELS
@@ -1493,6 +1498,12 @@ static struct
     N_("compact unusable user IDs and remove unusable signatures from key")},
   { "minimize", cmdMINIMIZE, 0,
     N_("compact unusable user IDs and remove all signatures from key")},
+  { "addmbr", cmdADDMEMBERS, KEYEDIT_NEED_SK | KEYEDIT_PARTY_KEY,
+    N_("add a member fingerprint to a party key")},
+  { "changembr", cmdCHANGEMEMBERS, KEYEDIT_NEED_SK | KEYEDIT_PARTY_KEY,
+    N_("change the list of members of a party key")},
+  { "removembr", cmdREMOVEMEMBERS, KEYEDIT_NEED_SK | KEYEDIT_PARTY_KEY,
+    N_("remove a member fingerprint from a party key")},
 
   { NULL, cmdNONE, 0, NULL}
 };
@@ -1570,6 +1581,7 @@ keyedit_menu (ctrl_t ctrl, const char *username, strlist_t locusr,
   int have_commands = !!commands;
   strlist_t delseckey_list = NULL;
   int delseckey_list_warn = 0;
+  int is_party_key = 0;
 
   if (opt.command_fd != -1)
     ;
@@ -1621,6 +1633,9 @@ keyedit_menu (ctrl_t ctrl, const char *username, strlist_t locusr,
         tty_printf (_("Secret subkeys are available.\n"));
     }
 
+  /* Check if PK is a partykey here. Set the partykey flag and
+   * restrict (or enable) some commands for PK. */
+  is_party_key = !check_party_key (keyblock);
   /* Main command loop.  */
   for (;;)
     {
@@ -1628,6 +1643,7 @@ keyedit_menu (ctrl_t ctrl, const char *username, strlist_t locusr,
       const char *arg_string = "";
       char *p;
       PKT_public_key *pk = keyblock->pkt->pkt.public_key;
+      int noop = 0;
 
       tty_printf ("\n");
 
@@ -1636,6 +1652,29 @@ keyedit_menu (ctrl_t ctrl, const char *username, strlist_t locusr,
           /* Show using flags: with_revoker, with_subkeys.  */
 	  show_key_with_all_names (ctrl, NULL, keyblock, 0, 1, 0, 1, 0, 0);
 	  tty_printf ("\n");
+
+          /* List party members. TODO: Improve output format. */
+          if (is_party_key)
+            {
+              kbnode_t sig;
+              notation_t notation;
+              strlist_t memberlist;
+              strlist_t m;
+
+              sig = find_kbnode (keyblock, PKT_SIGNATURE);
+              notation = search_sig_notations (sig->pkt->pkt.signature,
+                                              "party@gnupg.org");
+
+              memberlist = extract_members (notation);
+
+              for (m = memberlist; m; m = m->next)
+                {
+                  tty_printf ("member: %s",m->d);
+                  tty_printf ("\n");
+                }
+              free_notation (notation);
+              free_strlist (memberlist);
+            }
 	  redisplay = 0;
 	}
 
@@ -1731,7 +1770,26 @@ keyedit_menu (ctrl_t ctrl, const char *username, strlist_t locusr,
 	    {
 	      tty_printf (_("Need the secret key to do this.\n"));
 	      cmd = cmdNOP;
+              noop = 1;
 	    }
+          /* Disable certain commands for party keys. */
+          if ((cmds[i].flags & KEYEDIT_NO_PARTY_KEY) && is_party_key)
+            {
+              tty_printf (_("Command not available for a party key.\n"));
+              cmd = cmdNOP;
+              noop = 1;
+            }
+
+          /* Require a party key for certain commands. */
+          if ((cmds[i].flags & KEYEDIT_PARTY_KEY) && !is_party_key)
+            {
+              tty_printf (_("Command only available for a party key.\n"));
+              cmd = cmdNOP;
+              noop = 1;
+            }
+
+          if (noop)
+            ;
           else
 	    cmd = cmds[i].id;
 	}
@@ -1742,10 +1800,14 @@ keyedit_menu (ctrl_t ctrl, const char *username, strlist_t locusr,
 	case cmdHELP:
 	  for (i = 0; cmds[i].name; i++)
 	    {
-              if ((cmds[i].flags & (KEYEDIT_NEED_SK|KEYEDIT_NEED_SUBSK))
-                  && !(((cmds[i].flags & KEYEDIT_NEED_SK) && have_seckey)
-                       ||((cmds[i].flags&KEYEDIT_NEED_SUBSK)&&have_anyseckey)))
-		; /* Skip those item if we do not have the secret key.  */
+              if (((cmds[i].flags & (KEYEDIT_NEED_SK|KEYEDIT_NEED_SUBSK))
+                   && !(((cmds[i].flags & KEYEDIT_NEED_SK) && have_seckey)
+                        ||((cmds[i].flags&KEYEDIT_NEED_SUBSK)&&have_anyseckey)))
+                  || (((cmds[i].flags & (KEYEDIT_NO_PARTY_KEY))
+                       && is_party_key))
+                  || ((cmds[i].flags & KEYEDIT_PARTY_KEY) && !is_party_key))
+		; /* Skip those item if we do not have the secret key.
+                   * Or if it the items are not allowed for the (party) key*/
 	      else if (cmds[i].desc)
 		tty_printf ("%-11s %s\n", cmds[i].name, _(cmds[i].desc));
 	    }
@@ -2525,6 +2587,53 @@ keyedit_menu (ctrl_t ctrl, const char *username, strlist_t locusr,
 	    redisplay = modified = 1;
 	  break;
 
+        case cmdADDMEMBERS:
+        case cmdCHANGEMEMBERS:
+        case cmdREMOVEMEMBERS:
+          {
+            int mode = 0;
+            strlist_t memberlist = NULL;
+            party_member_t members = NULL;
+            party_member_t m = NULL;
+
+            /* complexity? */
+            if (cmd == cmdADDMEMBERS)
+              mode = 1;
+            else if (cmd == cmdCHANGEMEMBERS)
+              mode = 2;
+            else if (cmd == cmdREMOVEMEMBERS)
+              mode = 3;
+            else
+              mode = 0;
+
+            ask_partykey_members (ctrl, &members);
+
+            for (m = members; m; m = m->next)
+              {
+                char afpr[MAX_FINGERPRINT_LEN];
+
+                if (!m->is_empty
+                    && (m->fpr_version == 4
+                        || m->fpr_version == 5
+                        || m->fpr_version == 6))
+                  {
+                    bin2hex (m->fpr,
+                             m->fpr_version == 4? 20 : 32, afpr);
+
+                    memberlist = add_to_strlist2 (&memberlist, afpr, 0);
+                  }
+                else
+                  {
+                    memberlist = NULL;
+                    break;
+                  }
+              }
+
+            partykey_maintain (ctrl, mode, memberlist, NULL, &keyblock);
+            redisplay = 1;
+            modified = 1;
+            break;
+          }
 	case cmdQUIT:
 	  if (have_commands)
 	    goto leave;
@@ -2776,6 +2885,12 @@ keyedit_quick_adduid (ctrl_t ctrl, const char *username, const char *newuid)
   if (err)
     goto leave;
 
+  if (!check_party_key (keyblock))
+    {
+      log_info (_("Command not available for a party key.\n"));
+      goto leave;
+    }
+
   if (menu_adduid (ctrl, keyblock, 0, NULL, uidstring))
     {
       err = keydb_update_keyblock (ctrl, kdbhd, keyblock);
@@ -3023,6 +3138,12 @@ keyedit_quick_update_pref (ctrl_t ctrl, const char *username)
   err = quick_find_keyblock (ctrl, username, 1, &kdbhd, &keyblock);
   if (err)
     goto leave;
+
+  if (!check_party_key (keyblock))
+    {
+      log_info (_("Command not available for a party key.\n"));
+      goto leave;
+    }
 
   if (menu_set_preferences (ctrl, keyblock, 1))
     {
@@ -3639,6 +3760,12 @@ keyedit_quick_addkey (ctrl_t ctrl, const char *fpr, const char *algostr,
       goto leave;
     }
 
+  if (!check_party_key (keyblock))
+    {
+      log_info (_("command not available for a party key.\n"));
+      goto leave;
+    }
+
   /* Create the subkey.  Note that the called function already prints
    * an error message. */
   if (!generate_subkeypair (ctrl, keyblock, algostr, usagestr, expirestr))
@@ -3702,6 +3829,12 @@ keyedit_quick_addadsk (ctrl_t ctrl, const char *fpr, const char *adskfpr)
         show_key_with_all_names (ctrl, es_stdout, keyblock, 0, 0, 0, 0, 0, 1);
       log_error ("%s%s", _("Key is revoked."), "\n");
       err = gpg_error (GPG_ERR_CERT_REVOKED);
+      goto leave;
+    }
+
+  if (!check_party_key (keyblock))
+    {
+      log_info (_("command not available for a party key.\n"));
       goto leave;
     }
 
@@ -4050,6 +4183,8 @@ show_key_with_all_names_colon (ctrl_t ctrl, estream_t fp, kbnode_t keyblock)
 	    es_putc ('t', fp);
 	  if ((pk->pubkey_usage & PUBKEY_USAGE_GROUP))
 	    es_putc ('g', fp);
+          if ((pk->pubkey_usage & PUBKEY_USAGE_PARTY))
+	    es_putc ('p', fp);
 	  es_putc ('\n', fp);
 
 	  print_fingerprint (ctrl, fp, pk, 0);
@@ -7319,4 +7454,857 @@ menu_showphoto (ctrl_t ctrl, kbnode_t keyblock)
 	    }
 	}
     }
+}
+
+
+void
+free_members (party_member_t members)
+{
+  while (members)
+    {
+      party_member_t next;
+
+      next = members->next;
+
+      xfree (members);
+      members->is_empty = 0;
+      members->fpr_version = 0;
+      members = next;
+    }
+}
+
+/* Check if a keyblock represents a valid party-key.
+ * Return 0 if PUB_KEYBLOCK is a valid party key, GPG_ERR_INV_DATA otherwise. */
+gpg_error_t
+check_party_key (kbnode_t pub_keyblock)
+{
+  kbnode_t node;
+  PKT_public_key *pk;
+  u32 keyid[2];
+
+  PKT_user_id *uid = NULL;
+  int uid_count = 0;
+
+  notation_t notation = NULL;
+
+  no_primary_warning (pub_keyblock);
+
+  for (node = pub_keyblock; node; node = node->next)
+    {
+      if (node->pkt->pkttype == PKT_PUBLIC_SUBKEY)
+        {
+          if (opt.verbose)
+            log_info ("not a party key: has subkey\n");
+          goto leave;
+        }
+
+      if (node->pkt->pkttype == PKT_PUBLIC_KEY)
+        {
+          pk = node->pkt->pkt.public_key;
+
+          if (!(pk->pubkey_usage & PUBKEY_USAGE_CERT)
+              || !(pk->pubkey_usage & PUBKEY_USAGE_PARTY))
+            {
+              if (opt.verbose)
+                log_info ("not a party key: wrong usage\n");
+              goto leave;
+            }
+
+          keyid_from_pk (pk, keyid);
+        }
+      else if (node->pkt->pkttype == PKT_USER_ID)
+        {
+          if (uid_count)
+            {
+              if (opt.verbose)
+                log_info ("not a party key: not exactly one user ID\n");
+              goto leave;
+            }
+          uid = node->pkt->pkt.user_id;
+          uid_count++;
+        }
+    }
+
+  if (!(pk && uid))
+    {
+      if (opt.verbose)
+        log_info ("not a party key: pk or user ID not ok\n");
+      goto leave;
+    }
+
+
+  for (node = pub_keyblock; node; node = node->next)
+    {
+      if (node->pkt->pkttype == PKT_SIGNATURE)
+        {
+          PKT_signature *sig = node->pkt->pkt.signature;
+          if (keyid[0] == sig->keyid[0] && keyid[1] == sig->keyid[1]
+              && (uid && IS_UID_SIG(sig)))
+            {
+              char *user = utf8_to_native (uid->name, strlen (uid->name), 0);
+              if (sig->version < 4)
+                log_info (_("skipping v3 self-signature on user ID \"%s\"\n"),
+                          user);
+              else
+                {
+                  notation_t n;
+                  int pn_count = 0; /* count party notations */
+                  strlist_t memberlist = NULL;
+                  strlist_t m = NULL;
+                  int member_count = 0;
+
+                  if (!sig->flags.notation)
+                    {
+                      if (opt.verbose)
+                        tty_printf ("No notations on user ID \"%s\"\n", user);
+                      goto leave;
+                    }
+
+                  notation = sig_to_notation (sig);
+
+                  /* Check if there is exactly one
+                   * party notation in the uid sig*/
+                  for (n = notation; n; n = n->next)
+                    {
+                      if (!strcmp (n->name, "party@gnupg.org"))
+                        {
+                          if (pn_count)
+                            {
+                              if (opt.verbose)
+                                log_info ("exactly one party notation allowed\n");
+                              goto leave;
+                            }
+                          pn_count++;
+                        }
+                    }
+
+                  if (pn_count != 1)
+                    {
+                      if (opt.verbose)
+                        log_info ("exactly one party notation allowed\n");
+                      goto leave;
+                    }
+
+                  for (n = notation; n; n = n->next)
+                    {
+                      if (!strcmp (n->name, "party@gnupg.org"))
+                        {
+                          memberlist = extract_members (n);
+                          /* break; */
+                        }
+                    }
+
+                  /* Count members. */
+                  for (m = memberlist; m; m= m->next)
+                      member_count++;
+
+                  if (member_count > MAX_PARTY_MEMBERS)
+                    {
+                      log_error ("party key has too many members\n");
+                      goto leave;
+                    }
+
+                  /* Optional: Check for duplicates. */
+
+                  free_strlist (memberlist);
+                  return 0;
+                }
+            }
+        }
+    }
+
+  /* Invalid party key. */
+ leave:
+  free_notation (notation);
+  return gpg_error (GPG_ERR_INV_DATA);
+}
+
+
+/* Helper for partykey_maintain. Add members to an existing party key. */
+gpg_error_t
+partykey_add_members (ctrl_t ctrl, strlist_t memberlist, kbnode_t pub_keyblock)
+{
+  gpg_error_t err = 0;
+  kbnode_t node;
+  PKT_public_key *pk = NULL;
+  u32 keyid[2];
+  PKT_user_id *uid = NULL;
+  int uid_count = 0;
+
+  notation_t notation = NULL;
+  party_member_t members = NULL;
+  strlist_t s;
+
+  no_primary_warning (pub_keyblock);
+
+  /* Nothing to add. */
+  if (!memberlist)
+    return 0;
+
+  for (node = pub_keyblock; node; node = node->next)
+    {
+      if (node->pkt->pkttype == PKT_PUBLIC_SUBKEY)
+        {
+          log_error ("not a party key: has subkey\n");
+          err = gpg_error (GPG_ERR_INV_DATA);
+          goto leave;
+        }
+
+      if (node->pkt->pkttype == PKT_PUBLIC_KEY)
+        {
+          pk = node->pkt->pkt.public_key;
+
+          if ((pk->pubkey_usage & ~(PUBKEY_USAGE_CERT | PUBKEY_USAGE_PARTY))
+              || (!(pk->pubkey_usage & PUBKEY_USAGE_CERT))
+              || (!(pk->pubkey_usage & PUBKEY_USAGE_PARTY)))
+            {
+              log_error ("not a party key: wrong usage\n");
+              err = gpg_error (GPG_ERR_INV_DATA);
+              goto leave;
+            }
+
+          keyid_from_pk (pk, keyid);
+        }
+      else if (node->pkt->pkttype == PKT_USER_ID)
+        {
+          if (uid_count)
+            {
+              log_error ("not a party key: not exactly one user ID\n");
+              err = gpg_error (GPG_ERR_INV_DATA);
+              goto leave;
+            }
+          uid = node->pkt->pkt.user_id;
+          uid_count++;
+        }
+    }
+
+  if (!(pk && uid))
+    {
+      log_error ("not a party key: pk or user ID not ok\n");
+      err = gpg_error (GPG_ERR_INV_DATA);
+      goto leave;
+    }
+
+  for (node = pub_keyblock; node; node = node->next)
+    {
+      if (node->pkt->pkttype == PKT_SIGNATURE)
+        {
+          PKT_signature *sig = node->pkt->pkt.signature;
+          if (keyid[0] == sig->keyid[0] && keyid[1] == sig->keyid[1]
+              && (uid && IS_UID_SIG(sig)))
+            {
+              char *user = utf8_to_native (uid->name, strlen (uid->name), 0);
+              if (sig->version < 4)
+                log_info (_("skipping v3 self-signature on user ID \"%s\"\n"),
+                          user);
+              else
+                {
+                  PKT_signature *newsig;
+                  PACKET *newpkt;
+                  int rc;
+
+                  if (!sig->flags.notation)
+                    {
+                      tty_printf ("No notations on user ID \"%s\"\n", user);
+                      err = gpg_error (GPG_ERR_INV_DATA);
+                      goto leave;
+                    }
+
+                  /* omit this check? its already done above */
+                  if (memberlist)
+                    {
+                      notation_t n;
+                      notation_t old_notation;
+                      strlist_t tmp;
+                      int pn_count = 0; /* count party notations */
+
+                      tmp = strlist_last (memberlist);
+
+                      old_notation = sig_to_notation (sig);
+
+                      /* Check if there is exactly one
+                       * party notation in the uid sig*/
+                      for (n = old_notation; n; n = n->next)
+                        {
+                          if (!strcmp (n->name, "party@gnupg.org"))
+                            {
+                              if (pn_count)
+                                {
+                                  log_error ("exactly one"
+                                             " party notation allowed\n");
+                                  err = gpg_error (GPG_ERR_INV_DATA);
+                                  goto leave;
+                                }
+                              pn_count++;
+                            }
+                        }
+
+                      if (pn_count != 1)
+                        {
+                          log_error ("exactly one party notation allowed\n");
+                          err = gpg_error (GPG_ERR_INV_DATA);
+                          goto leave;
+                        }
+
+                      for (n = old_notation; n; n = n->next)
+                        {
+                          if (!strcmp (n->name, "party@gnupg.org"))
+                            {
+                              /* Get old members and append them to new members. */
+                              tmp->next = extract_members (n);
+
+                              /* This notation will be replaced. */
+                              n->flags.ignore = 1;
+
+                              if (opt.verbose)
+                                tty_printf ("Removing old party notation: %s\n",
+                                            n->name);
+                            }
+                        }
+
+                      /* We appended old members to our new memberlist.
+                       * Now make a new party notation. */
+                      free_members (members);
+                      for (s = memberlist; s; s = s->next)
+                        {
+                          err = add_partykey_member (ctrl, &members, s->d);
+                          if (err)
+                            {
+                              log_error ("building new member list failed\n");
+                              goto leave;
+                            }
+                        }
+                      free_notation (notation);
+                      notation = partykey_to_notation (members);
+                      notation->next = old_notation;
+
+
+                      tty_printf ("Adding notation: %s\n",
+                                  notation->name);
+                    }
+                  else
+                    {
+                      /* NOT REACHED */
+                      tty_printf ("no new members given.\n");
+                      return 0;
+                    }
+
+                  rc = update_keysig_packet (ctrl, &newsig, sig,
+                                             pk, uid, NULL,
+                                             pk,
+                                             keygen_add_notations, notation);
+                  if (rc)
+                    {
+                      log_error ("update_keysig_packet failed: %s\n",
+                                 gpg_strerror (rc));
+                      free_notation (notation);
+                      xfree (user);
+                      return 0;
+                    }
+
+                  /* replace the packet */
+                  newpkt = xmalloc_clear (sizeof *newpkt);
+                  newpkt->pkttype = PKT_SIGNATURE;
+                  newpkt->pkt.signature = newsig;
+                  free_packet (node->pkt, NULL);
+                  xfree (node->pkt);
+                  node->pkt = newpkt;
+
+                  if (notation)
+                    {
+                      /* Snip off the notation list from the sig */
+                      free_notation (notation->next);
+                      notation->next = NULL;
+                    }
+
+                  xfree (user);
+                }
+            }
+        }
+    }
+ leave:
+  free_notation (notation);
+  free_members (members);
+  return err;
+}
+
+
+/* Helper for partykey_maintain. Replace the current list of party members
+ * with members in MEMBERLIST. */
+gpg_error_t
+partykey_change_members (ctrl_t ctrl, strlist_t memberlist, kbnode_t pub_keyblock)
+{
+  gpg_error_t err = 0;
+  PKT_public_key *pk = NULL;
+  PKT_user_id *uid = NULL;
+  int uid_count = 0;
+  KBNODE node;
+  u32 keyid[2];
+
+  notation_t notation = NULL;
+
+  party_member_t members = NULL;
+  strlist_t s;
+
+  no_primary_warning (pub_keyblock);
+
+  if (!memberlist)
+    {
+      log_info ("replace all members in party key\n");
+    }
+  else
+    {
+      for (s = memberlist; s; s = s->next)
+        {
+          err = add_partykey_member (ctrl, &members, s->d);
+          if (err)
+            {
+              log_error ("building new member list failed");
+              goto leave;
+            }
+        }
+    }
+  notation = partykey_to_notation (members);
+
+  for (node = pub_keyblock; node; node = node->next)
+    {
+      if (node->pkt->pkttype == PKT_PUBLIC_SUBKEY)
+        {
+          log_error ("not a party key: has subkey\n");
+          err = gpg_error (GPG_ERR_INV_DATA);
+          goto leave;
+        }
+
+      if (node->pkt->pkttype == PKT_PUBLIC_KEY)
+        {
+          pk = node->pkt->pkt.public_key;
+
+          if ((pk->pubkey_usage & ~(PUBKEY_USAGE_CERT | PUBKEY_USAGE_PARTY))
+              || (!(pk->pubkey_usage & PUBKEY_USAGE_CERT))
+              || (!(pk->pubkey_usage & PUBKEY_USAGE_PARTY)))
+            {
+              log_error ("not a party key: wrong usage\n");
+              err = gpg_error (GPG_ERR_INV_DATA);
+              goto leave;
+            }
+
+          keyid_from_pk (pk, keyid);
+        }
+      else if (node->pkt->pkttype == PKT_USER_ID)
+        {
+          if (uid_count)
+            {
+              log_error ("not a party key: not exactly one user ID\n");
+              err = gpg_error (GPG_ERR_INV_DATA);
+              goto leave;
+            }
+          uid = node->pkt->pkt.user_id;
+          uid_count++;
+        }
+    }
+
+  if (!(pk && uid))
+    {
+      log_error ("not a party key: pk or uid wrong\n");
+      err = gpg_error (GPG_ERR_INV_DATA);
+      goto leave;
+    }
+
+  for (node = pub_keyblock; node; node = node->next)
+    {
+
+      if (node->pkt->pkttype == PKT_SIGNATURE)
+        {
+          PKT_signature *sig = node->pkt->pkt.signature;
+          if (keyid[0] == sig->keyid[0] && keyid[1] == sig->keyid[1]
+              && (uid && IS_UID_SIG (sig)))
+            {
+              char *user = utf8_to_native (uid->name, strlen (uid->name), 0);
+              if (sig->version < 4)
+                log_info (_("skipping v3 self-signature on user ID \"%s\"\n"),
+                          user);
+              else
+                {
+                  PKT_signature *newsig;
+                  PACKET *newpkt;
+                  int rc;
+
+                  if (!sig->flags.notation)
+                    {
+                      tty_printf ("No notations on user ID \"%s\"\n", user);
+                      err = gpg_error (GPG_ERR_INV_DATA);
+                      goto leave;
+                    }
+
+                  if (notation)
+                    {
+                      notation_t n;
+                      int pn_count = 0;
+
+                      notation->next = sig_to_notation (sig);
+
+                      /* Check if there is exactly one
+                       * party notation in the uid sig*/
+                      for (n = notation->next; n; n = n->next)
+                        {
+                          if (!strcmp (n->name, "party@gnupg.org"))
+                            {
+                              if (pn_count)
+                                {
+                                  log_error ("exactly one"
+                                             " party notation allowed\n");
+                                  err = gpg_error (GPG_ERR_INV_DATA);
+                                  goto leave;
+                                }
+                              pn_count++;
+                            }
+                        }
+
+                      if (pn_count != 1)
+                        {
+                          log_error ("exactly one party notation allowed\n");
+                          err = gpg_error (GPG_ERR_INV_DATA);
+                          goto leave;
+                        }
+
+                      for (n = notation->next; n; n = n->next)
+                        {
+                          /* Remove old members notation */
+                          if (!strcmp (n->name, "party@gnupg.org"))
+                            {
+                              n->flags.ignore = 1;
+
+                              tty_printf ("Removing old party notation: %s\n",
+                                          n->name);
+                            }
+                        }
+                      tty_printf ("Adding new party notation: %s\n",
+                                  notation->name);
+                    }
+                  else
+                    {
+                      /* Should be NOT REACHED,
+                       * even with no members given, a party notation is created.*/
+                      log_error ("generating party notation failed\n");
+                      err = gpg_error (GPG_ERR_INV_DATA);
+                      goto leave;
+                    }
+
+                  rc = update_keysig_packet (ctrl, &newsig, sig,
+                                             pk, uid, NULL,
+                                             pk,
+                                             keygen_add_notations, notation);
+                  if (rc)
+                    {
+                      log_error ("update_keysig_packet failed: %s\n",
+                                 gpg_strerror (rc));
+                      free_notation (notation);
+                      xfree (user);
+                      return 0;
+                    }
+
+                  /* replace the packet */
+                  newpkt = xmalloc_clear (sizeof *newpkt);
+                  newpkt->pkttype = PKT_SIGNATURE;
+                  newpkt->pkt.signature = newsig;
+                  free_packet (node->pkt, NULL);
+                  xfree (node->pkt);
+                  node->pkt = newpkt;
+
+                  if (notation)
+                    {
+                      /* Snip off the notation list from the sig */
+                      free_notation (notation->next);
+                      notation->next = NULL;
+                    }
+
+                  xfree (user);
+                }
+            }
+        }
+    }
+
+ leave:
+  free_notation (notation);
+  free_members (members);
+  return err;
+}
+
+
+/* Helper for partykey_maintain. Remove members from a member key. */
+gpg_error_t
+partykey_remove_members (ctrl_t ctrl, strlist_t memberlist, kbnode_t pub_keyblock)
+{
+  gpg_error_t err = 0;
+  KBNODE node;
+  PKT_public_key *pk = NULL;
+  u32 keyid[2];
+  PKT_user_id *uid = NULL;
+  int uid_count = 0;
+
+  notation_t notation = NULL;
+  strlist_t old_memberlist = NULL;
+  party_member_t members = NULL;
+
+  strlist_t s;
+  strlist_t t;
+
+  no_primary_warning (pub_keyblock);
+
+  /* Nothing to remove. */
+  if (!memberlist)
+    return 0;
+
+  for (node = pub_keyblock; node; node = node->next)
+    {
+      if (node->pkt->pkttype == PKT_PUBLIC_SUBKEY)
+        {
+          log_error ("not a party key: has subkey\n");
+          err = gpg_error (GPG_ERR_INV_DATA);
+          goto leave;
+        }
+
+      if (node->pkt->pkttype == PKT_PUBLIC_KEY)
+        {
+          pk = node->pkt->pkt.public_key;
+
+          if ((pk->pubkey_usage & ~(PUBKEY_USAGE_CERT | PUBKEY_USAGE_PARTY))
+              || (!(pk->pubkey_usage & PUBKEY_USAGE_CERT))
+              || (!(pk->pubkey_usage & PUBKEY_USAGE_PARTY)))
+            {
+              log_error ("not a party key: wrong usage\n");
+              err = gpg_error (GPG_ERR_INV_DATA);
+              goto leave;
+            }
+
+          keyid_from_pk (pk, keyid);
+        }
+      else if (node->pkt->pkttype == PKT_USER_ID)
+        {
+          if (uid_count)
+            {
+              log_error ("not a party key: not exactly one user ID\n");
+              err = gpg_error (GPG_ERR_INV_DATA);
+              goto leave;
+            }
+          uid = node->pkt->pkt.user_id;
+          uid_count++;
+        }
+    }
+
+  if (!(pk && uid))
+    {
+      log_error ("not a party key: pk or user ID not ok\n");
+      err = gpg_error (GPG_ERR_INV_DATA);
+      goto leave;
+    }
+
+  for (node = pub_keyblock; node; node = node->next)
+    {
+      if ( node->pkt->pkttype == PKT_SIGNATURE)
+        {
+          PKT_signature *sig = node->pkt->pkt.signature;
+          if (keyid[0] == sig->keyid[0] && keyid[1] == sig->keyid[1]
+              && (uid && IS_UID_SIG (sig)))
+            {
+              char *user = utf8_to_native (uid->name, strlen (uid->name), 0);
+              if (sig->version < 4)
+                log_info (_("skipping v3 self-signature on user ID \"%s\"\n"),
+                          user);
+              else
+                {
+                  PKT_signature *newsig;
+                  PACKET *newpkt;
+                  int rc;
+
+                  if (!sig->flags.notation)
+                    {
+                      log_error ("not a party key: missing party notation\n");
+                      err = gpg_error (GPG_ERR_INV_DATA);
+                      goto leave;
+                    }
+
+                  if (memberlist)
+                    {
+                      notation_t n;
+                      notation_t old_notation;
+                      int pn_count = 0;
+
+                      old_notation = sig_to_notation (sig);
+
+                      /* Check if there is exactly one
+                       * party notation in the uid sig*/
+                      for (n = old_notation; n; n = n->next)
+                        {
+                          if (strcmp (n->name, "party@gnupg.org") == 0)
+                            {
+                              if (pn_count)
+                                {
+                                  log_error ("exactly party notation allowed\n");
+                                  goto leave;
+                                }
+                              pn_count++;
+                            }
+                        }
+
+                      if (pn_count != 1)
+                        {
+                          log_error ("exactly one party notation allowed\n");
+                          goto leave;
+                        }
+
+                      for (n = old_notation; n; n = n->next)
+                        {
+                          if (!strcmp (n->name, "party@gnupg.org"))
+                            {
+                              old_memberlist = extract_members (n);
+                              /* This notation will be replaced. */
+                              n->flags.ignore = 1;
+
+                              tty_printf ("Removing old party notation: %s\n",
+                                          n->name);
+                              break; /* or not */
+                            }
+                        }
+
+                      /* We appended old members to our new memberlist.
+                       * Now make a new member notation. */
+                      for (s = old_memberlist; s; s = s->next)
+                        {
+                          int keep = 1;
+
+                          /* TODO: check for errors */
+                          for (t = memberlist; t; t = t->next)
+                            {
+                              if (!strcmp (s->d,t->d))
+                                keep = 0;
+                            }
+                          if (keep)
+                            add_partykey_member (ctrl, &members, s->d);
+                        }
+
+                      notation = partykey_to_notation (members);
+                      notation->next = old_notation;
+
+                      tty_printf ("Adding new party notation: %s\n",
+                                  notation->name);
+
+                    }
+                  else
+                    {
+                      /* NOT REACHED */
+                      tty_printf ("no members to remove (given).\n");
+                      return 0;
+                    }
+
+
+                  rc = update_keysig_packet (ctrl, &newsig, sig,
+                                             pk, uid, NULL,
+                                             pk,
+                                             keygen_add_notations, notation);
+                  if (rc)
+                    {
+                      log_error ("update_keysig_packet failed: %s\n",
+                                 gpg_strerror (rc));
+                      free_notation (notation);
+                      xfree (user);
+                      return 0;
+                    }
+
+                  /* replace the packet */
+                  newpkt = xmalloc_clear (sizeof *newpkt);
+                  newpkt->pkttype = PKT_SIGNATURE;
+                  newpkt->pkt.signature = newsig;
+                  free_packet (node->pkt, NULL);
+                  xfree (node->pkt);
+                  node->pkt = newpkt;
+
+                  if (notation)
+                    {
+                      /* Snip off the notation list from the sig */
+                      free_notation (notation->next);
+                      notation->next = NULL;
+                    }
+
+                  xfree (user);
+                }
+            }
+        }
+    }
+
+ leave:
+  free_notation (notation);
+  free_strlist (old_memberlist);
+  free_members (members);
+  return err;
+}
+
+
+/* Maintain a memberkey (formerly known as groupkey).
+ * Depending on MODE, add, change or remove group members in MEMBERLIST:
+ * Mode | action
+ * ---------------------
+ *  0   | invalid
+ *  1   | add
+ *  2   | change/replace
+ *  3   | remove
+ * Either PARTYKEY or PUB_KEYBLOCK is to be set, the other must be NULL.
+ */
+gpg_error_t
+partykey_maintain (ctrl_t ctrl, int mode, strlist_t memberlist,
+                   const char *partykey, kbnode_t *pub_keyblock)
+{
+  gpg_error_t err = 0;
+  KEYDB_HANDLE hd = NULL;
+  kbnode_t keyblock = NULL;
+
+  if (!partykey && pub_keyblock)
+    keyblock = *pub_keyblock;
+  else if (partykey && !pub_keyblock)
+    {
+      err = quick_find_keyblock (ctrl, partykey, 1, &hd, &keyblock);
+      if (err)
+        goto leave;
+
+      /* We need pubkey_usage later. */
+      merge_keys_and_selfsig (ctrl, keyblock);
+    }
+  else
+    {
+      log_error ("Provide partykey either as string or as keyblock.\n");
+      return gpg_error (GPG_ERR_FORBIDDEN);
+    }
+
+  if (mode == 1)
+    err = partykey_add_members (ctrl, memberlist, keyblock);
+  else if (mode == 2)
+    err = partykey_change_members (ctrl, memberlist, keyblock);
+  else if (mode == 3)
+    err = partykey_remove_members (ctrl, memberlist, keyblock);
+  else
+      log_error ("invalid party key mode.\n");
+
+  if (err)
+    {
+      log_error ("updating party key failed\n");
+      goto leave;
+    }
+
+  if (partykey)
+    {
+      err = keydb_update_keyblock (ctrl, hd, keyblock);
+      if (err)
+        {
+          log_error (_("update failed: %s\n"), gpg_strerror (err));
+          goto leave;
+        }
+    }
+
+ leave:
+  if (partykey)
+    {
+      release_kbnode (keyblock);
+      keydb_release (hd);
+    }
+  return err;
 }

@@ -891,3 +891,25 @@ seckey_packet_to_nvc (PKT_public_key *pk)
   (void)pk;
   return NULL;
 }
+
+gpg_error_t find_and_check_key (ctrl_t ctrl,
+                                const char *name, unsigned int use,
+                                int mark_hidden, int from_file,
+                                pk_list_t *pk_list_addr)
+{
+  (void) ctrl;
+  (void) name;
+  (void) use;
+  (void) mark_hidden;
+  (void) from_file;
+  (void) pk_list_addr;
+
+  return gpg_error (GPG_ERR_NOT_IMPLEMENTED);
+}
+
+gpg_error_t check_party_key (kbnode_t pub_keyblock)
+{
+  (void) pub_keyblock;
+
+  return gpg_error (GPG_ERR_NOT_IMPLEMENTED);
+}

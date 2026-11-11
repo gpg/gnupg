@@ -70,5 +70,8 @@ int keyedit_print_one_sig (ctrl_t ctrl, estream_t fp,
 			   int *oth_err, int is_selfsig,
 			   int print_without_key, int extended);
 void no_usable_encr_subkeys_warning (kbnode_t keyblock);
+gpg_error_t partykey_maintain (ctrl_t ctrl, int mode, strlist_t memberlist,
+                               const char *partykey, kbnode_t *pub_keyblock);
+gpg_error_t check_party_key (kbnode_t keyblock);
 
 #endif	/* GNUPG_G10_KEYEDIT_H */

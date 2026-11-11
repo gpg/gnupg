@@ -285,6 +285,11 @@ aead_algo_t select_aead_from_pklist (pk_list_t pk_list);
 void warn_missing_aead_from_pklist (PK_LIST pk_list);
 void warn_missing_aes_from_pklist (PK_LIST pk_list);
 
+/*-- expand-group.c --*/
+strlist_t extract_members (notation_t party_notation);
+strlist_t expand_partykey (ctrl_t ctrl, strlist_t input,
+                            int include_partykey);
+
 /*-- skclist.c --*/
 int  random_is_faked (void);
 void release_sk_list( SK_LIST sk_list );

@@ -2455,6 +2455,7 @@ main (int argc, char **argv)
     int orig_argc;
     char **orig_argv;
     const char *fname;
+    const char *partykey; /* party key to be changed. */
     char *username;
     int may_coredump;
     gpg_error_t tmperr;
@@ -2473,6 +2474,7 @@ main (int argc, char **argv)
     int default_keyring = 1;
     int greeting = 0;
     int nogreeting = 0;
+    int partymode = 0; /* Party key maintenance mode. */
     char *logfile = NULL;
     int use_random_seed = 1;
     enum cmd_and_opt_values cmd = 0;
@@ -2812,6 +2814,9 @@ main (int argc, char **argv)
           case aRebuildKeydbCaches:
           case aAddRecipients:
           case aChangeRecipients:
+          case aAddMembers:
+          case aChangeMembers:
+          case aRemoveMembers:
             set_cmd (&cmd, pargs.r_opt);
             break;
 
@@ -4643,6 +4648,23 @@ main (int argc, char **argv)
                        print_fname_stdin (fname), gpg_strerror (rc));
           }
 	break;
+
+      case aAddMembers:
+      case aChangeMembers:
+      case aRemoveMembers:
+        if (cmd == aAddMembers)
+          partymode = 1;
+        else if (cmd == aChangeMembers)
+          partymode = 2;
+        else if (cmd == aRemoveMembers)
+          partymode = 3;
+        else
+          partymode = 0;
+
+        partykey = argc? *argv : NULL;
+
+        partykey_maintain (ctrl, partymode, memberlist, partykey, NULL);
+        break;
 
       case aEncrSym:
 	/* This works with PGP 8 in the sense that it acts just like a
