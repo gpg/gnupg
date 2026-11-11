@@ -900,10 +900,13 @@ static const struct adm_key_algo_s
 static gpg_error_t
 auth_adm_key (app_t app, const unsigned char *value, size_t valuelen)
 {
+  /* An empty witness requests a witness.  */
+  static const unsigned char witness_req[] = { 0x7c, 0x02, 0x80, 0x00 };
   gpg_error_t err = gpg_error (GPG_ERR_INV_LENGTH);
   const struct adm_key_algo_s *ka;
   int i;
   int p1 = 0;
+  int resp_tag = 1;
   size_t bl;
   unsigned char tmpl[2+3*(2+16)];
   size_t tmpllen;
@@ -917,25 +920,25 @@ auth_adm_key (app_t app, const unsigned char *value, size_t valuelen)
   /* Request a witness.  The card refuses that for an algorithm
    * other than the one of its key, so the first algorithm with a
    * matching key length for which we get a witness is the one.  */
-  tmpl[0] = 0x7c;
-  tmpl[1] = 0x02;
-  tmpl[2] = 0x80;
-  tmpl[3] = 0;    /* (Empty witness requests a witness.)  */
-  tmpllen = 4;
   for (i=0; i < DIM (adm_key_algos); i++)
     {
       ka = adm_key_algos + i;
       if (ka->keylen != valuelen)
         continue;
-      /* For 3DES we keep on using the legacy identifier because that
-       * is what we always did and thus known to work with all
-       * cards.  */
-      p1 = (ka->algo == PIV_ALGORITHM_3DES_ECB
-            ? PIV_ALGORITHM_3DES_ECB_0 : ka->algo);
+      p1 = ka->algo;
       err = iso7816_general_authenticate (app_get_slot (app), 0,
                                           p1, 0x9B,
-                                          tmpl, tmpllen, 0,
-                                          &outdata, &outdatalen);
+                                          witness_req, sizeof witness_req,
+                                          0, &outdata, &outdatalen);
+      if (err && p1 == PIV_ALGORITHM_3DES_ECB)
+        {
+          /* Some cards only know the legacy identifier for 3DES.  */
+          p1 = PIV_ALGORITHM_3DES_ECB_0;
+          err = iso7816_general_authenticate (app_get_slot (app), 0,
+                                              p1, 0x9B,
+                                              witness_req, sizeof witness_req,
+                                              0, &outdata, &outdatalen);
+        }
       if (!err)
         break;
     }
@@ -952,6 +955,7 @@ auth_adm_key (app_t app, const unsigned char *value, size_t valuelen)
   err = gcry_cipher_setkey (cipher, value, valuelen);
   if (err)
     goto leave;
+ again:
   if (!(outdatalen && *outdata == 0x7c
         && (s = find_tlv (outdata, outdatalen, 0x80, &n))
         && n == bl))
@@ -966,22 +970,42 @@ auth_adm_key (app_t app, const unsigned char *value, size_t valuelen)
 
   /* Return decrypted witness and send our challenge.  */
   tmpl[0] = 0x7c;
-  tmpl[1] = 2 + bl + 2 + bl + 2;
+  tmpl[1] = 2 + bl + 2 + bl;
   tmpl[2] = 0x80;
   tmpl[3] = bl;
   memcpy (tmpl+4, witness, bl);
   tmpl[4+bl] = 0x81;
   tmpl[5+bl] = bl;
   gcry_create_nonce (tmpl+6+bl, bl);
-  tmpl[6+2*bl] = 0x82;
-  tmpl[7+2*bl] = 0;
-  tmpllen = 8 + 2*bl;
+  tmpllen = 6 + 2*bl;
+  if (resp_tag)
+    {
+      /* Request the response with an empty tag as in the example of
+       * SP 800-73-5 Part 2, Table 23.  */
+      tmpl[1] += 2;
+      tmpl[tmpllen++] = 0x82;
+      tmpl[tmpllen++] = 0;
+    }
   xfree (outdata);
   err = iso7816_general_authenticate (app_get_slot (app), 0,
                                       p1, 0x9B,
                                       tmpl, tmpllen, 0,
                                       &outdata, &outdatalen);
-  if (gpg_err_code (err) == GPG_ERR_BAD_PIN)
+  if (resp_tag && gpg_err_code (err) == GPG_ERR_INV_VALUE)
+    {
+      /* The Nitrokey 3 rejects the empty response tag.  Retry
+       * without it; that requires a new witness.  */
+      resp_tag = 0;
+      err = iso7816_general_authenticate (app_get_slot (app), 0,
+                                          p1, 0x9B,
+                                          witness_req, sizeof witness_req,
+                                          0, &outdata, &outdatalen);
+      if (!err)
+        goto again;
+    }
+  /* The Nitrokey 3 also uses 6A80 for a wrong key.  */
+  if (gpg_err_code (err) == GPG_ERR_BAD_PIN
+      || (!resp_tag && gpg_err_code (err) == GPG_ERR_INV_VALUE))
     err = gpg_error (GPG_ERR_BAD_AUTH);
   if (err)
     goto leave;
