@@ -561,7 +561,7 @@ static strlist_t opt_attributes;
 static unsigned int parent_cache_stats;
 
 /* The default cipher algo.  */
-#define DEFAULT_CIPHER_ALGO       "AES256-CBC"
+#define DEFAULT_CIPHER_ALGO       "AES256-GCM"
 #define DEFAULT_CIPHER_ALGO_DE_VS "AES256-GCM"
 
 /*
@@ -992,8 +992,6 @@ main ( int argc, char **argv)
     log_fatal ("error allocating session environment block: %s\n",
                strerror (errno));
 
-  /* Note: If you change this default cipher algorithm , please
-     remember to update the Gpgconflist entry as well.  */
   opt.def_cipher_algoid = DEFAULT_CIPHER_ALGO;
 
 
