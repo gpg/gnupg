@@ -1001,6 +1001,9 @@ build_pk_list (ctrl_t ctrl, strlist_t rcpts, PK_LIST *ret_pk_list)
   else
     remusr = rcpts;
 
+  /* Expand party keys. */
+  remusr = expand_partykey (ctrl, rcpts, 0);
+
   /* XXX: Change this function to use get_pubkeys instead of
      get_pubkey_byname to detect ambiguous key specifications and warn
      about duplicate keyblocks.  For ambiguous key specifications on
@@ -1389,8 +1392,9 @@ build_pk_list (ctrl_t ctrl, strlist_t rcpts, PK_LIST *ret_pk_list)
     release_pk_list( pk_list );
   else
     *ret_pk_list = pk_list;
-  if (opt.grouplist)
-    free_strlist(remusr);
+
+  /* Always free remusr because we expand party keys. */
+  free_strlist(remusr);
   return rc;
 }
 

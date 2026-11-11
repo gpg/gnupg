@@ -63,6 +63,7 @@ described here.
     - rvs :: Revocation signature (standalone) [since 2.2.9]
     - fpr :: Fingerprint (fingerprint is in field 10)
     - fp2 :: SHA-256 fingerprint (fingerprint is in field 10)
+    - mbr :: Fingerprint of a member of a party key
     - pkd :: Public key data [*]
     - grp :: Keygrip
     - rvk :: Revocation key
@@ -203,6 +204,7 @@ described here.
     - r :: Restricted encryption (subkey only use)
     - t :: Timestamping
     - g :: Group key
+    - p :: Party key
     - ? :: Unknown capability
 
     A key may have any combination of them in any order.  In addition

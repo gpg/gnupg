@@ -1116,6 +1116,8 @@ print_capabilities (ctrl_t ctrl, PKT_public_key *pk, KBNODE keyblock)
     es_putc ('t', es_stdout);
   if ((use & PUBKEY_USAGE_GROUP))
     es_putc ('g', es_stdout);
+ if ((use & PUBKEY_USAGE_PARTY))
+    es_putc ('p', es_stdout);
 
   if ((use & PUBKEY_USAGE_UNKNOWN))
     es_putc ('?', es_stdout);
@@ -1124,7 +1126,7 @@ print_capabilities (ctrl_t ctrl, PKT_public_key *pk, KBNODE keyblock)
     {
       /* Figure out the usable capabilities.  */
       KBNODE k;
-      int enc = 0, sign = 0, cert = 0, auth = 0, disabled = 0;
+      int enc = 0, sign = 0, cert = 0, party = 0, auth = 0, disabled = 0;
 
       for (k = keyblock; k; k = k->next)
 	{
@@ -1134,7 +1136,10 @@ print_capabilities (ctrl_t ctrl, PKT_public_key *pk, KBNODE keyblock)
 	      pk = k->pkt->pkt.public_key;
 
 	      if (pk->flags.primary)
-		disabled = pk_is_disabled (pk);
+                {
+                  disabled = pk_is_disabled (pk);
+                  party = !!(pk->pubkey_usage & PUBKEY_USAGE_PARTY);
+                }
 
 	      if (pk->flags.valid && !pk->flags.revoked && !pk->has_expired)
 		{
@@ -1159,6 +1164,8 @@ print_capabilities (ctrl_t ctrl, PKT_public_key *pk, KBNODE keyblock)
 	es_putc ('S', es_stdout);
       if (cert)
 	es_putc ('C', es_stdout);
+      if (party)
+        es_putc ('P', es_stdout);
       if (auth)
 	es_putc ('A', es_stdout);
       if (disabled)
@@ -1815,6 +1822,45 @@ list_keyblock_print (ctrl_t ctrl, kbnode_t keyblock, int secret, int fpr,
 	  if ((opt.list_options & LIST_SHOW_PHOTOS) && uid->attribs != NULL)
 	    show_photos (ctrl, uid->attribs, uid->numattribs, pk, uid);
 	}
+      /* Party member listing.
+       * FIXME: We do not check if the party key is valid here. */
+      else if ((opt.list_options & LIST_SHOW_MEMBERS)
+               && node->pkt->pkttype == PKT_SIGNATURE)
+        {
+          PKT_signature *sig = node->pkt->pkt.signature;
+          notation_t pnotation = NULL;
+          strlist_t memberlist = NULL;
+          strlist_t member = NULL;
+
+          if (IS_UID_SIG (sig)
+              && mainkid[0] == sig->keyid[0] && mainkid[1] == sig->keyid[1]
+              && !check_party_key (keyblock))
+            {
+              pnotation = search_sig_notations (sig, "party@gnupg.org");
+              if (pnotation)
+                {
+                  /* TODO: correct the indent. */
+                  es_fprintf (es_stdout, "%*sParty-members:\n",
+                              14/* indent */, "");
+
+                  memberlist = extract_members (pnotation);
+                  if (!memberlist)
+                    {
+                      log_info ("memberlist might be empty.\n");
+                    }
+                  else
+                    {
+                      for (member = memberlist; member; member = member->next)
+                        {
+                          es_fprintf (es_stdout, "%*s%s\n",
+                                      14/* indent */, "", member->d);
+                        }
+                    }
+                }
+            }
+          free_strlist (memberlist);
+          free_notation (pnotation);
+        }
       else if (node->pkt->pkttype == PKT_PUBLIC_SUBKEY)
 	{
 	  PKT_public_key *pk2 = node->pkt->pkt.public_key;
@@ -2260,6 +2306,33 @@ list_keyblock_colon (ctrl_t ctrl, kbnode_t keyblock,
 	    }
 #endif /*USE_TOFU*/
 	}
+      /* Colon listing for party members.
+       * Note: We do not check if the party key is valid here. */
+      else if ((opt.list_options & LIST_SHOW_MEMBERS)
+               && node->pkt->pkttype == PKT_SIGNATURE)
+        {
+          PKT_signature *sig = node->pkt->pkt.signature;
+          strlist_t m = NULL;
+          strlist_t memberlist = NULL;
+          notation_t pnotation;
+
+          /* UID self sig. */
+          if (IS_UID_SIG (sig)
+              && (keyid[0] == sig->keyid[0] && keyid[1] == sig->keyid[1])
+              && !check_party_key (keyblock))
+            {
+              pnotation = search_sig_notations (sig, "party@gnupg.org");
+              if (pnotation)
+                memberlist = extract_members (pnotation);
+
+              if (!memberlist)
+                es_fprintf (es_stdout,  "mbr:::::::::%s:\n", "");
+              else
+                for (m = memberlist; m; m = m->next)
+                  es_fprintf (es_stdout, "mbr:::::::::%s:\n", m->d);
+            }
+
+        }
       else if (node->pkt->pkttype == PKT_PUBLIC_SUBKEY)
 	{
 	  u32 keyid2[2];

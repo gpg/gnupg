@@ -488,6 +488,7 @@ EXTERN_UNLESS_MAIN_MODULE int memory_stat_debug_mode;
 #define LIST_SHOW_TRUSTSIG               (1<<20)
 #define LIST_SHOW_HIDDEN_NOTATIONS       (1<<21)
 #define LIST_DEBUG_SHOW_SEXP             (1<<22)  /*Only for parse-packet*/
+#define LIST_SHOW_MEMBERS                (1<<23)  /* Only for list-keys. */
 
 #define VERIFY_SHOW_PHOTOS               (1<<0)
 #define VERIFY_SHOW_POLICY_URLS          (1<<1)

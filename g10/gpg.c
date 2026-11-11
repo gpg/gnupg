@@ -2155,6 +2155,8 @@ parse_list_options(char *str)
       {"store-x509-notations",LIST_STORE_X509_NOTATIONS,NULL, NULL },
       {"show-keyserver-urls",LIST_SHOW_KEYSERVER_URLS,NULL,
        N_("show preferred keyserver URLs during signature listings")},
+      {"show-members",LIST_SHOW_MEMBERS,NULL,
+       N_("show members listed in the party notation of a party key")},
       {"show-uid-validity",LIST_SHOW_UID_VALIDITY,NULL,
        N_("show user ID validity during key listings")},
       {"show-unusable-uids",LIST_SHOW_UNUSABLE_UIDS,NULL,
