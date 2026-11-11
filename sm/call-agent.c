@@ -1171,16 +1171,32 @@ int
 gpgsm_agent_havekey (ctrl_t ctrl, const char *hexkeygrip)
 {
   int rc;
+  const char *s, *hexkeygrip2;
   char line[ASSUAN_LINELENGTH];
 
   rc = start_agent (ctrl);
   if (rc)
     return rc;
 
-  if (!hexkeygrip || strlen (hexkeygrip) != 40)
+  if (!hexkeygrip)
     return gpg_error (GPG_ERR_INV_VALUE);
 
-  snprintf (line, DIM(line), "HAVEKEY %s", hexkeygrip);
+  if ((s = strchr (hexkeygrip, ',')))
+    {
+      /* Composite key.  */
+      if (s - hexkeygrip != 40)
+        return gpg_error (GPG_ERR_INV_VALUE);
+      hexkeygrip2 = s+1;
+      if (strlen (hexkeygrip2) != 40)
+        return gpg_error (GPG_ERR_INV_VALUE);
+    }
+  else if (strlen (hexkeygrip) != 40)
+    return gpg_error (GPG_ERR_INV_VALUE);
+  else
+    hexkeygrip2 = "";
+
+  snprintf (line, DIM(line), "HAVEKEY %.40s%s%.40s",
+            hexkeygrip, *hexkeygrip2? " ":"", hexkeygrip2);
 
   rc = assuan_transact (agent_ctx, line, NULL, NULL, NULL, NULL, NULL, NULL);
   return rc;

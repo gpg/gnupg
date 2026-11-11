@@ -1754,7 +1754,8 @@ list_internal_keys (ctrl_t ctrl, strlist_t names, estream_t fp,
             }
         }
 
-      if (!mode          || ((mode & 1) && !have_secret)
+      if (!mode
+          || ((mode & 1) && !have_secret)
           || ((mode & 2) && have_secret)  )
         {
           if (ctrl->with_colons)
