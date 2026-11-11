@@ -195,12 +195,12 @@ encrypt_dek (ctrl_t ctrl, const DEK dek, ksba_cert_t cert, int pk_algo,
   if (DBG_CRYPTO)
     {
       log_printsexp (" pubkey:", s_pkey);
-      log_printhex (dek->key, dek->keylen, "CEK .....:");
+      log_printhex (dek->key, dek->keylen, "CEK ........:");
     }
 
   /* Put the encoded cleartext into a simple list. */
   s_data = NULL; /* (avoid compiler warning) */
-  if (pk_algo == GCRY_PK_ECC)
+  if (pk_algo == GCRY_PK_ECC || pk_algo == GCRY_PK_KEM)
     {
       rc = kem_pkencrypt (ctrl, pk_algo, dek, s_pkey, &s_ciph);
     }

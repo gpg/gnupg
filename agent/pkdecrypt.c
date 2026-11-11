@@ -1065,11 +1065,11 @@ composite_cms_kem_decrypt (ctrl_t ctrl, const char *desc_text,
     log_printhex (comb_shared, comb_shared_len, "Final shared:");
 
   session_key_len = keklen;
-  err = gnupg_kem_derive_seskey (DBG_CRYPTO,
-                                 comb_shared, comb_shared_len,
-                                 encryptedkey.data, encryptedkey.len,
-                                 pqcalgostr, wrapalgostr, kdfalgostr,
-                                 session_key_len, &session_key);
+  err = gnupg_kem_derive_or_gen_seskey (DBG_CRYPTO, 0 /*(Derive)*/,
+                                        comb_shared, comb_shared_len,
+                                        encryptedkey.data, encryptedkey.len,
+                                        pqcalgostr, wrapalgostr, kdfalgostr,
+                                        session_key_len, &session_key);
   if (err)
     goto leave;
 

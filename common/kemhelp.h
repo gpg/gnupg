@@ -86,7 +86,7 @@ gpg_error_t gnupg_kem_combiner_sha3_256 (void *kek, size_t kek_len,
 
 const struct gnupg_ecc_params *gnupg_get_ecc_params (const char *curve);
 
-gpg_error_t gnupg_kem_derive_seskey (int enable_debug,
+gpg_error_t gnupg_kem_derive_or_gen_seskey (int enable_debug, int generate,
                                      const void *shared, size_t shared_len,
                                      const void *encrkey, size_t encrkey_len,
                                      const char *pqcalgostr,

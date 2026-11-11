@@ -770,7 +770,7 @@ do_encrypt_kem (PKT_public_key *pk, gcry_mpi_t data, int seskey_algo,
       if (err)
         {
           if (opt.verbose)
-            log_info ("%s: gcry_kem_encap for ECC failed\n", __func__);
+            log_info ("%s: gcry_kem_encap for Kyber failed\n", __func__);
           goto leave;
         }
 

@@ -70,8 +70,6 @@ ecdh_encrypt (DEK dek, gcry_sexp_t s_pkey, gcry_sexp_t *r_encval)
   unsigned char ecc_ecdh[ECC_POINT_LEN_MAX];
   size_t ecc_ct_len, ecc_ecdh_len;
 
-  *r_encval = NULL;
-
   /* Figure out the encryption and wrap algo OIDs.  */
   /* Get the curve name if any,  */
   l1 = gcry_sexp_find_token (s_pkey, "curve", 0);
@@ -318,6 +316,298 @@ ecdh_encrypt (DEK dek, gcry_sexp_t s_pkey, gcry_sexp_t *r_encval)
 }
 
 
+/* Encrypt the DEK using boths keys along with the pqcalgostr and
+ * curvestr helper values.  The created encrypted output at R_ENCVAL
+ * is in this format:
+ *
+ *  (enc-val
+ *    (kem
+ *      (pqc kyberNNN)     -- The PQC algo
+ *      (curve <xyz>)      -- The curve for a composite algo
+ *      (ct <ciphertext>)  -- ciphertext
+ *      (kdf hkdf-sha256)
+ *      (kek-len 32)       -- length of the key encryption key
+ *      (wrap-algo aes256-wrap)
+ *      (encr-key <key>))) -- this is the encrypted session key
+ */
+static gpg_error_t
+composite_kem_encrypt (DEK dek,
+                       gcry_sexp_t s_pkey_mlk, const char *pqcalgostr,
+                       gcry_sexp_t s_pkey_ecc, const char *curvestr,
+                       gcry_sexp_t *r_encval)
+{
+  gpg_error_t err;
+  enum gcry_kem_algos mlk_kem_algo, ecc_kem_algo;
+  const char *label;
+  gcry_buffer_t ecc_pubkey_buffer = { 0, 0, 0, NULL };
+  const unsigned char *ecc_pubkey = NULL;
+  size_t ecc_pubkey_len;
+  unsigned char *ecc_encaps = NULL;
+  unsigned char *ecc_shared = NULL;
+  size_t ecc_encaps_len, ecc_shared_len;
+  gcry_buffer_t mlk_pubkey_buffer = { 0, 0, 0, NULL };
+  const unsigned char *mlk_pubkey = NULL;
+  size_t mlk_pubkey_len;
+  unsigned char *mlk_encaps = NULL;
+  unsigned char *mlk_shared = NULL;
+  size_t mlk_encaps_len, mlk_shared_len;
+  unsigned char *comb_shared = NULL;
+  size_t comb_shared_len;
+  void *enckey = NULL;
+  size_t enckey_len;
+  unsigned char *ciphertext = NULL;
+  size_t ciphertext_len;
+  const char *kdfalgostr  = "hkdf-sha256";
+  const char *wrapalgostr = "aes256-wrap";
+
+  /* Get PQC algo information. */
+  if (!strcmp (pqcalgostr, "kyber768"))
+    {
+      mlk_kem_algo = GCRY_KEM_MLKEM768;
+      mlk_pubkey_len = GCRY_KEM_MLKEM768_PUBKEY_LEN;
+      mlk_encaps_len = GCRY_KEM_MLKEM768_ENCAPS_LEN;
+      mlk_shared_len = GCRY_KEM_MLKEM768_SHARED_LEN;
+    }
+  else if (!strcmp (pqcalgostr, "kyber1024"))
+    {
+      mlk_kem_algo = GCRY_KEM_MLKEM1024;
+      mlk_pubkey_len = GCRY_KEM_MLKEM1024_PUBKEY_LEN;
+      mlk_encaps_len = GCRY_KEM_MLKEM1024_ENCAPS_LEN;
+      mlk_shared_len = GCRY_KEM_MLKEM1024_SHARED_LEN;
+    }
+  else
+    {
+      err = gpg_error (GPG_ERR_PUBKEY_ALGO);
+      log_info ("%s: PQC algo '%s' is not supported\n", __func__, pqcalgostr);
+      goto leave;
+    }
+
+  /* Get the ECC algo information.  */
+  label = NULL;
+  if (!strcmp (curvestr, "X25519"))
+    {
+      ecc_kem_algo = GCRY_KEM_RAW_X25519;
+      ecc_encaps_len = GCRY_KEM_ECC_X25519_ENCAPS_LEN;
+      if (mlk_kem_algo == GCRY_KEM_MLKEM768)
+        label = "\x5c\x2e\x2f\x2f\x5e\x5c";
+    }
+  else if (!strcmp (curvestr, "X448"))
+    {
+      ecc_kem_algo = GCRY_KEM_RAW_X448;
+      ecc_encaps_len = GCRY_KEM_ECC_X448_ENCAPS_LEN;
+      if (mlk_kem_algo == GCRY_KEM_MLKEM1024)
+        label = "MLKEM1024-X448";
+    }
+  else if (!strcmp (curvestr, "bp256"))
+    {
+      ecc_kem_algo = GCRY_KEM_RAW_BP256;
+      ecc_encaps_len = 1 + 32 + 32;
+      if (mlk_kem_algo == GCRY_KEM_MLKEM768)
+        label = "MLKEM768-BP256";
+    }
+  else if (!strcmp (curvestr, "nistp256"))
+    {
+      ecc_kem_algo = GCRY_KEM_RAW_P256R1;
+      ecc_encaps_len = 1 + 32 + 32;
+      if (mlk_kem_algo == GCRY_KEM_MLKEM768)
+        label = "MLKEM768-P256";
+    }
+  else if (!strcmp (curvestr, "bp384"))
+    {
+      ecc_kem_algo = GCRY_KEM_RAW_BP384;
+      ecc_encaps_len = 1 + 48 + 48;
+      if (mlk_kem_algo == GCRY_KEM_MLKEM1024)
+        label = "MLKEM1024-BP384";
+    }
+  else if (!strcmp (curvestr, "nistp384"))
+    {
+      ecc_kem_algo = GCRY_KEM_RAW_P384R1;
+      ecc_encaps_len = 1 + 48 + 48;
+    }
+  else if (!strcmp (curvestr, "bp512"))
+    {
+      ecc_kem_algo = GCRY_KEM_RAW_BP512;
+      ecc_encaps_len = 1 + 64 + 64;
+    }
+  else if (!strcmp (curvestr, "nistp521"))
+    {
+      ecc_kem_algo = GCRY_KEM_RAW_P521R1;
+      ecc_encaps_len = 1 + 66 + 66;
+      if (mlk_kem_algo == GCRY_KEM_MLKEM1024)
+        label = "MLKEM1024-P521";
+    }
+  else
+    {
+      err = gpg_error (GPG_ERR_UNKNOWN_CURVE);
+      log_info ("%s: curve '%s' is not supported\n", __func__, curvestr);
+      goto leave;
+    }
+
+  if (!label)
+    {
+      err = gpg_error (GPG_ERR_PUBKEY_ALGO);
+      log_info ("%s: composite algo '%s' with '%s' is not specified\n",
+                __func__, pqcalgostr, curvestr);
+      goto leave;
+    }
+
+  /* Encrypt to the ECC part.  */
+  err = gcry_sexp_extract_param (s_pkey_ecc, NULL, "&q",
+                                 &ecc_pubkey_buffer, NULL);
+  if (err)
+    goto leave;
+  ecc_pubkey = ecc_pubkey_buffer.data;
+  ecc_pubkey_len = ecc_pubkey_buffer.len;
+
+  ecc_shared_len = ecc_encaps_len;
+  ecc_encaps = xtrymalloc (ecc_encaps_len);
+  if (ecc_encaps)
+    ecc_shared = xtrymalloc (ecc_shared_len);
+  if (!ecc_encaps || !ecc_shared)
+    {
+      err = gpg_error_from_syserror ();
+      goto leave;
+    }
+
+  err = gcry_kem_encap (ecc_kem_algo, ecc_pubkey, ecc_pubkey_len,
+                        /* outputs: */ ecc_encaps, ecc_encaps_len,
+                        /*          */ ecc_shared, ecc_shared_len,
+                        NULL, 0);
+  if (err)
+    {
+      if (opt.verbose)
+        log_info ("%s: gcry_kem_encap for ECC part (%s) failed\n",
+                  __func__, curvestr);
+      log_debug ("pubkey_len=%zu encaps_len=%zu shared_len=%zu\n",
+                 ecc_pubkey_len, ecc_encaps_len, ecc_shared_len);
+      goto leave;
+    }
+  /* Return only the x-coordinate: A 0x04 prefix is required and the
+   * value must odd so that we can extract just the half of it.  */
+  if (ecc_shared_len > 3 && ecc_shared[0] == 0x04 && ecc_shared_len % 2)
+    {
+      ecc_shared_len = (ecc_shared_len - 1)/2;
+      memmove (ecc_shared, ecc_shared+1, ecc_shared_len);
+    }
+
+  if (DBG_CRYPTO)
+    {
+      log_printhex (ecc_encaps, ecc_encaps_len, "ECC    ephem:");
+      log_printhex (ecc_shared, ecc_shared_len, "ECC   shared:");
+    }
+
+  /* Encrypt to the ML-KEM part.  */
+  err = gcry_sexp_extract_param (s_pkey_mlk, NULL, "&p",
+                                 &mlk_pubkey_buffer, NULL);
+  if (err)
+    goto leave;
+  if (mlk_pubkey_len != mlk_pubkey_buffer.len)
+    {
+      log_info ("%s: Kyber public key length invalid (%zu)\n",
+                __func__, mlk_pubkey_buffer.len);
+      err = gpg_error (GPG_ERR_BAD_PUBKEY);
+      goto leave;
+    }
+  mlk_pubkey = mlk_pubkey_buffer.data;
+
+  if (DBG_CRYPTO)
+    log_printhex (mlk_pubkey, mlk_pubkey_len, "|!trunc|Kyber pubkey:");
+
+  mlk_encaps = xtrymalloc (mlk_encaps_len);
+  if (mlk_encaps)
+    mlk_shared = xtrymalloc (mlk_shared_len);
+  if (!mlk_encaps || !mlk_shared)
+    {
+      err = gpg_error_from_syserror ();
+      goto leave;
+    }
+
+  err = gcry_kem_encap (mlk_kem_algo, mlk_pubkey, mlk_pubkey_len,
+                        /* outputs: */ mlk_encaps, mlk_encaps_len,
+                        /*          */ mlk_shared, mlk_shared_len,
+                        NULL, 0);
+  if (err)
+    {
+      if (opt.verbose)
+        log_info ("%s: gcry_kem_encap for MLKEM part (%s) failed\n",
+                  __func__, curvestr);
+      goto leave;
+    }
+  if (DBG_CRYPTO)
+    log_printhex (mlk_shared, mlk_shared_len, "MLKEM shared:");
+
+  /* Combine the keys.  */
+  comb_shared_len = 32;  /* Always 32 octets.  */
+  comb_shared = xtrymalloc_secure (comb_shared_len);
+  if (!comb_shared)
+    {
+      err = gpg_error_from_syserror ();
+      goto leave;
+    }
+  err = gnupg_kem_combiner_sha3_256 (comb_shared, comb_shared_len,
+                                     ecc_shared, ecc_shared_len,
+                                     ecc_encaps, ecc_encaps_len,
+                                     ecc_pubkey, ecc_pubkey_len,
+                                     mlk_shared, mlk_shared_len,
+                                     label, strlen (label));
+  if (err)
+    {
+      if (opt.verbose)
+        log_info ("%s: PQC-CMS key combiner failed\n", __func__);
+      goto leave;
+    }
+
+  if (DBG_CRYPTO)
+    log_printhex (comb_shared, comb_shared_len, "Final shared:");
+
+  enckey_len = comb_shared_len + 8;  /* 8 is for the AES tag */
+  err = gnupg_kem_derive_or_gen_seskey (DBG_CRYPTO, 1/*(generate)*/,
+                                        comb_shared, comb_shared_len,
+                                        dek->key, dek->keylen,
+                                        pqcalgostr, wrapalgostr, kdfalgostr,
+                                        enckey_len, &enckey);
+  if (err)
+    goto leave;
+
+  if (DBG_CRYPTO)
+    log_printhex (enckey, enckey_len, "EncrKey ....:");
+
+  ciphertext_len = mlk_encaps_len + ecc_encaps_len;
+  ciphertext = xtrymalloc (ciphertext_len);
+  if (!ciphertext)
+    goto leave;
+  memcpy (ciphertext, mlk_encaps, mlk_encaps_len);
+  memcpy (ciphertext+mlk_encaps_len, ecc_encaps, ecc_encaps_len);
+
+
+  err = gcry_sexp_build (r_encval, NULL,
+                         "(enc-val(kem"
+                         "(pqc %s)(curve %s)"
+                         "(kdf %s)(wrap-algo %s)"
+                         "(ct %b)(encr-key %b)))",
+                         pqcalgostr, curvestr,
+                         kdfalgostr, wrapalgostr,
+                         (int)ciphertext_len, ciphertext,
+                         (int)enckey_len, enckey,
+                         NULL);
+  if (err)
+    log_error ("%s: failed building final S-exp: %s\n",
+               __func__, gpg_strerror (err));
+
+ leave:
+  gcry_free (ecc_pubkey_buffer.data);
+  gcry_free (mlk_pubkey_buffer.data);
+  xfree (ecc_encaps);
+  xfree (ecc_shared);
+  xfree (mlk_encaps);
+  xfree (mlk_shared);
+  xfree (comb_shared);
+  xfree (ciphertext);
+  xfree (enckey);
+  return err;
+}
+
+
 /* Dispatcher for the KEM encrypt^Wencap functions.  PK_ALGO is the
  * algo which is either GCRY_PK_ECC or GCRY_PK_KEM.  DEK has the data
  * encryption key.  S_PKEY isthe public we want to encrypt to.
@@ -326,10 +616,88 @@ gpg_error_t
 kem_pkencrypt (ctrl_t ctrl, int pk_algo, const DEK dek,
                gcry_sexp_t s_pkey, gcry_sexp_t *r_encval)
 {
+  gpg_error_t err;
+  const char *tag;
+  size_t taglen;
+  gcry_sexp_t s_pkey_ecc, s_pkey_mlk;
+  char *curvestr = NULL;
+  char *pqcalgostr = NULL;
+  gcry_sexp_t l_tmp, l1;
+
+  (void)ctrl;  /* Currently not used.  */
+
+  *r_encval = NULL;
 
   if (pk_algo == GCRY_PK_ECC)  /* We use KEM for ECC.  */
     return ecdh_encrypt (dek, s_pkey, r_encval);
   if (pk_algo != GCRY_PK_KEM)
     return gpg_error (GPG_ERR_PUBKEY_ALGO);  /* Should not happen */
-  return gpg_error (GPG_ERR_NOT_IMPLEMENTED);
+
+  /* We only support composite KEM algorithms.  Split the key so that
+   * we can pass both parts independently.  */
+  tag = gcry_sexp_nth_data (s_pkey, 0, &taglen);
+  if (!(tag && taglen == 13 && !memcmp (tag, "composite-key", 13)))
+    {
+      log_error ("%s: invalid public key: no a composite key\n", __func__);
+      return gpg_error (GPG_ERR_PUBKEY_ALGO);
+    }
+
+  s_pkey_mlk = gcry_sexp_nth (s_pkey, 1);
+  s_pkey_ecc = gcry_sexp_nth (s_pkey, 2);
+  if (!s_pkey_mlk || !s_pkey_ecc)
+    {
+      log_error ("%s: broken composite key detected\n", __func__);
+      err = gpg_error (GPG_ERR_BAD_PUBKEY);
+      goto leave;
+    }
+
+  if ((l1 = gcry_sexp_find_token (s_pkey_ecc, "curve", 0)))
+    ; /* Alright, the second key part has the ECC key.  */
+  else if ((l1 = gcry_sexp_find_token (s_pkey_mlk, "curve", 0)))
+    {
+      /* Uncommonly the first part has the curve parameter and thus
+       * is the ECC part.  Swap them to get the variables right. */
+      gcry_sexp_t s_tmp = s_pkey_mlk;
+      s_pkey_mlk = s_pkey_ecc;
+      s_pkey_ecc = s_tmp;
+    }
+  else
+    l1 = NULL;
+  curvestr = gcry_sexp_nth_string (l1, 1);
+  gcry_sexp_release (l1);
+  if (!curvestr)
+    {
+      log_error ("%s: no curve given in any part of a composite key\n",
+                 __func__);
+      err = gpg_error (GPG_ERR_BAD_PUBKEY);
+      goto leave;
+    }
+
+  /* Get the name of the PQC algo.  */
+  if ((l1 = gcry_sexp_find_token (s_pkey_mlk, "public-key", 0)))
+    {
+      l_tmp = gcry_sexp_cadr (l1);
+      gcry_sexp_release (l1);
+      l1 = l_tmp;
+    }
+  pqcalgostr = gcry_sexp_nth_string (l1, 0);
+  gcry_sexp_release (l1);
+  if (!pqcalgostr)
+    {
+      log_error ("%s: no PQC algo given in any part of a composite key\n",
+                 __func__);
+      err = gpg_error (GPG_ERR_BAD_PUBKEY);
+      goto leave;
+    }
+
+  err = composite_kem_encrypt (dek, s_pkey_mlk, pqcalgostr,
+                               s_pkey_ecc, curvestr,
+                               r_encval);
+
+ leave:
+  gcry_sexp_release (s_pkey_mlk);
+  gcry_sexp_release (s_pkey_ecc);
+  xfree (curvestr);
+  xfree (pqcalgostr);
+  return err;
 }

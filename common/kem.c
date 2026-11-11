@@ -384,29 +384,35 @@ gnupg_get_ecc_params (const char *curve)
 
 
 
-/* Derive a session key for composite CMS algos.  (SHARED,SHARED_LEN)
- * give the shared secret from which a KEK is derived.
- * (ENCRKEY,ENCRYKEY_LEN) give the encrypted key to be decrypted and
- * hashed into a session key.  PQCALGOSTR, WRAPALSOSTR, and KDFALGOSTR
- * derscribe the used algorithms.  SESSION_KEY_LEN is the requested
- * length for the output.  On success the allocated session key is
- * stored at R_SESSION_KEY.  ENABLE_DEBUG enables debug output.  */
+/* Derive a session key for composite CMS algos. With GENERATE set the
+ * input is a session key, with GENERATE clear the input is the
+ * encrypted key; reversed if GENERATE is not set.
+ * (SHARED,SHARED_LEN) gives the shared secret from which a KEK is
+ * derived.  (INPKEY,INPKEY_LEN) is the the encrypted key or in
+ * generate mode the session key.  That key will be
+ * decrypted/encrypted and hashed to formthe session key or the
+ * encrypted key.  PQCALGOSTR, WRAPALSOSTR, and KDFALGOSTR derscribe
+ * the used algorithms.  OUTKEY_LEN is the requested length for the
+ * output.  On success the allocated output is stored at R_OUTKEY.
+ * ENABLE_DEBUG enables debug output.  */
 gpg_error_t
-gnupg_kem_derive_seskey (int enable_debug,
-                         const void *shared, size_t shared_len,
-                         const void *encrkey, size_t encrkey_len,
-                         const char *pqcalgostr,
-                         const char *wrapalgostr,
-                         const char *kdfalgostr,
-                         size_t session_key_len,
-                         void **r_session_key)
+gnupg_kem_derive_or_gen_seskey (int enable_debug, int generate,
+                                const void *shared, size_t shared_len,
+                                const void *inpkey, size_t inpkey_len,
+                                const char *pqcalgostr,
+                                const char *wrapalgostr,
+                                const char *kdfalgostr,
+                                size_t outkey_len,
+                                void **r_outkey)
 {
   gpg_error_t err;
-  void *session_key;
+  void *outkey;
   gcry_cipher_hd_t hd;
   gcry_kdf_hd_t kdfhd;
   unsigned long kdfparam[1];
   int wrapalgo, kdfalgo, kdfmacalgo;
+  void *kek = NULL;
+  size_t kek_len;
   /* Template for the RFC-9629 key derivation:
    *  CMSORIforKEMOtherInfo ::= SEQUENCE {
    *    wrap KeyEncryptionAlgorithmIdentifier,
@@ -446,29 +452,53 @@ gnupg_kem_derive_seskey (int enable_debug,
   else
     return gpg_error (GPG_ERR_DIGEST_ALGO);
 
-  /* Check the length of the requested session key.  This also makes
-   * sure that it fits the der encoding in the template. */
-  if (session_key_len < 16 || session_key_len > 127)
-    {
-      log_info ("%s: requested session key length is wrong (%zu)\n",
-                __func__, session_key_len);
-      return gpg_error (GPG_ERR_INV_LENGTH);
-    }
-  cmsoriforkemotherinfo[CMSORIFORKEMOTHERINFO_KEKLEN] = session_key_len;
-
   /* Check that the requested length matches and then allocate.  */
-  if (encrkey_len != session_key_len + 8)
+  if (generate)
     {
-      log_info ("%s: encrypted key size %zu does not fit for '%s'\n",
-                __func__, encrkey_len, pqcalgostr);
-      return gpg_error (GPG_ERR_INV_DATA);
+      if (inpkey_len + 8 != outkey_len)
+        {
+          log_info ("%s: session key size %zu does not fit for '%s'\n",
+                    __func__, outkey_len, pqcalgostr);
+          return gpg_error (GPG_ERR_INV_DATA);
+        }
     }
-
-  session_key = xtrymalloc_secure (session_key_len);
-  if (!session_key)
-    return gpg_error_from_syserror ();
+  else
+    {
+      if (inpkey_len != outkey_len + 8)
+        {
+          log_info ("%s: encrypted key size %zu does not fit for '%s'\n",
+                    __func__, inpkey_len, pqcalgostr);
+          return gpg_error (GPG_ERR_INV_DATA);
+        }
+    }
 
   /* Note: From here on jump to the leave label on error.  */
+  kek_len = generate? inpkey_len : outkey_len;
+
+  /* Check the length of the KEK.  This also makes sure that it fits
+   * the DER encoding in the template. */
+  if (kek_len < 16 || kek_len > 127)
+    {
+      log_info ("%s: requested output key length is wrong (%zu)\n",
+                __func__, outkey_len);
+      err = gpg_error (GPG_ERR_INV_LENGTH);
+      goto leave;
+    }
+  cmsoriforkemotherinfo[CMSORIFORKEMOTHERINFO_KEKLEN] = kek_len;
+
+  kek = xtrymalloc_secure (kek_len);
+  if (!kek)
+    {
+      err = gpg_error_from_syserror ();
+      goto leave;
+    }
+
+  outkey = xtrymalloc_secure (outkey_len);
+  if (!outkey)
+    {
+      err = gpg_error_from_syserror ();
+      goto leave;
+    }
 
   err = gcry_cipher_open (&hd, wrapalgo, GCRY_CIPHER_MODE_AESWRAP, 0);
   if (err)
@@ -478,7 +508,12 @@ gnupg_kem_derive_seskey (int enable_debug,
       goto leave;
     }
 
-  kdfparam[0] = session_key_len;
+  kdfparam[0] = kek_len;
+  /* log_debug ("%s: kdfalgo=%d kdfmacalgo=%d kddparm[0]=%lu\n", __func__, */
+  /*            kdfalgo, kdfmacalgo, kdfparam[0]); */
+  /* log_printhex (shared, shared_len, "%s: shared", __func__); */
+  /* log_printhex (cmsoriforkemotherinfo, sizeof cmsoriforkemotherinfo, */
+  /*               "%s: cmsoriforkemotherinfo", __func__); */
   err = gcry_kdf_open (&kdfhd, kdfalgo, kdfmacalgo,
                        kdfparam, 1,
                        shared, shared_len,
@@ -492,37 +527,47 @@ gnupg_kem_derive_seskey (int enable_debug,
       goto leave;
     }
 
-  /* Note that we use the SESSION_KEY buffer for deriving the KEK and
-   * after it has been set we use that very buffer for its actual purpose. */
   err = gcry_kdf_compute (kdfhd, NULL);
   if (!err)
-    err = gcry_kdf_final (kdfhd, session_key_len, session_key);
+    err = gcry_kdf_final (kdfhd, kek_len, kek);
   gcry_kdf_close (kdfhd);
 
   if (enable_debug)
-    log_printhex (session_key, session_key_len, "Derived KEK :");
+    log_printhex (kek, kek_len, "Derived KEK :");
 
-  err = gcry_cipher_setkey (hd, session_key, session_key_len);
+  err = gcry_cipher_setkey (hd, kek, kek_len);
   if (!err)
-    err = gcry_cipher_decrypt (hd, session_key, session_key_len,
-                               encrkey, encrkey_len);
+    {
+      if (generate)
+        err = gcry_cipher_encrypt (hd, outkey, outkey_len,
+                                   inpkey, inpkey_len);
+      else
+        err = gcry_cipher_decrypt (hd, outkey, outkey_len,
+                                   inpkey, inpkey_len);
+    }
   gcry_cipher_close (hd);
   if (err)
     {
-      log_error ("%s: error decrypting key using %s: %s\n",
-                 __func__, wrapalgostr, gpg_strerror (err));
+      log_error ("%s: error %s key using %s: %s\n",
+                 __func__, generate? "encrypting": "decrypting",
+                 wrapalgostr, gpg_strerror (err));
       goto leave;
     }
 
   /* Success:  Return the key.  */
-  *r_session_key = session_key;
-  session_key = NULL;
+  *r_outkey = outkey;
+  outkey = NULL;
 
  leave:
-  if (session_key)
+  if (kek)
     {
-      wipememory (session_key, session_key_len);
-      xfree (session_key);
+      wipememory (kek, kek_len);
+      xfree (kek);
+    }
+  if (outkey)
+    {
+      wipememory (outkey, outkey_len);
+      xfree (outkey);
     }
   return err;
 }
