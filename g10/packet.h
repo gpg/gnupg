@@ -1052,9 +1052,10 @@ int ask_for_detached_datafile( gcry_md_hd_t md, gcry_md_hd_t md2,
 /*-- sign.c --*/
 int make_keysig_packet (ctrl_t ctrl,
                         PKT_signature **ret_sig, PKT_public_key *pk,
-			PKT_user_id *uid, PKT_public_key *subpk,
-			PKT_public_key *pksk, int sigclass,
-			u32 timestamp, u32 duration,
+			PKT_user_id *uid, party_member_t members,
+                        PKT_public_key *subpk, PKT_public_key *pksk,
+                        int sigclass,
+                        u32 timestamp, u32 duration,
 			int (*mksubpkt)(PKT_signature *, void *),
 			void *opaque,
                         const char *cache_nonce);

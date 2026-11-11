@@ -61,6 +61,7 @@
 #define PQC9980_STD_KEY_PARAM_SUB  "mlk768_bp384/encr"
 #define PQC9980_STD_KEY_PARAM      PQC9980_STD_KEY_PARAM_PRI \
                                    "+" PQC9980_STD_KEY_PARAM_SUB
+#define PARTY_STD_KEY_PARAM    "ed25519/cert,party"
 
 /* When generating keys using the streamlined key generation dialog,
    use this as a default expiration interval.  */
@@ -109,7 +110,8 @@ enum para_name {
   pADSK,        /* this uses u.adsk  */
   pVERSION,     /* Desired version of the key packet.  */
   pSUBVERSION,  /* Ditto for the subpacket.  */
-  pCARDKEY      /* The keygrips have been taken from active card (bool).  */
+  pCARDKEY,     /* The keygrips have been taken from active card (bool).  */
+  pPARTYKEY     /* Used for the party feature. */
 };
 
 struct para_data_s {
@@ -123,6 +125,7 @@ struct para_data_s {
         unsigned int usage;
         struct revocation_key revkey;
         PKT_public_key *adsk;  /* used with key == pADSK */
+        party_member_t members;
         char value[1];
     } u;
 };
@@ -326,7 +329,7 @@ write_uid (kbnode_t root, const char *s)
 static void
 do_add_key_flags (PKT_signature *sig, unsigned int use)
 {
-  byte buf[2] = { 0, 0 };
+  byte buf[3] = { 0, 0, 0 };
 
   /* The spec says that all primary keys MUST be able to certify. */
   if ( sig->sig_class != 0x18 )
@@ -346,7 +349,14 @@ do_add_key_flags (PKT_signature *sig, unsigned int use)
   if (use & PUBKEY_USAGE_TIME)
     buf[1] |= 0x08;
 
-  build_sig_subpkt (sig, SIGSUBPKT_KEY_FLAGS, buf, buf[1]? 2:1);
+  if (use & PUBKEY_USAGE_PARTY)
+    {
+      buf[0] = 0x01; /* Party keys are always primary and certify keys. */
+      buf[1] = 0x00;
+      buf[2] = 0x01; /* See LibrePGP Section 5.2.3.23. */
+    }
+
+  build_sig_subpkt (sig, SIGSUBPKT_KEY_FLAGS, buf, buf[2]? 3 : (buf[1]? 2: 1));
 }
 
 
@@ -1100,10 +1110,11 @@ keygen_add_notations(PKT_signature *sig,void *opaque)
 	unsigned int n1,n2;
 
 	n1=strlen(notation->name);
-	if(notation->altvalue)
-	  n2=strlen(notation->altvalue);
-	else if(notation->bdat)
+        /* Re-ordered the cases. */
+        if (notation->bdat)
 	  n2=notation->blen;
+	else if(notation->altvalue)
+	  n2=strlen(notation->altvalue);
 	else
 	  n2=strlen(notation->value);
 
@@ -1117,10 +1128,12 @@ keygen_add_notations(PKT_signature *sig,void *opaque)
 	buf[6] = n2 >> 8;
 	buf[7] = n2;
 	memcpy(buf+8, notation->name, n1 );
-	if(notation->altvalue)
-	  memcpy(buf+8+n1, notation->altvalue, n2 );
-	else if(notation->bdat)
+
+        /* Re-order cases here too. */
+        if(notation->bdat)
 	  memcpy(buf+8+n1, notation->bdat, n2 );
+	else if(notation->altvalue)
+	  memcpy(buf+8+n1, notation->altvalue, n2 );
 	else
 	  memcpy(buf+8+n1, notation->value, n2 );
 	build_sig_subpkt( sig, SIGSUBPKT_NOTATION |
@@ -1171,7 +1184,7 @@ make_backsig (ctrl_t ctrl, PKT_signature *sig, PKT_public_key *pk,
 
   cache_public_key (sub_pk);
 
-  err = make_keysig_packet (ctrl, &backsig, pk, NULL, sub_pk, sub_psk, 0x19,
+  err = make_keysig_packet (ctrl, &backsig, pk, NULL, NULL, sub_pk, sub_psk, 0x19,
                             timestamp, 0, NULL, NULL, cache_nonce);
   if (err)
     log_error ("make_keysig_packet failed for backsig: %s\n",
@@ -1351,7 +1364,7 @@ write_direct_sig (ctrl_t ctrl, kbnode_t root, PKT_public_key *psk,
   cache_public_key (pk);
 
   /* Make the signature.  */
-  err = make_keysig_packet (ctrl, &sig, pk, NULL,NULL, psk, 0x1F,
+  err = make_keysig_packet (ctrl, &sig, pk, NULL, NULL, NULL, psk, 0x1F,
                             timestamp, 0,
                             keygen_add_revkey, revkey, cache_nonce);
   if (err)
@@ -1374,7 +1387,8 @@ write_direct_sig (ctrl_t ctrl, kbnode_t root, PKT_public_key *psk,
    signature.  */
 static gpg_error_t
 write_selfsigs (ctrl_t ctrl, kbnode_t root, PKT_public_key *psk,
-		unsigned int use, u32 timestamp, const char *cache_nonce)
+		unsigned int use,  party_member_t members,
+                u32 timestamp, const char *cache_nonce)
 {
   gpg_error_t err;
   PACKET *pkt;
@@ -1406,8 +1420,8 @@ write_selfsigs (ctrl_t ctrl, kbnode_t root, PKT_public_key *psk,
   cache_public_key (pk);
 
   /* Make the signature.  */
-  err = make_keysig_packet (ctrl, &sig, pk, uid, NULL, psk, 0x13,
-                            timestamp, 0,
+  err = make_keysig_packet (ctrl, &sig, pk, uid, members,
+                            NULL, psk, 0x13, timestamp, 0,
                             keygen_add_std_prefs, pk, cache_nonce);
   if (err)
     {
@@ -1479,7 +1493,7 @@ write_keybinding (ctrl_t ctrl, kbnode_t keyblock,
   else
     oduap.cpl_notation = NULL;
   oduap.pk = sub_pk;
-  err = make_keysig_packet (ctrl, &sig, pri_pk, NULL, sub_pk, pri_psk, 0x18,
+  err = make_keysig_packet (ctrl, &sig, pri_pk, NULL, NULL, sub_pk, pri_psk, 0x18,
                             timestamp, 0,
                             keygen_add_key_flags_from_oduap, &oduap,
                             cache_nonce);
@@ -2586,9 +2600,13 @@ ask_key_flags_with_mask (int algo, int subkey, unsigned int current,
                             |PUBKEY_USAGE_SIG
                             |PUBKEY_USAGE_AUTH));
 
-  /* However, only primary keys may certify. */
+  /* However, only primary keys may certify. Also party keys are always
+  * primary/certify keys. */
   if (subkey)
-    possible &= ~PUBKEY_USAGE_CERT;
+    {
+      possible &= ~PUBKEY_USAGE_CERT;
+      possible &= ~PUBKEY_USAGE_PARTY;
+    }
 
   /* Preload the current set with the possible set, without
    * authentication if CURRENT is 0.  If CURRENT is non-zero we mask
@@ -2727,6 +2745,41 @@ check_keygrip (ctrl_t ctrl, const char *hexgrip)
 }
 
 
+static int
+ask_is_partykey (void)
+{
+  char *answer = NULL;
+  int selection;
+  int is_partykey;
+
+  tty_printf (_("Please select a key type.\n"));
+  tty_printf (_("   (%d) Normal key.%s\n"), 1, _(" *default*"));
+  tty_printf (_("   (%d) Party key.%s\n"), 2, "");
+
+  for (;;)
+    {
+      xfree (answer);
+      answer = cpr_get ("keygen.ask_is_partykey", _("Your selection? "));
+      cpr_kill_prompt ();
+      selection = *answer? atoi (answer) : 1;  /* Default is normal key. */
+
+      if (selection == 1 || !strcmp (answer, "normal"))
+      {
+        is_partykey = 0;
+        break;
+      }
+      else if (selection == 2 || !strcmp (answer, "party"))
+        {
+          is_partykey = 1;
+          break;
+        }
+      else
+        tty_printf (_("Invalid selection.\n"));
+    }
+
+  xfree (answer);
+  return is_partykey ;
+}
 
 /* Ask for an algorithm.  The function returns the algorithm id to
  * create. If ADDMODE is false the function won't show an option to
@@ -2739,8 +2792,9 @@ check_keygrip (ctrl_t ctrl, const char *hexgrip)
  * an active card, true is stored there; if R_KEYTIME is not NULL the
  * creation time of that key is then stored there.  */
 static int
-ask_algo (ctrl_t ctrl, int addmode, int *r_subkey_algo, unsigned int *r_usage,
-          char **r_keygrip, int *r_cardkey, u32 *r_keytime)
+ask_algo (ctrl_t ctrl, int addmode, int is_partykey, int *r_subkey_algo,
+          unsigned int *r_usage, char **r_keygrip,
+          int *r_cardkey, u32 *r_keytime)
 {
   gpg_error_t err;
   char *keygrip = NULL;
@@ -2755,57 +2809,66 @@ ask_algo (ctrl_t ctrl, int addmode, int *r_subkey_algo, unsigned int *r_usage,
 
   tty_printf (_("Please select what kind of key you want:\n"));
 
-#if GPG_USE_RSA
-  if (!addmode)
-    tty_printf (_("   (%d) RSA and RSA%s\n"), 1, "");
-#endif
-
-  if (!addmode && opt.compliance != CO_DE_VS)
-    tty_printf (_("   (%d) DSA and Elgamal%s\n"), 2, "");
-
-  if (opt.compliance != CO_DE_VS)
-    tty_printf (_("   (%d) DSA (sign only)%s\n"), 3, "");
-#if GPG_USE_RSA
-  tty_printf (_("   (%d) RSA (sign only)%s\n"), 4, "");
-#endif
-
-  if (addmode)
+  if (is_partykey)
     {
-      if (opt.compliance != CO_DE_VS)
-        tty_printf (_("   (%d) Elgamal (encrypt only)%s\n"), 5, "");
-#if GPG_USE_RSA
-      tty_printf (_("   (%d) RSA (encrypt only)%s\n"), 6, "");
-#endif
+      tty_printf (_("   (%d) RSA%s\n"), 1, "");
+      tty_printf (_("   (%d) DSA%s\n"), 3, "");
+      tty_printf (_("   (%d) ECC%s\n"), 10, _(" *default*") );
+
     }
-  if (opt.expert)
-    {
-      if (opt.compliance != CO_DE_VS)
-        tty_printf (_("   (%d) DSA (set your own capabilities)%s\n"), 7, "");
+  else {
 #if GPG_USE_RSA
-      tty_printf (_("   (%d) RSA (set your own capabilities)%s\n"), 8, "");
+    if (!addmode)
+      tty_printf (_("   (%d) RSA and RSA%s\n"), 1, "");
 #endif
-    }
+
+    if (!addmode && opt.compliance != CO_DE_VS)
+      tty_printf (_("   (%d) DSA and Elgamal%s\n"), 2, "");
+
+    if (opt.compliance != CO_DE_VS)
+      tty_printf (_("   (%d) DSA (sign only)%s\n"), 3, "");
+#if GPG_USE_RSA
+    tty_printf (_("   (%d) RSA (sign only)%s\n"), 4, "");
+#endif
+
+    if (addmode)
+      {
+        if (opt.compliance != CO_DE_VS)
+          tty_printf (_("   (%d) Elgamal (encrypt only)%s\n"), 5, "");
+#if GPG_USE_RSA
+        tty_printf (_("   (%d) RSA (encrypt only)%s\n"), 6, "");
+#endif
+      }
+    if (opt.expert)
+      {
+        if (opt.compliance != CO_DE_VS)
+          tty_printf (_("   (%d) DSA (set your own capabilities)%s\n"), 7, "");
+#if GPG_USE_RSA
+        tty_printf (_("   (%d) RSA (set your own capabilities)%s\n"), 8, "");
+#endif
+      }
 
 #if GPG_USE_ECDSA || GPG_USE_ECDH || GPG_USE_EDDSA
-  if (!addmode)
-    tty_printf (_("   (%d) ECC (sign and encrypt)%s\n"), 9, _(" *default*") );
-  tty_printf (_("  (%d) ECC (sign only)\n"), 10 );
-  if (opt.expert)
-    tty_printf (_("  (%d) ECC (set your own capabilities)%s\n"), 11, "");
-  if (addmode)
-    tty_printf (_("  (%d) ECC (encrypt only)%s\n"), 12, "");
+    if (!addmode)
+      tty_printf (_("   (%d) ECC (sign and encrypt)%s\n"), 9, _(" *default*") );
+    tty_printf (_("  (%d) ECC (sign only)\n"), 10 );
+    if (opt.expert)
+      tty_printf (_("  (%d) ECC (set your own capabilities)%s\n"), 11, "");
+    if (addmode)
+      tty_printf (_("  (%d) ECC (encrypt only)%s\n"), 12, "");
 #endif
 
-  if (opt.expert && r_keygrip)
-    tty_printf (_("  (%d) Existing key%s\n"), 13, "");
-  if (r_keygrip)
-    tty_printf (_("  (%d) Existing key from card%s\n"), 14, "");
+    if (opt.expert && r_keygrip)
+      tty_printf (_("  (%d) Existing key%s\n"), 13, "");
+    if (r_keygrip)
+      tty_printf (_("  (%d) Existing key from card%s\n"), 14, "");
 
-  /* Reserve 15 for Dilithium primary + Kyber subkey.  */
-  if (!addmode)
-    tty_printf (_("  (%d) ECC and Kyber%s\n"), 16, "");
-  if (addmode)
+    /* Reserve 15 for Dilithium primary + Kyber subkey.  */
+    if (!addmode)
+      tty_printf (_("  (%d) ECC and Kyber%s\n"), 16, "");
+    if (addmode)
     tty_printf (_("  (%d) Kyber (encrypt only)%s\n"), 17, "");
+  }
 
   for (;;)
     {
@@ -2814,299 +2877,326 @@ ask_algo (ctrl_t ctrl, int addmode, int *r_subkey_algo, unsigned int *r_usage,
       xfree (answer);
       answer = cpr_get ("keygen.algo", _("Your selection? "));
       cpr_kill_prompt ();
-      algo = *answer? atoi (answer) : 9;  /* Default algo is 9 */
+      if (is_partykey)
+        {
+          algo = *answer? atoi (answer) : 10;  /* Default is ECC for party keys. */
 
-      if (opt.compliance == CO_DE_VS
-          && (algo == 2 || algo == 3 || algo == 5 || algo == 7))
-        {
-          tty_printf (_("Invalid selection.\n"));
-        }
-      else if ((algo == 1 || !strcmp (answer, "rsa+rsa")) && !addmode)
-        {
-          algo = PUBKEY_ALGO_RSA;
-          *r_subkey_algo = PUBKEY_ALGO_RSA;
-          break;
-	}
-      else if ((algo == 2 || !strcmp (answer, "dsa+elg")) && !addmode)
-        {
-          algo = PUBKEY_ALGO_DSA;
-          *r_subkey_algo = PUBKEY_ALGO_ELGAMAL_E;
-          break;
-	}
-      else if (algo == 3 || !strcmp (answer, "dsa"))
-        {
-          algo = PUBKEY_ALGO_DSA;
-          *r_usage = PUBKEY_USAGE_SIG;
-          break;
-	}
-      else if (algo == 4 || !strcmp (answer, "rsa/s"))
-        {
-          algo = PUBKEY_ALGO_RSA;
-          *r_usage = PUBKEY_USAGE_SIG;
-          break;
-	}
-      else if ((algo == 5 || !strcmp (answer, "elg")) && addmode)
-        {
-          algo = PUBKEY_ALGO_ELGAMAL_E;
-          *r_usage = PUBKEY_USAGE_ENC;
-          break;
-	}
-      else if ((algo == 6 || !strcmp (answer, "rsa/e")) && addmode)
-        {
-          algo = PUBKEY_ALGO_RSA;
-          *r_usage = PUBKEY_USAGE_ENC;
-          break;
-	}
-      else if ((algo == 7 || !strcmp (answer, "dsa/*")) && opt.expert)
-        {
-          algo = PUBKEY_ALGO_DSA;
-          *r_usage = ask_key_flags (algo, addmode, 0);
-          break;
-	}
-      else if ((algo == 8 || !strcmp (answer, "rsa/*")) && opt.expert)
-        {
-          algo = PUBKEY_ALGO_RSA;
-          *r_usage = ask_key_flags (algo, addmode, 0);
-          break;
-	}
-      else if ((algo == 9 || !strcmp (answer, "ecc+ecc"))
-               && !addmode)
-        {
-          algo = PUBKEY_ALGO_ECDSA;
-          *r_subkey_algo = PUBKEY_ALGO_ECDH;
-          break;
-	}
-      else if ((algo == 10 || !strcmp (answer, "ecc/s")))
-        {
-          algo = PUBKEY_ALGO_ECDSA;
-          *r_usage = PUBKEY_USAGE_SIG;
-          break;
-	}
-      else if ((algo == 11 || !strcmp (answer, "ecc/*")) && opt.expert)
-        {
-          algo = PUBKEY_ALGO_ECDSA;
-          *r_usage = ask_key_flags (algo, addmode, 0);
-          break;
-	}
-      else if ((algo == 12 || !strcmp (answer, "ecc/e"))
-               && addmode)
-        {
-          algo = PUBKEY_ALGO_ECDH;
-          *r_usage = PUBKEY_USAGE_ENC;
-          break;
-	}
-      else if ((algo == 13 || !strcmp (answer, "keygrip"))
-               && opt.expert && r_keygrip)
-        {
-          for (;;)
+          if (algo == 1)
             {
-              xfree (answer);
-              answer = cpr_get ("keygen.keygrip", _("Enter the keygrip: "));
-              cpr_kill_prompt ();
-              trim_spaces (answer);
-              if (!*answer)
+              algo = PUBKEY_ALGO_RSA;
+              *r_usage = PUBKEY_USAGE_PARTY | PUBKEY_USAGE_CERT;
+              break;
+            }
+          else if (algo == 3)
+            {
+              algo = PUBKEY_ALGO_DSA;
+              *r_usage = PUBKEY_USAGE_PARTY | PUBKEY_USAGE_CERT;
+              break;
+            }
+          else if (algo == 10)
+            {
+              algo = PUBKEY_ALGO_ECDSA;
+              *r_usage = PUBKEY_USAGE_PARTY | PUBKEY_USAGE_CERT;
+              break;
+            }
+          else
+            goto ask_again;
+        }
+      else
+        {
+          algo = *answer? atoi (answer) : 9;  /* Default algo is 9 */
+
+          if (opt.compliance == CO_DE_VS
+              && (algo == 2 || algo == 3 || algo == 5 || algo == 7))
+            {
+              tty_printf (_("Invalid selection.\n"));
+            }
+          else if ((algo == 1 || !strcmp (answer, "rsa+rsa")) && !addmode)
+            {
+              algo = PUBKEY_ALGO_RSA;
+              *r_subkey_algo = PUBKEY_ALGO_RSA;
+              break;
+            }
+          else if ((algo == 2 || !strcmp (answer, "dsa+elg")) && !addmode)
+            {
+              algo = PUBKEY_ALGO_DSA;
+              *r_subkey_algo = PUBKEY_ALGO_ELGAMAL_E;
+              break;
+            }
+          else if (algo == 3 || !strcmp (answer, "dsa"))
+            {
+              algo = PUBKEY_ALGO_DSA;
+              *r_usage = PUBKEY_USAGE_SIG;
+              break;
+            }
+          else if (algo == 4 || !strcmp (answer, "rsa/s"))
+            {
+              algo = PUBKEY_ALGO_RSA;
+              *r_usage = PUBKEY_USAGE_SIG;
+              break;
+            }
+          else if ((algo == 5 || !strcmp (answer, "elg")) && addmode)
+            {
+              algo = PUBKEY_ALGO_ELGAMAL_E;
+              *r_usage = PUBKEY_USAGE_ENC;
+              break;
+            }
+          else if ((algo == 6 || !strcmp (answer, "rsa/e")) && addmode)
+            {
+              algo = PUBKEY_ALGO_RSA;
+              *r_usage = PUBKEY_USAGE_ENC;
+              break;
+            }
+          else if ((algo == 7 || !strcmp (answer, "dsa/*")) && opt.expert)
+            {
+              algo = PUBKEY_ALGO_DSA;
+              *r_usage = ask_key_flags (algo, addmode, 0);
+              break;
+            }
+          else if ((algo == 8 || !strcmp (answer, "rsa/*")) && opt.expert)
+            {
+              algo = PUBKEY_ALGO_RSA;
+              *r_usage = ask_key_flags (algo, addmode, 0);
+              break;
+            }
+          else if ((algo == 9 || !strcmp (answer, "ecc+ecc"))
+                   && !addmode)
+            {
+              algo = PUBKEY_ALGO_ECDSA;
+              *r_subkey_algo = PUBKEY_ALGO_ECDH;
+              break;
+            }
+          else if ((algo == 10 || !strcmp (answer, "ecc/s")))
+            {
+              algo = PUBKEY_ALGO_ECDSA;
+              *r_usage = PUBKEY_USAGE_SIG;
+              break;
+            }
+          else if ((algo == 11 || !strcmp (answer, "ecc/*")) && opt.expert)
+            {
+              algo = PUBKEY_ALGO_ECDSA;
+              *r_usage = ask_key_flags (algo, addmode, 0);
+              break;
+            }
+          else if ((algo == 12 || !strcmp (answer, "ecc/e"))
+                   && addmode)
+            {
+              algo = PUBKEY_ALGO_ECDH;
+              *r_usage = PUBKEY_USAGE_ENC;
+              break;
+            }
+          else if ((algo == 13 || !strcmp (answer, "keygrip"))
+                   && opt.expert && r_keygrip)
+            {
+              for (;;)
                 {
                   xfree (answer);
-                  answer = NULL;
-                  continue;
-                }
-
-              if (strlen (answer) == 40+1+40 && answer[40]==',')
-                {
-                  int algo1, algo2;
-
-                  answer[40] = 0;
-                  algo1 = check_keygrip (ctrl, answer);
-                  algo2 = check_keygrip (ctrl, answer+41);
-                  answer[40] = ',';
-                  if (algo1 == PUBKEY_ALGO_ECDH && algo2 == PUBKEY_ALGO_KYBER)
+                  answer = cpr_get ("keygen.keygrip", _("Enter the keygrip: "));
+                  cpr_kill_prompt ();
+                  trim_spaces (answer);
+                  if (!*answer)
                     {
-                      algo = PUBKEY_ALGO_KYBER;
-                      break;
+                      xfree (answer);
+                      answer = NULL;
+                      continue;
                     }
-                  else if (!algo1 || !algo2)
+
+                  if (strlen (answer) == 40+1+40 && answer[40]==',')
+                    {
+                      int algo1, algo2;
+
+                      answer[40] = 0;
+                      algo1 = check_keygrip (ctrl, answer);
+                      algo2 = check_keygrip (ctrl, answer+41);
+                      answer[40] = ',';
+                      if (algo1 == PUBKEY_ALGO_ECDH && algo2 == PUBKEY_ALGO_KYBER)
+                        {
+                          algo = PUBKEY_ALGO_KYBER;
+                          break;
+                        }
+                      else if (!algo1 || !algo2)
+                        tty_printf (_("No key with this keygrip\n"));
+                      else
+                        tty_printf ("Invalid combination for dual algo (%d,%d)\n",
+                                    algo1, algo2);
+                    }
+                  else if (strlen (answer) != 40 &&
+                           !(answer[0] == '&' && strlen (answer+1) == 40))
+                    tty_printf
+                      (_("Not a valid keygrip (expecting 40 hex digits)\n"));
+                  else if (!(algo = check_keygrip (ctrl, answer)) )
                     tty_printf (_("No key with this keygrip\n"));
                   else
-                    tty_printf ("Invalid combination for dual algo (%d,%d)\n",
-                                algo1, algo2);
+                    break; /* Okay.  */
                 }
-              else if (strlen (answer) != 40 &&
-                       !(answer[0] == '&' && strlen (answer+1) == 40))
-                tty_printf
-                  (_("Not a valid keygrip (expecting 40 hex digits)\n"));
-              else if (!(algo = check_keygrip (ctrl, answer)) )
-                tty_printf (_("No key with this keygrip\n"));
-              else
-                break; /* Okay.  */
-            }
-          xfree (keygrip);
-          keygrip = answer;
-          answer = NULL;
-          *r_usage = ask_key_flags (algo, addmode, 0);
-          break;
-	}
-      else if ((algo == 14 || !strcmp (answer, "cardkey")) && r_keygrip)
-        {
-          char *serialno;
-          keypair_info_t keypairlist, kpi;
-          int count, selection;
-
-          err = agent_scd_serialno (&serialno, NULL);
-          if (err)
-            {
-              tty_printf (_("error reading the card: %s\n"),
-                          gpg_strerror (err));
-              goto ask_again;
-            }
-          tty_printf (_("Serial number of the card: %s\n"), serialno);
-          xfree (serialno);
-
-          err = agent_scd_keypairinfo (ctrl, NULL, &keypairlist);
-          if (err)
-            {
-              tty_printf (_("error reading the card: %s\n"),
-                          gpg_strerror (err));
-              goto ask_again;
-            }
-
-          do
-            {
-              char *authkeyref, *encrkeyref, *signkeyref;
-
-              agent_scd_getattr_one ("$AUTHKEYID", &authkeyref);
-              agent_scd_getattr_one ("$ENCRKEYID", &encrkeyref);
-              agent_scd_getattr_one ("$SIGNKEYID", &signkeyref);
-
-              tty_printf (_("Available keys:\n"));
-              for (count=1, kpi=keypairlist; kpi; kpi = kpi->next, count++)
-                {
-                  gcry_sexp_t s_pkey;
-                  char *algostr = NULL;
-                  enum gcry_pk_algos algoid = 0;
-                  const char *keyref = kpi->idstr;
-                  int any = 0;
-
-                  if (!keyref)
-                    continue;
-
-                  if (agent_scd_readkey (ctrl, keyref, &s_pkey, NULL))
-                    continue;
-
-                  algostr = pubkey_algo_string (s_pkey, &algoid);
-                  gcry_sexp_release (s_pkey);
-
-                  /* We need to tweak the algo in case GCRY_PK_ECC is
-                   * returned because pubkey_algo_string is not aware
-                   * of the OpenPGP algo mapping.  We need to
-                   * distinguish between ECDH and ECDSA but we can do
-                   * that only if we got usage flags.
-                   * Note: Keep this in sync with parse_key_parameter_part.
-                   */
-                  if (algoid == GCRY_PK_ECC && algostr)
-                    {
-                      if (!strcmp (algostr, "ed25519"))
-                        kpi->algo = PUBKEY_ALGO_EDDSA;
-                      else if (!strcmp (algostr, "ed448"))
-                        kpi->algo = PUBKEY_ALGO_EDDSA;
-                      else if (!strcmp (algostr, "cv25519"))
-                        kpi->algo = PUBKEY_ALGO_ECDH;
-                      else if (!strcmp (algostr, "cv448"))
-                        kpi->algo = PUBKEY_ALGO_ECDH;
-                      else if ((kpi->usage & GCRY_PK_USAGE_ENCR))
-                        kpi->algo = PUBKEY_ALGO_ECDH;
-                      else
-                        kpi->algo = PUBKEY_ALGO_ECDSA;
-                    }
-                  else
-                    kpi->algo = map_gcry_pk_to_openpgp (algoid);
-
-                  tty_printf ("   (%d) %s %s %s",
-                              count, kpi->keygrip, keyref, algostr);
-                  if ((kpi->usage & GCRY_PK_USAGE_CERT))
-                    {
-                      tty_printf ("%scert", any?",":" (");
-                      any = 1;
-                    }
-                  if ((kpi->usage & GCRY_PK_USAGE_SIGN))
-                    {
-                      tty_printf ("%ssign%s", any?",":" (",
-                                  (signkeyref && keyref
-                                   && !strcmp (signkeyref, keyref))? "*":"");
-                      any = 1;
-                    }
-                  if ((kpi->usage & GCRY_PK_USAGE_AUTH))
-                    {
-                      tty_printf ("%sauth%s", any?",":" (",
-                                  (authkeyref && keyref
-                                   && !strcmp (authkeyref, keyref))? "*":"");
-                      any = 1;
-                    }
-                  if ((kpi->usage & GCRY_PK_USAGE_ENCR))
-                    {
-                      tty_printf ("%sencr%s", any?",":" (",
-                                  (encrkeyref && keyref
-                                   && !strcmp (encrkeyref, keyref))? "*":"");
-                      any = 1;
-                    }
-                  tty_printf ("%s\n", any?")":"");
-                  xfree (algostr);
-                }
-
-              xfree (answer);
-              answer = cpr_get ("keygen.cardkey", _("Your selection? "));
-              cpr_kill_prompt ();
-              trim_spaces (answer);
-              selection = atoi (answer);
-              xfree (authkeyref);
-              xfree (encrkeyref);
-              xfree (signkeyref);
-            }
-          while (!(selection > 0 && selection < count));
-
-          for (count=1,kpi=keypairlist; kpi; kpi = kpi->next, count++)
-            if (count == selection)
+              xfree (keygrip);
+              keygrip = answer;
+              answer = NULL;
+              *r_usage = ask_key_flags (algo, addmode, 0);
               break;
-          if (!kpi || !kpi->algo)
+            }
+          else if ((algo == 14 || !strcmp (answer, "cardkey")) && r_keygrip)
             {
-              /* Just in case no good key.  */
+              char *serialno;
+              keypair_info_t keypairlist, kpi;
+              int count, selection;
+
+              err = agent_scd_serialno (&serialno, NULL);
+              if (err)
+                {
+                  tty_printf (_("error reading the card: %s\n"),
+                              gpg_strerror (err));
+                  goto ask_again;
+                }
+              tty_printf (_("Serial number of the card: %s\n"), serialno);
+              xfree (serialno);
+
+              err = agent_scd_keypairinfo (ctrl, NULL, &keypairlist);
+              if (err)
+                {
+                  tty_printf (_("error reading the card: %s\n"),
+                              gpg_strerror (err));
+                  goto ask_again;
+                }
+
+              do
+                {
+                  char *authkeyref, *encrkeyref, *signkeyref;
+
+                  agent_scd_getattr_one ("$AUTHKEYID", &authkeyref);
+                  agent_scd_getattr_one ("$ENCRKEYID", &encrkeyref);
+                  agent_scd_getattr_one ("$SIGNKEYID", &signkeyref);
+
+                  tty_printf (_("Available keys:\n"));
+                  for (count=1, kpi=keypairlist; kpi; kpi = kpi->next, count++)
+                    {
+                      gcry_sexp_t s_pkey;
+                      char *algostr = NULL;
+                      enum gcry_pk_algos algoid = 0;
+                      const char *keyref = kpi->idstr;
+                      int any = 0;
+
+                      if (!keyref)
+                        continue;
+
+                      if (agent_scd_readkey (ctrl, keyref, &s_pkey, NULL))
+                        continue;
+
+                      algostr = pubkey_algo_string (s_pkey, &algoid);
+                      gcry_sexp_release (s_pkey);
+
+                      /* We need to tweak the algo in case GCRY_PK_ECC is
+                       * returned because pubkey_algo_string is not aware
+                       * of the OpenPGP algo mapping.  We need to
+                       * distinguish between ECDH and ECDSA but we can do
+                       * that only if we got usage flags.
+                       * Note: Keep this in sync with parse_key_parameter_part.
+                       */
+                      if (algoid == GCRY_PK_ECC && algostr)
+                        {
+                          if (!strcmp (algostr, "ed25519"))
+                            kpi->algo = PUBKEY_ALGO_EDDSA;
+                          else if (!strcmp (algostr, "ed448"))
+                            kpi->algo = PUBKEY_ALGO_EDDSA;
+                          else if (!strcmp (algostr, "cv25519"))
+                            kpi->algo = PUBKEY_ALGO_ECDH;
+                          else if (!strcmp (algostr, "cv448"))
+                            kpi->algo = PUBKEY_ALGO_ECDH;
+                          else if ((kpi->usage & GCRY_PK_USAGE_ENCR))
+                            kpi->algo = PUBKEY_ALGO_ECDH;
+                          else
+                            kpi->algo = PUBKEY_ALGO_ECDSA;
+                        }
+                      else
+                        kpi->algo = map_gcry_pk_to_openpgp (algoid);
+
+                      tty_printf ("   (%d) %s %s %s",
+                                  count, kpi->keygrip, keyref, algostr);
+                      if ((kpi->usage & GCRY_PK_USAGE_CERT))
+                        {
+                          tty_printf ("%scert", any?",":" (");
+                          any = 1;
+                        }
+                      if ((kpi->usage & GCRY_PK_USAGE_SIGN))
+                        {
+                          tty_printf ("%ssign%s", any?",":" (",
+                                      (signkeyref && keyref
+                                       && !strcmp (signkeyref, keyref))? "*":"");
+                          any = 1;
+                        }
+                      if ((kpi->usage & GCRY_PK_USAGE_AUTH))
+                        {
+                          tty_printf ("%sauth%s", any?",":" (",
+                                      (authkeyref && keyref
+                                       && !strcmp (authkeyref, keyref))? "*":"");
+                          any = 1;
+                        }
+                      if ((kpi->usage & GCRY_PK_USAGE_ENCR))
+                        {
+                          tty_printf ("%sencr%s", any?",":" (",
+                                      (encrkeyref && keyref
+                                       && !strcmp (encrkeyref, keyref))? "*":"");
+                          any = 1;
+                        }
+                      tty_printf ("%s\n", any?")":"");
+                      xfree (algostr);
+                    }
+
+                  xfree (answer);
+                  answer = cpr_get ("keygen.cardkey", _("Your selection? "));
+                  cpr_kill_prompt ();
+                  trim_spaces (answer);
+                  selection = atoi (answer);
+                  xfree (authkeyref);
+                  xfree (encrkeyref);
+                  xfree (signkeyref);
+                }
+              while (!(selection > 0 && selection < count));
+
+              for (count=1,kpi=keypairlist; kpi; kpi = kpi->next, count++)
+                if (count == selection)
+                  break;
+              if (!kpi || !kpi->algo)
+                {
+                  /* Just in case no good key.  */
+                  free_keypair_info (keypairlist);
+                  goto ask_again;
+                }
+
+              xfree (keygrip);
+              keygrip = xstrdup (kpi->keygrip);
+              cardkey = 1;
+              algo = kpi->algo;
+              keytime = kpi->keytime;
+
+              /* In expert mode allow to change the usage flags.  */
+              if (opt.expert)
+                *r_usage = ask_key_flags_with_mask (algo, addmode,
+                                                    kpi->usage, kpi->usage);
+              else
+                {
+                  *r_usage = kpi->usage;
+                  if (addmode)
+                    *r_usage &= ~GCRY_PK_USAGE_CERT;
+                }
               free_keypair_info (keypairlist);
-              goto ask_again;
+              break;
             }
-
-          xfree (keygrip);
-          keygrip = xstrdup (kpi->keygrip);
-          cardkey = 1;
-          algo = kpi->algo;
-          keytime = kpi->keytime;
-
-          /* In expert mode allow to change the usage flags.  */
-          if (opt.expert)
-            *r_usage = ask_key_flags_with_mask (algo, addmode,
-                                                kpi->usage, kpi->usage);
-          else
+          else if ((algo == 16 || !strcmp (answer, "ecc+kyber")) && !addmode)
             {
-              *r_usage = kpi->usage;
-              if (addmode)
-                *r_usage &= ~GCRY_PK_USAGE_CERT;
+              algo = PUBKEY_ALGO_ECDSA;
+              *r_subkey_algo = PUBKEY_ALGO_KYBER;
+              break;
             }
-          free_keypair_info (keypairlist);
-          break;
-	}
-      else if ((algo == 16 || !strcmp (answer, "ecc+kyber")) && !addmode)
-        {
-          algo = PUBKEY_ALGO_ECDSA;
-          *r_subkey_algo = PUBKEY_ALGO_KYBER;
-          break;
-	}
-      else if ((algo == 17 || !strcmp (answer, "kyber")) && addmode)
-        {
-          algo = PUBKEY_ALGO_KYBER;
-          *r_usage = PUBKEY_USAGE_ENC;
-          break;
-	}
-      else
-        tty_printf (_("Invalid selection.\n"));
-
+          else if ((algo == 17 || !strcmp (answer, "kyber")) && addmode)
+            {
+              algo = PUBKEY_ALGO_KYBER;
+              *r_usage = PUBKEY_USAGE_ENC;
+              break;
+            }
+          else
+            tty_printf (_("Invalid selection.\n"));
+        }
     ask_again:
       ;
     }
@@ -3984,6 +4074,209 @@ ask_user_id (int mode, int full, KBNODE keyblock)
 }
 
 
+/* Convert a fingerprint string to binary. If FPR is found in the keyring,
+ * we add it to MEMBERS. Skip duplicates. */
+gpg_error_t
+add_partykey_member (ctrl_t ctrl, party_member_t *members, char *fprstr)
+{
+  gpg_error_t err = 0;
+  KEYDB_HANDLE hd = NULL;
+  party_member_t new_member = NULL;
+  party_member_t m = NULL;
+  byte fpr[MAX_FINGERPRINT_LEN];
+  byte fprlen = 0;
+  byte version;
+  kbnode_t keyblock = NULL;
+
+  fprlen = strlen (fprstr)/2;
+  if (!(strlen (fprstr) == 40 || strlen (fprstr) == 64))
+    {
+      log_error ("invalid fingerprint\n");
+      err = gpg_error (GPG_ERR_INV_DATA);
+      goto leave;
+    }
+
+  hex2bin (fprstr, fpr, fprlen);
+
+  hd = keydb_new (ctrl);
+  if (!hd)
+    {
+      err = gpg_error_from_syserror ();
+      goto leave;
+    }
+
+  err = keydb_lock (hd);
+  if (err)
+    goto leave;
+
+  err = keydb_search_fpr (hd, fpr, fprlen);
+  if (err)
+    {
+      err = gpg_error (GPG_ERR_NO_PUBKEY);
+      log_info ("fingerprint not found: %s\n", fprstr);
+      goto leave;
+    }
+  /* We need the fpr version. */
+  err = keydb_get_keyblock (hd, &keyblock);
+  if (err)
+    {
+      log_error ("failed to get the keyblock\n");
+      goto leave;
+    }
+
+  version = keyblock->pkt->pkt.public_key->version;
+
+  /* Check if the key is already in MEMBERS. */
+  for (m = *members; m; m = m->next)
+    {
+      if (m->fpr_version == version
+          && !memcmp (m->fpr, fpr, fprlen))
+        {
+          if (opt.verbose)
+            log_info ("fpr already in members list - skipping: %s\n", fprstr);
+          /* err = gpg_error (GPG_ERR_INV_DATA); */
+          goto leave;
+        }
+    }
+
+  /* New member. */
+  log_assert (sizeof new_member->fpr >= fprlen);
+  new_member = xmalloc_clear (sizeof *new_member);
+  new_member->fpr_version = version;
+
+  memcpy (new_member->fpr, fpr, fprlen);
+
+  /* Add to list. */
+  new_member->next = *members;
+  *members = new_member;
+
+ leave:
+  keydb_release (hd);
+  release_kbnode (keyblock);
+  return err;
+}
+
+
+/* Ask which fingerprints should be added to the party key.
+ * The fingerprint must be in the local keyring. */
+void
+ask_partykey_members (ctrl_t ctrl, party_member_t *members)
+{
+  KEYDB_HANDLE hd;
+  party_member_t new_member = NULL;
+  party_member_t m;
+  char *answer = NULL;
+  byte fpr[MAX_FINGERPRINT_LEN];
+  byte fprlen = 0;
+  byte version;
+  kbnode_t keyblock = NULL;
+  int rc = 0;
+  int no_members = 1;      /* flag to check if we create an empty member list. */
+
+  tty_printf (_("Enter fingerprint of a member.\n"));
+  tty_printf (_(" (end with an empty line):\n"));
+
+  for (;;)
+    {
+      xfree (answer);
+      answer = cpr_get ("ask_partykey_members.enter.fpr",
+                        _("Please enter fingerprint of a party member.\n"));
+      cpr_kill_prompt ();
+
+      if (!strlen (answer))
+        {
+          if (no_members)
+            {
+              /* Create an empty member_list. */
+              new_member = xmalloc_clear (sizeof *new_member);
+              new_member->is_empty = 1;
+
+              new_member->next = *members;
+              *members = new_member;
+            }
+          goto leave;
+        }
+
+      /* We need better checking that what we receive is really a fingerprint. */
+      fprlen = strlen (answer)/2;
+      if (!(strlen (answer) == 40 || strlen (answer) == 64))
+        {
+          tty_printf ("Invalid fingerprint.\n");
+          goto ask_again;
+        }
+
+      hex2bin (answer, fpr, fprlen);
+
+      hd = keydb_new (ctrl);
+      if (!hd)
+        {
+          rc = gpg_error_from_syserror ();
+          goto leave;
+        }
+
+      rc = keydb_lock (hd);
+      if (rc)
+        goto leave;
+
+      rc = keydb_search_fpr (hd, fpr, fprlen);
+      if (rc)
+        {
+          rc = 0;
+          log_info ("key not found\n");
+          goto ask_again;
+        }
+
+      rc = keydb_get_keyblock (hd, &keyblock);
+      if (rc)
+        {
+          rc = 0;
+          goto ask_again;
+        }
+
+      log_assert (keyblock->pkt->pkttype == PKT_PUBLIC_KEY);
+      version = keyblock->pkt->pkt.public_key->version;
+
+      /* Check if the key is already in MEMBERS. */
+      for (m = *members; m; m = m->next)
+        {
+          if (m->fpr_version == version
+              && !memcmp (m->fpr, fpr, fprlen))
+            {
+              if (opt.verbose)
+                log_info ("fpr already in members list - skipping: %s\n", answer);
+              /* err = gpg_error (GPG_ERR_INV_DATA); */
+              goto ask_again;
+            }
+        }
+
+      /* New member. */
+      log_assert (sizeof new_member->fpr >= fprlen);
+      new_member = xmalloc_clear (sizeof *new_member);
+      new_member->fpr_version = version;
+
+      memcpy (new_member->fpr, fpr, fprlen);
+
+
+      /* Add to list. */
+      new_member->next = *members;
+      *members = new_member;
+
+      if (no_members)
+        no_members = 0;
+
+    ask_again:
+      keydb_release (hd);
+      hd = NULL;
+      release_kbnode (keyblock);
+      keyblock = NULL;
+    }
+
+ leave:
+  keydb_release (hd);
+  xfree (answer);
+}
+
+
 /* Basic key generation.  Here we divert to the actual generation
  * routines based on the requested algorithm.  KEYGEN_FLAGS might be
  * updated by this function.  */
@@ -4276,6 +4569,7 @@ parse_key_parameter_part (ctrl_t ctrl,
   if (flags)
     {
       char **tokens = NULL;
+      int is_partykey = 0; /* Used to overwrite KEYUSE at the end. */
 
       tokens = strtokenize (flags, ",");
       if (!tokens)
@@ -4294,6 +4588,8 @@ parse_key_parameter_part (ctrl_t ctrl,
             keyuse |= PUBKEY_USAGE_AUTH;
           else if (!ascii_strcasecmp (s, "cert"))
             keyuse |= PUBKEY_USAGE_CERT;
+          else if (!ascii_strcasecmp (s, "party"))
+            is_partykey = 1;
           else if (!ascii_strcasecmp (s, "ecdsa") && !from_card)
             {
               if (algo == PUBKEY_ALGO_ECDH || algo == PUBKEY_ALGO_ECDSA)
@@ -4331,12 +4627,15 @@ parse_key_parameter_part (ctrl_t ctrl,
             keyversion = 5;
           else if (!ascii_strcasecmp (s, "v4"))
             keyversion = 4;
-          else
+          else if (!is_partykey)
             {
               xfree (tokens);
               return gpg_error (GPG_ERR_UNKNOWN_FLAG);
             }
         }
+      /* Overwrite KEYUSE if the party flag was given. */
+      if (is_partykey)
+        keyuse = PUBKEY_USAGE_CERT | PUBKEY_USAGE_PARTY;
 
       xfree (tokens);
     }
@@ -4665,6 +4964,8 @@ parse_key_parameter_string (ctrl_t ctrl,
     string = PQC9980_STD_KEY_PARAM;
   else if (!ascii_strcasecmp (string, "card"))
     string = "card/cert,sign+card/encr";
+ else if (!ascii_strcasecmp (string, "party-default"))
+    string = PARTY_STD_KEY_PARAM;
 
   primary = xstrdup (string);
   secondary = strchr (primary, '+');
@@ -4739,6 +5040,20 @@ release_parameter_list (struct para_data_s *r)
         wipememory (r->u.value, strlen (r->u.value));
       else if (r->key == pADSK)
         free_public_key (r->u.adsk);
+      else if (r->key == pPARTYKEY)
+        {
+          while (r->u.members)
+            {
+              party_member_t next;
+
+              next = r->u.members->next;
+
+              xfree (r->u.members);
+              r->u.members->is_empty = 0;
+              r->u.members->fpr_version = 0;
+              r->u.members = next;
+            }
+        }
 
       xfree (r);
     }
@@ -4767,6 +5082,14 @@ static struct para_data_s *
 get_parameter (struct para_data_s *para, enum para_name key)
 {
   return get_parameter_idx (para, key, 0);
+}
+
+/* Return the first item of name KEY from PARA. Used with pMEMBERKEY. */
+static party_member_t
+get_parameter_partykey_members (struct para_data_s *para, enum para_name key)
+{
+  struct para_data_s *r = get_parameter (para, key);
+  return (r && r->u.members)? r->u.members : NULL;
 }
 
 static const char *
@@ -4850,6 +5173,7 @@ parse_usagestr (const char *usagestr)
   const char *s;
   int i;
   unsigned int use = 0;
+  int is_party = 0;
 
   tokens = strtokenize (usagestr, " \t,");
   if (!tokens)
@@ -4878,12 +5202,18 @@ parse_usagestr (const char *usagestr)
         use |= PUBKEY_USAGE_TIME;
       else if (!ascii_strcasecmp (s, "group"))
         use |= PUBKEY_USAGE_GROUP;
+      else if (!ascii_strcasecmp (s, "party"))
+        is_party = 1;
       else
         {
           xfree (tokens);
           return -1; /* error */
         }
     }
+
+  /* Overwrite usage string if party usage was given. */
+  if (is_party)
+    use = PUBKEY_USAGE_PARTY | PUBKEY_USAGE_CERT;
 
   xfree (tokens);
   return use;
@@ -5194,6 +5524,27 @@ proc_parameter_file (ctrl_t ctrl, struct para_data_s *para, const char *fname,
                      fname, r->lnr, algo);
           goto leave;
         }
+      /* We create an empty party key if usage party was given
+       * but no member fprs. */
+      if (r && (r->u.usage & PUBKEY_USAGE_CERT)
+          && (r->u.usage & PUBKEY_USAGE_PARTY)
+          && !get_parameter (para, pPARTYKEY))
+        {
+          party_member_t members;
+
+          if (opt.verbose)
+            log_info ("create an empty party key.\n");
+
+          members = xmalloc_clear (sizeof *members);
+          members->is_empty = 1;
+
+          /* New, pPARTYKEY para for empty party key */
+          r = xcalloc (1, sizeof *r);
+          r->key = pPARTYKEY;
+          r->u.members = members;
+          r->next = para;
+          para = r;
+        }
     }
 
   is_default = 0;
@@ -5429,6 +5780,7 @@ read_parameter_file (ctrl_t ctrl, const char *fname )
         { "Subkey-grip",    pSUBKEYGRIP },
         { "Key-Version",    pVERSION },
         { "Subkey-Version", pSUBVERSION },
+        { "Party-member",   pPARTYKEY},
         { NULL, 0 }
     };
     IOBUF fp;
@@ -5439,6 +5791,7 @@ read_parameter_file (ctrl_t ctrl, const char *fname )
     const char *err = NULL;
     struct para_data_s *para, *r;
     int i;
+    int is_partykey_para = 0;
     struct output_control_s outctrl;
 
     memset( &outctrl, 0, sizeof( outctrl ) );
@@ -5564,6 +5917,36 @@ read_parameter_file (ctrl_t ctrl, const char *fname )
 	    release_parameter_list( para );
 	    para = NULL;
 	}
+        /* TODO: set PK_USAGE_PARTY. */
+        else if (keywords[i].key == pPARTYKEY && para)
+          {
+            party_member_t members = NULL;
+            gpg_error_t rc = 0;
+
+            is_partykey_para = 1;
+
+            /* First member fpr. */
+            if ( !(r = get_parameter (para, pPARTYKEY)) )
+              {
+                rc = add_partykey_member (ctrl, &members, value);
+                if (!rc)
+                  {
+                    r = xcalloc (1, sizeof *r);
+                    r->lnr = lnr;
+                    r->key = pPARTYKEY;
+                    r->u.members = members;
+                    r->next = para;
+                    para = r;
+                  }
+              }
+            else
+              {
+                /* We already have a party key parameter.
+                 * Append the new member to the existing
+                 * party key parameter. */
+                add_partykey_member (ctrl, &r->u.members, value);
+              }
+          }
 	else {
 	    for( r = para; r; r = r->next ) {
 		if( r->key == keywords[i].key )
@@ -5575,7 +5958,9 @@ read_parameter_file (ctrl_t ctrl, const char *fname )
 	    }
 	}
 
-        if ((keywords[i].key == pVERSION
+        if (is_partykey_para)
+          ; /* FIXME */
+        else if ((keywords[i].key == pVERSION
              || keywords[i].key == pSUBVERSION))
           ; /* Ignore version.  */
         else
@@ -5629,14 +6014,15 @@ quickgen_set_para (struct para_data_s *para, int for_subkey,
   r = xmalloc_clear (sizeof *r + 50);
   r->key = for_subkey? pSUBKEYUSAGE :  pKEYUSAGE;
   if (use)
-    snprintf (r->u.value, 30, "%s%s%s%s%s%s%s",
+    snprintf (r->u.value, 30, "%s%s%s%s%s%s%s%s",
               (use & PUBKEY_USAGE_ENC)?  "encr " : "",
               (use & PUBKEY_USAGE_SIG)?  "sign " : "",
               (use & PUBKEY_USAGE_AUTH)? "auth " : "",
               (use & PUBKEY_USAGE_CERT)? "cert " : "",
               (use & PUBKEY_USAGE_RENC)? "renc " : "",
               (use & PUBKEY_USAGE_TIME)? "time " : "",
-              (use & PUBKEY_USAGE_GROUP)?"group ": "");
+              (use & PUBKEY_USAGE_GROUP)?"group ": "",
+              (use & PUBKEY_USAGE_PARTY)?"party ": "");
   else
     strcpy (r->u.value, for_subkey ? "encr" : "sign");
   r->next = para;
@@ -5697,7 +6083,8 @@ quickgen_set_para (struct para_data_s *para, int for_subkey,
  */
 void
 quick_generate_keypair (ctrl_t ctrl, const char *uid, const char *algostr,
-                        const char *usagestr, const char *expirestr)
+                        const char *usagestr, const char *expirestr,
+                        strlist_t memberlist)
 {
   gpg_error_t err;
   struct para_data_s *para = NULL;
@@ -5773,14 +6160,15 @@ quick_generate_keypair (ctrl_t ctrl, const char *uid, const char *algostr,
   if (!*expirestr || strcmp (expirestr, "-") == 0)
     expirestr = default_expiration_interval;
 
-  if ((!*algostr || !ascii_strcasecmp (algostr, "default")
+  if (((!*algostr || !ascii_strcasecmp (algostr, "default")
        || !ascii_strcasecmp (algostr, "future-default")
        || !ascii_strcasecmp (algostr, "futuredefault")
        || !ascii_strcasecmp (algostr, "pqc")
        || (!ascii_strcasecmp (algostr, "pqc9980") && RFC9980)
-       || !ascii_strcasecmp (algostr, "card"))
+       || !ascii_strcasecmp (algostr, "card")
+       || !ascii_strcasecmp (algostr, "party-default"))
       && (!*usagestr || !ascii_strcasecmp (usagestr, "default")
-          || !strcmp (usagestr, "-")))
+          || !strcmp (usagestr, "-"))))
     {
       /* Use default key parameters.  */
       int algo, subalgo, version, subversion;
@@ -5790,18 +6178,29 @@ quick_generate_keypair (ctrl_t ctrl, const char *uid, const char *algostr,
       char *keygrip, *subkeygrip;
       u32 keytime, subkeytime;
 
-      err = parse_key_parameter_string (ctrl, algostr, -1, 0,
-                                        &algo, &size, &keyuse, &curve, &version,
-                                        &keygrip, &keytime,
-                                        &subalgo, &subsize, &subkeyuse,
-                                        &subcurve, &subversion,
-                                        &subkeygrip, &subkeytime);
+      /* Party keys are only primary keys. */
+      if (!ascii_strcasecmp (algostr, "party-default"))
+        err = parse_key_parameter_string (ctrl, algostr, 0, 0,
+                                          &algo, &size, &keyuse, &curve, &version,
+                                          &keygrip, &keytime,
+                                          &subalgo, &subsize, &subkeyuse,
+                                          &subcurve, &subversion,
+                                          &subkeygrip, &subkeytime);
+      else
+        err = parse_key_parameter_string (ctrl, algostr, -1, 0,
+                                          &algo, &size, &keyuse, &curve, &version,
+                                          &keygrip, &keytime,
+                                          &subalgo, &subsize, &subkeyuse,
+                                          &subcurve, &subversion,
+                                          &subkeygrip, &subkeytime);
       if (err)
         {
           log_error (_("Key generation failed: %s\n"), gpg_strerror (err));
           goto leave;
         }
 
+      /* We dont pass party key to this func bc we need CTRL.
+       * process it after expirestr. */
       para = quickgen_set_para (para, 0, algo, size, curve, keyuse, version,
                                 keygrip, keytime);
       if (subalgo)
@@ -5822,6 +6221,30 @@ quick_generate_keypair (ctrl_t ctrl, const char *uid, const char *algostr,
           r = xmalloc_clear (sizeof *r + 20);
           r->key = pKEYEXPIRE;
           r->u.expire = expire;
+          r->next = para;
+          para = r;
+        }
+
+      if (!ascii_strcasecmp (algostr, "party-default"))
+        {
+          party_member_t members = NULL;
+          strlist_t s;
+
+          /* Empty memberlist.*/
+          if (!memberlist)
+            {
+              members = xmalloc_clear (sizeof *members);
+              members->is_empty = 1;
+            }
+          else
+            {
+              for (s = memberlist; s; s = s->next)
+                add_partykey_member (ctrl, &members, s->d);
+            }
+
+          r = xmalloc_clear (sizeof *r);
+          r->key = pPARTYKEY;
+          r->u.members = members;
           r->next = para;
           para = r;
         }
@@ -5856,6 +6279,30 @@ quick_generate_keypair (ctrl_t ctrl, const char *uid, const char *algostr,
       r->u.expire = expire;
       r->next = para;
       para = r;
+
+      if ((use & PUBKEY_USAGE_CERT) && (use & PUBKEY_USAGE_PARTY))
+        {
+          party_member_t members = NULL;
+          strlist_t s;
+
+          /* Empty memberlist. */
+          if (!memberlist)
+            {
+              members = xmalloc_clear (sizeof *members);
+              members->is_empty = 1;
+            }
+          else
+            {
+              for (s = memberlist; s; s = s->next)
+                add_partykey_member (ctrl, &members, s->d);
+            }
+
+          r = xmalloc_clear (sizeof *r);
+          r->key = pPARTYKEY;
+          r->u.members = members;
+          r->next = para;
+          para = r;
+        }
 
       xfree (keygrip);
     }
@@ -5913,6 +6360,7 @@ generate_keypair (ctrl_t ctrl, const char *fname,
   unsigned int use;
   int both = 0;
   u32 expire;
+  int is_partykey = 0;
   struct para_data_s *para = NULL;
   struct para_data_s *r;
   struct output_control_s outctrl;
@@ -6021,8 +6469,14 @@ generate_keypair (ctrl_t ctrl, const char *fname,
       int cardkey;
       u32 keytime;
 
-      algo = ask_algo (ctrl, 0, &subkey_algo, &use,
-                       &key_from_hexgrip, &cardkey, &keytime);
+      is_partykey = ask_is_partykey ();
+
+      if (is_partykey)
+        algo = ask_algo (ctrl, 0, 1, NULL, &use,
+                         NULL, NULL, &keytime);
+      else
+        algo = ask_algo (ctrl, 0, 0, &subkey_algo, &use,
+                         &key_from_hexgrip, &cardkey, &keytime);
       if (key_from_hexgrip)
         {
           r = xmalloc_clear( sizeof *r + 20 );
@@ -6265,12 +6719,13 @@ generate_keypair (ctrl_t ctrl, const char *fname,
 
               if (use)
                 {
-                  r = xmalloc_clear( sizeof *r + 25 );
+                  r = xmalloc_clear( sizeof *r + 32 );
                   r->key = pKEYUSAGE;
-                  sprintf( r->u.value, "%s%s%s",
+                  sprintf( r->u.value, "%s%s%s%s",
                            (use & PUBKEY_USAGE_SIG)? "sign ":"",
                            (use & PUBKEY_USAGE_ENC)? "encrypt ":"",
-                           (use & PUBKEY_USAGE_AUTH)? "auth":"" );
+                           (use & PUBKEY_USAGE_AUTH)? "auth ":"",
+                            (use & PUBKEY_USAGE_PARTY)? "party":"");
                   r->next = para;
                   para = r;
                 }
@@ -6344,6 +6799,19 @@ generate_keypair (ctrl_t ctrl, const char *fname,
   r->u.expire = expire;
   r->next = para;
   para = r;
+
+  if (is_partykey)
+    {
+      party_member_t members = NULL;
+
+      ask_partykey_members (ctrl, &members);
+
+      r = xcalloc (1, sizeof *r);
+      r->key = pPARTYKEY;
+      r->u.members = members;
+      r->next = para;
+      para = r;
+    }
 
   uid = ask_user_id (0, !!(genflags & GENERATE_KEYPAIR_FULL), NULL);
   if (!uid)
@@ -6723,6 +7191,7 @@ do_generate_keypair (ctrl_t ctrl, struct para_data_s *para,
       if (!err)
         err = write_selfsigs (ctrl, pub_root, pri_psk,
                               get_parameter_uint (para, pKEYUSAGE),
+                              get_parameter_partykey_members (para, pPARTYKEY),
                               signtimestamp, cache_nonce);
     }
 
@@ -7175,7 +7644,7 @@ generate_subkeypair (ctrl_t ctrl, kbnode_t keyblock, const char *algostr,
 
   if (interactive)
     {
-      algo = ask_algo (ctrl, 1, NULL, &use, &key_from_hexgrip, &cardkey,
+      algo = ask_algo (ctrl, 1, 0, NULL, &use, &key_from_hexgrip, &cardkey,
                        &keytime);
       log_assert (algo);
 

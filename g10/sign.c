@@ -74,13 +74,15 @@ typedef struct pt_extra_hash_data_s *pt_extra_hash_data_t;
  */
 static void
 mk_notation_policy_etc (ctrl_t ctrl, PKT_signature *sig,
-			PKT_public_key *pk, PKT_public_key *pksk, int with_manu)
+			PKT_public_key *pk, PKT_public_key *pksk,
+                        int with_manu, party_member_t members)
 {
   const char *string;
   char *p = NULL;
   strlist_t pu = NULL;
   struct notation *nd = NULL;
   struct notation *ndmanu = NULL;
+  struct notation *ndparty = NULL;
   struct expando_args args;
 
   log_assert (sig->version >= 4);
@@ -96,6 +98,15 @@ mk_notation_policy_etc (ctrl_t ctrl, PKT_signature *sig,
     nd = opt.sig_notations;
   else if (IS_CERT(sig) && opt.cert_notations)
     nd = opt.cert_notations;
+
+  /* Same as manu-case. */
+  if (members)
+    {
+      ndparty = partykey_to_notation (members);
+
+      ndparty->next = nd;
+      nd = ndparty;
+    }
 
   if (with_manu)
     {
@@ -135,6 +146,13 @@ mk_notation_policy_etc (ctrl_t ctrl, PKT_signature *sig,
           ndmanu->next = NULL;
           free_notation (ndmanu);
           /* ND is now again opt.sig_notations or opt.cert_notations. */
+        }
+      if (members)
+        {
+          /* Restore the original nd and release ndparty.  */
+          nd = ndparty->next;
+          ndparty->next = NULL;
+          free_notation (ndparty);
         }
     }
 
@@ -1021,7 +1039,7 @@ write_signature_packets (ctrl_t ctrl,
       else
         with_manu = 0;
 
-      mk_notation_policy_etc (ctrl, sig, NULL, pk, with_manu);
+      mk_notation_policy_etc (ctrl, sig, NULL, pk, with_manu, NULL);
       if (opt.flags.include_key_block && IS_SIG (sig))
         err = mk_sig_subpkt_key_block (ctrl, sig, pk);
       else
@@ -1866,8 +1884,8 @@ sign_symencrypt_file (ctrl_t ctrl, const char *fname, strlist_t locusr)
 int
 make_keysig_packet (ctrl_t ctrl,
                     PKT_signature **ret_sig, PKT_public_key *pk,
-		    PKT_user_id *uid, PKT_public_key *subpk,
-		    PKT_public_key *pksk,
+		    PKT_user_id *uid, party_member_t members,
+                    PKT_public_key *subpk, PKT_public_key *pksk,
 		    int sigclass,
                     u32 timestamp, u32 duration,
 		    int (*mksubpkt)(PKT_signature *, void *), void *opaque,
@@ -1987,7 +2005,7 @@ make_keysig_packet (ctrl_t ctrl,
         with_manu = 1;
     }
 
-  mk_notation_policy_etc (ctrl, sig, pk, pksk, with_manu);
+  mk_notation_policy_etc (ctrl, sig, pk, pksk, with_manu, members);
 
   /* Crucial that the call to mksubpkt comes LAST before the calls
    * to finalize the sig as that makes it possible for the mksubpkt

@@ -322,7 +322,8 @@ u32 ask_expiredate(void);
 unsigned int ask_key_flags (int algo, int subkey, unsigned int current);
 const char *ask_curve (int *algo, int *subkey_algo, const char *current);
 void quick_generate_keypair (ctrl_t ctrl, const char *uid, const char *algostr,
-                             const char *usagestr, const char *expirestr);
+                             const char *usagestr, const char *expirestr,
+                             strlist_t memberlist);
 
 #define GENERATE_KEYPAIR_FULL        1  /* Full key generation dialog.  */
 #define GENERATE_KEYPAIR_CARDBACKUP  2  /* Create card key with backup. */
@@ -352,6 +353,8 @@ gpg_error_t generate_subkeypair (ctrl_t ctrl, kbnode_t keyblock,
                                  const char *expirestr);
 gpg_error_t append_subkey_to_keyblock (ctrl_t ctrl, kbnode_t keyblock,
                                        PKT_public_key *sub_pk, int use);
+gpg_error_t add_partykey_member (ctrl_t ctrl, party_member_t *members, char *fprstr);
+void ask_partykey_members (ctrl_t ctrl, party_member_t *members);
 #ifdef ENABLE_CARD_SUPPORT
 gpg_error_t generate_card_subkeypair (ctrl_t ctrl, kbnode_t pub_keyblock,
                                       int keyno, const char *serialno);

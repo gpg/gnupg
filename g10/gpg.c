@@ -2462,6 +2462,7 @@ main (int argc, char **argv)
     strlist_t remusr = NULL;
     strlist_t locusr = NULL;
     strlist_t nrings = NULL;
+    strlist_t memberlist = NULL;
     armor_filter_context_t *afx = NULL;
     int detached_sig = 0;
     char *last_configname = NULL;
@@ -3276,6 +3277,14 @@ main (int argc, char **argv)
               sl->flags |= PK_LIST_FROM_FILE;
             any_explicit_recipient = 1;
 	    break;
+
+          case oMember:
+          case oMemberFile:
+            /* Store party members. Only accept fingerprints. */
+            sl = add_to_strlist2( &memberlist, pargs.r.ret_str, utf8_strings );
+            if (pargs.r_opt == oMemberFile)
+              sl->flags |= PK_LIST_FROM_FILE;
+            break;
 
 	  case oEncryptTo:
 	  case oHiddenEncryptTo:
@@ -4966,7 +4975,8 @@ main (int argc, char **argv)
           if (mopt.forbid_gen_key)
             gen_key_forbidden ();
           else
-            quick_generate_keypair (ctrl, username, x_algo, x_usage, x_expire);
+            quick_generate_keypair (ctrl, username, x_algo, x_usage,
+                                    x_expire, memberlist);
           xfree (username);
         }
         break;

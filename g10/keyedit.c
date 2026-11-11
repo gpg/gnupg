@@ -1139,6 +1139,7 @@ sign_uids (ctrl_t ctrl, estream_t fp,
 	      if (selfsig)
 		rc = make_keysig_packet (ctrl, &sig, primary_pk,
 					 node->pkt->pkt.user_id,
+                                         NULL,
 					 NULL,
 					 pk,
 					 0x13,
@@ -1149,6 +1150,7 @@ sign_uids (ctrl_t ctrl, estream_t fp,
 		rc = make_keysig_packet (ctrl, &sig, primary_pk,
 					 node->pkt->pkt.user_id,
 					 NULL,
+                                         NULL,
 					 pk,
 					 class,
 					 timestamp, duration,
@@ -3559,7 +3561,7 @@ keyedit_quick_revsig (ctrl_t ctrl, const char *username, const char *sigtorev,
 
       err = make_keysig_packet (ctrl, &sig, primarypk,
                                 unode? unode->pkt->pkt.user_id : NULL,
-                                NULL, pksigtorev, 0x30, 0, 0,
+                                NULL, NULL, pksigtorev, 0x30, 0, 0,
                                 sign_mk_attrib, &attrib, NULL);
       if (err)
         {
@@ -4807,7 +4809,7 @@ menu_adduid (ctrl_t ctrl, kbnode_t pub_keyblock,
       return 0;
     }
 
-  err = make_keysig_packet (ctrl, &sig, pk, uid, NULL, pk, 0x13, 0, 0,
+  err = make_keysig_packet (ctrl, &sig, pk, uid, NULL, NULL, pk, 0x13, 0, 0,
                             keygen_add_std_prefs, pk, NULL);
   if (err)
     {
@@ -5193,7 +5195,7 @@ menu_addrevoker (ctrl_t ctrl, kbnode_t pub_keyblock, int sensitive)
       break;
     }
 
-  rc = make_keysig_packet (ctrl, &sig, pk, NULL, NULL, pk, 0x1F, 0, 0,
+  rc = make_keysig_packet (ctrl, &sig, pk, NULL, NULL, NULL, pk, 0x1F, 0, 0,
 			   keygen_add_revkey, &revkey, NULL);
   if (rc)
     {
@@ -5270,7 +5272,7 @@ append_adsk_to_key (ctrl_t ctrl, kbnode_t keyblock, PKT_public_key *adsk,
   adsknode = new_kbnode (pkt);
 
   /* Make the signature.  */
-  err = make_keysig_packet (ctrl, &sig, main_pk, NULL, adsk, main_pk, 0x18,
+  err = make_keysig_packet (ctrl, &sig, main_pk, NULL, NULL, adsk, main_pk, 0x18,
                             sigtimestamp, 0,
                             keygen_add_key_flags_and_expire, adsk, cache_nonce);
   adsk = NULL; /* (owned by adsknode - avoid double free.)  */
@@ -6945,7 +6947,7 @@ reloop:			/* (must use this, because we are modifying the list) */
 	}
       rc = make_keysig_packet (ctrl, &sig, primary_pk,
 			       unode->pkt->pkt.user_id,
-			       NULL, signerkey, 0x30, 0, 0,
+			       NULL, NULL, signerkey, 0x30, 0, 0,
                                sign_mk_attrib, &attrib, NULL);
       free_public_key (signerkey);
       if (rc)
@@ -7028,7 +7030,7 @@ core_revuid (ctrl_t ctrl, kbnode_t keyblock, KBNODE node,
              mksubpkt argument to make_keysig_packet */
           attrib.reason = (struct revocation_reason_info *)reason;
 
-          rc = make_keysig_packet (ctrl, &sig, pk, uid, NULL, pk, 0x30,
+          rc = make_keysig_packet (ctrl, &sig, pk, uid, NULL, NULL, pk, 0x30,
                                    timestamp, 0,
                                    sign_mk_attrib, &attrib, NULL);
           if (rc)
@@ -7157,7 +7159,7 @@ menu_revkey (ctrl_t ctrl, kbnode_t pub_keyblock)
   if (!reason)
     return 0;
 
-  rc = make_keysig_packet (ctrl, &sig, pk, NULL, NULL, pk,
+  rc = make_keysig_packet (ctrl, &sig, pk, NULL, NULL, NULL, pk,
 			   0x20, 0, 0,
 			   revocation_reason_build_cb, reason, NULL);
   if (rc)
@@ -7219,7 +7221,7 @@ menu_revsubkey (ctrl_t ctrl, kbnode_t pub_keyblock)
 	  attrib.reason = reason;
 
 	  node->flag &= ~NODFLG_SELKEY;
-	  rc = make_keysig_packet (ctrl, &sig, mainpk, NULL, subpk, mainpk,
+	  rc = make_keysig_packet (ctrl, &sig, mainpk, NULL, NULL, subpk, mainpk,
 				   0x28, 0, 0, sign_mk_attrib, &attrib,
                                    NULL);
 	  if (rc)
