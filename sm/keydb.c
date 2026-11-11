@@ -1531,7 +1531,7 @@ keydb_search_reset (KEYDB_HANDLE hd)
 char *
 keydb_search_desc_dump (struct keydb_search_desc *desc)
 {
-  char *fpr;
+  char *fpr, *sn;
   char *result;
 
   switch (desc->mode)
@@ -1561,8 +1561,10 @@ keydb_search_desc_dump (struct keydb_search_desc *desc)
     case KEYDB_SEARCH_MODE_ISSUER:
       return xasprintf ("ISSUER: '%s'", desc->u.name);
     case KEYDB_SEARCH_MODE_ISSUER_SN:
-      return xasprintf ("ISSUER_SN: '#%.*s/%s'",
-                        (int)desc->snlen,desc->sn, desc->u.name);
+      sn = desc->sn? bin2hex (desc->sn, desc->snlen, NULL) : NULL;
+      result = xasprintf ("ISSUER_SN: '#%s/%s'", sn, desc->u.name);
+      xfree (sn);
+      return result;
     case KEYDB_SEARCH_MODE_SN:
       return xasprintf ("SN: '%.*s'",
                         (int)desc->snlen, desc->sn);
