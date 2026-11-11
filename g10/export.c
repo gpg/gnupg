@@ -147,6 +147,9 @@ parse_export_options(char *str,unsigned int *options,int noisy)
       {"mode1003", EXPORT_MODE1003, NULL,
        N_("export secret keys using the GnuPG format") },
 
+      {"export-party",EXPORT_PARTY, NULL,
+       N_("include all members of a party key") },
+
       /* Aliases for backward compatibility */
       {"include-local-sigs",EXPORT_LOCAL_SIGS,NULL,NULL},
       {"include-attributes",EXPORT_ATTRIBUTES,NULL,NULL},
@@ -2423,6 +2426,15 @@ do_export_stream (ctrl_t ctrl, iobuf_t out, strlist_t users, int secret,
     }
   else
     {
+      /* Also export members of a party key. */
+      if ((options & EXPORT_PARTY))
+        {
+          strlist_t expanded_users;
+
+          expanded_users = expand_partykey (ctrl, users, 1);
+          users = expanded_users;
+        }
+
       for (ndesc=0, sl=users; sl; sl = sl->next, ndesc++)
         ;
       desc = xmalloc ( ndesc * sizeof *desc);

@@ -462,6 +462,7 @@ EXTERN_UNLESS_MAIN_MODULE int memory_stat_debug_mode;
 #define EXPORT_MODE1003                  (1<<12)
 #define EXPORT_REALCLEAN                 (1<<13)
 #define EXPORT_KEEP_EXPIRED              (1<<14)
+#define EXPORT_PARTY                     (1<<15)
 #define EXPORT_NO_STATUS                 (1<<20) /*Do not emit status lines.*/
 
 #define LIST_SHOW_PHOTOS                 (1<<0)

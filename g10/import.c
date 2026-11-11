@@ -1634,11 +1634,12 @@ impex_filter_getval (void *cookie, const char *propname)
         }
       else if (!strcmp (propname, "usage"))
         {
-          snprintf (numbuf, sizeof numbuf, "%s%s%s%s%s",
+          snprintf (numbuf, sizeof numbuf, "%s%s%s%s%s%s",
                     (pk->pubkey_usage & PUBKEY_USAGE_ENC)?"e":"",
                     (pk->pubkey_usage & PUBKEY_USAGE_SIG)?"s":"",
                     (pk->pubkey_usage & PUBKEY_USAGE_CERT)?"c":"",
                     (pk->pubkey_usage & PUBKEY_USAGE_AUTH)?"a":"",
+                    (pk->pubkey_usage & PUBKEY_USAGE_PARTY)?"p":"",
                     (pk->pubkey_usage & PUBKEY_USAGE_UNKNOWN)?"?":"");
           result = numbuf;
         }
