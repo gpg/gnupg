@@ -1914,6 +1914,86 @@ blob_to_notation(const char *name, const char *data, size_t len)
   return NULL;
 }
 
+
+/* Turn a Party member list into a notation.
+ * This is notation is not human-readable and critical.
+ * Always return a party notation. If MEMBERS is NULL,
+ * return empty party notation.
+ * The caller must free the result using free_notation(). */
+struct notation *
+partykey_to_notation (party_member_t members)
+{
+  notation_t notation;
+  party_member_t m;
+  const char *name = "party@gnupg.org";
+  byte *buf = NULL;
+  size_t buflen = 0;
+  size_t off = 0;
+
+  notation = xcalloc (1, sizeof *notation);
+  notation->name = xstrdup (name);
+  notation->flags.critical = 1;
+
+  if (!members || members->is_empty)
+    {
+      /* Possible issue with keygen_add_notation if bdat is NULL. */
+      buf = "-";
+      notation->blen = 1;
+      notation->bdat = xmalloc_clear (notation->blen);
+      memcpy (notation->bdat, buf, notation->blen);
+      return notation;
+    }
+
+  /* Get total size of the group member list MEMBERS. */
+  for (m = members; m; m = m->next)
+    {
+      if (m->fpr_version == 4
+          || m->fpr_version == 5
+          || m->fpr_version == 6)
+        buflen += 1 + (m->fpr_version == 4? 20 : 32); /* Version byte + fpr length */
+      else
+        {
+          log_error ("invalid fingerprint version: %d\n", m->fpr_version);
+          goto leave;
+        }
+    }
+
+  if (!buflen)
+    goto leave;
+
+  buf = xmalloc_clear (buflen);
+  for (m = members; m; m = m->next)
+    {
+      memcpy (buf + off, &m->fpr_version, 1);
+      off += 1;
+
+      memcpy (buf + off, m->fpr, m->fpr_version == 4? 20 : 32);
+      off += m->fpr_version == 4? 20 : 32;
+    }
+
+  if (off != buflen)
+    {
+      log_error ("write party member list to notation failed\n");
+      goto leave;
+    }
+
+
+
+  notation->bdat = xmalloc_clear (buflen);
+  memcpy (notation->bdat, buf, buflen);
+  notation->blen = buflen;
+  notation->altvalue = NULL;
+
+  /* Optional: Store a human-readable approximation of bdat in notation->value */
+  /* notation->value = notation_value_to_human_readable_string (notation); */
+
+ leave:
+  xfree (buf);
+
+  return notation;
+}
+
+
 struct notation *
 sig_to_notation(PKT_signature *sig)
 {

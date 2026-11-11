@@ -1059,6 +1059,8 @@ usagestr_from_pk (PKT_public_key *pk, int fill)
     buffer[i++] = 'T';
   if ( (use & PUBKEY_USAGE_GROUP) )
     buffer[i++] = 'G';
+  if ( (use & PUBKEY_USAGE_PARTY) )
+    buffer[i++] = 'P';
 
   while (fill && i < 4)
     buffer[i++] = ' ';

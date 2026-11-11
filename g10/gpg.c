@@ -191,6 +191,9 @@ enum cmd_and_opt_values
     aPasswd,
     aServer,
     aTOFUPolicy,
+    aAddMembers,
+    aChangeMembers,
+    aRemoveMembers,
 
     oMimemode,
     oTextmode,
@@ -473,6 +476,8 @@ enum cmd_and_opt_values
     oRequirePQCEncryption,
     oDisablePQCEncryption,
     oProcAllSigs,
+    oMember,
+    oMemberFile,
 
     oNoop
   };
@@ -496,6 +501,9 @@ static gpgrt_opt_t opts[] = {
   ARGPARSE_c (aVerifyFiles, "verify-files" , "@" ),
   ARGPARSE_c (aAddRecipients, "add-recipients", "@" ),
   ARGPARSE_c (aChangeRecipients, "change-recipients", "@" ),
+  ARGPARSE_c (aAddMembers, "add-members", "@" ),
+  ARGPARSE_c (aChangeMembers, "change-members", "@" ),
+  ARGPARSE_c (aRemoveMembers, "remove-members", "@" ),
   ARGPARSE_c (aListKeys, "list-keys", N_("list keys")),
   ARGPARSE_c (aListKeys, "list-public-keys", "@" ),
   ARGPARSE_c (aListSigs, "list-signatures", N_("list keys and signatures")),
@@ -877,6 +885,8 @@ static gpgrt_opt_t opts[] = {
   ARGPARSE_s_s (oRecipientFile, "recipient-file", "@"),
   ARGPARSE_s_s (oHiddenRecipientFile, "hidden-recipient-file", "@"),
   ARGPARSE_s_s (oRecipient, "remote-user", "@"),  /* (old option name) */
+  ARGPARSE_s_s (oMember, "member", "@"),
+  ARGPARSE_s_s (oMemberFile, "member-file", "@"),
   ARGPARSE_s_n (oThrowKeyids, "throw-keyids", "@"),
   ARGPARSE_s_n (oNoThrowKeyids, "no-throw-keyids", "@"),
   ARGPARSE_s_s (oLocalUser, "local-user",

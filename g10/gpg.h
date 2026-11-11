@@ -56,6 +56,9 @@
  * format_hexfingerprint().  */
 #define MAX_FORMATTED_FINGERPRINT_LEN 60
 
+/* Maximal number of party members. */
+#define MAX_PARTY_MEMBERS 250
+
 
 /*
    Forward declarations.

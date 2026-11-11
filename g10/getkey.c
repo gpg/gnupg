@@ -2608,6 +2608,17 @@ parse_key_usage (PKT_signature * sig)
             key_usage |= PUBKEY_USAGE_RENC;
           if ((flags & 0x08))
             key_usage |= PUBKEY_USAGE_TIME;
+
+
+          /* Third octet. */
+          n--;
+          p++;
+          if (n)
+            {
+              flags = *p;
+              if ((flags & 0x01))
+                key_usage |= PUBKEY_USAGE_PARTY;
+            }
         }
 
       if (!key_usage)

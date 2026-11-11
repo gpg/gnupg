@@ -60,6 +60,8 @@
 #define PUBKEY_USAGE_RENC    1024                /* Restricted encryption.  */
 #define PUBKEY_USAGE_TIME    2048                /* Timestamp use.  */
 
+#define PUBKEY_USAGE_PARTY   4096                /* Party key use. */
+
 #define PUBKEY_USAGE_VERIFY  16384               /* Verify only modifier.  */
 
 /* The usage bits which can be derived from the algo.  */
@@ -661,6 +663,17 @@ struct packet_struct {
 		       } while(0)
 
 
+/* A list of party members used in a notation. */
+struct party_member_s
+{
+  struct party_member_s *next;
+  byte is_empty;
+  byte fpr_version;
+  byte fpr[MAX_FINGERPRINT_LEN];
+};
+typedef struct party_member_s *party_member_t;
+
+
 /* A notation.  See RFC 4880, Section 5.2.3.16.  */
 struct notation
 {
@@ -958,6 +971,7 @@ struct notation *string_to_notation(const char *string,int is_utf8);
 struct notation *name_value_to_notation (const char *name, const char *value);
 struct notation *blob_to_notation(const char *name,
                                   const char *data, size_t len);
+struct notation *partykey_to_notation (party_member_t members);
 struct notation *sig_to_notation(PKT_signature *sig);
 struct notation *search_sig_notations (PKT_signature *sig, const char *name);
 void free_notation (struct notation *notation);

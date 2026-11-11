@@ -392,6 +392,10 @@ register_known_notation (const char *string)
       sl = add_to_strlist (&known_notations_list,
                            "preferred-email-encoding@pgp.com");
       sl->flags = 32;  /* Length of the string.  */
+
+      sl = add_to_strlist (&known_notations_list,
+                           "party@gnupg.org");
+      sl->flags = 15;  /* Length of the string.  */
     }
   if (!string)
     return; /* Only initialized the default known notations.  */
@@ -1922,8 +1926,63 @@ dump_sig_subpkt (int hashed, int type, int critical,
 
 		if (*buffer & 0x80)
 		  es_write_sanitized (listfp, s + n1, n2, ")", NULL);
-		else
-		  p = "[not human readable]";
+		else if (!memcmp(s,"party@gnupg.org",
+                                 strlen("party@gnupg.org")))
+                    {
+                      size_t off = 0;
+
+                      /* Skip notation name.*/
+                      s += n1;
+
+                      /* Empty memberlist. */
+                      if (n2 == 1)
+                        es_write_sanitized (listfp, "[no members]",
+                                            strlen ("[no members]"),
+                                            NULL, NULL);
+                      else
+                        {
+                          while (off < n2)
+                            {
+                              byte fprlen = 0;
+                              char *hexfpr = NULL;
+                              char *version = NULL;
+
+                              if (*s == 4)
+                                fprlen = 20;
+                              else if (*s == 5 || *s == 6)
+                                fprlen = 32;
+                              else
+                                {
+                                  log_error ("invalid fingerprint length\n");
+                                  break;
+                                }
+
+                              /* Version.*/
+                              es_putc ('v', listfp);
+                              version = bin2hex (s, 1, version);
+
+                              es_write_sanitized (listfp, version,
+                                                  strlen (version),
+                                                  NULL , NULL);
+                              off += 1;
+                              s++;
+                              es_putc (' ', listfp);
+
+                              /* Fingerprint. */
+                              hexfpr = bin2hex (s, fprlen, hexfpr);
+                              es_write_sanitized (listfp, hexfpr,
+                                                  strlen (hexfpr),
+                                                  NULL, NULL);
+                              off += fprlen;
+                              s += fprlen;
+
+                              if (off != n2)
+                                es_putc (',', listfp);
+                            }
+                        }
+                    }
+                  else
+                    p = "[not human readable]";
 	      }
 	  }
       }

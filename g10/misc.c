@@ -813,7 +813,7 @@ openpgp_pk_algo_usage ( int algo )
     /* They are hardwired in gpg 1.0. */
     switch ( algo ) {
       case PUBKEY_ALGO_RSA:
-          use = (PUBKEY_USAGE_CERT | PUBKEY_USAGE_SIG
+          use = (PUBKEY_USAGE_CERT | PUBKEY_USAGE_PARTY | PUBKEY_USAGE_SIG
                  | PUBKEY_USAGE_ENC | PUBKEY_USAGE_RENC | PUBKEY_USAGE_AUTH);
           break;
       case PUBKEY_ALGO_RSA_E:
@@ -821,7 +821,7 @@ openpgp_pk_algo_usage ( int algo )
           use = PUBKEY_USAGE_ENC | PUBKEY_USAGE_RENC;
           break;
       case PUBKEY_ALGO_RSA_S:
-          use = PUBKEY_USAGE_CERT | PUBKEY_USAGE_SIG;
+          use = PUBKEY_USAGE_CERT  | PUBKEY_USAGE_PARTY | PUBKEY_USAGE_SIG;
           break;
       case PUBKEY_ALGO_ELGAMAL:
           if (RFC2440)
@@ -831,15 +831,18 @@ openpgp_pk_algo_usage ( int algo )
           use = PUBKEY_USAGE_ENC | PUBKEY_USAGE_RENC;
           break;
       case PUBKEY_ALGO_DSA:
-          use = PUBKEY_USAGE_CERT | PUBKEY_USAGE_SIG | PUBKEY_USAGE_AUTH;
+          use = (PUBKEY_USAGE_CERT  | PUBKEY_USAGE_PARTY | PUBKEY_USAGE_SIG
+                 | PUBKEY_USAGE_AUTH);
           break;
       case PUBKEY_ALGO_ECDSA:
       case PUBKEY_ALGO_EDDSA:
-          use = PUBKEY_USAGE_CERT | PUBKEY_USAGE_SIG | PUBKEY_USAGE_AUTH;
+          use = (PUBKEY_USAGE_CERT  | PUBKEY_USAGE_PARTY | PUBKEY_USAGE_SIG
+                 | PUBKEY_USAGE_AUTH);
           break;
       case PUBKEY_ALGO_ED25519:
         if (RFC9980)
-          use= PUBKEY_USAGE_CERT | PUBKEY_USAGE_SIG | PUBKEY_USAGE_AUTH;
+          use= (PUBKEY_USAGE_CERT  | PUBKEY_USAGE_PARTY | PUBKEY_USAGE_SIG
+                | PUBKEY_USAGE_AUTH);
         break;
       case PUBKEY_ALGO_X25519:
         if (RFC9980)
@@ -858,7 +861,7 @@ openpgp_pk_algo_usage ( int algo )
 
       case PUBKEY_ALGO_MLD65_25519:
       case PUBKEY_ALGO_MLD87_448:
-          use = PUBKEY_USAGE_CERT | PUBKEY_USAGE_SIG;
+          use = PUBKEY_USAGE_CERT  | PUBKEY_USAGE_PARTY | PUBKEY_USAGE_SIG;
           break;
 
       default:
