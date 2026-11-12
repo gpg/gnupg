@@ -3120,11 +3120,12 @@ writekey_ecc (app_t app, data_object_t dobj, int keyref,
 }
 
 
-/* Write a key to a slot.  This command requires proprietary
- * extensions of the PIV specification and is thus only implemented for
- * supported card types.  The input is a canonical encoded
- * S-expression with the secret key in KEYDATA and its length (for
- * assertion) in KEYDATALEN.  KEYREFSTR needs to be the usual 2
+/* Write a key to a slot.  This command uses the import command of
+ * Yubico, which is not part of the PIV specification.  It is sent to
+ * all cards because other vendors, for example Token2, implement it
+ * too; cards without it reject the command.  The input is a canonical
+ * encoded S-expression with the secret key in KEYDATA and its length
+ * (for assertion) in KEYDATALEN.  KEYREFSTR needs to be the usual 2
  * hexdigit slot number prefixed with "PIV."
  *
  * Supported FLAGS are:
@@ -3144,12 +3145,6 @@ do_writekey (app_t app, ctrl_t ctrl,
   int depth;
 
   (void)ctrl;
-
-  if (!app->app_local->flags.yubikey)
-    {
-      err = gpg_error (GPG_ERR_NOT_SUPPORTED);
-      goto leave;
-    }
 
   /* Check keyref and test whether a key already exists.  */
   dobj = find_dobj_by_keyref (app, keyrefstr);
