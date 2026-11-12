@@ -1338,7 +1338,8 @@ prompt_for_card (ctrl_t ctrl, const unsigned char *grip,
         err = out_of_core ();
       else
         {
-          err = agent_get_confirmation (ctrl, desc, NULL, NULL, 0);
+          err = agent_get_confirmation (ctrl, desc, NULL, NULL,
+                                        CONFIRM_FLAG_FOCUSOK);
           if (ctrl->pinentry_mode == PINENTRY_MODE_LOOPBACK &&
               gpg_err_code (err) == GPG_ERR_NO_PIN_ENTRY)
             err = gpg_error (GPG_ERR_CARD_NOT_PRESENT);
@@ -1471,7 +1472,8 @@ agent_key_from_file (ctrl_t ctrl, const char *cache_nonce,
           gcry_free (comment_buffer);
 
           err = agent_get_confirmation (ctrl, prompt,
-                                        L_("Allow"), L_("Deny"), 0);
+                                        L_("Allow"), L_("Deny"),
+                                        CONFIRM_FLAG_FOCUSOK);
           xfree (prompt);
 
           if (err)

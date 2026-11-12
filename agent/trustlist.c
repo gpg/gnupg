@@ -788,7 +788,8 @@ agent_marktrusted (ctrl_t ctrl, const char *name, const char *fpr, int flag)
       xfree (nameformatted);
       return out_of_core ();
     }
-  err = agent_get_confirmation (ctrl, desc, L_("Yes"), L_("No"), 1);
+  err = agent_get_confirmation (ctrl, desc, L_("Yes"), L_("No"),
+                                CONFIRM_FLAG_WITHCANCEL);
   xfree (desc);
   if (!err)
     yes_i_trust = 1;
@@ -844,7 +845,8 @@ agent_marktrusted (ctrl_t ctrl, const char *name, const char *fpr, int flag)
       wrong =  L_("Wrong");
       if (!strcmp (wrong, "Wrong"))
         wrong = "_Wrong";
-      err = agent_get_confirmation (ctrl, desc, correct, wrong, 1);
+      err = agent_get_confirmation (ctrl, desc, correct, wrong,
+                                    CONFIRM_FLAG_WITHCANCEL);
       xfree (desc);
       if (gpg_err_code (err) == GPG_ERR_NOT_CONFIRMED)
         yes_i_trust = 0;

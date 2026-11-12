@@ -2944,7 +2944,8 @@ data_sign (ctrl_t ctrl, ssh_key_type_spec_t *spec,
                              fpr, comment? comment:"");
       xfree (fpr);
       gcry_free (comment);
-      err = agent_get_confirmation (ctrl, prompt, L_("Allow"), L_("Deny"), 0);
+      err = agent_get_confirmation (ctrl, prompt, L_("Allow"), L_("Deny"),
+                                    CONFIRM_FLAG_FOCUSOK);
       xfree (prompt);
       if (err)
         goto out;

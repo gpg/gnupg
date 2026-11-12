@@ -1923,14 +1923,16 @@ agent_get_passphrase (ctrl_t ctrl,
 /* Pop up the PIN-entry, display the text and the prompt and ask the
    user to confirm this.  We return 0 for success, ie. the user
    confirmed it, GPG_ERR_NOT_CONFIRMED for what the text says or an
-   other error.  If WITH_CANCEL it true an extra cancel button is
-   displayed to allow the user to easily return a GPG_ERR_CANCELED.
-   if the Pinentry does not support this, the user can still cancel by
-   closing the Pinentry window.  */
+   other error.  If FLAGS has FOCUSOK, confirmation is done with
+   --focus=ok to ask pinentry put the focus on OK button.  If FLAGS
+   has WITHCANCEL, an extra cancel button is displayed to allow the
+   user to easily return a GPG_ERR_CANCELED.  if the Pinentry does not
+   support this, the user can still cancel by closing the Pinentry
+   window.  */
 int
 agent_get_confirmation (ctrl_t ctrl,
                         const char *desc, const char *ok,
-                        const char *notok, int with_cancel)
+                        const char *notok, unsigned int flags)
 {
   int rc;
   char line[ASSUAN_LINELENGTH];
@@ -1977,7 +1979,7 @@ agent_get_confirmation (ctrl_t ctrl,
       /* Try to use the newer NOTOK feature if a cancel button is
          requested.  If no cancel button is requested we keep on using
          the standard cancel.  */
-      if (with_cancel)
+      if ((flags & CONFIRM_FLAG_WITHCANCEL))
         {
           snprintf (line, DIM(line), "SETNOTOK %s", notok);
           rc = assuan_transact (entry_ctx,
@@ -2003,7 +2005,10 @@ agent_get_confirmation (ctrl_t ctrl,
     rc = watch_sock_start (&sock_watched, &thread);
     if (!rc)
       {
-        rc = assuan_transact (entry_ctx, "CONFIRM",
+        const char *cmd = "CONFIRM";
+        if ((flags & CONFIRM_FLAG_FOCUSOK))
+          cmd = "CONFIRM --focus=ok";
+        rc = assuan_transact (entry_ctx, cmd,
                               NULL, NULL, NULL, NULL, NULL, NULL);
         if (rc && gpg_err_source (rc)
             && gpg_err_code (rc) == GPG_ERR_ASS_CANCELED)

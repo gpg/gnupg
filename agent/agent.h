@@ -535,13 +535,16 @@ int agent_get_passphrase (ctrl_t ctrl, char **retpass,
 			  const char *keyinfo, cache_mode_t cache_mode,
                           struct pin_entry_info_s *pininfo);
 int agent_get_confirmation (ctrl_t ctrl, const char *desc, const char *ok,
-			    const char *notokay, int with_cancel);
+			    const char *notokay, unsigned int flags);
 int agent_show_message (ctrl_t ctrl, const char *desc, const char *ok_btn);
 int agent_popup_message_start (ctrl_t ctrl,
                                const char *desc, const char *ok_btn);
 void agent_popup_message_stop (ctrl_t ctrl);
 int agent_clear_passphrase (ctrl_t ctrl,
 			    const char *keyinfo, cache_mode_t cache_mode);
+
+#define CONFIRM_FLAG_WITHCANCEL (1 << 0)
+#define CONFIRM_FLAG_FOCUSOK    (1 << 1)
 
 /*-- cache.c --*/
 void initialize_module_cache (void);
