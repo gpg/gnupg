@@ -22,6 +22,7 @@
 
 int have_static_passphrase (void);
 const char *get_static_passphrase (void);
+void set_passphrase_from_string (const char *pass);
 void read_passphrase_from_fd (int fd);
 
 #endif	/* GPGSM_PASSPHRASE_H */

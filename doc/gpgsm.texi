@@ -909,6 +909,16 @@ one passphrase is supplied.
 Note that this passphrase is only used if the option @option{--batch}
 has also been given.
 
+@item --passphrase @var{string}
+@opindex passphrase
+Use @var{string} as the passphrase. This can only be used if only one
+passphrase is supplied. Obviously, this is of very questionable
+security on a multi-user system.  Don't use this option if you can
+avoid it.  @var{string} is optional and defaults to the empty string.
+
+Note that this passphrase is only used if the option @option{--batch}
+has also been given.
+
 @item --pinentry-mode @code{mode}
 @opindex pinentry-mode
 Set the pinentry mode to @code{mode}.  Allowed values for @code{mode}
@@ -924,7 +934,7 @@ are:
   Return a Pinentry error (``No Pinentry'').
   @item loopback
   Redirect Pinentry queries to the caller.  Note that in contrast to
-  Pinentry the user is not prompted again if he enters a bad password.
+  Pinentry the user is not prompted again if she enters a bad password.
 @end table
 
 @item --no-protection

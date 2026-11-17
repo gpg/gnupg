@@ -45,6 +45,16 @@ get_static_passphrase (void)
   return fd_passwd;
 }
 
+
+void
+set_passphrase_from_string (const char *pass)
+{
+  xfree (fd_passwd);
+  fd_passwd = xmalloc_secure(strlen(pass)+1);
+  strcpy (fd_passwd, pass);
+}
+
+
 void
 read_passphrase_from_fd (int fd)
 {

@@ -134,6 +134,7 @@ enum cmd_and_opt_values {
   oProtectToolProgram,
   oFakedSystemTime,
 
+  oPassphrase,
   oPassphraseFD,
   oPinentryMode,
   oNoProtection,
@@ -439,6 +440,7 @@ static gpgrt_opt_t opts[] = {
   ARGPARSE_s_i (oStatusFD, "status-fd", N_("|FD|write status info to this FD")),
   ARGPARSE_s_n (oEnableSpecialFilenames, "enable-special-filenames", "@"),
   ARGPARSE_s_n (oDisableFdTranslation, "disable-fd-translation", "@"),
+  ARGPARSE_o_s (oPassphrase,      "passphrase", "@"),
   ARGPARSE_s_i (oPassphraseFD,    "passphrase-fd", "@"),
   ARGPARSE_s_s (oPinentryMode,    "pinentry-mode", "@"),
   ARGPARSE_s_n (oNoProtection,    "no-protection", "@"),
@@ -1194,6 +1196,10 @@ main ( int argc, char **argv)
 
         case oP12Charset:
           opt.p12_charset = pargs.r.ret_str;
+          break;
+
+        case oPassphrase:
+          set_passphrase_from_string (pargs.r_type ? pargs.r.ret_str : "");
           break;
 
         case oPassphraseFD:
