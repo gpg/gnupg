@@ -2364,10 +2364,14 @@ dns_q_remake(struct dns_packet **Q, int qflags)
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 #ifndef DNS_D_MAXPTRS
-#define DNS_D_MAXPTRS	127	/* Arbitrary; possible, valid depth is something like packet size / 2 + fudge. */
+#define DNS_D_MAXPTRS	127	/* Arbitrary; possible, valid depth is
+                                 * something like packet size / 2 + fudge. */
 #endif
 
-static size_t dns_l_expand(unsigned char *dst, size_t lim, unsigned short src, unsigned short *nxt, const unsigned char *data, size_t end) {
+static size_t dns_l_expand(unsigned char *dst, size_t lim, unsigned short src,
+                           unsigned short *nxt, const unsigned char *data,
+                           size_t end)
+{
 	unsigned short len;
 	unsigned nptrs	= 0;
 
@@ -2604,8 +2608,12 @@ size_t dns_d_comp(void *dst_, size_t lim, const void *src_, size_t len, struct d
 
 #if 1
 	if (dst.p < lim) {
-		struct { unsigned char label[DNS_D_MAXLABEL + 1]; size_t len; unsigned short p, x, y; } a, b;
-		unsigned i;
+		struct {
+                  unsigned char label[DNS_D_MAXLABEL + 1];
+                  size_t len;
+                  unsigned short p, x, y;
+                } a, b;
+		unsigned int i;
 
 		a.p	= 0;
 
@@ -2688,7 +2696,9 @@ invalid:
 
 #include <stdio.h>
 
-size_t dns_d_expand(void *dst, size_t lim, unsigned short src, struct dns_packet *P, int *error) {
+size_t dns_d_expand(void *dst, size_t lim, unsigned short src,
+                    struct dns_packet *P, int *error)
+{
 	size_t dstp	= 0;
 	unsigned nptrs	= 0;
 	unsigned char len;
@@ -2728,9 +2738,6 @@ size_t dns_d_expand(void *dst, size_t lim, unsigned short src, struct dns_packet
 				((unsigned char *)dst)[dstp]	= '.';
 
 			dstp++;
-
-			nptrs	= 0;
-
 			continue;
 		case 0x01:	/* RESERVED */
 			goto reserved;
