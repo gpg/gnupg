@@ -78,7 +78,7 @@ check_hash_algo_requirement_with_ecc (int hash_algo, unsigned int qbits0)
     return 1;
 
   /* There are cases for certificates.  */
-  if (qbits0 == 521 && algo == GCRY_MD_SHA384)
+  if (qbits0 == 521 && hash_algo == GCRY_MD_SHA384)
     return 0;
 
   /* There are cases for signatures.  */
