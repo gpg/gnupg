@@ -66,6 +66,29 @@ get_dsa_qbits (gcry_sexp_t key)
 }
 
 
+/* Return 0 if the hash and key combination is OK, otherwise return 1.
+   Only when the hash length is shorter than qbits0, this function is
+   called, to see if there are any specific use cases to relax the
+   condition.  */
+static int
+check_hash_algo_requirement_with_ecc (int hash_algo, unsigned int qbits0)
+{
+  if (opt.require_compliance)
+    /* Nowadays, standards clearly says no.  */
+    return 1;
+
+  /* There are cases for certificates.  */
+  if (qbits0 == 521 && algo == GCRY_MD_SHA384)
+    return 0;
+
+  /* There are cases for signatures.  */
+  if (qbits0 == 384 && hash_algo == GCRY_MD_SHA256)
+    return 0;
+
+  return 1;
+}
+
+
 static int
 do_encode_md (gcry_md_hd_t md, int algo, int pkalgo, unsigned int nbits,
               gcry_sexp_t pkey, gcry_mpi_t *r_val)
@@ -108,7 +131,9 @@ do_encode_md (gcry_md_hd_t md, int algo, int pkalgo, unsigned int nbits,
       /* Check if we're too short.  Too long is safe as we'll
 	 automatically left-truncate. */
       nframe = gcry_md_get_algo_dlen (algo);
-      if (nframe < qbits/8 && !(qbits0 == 521 && algo == GCRY_MD_SHA384))
+      if (nframe < qbits/8
+          && (pkalgo != GCRY_PK_ECC
+              || check_hash_algo_requirement_with_ecc (algo, qbits0)))
         {
 	  log_error (_("a %u bit hash is not valid for a %u bit %s key\n"),
                      (unsigned int)nframe*8,
