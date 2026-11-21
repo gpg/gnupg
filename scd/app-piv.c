@@ -2985,6 +2985,8 @@ writekey_ecc (app_t app, data_object_t dobj, int keyref,
   const unsigned char *ecc_q = NULL;
   const unsigned char *ecc_d = NULL;
   size_t ecc_q_len, ecc_d_len;
+  unsigned char dbuf[48] = { 0 };
+  size_t dlen;
   unsigned char *apdudata = NULL;
   size_t apdudatalen;
   unsigned char tmpl[1];
@@ -3081,9 +3083,20 @@ writekey_ecc (app_t app, data_object_t dobj, int keyref,
   if (opt.verbose)
     log_info ("ECC private key size is %u bytes\n", (unsigned int)ecc_d_len);
 
+  /* The card expects D with the full length of the curve but leading
+   * zero bytes have been stripped above.  */
+  dlen = mechanism == PIV_ALGORITHM_ECC_P256? 32 : 48;
+  if (ecc_d_len > dlen)
+    {
+      err = gpg_error (GPG_ERR_BAD_SECKEY);
+      goto leave;
+    }
+  memcpy (dbuf + dlen - ecc_d_len, ecc_d, ecc_d_len);
+
   err = concat_tlv_list (1, &apdudata, &apdudatalen,
-                         (int)0x06, (size_t)ecc_d_len, ecc_d,
+                         (int)0x06, dlen, dbuf,
                          (int)0, (size_t)0, NULL);
+  wipememory (dbuf, sizeof dbuf);
   if (err)
     goto leave;
 
