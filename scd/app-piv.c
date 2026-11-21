@@ -3473,65 +3473,6 @@ do_genkey (app_t app, ctrl_t ctrl, const char *keyrefstr, const char *keytype,
 
 
 
-/* Map some names to an OID.  */
-static const unsigned char *
-map_curve_name_to_oid (const unsigned char *name, size_t *namelenp)
-{
-  if (*namelenp == 8 && !memcmp (name, "nistp256", 8))
-    {
-      *namelenp = 19;
-      return "1.2.840.10045.3.1.7";
-    }
-  if (*namelenp == 8 && !memcmp (name, "nistp384", 8))
-    {
-      *namelenp = 12;
-      return "1.3.132.0.34";
-    }
-  if (*namelenp == 8 && !memcmp (name, "nistp521", 8))
-    {
-      *namelenp = 12;
-      return "1.3.132.0.35";
-    }
-  return name;
-}
-
-
-/* Communication object for my_cmp_public_key. */
-struct my_cmp_public_key_parm_s {
-  int curve_seen;
-};
-
-/* Compare function used with cmp_canon_sexp.  */
-static int
-my_cmp_public_key (void *opaque, int depth,
-                   const unsigned char *aval, size_t alen,
-                   const unsigned char *bval, size_t blen)
-{
-  struct my_cmp_public_key_parm_s *parm = opaque;
-
-  (void)depth;
-
-  if (parm->curve_seen)
-    {
-      /* Last token was "curve" - canonicalize its argument.  */
-      parm->curve_seen = 0;
-      aval = map_curve_name_to_oid (aval, &alen);
-      bval = map_curve_name_to_oid (bval, &blen);
-    }
-  else if (alen == 5 && !memcmp (aval, "curve", 5))
-    parm->curve_seen = 1;
-  else
-    parm->curve_seen = 0;
-
-  if (alen > blen)
-    return 1;
-  else if (alen < blen)
-    return -1;
-  else
-    return memcmp (aval, bval, alen);
-}
-
-
 /* Write the certificate (CERT,CERTLEN) to the card at CERTREFSTR.
  * CERTREFSTR is either the OID of the certificate's container data
  * object or of the form "PIV.<two_hexdigit_keyref>". */
@@ -3545,7 +3486,8 @@ do_writecert (app_t app, ctrl_t ctrl,
   unsigned char *pk = NULL;
   unsigned char *orig_pk = NULL;
   size_t pklen, orig_pklen;
-  struct my_cmp_public_key_parm_s cmp_parm = { 0 };
+  char grip[KEYGRIP_LEN*2+1];
+  char orig_grip[KEYGRIP_LEN*2+1];
 
   (void)ctrl;
 
@@ -3577,8 +3519,16 @@ do_writecert (app_t app, ctrl_t ctrl,
   err = app_help_pubkey_from_cert (cert, certlen, &pk, &pklen);
   if (err)
     goto leave;  /* No public key in new certificate. */
-  if (cmp_canon_sexp (orig_pk, orig_pklen, pk, pklen,
-                      my_cmp_public_key, &cmp_parm))
+  /* Compare the keygrips because the representation of the key in
+   * the certificate may differ; for example a certificate uses an OID
+   * for the curve and has no prefix for an Ed25519 point.  */
+  err = app_help_get_keygrip_string_pk (orig_pk, orig_pklen, orig_grip,
+                                        NULL, NULL, NULL);
+  if (!err)
+    err = app_help_get_keygrip_string_pk (pk, pklen, grip, NULL, NULL, NULL);
+  if (err)
+    goto leave;
+  if (strcmp (orig_grip, grip))
     {
       err = gpg_error (GPG_ERR_CONFLICT);
       goto leave;
