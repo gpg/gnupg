@@ -83,6 +83,7 @@
 #define PIV_ALGORITHM_ECC_P384   0x14
 #define PIV_ALGORITHM_RSA_4096   0x16  /* Yubico extension (fw 5.7).  */
 #define PIV_ALGORITHM_ED25519    0xE0  /* Yubico extension (fw 5.7).  */
+#define PIV_ALGORITHM_X25519     0xE1  /* Yubico extension (fw 5.7).  */
 
 
 /* The AID for PIV.  */
@@ -1364,7 +1365,8 @@ get_keygrip_by_tag (app_t app, unsigned int tag,
         err = genkey_parse_rsa (certbuf, certbuflen, &s_pkey);
       else if (mechanism == PIV_ALGORITHM_ECC_P256
                || mechanism == PIV_ALGORITHM_ECC_P384
-               || mechanism == PIV_ALGORITHM_ED25519)
+               || mechanism == PIV_ALGORITHM_ED25519
+               || mechanism == PIV_ALGORITHM_X25519)
         err = genkey_parse_ecc (certbuf, certbuflen, mechanism, &s_pkey);
       else
         err = gpg_error (GPG_ERR_PUBKEY_ALGO);
@@ -1582,7 +1584,8 @@ do_readkey (app_t app, ctrl_t ctrl, const char *keyrefstr, unsigned int flags,
         err = genkey_parse_rsa (cert, certlen, &s_pkey);
       else if (mechanism == PIV_ALGORITHM_ECC_P256
                || mechanism == PIV_ALGORITHM_ECC_P384
-               || mechanism == PIV_ALGORITHM_ED25519)
+               || mechanism == PIV_ALGORITHM_ED25519
+               || mechanism == PIV_ALGORITHM_X25519)
         err = genkey_parse_ecc (cert, certlen, mechanism, &s_pkey);
       else
         err = gpg_error (GPG_ERR_PUBKEY_ALGO);
@@ -1672,6 +1675,7 @@ get_key_algorithm_by_dobj (app_t app, data_object_t dobj, int *r_mechanism)
         case PIV_ALGORITHM_ECC_P256:
         case PIV_ALGORITHM_ECC_P384:
         case PIV_ALGORITHM_ED25519:
+        case PIV_ALGORITHM_X25519:
           *r_mechanism = mechanism;
           break;
 
@@ -1751,6 +1755,8 @@ get_key_algorithm_by_dobj (app_t app, data_object_t dobj, int *r_mechanism)
         algo = PIV_ALGORITHM_ECC_P384;
       else if (curve_name && !strcmp (curve_name, "Ed25519"))
         algo = PIV_ALGORITHM_ED25519;
+      else if (curve_name && !strcmp (curve_name, "Curve25519"))
+        algo = PIV_ALGORITHM_X25519;
       else
         {
           err = gpg_error (GPG_ERR_UNKNOWN_CURVE);
@@ -2671,6 +2677,9 @@ do_decipher (app_t app, ctrl_t ctrl, const char *keyidstr,
     case PIV_ALGORITHM_ECC_P384:
       framelen = 1+48+48;
       break;
+    case PIV_ALGORITHM_X25519:
+      framelen = 32;
+      break;
     case PIV_ALGORITHM_RSA_2048:
       framelen = 2048 / 8;
       break;
@@ -2684,6 +2693,24 @@ do_decipher (app_t app, ctrl_t ctrl, const char *keyidstr,
       err = gpg_error (GPG_ERR_INTERNAL);
       log_debug ("piv: unknown PIV mechanism %d while decrypting\n", mechanism);
       goto leave;
+    }
+
+  /* An X25519 point comes with the 0x40 prefix.  It is little-endian
+   * and thus can't be adjusted like the other points below.  */
+  if (mechanism == PIV_ALGORITHM_X25519)
+    {
+      if (indatalen == 33 && *indata == 0x40)
+        {
+          indata++;
+          indatalen--;
+        }
+      if (indatalen != framelen)
+        {
+          err = gpg_error (GPG_ERR_INV_VALUE);
+          log_error ("piv: input of %zu octets is not an X25519 point\n",
+                     indatalen);
+          goto leave;
+        }
     }
 
   /* Check that the ciphertext has the right length; due to internal
@@ -2769,6 +2796,24 @@ do_decipher (app_t app, ctrl_t ctrl, const char *keyidstr,
       err = gpg_error (GPG_ERR_CARD);
       log_error ("piv: response does not contain a proper result\n");
       goto leave;
+    }
+
+  if (mechanism == PIV_ALGORITHM_X25519)
+    {
+      /* Return the shared secret with the 0x40 prefix like
+       * app-openpgp does.  */
+      unsigned char *p = xtrymalloc (1 + outdatalen);
+
+      if (!p)
+        {
+          err = gpg_error_from_syserror ();
+          goto leave;
+        }
+      p[0] = 0x40;
+      memcpy (p+1, outdata, outdatalen);
+      xfree (outdata);
+      outdata = p;
+      outdatalen++;
     }
 
  leave:
@@ -3057,6 +3102,8 @@ writekey_ecc (app_t app, data_object_t dobj, int keyref,
             mechanism = PIV_ALGORITHM_ECC_P384;
           else if (xname && !strcmp (xname, "ed25519"))
             mechanism = PIV_ALGORITHM_ED25519;
+          else if (xname && !strcmp (xname, "cv25519"))
+            mechanism = PIV_ALGORITHM_X25519;
           else
             {
               err = gpg_error (GPG_ERR_UNKNOWN_CURVE);
@@ -3110,9 +3157,10 @@ writekey_ecc (app_t app, data_object_t dobj, int keyref,
   if (opt.verbose)
     log_info ("ECC private key size is %u bytes\n", (unsigned int)ecc_d_len);
 
-  /* The card returns the Ed25519 public key without the 0x40 prefix
-   * used by Libgcrypt; store it the same way.  */
-  if (mechanism == PIV_ALGORITHM_ED25519)
+  /* The card returns Ed25519 and X25519 public keys without the 0x40
+   * prefix used by Libgcrypt; store them the same way.  */
+  if (mechanism == PIV_ALGORITHM_ED25519
+      || mechanism == PIV_ALGORITHM_X25519)
     {
       if (ecc_q_len == 33 && *ecc_q == 0x40)
         {
@@ -3135,10 +3183,25 @@ writekey_ecc (app_t app, data_object_t dobj, int keyref,
       goto leave;
     }
   memcpy (dbuf + dlen - ecc_d_len, ecc_d, ecc_d_len);
+  if (mechanism == PIV_ALGORITHM_X25519)
+    {
+      /* Libgcrypt stores the X25519 secret big-endian but the card
+       * expects the little-endian encoding of RFC 7748.  */
+      size_t i;
+      unsigned char c;
 
-  /* Yubico uses a dedicated tag for the Ed25519 secret.  Token2 cards
-   * reject that and expect the tag used for the other curves.  */
-  tag = mechanism == PIV_ALGORITHM_ED25519? 0x07 : 0x06;
+      for (i=0; i < dlen/2; i++)
+        {
+          c = dbuf[i];
+          dbuf[i] = dbuf[dlen-1-i];
+          dbuf[dlen-1-i] = c;
+        }
+    }
+
+  /* Yubico uses dedicated tags for the Ed25519 and X25519 secrets.
+   * Token2 cards reject them and expect the tag of the other curves.  */
+  tag = (mechanism == PIV_ALGORITHM_ED25519? 0x07
+         : mechanism == PIV_ALGORITHM_X25519? 0x08 : 0x06);
   for (;;)
     {
       xfree (apdudata);
@@ -3388,7 +3451,8 @@ genkey_parse_ecc (const unsigned char *data, size_t datalen, int mechanism,
     curve = "nistp256";
   else if (mechanism == PIV_ALGORITHM_ECC_P384)
     curve = "nistp384";
-  else if (mechanism == PIV_ALGORITHM_ED25519)
+  else if (mechanism == PIV_ALGORITHM_ED25519
+           || mechanism == PIV_ALGORITHM_X25519)
     {
       /* Libgcrypt expects the point with a 0x40 prefix.  */
       unsigned char qbuf[1+32] = { 0x40 };
@@ -3400,9 +3464,15 @@ genkey_parse_ecc (const unsigned char *data, size_t datalen, int mechanism,
           goto leave;
         }
       memcpy (qbuf+1, ecc_q, 32);
-      err = gcry_sexp_build (r_sexp, NULL,
-                             "(public-key(ecc(curve Ed25519)(flags eddsa)"
-                             "(q%b)))", (int)sizeof qbuf, qbuf);
+      if (mechanism == PIV_ALGORITHM_ED25519)
+        err = gcry_sexp_build (r_sexp, NULL,
+                               "(public-key(ecc(curve Ed25519)(flags eddsa)"
+                               "(q%b)))", (int)sizeof qbuf, qbuf);
+      else
+        err = gcry_sexp_build (r_sexp, NULL,
+                               "(public-key(ecc(curve Curve25519)"
+                               "(flags djb-tweak)(q%b)))",
+                               (int)sizeof qbuf, qbuf);
       goto leave;
     }
   else
@@ -3422,8 +3492,8 @@ genkey_parse_ecc (const unsigned char *data, size_t datalen, int mechanism,
 
 /* Create a new keypair for KEYREF.  If KEYTYPE is NULL a default
  * keytype is selected, else it may be one of the strings:
- *  "rsa2048", "rsa3072", "rsa4096", "nistp256", "nistp384", or
- *  "ed25519".
+ *  "rsa2048", "rsa3072", "rsa4096", "nistp256", "nistp384", "ed25519",
+ *  or "cv25519".
  *
  * Supported FLAGS are:
  *   APP_GENKEY_FLAG_FORCE   Overwrite existing key.
@@ -3471,6 +3541,8 @@ do_genkey (app_t app, ctrl_t ctrl, const char *keyrefstr, const char *keytype,
     mechanism = PIV_ALGORITHM_ECC_P384;
   else if (!strcmp (keytype, "ed25519"))
     mechanism = PIV_ALGORITHM_ED25519;
+  else if (!strcmp (keytype, "cv25519"))
+    mechanism = PIV_ALGORITHM_X25519;
   else
     return gpg_error (GPG_ERR_UNKNOWN_CURVE);
 
