@@ -82,6 +82,7 @@
 #define PIV_ALGORITHM_ECC_P256   0x11
 #define PIV_ALGORITHM_ECC_P384   0x14
 #define PIV_ALGORITHM_RSA_4096   0x16  /* Yubico extension (fw 5.7).  */
+#define PIV_ALGORITHM_ED25519    0xE0  /* Yubico extension (fw 5.7).  */
 
 
 /* The AID for PIV.  */
@@ -1362,7 +1363,8 @@ get_keygrip_by_tag (app_t app, unsigned int tag,
           || mechanism == PIV_ALGORITHM_RSA_4096)
         err = genkey_parse_rsa (certbuf, certbuflen, &s_pkey);
       else if (mechanism == PIV_ALGORITHM_ECC_P256
-               || mechanism == PIV_ALGORITHM_ECC_P384)
+               || mechanism == PIV_ALGORITHM_ECC_P384
+               || mechanism == PIV_ALGORITHM_ED25519)
         err = genkey_parse_ecc (certbuf, certbuflen, mechanism, &s_pkey);
       else
         err = gpg_error (GPG_ERR_PUBKEY_ALGO);
@@ -1579,7 +1581,8 @@ do_readkey (app_t app, ctrl_t ctrl, const char *keyrefstr, unsigned int flags,
           || mechanism == PIV_ALGORITHM_RSA_4096)
         err = genkey_parse_rsa (cert, certlen, &s_pkey);
       else if (mechanism == PIV_ALGORITHM_ECC_P256
-               || mechanism == PIV_ALGORITHM_ECC_P384)
+               || mechanism == PIV_ALGORITHM_ECC_P384
+               || mechanism == PIV_ALGORITHM_ED25519)
         err = genkey_parse_ecc (cert, certlen, mechanism, &s_pkey);
       else
         err = gpg_error (GPG_ERR_PUBKEY_ALGO);
@@ -1668,6 +1671,7 @@ get_key_algorithm_by_dobj (app_t app, data_object_t dobj, int *r_mechanism)
         case PIV_ALGORITHM_RSA_4096:
         case PIV_ALGORITHM_ECC_P256:
         case PIV_ALGORITHM_ECC_P384:
+        case PIV_ALGORITHM_ED25519:
           *r_mechanism = mechanism;
           break;
 
@@ -1739,11 +1743,14 @@ get_key_algorithm_by_dobj (app_t app, data_object_t dobj, int *r_mechanism)
     case GCRY_PK_ECC:
     case GCRY_PK_ECDSA:
     case GCRY_PK_ECDH:
+    case GCRY_PK_EDDSA:
       curve_name = gcry_pk_get_curve (s_pkey, 0, NULL);
       if (curve_name && !strcmp (curve_name, "NIST P-256"))
         algo = PIV_ALGORITHM_ECC_P256;
       else if (curve_name && !strcmp (curve_name, "NIST P-384"))
         algo = PIV_ALGORITHM_ECC_P384;
+      else if (curve_name && !strcmp (curve_name, "Ed25519"))
+        algo = PIV_ALGORITHM_ED25519;
       else
         {
           err = gpg_error (GPG_ERR_UNKNOWN_CURVE);
@@ -2346,6 +2353,21 @@ do_sign (app_t app, ctrl_t ctrl, const char *keyidstr, int hashalgo,
           indatalen -= oidbuflen;
         }
     }
+  else if (mechanism == PIV_ALGORITHM_ED25519)
+    {
+      /* The card signs INDATA as given (PureEdDSA).  Like app-openpgp
+       * we sign only the digest and thus remove a DigestInfo prefix
+       * as gpg-agent prepends it.  */
+      oidbuflen = sizeof oidbuf;
+      if (hashalgo
+          && !gcry_md_get_asnoid (hashalgo, &oidbuf, &oidbuflen)
+          && indatalen == oidbuflen + gcry_md_get_algo_dlen (hashalgo)
+          && !memcmp (indata, oidbuf, oidbuflen))
+        {
+          indata += oidbuflen;
+          indatalen -= oidbuflen;
+        }
+    }
   else if (mechanism == PIV_ALGORITHM_RSA_2048
            && indatalen == 2048/8 && indata[indatalen-1] == 0xBC)
     {
@@ -2505,12 +2527,14 @@ do_sign (app_t app, ctrl_t ctrl, const char *keyidstr, int hashalgo,
           outdatalen = n;
         }
       else if (mechanism == PIV_ALGORITHM_RSA_3072
-               || mechanism == PIV_ALGORITHM_RSA_4096)
+               || mechanism == PIV_ALGORITHM_RSA_4096
+               || mechanism == PIV_ALGORITHM_ED25519)
         {
+          /* For Ed25519 this is already R and S concatenated.  */
           memmove (outdata, outdata + (s - outdata), n);
           outdatalen = n;
         }
-      else /* ECC */
+      else /* ECDSA */
         {
           const unsigned char *rval, *sval;
           size_t rlen, rlenx, slen, slenx, resultlen;
@@ -2987,6 +3011,7 @@ writekey_ecc (app_t app, data_object_t dobj, int keyref,
   size_t ecc_q_len, ecc_d_len;
   unsigned char dbuf[48] = { 0 };
   size_t dlen;
+  int tag;
   unsigned char *apdudata = NULL;
   size_t apdudatalen;
   unsigned char tmpl[1];
@@ -3030,6 +3055,8 @@ writekey_ecc (app_t app, data_object_t dobj, int keyref,
             mechanism = PIV_ALGORITHM_ECC_P256;
           else if (xname && !strcmp (xname, "nistp384"))
             mechanism = PIV_ALGORITHM_ECC_P384;
+          else if (xname && !strcmp (xname, "ed25519"))
+            mechanism = PIV_ALGORITHM_ED25519;
           else
             {
               err = gpg_error (GPG_ERR_UNKNOWN_CURVE);
@@ -3083,9 +3110,25 @@ writekey_ecc (app_t app, data_object_t dobj, int keyref,
   if (opt.verbose)
     log_info ("ECC private key size is %u bytes\n", (unsigned int)ecc_d_len);
 
+  /* The card returns the Ed25519 public key without the 0x40 prefix
+   * used by Libgcrypt; store it the same way.  */
+  if (mechanism == PIV_ALGORITHM_ED25519)
+    {
+      if (ecc_q_len == 33 && *ecc_q == 0x40)
+        {
+          ecc_q++;
+          ecc_q_len--;
+        }
+      if (ecc_q_len != 32)
+        {
+          err = gpg_error (GPG_ERR_BAD_SECKEY);
+          goto leave;
+        }
+    }
+
   /* The card expects D with the full length of the curve but leading
    * zero bytes have been stripped above.  */
-  dlen = mechanism == PIV_ALGORITHM_ECC_P256? 32 : 48;
+  dlen = mechanism == PIV_ALGORITHM_ECC_P384? 48 : 32;
   if (ecc_d_len > dlen)
     {
       err = gpg_error (GPG_ERR_BAD_SECKEY);
@@ -3093,22 +3136,33 @@ writekey_ecc (app_t app, data_object_t dobj, int keyref,
     }
   memcpy (dbuf + dlen - ecc_d_len, ecc_d, ecc_d_len);
 
-  err = concat_tlv_list (1, &apdudata, &apdudatalen,
-                         (int)0x06, dlen, dbuf,
-                         (int)0, (size_t)0, NULL);
-  wipememory (dbuf, sizeof dbuf);
-  if (err)
-    goto leave;
+  /* Yubico uses a dedicated tag for the Ed25519 secret.  Token2 cards
+   * reject that and expect the tag used for the other curves.  */
+  tag = mechanism == PIV_ALGORITHM_ED25519? 0x07 : 0x06;
+  for (;;)
+    {
+      xfree (apdudata);
+      err = concat_tlv_list (1, &apdudata, &apdudatalen,
+                             tag, dlen, dbuf,
+                             (int)0, (size_t)0, NULL);
+      if (err)
+        goto leave;
 
-  err = iso7816_send_apdu (app_get_slot (app),
-                           -1,         /* Use command chaining.  */
-                           0,          /* Class */
-                           0xfe,       /* Ins: Yubikey Import Asym. Key.  */
-                           mechanism,  /* P1 */
-                           keyref,     /* P2 */
-                           apdudatalen,/* Lc */
-                           apdudata,   /* data */
-                           NULL, NULL, NULL);
+      err = iso7816_send_apdu (app_get_slot (app),
+                               -1,         /* Use command chaining.  */
+                               0,          /* Class */
+                               0xfe,       /* Ins: Yubikey Import Key.  */
+                               mechanism,  /* P1 */
+                               keyref,     /* P2 */
+                               apdudatalen,/* Lc */
+                               apdudata,   /* data */
+                               NULL, NULL, NULL);
+      if (tag == 0x06
+          || (gpg_err_code (err) != GPG_ERR_INV_VALUE
+              && gpg_err_code (err) != GPG_ERR_NOT_SUPPORTED))
+        break;
+      tag = 0x06;
+    }
   if (err)
     goto leave;
 
@@ -3128,6 +3182,7 @@ writekey_ecc (app_t app, data_object_t dobj, int keyref,
 
 
  leave:
+  wipememory (dbuf, sizeof dbuf);
   xfree (apdudata);
   return err;
 }
@@ -3333,6 +3388,23 @@ genkey_parse_ecc (const unsigned char *data, size_t datalen, int mechanism,
     curve = "nistp256";
   else if (mechanism == PIV_ALGORITHM_ECC_P384)
     curve = "nistp384";
+  else if (mechanism == PIV_ALGORITHM_ED25519)
+    {
+      /* Libgcrypt expects the point with a 0x40 prefix.  */
+      unsigned char qbuf[1+32] = { 0x40 };
+
+      if (ecc_qlen != 32)
+        {
+          log_error (_("response does not contain the EC public key\n"));
+          err = gpg_error (GPG_ERR_CARD);
+          goto leave;
+        }
+      memcpy (qbuf+1, ecc_q, 32);
+      err = gcry_sexp_build (r_sexp, NULL,
+                             "(public-key(ecc(curve Ed25519)(flags eddsa)"
+                             "(q%b)))", (int)sizeof qbuf, qbuf);
+      goto leave;
+    }
   else
     {
       err = gpg_error (GPG_ERR_BUG); /* Call with wrong parameters.  */
@@ -3350,7 +3422,8 @@ genkey_parse_ecc (const unsigned char *data, size_t datalen, int mechanism,
 
 /* Create a new keypair for KEYREF.  If KEYTYPE is NULL a default
  * keytype is selected, else it may be one of the strings:
- *  "rsa2048", "rsa3072", "rsa4096", "nistp256, or "nistp384".
+ *  "rsa2048", "rsa3072", "rsa4096", "nistp256", "nistp384", or
+ *  "ed25519".
  *
  * Supported FLAGS are:
  *   APP_GENKEY_FLAG_FORCE   Overwrite existing key.
@@ -3396,6 +3469,8 @@ do_genkey (app_t app, ctrl_t ctrl, const char *keyrefstr, const char *keytype,
     mechanism = PIV_ALGORITHM_ECC_P256;
   else if (!strcmp (keytype, "nistp384"))
     mechanism = PIV_ALGORITHM_ECC_P384;
+  else if (!strcmp (keytype, "ed25519"))
+    mechanism = PIV_ALGORITHM_ED25519;
   else
     return gpg_error (GPG_ERR_UNKNOWN_CURVE);
 
