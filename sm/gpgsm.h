@@ -192,6 +192,7 @@ struct
 #define DBG_X509_VALUE    1	/* debug x.509 data reading/writing */
 #define DBG_MPI_VALUE	  2	/* debug mpi details */
 #define DBG_CRYPTO_VALUE  4	/* debug low level crypto */
+#define DBG_DER_VALUE     8     /* debug the DER parser   */
 #define DBG_MEMORY_VALUE  32	/* debug memory allocation stuff */
 #define DBG_CACHE_VALUE   64	/* debug the caching */
 #define DBG_MEMSTAT_VALUE 128	/* show memory statistics */
@@ -202,6 +203,7 @@ struct
 
 #define DBG_X509    (opt.debug & DBG_X509_VALUE)
 #define DBG_CRYPTO  (opt.debug & DBG_CRYPTO_VALUE)
+#define DBG_DER     (opt.debug & DBG_DER_VALUE)
 #define DBG_MEMORY  (opt.debug & DBG_MEMORY_VALUE)
 #define DBG_CACHE   (opt.debug & DBG_CACHE_VALUE)
 #define DBG_HASHING (opt.debug & DBG_HASHING_VALUE)

@@ -496,6 +496,7 @@ static struct debug_flags_s debug_flags [] =
     { DBG_X509_VALUE   , "x509"    },
     { DBG_MPI_VALUE    , "mpi"     },
     { DBG_CRYPTO_VALUE , "crypto"  },
+    { DBG_DER_VALUE    , "der"     },
     { DBG_MEMORY_VALUE , "memory"  },
     { DBG_CACHE_VALUE  , "cache"   },
     { DBG_MEMSTAT_VALUE, "memstat" },
@@ -847,7 +848,7 @@ set_debug (void)
 
   /* minip12.c may be used outside of GnuPG, thus we don't have the
    * opt structure over there.  */
-  p12_set_verbosity (opt.verbose, opt.debug);
+  p12_set_verbosity (opt.verbose, DBG_DER);
 }
 
 
