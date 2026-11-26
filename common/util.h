@@ -40,6 +40,11 @@
  * Example: (#if GPG_ERROR_VERSION_NUMBER < 0x011500 // 1.21)
  */
 
+/* These constants are used but may not yet be defined in gcrypt.h.  */
+#if GCRYPT_VERSION_NUMBER < 0x010c05
+# define GCRY_PK_MLKEM 331  /* Actually this is an enum in gcrypt.h */
+#endif
+
 
 #ifndef EXTERN_UNLESS_MAIN_MODULE
 # if !defined (INCLUDED_BY_MAIN_MODULE)

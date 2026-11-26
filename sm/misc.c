@@ -35,6 +35,25 @@
 #include "../common/sexp-parse.h"
 
 
+static struct {
+  const char *oidstr;
+  short mlkemalgo;
+  const char *curve;
+  unsigned short eccdlen;
+} mlkem_infos[] =  {
+  { "1.3.6.1.5.5.7.6.58", GCRY_KEM_MLKEM768,  "X25519"   , 32 },
+  { "1.3.6.1.5.5.7.6.59", GCRY_KEM_MLKEM768,  "nistp256" , 32 },
+  { "1.3.6.1.5.5.7.6.60", GCRY_KEM_MLKEM768,  "nistp384" , 48 },
+  { "1.3.6.1.5.5.7.6.61", GCRY_KEM_MLKEM768,  "bp256"    , 32 },
+  { "1.3.6.1.5.5.7.6.63", GCRY_KEM_MLKEM1024, "nistp384" , 48 },
+  { "1.3.6.1.5.5.7.6.64", GCRY_KEM_MLKEM1024, "bp384"    , 48 },
+  { "1.3.6.1.5.5.7.6.65", GCRY_KEM_MLKEM1024, "X448"     , 56 },
+  { "1.3.6.1.5.5.7.6.66", GCRY_KEM_MLKEM1024, "nistp521" , 66 },
+  { NULL }
+};
+
+
+
 /* Print a message
  *   "(further info: %s)\n
  * in verbose mode to further explain an error.  That message is
@@ -409,4 +428,31 @@ gpgsm_map_cipher_name_to_oid (const char *oidstr)
       return oidtbl[idx].oidstr;
 
   return NULL;
+}
+
+
+/* Return various parameters for the MLKEM Composite algo with
+ * ALGOOID.  */
+gpg_error_t
+gpgsm_get_mlkem_params (const char *algooid,
+                        char const **r_mlkem, char const **r_curve,
+                        unsigned int *r_eccdlen)
+{
+  int i;
+
+  for (i = 0; mlkem_infos[i].oidstr; i++)
+    if (!strcmp (mlkem_infos[i].oidstr, algooid))
+      {
+        if (r_mlkem)
+          *r_mlkem = (mlkem_infos[i].mlkemalgo == GCRY_KEM_MLKEM768?
+                      "kyber768" : "kyber1024");
+        if (r_curve)
+          *r_curve = mlkem_infos[i].curve;
+
+        if (r_eccdlen)
+          *r_eccdlen = mlkem_infos[i].eccdlen;
+
+        return 0;
+      }
+  return gpg_error (GPG_ERR_UNKNOWN_ALGORITHM);
 }

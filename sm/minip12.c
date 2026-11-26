@@ -163,15 +163,19 @@ struct p12_parse_ctx_s
   /* Malloced name of the curve.  */
   char *curve;
 
-  /* The private key as an MPI array.   */
+  /* Malloced decimal dotted OID of the algorithm.  This is used for
+   * composite algorithms.  */
+  char *algooid;
+
+  /* The private key as an MPI array terminated by a NULL entry.   */
   gcry_mpi_t *privatekey;
 
-  /* A second private key as an MPI array.   */
+  /* A second private key as an MPI array terminated by a NULL entry.  */
   gcry_mpi_t *privatekey2;
 };
 
 
-static int opt_verbose;
+static int opt_verbose, opt_debug;
 
 
 
@@ -181,8 +185,9 @@ void
 p12_set_verbosity (int verbose, int debug)
 {
   opt_verbose = !!verbose;
-  if (debug)
-    opt_verbose = 2;
+  opt_debug   = !!debug;
+  if (opt_debug)
+    opt_verbose = 1;
 }
 
 
@@ -193,7 +198,7 @@ dump_to_file (const void *s, size_t n, const char *name)
   char fname[100];
   static int fcount;
 
-  if (opt_verbose > 1 && getenv ("GPGSM_DUMP_P12_DATA"))
+  if (opt_debug && getenv ("GPGSM_DUMP_P12_DATA"))
     {
       snprintf (fname, sizeof fname, "tmp-p12-%03d-%s", ++fcount, name);
       log_debug ("dumping %zu bytes to '%s'\n", n, fname);
@@ -850,7 +855,7 @@ parse_bag_encrypted_data (struct p12_parse_ctx_s *ctx, tlv_parser_t tlv)
               err = gpg_error (GPG_ERR_DIGEST_ALGO);
               goto bailout;
             }
-          if (opt_verbose > 1)
+          if (opt_debug)
             log_debug ("kdf digest algo = %d\n", digest_algo);
 
           /* Read the optional Null tag.  */
@@ -965,7 +970,7 @@ parse_bag_encrypted_data (struct p12_parse_ctx_s *ctx, tlv_parser_t tlv)
 
   /* We do not need the TLV anymore and allocated a new one.  */
   where = "bag.encryptedData.decrypted-text";
-  tmptlv = tlv_parser_new (plain, datalen, opt_verbose, tlv);
+  tmptlv = tlv_parser_new (plain, datalen, opt_debug? 2:0, tlv);
   if (!tmptlv)
     {
       err = gpg_error_from_syserror ();
@@ -1091,7 +1096,7 @@ parse_bag_encrypted_data (struct p12_parse_ctx_s *ctx, tlv_parser_t tlv)
               log_error ("a private key has already been received\n");
               goto bailout;
             }
-          ctx->privatekey = gcry_calloc (10, sizeof *ctx->privatekey);
+          ctx->privatekey = gcry_calloc (10+1, sizeof *ctx->privatekey);
           if (!ctx->privatekey)
             {
               err = gpg_error_from_syserror ();
@@ -1120,7 +1125,7 @@ parse_bag_encrypted_data (struct p12_parse_ctx_s *ctx, tlv_parser_t tlv)
                              keyelem_count, gpg_strerror (err));
                   goto bailout;
                 }
-              if (opt_verbose > 1)
+              if (opt_debug)
                 log_debug ("RSA key parameter %d found\n", keyelem_count);
               keyelem_count++;
             }
@@ -1386,7 +1391,7 @@ parse_shrouded_key_bag (struct p12_parse_ctx_s *ctx, tlv_parser_t tlv)
               err = gpg_error (GPG_ERR_DIGEST_ALGO);
               goto bailout;
             }
-          if (opt_verbose > 1)
+          if (opt_debug)
             log_debug ("kdf digest algo = %d\n", digest_algo);
 
           /* Read the optional Null tag.  */
@@ -1442,7 +1447,7 @@ parse_shrouded_key_bag (struct p12_parse_ctx_s *ctx, tlv_parser_t tlv)
         goto bailout;
       if (tlv_expect_octet_string (tlv, &data, &datalen))
         goto bailout;
-      if (opt_verbose > 1)
+      if (opt_debug)
         log_printhex (data, datalen, "%s: salt", __func__);
 
       if (datalen < 8 || datalen > 20)
@@ -1499,7 +1504,7 @@ parse_shrouded_key_bag (struct p12_parse_ctx_s *ctx, tlv_parser_t tlv)
 
   /* We do not need the TLV anymore and allocated a new one.  */
   where = "shrouded_key_bag.decrypted-text";
-  tmptlv = tlv_parser_new (plain, datalen, opt_verbose, tlv);
+  tmptlv = tlv_parser_new (plain, datalen, opt_debug? 2:0, tlv);
   if (!tmptlv)
     {
       err = gpg_error_from_syserror ();
@@ -1507,7 +1512,7 @@ parse_shrouded_key_bag (struct p12_parse_ctx_s *ctx, tlv_parser_t tlv)
     }
   tlv = tmptlv;
   newtlv++;
-  if (opt_verbose > 1)
+  if (opt_debug)
     log_debug ("new parser context\n");
 
   if (tlv_next (tlv))
@@ -1550,7 +1555,7 @@ parse_shrouded_key_bag (struct p12_parse_ctx_s *ctx, tlv_parser_t tlv)
   if (oidlen == DIM(oid_rsaEncryption)
       && !memcmp (oid, oid_rsaEncryption, oidlen))
     {
-      if (opt_verbose > 1)
+      if (opt_debug)
         log_debug ("RSA parameters\n");
 
       /* Read the optional Null tag.  */
@@ -1576,8 +1581,23 @@ parse_shrouded_key_bag (struct p12_parse_ctx_s *ctx, tlv_parser_t tlv)
           err = gpg_error (GPG_ERR_INV_OID_STRING);
           goto bailout;
         }
-      if (opt_verbose > 1)
+      if (opt_debug)
         log_debug ("OID of curve is: %s\n", ctx->curve);
+    }
+  else if (oidlen == 8 && !memcmp (oid, "\x2b\x06\x01\x05\x05\x07\x06", 7)
+           && oid[7] >= 58 && oid[7] < 66 && oid[7] != 62)
+    {
+      /* These are id-MLKEM*-*-SHA3-256 with the exception of those
+       * with RSA as traditional algorithm.  */
+      ctx->algooid = ksba_oid_to_str (oid, oidlen);
+      if (!ctx->algooid)
+        {
+          err = gpg_error (GPG_ERR_INV_OID_STRING);
+          goto bailout;
+        }
+      if (opt_debug)
+        log_debug ("MLKEM parameters (%s)\n", ctx->algooid);
+
     }
   else /* Unknown key format */
     {
@@ -1592,117 +1612,146 @@ parse_shrouded_key_bag (struct p12_parse_ctx_s *ctx, tlv_parser_t tlv)
   if (tlv_expect_octet_string (tlv, &data, &datalen))
     goto bailout;
 
-  tmptlv = tlv_parser_new (data, datalen, opt_verbose, tlv);
-  if (!tmptlv)
+  if (ctx->algooid)  /* The composite MLKEM case.  */
     {
-      err = gpg_error_from_syserror ();
-      goto bailout;
-    }
-  tlv = tmptlv;
-  newtlv++;
-  data = NULL;
-  if (opt_verbose > 1)
-    log_debug ("new parser context\n");
-
-  if (tlv_next (tlv))
-    goto bailout;
-  if (tlv_expect_sequence (tlv))
-    goto bailout;
-
-  if (ctx->privatekey2)
-    {
-      err = gpg_error (GPG_ERR_DUP_VALUE);
-      log_error ("two private keys have already been received\n");
-      goto bailout;
-    }
-  privatekey = gcry_calloc (10, sizeof *privatekey);
-  if (!privatekey)
-    {
-      err = gpg_error_from_syserror ();
-      log_error ("error allocating privatekey element array\n");
-      goto bailout;
-    }
-  if (ctx->privatekey)
-    {
-      log_info ("a private key has already been received - reading second\n");
-      ctx->privatekey2 = privatekey;
-    }
-  else
-    ctx->privatekey = privatekey;
-
-  where = "shrouded_key_bag.reading.key-parameters";
-  if (ctx->curve)  /* ECC case.  */
-    {
-      if (tlv_next (tlv))
-        goto bailout;
-      if ((err = tlv_expect_integer (tlv, &intval)))
-        goto bailout;
-      if (intval != 1)
+      if (ctx->privatekey)
         {
-          err = gpg_error (GPG_ERR_INV_VALUE);
-          log_error ("error parsing private ecPublicKey parameter: %s\n",
-                     "bad version");
+          err = gpg_error (GPG_ERR_DUP_VALUE);
+          log_error ("a private key has already been received\n");
           goto bailout;
         }
-
-      if (tlv_next (tlv))
-        goto bailout;
-      if (tlv_expect_octet_string (tlv, &data, &datalen))
-        goto bailout;
-      if (opt_verbose > 1)
-        log_printhex (data, datalen, "ecc q=");
-      err = gcry_mpi_scan (privatekey, GCRYMPI_FMT_USG,
-                           data, datalen, NULL);
-      if (err)
+      ctx->privatekey = gcry_calloc (2, sizeof *privatekey);
+      if (!ctx->privatekey)
         {
-          log_error ("error parsing key parameter: %s\n", gpg_strerror (err));
+          err = gpg_error_from_syserror ();
+          log_error ("error allocating privatekey element array\n");
+          goto bailout;
+        }
+      ctx->privatekey[0] = gcry_mpi_set_opaque_copy (NULL, data, 8*datalen);
+      if (!ctx->privatekey[0])
+        {
+          err = gpg_error_from_syserror ();
+          log_error ("error allocating privatekey MPI\n");
           goto bailout;
         }
     }
-  else  /* RSA case */
+  else /* Further parsing required */
     {
-      int keyelem_count = 0;
-      int firstparam = 1;
-      unsigned int startlevel = tlv_parser_level (tlv);
-
-      while (!(err = tlv_next (tlv)) && tlv_parser_level (tlv) == startlevel)
+      tmptlv = tlv_parser_new (data, datalen, opt_debug? 2:0, tlv);
+      if (!tmptlv)
         {
-          if (keyelem_count >= 9)
-            {
-              err = gpg_error (GPG_ERR_TOO_MANY);
-              goto bailout;
-            }
-
-          err = tlv_expect_mpinteger (tlv, firstparam,
-                                      privatekey+keyelem_count);
-          if (firstparam && gpg_err_code (err) == GPG_ERR_FALSE)
-            ; /* Ignore the first value iff it is zero. */
-          else if (err)
-            {
-              log_error ("error parsing RSA key parameter %d: %s\n",
-                         keyelem_count, gpg_strerror (err));
-              goto bailout;
-            }
-          else
-            {
-              if (opt_verbose > 1)
-                log_debug ("RSA key parameter %d found\n", keyelem_count);
-              keyelem_count++;
-            }
-          firstparam = 0;
+          err = gpg_error_from_syserror ();
+          goto bailout;
         }
-      if (!err)
-        tlv_parser_set_pending (tlv);
-      else if (err && gpg_err_code (err) != GPG_ERR_EOF)
-        goto bailout;
-      err = 0;
-    }
+      tlv = tmptlv;
+      newtlv++;
+      data = NULL;
+      if (opt_debug)
+        log_debug ("new parser context\n");
 
-  if (opt_verbose > 1)
-    log_debug ("restoring parser context\n");
-  tlv = tlv_parser_release (tlv);
-  log_assert (tlv);
-  newtlv--;
+      if (tlv_next (tlv))
+        goto bailout;
+      if (tlv_expect_sequence (tlv))
+        goto bailout;
+
+      if (ctx->privatekey2)
+        {
+          err = gpg_error (GPG_ERR_DUP_VALUE);
+          log_error ("two private keys have already been received\n");
+          goto bailout;
+        }
+      privatekey = gcry_calloc (10+1, sizeof *privatekey);
+      if (!privatekey)
+        {
+          err = gpg_error_from_syserror ();
+          log_error ("error allocating privatekey element array\n");
+          goto bailout;
+        }
+      if (ctx->privatekey)
+        {
+          log_info ("a private key has already been received"
+                    " - reading second\n");
+          ctx->privatekey2 = privatekey;
+        }
+      else
+        ctx->privatekey = privatekey;
+
+      where = "shrouded_key_bag.reading.key-parameters";
+      if (ctx->curve)  /* ECC case.  */
+        {
+          if (tlv_next (tlv))
+            goto bailout;
+          if ((err = tlv_expect_integer (tlv, &intval)))
+            goto bailout;
+          if (intval != 1)
+            {
+              err = gpg_error (GPG_ERR_INV_VALUE);
+              log_error ("error parsing private ecPublicKey parameter: %s\n",
+                         "bad version");
+              goto bailout;
+            }
+
+          if (tlv_next (tlv))
+            goto bailout;
+          if (tlv_expect_octet_string (tlv, &data, &datalen))
+            goto bailout;
+          if (opt_debug)
+            log_printhex (data, datalen, "ecc q=");
+          err = gcry_mpi_scan (privatekey, GCRYMPI_FMT_USG,
+                               data, datalen, NULL);
+          if (err)
+            {
+              log_error ("error parsing key parameter: %s\n",
+                         gpg_strerror (err));
+              goto bailout;
+            }
+        }
+      else  /* RSA case */
+        {
+          int keyelem_count = 0;
+          int firstparam = 1;
+          unsigned int startlevel = tlv_parser_level (tlv);
+
+          while (!(err = tlv_next (tlv))
+                 && tlv_parser_level (tlv) == startlevel)
+            {
+              if (keyelem_count >= 9)
+                {
+                  err = gpg_error (GPG_ERR_TOO_MANY);
+                  goto bailout;
+                }
+
+              err = tlv_expect_mpinteger (tlv, firstparam,
+                                          privatekey+keyelem_count);
+              if (firstparam && gpg_err_code (err) == GPG_ERR_FALSE)
+                ; /* Ignore the first value iff it is zero. */
+              else if (err)
+                {
+                  log_error ("error parsing RSA key parameter %d: %s\n",
+                             keyelem_count, gpg_strerror (err));
+                  goto bailout;
+                }
+              else
+                {
+                  if (opt_debug)
+                    log_debug ("RSA key parameter %d found\n", keyelem_count);
+                  keyelem_count++;
+                }
+              firstparam = 0;
+            }
+          if (!err)
+            tlv_parser_set_pending (tlv);
+          else if (err && gpg_err_code (err) != GPG_ERR_EOF)
+            goto bailout;
+          err = 0;
+        }
+
+      if (opt_debug)
+        log_debug ("restoring parser context\n");
+      tlv = tlv_parser_release (tlv);
+      log_assert (tlv);
+      newtlv--;
+    }
 
   where = "shrouded_key_bag.attribute_set";
   /* Check for an optional set of attributes.  */
@@ -1727,7 +1776,7 @@ parse_shrouded_key_bag (struct p12_parse_ctx_s *ctx, tlv_parser_t tlv)
     {
       tlv = tlv_parser_release (tlv);
       newtlv--;
-      if (opt_verbose > 1)
+      if (opt_debug)
         log_debug ("parser context released\n");
     }
   return err;
@@ -1876,7 +1925,7 @@ parse_bag_data (struct p12_parse_ctx_s *ctx, tlv_parser_t tlv)
   if (tlv_expect_octet_string (tlv, &data, &datalen))
     goto bailout;
 
-  tmptlv = tlv_parser_new (data, datalen, opt_verbose, tlv);
+  tmptlv = tlv_parser_new (data, datalen, opt_debug? 2:0, tlv);
   if (!tmptlv)
     {
       err = gpg_error_from_syserror ();
@@ -1885,7 +1934,7 @@ parse_bag_data (struct p12_parse_ctx_s *ctx, tlv_parser_t tlv)
   tlv = tmptlv;
   newtlv = 1;
     data = NULL;
-  if (opt_verbose > 1)
+  if (opt_debug)
     log_debug ("new parser context for embedded octet string\n");
 
   /* Expect:
@@ -1948,7 +1997,7 @@ parse_bag_data (struct p12_parse_ctx_s *ctx, tlv_parser_t tlv)
   if (newtlv)
     {
       tlv_parser_release (tlv);
-      if (opt_verbose > 1)
+      if (opt_debug)
         log_debug ("parser context released\n");
     }
   return err;
@@ -1972,11 +2021,13 @@ parse_bag_data (struct p12_parse_ctx_s *ctx, tlv_parser_t tlv)
    tries to extract the first private key object it finds.  In case of
    an error NULL is returned. CERTCB and CERTCBARG are used to pass
    X.509 certificates back to the caller.  If R_CURVE is not NULL and
-   an ECC key was found the OID of the curve is stored there. */
+   an ECC key was found the OID of the curve is stored there.  If
+   R_ALGOOID is not NULL and a composite MLKEM keywas found, the algo
+   OID is stored there.  */
 gcry_mpi_t *
 p12_parse (const unsigned char *buffer, size_t length, const char *pw,
            void (*certcb)(void*, const unsigned char*, size_t),
-           void *certcbarg, int *r_badpass, char **r_curve)
+           void *certcbarg, int *r_badpass, char **r_curve, char **r_algooid)
 {
   gpg_error_t err;
   const char *where = "";
@@ -1998,7 +2049,7 @@ p12_parse (const unsigned char *buffer, size_t length, const char *pw,
   ctx.certcbarg = certcbarg;
   ctx.password = pw;
 
-  tlv = tlv_parser_new (buffer, length, opt_verbose, 0);
+  tlv = tlv_parser_new (buffer, length, opt_debug? 2:0, 0);
   if (!tlv)
     {
       err = gpg_error_from_syserror ();
@@ -2043,7 +2094,7 @@ p12_parse (const unsigned char *buffer, size_t length, const char *pw,
   if ((err = tlv_expect_octet_string (tlv, &data, &datalen)))
     goto bailout;
 
-  tmptlv = tlv_parser_new (data, datalen, opt_verbose, tlv);
+  tmptlv = tlv_parser_new (data, datalen, opt_debug? 2:0, tlv);
   if (!tmptlv)
     {
       err = gpg_error_from_syserror ();
@@ -2053,7 +2104,7 @@ p12_parse (const unsigned char *buffer, size_t length, const char *pw,
   newtlv = 1;
   data = NULL;
 
-  if (opt_verbose > 1)
+  if (opt_debug)
     log_debug ("new parser context for embedded octet string\n");
 
   where = "bags";
@@ -2114,7 +2165,7 @@ p12_parse (const unsigned char *buffer, size_t length, const char *pw,
   if (newtlv)
     {
       tlv = tlv_parser_release (tlv);
-      if (opt_verbose > 1)
+      if (opt_debug)
         log_debug ("parser context released\n");
     }
   tlv_parser_release (tlv);
@@ -2122,6 +2173,11 @@ p12_parse (const unsigned char *buffer, size_t length, const char *pw,
     *r_curve = ctx.curve;
   else
     gcry_free (ctx.curve);
+
+  if (r_algooid)
+    *r_algooid = ctx.algooid;
+  else
+    gcry_free (ctx.algooid);
 
   /* We have no way yet to return the second private key.  */
   if (ctx.privatekey2)
@@ -2138,7 +2194,7 @@ p12_parse (const unsigned char *buffer, size_t length, const char *pw,
   if (newtlv)
     {
       tlv = tlv_parser_release (tlv);
-      if (opt_verbose > 1)
+      if (opt_debug)
         log_debug ("parser context released\n");
     }
   *r_badpass = ctx.badpass;
@@ -2165,8 +2221,11 @@ p12_parse (const unsigned char *buffer, size_t length, const char *pw,
     }
   tlv_parser_release (tlv);
   gcry_free (ctx.curve);
+  gcry_free (ctx.algooid);
   if (r_curve)
     *r_curve = NULL;
+  if (r_algooid)
+    *r_algooid = NULL;
   return NULL;
 }
 
@@ -2179,7 +2238,7 @@ p12_parse_free_kparms (gcry_mpi_t *kparms)
 
   if (kparms)
     {
-      for (i=0; i < 8; i++)
+      for (i=0; kparms[i]; i++)
         gcry_mpi_release (kparms[i]);
       gcry_free (kparms);
     }
@@ -2694,6 +2753,150 @@ build_ecc_key_sequence (gcry_mpi_t *kparms, int mode, size_t *r_length)
 }
 
 
+/* Build a DER encoded SEQUENCE for a composite ML-KEM key:
+ *
+ * SEQUENCE {  -- OneAsymmetricKey (RFC-5958)
+ *   INTEGER 0
+ *   SEQUENCE {
+ *     OBJECT IDENTIFIER (1 3 6 1 5 5 7 6 59) -- or 60, 61 ...
+ *     }
+ *   OCTET STRING --  mlkem_seed || ecc_d
+ * }
+ *
+ * KPARMS[0] := Opaque MPI with the Algo OID as dotted-decimal string.
+ * KPARMS[1] := Opaque MPI with the private ML-KEM seed (seed)
+ * KPARMS[2] := Opaque MPI with the private ECC key (d)
+ * MODE controls what is being generated:
+ *    0 - As described above
+ *    1 - Ditto but without the extra padding needed for pkcs#12
+ *    2 - Only the octet string (ECPrivateKey)
+ */
+
+static unsigned char *
+build_mlkem_key_sequence (gcry_mpi_t *kparms, int mode, size_t *r_length)
+{
+  gpg_error_t err;
+  unsigned int nbits, n;
+  const unsigned char *s;
+  char *algooid = NULL;
+  const unsigned char *mlkem_seed, *ecc_d;
+  size_t mlkem_seedlen, ecc_dlen;
+  tlv_builder_t tb;
+  unsigned char *key = NULL;
+  size_t keylen;
+  void *result = NULL;
+  size_t resultlen;
+  int e;
+  int i;
+
+
+  for (i=0; kparms[i]; i++)
+    ;
+  if (i != 3)
+    {
+      log_error ("%s: invalid number of parameters\n", __func__);
+      goto leave;
+    }
+
+  s = gcry_mpi_get_opaque (kparms[0], &nbits);
+  n = (nbits+7)/8;
+  algooid = xtrymalloc (n + 1);
+  if (!algooid)
+    {
+      err = gpg_error_from_syserror ();
+      log_error ("%s:%d: error getting parameter: %s\n",
+                 __func__, __LINE__, gpg_strerror (err));
+      goto leave;
+    }
+  memcpy (algooid, s, n);
+  algooid[n] = 0;
+
+  mlkem_seed = gcry_mpi_get_opaque (kparms[1], &nbits);
+  mlkem_seedlen = (nbits+7)/8;
+
+  ecc_d = gcry_mpi_get_opaque (kparms[2], &nbits);
+  ecc_dlen = (nbits+7)/8;
+
+  if (mlkem_seedlen != 64 || ecc_dlen < 32)
+    {
+      log_error ("%s:%d: invalid parameterlen (mlkem=%zu,ecc=%zu)\n",
+                 __func__, __LINE__, mlkem_seedlen, ecc_dlen);
+      goto leave;
+    }
+
+  keylen = mlkem_seedlen + ecc_dlen;
+  key = xtrymalloc_secure (keylen);
+  if (!key)
+    {
+      err = gpg_error_from_syserror ();
+      log_error ("%s:%d: error allocating temp memory for key: %s\n",
+                 __func__, __LINE__, gpg_strerror (err));
+      goto leave;
+    }
+  memcpy (key, mlkem_seed, mlkem_seedlen);
+  memcpy (key+mlkem_seedlen, ecc_d, ecc_dlen);
+
+  tb = tlv_builder_new (1 /*(use secmem)*/);
+  if (!tb)
+    {
+      err = gpg_error_from_syserror ();
+      log_error ("%s:%d: error creating new TLV builder: %s\n",
+                 __func__, __LINE__, gpg_strerror (err));
+      goto leave;
+    }
+  e = 0;
+  tlv_builder_add_tag (tb, 0, TAG_SEQUENCE);
+  tlv_builder_add_ptr (tb, 0, TAG_INTEGER, "\0", 1);
+  tlv_builder_add_tag (tb, 0, TAG_SEQUENCE);
+  e|= builder_add_oid (tb, 0, algooid);
+  tlv_builder_add_end (tb);
+  tlv_builder_add_ptr (tb, 0, TAG_OCTET_STRING, key, keylen);
+  tlv_builder_add_end (tb);
+
+  err = tlv_builder_finalize (tb, &result, &resultlen);
+  if (err || e)
+    {
+      if (!err)
+        err = gpg_error (GPG_ERR_GENERAL);
+      log_error ("%s:%d: tlv building failed: %s\n",
+                 __func__, __LINE__, gpg_strerror (err));
+      xfree (result); result = NULL;
+      goto leave;
+    }
+
+  /* Append some pad characters if needed. */
+  if (!mode && (n = 8 - resultlen % 8))
+    {
+      unsigned char *p = xtrymalloc_secure (resultlen + n);
+      if (!p)
+        {
+          err = gpg_error_from_syserror ();
+          log_error ("%s:%d: error allocating buffer: %s\n",
+                     __func__, __LINE__, gpg_strerror (err));
+          xfree (result);
+          return NULL;
+        }
+      memcpy (p, result, resultlen);
+      xfree (result);
+      result = p;
+      p = (unsigned char*)result + resultlen;
+      for (i=0; i < n; i++, resultlen++)
+        *p++ = n;
+    }
+
+  *r_length = resultlen;
+
+ leave:
+  if (key)
+    {
+      wipememory (key, keylen);
+      xfree (key);
+    }
+  xfree (algooid);
+  return result;
+}
+
+
 static unsigned char *
 build_key_bag (unsigned char *buffer, size_t buflen, char *salt,
                const unsigned char *sha1hash, const char *keyidstr,
@@ -3043,7 +3246,8 @@ build_cert_sequence (const unsigned char *buffer, size_t buflen,
    in R_LENGTH; return NULL in case of an error.  If CHARSET is not
    NULL, re-encode PW to that character set. */
 unsigned char *
-p12_build (gcry_mpi_t *kparms, const void *cert, size_t certlen,
+p12_build (gcry_mpi_t *kparms, int keytype,
+           const void *cert, size_t certlen,
            const char *pw, const char *charset, size_t *r_length)
 {
   unsigned char *buffer = NULL;
@@ -3137,13 +3341,10 @@ p12_build (gcry_mpi_t *kparms, const void *cert, size_t certlen,
   if (kparms)
     {
       /* Encode the key. */
-      int i;
 
-      /* Right, that is a stupid way to distinguish ECC from RSA.  */
-      for (i=0; kparms[i]; i++)
-        ;
-
-      if (i == 3 && gcry_mpi_get_flag (kparms[0], GCRYMPI_FLAG_OPAQUE))
+      if (keytype == GCRY_PK_MLKEM)  /* Composite */
+        buffer = build_mlkem_key_sequence (kparms, 0, &buflen);
+      else if (keytype == GCRY_PK_ECC)
         buffer = build_ecc_key_sequence (kparms, 0, &buflen);
       else
         buffer = build_rsa_key_sequence (kparms, 0, &buflen);
@@ -3151,6 +3352,7 @@ p12_build (gcry_mpi_t *kparms, const void *cert, size_t certlen,
         goto failure;
 
       /* Encrypt it. */
+#warning Change algos to more modern ones.
       gcry_randomize (salt, 8, GCRY_STRONG_RANDOM);
       crypt_block (buffer, buflen, salt, 8, 2048, NULL, 0,
                    pw, GCRY_CIPHER_3DES, GCRY_MD_SHA1, 1);
@@ -3192,24 +3394,27 @@ p12_build (gcry_mpi_t *kparms, const void *cert, size_t certlen,
 
 
 /* This is actually not a PKCS#12 function but one which creates an
- * unencrypted PKCS#1 private key.  */
+ * unencrypted PKCS#1 private key.  KEYTYPE is one of the GCRY_PK_
+ * values.  */
 unsigned char *
-p12_raw_build (gcry_mpi_t *kparms, int rawmode, size_t *r_length)
+p12_raw_build (gcry_mpi_t *kparms, int keytype, int rawmode, size_t *r_length)
 {
   unsigned char *buffer;
   size_t buflen;
-  int i;
 
   log_assert (rawmode == 1 || rawmode == 2);
 
-  /* Right, that is a stupid way to distinguish ECC from RSA.  */
-  for (i=0; kparms[i]; i++)
-    ;
-
-  if (gcry_mpi_get_flag (kparms[0], GCRYMPI_FLAG_OPAQUE))
+  if (keytype == GCRY_PK_MLKEM)  /* Composite */
+    buffer = build_mlkem_key_sequence (kparms, rawmode, &buflen);
+  else if (keytype == GCRY_PK_ECC)
     buffer = build_ecc_key_sequence (kparms, rawmode, &buflen);
-  else
+  else if (keytype == GCRY_PK_RSA)
     buffer = build_rsa_key_sequence (kparms, rawmode, &buflen);
+  else
+    {
+      log_error ("%s: invalid keytype %d\n", __func__, keytype);
+      buffer = NULL;
+    }
   if (!buffer)
     return NULL;
 

@@ -390,6 +390,7 @@ one_file (const char *name, const char *pass)
   gcry_mpi_t *result;
   int badpass;
   char *curve = NULL;
+  char *algooid = NULL;
 
   fp = fopen (name, "rb");
   if (!fp)
@@ -413,7 +414,8 @@ one_file (const char *name, const char *pass)
     }
   fclose (fp);
 
-  result = p12_parse (buf, buflen, pass, cert_cb, NULL, &badpass, &curve);
+  result = p12_parse (buf, buflen, pass, cert_cb, NULL,
+                      &badpass, &curve, &algooid);
   if (result)
     {
       int i, rc;
@@ -421,6 +423,8 @@ one_file (const char *name, const char *pass)
 
       if (curve)
         log_info ("curve: %s\n", curve);
+      if (algooid)
+        log_info ("algooid: %s\n", algooid);
       for (i=0; result[i]; i++)
         {
           rc = gcry_mpi_aprint (GCRYMPI_FMT_HEX, &tmpbuf, NULL, result[i]);
@@ -439,6 +443,8 @@ one_file (const char *name, const char *pass)
     log_error ("Bad password given?\n");
 
   xfree (buf);
+  xfree (curve);
+  xfree (algooid);
   return 0;
 }
 
@@ -473,6 +479,7 @@ run_one_test (const char *name, const char *desc, const char *pass,
   gcry_mpi_t *result;
   int badpass;
   char *curve = NULL;
+  char *algooid = NULL;
   char *resulthash = NULL;
   char *p;
   char *certstr = NULL;
@@ -508,7 +515,7 @@ run_one_test (const char *name, const char *desc, const char *pass,
   fclose (fp);
 
   result = p12_parse (buf, buflen, pass? pass:"", cert_collect_cb, &certstr,
-                      &badpass, &curve);
+                      &badpass, &curve, &algooid);
   if (result)
     {
       int i, rc;
@@ -521,6 +528,12 @@ run_one_test (const char *name, const char *desc, const char *pass,
           if (verbose > 1)
             inf ("curve: %s\n", curve);
           tmpstring = xstrconcat ("curve:", curve, "\n", NULL);
+        }
+      else if (algooid)
+        {
+          if (verbose > 1)
+            inf ("algooid: %s\n", algooid);
+          tmpstring = xstrconcat ("algooid:", algooid, "\n", NULL);
         }
       else
         tmpstring = xstrdup ("\n");
@@ -587,6 +600,7 @@ run_one_test (const char *name, const char *desc, const char *pass,
   xfree (certstr);
   xfree (resulthash);
   xfree (curve);
+  xfree (algooid);
   xfree (buf);
   return ret;
 }

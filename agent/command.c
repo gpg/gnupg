@@ -3006,12 +3006,8 @@ cmd_import_key (assuan_context_t ctx, char *line)
     }
   else if (keydata_type == KEYDATA_COMPOSITE)
     {
-      if (!mode1003)
-        {
-          err = set_error (GPG_ERR_ASS_PARAMETER,
-                           "\"--mode1003\" required for composite keys");
-          goto leave;
-        }
+      int e1, e2;
+
       /* Split the key up.  */
       skey1 = gcry_sexp_nth (keydata, 1);
       skey2 = gcry_sexp_nth (keydata, 2);
@@ -3034,10 +3030,17 @@ cmd_import_key (assuan_context_t ctx, char *line)
        * FORCE because gpg is not yet able to correcly detect that
        * both keys are on a smartcard (which is the only sensible way
        * to allow overwriting both private keys.  */
-      if (!agent_key_available (ctrl, grip1)
-          || !agent_key_available (ctrl, grip2))
+      e1 = agent_key_available (ctrl, grip1);
+      e2 = agent_key_available (ctrl, grip2);
+      if (!e1 || !e2)
         {
           log_error ("at least one part of a composite key already exists\n");
+          log_printf ("keygrip1: ");
+          log_printhex (grip1, 20, "|!upcase,nolf|");
+          log_printf ("%s\n", e1? "":" (exists)");
+          log_printf ("keygrip2: ");
+          log_printhex (grip2, 20, "|!upcase,nolf|");
+          log_printf ("%s\n", e2? "":" (exists)");
           err = gpg_error (GPG_ERR_EEXIST);
           goto leave;
         }

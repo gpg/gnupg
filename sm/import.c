@@ -680,41 +680,129 @@ store_cert_cb (void *opaque,
 }
 
 
+/* Given the ECC secret parameter d return the public key q.  */
+static gpg_error_t
+ecc_q_from_d (const char *curve, gcry_mpi_t d, gcry_mpi_t *r_q)
+{
+  gpg_error_t err;
+  gcry_ctx_t ecctx = NULL;
+
+  *r_q = NULL;
+  err = gcry_mpi_ec_new (&ecctx, NULL, curve);
+  if (err)
+    {
+      log_error ("error creating context for curve '%s': %s\n",
+                 curve, gpg_strerror (err));
+      goto leave;
+    }
+  err = gcry_mpi_ec_set_mpi ("d", d, ecctx);
+  if (err)
+    {
+      log_error ("error setting 'd' into context of curve '%s': %s\n",
+                 curve, gpg_strerror (err));
+      goto leave;
+    }
+
+  *r_q = gcry_mpi_ec_get_mpi ("q", ecctx, 1);
+  if (!*r_q)
+    {
+      err = gpg_error_from_syserror ();
+      log_error ("error computing 'q' from 'd' for curve '%s'\n", curve);
+      goto leave;
+    }
+ leave:
+  gcry_ctx_release (ecctx);
+  return err;
+}
+
+
 /* Helper for parse_p12.  */
 static gpg_error_t
-p12_to_skey (gcry_mpi_t *kparms, const char *curve, gcry_sexp_t *r_skey)
+p12_to_skey (gcry_mpi_t *kparms, const char *curve, const char *algooid,
+             gcry_sexp_t *r_skey)
 {
   gpg_error_t err = 0;
   struct rsa_secret_key_s sk;
-  gcry_ctx_t ecctx = NULL;
+  gcry_sexp_t s_kyberfull = NULL;
+  gcry_sexp_t s_kyberpriv = NULL;
+  gcry_mpi_t ecc_q = NULL;
+  gcry_mpi_t ecc_d = NULL;
 
-  if (curve)
+  if (algooid)
+    {
+      const char *mlkname, *curvename;
+      const unsigned char *seed, *eccd;
+      unsigned int n, seedlen, eccdlen;
+
+      /* log_debug ("algooid: %s\n", algooid); */
+      /* gcry_log_debugmpi ("MPI[0]", kparms[0]); */
+      err = gpgsm_get_mlkem_params (algooid, &mlkname, &curvename, &eccdlen);
+      if (err)
+        {
+          log_error ("MLKEM private key not supported (%s)\n", algooid);
+          goto leave;
+        }
+      seedlen = 64;
+
+      seed = gcry_mpi_get_opaque (kparms[0], &n);
+      n = (n+7)/8;
+      if (!seed || n != seedlen+eccdlen) /* Seed + ECC d */
+        {
+          err = gpg_error (GPG_ERR_BAD_SECKEY);
+          log_error ("MLKEM private key is not valid (len=%u)\n", n);
+          goto leave;
+        }
+      eccd = seed + seedlen;
+
+      /* Create the full Kyber private key from the supplied seed.  */
+      {
+        gcry_sexp_t s_parms;
+
+        err = gcry_sexp_build (&s_parms, NULL,
+                               "(genkey(%s(derive-parms(seed%b))))",
+                               mlkname, (int)seedlen, seed);
+        if (!err)
+          err = gcry_pk_genkey (&s_kyberfull, s_parms);
+        gcry_sexp_release (s_parms);
+        if (err)
+          goto leave;
+        s_kyberpriv = gcry_sexp_find_token (s_kyberfull, "private-key", 0);
+        if (!s_kyberpriv)
+          {
+            log_error ("MLKEM key conversion failed: no private key part\n");
+            err = gpg_error (GPG_ERR_INV_DATA);
+            goto leave;
+          }
+      }
+
+      /* Create the full ECC key from its d parameter.  */
+      err = gcry_mpi_scan (&ecc_d, GCRYMPI_FMT_USG, eccd, eccdlen, NULL);
+      if (err)
+        goto leave;
+      err = ecc_q_from_d (curvename, ecc_d, &ecc_q);
+      if (err)
+        goto leave;
+
+
+      /* Build the composite s-expression.  */
+      err = gcry_sexp_build (r_skey, NULL,
+                             "(composite-key"
+                             "%S"
+                             "(private-key(ecc(curve %s)(q%m)(d%m))))",
+                             s_kyberpriv, curvename, ecc_q, ecc_d);
+      if (err)
+        goto leave;
+
+    }
+  else if (curve)
     {
       /* log_debug ("curve: %s\n", curve); */
       /* gcry_log_debugmpi ("MPI[0]", kparms[0]); */
 
       /* We need to get the public key.  */
-      err = gcry_mpi_ec_new (&ecctx, NULL, curve);
+      err = ecc_q_from_d (curve, kparms[0], kparms+1);
       if (err)
-        {
-          log_error ("error creating context for curve '%s': %s\n",
-                     curve, gpg_strerror (err));
-          goto leave;
-        }
-      err = gcry_mpi_ec_set_mpi ("d", kparms[0], ecctx);
-      if (err)
-        {
-          log_error ("error setting 'd' into context of curve '%s': %s\n",
-                     curve, gpg_strerror (err));
-          goto leave;
-        }
-
-      kparms[1] = gcry_mpi_ec_get_mpi ("q", ecctx, 1);
-      if (!kparms[1])
-        {
-          log_error ("error computing 'q' from 'd' for curve '%s'\n", curve);
-          goto leave;
-        }
+        goto leave;
 
       err = gcry_sexp_build (r_skey, NULL,
                              "(private-key(ecc(curve %s)(q%m)(d%m)))",
@@ -754,7 +842,10 @@ p12_to_skey (gcry_mpi_t *kparms, const char *curve, gcry_sexp_t *r_skey)
     }
 
  leave:
-  gcry_ctx_release (ecctx);
+  gcry_mpi_release (ecc_d);
+  gcry_mpi_release (ecc_q);
+  gcry_sexp_release (s_kyberpriv);
+  gcry_sexp_release (s_kyberfull);
   return err;
 }
 
@@ -782,9 +873,9 @@ parse_p12 (ctrl_t ctrl, ksba_reader_t reader, struct stats_s *stats)
   size_t wrappedkeylen;
   gcry_cipher_hd_t cipherhd = NULL;
   gcry_sexp_t s_key = NULL;
-  unsigned char grip[20];
   int bad_pass = 0;
   char *curve = NULL;
+  char *algooid = NULL;
   int i;
   struct store_cert_parm_s store_cert_parm;
 
@@ -846,7 +937,7 @@ parse_p12 (ctrl_t ctrl, ksba_reader_t reader, struct stats_s *stats)
 
   kparms = p12_parse (p12buffer + p12bufoff, p12buflen - p12bufoff,
                       passphrase, store_cert_cb,
-                      &store_cert_parm, &bad_pass, &curve);
+                      &store_cert_parm, &bad_pass, &curve, &algooid);
 
   xfree (passphrase);
   passphrase = NULL;
@@ -859,7 +950,7 @@ parse_p12 (ctrl_t ctrl, ksba_reader_t reader, struct stats_s *stats)
     }
 
 
-  err = p12_to_skey (kparms, curve, &s_key);
+  err = p12_to_skey (kparms, curve, algooid, &s_key);
   p12_parse_free_kparms (kparms);
   kparms = NULL;
   if (err)
@@ -869,15 +960,42 @@ parse_p12 (ctrl_t ctrl, ksba_reader_t reader, struct stats_s *stats)
       goto leave;
     }
 
-  /* Compute the keygrip. */
-  if (!gcry_pk_get_keygrip (s_key, grip))
-    {
-      err = gpg_error (GPG_ERR_GENERAL);
-      log_error ("can't calculate keygrip\n");
-      goto leave;
-    }
+
+  /* In Debug mode we print the keygrip.  */
   if (DBG_X509)
-    log_printhex (grip, 20, "keygrip:");
+    {
+      unsigned char grip_ecc[20], grip_mlk[20];
+      gcry_sexp_t s_key_ecc, s_key_mlk;
+
+      if (algooid)
+        {
+          /* This is a composite key, p12_to_skey makes sure that the
+           * first part is ML-KEM.  */
+          s_key_mlk = gcry_sexp_nth (s_key, 1);
+          s_key_ecc = gcry_sexp_nth (s_key, 2);
+          if (!s_key_mlk || !s_key_ecc)
+            log_debug ("keygrip: [broken composite key detected]\n");
+          else if (!gcry_pk_get_keygrip (s_key_ecc, grip_ecc)
+                   || !gcry_pk_get_keygrip (s_key_mlk, grip_mlk))
+            log_debug ("keygrip: [failed for at least one part]\n");
+          else
+            {
+              log_printf ("keygrip: ");
+              log_printhex (grip_ecc, 20, "|!upcase,nolf|");
+              log_printf (",");
+              log_printhex (grip_mlk, 20, "|!upcase|");
+            }
+          gcry_sexp_release (s_key_mlk);
+          gcry_sexp_release (s_key_ecc);
+        }
+      else
+        {
+          if (!gcry_pk_get_keygrip (s_key, grip_ecc))
+            log_debug ("keygrip: [error computing keygrip]\n");
+          else
+            log_printhex (grip_ecc, 20, "keygrip:");
+        }
+    }
 
   /* Convert to canonical encoding using a function which pads it to a
      multiple of 64 bits.  We need this padding for AESWRAP.  */
@@ -965,6 +1083,7 @@ parse_p12 (ctrl_t ctrl, ksba_reader_t reader, struct stats_s *stats)
   xfree (get_membuf (&p12mbuf, NULL));
   xfree (p12buffer);
   xfree (curve);
+  xfree (algooid);
 
   if (bad_pass)
     {

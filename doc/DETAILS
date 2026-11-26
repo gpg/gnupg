@@ -1830,9 +1830,18 @@ Description of some debug flags:
   - RFC-8813 :: Clarifications for ECC Subject Public Key
   - RFC-8954 :: Online Certificate Status Protocol (OCSP) Nonce Extension
   - RFC-9180 :: Hybrid Public Key Encryption
+  - RFC-9580 :: Redesigned OpenPGP
+  - RFC-9980 :: Post-Quantum Cryptography in OpenPGP
   - RFC-9987 :: Secure Shell (SSH) Agent Protocol
+  - RFC-10073 :: Composite ML-DSA for Use in X.509 PKI
+  - RFC-10082 :: Composite ML-DSA for Use in CMS
 
   - draft-koch-librepgp-05 :: Updates to RFC-4880
+  - draft-ietf-lamps-pq-composite-kem-22 ::
+       Composite ML-KEM for Use in X.509 PKI
+  - draft-ietf-lamps-cms-composite-kem-03 ::
+       Composite ML-KEM for Use in CMS
+
 
   - T6390 :: Notes on use of X25519 in GnuPG (https://dev.gnupg.org/T6390)
 

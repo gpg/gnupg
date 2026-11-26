@@ -544,9 +544,10 @@ print_short_info (ksba_cert_t cert, estream_t stream)
 
 /* Parse a private key S-expression and return a malloced array with
    the RSA parameters in pkcs#12 order.  The caller needs to
-   deep-release this array.  */
+   deep-release this array.  R_KEYLEN is set in the MLKEM case to
+   either 768 or 1024.  */
 static gcry_mpi_t *
-sexp_to_kparms (gcry_sexp_t sexp)
+sexp_to_kparms (gcry_sexp_t sexp, int *r_keytype, unsigned int *r_keylen)
 {
   gcry_sexp_t list, l2;
   const char *name;
@@ -554,6 +555,9 @@ sexp_to_kparms (gcry_sexp_t sexp)
   size_t n;
   int idx;
   gcry_mpi_t *array;
+
+  *r_keytype = 0;
+  *r_keylen = 0;
 
   list = gcry_sexp_find_token (sexp, "private-key", 0 );
   if(!list)
@@ -600,6 +604,8 @@ sexp_to_kparms (gcry_sexp_t sexp)
       array[6] = gcry_mpi_snew (0);  /* compute d mod (p-1) */
       gcry_mpi_sub_ui (array[6], array[4], 1);
       gcry_mpi_mod (array[6], array[2], array[6]);
+
+      *r_keytype = GCRY_PK_RSA;
     }
   else if (name && n == 3 && !memcmp (name, "ecc", 3))
     {
@@ -616,7 +622,26 @@ sexp_to_kparms (gcry_sexp_t sexp)
           xfree (array);
           array = NULL;  /* Error.  */
         }
+
+      *r_keytype = GCRY_PK_ECC;
     }
+  else if (name && ((n == 8 && !memcmp (name, "kyber768", 8))
+                    || (n == 9 && !memcmp (name, "kyber1024", 9))))
+    {
+      *r_keylen = (n == 9)? 1024 : 768;
+      array = xtrycalloc (1 + 1, sizeof *array);
+      if (!array)
+        {
+          gcry_sexp_release (list);
+          return NULL;
+        }
+      if (gcry_sexp_extract_param (list, NULL, "/'seed'", array+0, NULL))
+        {
+          xfree (array);
+          array = NULL;  /* Error.  */
+        }
+      *r_keytype = GCRY_PK_MLKEM;
+     }
   else
     {
       array = NULL;
@@ -627,42 +652,27 @@ sexp_to_kparms (gcry_sexp_t sexp)
 }
 
 
+/* Helper to receive on secret key from the agent and return it as a
+ * gcrypt s-expr.  (KEK,KEKLEN) must be provide to unwrap the key.  On
+ * success R_SKEY received the secret key.  */
 static gpg_error_t
-export_p12 (ctrl_t ctrl, const unsigned char *certimg, size_t certimglen,
-            const char *prompt, const char *keygrip, int rawmode,
-            void **r_result, size_t *r_resultlen)
+receive_and_unwrap_key (ctrl_t ctrl, const char *prompt, const char *keygrip,
+                        const void *kek, size_t keklen, gcry_sexp_t *r_skey)
 {
-  gpg_error_t err = 0;
-  void *kek = NULL;
-  size_t keklen;
+  gpg_error_t err;
   unsigned char *wrappedkey = NULL;
   size_t wrappedkeylen;
   gcry_cipher_hd_t cipherhd = NULL;
-  gcry_sexp_t s_skey = NULL;
-  gcry_mpi_t *kparms = NULL;
   unsigned char *key = NULL;
   size_t keylen;
-  char *passphrase = NULL;
-  unsigned char *result = NULL;
-  size_t resultlen;
-  int i;
 
-  *r_result = NULL;
-
-  /* Get the current KEK.  */
-  err = gpgsm_agent_keywrap_key (ctrl, 1, &kek, &keklen);
-  if (err)
-    {
-      log_error ("error getting the KEK: %s\n", gpg_strerror (err));
-      goto leave;
-    }
+  *r_skey = NULL;
 
   /* Receive the wrapped key from the agent.  */
   err = gpgsm_agent_export_key (ctrl, keygrip, prompt,
                                 &wrappedkey, &wrappedkeylen);
   if (err)
     goto leave;
-
 
   /* Unwrap the key.  */
   err = gcry_cipher_open (&cipherhd, GCRY_CIPHER_AES128,
@@ -672,8 +682,6 @@ export_p12 (ctrl_t ctrl, const unsigned char *certimg, size_t certimglen,
   err = gcry_cipher_setkey (cipherhd, kek, keklen);
   if (err)
     goto leave;
-  xfree (kek);
-  kek = NULL;
 
   if (wrappedkeylen < 24)
     {
@@ -692,32 +700,225 @@ export_p12 (ctrl_t ctrl, const unsigned char *certimg, size_t certimglen,
     goto leave;
   xfree (wrappedkey);
   wrappedkey = NULL;
-  gcry_cipher_close (cipherhd);
-  cipherhd = NULL;
-
 
   /* Convert to a gcrypt S-expression.  */
-  err = gcry_sexp_create (&s_skey, key, keylen, 0, xfree_fnc);
+  err = gcry_sexp_create (r_skey, key, keylen, 0, xfree_fnc);
   if (err)
     goto leave;
-  key = NULL; /* Key is now owned by S_KEY.  */
+  key = NULL; /* Key is now owned by R_SKEY.  */
 
-  /* Get the parameters from the S-expression.  */
-  kparms = sexp_to_kparms (s_skey);
-  gcry_sexp_release (s_skey);
-  s_skey = NULL;
-  if (!kparms)
+ leave:
+  xfree (key);
+  gcry_cipher_close (cipherhd);
+  xfree (wrappedkey);
+  return err;
+}
+
+
+static gpg_error_t
+export_p12 (ctrl_t ctrl, const unsigned char *certimg, size_t certimglen,
+            const char *prompt, const char *keygrip_arg, int rawmode,
+            void **r_result, size_t *r_resultlen)
+{
+  gpg_error_t err = 0;
+  char *keygrip_buffer = NULL;
+  const char *keygrip1, *keygrip2;
+  void *kek = NULL;
+  size_t keklen;
+  gcry_sexp_t s_skey1 = NULL;
+  gcry_sexp_t s_skey2 = NULL;
+  gcry_mpi_t *kparms1 = NULL;
+  gcry_mpi_t *kparms2 = NULL;
+  int key1_type, key2_type;
+  unsigned int key1_len, key2_len;
+  char *passphrase = NULL;
+  unsigned char *result = NULL;
+  size_t resultlen;
+  int i;
+  char *p;
+
+  *r_result = NULL;
+
+  /* Split the keygrip if needed.  */
+  keygrip2 = strchr (keygrip_arg, ',');
+  if (!keygrip2)
+    keygrip1 = keygrip_arg;
+  else
+    {
+      keygrip2++;
+      keygrip_buffer = xtrystrdup (keygrip_arg);
+      if (!keygrip_buffer)
+        {
+          err = gpg_error_from_syserror ();
+          goto leave;
+        }
+      p = strchr (keygrip_buffer, ',');
+      log_assert (p);
+      *p = 0;
+      keygrip1 = keygrip_buffer;
+    }
+
+  /* Get the current KEK.  */
+  err = gpgsm_agent_keywrap_key (ctrl, 1, &kek, &keklen);
+  if (err)
+    {
+      log_error ("error getting the KEK: %s\n", gpg_strerror (err));
+      goto leave;
+    }
+
+  /* Reveive the keys and turn them it into S-expressions.  */
+  err = receive_and_unwrap_key (ctrl, prompt, keygrip1, kek, keklen,
+                                &s_skey1);
+  if (err)
+    goto leave;
+
+  if (keygrip2)
+    {
+      err = receive_and_unwrap_key (ctrl, prompt, keygrip2, kek, keklen,
+                                    &s_skey2);
+      if (err)
+        goto leave;
+    }
+
+
+  /* Get the parameters from the S-expressions.  */
+  kparms1 = sexp_to_kparms (s_skey1, &key1_type, &key1_len);
+  gcry_sexp_release (s_skey1);
+  s_skey1 = NULL;
+  if (!kparms1)
     {
       log_error ("error converting key parameters\n");
+      gcry_log_debugsxp ("s_skey1", s_skey1);
       err = GPG_ERR_BAD_SECKEY;
       goto leave;
     }
+
+  if (s_skey2)
+    {
+      kparms2 = sexp_to_kparms (s_skey2, &key2_type, &key2_len);
+      gcry_sexp_release (s_skey2);
+      s_skey2 = NULL;
+      if (!kparms2)
+        {
+          log_error ("error converting key parameters\n");
+          gcry_log_debugsxp ("s_skey2", s_skey2);
+          err = GPG_ERR_BAD_SECKEY;
+          goto leave;
+        }
+    }
+  else
+    key2_type = 0;
+
+
+  /* For a composite key merge them into one kparms array. */
+  if (key1_type && key2_type)
+    {
+      const unsigned char *curvep, *seedp;
+      unsigned int curvelen, seedlen;
+      const char *oid;
+      int kyber;
+
+      /* Swap them so that kparms1 always has the ECC part.  */
+      if (key1_type == GCRY_PK_MLKEM)
+        {
+          gcry_mpi_t *tmpparms;
+          unsigned int tmplen;
+
+          tmpparms = kparms1;
+          kparms1 = kparms2;
+          kparms2 = tmpparms;
+          key1_type = key2_type;
+          key2_type = GCRY_PK_MLKEM;
+          tmplen = key1_len;
+          key1_len = key2_len;
+          key2_len = tmplen;
+        }
+
+      if (key1_type != GCRY_PK_ECC)
+        {
+          log_error ("composite key not supported (%d,%d)\n",
+                     key1_type, key2_type);
+          err = GPG_ERR_BAD_SECKEY;
+          goto leave;
+        }
+      kyber = key2_len;
+
+      /* Desired kparms layout for Composiutse ML-KEM:
+       *   kparms[0] := OID in dotted decimal format.
+       *   kparms[1] := ML-KEM Seed
+       *   kparms[2] := ECC d
+       */
+      if (!kparms1[0]
+          || !gcry_mpi_get_flag (kparms1[0], GCRYMPI_FLAG_OPAQUE)
+          || !(curvep = gcry_mpi_get_opaque (kparms1[0], &curvelen)))
+        {
+          err = GPG_ERR_BAD_SECKEY;
+          goto leave;
+        }
+      curvelen = (curvelen+7)/8;
+
+      if (!kparms2[0]
+          || !gcry_mpi_get_flag (kparms2[0], GCRYMPI_FLAG_OPAQUE)
+          || !(seedp = gcry_mpi_get_opaque (kparms2[0], &seedlen)))
+        {
+          err = GPG_ERR_BAD_SECKEY;
+          goto leave;
+        }
+      seedlen = (seedlen+7)/8;
+
+      if (curvelen == 6 && !memcmp (curvep, "X25519", curvelen)
+          && kyber == 768)
+        oid = "1.3.6.1.5.5.7.6.58";
+      else if (curvelen == 8 && !memcmp (curvep, "nistp256", curvelen)
+               && kyber == 768)
+        oid = "1.3.6.1.5.5.7.6.59";
+      else if (curvelen == 8 && !memcmp (curvep, "nistp384", curvelen)
+               && kyber == 768)
+        oid = "1.3.6.1.5.5.7.6.60";
+      else if (curvelen == 5 && !memcmp (curvep, "bp256", curvelen)
+               && kyber == 768)
+        oid = "1.3.6.1.5.5.7.6.61";
+      else if (curvelen == 8 && !memcmp (curvep, "nistp384", curvelen)
+               && kyber == 1024)
+        oid = "1.3.6.1.5.5.7.6.63";
+      else if (curvelen == 5 && !memcmp (curvep, "bp384", curvelen)
+               && kyber == 1024)
+        oid = "1.3.6.1.5.5.7.6.64";
+      else if (curvelen == 4 && !memcmp (curvep, "X448", curvelen)
+               && kyber == 1024)
+        oid = "1.3.6.1.5.5.7.6.65";
+      else if (curvelen == 8 && !memcmp (curvep, "nistp521", curvelen)
+               && kyber == 1024)
+        oid = "1.3.6.1.5.5.7.6.66";
+      else
+        {
+          log_error ("composite key not supported (%.*s,kyber%d)\n",
+                     (int)curvelen, curvep, kyber);
+          err = GPG_ERR_UNUSABLE_SECKEY;
+          goto leave;
+        }
+      if (!gcry_mpi_set_opaque_copy (kparms1[0], oid, 8*(strlen (oid)+1)))
+        {
+          err = gpg_error_from_syserror ();
+          goto leave;
+        }
+
+      if (!gcry_mpi_set_opaque_copy (kparms1[1], seedp, 8*seedlen))
+        {
+          err = gpg_error_from_syserror ();
+          goto leave;
+        }
+
+      /* Note that kparms1[2] already carries 'd'.  */
+    }
+
 
   if (rawmode)
     {
       /* Export in raw mode, that is only the pkcs#1/#8 unprotected
        * private key. */
-      result = p12_raw_build (kparms, rawmode, &resultlen);
+      result = p12_raw_build (kparms1, key2_type? key2_type : key1_type,
+                              rawmode, &resultlen);
       if (!result)
         err = gpg_error (GPG_ERR_GENERAL);
     }
@@ -734,7 +935,8 @@ export_p12 (ctrl_t ctrl, const unsigned char *certimg, size_t certimglen,
             goto leave;
         }
 
-      result = p12_build (kparms, certimg, certimglen,
+      result = p12_build (kparms1, key2_type? key2_type : key1_type,
+                          certimg, certimglen,
                           ctrl->no_protection? "" : passphrase,
                           opt.p12_charset, &resultlen);
       xfree (passphrase);
@@ -744,17 +946,22 @@ export_p12 (ctrl_t ctrl, const unsigned char *certimg, size_t certimglen,
     }
 
  leave:
-  xfree (key);
-  gcry_sexp_release (s_skey);
-  if (kparms)
+  gcry_sexp_release (s_skey1);
+  gcry_sexp_release (s_skey2);
+  if (kparms1)
     {
-      for (i=0; kparms[i]; i++)
-        gcry_mpi_release (kparms[i]);
-      xfree (kparms);
+      for (i=0; kparms1[i]; i++)
+        gcry_mpi_release (kparms1[i]);
+      xfree (kparms1);
     }
-  gcry_cipher_close (cipherhd);
-  xfree (wrappedkey);
+  if (kparms2)
+    {
+      for (i=0; kparms2[i]; i++)
+        gcry_mpi_release (kparms2[i]);
+      xfree (kparms2);
+    }
   xfree (kek);
+  xfree (keygrip_buffer);
 
   if (gpg_err_code (err) == GPG_ERR_BAD_PASSPHRASE)
     {
