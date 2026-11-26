@@ -633,6 +633,8 @@ const char *gpgsm_map_cipher_name_to_oid (const char *oidstr);
 gpg_error_t gpgsm_get_mlkem_params (const char *algoid,
                                     char const **r_mlkem, char const **r_curve,
                                     unsigned int *r_eccdlen);
+gpg_error_t gpgsm_get_mlkem_oid (const char *mlkemname, const char *curve,
+                                 char const **r_algooid);
 
 
 

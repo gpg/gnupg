@@ -736,6 +736,7 @@ export_p12 (ctrl_t ctrl, const unsigned char *certimg, size_t certimglen,
   size_t resultlen;
   int i;
   char *p;
+  char *curvename = NULL;
 
   *r_result = NULL;
 
@@ -856,6 +857,15 @@ export_p12 (ctrl_t ctrl, const unsigned char *certimg, size_t certimglen,
           goto leave;
         }
       curvelen = (curvelen+7)/8;
+      curvename = xtrymalloc (curvelen + 1);
+      if (!curvename)
+        {
+          err = gpg_error_from_syserror ();
+          goto leave;
+        }
+      memcpy (curvename, curvep, curvelen);
+      curvename[curvelen] = 0;
+
 
       if (!kparms2[0]
           || !gcry_mpi_get_flag (kparms2[0], GCRYMPI_FLAG_OPAQUE)
@@ -866,34 +876,12 @@ export_p12 (ctrl_t ctrl, const unsigned char *certimg, size_t certimglen,
         }
       seedlen = (seedlen+7)/8;
 
-      if (curvelen == 6 && !memcmp (curvep, "X25519", curvelen)
-          && kyber == 768)
-        oid = "1.3.6.1.5.5.7.6.58";
-      else if (curvelen == 8 && !memcmp (curvep, "nistp256", curvelen)
-               && kyber == 768)
-        oid = "1.3.6.1.5.5.7.6.59";
-      else if (curvelen == 8 && !memcmp (curvep, "nistp384", curvelen)
-               && kyber == 768)
-        oid = "1.3.6.1.5.5.7.6.60";
-      else if (curvelen == 5 && !memcmp (curvep, "bp256", curvelen)
-               && kyber == 768)
-        oid = "1.3.6.1.5.5.7.6.61";
-      else if (curvelen == 8 && !memcmp (curvep, "nistp384", curvelen)
-               && kyber == 1024)
-        oid = "1.3.6.1.5.5.7.6.63";
-      else if (curvelen == 5 && !memcmp (curvep, "bp384", curvelen)
-               && kyber == 1024)
-        oid = "1.3.6.1.5.5.7.6.64";
-      else if (curvelen == 4 && !memcmp (curvep, "X448", curvelen)
-               && kyber == 1024)
-        oid = "1.3.6.1.5.5.7.6.65";
-      else if (curvelen == 8 && !memcmp (curvep, "nistp521", curvelen)
-               && kyber == 1024)
-        oid = "1.3.6.1.5.5.7.6.66";
-      else
+      if (gpgsm_get_mlkem_oid (kyber == 768? "kyber768":
+                               kyber == 1024? "kyber1024":NULL,
+                               curvename, &oid))
         {
-          log_error ("composite key not supported (%.*s,kyber%d)\n",
-                     (int)curvelen, curvep, kyber);
+          log_error ("composite key not supported (%s,kyber%d)\n",
+                     curvename, kyber);
           err = GPG_ERR_UNUSABLE_SECKEY;
           goto leave;
         }
@@ -946,6 +934,7 @@ export_p12 (ctrl_t ctrl, const unsigned char *certimg, size_t certimglen,
     }
 
  leave:
+  xfree (curvename);
   gcry_sexp_release (s_skey1);
   gcry_sexp_release (s_skey2);
   if (kparms1)

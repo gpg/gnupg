@@ -456,3 +456,28 @@ gpgsm_get_mlkem_params (const char *algooid,
       }
   return gpg_error (GPG_ERR_UNKNOWN_ALGORITHM);
 }
+
+
+gpg_error_t
+gpgsm_get_mlkem_oid (const char *mlkemname, const char *curve,
+                     char const **r_algooid)
+{
+  int i;
+  int mlkemalgo;
+
+  if (mlkemname && !strcmp (mlkemname, "kyber768"))
+    mlkemalgo = GCRY_KEM_MLKEM768;
+  else if (mlkemname && !strcmp (mlkemname, "kyber1024"))
+    mlkemalgo = GCRY_KEM_MLKEM1024;
+  else
+    return gpg_error (GPG_ERR_UNKNOWN_ALGORITHM);
+
+  for (i = 0; mlkem_infos[i].oidstr; i++)
+    if (mlkem_infos[i].mlkemalgo == mlkemalgo
+        && !strcmp (mlkem_infos[i].curve, curve))
+      {
+        *r_algooid = mlkem_infos[i].oidstr;
+        return 0;
+      }
+  return gpg_error (GPG_ERR_UNKNOWN_ALGORITHM);
+}
