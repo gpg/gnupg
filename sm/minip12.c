@@ -96,20 +96,6 @@ static unsigned char const oid_rsaEncryption[9] = {
 static unsigned char const oid_pcPublicKey[7] = {
   0x2A, 0x86, 0x48, 0xCE, 0x3D, 0x02, 0x01 };
 
-static unsigned char const data_3desiter2048[30] = {
-  0x30, 0x1C, 0x06, 0x0A, 0x2A, 0x86, 0x48, 0x86,
-  0xF7, 0x0D, 0x01, 0x0C, 0x01, 0x03, 0x30, 0x0E,
-  0x04, 0x08, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
-  0xFF, 0xFF, 0x02, 0x02, 0x08, 0x00 };
-#define DATA_3DESITER2048_SALT_OFF  18
-
-static unsigned char const data_rc2iter2048[30] = {
-  0x30, 0x1C, 0x06, 0x0A, 0x2A, 0x86, 0x48, 0x86,
-  0xF7, 0x0D, 0x01, 0x0C, 0x01, 0x06, 0x30, 0x0E,
-  0x04, 0x08, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
-  0xFF, 0xFF, 0x02, 0x02, 0x08, 0x00 };
-#define DATA_RC2ITER2048_SALT_OFF  18
-
 static unsigned char const data_mactemplate[51] = {
   0x30, 0x31, 0x30, 0x21, 0x30, 0x09, 0x06, 0x05,
   0x2b, 0x0e, 0x03, 0x02, 0x1a, 0x05, 0x00, 0x04,
@@ -259,6 +245,62 @@ builder_add_oid (tlv_builder_t tb, int class, const char *oid)
   ksba_free (der);
   return 0;
 }
+
+
+/* Add and INTEGER with VALUE to TB.  Function returns 1 on error.  */
+static void
+builder_add_int (tlv_builder_t tb, unsigned int value)
+{
+  uint64_t v = value;
+  unsigned char buf[1+8];  /* Note that value is 64 bits.  */
+  unsigned int buflen;
+  int i;
+
+  for (buflen=0, i=7; i; i--)
+    {
+      buf[buflen] = (v >> (i*8));
+      if (buflen || buf[buflen])
+        buflen++;
+    }
+  buf[buflen] = v;  /* At least one byte  */
+  buflen++;
+  if ((buf[0] & 0x80)) /* Prepend a zero to make it a positive.  */
+    {
+      memmove (buf+1, buf, buflen);
+      buf[0] = 0;
+      buflen++;
+    }
+
+  tlv_builder_add_val (tb, 0, TAG_INTEGER, buf, buflen);
+}
+
+
+/* Add an BMP string to TB by assuming plain ascii in STRING.  Returns
+ * 0 on sucess.  */
+static int
+builder_add_bmp_string (tlv_builder_t tb, const char *string)
+{
+  unsigned char *buf;
+  size_t buflen;
+
+  buf = xtrymalloc (strlen (string)*2);
+  if (!buf)
+    {
+      log_error ("%s: malloc failed\n", __func__);
+      return 1;
+    }
+  for (buflen=0; *string; string++)
+    {
+      buf[buflen++] = 0;
+      buf[buflen++] = *string;
+    }
+
+  tlv_builder_add_val (tb, 0, TAG_BMP_STRING, buf, buflen);
+  xfree (buf);
+  return 0;
+}
+
+
 
 
 /* Wrapper around tlv_builder_add_ptr to add an MPI.  TAG may either
@@ -532,7 +574,7 @@ crypt_block (unsigned char *buffer, size_t length, char *salt, size_t saltlen,
   if (rc)
     {
       wipememory (buffer, length);
-      log_error ("%scrytion failed (%zu bytes): %s\n",
+      log_error ("%scryption failed (%zu bytes): %s\n",
                  encrypt?"en":"de", length, gpg_strerror (rc));
       goto leave;
     }
@@ -2471,7 +2513,8 @@ create_final (struct buffer_s *sequences, const char *pw, size_t *r_length)
  */
 
 static unsigned char *
-build_rsa_key_sequence (gcry_mpi_t *kparms, int mode, size_t *r_length)
+build_rsa_key_sequence (gcry_mpi_t *kparms, int mode, int padding,
+                        size_t *r_length)
 {
   int rc, i;
   size_t needed, n;
@@ -2528,8 +2571,8 @@ build_rsa_key_sequence (gcry_mpi_t *kparms, int mode, size_t *r_length)
       needed += n;
     }
 
-  /* allocate 8 extra bytes for padding */
-  plain = gcry_malloc_secure (needed+8);
+  /* allocate 8 or 16 extra bytes for padding */
+  plain = gcry_malloc_secure (needed+padding);
   if (!plain)
     {
       log_error ("error allocating encryption buffer\n");
@@ -2592,7 +2635,7 @@ build_rsa_key_sequence (gcry_mpi_t *kparms, int mode, size_t *r_length)
   if (!mode)
     {
       /* Append some pad characters; we already allocated extra space. */
-      n = 8 - plainlen % 8;
+      n = padding - plainlen % padding;
       for (i=0; i < n; i++, plainlen++)
         *p++ = n;
     }
@@ -2633,7 +2676,8 @@ build_rsa_key_sequence (gcry_mpi_t *kparms, int mode, size_t *r_length)
  */
 
 static unsigned char *
-build_ecc_key_sequence (gcry_mpi_t *kparms, int mode, size_t *r_length)
+build_ecc_key_sequence (gcry_mpi_t *kparms, int mode, int padding,
+                        size_t *r_length)
 {
   gpg_error_t err;
   unsigned int nbits, n;
@@ -2728,7 +2772,7 @@ build_ecc_key_sequence (gcry_mpi_t *kparms, int mode, size_t *r_length)
     }
 
   /* Append some pad characters if needed. */
-  if (!mode && (n = 8 - resultlen % 8))
+  if (!mode && (n = padding - resultlen % padding))
     {
       p = xtrymalloc_secure (resultlen + n);
       if (!p)
@@ -2771,9 +2815,9 @@ build_ecc_key_sequence (gcry_mpi_t *kparms, int mode, size_t *r_length)
  *    1 - Ditto but without the extra padding needed for pkcs#12
  *    2 - Only the octet string (ECPrivateKey)
  */
-
 static unsigned char *
-build_mlkem_key_sequence (gcry_mpi_t *kparms, int mode, size_t *r_length)
+build_mlkem_key_sequence (gcry_mpi_t *kparms, int mode, int padding,
+                          size_t *r_length)
 {
   gpg_error_t err;
   unsigned int nbits, n;
@@ -2865,7 +2909,7 @@ build_mlkem_key_sequence (gcry_mpi_t *kparms, int mode, size_t *r_length)
     }
 
   /* Append some pad characters if needed. */
-  if (!mode && (n = 8 - resultlen % 8))
+  if (!mode && (n = padding - resultlen % padding))
     {
       unsigned char *p = xtrymalloc_secure (resultlen + n);
       if (!p)
@@ -2897,236 +2941,167 @@ build_mlkem_key_sequence (gcry_mpi_t *kparms, int mode, size_t *r_length)
 }
 
 
+/* (BUFFER,BUFLEN) has the encrypted key.  SALT has the 8 bytes of the
+ * salt.  SHA1HASH is the identifier for the certificate.  KEYIDSTR is
+ * a string with the 8 character key identifier.  R_LENGTH received
+ * the length of the reated DER block.  The return value is the
+ * allocated DER block. */
 static unsigned char *
 build_key_bag (unsigned char *buffer, size_t buflen, char *salt,
+               unsigned int itercount,
                const unsigned char *sha1hash, const char *keyidstr,
                size_t *r_length)
 {
-  size_t len[11], needed;
-  unsigned char *p, *keybag;
+  gpg_error_t err;
+  int e;
+  tlv_builder_t tb;
+  void *keybag;
   size_t keybaglen;
 
-  /* Walk 11 steps down to collect the info: */
-
-  /* 10. The data goes into an octet string. */
-  needed = compute_tag_length (buflen);
-  needed += buflen;
-
-  /* 9. Prepend the algorithm identifier. */
-  needed += DIM (data_3desiter2048);
-
-  /* 8. Put a sequence around. */
-  len[8] = needed;
-  needed += compute_tag_length (needed);
-
-  /* 7. Prepend a [0] tag. */
-  len[7] = needed;
-  needed += compute_tag_length (needed);
-
-  /* 6b. The attributes which are appended at the end. */
-  if (sha1hash)
-    needed += DIM (data_attrtemplate) + 20;
-
-  /* 6. Prepend the shroudedKeyBag OID. */
-  needed += 2 + DIM (oid_pkcs_12_pkcs_8ShroudedKeyBag);
-
-  /* 5+4. Put all into two sequences. */
-  len[5] = needed;
-  needed += compute_tag_length ( needed);
-  len[4] = needed;
-  needed += compute_tag_length (needed);
-
-  /* 3. This all goes into an octet string. */
-  len[3] = needed;
-  needed += compute_tag_length (needed);
-
-  /* 2. Prepend another [0] tag. */
-  len[2] = needed;
-  needed += compute_tag_length (needed);
-
-  /* 1. Prepend the data OID. */
-  needed += 2 + DIM (oid_data);
-
-  /* 0. Prepend another sequence. */
-  len[0] = needed;
-  needed += compute_tag_length (needed);
-
-  /* Now that we have all length information, allocate a buffer. */
-  p = keybag = gcry_malloc (needed);
-  if (!keybag)
+  tb = tlv_builder_new (1);
+  if (!tb)
     {
-      log_error ("error allocating buffer\n");
+      err = gpg_error_from_syserror ();
+      log_error ("%s:%d: error creating new TLV builder: %s\n",
+                 __func__, __LINE__, gpg_strerror (err));
       return NULL;
     }
-
-  /* Walk 11 steps up to store the data. */
+  e = 0;
 
   /* 0. Store the first sequence. */
-  p = store_tag_length (p, TAG_SEQUENCE, len[0]);
-
-  /* 1. Store the data OID. */
-  p = store_tag_length (p, TAG_OBJECT_ID, DIM (oid_data));
-  memcpy (p, oid_data, DIM (oid_data));
-  p += DIM (oid_data);
-
-  /* 2. Store a [0] tag. */
-  p = store_tag_length (p, 0xa0, len[2]);
-
-  /* 3. And an octet string. */
-  p = store_tag_length (p, TAG_OCTET_STRING, len[3]);
-
-  /* 4+5. Two sequences. */
-  p = store_tag_length (p, TAG_SEQUENCE, len[4]);
-  p = store_tag_length (p, TAG_SEQUENCE, len[5]);
-
-  /* 6. Store the shroudedKeyBag OID. */
-  p = store_tag_length (p, TAG_OBJECT_ID,
-                        DIM (oid_pkcs_12_pkcs_8ShroudedKeyBag));
-  memcpy (p, oid_pkcs_12_pkcs_8ShroudedKeyBag,
-          DIM (oid_pkcs_12_pkcs_8ShroudedKeyBag));
-  p += DIM (oid_pkcs_12_pkcs_8ShroudedKeyBag);
-
-  /* 7. Store a [0] tag. */
-  p = store_tag_length (p, 0xa0, len[7]);
-
-  /* 8. Store a sequence. */
-  p = store_tag_length (p, TAG_SEQUENCE, len[8]);
-
-  /* 9. Now for the pre-encoded algorithm identifier and the salt. */
-  memcpy (p, data_3desiter2048, DIM (data_3desiter2048));
-  memcpy (p + DATA_3DESITER2048_SALT_OFF, salt, 8);
-  p += DIM (data_3desiter2048);
-
-  /* 10. And the octet string with the encrypted data. */
-  p = store_tag_length (p, TAG_OCTET_STRING, buflen);
-  memcpy (p, buffer, buflen);
-  p += buflen;
+  tlv_builder_add_tag (tb, 0, TAG_SEQUENCE);
+  e|= builder_add_oid (tb, 0, "1.2.840.113549.1.7.1"); /* data */
+  tlv_builder_add_tag (tb, CLASS_CONTEXT, 0);          /* [0] tag */
+  tlv_builder_add_tag (tb, 0, TAG_OCTET_STRING);
+  tlv_builder_add_tag (tb, 0, TAG_SEQUENCE);
+  tlv_builder_add_tag (tb, 0, TAG_SEQUENCE);
+  e|= builder_add_oid (tb, 0, "1.2.840.113549.1.12.10.1.2"); /*shroudedKeyBag*/
+  tlv_builder_add_tag (tb, CLASS_CONTEXT, 0);          /* [0] tag */
+  tlv_builder_add_tag (tb, 0, TAG_SEQUENCE);
+  /* The algorithm identifier and the salt. */
+  tlv_builder_add_tag (tb, 0, TAG_SEQUENCE);
+  e|= builder_add_oid (tb, 0, "1.2.840.113549.1.12.1.3"); /*3des-CBC*/
+  tlv_builder_add_tag (tb, 0, TAG_SEQUENCE);
+  tlv_builder_add_val (tb, 0, TAG_OCTET_STRING, salt, 8);
+  builder_add_int (tb, itercount);
+  tlv_builder_add_end (tb);
+  tlv_builder_add_end (tb);
+  tlv_builder_add_ptr (tb, 0, TAG_OCTET_STRING, buffer, buflen);
+  tlv_builder_add_end (tb);
+  tlv_builder_add_end (tb);
 
   /* Append the attributes whose length we calculated at step 2b. */
   if (sha1hash)
     {
-      int i;
+      char *friendlyname;
 
-      memcpy (p, data_attrtemplate, DIM (data_attrtemplate));
-      for (i=0; i < 8; i++)
-        p[DATA_ATTRTEMPLATE_KEYID_OFF+2*i+1] = keyidstr[i];
-      p += DIM (data_attrtemplate);
-      memcpy (p, sha1hash, 20);
-      p += 20;
+      tlv_builder_add_tag (tb, 0, TAG_SET);
+      tlv_builder_add_tag (tb, 0, TAG_SEQUENCE);
+      e|= builder_add_oid (tb, 0, "1.2.840.113549.1.9.20"); /*friendlyName*/
+      tlv_builder_add_tag (tb, 0, TAG_SET);
+      friendlyname = strconcat ("GnuPG exported certificate ", keyidstr, NULL);
+      if (!friendlyname)
+        {
+          log_error ("%s: malloc failed\n", __func__);
+          e |= 1;
+        }
+      else
+        {
+          e|= builder_add_bmp_string (tb, friendlyname);
+          xfree (friendlyname);
+        }
+      tlv_builder_add_end (tb);  /*Set*/
+      tlv_builder_add_end (tb);  /*Sequence*/
+      tlv_builder_add_tag (tb, 0, TAG_SEQUENCE);
+      e|= builder_add_oid (tb, 0, "1.2.840.113549.1.9.21"); /*localKeyId*/
+      tlv_builder_add_tag (tb, 0, TAG_SET);
+      tlv_builder_add_val (tb, 0, TAG_OCTET_STRING, sha1hash, 20);
+      tlv_builder_add_end (tb);  /*Set*/
+      tlv_builder_add_end (tb);  /*Sequence*/
+      tlv_builder_add_end (tb);  /*Set*/
     }
+  /* Close everything.  */
+  tlv_builder_add_end (tb);  /*Sequence*/
+  tlv_builder_add_end (tb);  /*Sequence*/
+  tlv_builder_add_end (tb);  /*constructed OCTET STRING*/
+  tlv_builder_add_end (tb);  /*[0]*/
+  tlv_builder_add_end (tb);  /*Sequence*/
 
-
-  keybaglen = p - keybag;
-  if (needed != keybaglen)
-    log_debug ("p12_parse: warning: length mismatch: %lu, %lu\n",
-               (unsigned long)needed, (unsigned long)keybaglen);
-
+  /* Get the DER.  */
+  err = tlv_builder_finalize (tb, &keybag, &keybaglen);
+  if (err || e)
+    {
+      if (!err)
+        err = gpg_error (GPG_ERR_GENERAL);
+      log_error ("%s:%d: tlv building failed: %s\n",
+                 __func__, __LINE__, gpg_strerror (err));
+      return NULL;
+    }
   *r_length = keybaglen;
   return keybag;
 }
 
 
+/* Somewhat similar to build_key_bag but used for the cert bag.  */
 static unsigned char *
-build_cert_bag (unsigned char *buffer, size_t buflen, char *salt,
-                size_t *r_length)
+build_cert_bag (unsigned char *buffer, size_t buflen,
+                unsigned int itercount, char *salt, size_t *r_length)
 {
-  size_t len[9], needed;
-  unsigned char *p, *certbag;
+  gpg_error_t err;
+  int e;
+  tlv_builder_t tb;
+  void *certbag;
   size_t certbaglen;
 
-  /* Walk 9 steps down to collect the info: */
-
-  /* 8. The data goes into an octet string. */
-  needed = compute_tag_length (buflen);
-  needed += buflen;
-
-  /* 7. The algorithm identifier. */
-  needed += DIM (data_rc2iter2048);
-
-  /* 6. The data OID. */
-  needed += 2 + DIM (oid_data);
-
-  /* 5. A sequence. */
-  len[5] = needed;
-  needed += compute_tag_length ( needed);
-
-  /* 4. An integer. */
-  needed += 3;
-
-  /* 3. A sequence. */
-  len[3] = needed;
-  needed += compute_tag_length (needed);
-
-  /* 2.  A [0] tag. */
-  len[2] = needed;
-  needed += compute_tag_length (needed);
-
-  /* 1. The encryptedData OID. */
-  needed += 2 + DIM (oid_encryptedData);
-
-  /* 0. The first sequence. */
-  len[0] = needed;
-  needed += compute_tag_length (needed);
-
-  /* Now that we have all length information, allocate a buffer. */
-  p = certbag = gcry_malloc (needed);
-  if (!certbag)
+  tb = tlv_builder_new (0);  /* No secure memory required.  */
+  if (!tb)
     {
-      log_error ("error allocating buffer\n");
+      err = gpg_error_from_syserror ();
+      log_error ("%s:%d: error creating new TLV builder: %s\n",
+                 __func__, __LINE__, gpg_strerror (err));
       return NULL;
     }
-
-  /* Walk 9 steps up to store the data. */
+  e = 0;
 
   /* 0. Store the first sequence. */
-  p = store_tag_length (p, TAG_SEQUENCE, len[0]);
+  tlv_builder_add_tag (tb, 0, TAG_SEQUENCE);
+  e|= builder_add_oid (tb, 0, "1.2.840.113549.1.7.6"); /*encryptedData*/
+  tlv_builder_add_tag (tb, CLASS_CONTEXT, 0);          /* [0] tag */
+  tlv_builder_add_tag (tb, 0, TAG_SEQUENCE);
+  builder_add_int (tb, 0);                             /* version */
+  tlv_builder_add_tag (tb, 0, TAG_SEQUENCE);
+  e|= builder_add_oid (tb, 0, "1.2.840.113549.1.7.1"); /* data */
+  /* The algorithm identifier and the salt. */
+  tlv_builder_add_tag (tb, 0, TAG_SEQUENCE);
+  e|= builder_add_oid (tb, 0, "1.2.840.113549.1.12.1.6"); /*40BitRC2-CBC*/
+  tlv_builder_add_tag (tb, 0, TAG_SEQUENCE);
+  tlv_builder_add_val (tb, 0, TAG_OCTET_STRING, salt, 8);
+  builder_add_int (tb, itercount);
+  tlv_builder_add_end (tb);
+  tlv_builder_add_end (tb);
+  tlv_builder_add_ptr (tb, CLASS_CONTEXT, 0, buffer, buflen);
+  tlv_builder_add_end (tb);
+  tlv_builder_add_end (tb);
+  tlv_builder_add_end (tb);  /*[0]*/
+  tlv_builder_add_end (tb);  /*Sequence*/
 
-  /* 1. Store the encryptedData OID. */
-  p = store_tag_length (p, TAG_OBJECT_ID, DIM (oid_encryptedData));
-  memcpy (p, oid_encryptedData, DIM (oid_encryptedData));
-  p += DIM (oid_encryptedData);
-
-  /* 2. Store a [0] tag. */
-  p = store_tag_length (p, 0xa0, len[2]);
-
-  /* 3. Store a sequence. */
-  p = store_tag_length (p, TAG_SEQUENCE, len[3]);
-
-  /* 4. Store the integer 0. */
-  *p++ = TAG_INTEGER;
-  *p++ = 1;
-  *p++ = 0;
-
-  /* 5. Store a sequence. */
-  p = store_tag_length (p, TAG_SEQUENCE, len[5]);
-
-  /* 6. Store the data OID. */
-  p = store_tag_length (p, TAG_OBJECT_ID, DIM (oid_data));
-  memcpy (p, oid_data, DIM (oid_data));
-  p += DIM (oid_data);
-
-  /* 7. Now for the pre-encoded algorithm identifier and the salt. */
-  memcpy (p, data_rc2iter2048, DIM (data_rc2iter2048));
-  memcpy (p + DATA_RC2ITER2048_SALT_OFF, salt, 8);
-  p += DIM (data_rc2iter2048);
-
-  /* 8. And finally the [0] tag with the encrypted data. */
-  p = store_tag_length (p, 0x80, buflen);
-  memcpy (p, buffer, buflen);
-  p += buflen;
-  certbaglen = p - certbag;
-
-  if (needed != certbaglen)
-    log_debug ("p12_parse: warning: length mismatch: %lu, %lu\n",
-               (unsigned long)needed, (unsigned long)certbaglen);
-
+  /* Get the DER.  */
+  err = tlv_builder_finalize (tb, &certbag, &certbaglen);
+  if (err || e)
+    {
+      if (!err)
+        err = gpg_error (GPG_ERR_GENERAL);
+      log_error ("%s:%d: tlv building failed: %s\n",
+                 __func__, __LINE__, gpg_strerror (err));
+      return NULL;
+    }
   *r_length = certbaglen;
   return certbag;
 }
 
 
 static unsigned char *
-build_cert_sequence (const unsigned char *buffer, size_t buflen,
+build_cert_sequence (const unsigned char *buffer, size_t buflen, int padding,
                      const unsigned char *sha1hash, const char *keyidstr,
                      size_t *r_length)
 {
@@ -3136,6 +3111,7 @@ build_cert_sequence (const unsigned char *buffer, size_t buflen,
   int i;
 
   log_assert (strlen (keyidstr) == 8);
+  log_assert (padding == 8 || padding == 16);
 
   /* Walk 8 steps down to collect the info: */
 
@@ -3174,7 +3150,7 @@ build_cert_sequence (const unsigned char *buffer, size_t buflen,
   needed += compute_tag_length (needed);
 
   /* Now that we have all length information, allocate a buffer. */
-  p = certseq = gcry_malloc (needed + 8 /*(for padding)*/);
+  p = certseq = gcry_malloc (needed + padding);
   if (!certseq)
     {
       log_error ("error allocating buffer\n");
@@ -3232,7 +3208,7 @@ build_cert_sequence (const unsigned char *buffer, size_t buflen,
                (unsigned long)needed, (unsigned long)certseqlen);
 
   /* Append some pad characters; we already allocated extra space. */
-  n = 8 - certseqlen % 8;
+  n = padding - certseqlen % padding;
   for (i=0; i < n; i++, certseqlen++)
     *p++ = n;
 
@@ -3311,13 +3287,18 @@ p12_build (gcry_mpi_t *kparms, int keytype,
 
   if (cert && certlen)
     {
+      int cipher_algo = GCRY_CIPHER_RFC2268_40;
+      int hash_algo = GCRY_MD_SHA1;
+      unsigned int itercount = 2048;
+      int padlen = gcry_cipher_get_algo_blklen (cipher_algo);
+
       /* Calculate the hash value we need for the bag attributes. */
       gcry_md_hash_buffer (GCRY_MD_SHA1, sha1hash, cert, certlen);
       sprintf (keyidstr, "%02x%02x%02x%02x",
                sha1hash[16], sha1hash[17], sha1hash[18], sha1hash[19]);
 
       /* Encode the certificate. */
-      buffer = build_cert_sequence (cert, certlen, sha1hash, keyidstr,
+      buffer = build_cert_sequence (cert, certlen, padlen, sha1hash, keyidstr,
                                     &buflen);
       if (!buffer)
         goto failure;
@@ -3325,10 +3306,11 @@ p12_build (gcry_mpi_t *kparms, int keytype,
       /* Encrypt it. */
       gcry_randomize (salt, 8, GCRY_STRONG_RANDOM);
       crypt_block (buffer, buflen, salt, 8, 2048, NULL, 0, pw,
-                   GCRY_CIPHER_RFC2268_40, GCRY_MD_SHA1, 1);
+                   cipher_algo, hash_algo, 1);
 
       /* Encode the encrypted stuff into a bag. */
-      seqlist[seqlistidx].buffer = build_cert_bag (buffer, buflen, salt, &n);
+      seqlist[seqlistidx].buffer = build_cert_bag (buffer, buflen, itercount,
+                                                   salt, &n);
       seqlist[seqlistidx].length = n;
       gcry_free (buffer);
       buffer = NULL;
@@ -3341,28 +3323,34 @@ p12_build (gcry_mpi_t *kparms, int keytype,
   if (kparms)
     {
       /* Encode the key. */
+      int cipher_algo = GCRY_CIPHER_3DES;  /* fixme: use GCRY_CIPHER_AES256 */
+      int hash_algo = GCRY_MD_SHA1;        /* fixme: use GCRY_MD_SHA256     */
+      unsigned int itercount = 2048;
+      int padlen = gcry_cipher_get_algo_blklen (cipher_algo);
 
+      log_assert (padlen >= 8);
       if (keytype == GCRY_PK_MLKEM)  /* Composite */
-        buffer = build_mlkem_key_sequence (kparms, 0, &buflen);
+        buffer = build_mlkem_key_sequence (kparms, 0, padlen, &buflen);
       else if (keytype == GCRY_PK_ECC)
-        buffer = build_ecc_key_sequence (kparms, 0, &buflen);
+        buffer = build_ecc_key_sequence (kparms, 0, padlen, &buflen);
       else
-        buffer = build_rsa_key_sequence (kparms, 0, &buflen);
+        buffer = build_rsa_key_sequence (kparms, 0, padlen, &buflen);
       if (!buffer)
         goto failure;
 
       /* Encrypt it. */
-#warning Change algos to more modern ones.
       gcry_randomize (salt, 8, GCRY_STRONG_RANDOM);
       crypt_block (buffer, buflen, salt, 8, 2048, NULL, 0,
-                   pw, GCRY_CIPHER_3DES, GCRY_MD_SHA1, 1);
+                   pw, cipher_algo, hash_algo, 1);
 
       /* Encode the encrypted stuff into a bag. */
       if (cert && certlen)
         seqlist[seqlistidx].buffer = build_key_bag (buffer, buflen, salt,
+                                                    itercount,
                                                     sha1hash, keyidstr, &n);
       else
         seqlist[seqlistidx].buffer = build_key_bag (buffer, buflen, salt,
+                                                    itercount,
                                                     NULL, NULL, &n);
       seqlist[seqlistidx].length = n;
       gcry_free (buffer);
@@ -3404,12 +3392,13 @@ p12_raw_build (gcry_mpi_t *kparms, int keytype, int rawmode, size_t *r_length)
 
   log_assert (rawmode == 1 || rawmode == 2);
 
+  /* Note that the padding is not actually used.  */
   if (keytype == GCRY_PK_MLKEM)  /* Composite */
-    buffer = build_mlkem_key_sequence (kparms, rawmode, &buflen);
+    buffer = build_mlkem_key_sequence (kparms, rawmode, 16, &buflen);
   else if (keytype == GCRY_PK_ECC)
-    buffer = build_ecc_key_sequence (kparms, rawmode, &buflen);
+    buffer = build_ecc_key_sequence (kparms, rawmode, 16, &buflen);
   else if (keytype == GCRY_PK_RSA)
-    buffer = build_rsa_key_sequence (kparms, rawmode, &buflen);
+    buffer = build_rsa_key_sequence (kparms, rawmode, 16, &buflen);
   else
     {
       log_error ("%s: invalid keytype %d\n", __func__, keytype);
