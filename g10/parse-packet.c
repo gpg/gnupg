@@ -3006,12 +3006,12 @@ parse_key (IOBUF inp, int pkttype, unsigned long pktlen,
   if (list_mode)
     {
       es_fprintf (listfp, ":%s key packet:\n"
-                  "\tversion %d, algo %d, created %lu, expires %lu",
+                  "\tversion %d, algo %d, created %lu",
                   pkttype == PKT_PUBLIC_KEY ? "public" :
                   pkttype == PKT_SECRET_KEY ? "secret" :
                   pkttype == PKT_PUBLIC_SUBKEY ? "public sub" :
                   pkttype == PKT_SECRET_SUBKEY ? "secret sub" : "??",
-                  version, algorithm, timestamp, expiredate);
+                  version, algorithm, timestamp);
       if (is_v5 || is_v6)
         es_fprintf (listfp, ", pkbytes %u\n", pkbytes);
       else
