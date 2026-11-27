@@ -229,6 +229,8 @@ struct
 /* Don't use PartialFileGuard (writing to .part file,
  * renaming/deleting at the finish) by gpgsm itself.  */
 #define COMPAT_NO_PARTIALFILEGUARD 8
+/* Use the classic RC2 + 3DES algos for pkcs#12 creation.  */
+#define COMPAT_LEGACY_P12_ALGOS   16
 
 /* Forward declaration for an object defined in server.c */
 struct server_local_s;

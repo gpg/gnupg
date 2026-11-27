@@ -926,7 +926,9 @@ export_p12 (ctrl_t ctrl, const unsigned char *certimg, size_t certimglen,
       result = p12_build (kparms1, key2_type? key2_type : key1_type,
                           certimg, certimglen,
                           ctrl->no_protection? "" : passphrase,
-                          opt.p12_charset, &resultlen);
+                          opt.p12_charset,
+                          !(opt.compat_flags & COMPAT_LEGACY_P12_ALGOS),
+                          &resultlen);
       xfree (passphrase);
       passphrase = NULL;
       if (!result)

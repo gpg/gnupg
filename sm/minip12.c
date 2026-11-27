@@ -1,7 +1,7 @@
 /* minip12.c - A minimal pkcs-12 implementation.
  * Copyright (C) 2002, 2003, 2004, 2006, 2011 Free Software Foundation, Inc.
  * Copyright (C) 2014 Werner Koch
- * Copyright (C) 2022-2024 g10 Code GmbH
+ * Copyright (C) 2022-2024, 2026 g10 Code GmbH
  *
  * This file is part of GnuPG.
  *
@@ -2945,10 +2945,11 @@ build_mlkem_key_sequence (gcry_mpi_t *kparms, int mode, int padding,
  * salt.  SHA1HASH is the identifier for the certificate.  KEYIDSTR is
  * a string with the 8 character key identifier.  R_LENGTH received
  * the length of the reated DER block.  The return value is the
- * allocated DER block. */
+ * allocated DER block.  If IV and IVLEN are set PBES2 key wrapping is
+ * used with AES256-CBC abd hmacSHA256.  */
 static unsigned char *
 build_key_bag (unsigned char *buffer, size_t buflen, char *salt,
-               unsigned int itercount,
+               const void *iv, size_t ivlen, unsigned int itercount,
                const unsigned char *sha1hash, const char *keyidstr,
                size_t *r_length)
 {
@@ -2957,6 +2958,7 @@ build_key_bag (unsigned char *buffer, size_t buflen, char *salt,
   tlv_builder_t tb;
   void *keybag;
   size_t keybaglen;
+  int use_pbes2 = iv && ivlen;
 
   tb = tlv_builder_new (1);
   if (!tb)
@@ -2969,28 +2971,52 @@ build_key_bag (unsigned char *buffer, size_t buflen, char *salt,
   e = 0;
 
   /* 0. Store the first sequence. */
-  tlv_builder_add_tag (tb, 0, TAG_SEQUENCE);
+  tlv_builder_add_tag (tb, 0, TAG_SEQUENCE); /* (cnt#1) */
   e|= builder_add_oid (tb, 0, "1.2.840.113549.1.7.1"); /* data */
-  tlv_builder_add_tag (tb, CLASS_CONTEXT, 0);          /* [0] tag */
-  tlv_builder_add_tag (tb, 0, TAG_OCTET_STRING);
-  tlv_builder_add_tag (tb, 0, TAG_SEQUENCE);
-  tlv_builder_add_tag (tb, 0, TAG_SEQUENCE);
+  tlv_builder_add_tag (tb, CLASS_CONTEXT, 0); /* [0] tag  (cnt#2) */
+  tlv_builder_add_tag (tb, 0, TAG_OCTET_STRING); /*(cnt#3)*/
+  tlv_builder_add_tag (tb, 0, TAG_SEQUENCE); /*(cnt#4)*/
+  tlv_builder_add_tag (tb, 0, TAG_SEQUENCE); /*(cnt#5)*/
   e|= builder_add_oid (tb, 0, "1.2.840.113549.1.12.10.1.2"); /*shroudedKeyBag*/
-  tlv_builder_add_tag (tb, CLASS_CONTEXT, 0);          /* [0] tag */
-  tlv_builder_add_tag (tb, 0, TAG_SEQUENCE);
-  /* The algorithm identifier and the salt. */
-  tlv_builder_add_tag (tb, 0, TAG_SEQUENCE);
-  e|= builder_add_oid (tb, 0, "1.2.840.113549.1.12.1.3"); /*3des-CBC*/
-  tlv_builder_add_tag (tb, 0, TAG_SEQUENCE);
-  tlv_builder_add_val (tb, 0, TAG_OCTET_STRING, salt, 8);
-  builder_add_int (tb, itercount);
-  tlv_builder_add_end (tb);
-  tlv_builder_add_end (tb);
+  tlv_builder_add_tag (tb, CLASS_CONTEXT, 0); /* [0] tag (cnt#6)*/
+  tlv_builder_add_tag (tb, 0, TAG_SEQUENCE); /*(cnt#7)*/
+  /* The algggorithm identifier and the salt. */
+  tlv_builder_add_tag (tb, 0, TAG_SEQUENCE); /*(cnt#8)*/
+  if (use_pbes2)
+    {
+      e|= builder_add_oid (tb, 0, "1.2.840.113549.1.5.13"); /*pkcs5PBES2*/
+      tlv_builder_add_tag (tb, 0, TAG_SEQUENCE); /*(cnt#9)*/
+      tlv_builder_add_tag (tb, 0, TAG_SEQUENCE); /*(cnt#10)*/
+      e|= builder_add_oid (tb, 0, "1.2.840.113549.1.5.12"); /*pkcs5PBKDF2*/
+      tlv_builder_add_tag (tb, 0, TAG_SEQUENCE); /*(cnt#11)*/
+      tlv_builder_add_val (tb, 0, TAG_OCTET_STRING, salt, 8);
+      builder_add_int (tb, itercount);
+      tlv_builder_add_tag (tb, 0, TAG_SEQUENCE); /*(cnt#12)*/
+      e|= builder_add_oid (tb, 0, "1.2.840.113549.2.9"); /*hmacWithSHA256*/
+      tlv_builder_add_ptr (tb, 0, TAG_NULL, NULL, 0);
+      tlv_builder_add_end (tb); /*(cnt#12)*/
+      tlv_builder_add_end (tb); /*(cnt#11)*/
+      tlv_builder_add_end (tb); /*(cnt#10)*/
+      tlv_builder_add_tag (tb, 0, TAG_SEQUENCE); /*(cnt#9.1)*/
+      e|= builder_add_oid (tb, 0, "2.16.840.1.101.3.4.1.42"); /*aes256-CBC*/
+      tlv_builder_add_val (tb, 0, TAG_OCTET_STRING, iv, ivlen);
+      tlv_builder_add_end (tb); /*(cnt#9.1)*/
+      tlv_builder_add_end (tb); /*(cnt#9)*/
+    }
+  else
+    {
+      e|= builder_add_oid (tb, 0, "1.2.840.113549.1.12.1.3"); /*3des-CBC*/
+      tlv_builder_add_tag (tb, 0, TAG_SEQUENCE); /*(cnt#9)*/
+      tlv_builder_add_val (tb, 0, TAG_OCTET_STRING, salt, 8);
+      builder_add_int (tb, itercount);
+      tlv_builder_add_end (tb); /*(cnt#9)*/
+    }
+  tlv_builder_add_end (tb); /*(cnt#8)*/
   tlv_builder_add_ptr (tb, 0, TAG_OCTET_STRING, buffer, buflen);
-  tlv_builder_add_end (tb);
-  tlv_builder_add_end (tb);
+  tlv_builder_add_end (tb); /*(cnt#7)*/
+  tlv_builder_add_end (tb); /*(cnt#6)*/
 
-  /* Append the attributes whose length we calculated at step 2b. */
+  /* Append the attributes. */
   if (sha1hash)
     {
       char *friendlyname;
@@ -3021,11 +3047,11 @@ build_key_bag (unsigned char *buffer, size_t buflen, char *salt,
       tlv_builder_add_end (tb);  /*Set*/
     }
   /* Close everything.  */
-  tlv_builder_add_end (tb);  /*Sequence*/
-  tlv_builder_add_end (tb);  /*Sequence*/
-  tlv_builder_add_end (tb);  /*constructed OCTET STRING*/
-  tlv_builder_add_end (tb);  /*[0]*/
-  tlv_builder_add_end (tb);  /*Sequence*/
+  tlv_builder_add_end (tb);  /*Sequence (cnt#5)*/
+  tlv_builder_add_end (tb);  /*Sequence (cnt#4)*/
+  tlv_builder_add_end (tb);  /*constructed OCTET STRING (cnt#3)*/
+  tlv_builder_add_end (tb);  /*[0] (cnt#2)*/
+  tlv_builder_add_end (tb);  /*Sequence (cnt#1)*/
 
   /* Get the DER.  */
   err = tlv_builder_finalize (tb, &keybag, &keybaglen);
@@ -3220,11 +3246,12 @@ build_cert_sequence (const unsigned char *buffer, size_t buflen, int padding,
 /* Expect the RSA key parameters in KPARMS and a password in PW.
    Create a PKCS structure from it and return it as well as the length
    in R_LENGTH; return NULL in case of an error.  If CHARSET is not
-   NULL, re-encode PW to that character set. */
+   NULL, re-encode PW to that character set.  With MODERN set AES256
+   is used inastead of the legacy algorithms. */
 unsigned char *
 p12_build (gcry_mpi_t *kparms, int keytype,
            const void *cert, size_t certlen,
-           const char *pw, const char *charset, size_t *r_length)
+           const char *pw, const char *charset, int modern, size_t *r_length)
 {
   unsigned char *buffer = NULL;
   size_t n, buflen;
@@ -3323,11 +3350,20 @@ p12_build (gcry_mpi_t *kparms, int keytype,
   if (kparms)
     {
       /* Encode the key. */
-      int cipher_algo = GCRY_CIPHER_3DES;  /* fixme: use GCRY_CIPHER_AES256 */
-      int hash_algo = GCRY_MD_SHA1;        /* fixme: use GCRY_MD_SHA256     */
+      int cipher_algo = GCRY_CIPHER_3DES;
+      int hash_algo = GCRY_MD_SHA1;
       unsigned int itercount = 2048;
-      int padlen = gcry_cipher_get_algo_blklen (cipher_algo);
+      unsigned char *iv = NULL;
+      size_t ivlen = 0;
+      int padlen;
 
+      if (modern)
+        {
+          cipher_algo = GCRY_CIPHER_AES256;
+          hash_algo = GCRY_MD_SHA256;
+        }
+
+      padlen = gcry_cipher_get_algo_blklen (cipher_algo);
       log_assert (padlen >= 8);
       if (keytype == GCRY_PK_MLKEM)  /* Composite */
         buffer = build_mlkem_key_sequence (kparms, 0, padlen, &buflen);
@@ -3340,19 +3376,31 @@ p12_build (gcry_mpi_t *kparms, int keytype,
 
       /* Encrypt it. */
       gcry_randomize (salt, 8, GCRY_STRONG_RANDOM);
-      crypt_block (buffer, buflen, salt, 8, 2048, NULL, 0,
+      if (modern)
+        {
+          ivlen = padlen;
+          iv = xtrymalloc (padlen);
+          if (!iv)
+            {
+              log_error ("%s: malloc failed\n", __func__);
+              goto failure;
+            }
+          gcry_randomize (iv, ivlen, GCRY_STRONG_RANDOM);
+        }
+      crypt_block (buffer, buflen, salt, 8, 2048, iv, ivlen,
                    pw, cipher_algo, hash_algo, 1);
 
       /* Encode the encrypted stuff into a bag. */
       if (cert && certlen)
         seqlist[seqlistidx].buffer = build_key_bag (buffer, buflen, salt,
-                                                    itercount,
+                                                    iv, ivlen, itercount,
                                                     sha1hash, keyidstr, &n);
       else
         seqlist[seqlistidx].buffer = build_key_bag (buffer, buflen, salt,
-                                                    itercount,
+                                                    iv, ivlen, itercount,
                                                     NULL, NULL, &n);
       seqlist[seqlistidx].length = n;
+      xfree (iv); iv = NULL;
       gcry_free (buffer);
       buffer = NULL;
       if (!seqlist[seqlistidx].buffer)

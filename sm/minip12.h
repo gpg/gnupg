@@ -34,7 +34,7 @@ void p12_parse_free_kparms (gcry_mpi_t *kparms);
 
 unsigned char *p12_build (gcry_mpi_t *kparms, int keytype,
                           const void *cert, size_t certlen,
-                          const char *pw, const char *charset,
+                          const char *pw, const char *charset, int modern,
                           size_t *r_length);
 unsigned char *p12_raw_build (gcry_mpi_t *kparms, int keytype, int rawmode,
                               size_t *r_length);

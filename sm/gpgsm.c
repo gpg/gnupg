@@ -515,6 +515,7 @@ static struct compatibility_flags_s compatibility_flags [] =
     { COMPAT_NO_CHAIN_CACHE, "no-chain-cache"     },
     { COMPAT_NO_KEYINFO_CACHE, "no-keyinfo-cache" },
     { COMPAT_NO_PARTIALFILEGUARD, "no-partial-file-guard" },
+    { COMPAT_LEGACY_P12_ALGOS,  "legacy-p12-algos" },
     { 0, NULL }
   };
 
